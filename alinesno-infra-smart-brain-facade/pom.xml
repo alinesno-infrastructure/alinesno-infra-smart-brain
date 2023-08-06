@@ -13,6 +13,11 @@
 	<artifactId>alinesno-infra-smart-brain-facade</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<chatgpt.version>4.0.5</chatgpt.version>
+		<chatgpt-java.version>1.0.7</chatgpt-java.version>
+	</properties>
+
 	<dependencies>
 
 		<!-- 引用公共门面服务 -->
@@ -20,6 +25,23 @@
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-facade</artifactId>
 			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.plexpt</groupId>
+			<artifactId>chatgpt</artifactId>
+			<version>${chatgpt.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.unfbx</groupId>
+			<artifactId>chatgpt-java</artifactId>
+			<version>${chatgpt-java.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
 		</dependency>
 
 	</dependencies>
