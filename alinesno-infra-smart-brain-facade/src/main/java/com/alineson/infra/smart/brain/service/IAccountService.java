@@ -9,7 +9,6 @@ import com.alineson.infra.smart.brain.entity.AccountEntity;
  * 【请填写功能名称】Service接口
  *
  * @version 1.0.0
- * @date 2023-07-20 13:04:06
  * @author luoxiaodong
  */
 public interface IAccountService extends IBaseService<AccountEntity> {
