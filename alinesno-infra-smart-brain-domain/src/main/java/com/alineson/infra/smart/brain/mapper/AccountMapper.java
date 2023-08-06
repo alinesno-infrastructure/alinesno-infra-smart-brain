@@ -1,7 +1,5 @@
 package com.alineson.infra.smart.brain.mapper;
 
-import com.alinesno.cloud.ai.chatgpt.entity.UserAccountEntity;
-import com.alinesno.cloud.common.facade.mapper.repository.IBaseJpaMapper;
 import com.alinesno.infra.common.facade.mapper.repository.IBaseMapper;
 import com.alineson.infra.smart.brain.entity.AccountEntity;
 
