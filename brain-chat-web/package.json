@@ -1,15 +1,7 @@
 {
-  "name": "chatgpt-web",
-  "version": "2.10.8",
+  "name": "brain-chat-web",
+  "version": "1.0.0-SNAPSHOT",
   "private": false,
-  "description": "GPT大模型社区版",
-  "author": "ACP-Team <luoandon@gmail.com>",
-  "keywords": [
-    "chatgpt-web",
-    "chatgpt",
-    "chatbot",
-    "vue"
-  ],
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",

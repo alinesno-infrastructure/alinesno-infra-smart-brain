@@ -2,25 +2,16 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
-		<groupId>com.alinesno.cloud</groupId>
-		<artifactId>alinesno-cloud-starter-parent</artifactId>
-		<version>2.1.3-Alpha</version>
-		<relativePath /> <!-- lookup parent from repository -->
+		<groupId>com.alinesno.infra.common</groupId>
+		<artifactId>alinesno-infra-platform-parent</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
-	<groupId>com.alinesno.cloud.ui</groupId>
-	<artifactId>chatgpt-web</artifactId>
+	<groupId>com.alinesno.infra.ui</groupId>
+	<artifactId>brain-chat-web</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
-
-	<url>http://maven.apache.org</url>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
-	</dependencies>
 
 	<build>
 		<finalName>${project.artifactId}</finalName>
@@ -32,11 +23,9 @@
                 <version>1.10.0</version>
                 <configuration>
                     <!-- 若不方便访问官网，可使用国内淘宝镜像-->
-                    <nodeDownloadRoot>https://npm.taobao.org/mirrors/node/
-                    </nodeDownloadRoot>
-                    <npmDownloadRoot>https://registry.npm.taobao.org/npm/-/
-                    </npmDownloadRoot>
-						<yarnDownloadRoot>http://data.linesno.com/web-tools/yarn/</yarnDownloadRoot>
+                    <nodeDownloadRoot>https://npm.taobao.org/mirrors/node/</nodeDownloadRoot>
+                    <npmDownloadRoot>https://registry.npm.taobao.org/npm/-/</npmDownloadRoot>
+										<yarnDownloadRoot>http://data.linesno.com/web-tools/yarn/</yarnDownloadRoot>
                 </configuration>
                 <executions>
                     <execution>
