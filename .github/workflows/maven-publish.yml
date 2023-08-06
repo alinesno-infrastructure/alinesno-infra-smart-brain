@@ -13,6 +13,16 @@ jobs:
       contents: read
       packages: write
 
+    env:
+      # 版本管理
+      PROJECT_NAME: 'alinesno-infra-smart-brain-boot'
+      PRO_VERSION: '1.0.0-SNAPSHOT'
+      BUILD_NUMBER: ${{ github.run_number }}
+
+      # 容器镜像
+      ALIYUN_CR_REGISTORY: 'registry.cn-shenzhen.aliyuncs.com'
+      ALIYUN_CR_NAMESPACE: 'alinesno-infra-platform'
+
     steps:
       - uses: actions/checkout@v3
 
@@ -132,3 +142,11 @@ jobs:
 
       - name: Build and Deploy to Nexus
         run: mvn clean deploy --settings nexus-config.xml
+
+      - name: Deploy to AliyunCR
+        run: |
+          mvn -B -U -f ${{ env.PROJECT_NAME }}/pom.xml clean compile jib:build \
+                        -Ddocker.registry.name=${{ env.ALIYUN_CR_NAMESPACE }} \
+                        -Djib.to.tags=${{ env.PRO_VERSION }}.${{ env.BUILD_NUMBER }} \
+                        -Djib.to.auth.username=${{secrets.ALIYUN_CR_USERNAME}} \
+                        -Djib.to.auth.password=${{secrets.ALIYUN_CR_PASSWORD}}
