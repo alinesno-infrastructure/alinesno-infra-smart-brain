@@ -1,0 +1,19 @@
+sms:
+  # 是否使用redis进行缓存 默认false
+  redis-cache: false
+  # 单账号每日最大发送量
+  account-max: 20
+  # 单账号每分钟最大发送
+  minute-max: 2
+  #默认厂商配置来源 此处为枚举设置，支持sql和配置文件，默认为从yml配置文件获取，如无需求可不改变
+  config-type: config-file
+  #启用框架banner打印，默认开启状态
+  is-print: false
+  #核心线程池大小
+  corePoolSize: 10
+  #最大线程数
+  maxPoolSize: 30
+  #队列容量
+  queueCapacity: 50
+  #设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
+  shutdownStrategy: true

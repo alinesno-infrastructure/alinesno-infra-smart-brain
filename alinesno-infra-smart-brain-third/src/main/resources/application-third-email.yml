@@ -1,0 +1,74 @@
+sms:
+  # 是否使用redis进行缓存 默认false
+  redis-cache: false
+  # 单账号每日最大发送量
+  account-max: 20
+  # 单账号每分钟最大发送
+  minute-max: 2
+  #默认厂商配置来源 此处为枚举设置，支持sql和配置文件，默认为从yml配置文件获取，如无需求可不改变
+  config-type: config-file
+  #启用框架banner打印，默认开启状态
+  is-print: true
+  #核心线程池大小
+  corePoolSize: 10
+  #最大线程数
+  maxPoolSize: 30
+  #队列容量
+  queueCapacity: 50
+  #设置线程池关闭的时候等待所有任务都完成再继续销毁其他的Bean
+  shutdownStrategy: true
+  alibaba:
+    #阿里云的accessKey
+    accessKeyId: 您的accessKey
+    #阿里云的accessKeySecret
+    accessKeySecret: 您的accessKeySecret
+    #短信签名
+    signature: 测试签名
+    #模板ID 用于发送固定模板短信使用
+    templateId: SMS_215125134
+    #模板变量 上述模板的变量
+    templateName: code
+    #请求地址默认为 dysmsapi.aliyuncs.com 如无特殊改变可以不用设置
+    requestUrl: dysmsapi.aliyuncs.com
+    #接口方法默认为 SendSms 如无特殊改变可以不用设置
+    action: SendSms
+    #接口版本号默认为 2017-05-25 如无特殊改变可以不用设置
+    version: 2017-05-25
+    #地域信息默认为 cn-hangzhou 如无特殊改变可以不用设置
+    regionId: cn-hangzhou
+  uni:
+    # 访问键标识
+    accessKeyId: your accessKeyId
+    # 访问键秘钥 简易模式不需要配置
+    accessKeySecret: your accessKeySecret
+    #是否为简易模式 默认为true
+    is-simple: true
+    # 短信签名
+    signature: your signature
+    # 模板Id 发送固定模板短信时使用的此配置
+    templateId: your templateId
+    # 模板变量名称 上述模板的变量名称
+    templateName: your templateName
+  tencent:
+    #腾讯云的accessKey
+    accessKeyId: 您的accessKey
+    #腾讯云的accessKeySecret
+    accessKeySecret: 您的accessKeySecret
+    #短信签名
+    signature: 测试签名
+    #模板ID 用于发送固定模板短信使用
+    templateId: SMS_215125134
+    #模板变量 上述模板的变量
+    templateName: code
+    #请求超时时间 默认60秒
+    connTimeout: 60
+    #短信sdkAppId
+    sdkAppId: 短信sdkAppId
+    #地域信息默认为 ap-guangzhou 如无特殊改变可不用设置
+    territory: ap-guangzhou
+    #请求地址默认为 sms.tencentcloudapi.com 如无特殊改变可不用设置
+    requestUrl: sms.tencentcloudapi.com
+    #接口名称默认为 SendSms 如无特殊改变可不用设置
+    action: SendSms
+    #接口版本默认为 2021-01-11 如无特殊改变可不用设置
+    version: 2021-01-11

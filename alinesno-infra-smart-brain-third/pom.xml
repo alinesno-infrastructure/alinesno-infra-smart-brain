@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+    	<groupId>com.alinesno.infra.smart</groupId>
+    	<artifactId>alinesno-infra-smart-brain-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>alinesno-infra-smart-brain-third</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<sms4j.version>2.2.0</sms4j.version>
+		<wechat.mp.version>4.5.0</wechat.mp.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- 引用公共门面服务 -->
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-facade</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- sms -->
+		<dependency>
+			<groupId>org.dromara.sms4j</groupId>
+			<artifactId>sms4j-spring-boot-starter</artifactId>
+		</dependency>
+
+		<!-- email -->
+		<dependency>
+			<groupId>org.dromara.sms4j</groupId>
+			<artifactId>sms4j-Email-core</artifactId>
+			<version>${sms4j.version}</version>
+		</dependency>
+
+		<!-- wechat-mp -->
+		<dependency>
+			<groupId>com.github.binarywang</groupId>
+			<artifactId>weixin-java-mp</artifactId>
+			<version>${wechat.mp.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
+			<version>1.0.0-SNAPSHOT</version>
+			<scope>compile</scope>
+		</dependency>
+
+	</dependencies>
+
+</project>

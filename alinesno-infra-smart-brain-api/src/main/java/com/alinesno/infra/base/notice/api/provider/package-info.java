@@ -1,0 +1,1 @@
+package com.alinesno.infra.base.notice.api.provider;

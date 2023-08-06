@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.alinesno.infra.common</groupId>
+        <artifactId>alinesno-infra-platform-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+    <packaging>pom</packaging>
+
+    <groupId>com.alinesno.infra.smart</groupId>
+    <artifactId>alinesno-infra-smart-brain-parent</artifactId>
+    <version>${revision}</version>
+
+    <properties>
+        <revision>1.0.0-SNAPSHOT</revision>
+        <alinesno.infra.version>${revision}</alinesno.infra.version>
+    </properties>
+
+    <modules>
+        <!-- 应用服务 -->
+        <module>alinesno-infra-smart-brain-facade</module>  <!-- 接口和引用 -->
+        <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
+        <module>alinesno-infra-smart-brain-adapter</module> <!-- 适配层 -->
+        <module>alinesno-infra-smart-brain-api</module>  <!-- 接口服务 -->
+        <module>alinesno-infra-smart-brain-client</module>  <!-- 对外引用 -->
+        <module>alinesno-infra-smart-brain-third</module>  <!-- third party引用 -->
+        <module>alinesno-infra-smart-brain-boot</module>  <!-- 启动服务 -->
+
+        <!-- 前端服务
+        <module>alinesno-infra-smart-brain-admin</module>
+        -->
+    </modules>
+
+</project>
+
