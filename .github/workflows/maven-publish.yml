@@ -70,12 +70,12 @@ jobs:
           echo '    <mirror>' >> nexus-config.xml
           echo '      <id>rdc-releases</id>' >> nexus-config.xml
           echo '      <mirrorOf>releases</mirrorOf>' >> nexus-config.xml
-          echo '      <url>http://repo.infra.linesno.com/nexus/content/repositories/releases/</url>' >> nexus-config.xml
+          echo '      <url>${{ secrets.NEXUS_REPOSITORY_RELEASE }}</url>' >> nexus-config.xml
           echo '    </mirror>' >> nexus-config.xml
           echo '    <mirror>' >> nexus-config.xml
           echo '      <id>rdc-snapshots</id>' >> nexus-config.xml
           echo '      <mirrorOf>snapshots</mirrorOf>' >> nexus-config.xml
-          echo '      <url>http://repo.infra.linesno.com/nexus/content/repositories/snapshots/</url>' >> nexus-config.xml
+          echo '      <url>${{ secrets.NEXUS_REPOSITORY_SNAPSHOT }}</url>' >> nexus-config.xml
           echo '    </mirror>' >> nexus-config.xml
           echo '  </mirrors>' >> nexus-config.xml 
 
@@ -84,10 +84,10 @@ jobs:
           echo '      <id>rdc</id>' >> nexus-config.xml
           echo '      <properties>' >> nexus-config.xml
           echo '        <altReleaseDeploymentRepository>' >> nexus-config.xml
-          echo '          rdc-releases::default::http://repo.infra.linesno.com/nexus/content/repositories/releases/' >> nexus-config.xml
+          echo '          rdc-releases::default::${{ secrets.NEXUS_REPOSITORY_RELEASE }}' >> nexus-config.xml
           echo '        </altReleaseDeploymentRepository>' >> nexus-config.xml
           echo '        <altSnapshotDeploymentRepository>' >> nexus-config.xml
-          echo '          rdc-snapshots::default::http://repo.infra.linesno.com/nexus/content/repositories/snapshots/' >> nexus-config.xml
+          echo '          rdc-snapshots::default::${{ secrets.NEXUS_REPOSITORY_SNAPSHOT }}' >> nexus-config.xml
           echo '        </altSnapshotDeploymentRepository>' >> nexus-config.xml
           echo '      </properties>' >> nexus-config.xml
           echo '      <repositories>' >> nexus-config.xml
@@ -113,7 +113,7 @@ jobs:
           echo '        </repository>' >> nexus-config.xml
           echo '        <repository>' >> nexus-config.xml
           echo '          <id>rdc-releases</id>' >> nexus-config.xml
-          echo '          <url>http://repo.infra.linesno.com/nexus/content/repositories/releases/</url>' >> nexus-config.xml
+          echo '          <url>${{ secrets.NEXUS_REPOSITORY_RELEASE }}</url>' >> nexus-config.xml
           echo '          <releases>' >> nexus-config.xml
           echo '            <enabled>true</enabled>' >> nexus-config.xml
           echo '          </releases>' >> nexus-config.xml
@@ -123,7 +123,7 @@ jobs:
           echo '        </repository>' >> nexus-config.xml
           echo '        <repository>' >> nexus-config.xml
           echo '          <id>rdc-snapshots</id>' >> nexus-config.xml
-          echo '          <url>http://repo.infra.linesno.com/nexus/content/repositories/snapshots/</url>' >> nexus-config.xml
+          echo '          <url>${{ secrets.NEXUS_REPOSITORY_SNAPSHOT }}</url>' >> nexus-config.xml
           echo '          <releases>' >> nexus-config.xml
           echo '            <enabled>false</enabled>' >> nexus-config.xml
           echo '          </releases>' >> nexus-config.xml
