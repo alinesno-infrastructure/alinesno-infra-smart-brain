@@ -1,0 +1,17 @@
+server:
+  port: 30302
+
+spring:
+  application:
+    name: demo-brain
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password: aip@local
+
+alinesno.smart:
+  brain:
+    env: development
+    kafkaServers: 192.168.101.18:9092
+    user-key: aip@local
