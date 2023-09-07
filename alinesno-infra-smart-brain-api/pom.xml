@@ -27,11 +27,6 @@
 			<artifactId>alinesno-infra-common-web-api</artifactId>
 			<version>${revision}</version>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.tomcat.embed</groupId>
-            <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.75</version>
-        </dependency>
 
     </dependencies>
 
