@@ -18,3 +18,11 @@ spring:
   devtools:
     restart:
       enabled: true
+
+alinesno:
+  infra:
+    smart:
+      brain:
+        openapi:
+          host:
+          key:

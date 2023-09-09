@@ -44,6 +44,8 @@ spec:
                 -Dspring.datasource.url=jdbc:mysql://${DB_MYSQL_URL}/dev_alinesno_infra_data_pipeline_v100?serverTimezone=GMT%2B8&zeroDateTimeBehavior=CONVERT_TO_NULL
                 -Dspring.datasource.username=${DB_MYSQL_USRENAME}
                 -Dspring.datasource.password=${DB_MYSQL_PASSWORD}
+                -Dalinesno.infra.smart.brain.openapi.host=${CHATGPT_PROXY}
+                -Dalinesno.infra.smart.brain.openapi.key=${CHATGPT_SK}
                 -Dserver.port=8080
           ports:
             - name: http

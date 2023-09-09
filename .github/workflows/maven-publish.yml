@@ -187,7 +187,11 @@ jobs:
             export ALIYUN_CR_NAMESPACE=${{ env.ALIYUN_CR_NAMESPACE }}
             export NAMESPACE=${{ secrets.K8S_NAMESPACE }}
 
+            export CHATGPT_PROXY=${{ secrets.DEV_CHATGPT_PROXY }}
+            export CHATGPT_SK=${{ secrets.DEV_CHATGPT_SK }}
+
             export REDIS_HOST=${{ secrets.DEV_REDIS_HOST }}
+
             export INFRA_DEV_DOMAIN=${{ secrets.INFRA_DEV_DOMAIN }}
             export DB_MYSQL_URL=${{ secrets.DEV_DB_MYSQL_URL }}
             export DB_MYSQL_USRENAME=${{ secrets.DEV_DB_MYSQL_USRENAME }}

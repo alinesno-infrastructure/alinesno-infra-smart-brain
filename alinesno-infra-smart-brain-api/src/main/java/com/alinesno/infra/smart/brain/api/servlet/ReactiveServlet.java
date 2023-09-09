@@ -4,10 +4,7 @@ package com.alinesno.infra.smart.brain.api.servlet;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.api.dto.ChatRequestDto;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponseDto;
-import com.alinesno.infra.smart.brain.api.session.UserSession;
-import com.alinesno.infra.smart.brain.service.IAccountService;
 import com.alinesno.infra.smart.brain.service.IChatgptApiService;
-import com.alinesno.infra.smart.brain.utils.TextParser;
 import com.unfbx.chatgpt.entity.chat.ChatCompletion;
 import com.unfbx.chatgpt.entity.chat.Message;
 import jakarta.servlet.AsyncContext;
@@ -21,6 +18,7 @@ import okhttp3.sse.EventSourceListener;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.util.List;
 
 /**
  * GPT响应配置
@@ -46,9 +44,6 @@ public class ReactiveServlet extends HttpServlet {
 	@Autowired
 	private IChatgptApiService chatgptApiService;
 	
-	@Autowired
-	private IAccountService accountService ;
-	
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse resp) throws IOException {
 		
@@ -60,27 +55,11 @@ public class ReactiveServlet extends HttpServlet {
 		
 	    PrintWriter out = asyncContext.getResponse().getWriter();
 	    
-	    String token = UserSession.getToken(request) ;
-	
-		// 账户Token不存在或者异常
-	    boolean isHasToken = accountService.isHasToken(token) ; 
-	    if(!isHasToken) {
-			generatorTokenMessageInfo(asyncContext , out) ; 
-			return ;
-	    }
-	   
-	    // 账户需要支付
-		boolean isNeedPay = accountService.validateNeedPayment(token) ; 
-	    if(isNeedPay) {
-			generatorPaymentMessageInfo(asyncContext , out) ; 
-			return ;
-	    }
-	
 	    // 正常返回数据
 	    generatorOpenApi(asyncContext , out , request) ; 
 	}
 
-	private Flux<Object> generatorOpenApi(AsyncContext asyncContext, PrintWriter out, HttpServletRequest request) throws IOException {
+	private void generatorOpenApi(AsyncContext asyncContext, PrintWriter out, HttpServletRequest request) throws IOException {
 		
 		InputStream inputStream = request.getInputStream();
 		String requestBody = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
@@ -94,13 +73,13 @@ public class ReactiveServlet extends HttpServlet {
 					.content(chatRequestDto.getPrompt())
 					.build();
 
-			ChatCompletion chatCompletion = ChatCompletion.builder().messages(Arrays.asList(message)).build();
+			ChatCompletion chatCompletion = ChatCompletion.builder().messages(List.of(message)).build();
 			chatgptApiService.getClient().streamChatCompletion(chatCompletion, new EventSourceListener() {
 			
 				String contentText = "" ; 
 				
 				@Override
-				public void onEvent(EventSource eventSource, String id, String type, String data) {
+				public void onEvent(@NotNull EventSource eventSource, String id, String type, @NotNull String data) {
 
 					log.debug("data = {}" , data);
 
@@ -149,48 +128,6 @@ public class ReactiveServlet extends HttpServlet {
 			if(s != null && StringUtils.isNotBlank(s.toString())) {
 		      out.println(s);
 		      out.flush();
-			}
-		}, Throwable::printStackTrace, asyncContext::complete);
-
-		return null;
-	}
-
-	private void generatorPaymentMessageInfo(AsyncContext asyncContext, PrintWriter out) {
-		
-		Flux<Object> flux = Flux.create(emitter -> {
-
-			String payMessageInfo = "你的使用已经超过次数，请充值 [充值链接](#)" ; 
-			
-			emitter.next(TextParser.parse(payMessageInfo)) ;
-			stopProcess(emitter , asyncContext) ; 
-			return;
-
-		});
-		
-		flux.subscribe(s -> {
-			if(s != null && StringUtils.isNotBlank(s.toString())) {
-			  out.println(s);
-			  out.flush();
-			}
-		}, Throwable::printStackTrace, asyncContext::complete);
-
-	}
-
-	private void generatorTokenMessageInfo(AsyncContext asyncContext, PrintWriter out) {
-		Flux<Object> flux = Flux.create(emitter -> {
-
-			String payMessageInfo = "账户Token异常，请点击左下角重置重新登陆." ; 
-			
-			emitter.next(TextParser.parse(payMessageInfo)) ; 
-			stopProcess(emitter , asyncContext) ; 
-			return;
-
-		});
-		
-		flux.subscribe(s -> {
-			if(s != null && StringUtils.isNotBlank(s.toString())) {
-			  out.println(s);
-			  out.flush();
 			}
 		}, Throwable::printStackTrace, asyncContext::complete);
 

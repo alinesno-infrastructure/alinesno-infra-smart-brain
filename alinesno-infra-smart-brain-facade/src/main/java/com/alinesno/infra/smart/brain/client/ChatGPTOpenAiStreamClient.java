@@ -224,6 +224,9 @@ public class ChatGPTOpenAiStreamClient {
      */
     @SuppressWarnings({ "deprecation", "unused" })
 	public void streamChatCompletion(ChatCompletion chatCompletion, EventSourceListener eventSourceListener) {
+
+        log.debug("open host = {} , key = {}" , apiHost , apiKey);
+
         if (Objects.isNull(eventSourceListener)) {
             log.error("参数异常：EventSourceListener不能为空，可以参考：com.unfbx.chatgpt.sse.ConsoleEventSourceListener");
             throw new BaseException(CommonError.PARAM_ERROR);
@@ -235,15 +238,9 @@ public class ChatGPTOpenAiStreamClient {
             EventSource.Factory factory = EventSources.createFactory(this.okHttpClient);
             ObjectMapper mapper = new ObjectMapper();
             String requestBody = mapper.writeValueAsString(chatCompletion);
-           
-            String apiHost = this.apiHost ; 
-            String apiKey = this.apiKey ; 
-            
+
             log.debug("requestBody = {}" , requestBody);
-            
-            apiHost = "https://openapi.com/api/openai/" ;
-            apiKey = "ak-test" ;
-            
+
             Request request = new Request.Builder()
                     .url(apiHost + "v1/chat/completions")
                     .post(RequestBody.create(MediaType.parse(ContentType.JSON.getValue()), requestBody))
