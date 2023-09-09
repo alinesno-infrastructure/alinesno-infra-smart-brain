@@ -209,7 +209,7 @@ jobs:
 
             export REDIS_HOST=${{ secrets.DEV_REDIS_HOST }}
 
-            export INFRA_DEV_DOMAIN=${{ secrets.INFRA_DEV_DOMAIN }}
+            export INFRA_DEV_DOMAIN=${{ secrets.INFRA_BETA_SMART_DOMAIN }}
             export DB_MYSQL_URL=${{ secrets.DEV_DB_MYSQL_URL }}
             export DB_MYSQL_USRENAME=${{ secrets.DEV_DB_MYSQL_USRENAME }}
             export DB_MYSQL_PASSWORD=${{ secrets.DEV_DB_MYSQL_PASSWORD }}
