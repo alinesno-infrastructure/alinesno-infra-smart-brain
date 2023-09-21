@@ -34,11 +34,20 @@ jobs:
           npm install
           npm run build:prod
 
+      - name: Login to Aliyun Container Registry (ACR)
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: ${{ env.ALIYUN_CR_REGISTORY }}
+          region-id: cn-shenzhen  # 3
+          username: "${{ secrets.ALIYUN_CR_USERNAME }}"
+          password: "${{ secrets.ALIYUN_CR_PASSWORD }}"
+
       - name: Build Docker image
         run: |
           cd ${{ PROJECT_NAME }}
           cp -r dist ./docker/
           docker build -t ${{ ALIYUN_CR_REGISTORY }}/${{ ALIYUN_CR_NAMESPACE }}/${{ PROJECT_NAME }}:${{ PRO_VERSION }}.${{ BUILD_NUMBER }} ./docker
+          docker push ${{ ALIYUN_CR_REGISTORY }}/${{ ALIYUN_CR_NAMESPACE }}/${{ PROJECT_NAME }}:${{ PRO_VERSION }}.${{ BUILD_NUMBER }}
 
       - name: local remote scp
         uses: cross-the-world/scp-pipeline@master
