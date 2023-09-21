@@ -13,6 +13,10 @@
 	<artifactId>alinesno-infra-smart-brain-boot</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<kaptcha.version>2.3.3</kaptcha.version>
+	</properties>
+
 	<dependencies>
 
 		<dependency>
@@ -36,6 +40,13 @@
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-api</artifactId>
 			<version>${revision}</version>
+		</dependency>
+
+		<!-- 验证码 -->
+		<dependency>
+			<groupId>pro.fessional</groupId>
+			<artifactId>kaptcha</artifactId>
+			<version>${kaptcha.version}</version>
 		</dependency>
 
 	</dependencies>
