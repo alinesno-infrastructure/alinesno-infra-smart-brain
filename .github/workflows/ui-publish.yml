@@ -22,7 +22,11 @@ jobs:
         run: npm install
 
       - name: Build Vue application
-        run: npm run build:prod --prefix alinesno-infra-smart-brain-admin
+        run: |
+          cd alinesno-infra-smart-brain-admin 
+          npm run build:prod 
 
       - name: Build Docker image
-        run: docker build -t your-docker-image-name alinesno-infra-smart-brain-admin/docker
+        run: |
+          cd alinesno-infra-smart-brain-admin 
+          docker build -t your-docker-image-name ./docker
