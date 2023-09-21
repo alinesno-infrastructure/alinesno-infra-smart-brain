@@ -61,35 +61,10 @@ export const constantRoutes = [
       },
 
       {
-        path: '/dashboard/build/operation',
-        component: () => import('@/views/build-project/operation'),
-        name: '/dashboard/build/operation',
-        meta: { title: '创建运维服务', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/build/data',
-        component: () => import('@/views/build-project/data'),
-        name: '/dashboard/build/data',
-        meta: { title: '创建数据服务', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/build/business',
-        component: () => import('@/views/build-project/business'),
-        name: '/dashboard/build/business',
-        meta: { title: '创建业务服务', icon: 'dashboard', affix: true }
-      },
-
-      {
         path: '/dashboard/smartService',
         component: () => import('@/views/smartService'),
         name: '/dashboard/smartService',
         meta: { title: '智能客服', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/dashboardTheme',
-        component: () => import('@/views/dashboardTheme'),
-        name: '/dashboard/dashboardTheme',
-        meta: { title: '自定义主题', icon: 'dashboard', affix: true }
       },
       {
         path: '/dashboard/serviceList',
@@ -109,36 +84,6 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       },
-      {
-        path: '/dashboard/businessWorkspace',
-        component: () => import('@/views/businessWorkspace'),
-        name: '/dashboard/businessWorkspace',
-        meta: { title: '业务建设', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/dataWorkspace',
-        component: () => import('@/views/dataWorkspace'),
-        name: '/dashboard/dataWorkspace',
-        meta: { title: '数据治理', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/operationWorkspace',
-        component: () => import('@/views/operationWorkspace'),
-        name: '/dashboard/operationWorkspace',
-        meta: { title: '运维监控', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/smartWorkspace',
-        component: () => import('@/views/smartWorkspace'),
-        name: '/dashboard/smartWorkspace',
-        meta: { title: '智能运营', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/dashboard/customWorkspace',
-        component: () => import('@/views/customWorkspace'),
-        name: '/dashboard/customWorkspace',
-        meta: { title: '自定义视图', icon: 'dashboard', affix: true }
-      }
     ]
   },
   {
