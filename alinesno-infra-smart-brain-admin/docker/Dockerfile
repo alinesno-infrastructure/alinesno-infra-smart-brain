@@ -5,7 +5,7 @@ FROM openresty/openresty:latest
 RUN cp -r dist/* /usr/local/openresty/nginx/html
 
 # 复制 OpenResty 配置文件
-COPY docker/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 
 # 暴露端口
 EXPOSE 80
