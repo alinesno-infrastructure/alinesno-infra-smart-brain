@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ${{ PROJECT_NAME }}
+          cd ${{ env.PROJECT_NAME }}
           npm install
           npm run build:prod
 
@@ -44,10 +44,10 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cd ${{ PROJECT_NAME }}
+          cd ${{ env.PROJECT_NAME }}
           cp -r dist ./docker/
-          docker build -t ${{ ALIYUN_CR_REGISTORY }}/${{ ALIYUN_CR_NAMESPACE }}/${{ PROJECT_NAME }}:${{ PRO_VERSION }}.${{ BUILD_NUMBER }} ./docker
-          docker push ${{ ALIYUN_CR_REGISTORY }}/${{ ALIYUN_CR_NAMESPACE }}/${{ PROJECT_NAME }}:${{ PRO_VERSION }}.${{ BUILD_NUMBER }}
+          docker build -t ${{ env.ALIYUN_CR_REGISTORY }}/${{ env.ALIYUN_CR_NAMESPACE }}/${{ env.PROJECT_NAME }}:${{ env.PRO_VERSION }}.${{ env.BUILD_NUMBER }} ./docker
+          docker push ${{ env.ALIYUN_CR_REGISTORY }}/${{ env.ALIYUN_CR_NAMESPACE }}/${{ env.PROJECT_NAME }}:${{ env.PRO_VERSION }}.${{ env.BUILD_NUMBER }}
 
       - name: local remote scp
         uses: cross-the-world/scp-pipeline@master
@@ -57,7 +57,7 @@ jobs:
           user: ${{ secrets.SERVER_BATA_USER_01 }}
           pass: ${{ secrets.SERVER_BATA_KEY_01 }}
           local: "./deploy/*"
-          remote: /home/github-action/${{ PROJECT_NAME }}
+          remote: /home/github-action/${{ env.PROJECT_NAME }}
 
       - name: SSH Pipelines
         uses: cross-the-world/ssh-pipeline@master
@@ -79,4 +79,4 @@ jobs:
 
             export INFRA_DEV_DOMAIN=${{ secrets.INFRA_BETA_SMART_DOMAIN }}
 
-            envsubst < /home/github-action/${{ PROJECT_NAME }}/kubernetes-admin-${{ env.CURRENT_PROFIRE }}.yml | kubectl apply -f -
+            envsubst < /home/github-action/${{ env.PROJECT_NAME }}/kubernetes-admin-${{ env.CURRENT_PROFIRE }}.yml | kubectl apply -f -
