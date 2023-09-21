@@ -2,7 +2,7 @@
 FROM openresty/openresty:latest
 
 # 将构建好的静态文件复制到 OpenResty 的默认静态文件目录
-RUN cp -r dist/* /usr/local/openresty/nginx/html
+RUN cp -r ../dist/* /usr/local/openresty/nginx/html
 
 # 复制 OpenResty 配置文件
 COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
