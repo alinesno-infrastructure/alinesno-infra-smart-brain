@@ -19,7 +19,9 @@ jobs:
           node-version: 16.13.1
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          cd alinesno-infra-smart-brain-admin/
+          npm install
 
       - name: Build Vue application
         run: |
