@@ -13,7 +13,8 @@
 	<artifactId>alinesno-infra-smart-brain-boot</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
+    <properties>
+        <docker.base.images>openjdk:17.0.2-jdk</docker.base.images>
 		<kaptcha.version>2.3.3</kaptcha.version>
 	</properties>
 
