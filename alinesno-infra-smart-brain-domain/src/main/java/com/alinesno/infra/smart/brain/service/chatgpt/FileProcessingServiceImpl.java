@@ -1,23 +1,16 @@
 package com.alinesno.infra.smart.brain.service.chatgpt;// FileProcessingServiceImpl.java
+
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.plexpt.chatgpt.ChatGPTStream;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
 import com.plexpt.chatgpt.entity.chat.Message;
 import com.plexpt.chatgpt.listener.AbstractStreamListener;
-import com.unfbx.chatgpt.constant.OpenAIConst;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.concurrent.CompletableFuture;
@@ -37,7 +30,7 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
      * 自定义api host使用builder的方式构造client
      */
     @Value("${alinesno.infra.smart.brain.openapi.host}")
-    private String apiHost = OpenAIConst.OPENAI_HOST;
+    private String apiHost ;
 
     private static ChatGPTStream chatGPTStream ;
 

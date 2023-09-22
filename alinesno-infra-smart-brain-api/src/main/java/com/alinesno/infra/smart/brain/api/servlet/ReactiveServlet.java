@@ -5,8 +5,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.api.dto.ChatRequestDto;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponseDto;
 import com.alinesno.infra.smart.brain.service.IChatgptApiService;
-import com.unfbx.chatgpt.entity.chat.ChatCompletion;
-import com.unfbx.chatgpt.entity.chat.Message;
+import com.plexpt.chatgpt.entity.chat.ChatCompletion;
+import com.plexpt.chatgpt.entity.chat.Message;
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -69,7 +69,7 @@ public class ReactiveServlet extends HttpServlet {
 			
 			Message message = Message
 					.builder()
-					.role(Message.Role.ASSISTANT)
+					.role(Message.Role.ASSISTANT.getValue())
 					.content(chatRequestDto.getPrompt())
 					.build();
 
@@ -108,7 +108,7 @@ public class ReactiveServlet extends HttpServlet {
 					
 					ChatResponseDto dto = new ChatResponseDto() ;
 					dto.setId(dataEscJSon.getString("id"));
-					dto.setRole(Message.Role.ASSISTANT.getName());
+					dto.setRole(Message.Role.ASSISTANT.getValue());
 					dto.setParentMessageId(chatRequestDto.getOptions().getParentMessageId()); 
 					dto.setText(contentText) ; 
 					

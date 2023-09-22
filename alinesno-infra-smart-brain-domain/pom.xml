@@ -28,11 +28,6 @@
 			<version>${revision}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.github.plexpt</groupId>
-			<artifactId>chatgpt</artifactId>
-			<version>4.1.2</version>
-		</dependency>
 
 	</dependencies>
 

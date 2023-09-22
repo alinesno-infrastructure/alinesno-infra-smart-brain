@@ -4,8 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponse;
 import com.alinesno.infra.smart.brain.client.ChatGPTOpenAiStreamClient;
 import com.alinesno.infra.smart.brain.service.IChatgptApiService;
-import com.unfbx.chatgpt.constant.OpenAIConst;
-import com.unfbx.chatgpt.entity.billing.CreditGrantsResponse;
+import com.plexpt.chatgpt.entity.billing.CreditGrantsResponse;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +35,7 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 	 * 自定义api host使用builder的方式构造client
 	 */
 	@Value("${alinesno.infra.smart.brain.openapi.host}")
-	private String apiHost = OpenAIConst.OPENAI_HOST;
+	private String apiHost ;
 
 	public static ChatGPTOpenAiStreamClient client = null;
 
@@ -114,13 +113,15 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 
 	private CreditGrantsResponse fetchBalance() {
 	
-		CreditGrantsResponse creditGrantsResponse = this.getClient().creditGrants() ; 
-		
-		log.info("账户总余额（美元）：{}", creditGrantsResponse.getTotalGranted());
-        log.info("账户总使用金额（美元）：{}", creditGrantsResponse.getTotalUsed());
-        log.info("账户总剩余金额（美元）：{}", creditGrantsResponse.getTotalAvailable());
+//		CreditGrantsResponse creditGrantsResponse = this.getClient().creditGrants() ;
+//
+//		log.info("账户总余额（美元）：{}", creditGrantsResponse.getTotalGranted());
+//        log.info("账户总使用金额（美元）：{}", creditGrantsResponse.getTotalUsed());
+//        log.info("账户总剩余金额（美元）：{}", creditGrantsResponse.getTotalAvailable());
         
-		return creditGrantsResponse;
+//		return creditGrantsResponse;
+
+		return null ;
 	}
 
 	@Override
