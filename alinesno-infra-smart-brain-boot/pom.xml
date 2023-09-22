@@ -15,6 +15,7 @@
 
     <properties>
         <docker.base.images>openjdk:17.0.2-jdk</docker.base.images>
+        <docker.user>root</docker.user>
 		<kaptcha.version>2.3.3</kaptcha.version>
 	</properties>
 
