@@ -14,6 +14,8 @@
 	<packaging>jar</packaging>
 
     <properties>
+        <docker.base.images>registry.cn-shenzhen.aliyuncs.com/alinesno-infra-base/openjdk:17.0.2-jdk</docker.base.images>
+		<docker.user>root</docker.user>
 		<kaptcha.version>2.3.3</kaptcha.version>
 	</properties>
 
