@@ -1,14 +1,11 @@
 # 使用 OpenResty 作为基础镜像
-FROM openresty/openresty:latest
+FROM nginx:latest
 
 # 将构建好的静态文件复制到 OpenResty 的默认静态文件目录
-COPY ./dist /usr/local/openresty/nginx/html
+COPY ./dist /usr/share/nginx/html
 
 # 复制 OpenResty 配置文件
-COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # 暴露端口
 EXPOSE 80
-
-# 启动 OpenResty
-CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]

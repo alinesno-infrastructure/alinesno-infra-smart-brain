@@ -79,7 +79,7 @@ jobs:
           echo '      <mirrorOf>snapshots</mirrorOf>' >> nexus-config.xml
           echo '      <url>${{ secrets.NEXUS_REPOSITORY_SNAPSHOT }}</url>' >> nexus-config.xml
           echo '    </mirror>' >> nexus-config.xml
-          echo '  </mirrors>' >> nexus-config.xml 
+          echo '  </mirrors>' >> nexus-config.xml
 
           echo '  <profiles>' >> nexus-config.xml
           echo '    <profile>' >> nexus-config.xml
@@ -152,20 +152,13 @@ jobs:
                         -Djib.to.tags=${{ env.PRO_VERSION }}.${{ env.BUILD_NUMBER }} \
                         -Djib.to.auth.username=${{secrets.ALIYUN_CR_USERNAME}} \
                         -Djib.to.auth.password=${{secrets.ALIYUN_CR_PASSWORD}}
-  
+
       - uses: dbelyaev/action-checkstyle@v0.8.4
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
           level: warning
-           
-      - name: Install MurphySec code scan cli
-        run: |
-          wget -q https://s.murphysec.com/release/install.sh -O - | /bin/bash
 
-      - name: Code scan
-        run: murphysec scan . --token ${{ secrets.MURPHYSEC_TOKEN }}
-        
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
