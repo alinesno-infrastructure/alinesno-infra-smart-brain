@@ -1352,3 +1352,54 @@ $chartColor: #3b5998;
     margin-top: 10px;
   }
 }
+
+.direct-box {
+  ul,li{
+    padding: 0px;
+    margin: 0px;
+    list-style: none;
+  }
+
+
+  li.box-item{
+
+    float: left;
+    width: 33%;
+    margin-top: 10px;
+    padding: 15px;
+    line-height: 1.3rem;
+    border-left: 1px solid #eee !important;
+    margin-bottom: 10px;
+
+    img.dire-panel-icon {
+      float: left;
+      border-radius: 2px;
+      margin-right: 10px;
+    }
+
+    .panel-title {
+      color: #3b5998;
+      font-weight: 550;
+      font-size: 1rem;
+      height: 28px;
+      line-height: 1.5rem;
+    }
+
+    .panel-tip {
+        margin-top: 10px;
+        color: #333;
+        font-size: 13px;
+        float: left;
+    }
+
+    .panel-describe {
+        margin-top: 10px;
+        font-size: 14px;
+        color: #333;
+    }
+  }
+
+  li.box-item:nth-child(3n+1) {
+    border-left: 0px solid #eee !important;
+  }
+}
