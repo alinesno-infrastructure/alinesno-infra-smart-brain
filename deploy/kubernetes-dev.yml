@@ -41,7 +41,7 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: |
                 -Dspring.data.redis.host=${REDIS_HOST}
-                -Dspring.datasource.url=jdbc:mysql://${DB_MYSQL_URL}/dev_alinesno_infra_data_pipeline_v100?serverTimezone=GMT%2B8&zeroDateTimeBehavior=CONVERT_TO_NULL
+                -Dspring.datasource.url=jdbc:mysql://${DB_MYSQL_URL}/dev_alinesno_infra_smart_brain_v100?serverTimezone=GMT%2B8&zeroDateTimeBehavior=CONVERT_TO_NULL
                 -Dspring.datasource.username=${DB_MYSQL_USRENAME}
                 -Dspring.datasource.password=${DB_MYSQL_PASSWORD}
                 -Dalinesno.infra.smart.brain.openapi.host=${CHATGPT_PROXY}
