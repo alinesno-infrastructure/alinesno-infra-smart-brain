@@ -65,10 +65,10 @@ public class CommonLoginController {
         user.put("phonenumber", "15888888888");
         user.put("sex", "1");
         user.put("avatar", "");
-        user.put("password", "$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE8ByOhJIrdAu2");
+        user.put("password", "");
         user.put("status", "0");
         user.put("delFlag", "0");
-        user.put("loginIp", "58.16.61.198");
+        user.put("loginIp", "");
         user.put("loginDate", "2023-09-21T16:54:12.000+08:00");
 
         Map<String, Object> dept = new HashMap<>();

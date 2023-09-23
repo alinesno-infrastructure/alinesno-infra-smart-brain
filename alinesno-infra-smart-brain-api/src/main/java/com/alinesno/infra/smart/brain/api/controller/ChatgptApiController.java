@@ -11,9 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 
 /**
@@ -41,7 +39,7 @@ public class ChatgptApiController {
 	 * @return ChatResponse 对象
 	 */
 	@GPT
-	@RequestMapping("/api/userInfo")
+	@GetMapping("/api/userInfo")
 	public ChatResponse userInfo(HttpServletRequest request) {
 		String tokenId = UserSession.getToken(request);
 		log.debug("tokenId = {}", tokenId);
@@ -60,7 +58,7 @@ public class ChatgptApiController {
 	 * @return ChatResponse 对象
 	 */
 	@GPT
-	@RequestMapping("/api/config")
+	@GetMapping("/api/config")
 	public ChatResponse config(HttpServletRequest request) {
 		String tokenId = UserSession.getToken(request);
 		log.debug("tokenId = {}", tokenId);
@@ -74,7 +72,7 @@ public class ChatgptApiController {
 	 * @param token 验证令牌数据传输对象
 	 * @return ChatResponse 对象
 	 */
-	@RequestMapping("/api/getVerifyCode")
+	@PostMapping("/api/getVerifyCode")
 	public ChatResponse getVerifyCode(@RequestBody VerityTokenDto token) {
 		String defaultConfig = "100" ; // authorityConfigClient.getConfigValueByKey(defaultNewUserCount);
 
@@ -89,7 +87,7 @@ public class ChatgptApiController {
 	 * @param token 验证令牌数据传输对象
 	 * @return ChatResponse 对象
 	 */
-	@RequestMapping("/api/verify")
+	@PostMapping("/api/verify")
 	public ChatResponse verify(@RequestBody VerityTokenDto token) {
 		return accountService.verify(token.getEmail(), token.getToken());
 	}
@@ -99,7 +97,7 @@ public class ChatgptApiController {
 	 *
 	 * @return ChatResponse 对象
 	 */
-	@RequestMapping("/api/session")
+	@GetMapping("/api/session")
 	public ChatResponse session() {
 		ChatResponse data = chatgptApiService.session();
 		return data;
