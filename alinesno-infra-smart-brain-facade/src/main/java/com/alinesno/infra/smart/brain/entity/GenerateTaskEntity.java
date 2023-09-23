@@ -29,7 +29,7 @@ public class GenerateTaskEntity extends InfraBaseEntity {
 
     public void copyFrom(GenerateTaskEntity other) {
         try {
-            BeanUtils.copyProperties(this, other);
+            BeanUtils.copyProperties(other, this);
         } catch (Exception e) {
             throw new RuntimeException("Error copying properties", e);
         }

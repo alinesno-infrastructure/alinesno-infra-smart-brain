@@ -5,7 +5,7 @@ import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,8 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class BrainTaskController {
 
-    @Autowired
-    private IGenerateTaskService generateTaskService ;
+    private final IGenerateTaskService generateTaskService ;
+
+    public BrainTaskController(IGenerateTaskService generateTaskService) {
+        this.generateTaskService = generateTaskService;
+    }
 
     /**
      * 提交任务
@@ -23,7 +26,7 @@ public class BrainTaskController {
      * @return 返回提交结果
      */
     @PostMapping("/commitTask")
-    public AjaxResult commitTask(@RequestBody @Valid BrainTaskDto dto) {
+    public AjaxResult commitTask(@Validated @RequestBody BrainTaskDto dto) {
         // 处理提交任务的逻辑
 
         log.debug("dto = {}" , dto);
@@ -39,7 +42,7 @@ public class BrainTaskController {
      * @return 返回提交结果
      */
     @PostMapping("/commitTaskToCms")
-    public AjaxResult commitTaskToCms(@RequestBody BrainTaskDto dto) {
+    public AjaxResult commitTaskToCms( @Validated @RequestBody BrainTaskDto dto) {
         // 处理提交任务并保存到CMS的逻辑
 
         log.debug("dto = {}" , dto);

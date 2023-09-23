@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.brain.scheduler;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.lmax.disruptor.BlockingWaitStrategy;
@@ -19,17 +20,16 @@ import java.util.stream.IntStream;
 @Component
 public class TaskProcessor {
 
-    @Autowired
-    private IGenerateTaskService aiGenTaskService;
+//    @Autowired
+//    private IGenerateTaskService aiGenTaskService;
 
     @Value("${alinesno.infra.smart.brain.disruptor.bufferSize:1024}")
     private int bufferSize;
 
     private volatile int batchSize;
 
-    private Disruptor<GenerateTaskEntity> disruptor;
+    public Disruptor<GenerateTaskEntity> disruptor;
 
-    @PostConstruct
     public void init() {
         disruptor = new Disruptor<>(GenerateTaskEntity::new, bufferSize, Executors.defaultThreadFactory(), ProducerType.SINGLE, new BlockingWaitStrategy());
 
@@ -42,25 +42,21 @@ public class TaskProcessor {
         });
 
         disruptor.start();
-
-        loadTasks();
     }
 
-    private void loadTasks() {
-        List<GenerateTaskEntity> tasks = aiGenTaskService.getAllUnfinishedTasks();
-        for (GenerateTaskEntity task : tasks) {
-            long sequence = disruptor.getRingBuffer().next();
-            try {
-                GenerateTaskEntity event = disruptor.getRingBuffer().get(sequence);
-                event.copyFrom(task);
-            } finally {
-                disruptor.getRingBuffer().publish(sequence);
-            }
+    public void addTaskToDisruptor(GenerateTaskEntity task) {
+        long sequence = disruptor.getRingBuffer().next();
+        try {
+            GenerateTaskEntity event = disruptor.getRingBuffer().get(sequence);
+            event.copyFrom(task);
+        } finally {
+            disruptor.getRingBuffer().publish(sequence);
         }
     }
 
+
     private void process(GenerateTaskEntity event) {
-        log.info("Processing task: {}", event.getBusinessId());
+        log.info("Processing task: {}", JSONObject.toJSON(event));
         // Process the event
     }
 
