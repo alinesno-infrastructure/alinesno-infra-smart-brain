@@ -88,7 +88,7 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 	@Override
 	public ChatResponse config() {
 
-		CreditGrantsResponse balance = fetchBalance();
+//		CreditGrantsResponse balance = fetchBalance();
 		String reverseProxy = api_reverse_proxy;
 		String apiModel = this.currentModel();
 
@@ -98,30 +98,16 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 		json.put("reverseProxy", reverseProxy);
 		json.put("timeoutMs", timeout_ms);
 		json.put("httpsProxy", "-");
-		
-		json.put("balanceAvailable", balance.getTotalAvailable());
-		json.put("balanceUsed", balance.getTotalUsed());
-		json.put("balanceTotal", balance.getTotalGranted());
-		
-		json.put("balance", balance.getTotalAvailable());
-		
-		ChatResponse r = ChatResponse.success() ; 
+
+//		json.put("balanceAvailable", balance.getTotalAvailable());
+//		json.put("balanceUsed", balance.getTotalUsed());
+//		json.put("balanceTotal", balance.getTotalGranted());
+//		json.put("balance", balance.getTotalAvailable());
+
+		ChatResponse r = ChatResponse.success() ;
 		r.setData(json);
 
 		return r;
-	}
-
-	private CreditGrantsResponse fetchBalance() {
-	
-//		CreditGrantsResponse creditGrantsResponse = this.getClient().creditGrants() ;
-//
-//		log.info("账户总余额（美元）：{}", creditGrantsResponse.getTotalGranted());
-//        log.info("账户总使用金额（美元）：{}", creditGrantsResponse.getTotalUsed());
-//        log.info("账户总剩余金额（美元）：{}", creditGrantsResponse.getTotalAvailable());
-        
-//		return creditGrantsResponse;
-
-		return null ;
 	}
 
 	@Override
