@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Prompt指令集实体类
@@ -12,7 +14,9 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
-@TableName("prompt_prompts")
+@EqualsAndHashCode(callSuper = true)
+@Data
+@TableName("prompt_posts")
 public class PromptPostsEntity extends InfraBaseEntity {
 
 	// fields
@@ -80,77 +84,4 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	@TableField("to_ping")
 	private String toPing;
 
-	// getter and setter methods
-
-	public Long getUseCount() {
-		return useCount;
-	}
-
-	public void setUseCount(Long useCount) {
-		this.useCount = useCount;
-	}
-
-	public String getPromptAuthor() {
-		return promptAuthor;
-	}
-
-	public void setPromptAuthor(String promptAuthor) {
-		this.promptAuthor = promptAuthor;
-	}
-
-	public String getPromptContent() {
-		return promptContent;
-	}
-
-	public void setPromptContent(String promptContent) {
-		this.promptContent = promptContent;
-	}
-
-	public String getPromptName() {
-		return promptName;
-	}
-
-	public void setPromptName(String promptName) {
-		this.promptName = promptName;
-	}
-
-	public String getPromptPassword() {
-		return promptPassword;
-	}
-
-	public void setPromptPassword(String promptPassword) {
-		this.promptPassword = promptPassword;
-	}
-
-	public Long getPromptStatus() {
-		return promptStatus;
-	}
-
-	public void setPromptStatus(Long promptStatus) {
-		this.promptStatus = promptStatus;
-	}
-
-	public String getPromptTitle() {
-		return promptTitle;
-	}
-
-	public void setPromptTitle(String promptTitle) {
-		this.promptTitle = promptTitle;
-	}
-
-	public String getPromptType() {
-		return promptType;
-	}
-
-	public void setPromptType(String promptType) {
-		this.promptType = promptType;
-	}
-
-	public String getToPing() {
-		return toPing;
-	}
-
-	public void setToPing(String toPing) {
-		this.toPing = toPing;
-	}
 }

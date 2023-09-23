@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.math.BigDecimal;
 
@@ -14,6 +16,8 @@ import java.math.BigDecimal;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("app_statistics")
 public class AppStatisticsEntity extends InfraBaseEntity {
 
@@ -89,85 +93,4 @@ public class AppStatisticsEntity extends InfraBaseEntity {
     @TableField("asset_special_topics")
     private Long assetSpecialTopics;
 
-    // getter and setter methods
-
-    public String getSourceSystem() {
-        return sourceSystem;
-    }
-
-    public void setSourceSystem(String sourceSystem) {
-        this.sourceSystem = sourceSystem;
-    }
-
-    public String getDataAsset() {
-        return dataAsset;
-    }
-
-    public void setDataAsset(String dataAsset) {
-        this.dataAsset = dataAsset;
-    }
-
-    public Long getRunningDays() {
-        return runningDays;
-    }
-
-    public void setRunningDays(Long runningDays) {
-        this.runningDays = runningDays;
-    }
-
-    public BigDecimal getDataStorage() {
-        return dataStorage;
-    }
-
-    public void setDataStorage(BigDecimal dataStorage) {
-        this.dataStorage = dataStorage;
-    }
-
-    public Long getDataRequests() {
-        return dataRequests;
-    }
-
-    public void setDataRequests(Long dataRequests) {
-        this.dataRequests = dataRequests;
-    }
-
-    public Long getDataSubjects() {
-        return dataSubjects;
-    }
-
-    public void setDataSubjects(Long dataSubjects) {
-        this.dataSubjects = dataSubjects;
-    }
-
-    public Long getAssetIndustryCategories() {
-        return assetIndustryCategories;
-    }
-
-    public void setAssetIndustryCategories(Long assetIndustryCategories) {
-        this.assetIndustryCategories = assetIndustryCategories;
-    }
-
-    public Long getAssetSubjects() {
-        return assetSubjects;
-    }
-
-    public void setAssetSubjects(Long assetSubjects) {
-        this.assetSubjects = assetSubjects;
-    }
-
-    public Long getAssetBusinessCategories() {
-        return assetBusinessCategories;
-    }
-
-    public void setAssetBusinessCategories(Long assetBusinessCategories) {
-        this.assetBusinessCategories = assetBusinessCategories;
-    }
-
-    public Long getAssetSpecialTopics() {
-        return assetSpecialTopics;
-    }
-
-    public void setAssetSpecialTopics(Long assetSpecialTopics) {
-        this.assetSpecialTopics = assetSpecialTopics;
-    }
 }

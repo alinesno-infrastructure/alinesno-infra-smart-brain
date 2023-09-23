@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Prompt指令类型实体类
@@ -12,6 +14,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("prompt_catalog")
 public class PromptCatalogEntity extends InfraBaseEntity {
 
@@ -80,77 +84,4 @@ public class PromptCatalogEntity extends InfraBaseEntity {
 	@TableField("status")
 	private String status;
 
-	// getter and setter methods
-
-	public String getIndustryCategory() {
-		return industryCategory;
-	}
-
-	public void setIndustryCategory(String industryCategory) {
-		this.industryCategory = industryCategory;
-	}
-
-	public String getBusinessCategory() {
-		return businessCategory;
-	}
-
-	public void setBusinessCategory(String businessCategory) {
-		this.businessCategory = businessCategory;
-	}
-
-	public String getManagementObject() {
-		return managementObject;
-	}
-
-	public void setManagementObject(String managementObject) {
-		this.managementObject = managementObject;
-	}
-
-	public String getInformationType() {
-		return informationType;
-	}
-
-	public void setInformationType(String informationType) {
-		this.informationType = informationType;
-	}
-
-	public String getSubjectCategory() {
-		return subjectCategory;
-	}
-
-	public void setSubjectCategory(String subjectCategory) {
-		this.subjectCategory = subjectCategory;
-	}
-
-	public String getResourceProvider() {
-		return resourceProvider;
-	}
-
-	public void setResourceProvider(String resourceProvider) {
-		this.resourceProvider = resourceProvider;
-	}
-
-	public String getSourceSystem() {
-		return sourceSystem;
-	}
-
-	public void setSourceSystem(String sourceSystem) {
-		this.sourceSystem = sourceSystem;
-	}
-
-	public String getSourceDataTable() {
-		return sourceDataTable;
-	}
-
-	public void setSourceDataTable(String sourceDataTable) {
-		this.sourceDataTable = sourceDataTable;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
 }

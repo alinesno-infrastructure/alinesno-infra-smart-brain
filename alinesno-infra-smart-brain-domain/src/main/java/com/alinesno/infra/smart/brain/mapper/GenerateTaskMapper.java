@@ -1,8 +1,7 @@
 package com.alinesno.infra.smart.brain.mapper;
 
 import com.alinesno.infra.common.facade.mapper.repository.IBaseMapper;
-import com.alinesno.infra.smart.brain.entity.AccountEntity;
-import com.alinesno.infra.smart.brain.entity.AiGenTaskEntity;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 
 /**
  * 【请填写功能名称】Mapper接口
@@ -10,5 +9,5 @@ import com.alinesno.infra.smart.brain.entity.AiGenTaskEntity;
  * @author luoxiaodong
  * @version 1.0.0
  */
-public interface AiGenTaskMapper extends IBaseMapper<AiGenTaskEntity> {
+public interface GenerateTaskMapper extends IBaseMapper<GenerateTaskEntity> {
 }

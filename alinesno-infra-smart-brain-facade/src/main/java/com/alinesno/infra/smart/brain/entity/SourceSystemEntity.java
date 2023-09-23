@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 来源系统实体类
@@ -12,6 +14,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("source_system")
 public class SourceSystemEntity extends InfraBaseEntity {
     // fields
@@ -30,21 +34,4 @@ public class SourceSystemEntity extends InfraBaseEntity {
     @TableField("system_id")
     private Long systemId;
 
-    // getter and setter methods
-
-    public String getSourceSystem() {
-        return this.sourceSystem;
-    }
-
-    public void setSourceSystem(String sourceSystem) {
-        this.sourceSystem = sourceSystem;
-    }
-
-    public Long getSystemId() {
-        return this.systemId;
-    }
-
-    public void setSystemId(Long systemId) {
-        this.systemId = systemId;
-    }
 }

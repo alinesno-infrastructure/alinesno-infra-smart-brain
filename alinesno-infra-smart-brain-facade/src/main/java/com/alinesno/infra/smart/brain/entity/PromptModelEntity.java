@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 模型管理实体类
@@ -12,6 +14,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("prompt_model")
 public class PromptModelEntity extends InfraBaseEntity {
 
@@ -80,77 +84,4 @@ public class PromptModelEntity extends InfraBaseEntity {
     @TableField("model_tags")
     private String modelTags;
 
-    // getter and setter methods
-
-    public String getModelName() {
-        return modelName;
-    }
-
-    public void setModelName(String modelName) {
-        this.modelName = modelName;
-    }
-
-    public String getIndustryCategory() {
-        return industryCategory;
-    }
-
-    public void setIndustryCategory(String industryCategory) {
-        this.industryCategory = industryCategory;
-    }
-
-    public String getBusinessCategory() {
-        return businessCategory;
-    }
-
-    public void setBusinessCategory(String businessCategory) {
-        this.businessCategory = businessCategory;
-    }
-
-    public String getResourceName() {
-        return resourceName;
-    }
-
-    public void setResourceName(String resourceName) {
-        this.resourceName = resourceName;
-    }
-
-    public String getResourceSummary() {
-        return resourceSummary;
-    }
-
-    public void setResourceSummary(String resourceSummary) {
-        this.resourceSummary = resourceSummary;
-    }
-
-    public String getModelDescription() {
-        return modelDescription;
-    }
-
-    public void setModelDescription(String modelDescription) {
-        this.modelDescription = modelDescription;
-    }
-
-    public String getModelFields() {
-        return modelFields;
-    }
-
-    public void setModelFields(String modelFields) {
-        this.modelFields = modelFields;
-    }
-
-    public String getModelSource() {
-        return modelSource;
-    }
-
-    public void setModelSource(String modelSource) {
-        this.modelSource = modelSource;
-    }
-
-    public String getModelTags() {
-        return modelTags;
-    }
-
-    public void setModelTags(String modelTags) {
-        this.modelTags = modelTags;
-    }
 }

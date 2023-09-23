@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户登陆记录实体类
@@ -28,6 +30,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("user_login_record")
 public class LoginRecordEntity extends InfraBaseEntity{
 
@@ -75,82 +79,4 @@ public class LoginRecordEntity extends InfraBaseEntity{
     @TableField("sign_out_time")
     private Date signOutTime;
 
-    //getter and setter
-    public String getEmailCode(){
-        return this.emailCode;
-    }
-    public LoginRecordEntity setEmailCode(String arg){
-        this.emailCode = arg;
-        return this;
-    }
-    public String getErrorPassword(){
-        return this.errorPassword;
-    }
-    public LoginRecordEntity setErrorPassword(String arg){
-        this.errorPassword = arg;
-        return this;
-    }
-    public String getLoginBrowser(){
-        return this.loginBrowser;
-    }
-    public LoginRecordEntity setLoginBrowser(String arg){
-        this.loginBrowser = arg;
-        return this;
-    }
-    public String getLoginIp(){
-        return this.loginIp;
-    }
-    public LoginRecordEntity setLoginIp(String arg){
-        this.loginIp = arg;
-        return this;
-    }
-    public String getLoginName(){
-        return this.loginName;
-    }
-    public LoginRecordEntity setLoginName(String arg){
-        this.loginName = arg;
-        return this;
-    }
-    public String getLoginRemark(){
-        return this.loginRemark;
-    }
-    public LoginRecordEntity setLoginRemark(String arg){
-        this.loginRemark = arg;
-        return this;
-    }
-    public String getLoginSrc(){
-        return this.loginSrc;
-    }
-    public LoginRecordEntity setLoginSrc(String arg){
-        this.loginSrc = arg;
-        return this;
-    }
-    public String getLoginStatus(){
-        return this.loginStatus;
-    }
-    public LoginRecordEntity setLoginStatus(String arg){
-        this.loginStatus = arg;
-        return this;
-    }
-    public Date getLoginTime(){
-        return this.loginTime;
-    }
-    public LoginRecordEntity setLoginTime(Date arg){
-        this.loginTime = arg;
-        return this;
-    }
-    public String getPhoneCode(){
-        return this.phoneCode;
-    }
-    public LoginRecordEntity setPhoneCode(String arg){
-        this.phoneCode = arg;
-        return this;
-    }
-    public Date getSignOutTime(){
-        return this.signOutTime;
-    }
-    public LoginRecordEntity setSignOutTime(Date arg){
-        this.signOutTime = arg;
-        return this;
-    }
 }

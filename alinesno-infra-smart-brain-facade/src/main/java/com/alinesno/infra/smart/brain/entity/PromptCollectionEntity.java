@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户指令收藏实体类
@@ -21,9 +23,11 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("user_prompt_collection")
 public class PromptCollectionEntity extends InfraBaseEntity {
-	private static final long serialVersionUID = 1L;
+
 	// fields
 	/**
 	 * 用户标识
@@ -43,31 +47,5 @@ public class PromptCollectionEntity extends InfraBaseEntity {
 	@Excel(name = "排序")
 	@TableField("sorting_order")
 	private Long sortingOrder;
-
-	public Long getUserId() {
-		return userId;
-	}
-
-	public void setUserId(Long userId) {
-		this.userId = userId;
-	}
-
-	public String getCollectedPrompt() {
-		return collectedPrompt;
-	}
-
-	public void setCollectedPrompt(String collectedPrompt) {
-		this.collectedPrompt = collectedPrompt;
-	}
-
-	public Long getSortingOrder() {
-		return sortingOrder;
-	}
-
-	public void setSortingOrder(Long sortingOrder) {
-		this.sortingOrder = sortingOrder;
-	}
-
-	// getter and setter
 
 }

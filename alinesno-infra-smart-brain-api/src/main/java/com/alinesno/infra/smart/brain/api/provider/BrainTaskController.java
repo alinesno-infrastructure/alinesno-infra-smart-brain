@@ -2,7 +2,8 @@ package com.alinesno.infra.smart.brain.api.provider;
 
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
-import com.alinesno.infra.smart.brain.service.IAiGenTaskService;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class BrainTaskController {
 
     @Autowired
-    private IAiGenTaskService aiGenTaskService ;
+    private IGenerateTaskService generateTaskService ;
 
     /**
      * 提交任务
@@ -22,12 +23,12 @@ public class BrainTaskController {
      * @return 返回提交结果
      */
     @PostMapping("/commitTask")
-    public AjaxResult commitTask(@RequestBody BrainTaskDto dto) {
+    public AjaxResult commitTask(@RequestBody @Valid BrainTaskDto dto) {
         // 处理提交任务的逻辑
 
         log.debug("dto = {}" , dto);
 
-        aiGenTaskService.commitTask(dto) ;
+        generateTaskService.commitTask(dto) ;
 
         return AjaxResult.success(); // 返回成功结果
     }
@@ -43,7 +44,7 @@ public class BrainTaskController {
 
         log.debug("dto = {}" , dto);
 
-        aiGenTaskService.commitTaskToCms(dto) ;
+        generateTaskService.commitTaskToCms(dto) ;
 
         return AjaxResult.success(); // 返回成功结果
     }

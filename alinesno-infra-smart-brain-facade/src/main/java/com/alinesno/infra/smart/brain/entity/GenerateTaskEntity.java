@@ -5,11 +5,12 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.beans.BeanUtils;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("ai_gen_task")
-public class AiGenTaskEntity extends InfraBaseEntity {
+@TableName("generate_task")
+public class GenerateTaskEntity extends InfraBaseEntity {
 
     @TableField
     private String businessId ; // 业务ID
@@ -26,4 +27,11 @@ public class AiGenTaskEntity extends InfraBaseEntity {
     @TableField
     private int taskStatus ;  // 0排队中/1运行中/2已完成/9失败
 
+    public void copyFrom(GenerateTaskEntity other) {
+        try {
+            BeanUtils.copyProperties(this, other);
+        } catch (Exception e) {
+            throw new RuntimeException("Error copying properties", e);
+        }
+    }
 }

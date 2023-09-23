@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 用户账户记录实体类
@@ -14,6 +16,8 @@ import cn.afterturn.easypoi.excel.annotation.Excel;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@EqualsAndHashCode(callSuper = true)
+@Data
 @TableName("user_account_record")
 public class AccountRecordEntity extends InfraBaseEntity {
 
@@ -117,131 +121,4 @@ public class AccountRecordEntity extends InfraBaseEntity {
     @TableField("record_type")
     private String recordType;
 
-    // getter and setter
-
-    public String getAccountId() {
-        return this.accountId;
-    }
-
-    public AccountRecordEntity setAccountId(String accountId) {
-        this.accountId = accountId;
-        return this;
-    }
-
-    public String getAccountName() {
-        return this.accountName;
-    }
-
-    public AccountRecordEntity setAccountName(String accountName) {
-        this.accountName = accountName;
-        return this;
-    }
-
-    public String getAgent() {
-        return this.agent;
-    }
-
-    public AccountRecordEntity setAgent(String agent) {
-        this.agent = agent;
-        return this;
-    }
-
-    public Date getCreateTime() {
-        return this.createTime;
-    }
-
-    public AccountRecordEntity setCreateTime(Date createTime) {
-        this.createTime = createTime;
-        return this;
-    }
-
-    public String getIp() {
-        return this.ip;
-    }
-
-    public AccountRecordEntity setIp(String ip) {
-        this.ip = ip;
-        return this;
-    }
-
-    public String getLoginName() {
-        return this.loginName;
-    }
-
-    public AccountRecordEntity setLoginName(String loginName) {
-        this.loginName = loginName;
-        return this;
-    }
-
-    public String getMethod() {
-        return this.method;
-    }
-
-    public AccountRecordEntity setMethod(String method) {
-        this.method = method;
-        return this;
-    }
-
-    public String getMethodDesc() {
-        return this.methodDesc;
-    }
-
-    public AccountRecordEntity setMethodDesc(String methodDesc) {
-        this.methodDesc = methodDesc;
-        return this;
-    }
-
-    public Long getMethodTime() {
-        return this.methodTime;
-    }
-
-    public AccountRecordEntity setMethodTime(Long methodTime) {
-        this.methodTime = methodTime;
-        return this;
-    }
-
-    public String getOperation() {
-        return this.operation;
-    }
-
-    public AccountRecordEntity setOperation(String operation) {
-        this.operation = operation;
-        return this;
-    }
-
-    public String getParams() {
-        return this.params;
-    }
-
-    public AccountRecordEntity setParams(String params) {
-        this.params = params;
-        return this;
-    }
-
-    public String getRolePower() {
-        return this.rolePower;
-    }
-
-    public AccountRecordEntity setRolePower(String rolePower) {
-        this.rolePower = rolePower;
-        return this;
-    }
-
-    public String getUrl() {
-        return this.url;
-    }
-
-    public AccountRecordEntity setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
-    public String getRecordType() {
-        return this.recordType;
-    }
-
-    public AccountRecordEntity setRecordType(String recordType) {
-        this.recordType = recordType;
-        return this;
-    }
 }
