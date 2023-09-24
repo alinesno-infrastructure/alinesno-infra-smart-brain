@@ -45,10 +45,15 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
         processFile(dto.getBusinessId() , dto.getSystemContent() , dto.getUserContent()) ;
 
+<<<<<<< HEAD
         return null ;
     }
 
     private void processFile(String businessId , String systemMessage , String messageContent){
+=======
+        String systemMessage = dto.getSystemContent() ;
+        String userMessage = dto.getUserContent() ;
+>>>>>>> 13cc3fc (feat:优化配置)
 
         if(chatGPTStream == null){
             chatGPTStream = ChatGPTStream.builder()
