@@ -4,19 +4,23 @@ import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ChatEventListener {
+public class ChatEventListener implements ApplicationListener<TaskEvent> {
 
     @Autowired
     private IGenerateTaskService taskService ;
 
-    @EventListener
-    public void handleEvent(GenerateTaskEntity event) {
+    @Override
+    public void onApplicationEvent(TaskEvent event) {
+        GenerateTaskEntity entity = taskService.getById(event.getId()) ;
+
         // 处理事件逻辑
-        event.setTaskStatus(TaskStatus.COMPLETED.getValue());
-        taskService.update(event);
+        entity.setTaskStatus(TaskStatus.COMPLETED.getValue());
+        entity.setAssistantContent(event.getAssistantContent());
+
+        taskService.update(entity);
     }
 }

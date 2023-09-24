@@ -1,16 +1,15 @@
 package com.alinesno.infra.smart.brain.service.chatgpt;// FileProcessingServiceImpl.java
 
 import com.alibaba.fastjson.JSON;
-import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.event.ChatEventPublisher;
+import com.alinesno.infra.smart.brain.event.TaskEvent;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.plexpt.chatgpt.ChatGPTStream;
 import com.plexpt.chatgpt.entity.chat.ChatChoice;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
 import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
 import com.plexpt.chatgpt.entity.chat.Message;
-import com.plexpt.chatgpt.listener.AbstractStreamListener;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import org.jetbrains.annotations.NotNull;
@@ -20,11 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import retrofit2.http.HEAD;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 文件处理服务接口的实现类
@@ -88,10 +85,10 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                     isFinish = true ;
                     log.debug("任务{}输出结束:{}" , dto.getId() , isFinish);
                 } else {
-                    ChatCompletionResponse response = (ChatCompletionResponse) JSON.parseObject(data, ChatCompletionResponse.class);
+                    ChatCompletionResponse response = JSON.parseObject(data, ChatCompletionResponse.class);
                     List<ChatChoice> choices = response.getChoices();
                     if (choices != null && !choices.isEmpty()) {
-                        Message delta = ((ChatChoice)choices.get(0)).getDelta();
+                        Message delta = choices.get(0).getDelta();
                         String text = delta.getContent();
                         if (text != null) {
                             stringBuilder.append(text) ;
@@ -103,7 +100,12 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
                 if(isFinish){
                     dto.setAssistantContent(stringBuilder.toString());
-                    chatEventPublisher.publishEvent(dto);
+
+                    TaskEvent taskEvent = new TaskEvent(dto)  ;
+                    taskEvent.setId(dto.getId());
+                    taskEvent.setAssistantContent(stringBuilder.toString());
+
+                    chatEventPublisher.publishEvent(taskEvent);
                 }
             }
         });
