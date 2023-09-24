@@ -2,10 +2,12 @@ package com.alinesno.infra.smart.brain.scheduler;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.lmax.disruptor.BlockingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -19,6 +21,9 @@ public class TaskProcessor {
     private int bufferSize;
 
     private volatile int batchSize;
+
+    @Autowired
+    private IFileProcessingService fileProcessingService ;
 
     public Disruptor<GenerateTaskEntity> disruptor;
 
@@ -50,6 +55,7 @@ public class TaskProcessor {
     private void process(GenerateTaskEntity event) {
         log.info("Processing task: {}", JSONObject.toJSON(event));
         // Process the event
+        fileProcessingService.processFile(event) ;
     }
 
 }

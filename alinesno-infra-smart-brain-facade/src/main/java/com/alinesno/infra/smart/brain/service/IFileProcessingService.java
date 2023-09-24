@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.brain.service;// FileProcessingService.java
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -12,5 +13,5 @@ public interface IFileProcessingService {
      * @param brainTaskDto 文件路径
      * @return CompletableFuture<String> 异步返回处理结果
      */
-    CompletableFuture<String> processFile(BrainTaskDto brainTaskDto);
+    void processFile(GenerateTaskEntity brainTaskDto);
 }

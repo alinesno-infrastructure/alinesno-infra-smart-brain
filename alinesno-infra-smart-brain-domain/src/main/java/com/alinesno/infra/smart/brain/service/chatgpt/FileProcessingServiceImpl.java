@@ -1,18 +1,29 @@
 package com.alinesno.infra.smart.brain.service.chatgpt;// FileProcessingServiceImpl.java
 
+import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.event.ChatEventPublisher;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.plexpt.chatgpt.ChatGPTStream;
+import com.plexpt.chatgpt.entity.chat.ChatChoice;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
+import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
 import com.plexpt.chatgpt.entity.chat.Message;
 import com.plexpt.chatgpt.listener.AbstractStreamListener;
+import okhttp3.sse.EventSource;
+import okhttp3.sse.EventSourceListener;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import retrofit2.http.HEAD;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -34,6 +45,9 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
     private static ChatGPTStream chatGPTStream ;
 
+    @Autowired
+    private ChatEventPublisher chatEventPublisher ;
+
     /**
      * 实现处理文件的方法
      * @param dto 文件路径
@@ -41,19 +55,10 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
      */
     @Override
     @Async
-    public CompletableFuture<String> processFile(BrainTaskDto dto) {
+    public void processFile(GenerateTaskEntity dto) {
 
-        processFile(dto.getBusinessId() , dto.getSystemContent() , dto.getUserContent()) ;
-
-<<<<<<< HEAD
-        return null ;
-    }
-
-    private void processFile(String businessId , String systemMessage , String messageContent){
-=======
         String systemMessage = dto.getSystemContent() ;
         String userMessage = dto.getUserContent() ;
->>>>>>> 13cc3fc (feat:优化配置)
 
         if(chatGPTStream == null){
             chatGPTStream = ChatGPTStream.builder()
@@ -65,23 +70,7 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
         }
 
         Message system = Message.ofSystem(systemMessage.trim());
-        Message message = Message.of(messageContent.trim());
-
-        AbstractStreamListener listener = new AbstractStreamListener() {
-
-            StringBuffer chatStringBuffer = new StringBuffer() ;
-
-            @Override
-            public void onMsg(String s) {
-                chatStringBuffer.append(s) ;
-                System.out.print(s) ;
-            }
-
-            @Override
-            public void onError(Throwable throwable, String s) {
-
-            }
-        };
+        Message message = Message.of(userMessage.trim());
 
         ChatCompletion chatCompletion = ChatCompletion.builder()
                 .model(ChatCompletion.Model.GPT_4.getName())
@@ -89,7 +78,35 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 .temperature(0.5)
                 .build();
 
-        chatGPTStream.streamChatCompletion(chatCompletion, listener);
+        chatGPTStream.streamChatCompletion(chatCompletion, new EventSourceListener(){
+
+            private boolean isFinish = false ;
+            private final StringBuilder stringBuilder = new StringBuilder();
+
+            public void onEvent(@NotNull EventSource eventSource, String id, String type, @NotNull String data) {
+                if (data.equals("[DONE]")) {
+                    isFinish = true ;
+                    log.debug("任务{}输出结束:{}" , dto.getId() , isFinish);
+                } else {
+                    ChatCompletionResponse response = (ChatCompletionResponse) JSON.parseObject(data, ChatCompletionResponse.class);
+                    List<ChatChoice> choices = response.getChoices();
+                    if (choices != null && !choices.isEmpty()) {
+                        Message delta = ((ChatChoice)choices.get(0)).getDelta();
+                        String text = delta.getContent();
+                        if (text != null) {
+                            stringBuilder.append(text) ;
+                            System.out.print(text);
+                        }
+
+                    }
+                }
+
+                if(isFinish){
+                    dto.setAssistantContent(stringBuilder.toString());
+                    chatEventPublisher.publishEvent(dto);
+                }
+            }
+        });
     }
 
 }

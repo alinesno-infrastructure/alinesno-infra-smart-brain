@@ -25,6 +25,9 @@ public class GenerateTaskEntity extends InfraBaseEntity {
     private String userContent ;  // GPT用户信息
 
     @TableField
+    private String assistantContent ;  // 生成内容
+
+    @TableField
     private int taskStatus ;  // 0排队中/1运行中/2已完成/9失败
 
     public void copyFrom(GenerateTaskEntity other) {

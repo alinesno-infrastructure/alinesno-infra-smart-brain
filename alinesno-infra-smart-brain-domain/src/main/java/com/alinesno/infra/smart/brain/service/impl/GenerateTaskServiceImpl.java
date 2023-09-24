@@ -29,6 +29,8 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         GenerateTaskEntity entity = new GenerateTaskEntity() ;
         BeanUtils.copyProperties(dto , entity);
 
+        entity.setTaskStatus(TaskStatus.RUNNING.getValue());
+
         this.save(entity) ;
 
         taskProcessor.addTaskToDisruptor(entity);
