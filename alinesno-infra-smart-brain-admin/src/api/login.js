@@ -18,6 +18,33 @@ export function login(username, password, code, uuid) {
   })
 }
 
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> sso_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+// 查询当前会话是否登录
+export function isSsoLogin(){
+  return request({
+    url: '/sso/isLogin',
+    method: 'get'
+  })
+}
+
+// 根据ticket值登录
+export function doLoginByTicket(ticket){
+  return request({
+    url: '/sso/doLoginByTicket?ticket=' + ticket,
+    method: 'get'
+  })
+}
+
+// 重定向至认证中心
+export function goSsoAuthUrl(clientLoginUrl){
+  return request({
+    url: '/sso/getSsoAuthUrl?clientLoginUrl=' + clientLoginUrl,
+    method: 'get'
+  })
+}
+// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> sso_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+
 // 注册方法
 export function register(data) {
   return request({

@@ -27,6 +27,32 @@
 			<version>4.5.13</version>
 		</dependency>
 
+		<!-- Sa-Token 权限认证, 在线文档：https://sa-token.cc/ -->
+		<dependency>
+			<groupId>cn.dev33</groupId>
+			<artifactId>sa-token-spring-boot3-starter</artifactId>
+			<version>1.36.0</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-web</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>com.dtflys.forest</groupId>
+			<artifactId>forest-spring-boot3-starter</artifactId>
+			<version>1.5.33</version>
+		</dependency>
+
+		<!-- Sa-Token 插件：整合SSO -->
+		<dependency>
+			<groupId>cn.dev33</groupId>
+			<artifactId>sa-token-sso</artifactId>
+			<version>1.36.0</version>
+		</dependency>
+
 		<!-- 引用服务 -->
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>

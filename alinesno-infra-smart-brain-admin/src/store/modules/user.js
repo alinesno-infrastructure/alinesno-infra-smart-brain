@@ -1,4 +1,4 @@
-import { login, logout, getInfo } from '@/api/login'
+import { login, logout, getInfo , goSsoAuthUrl , doLoginByTicket , isSsoLogin } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import defAva from '@/assets/images/profile.jpg'
 
@@ -13,6 +13,38 @@ const useUserStore = defineStore(
       permissions: []
     }),
     actions: {
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> sso_start >>>>>>>>>>>>>>>>.
+      // 重定向至认证中心
+      goSsoAuthUrl(clientLoginUrl) {
+        return new Promise((resolve, reject) => {
+          goSsoAuthUrl(clientLoginUrl).then(res => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        })
+      },
+      // 根据ticket值登录
+      doLoginByTicket(ticket) {
+        return new Promise((resolve, reject) => {
+          doLoginByTicket(ticket).then(res => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        })
+      },
+      // 查询当前会话是否登录
+      isSsoLogin() {
+        return new Promise((resolve, reject) => {
+          isSsoLogin().then(res => {
+            resolve(res)
+          }).catch(error => {
+            reject(error)
+          })
+        })
+      },
+      // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> sso_end >>>>>>>>>>>>>>>>.
       // 登录
       login(userInfo) {
         const username = userInfo.username.trim()

@@ -12,12 +12,23 @@ spring:
     password: adminer
   data:
     redis:
-      host: 127.0.0.1
+      host: sa-sso-server.com
       port: 6379
       password: aip@local
   devtools:
     restart:
       enabled: true
+
+# sa-token配置
+sa-token:
+  sso:
+    auth-url: http://sa-sso-server.com:27001/login
+    is-http: true
+    check-ticket-url: http://sa-sso-server.com:27001/sso/checkTicket
+    slo-url: http://sa-sso-server.com:27001/sso/signout
+    get-data-url: http://sa-sso-server.com:27001/sso/getData
+  sign:
+    secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
 
 alinesno:
   infra:

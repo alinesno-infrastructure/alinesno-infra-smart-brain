@@ -244,3 +244,14 @@ export function getNormalPath(p) {
 export function blobValidate(data) {
   return data.type !== 'application/json'
 }
+
+// 从url中查询到指定名称的参数值
+export const getParam = function(name, defaultValue){
+  var query = window.location.search.substring(1);
+  var vars = query.split("&");
+  for (var i=0;i<vars.length;i++) {
+      var pair = vars[i].split("=");
+      if(pair[0] == name){return pair[1];}
+  }
+  return(defaultValue == undefined ? null : defaultValue);
+}
