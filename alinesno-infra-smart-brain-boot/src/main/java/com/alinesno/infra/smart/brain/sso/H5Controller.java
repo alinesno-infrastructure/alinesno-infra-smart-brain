@@ -1,9 +1,12 @@
 package com.alinesno.infra.smart.brain.sso;
 
+import cn.dev33.satoken.config.SaSsoConfig;
 import cn.dev33.satoken.sso.SaSsoProcessor;
 import cn.dev33.satoken.sso.SaSsoUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
+import com.dtflys.forest.Forest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -47,6 +50,16 @@ public class H5Controller {
 			return result ;
 		}
 		return SaResult.error("无效ticket：" + ticket);
+	}
+
+	// 配置SSO相关参数
+	@Autowired
+	private void configSso(SaSsoConfig sso) {
+		// 配置Http请求处理器
+		sso.setSendHttp(url -> {
+			System.out.println("------ 发起请求：" + url);
+			return Forest.get(url).executeAsString();
+		});
 	}
 
 	// 全局异常拦截
