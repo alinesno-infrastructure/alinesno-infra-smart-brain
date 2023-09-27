@@ -20,7 +20,7 @@ router.beforeEach((to, from, next) => {
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
     /* has token*/
-    if (to.path === '/login' || to.path === '/sso/login') {
+    if (to.path === '/sso/login') {
       next({ path: '/' })
       NProgress.done()
     } else {
