@@ -12,84 +12,83 @@ import usePermissionStore from '@/store/modules/permission'
 
 NProgress.configure({ showSpinner: false });
 
-const whiteList = ['/login', '/register'];
+const whiteList = ['/login', '/register' , '/sso/login'];
 
 // 是否登录
-const isLogin = ref(false);
+// const isLogin = ref(false);
 
 router.beforeEach((to, from, next) => {
   NProgress.start()
 
-  // 获取参数
-  const back = getParam('back') || router.currentRoute.value.query.back;
-  const ticket = getParam('ticket') || router.currentRoute.value.query.ticket;
+  // // 获取参数
+  // const back = getParam('back') || router.currentRoute.value.query.back;
+  // const ticket = getParam('ticket') || router.currentRoute.value.query.ticket;
 
-  console.log('back = ' + back + ' , ticket = ' + ticket) ;
-  console.log('获取 back 参数：', back)
-  console.log('获取 ticket 参数：', ticket)
+  // console.log('back = ' + back + ' , ticket = ' + ticket) ;
+  // console.log('获取 back 参数：', back)
+  // console.log('获取 ticket 参数：', ticket)
 
-  useUserStore().isSsoLogin().then((res) => {
-    console.log('/isLogin 返回数据：', res);
-    isLogin.value = res.data;
+  // useUserStore().isSsoLogin().then((res) => {
+  //   console.log('/isLogin 返回数据：', res);
+  //   isLogin.value = res.data;
 
-    if(!isLogin.value){
+  //   if(!isLogin.value){
 
-      var clientLoginUrl =  encodeURIComponent(location.href) ; 
-      console.log('clientLoginUrl = ' + clientLoginUrl) ;
+  //     var clientLoginUrl =  encodeURIComponent(location.href) ; 
+  //     console.log('clientLoginUrl = ' + clientLoginUrl) ;
 
-      useUserStore().goSsoAuthUrl(clientLoginUrl).then((res) => {
-        console.log('/sso/getSsoAuthUrl 返回数据', res);
+  //     useUserStore().goSsoAuthUrl(clientLoginUrl).then((res) => {
+  //       console.log('/sso/getSsoAuthUrl 返回数据', res);
 
-        debugger
-        location.href = res.data;
-      });
+  //       debugger
+  //       location.href = res.data;
+  //     });
 
-    }
-
-  }) ;
-
-  // if (getToken()) {
-  //   to.meta.title && useSettingsStore().setTitle(to.meta.title)
-  //   /* has token*/
-  //   if (to.path === '/login') {
-  //     next({ path: '/' })
-  //     NProgress.done()
-  //   } else {
-  //     if (useUserStore().roles.length === 0) {
-  //       isRelogin.show = true
-  //       // 判断当前用户是否已拉取完user_info信息
-  //       useUserStore().getInfo().then(() => {
-  //         isRelogin.show = false
-  //         usePermissionStore().generateRoutes().then(accessRoutes => {
-  //           // 根据roles权限生成可访问的路由表
-  //           accessRoutes.forEach(route => {
-  //             if (!isHttp(route.path)) {
-  //               router.addRoute(route) // 动态添加可访问路由表
-  //             }
-  //           })
-  //           next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
-  //         })
-  //       }).catch(err => {
-  //         useUserStore().logOut().then(() => {
-  //           ElMessage.error(err)
-  //           next({ path: '/' })
-  //         })
-  //       })
-  //     } else {
-  //       next()
-  //     }
   //   }
-  // } else {
+
+  // }) ;
+
+  if (getToken()) {
+    to.meta.title && useSettingsStore().setTitle(to.meta.title)
+    /* has token*/
+    if (to.path === '/login') {
+      next({ path: '/' })
+      NProgress.done()
+    } else {
+      if (useUserStore().roles.length === 0) {
+        isRelogin.show = true
+        // 判断当前用户是否已拉取完user_info信息
+        useUserStore().getInfo().then(() => {
+          isRelogin.show = false
+          usePermissionStore().generateRoutes().then(accessRoutes => {
+            // 根据roles权限生成可访问的路由表
+            accessRoutes.forEach(route => {
+              if (!isHttp(route.path)) {
+                router.addRoute(route) // 动态添加可访问路由表
+              }
+            })
+            next({ ...to, replace: true }) // hack方法 确保addRoutes已完成
+          })
+        }).catch(err => {
+          useUserStore().logOut().then(() => {
+            ElMessage.error(err)
+            next({ path: '/' })
+          })
+        })
+      } else {
+        next()
+      }
+    }
+  } else {
     // 没有token
     if (whiteList.indexOf(to.path) !== -1) {
       // 在免登录白名单，直接进入
       next()
     } else {
-      next()
-      // next(`/login?redirect=${to.fullPath}`) // 否则全部重定向到登录页
+      next(`/login?redirect=${to.fullPath}`) // 否则全部重定向到登录页
       NProgress.done()
     }
-  // }
+  }
 
 })
 

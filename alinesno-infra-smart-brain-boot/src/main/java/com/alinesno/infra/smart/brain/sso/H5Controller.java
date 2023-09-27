@@ -9,6 +9,8 @@ import cn.dev33.satoken.sso.SaSsoUtil;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.dev33.satoken.util.SaResult;
 
+import java.util.UUID;
+
 /**
  * 前后台分离架构下集成SSO所需的代码 （SSO-Client端）
  * <p>（注：如果不需要前后端分离架构下集成SSO，可删除此包下所有代码）</p>
@@ -37,7 +39,13 @@ public class H5Controller {
 		Object loginId = SaSsoProcessor.instance.checkTicket(ticket, "/sso/doLoginByTicket");
 		if(loginId != null) {
 			StpUtil.login(loginId);
-			return SaResult.data(StpUtil.getTokenValue());
+
+			String adminToken = UUID.randomUUID().toString() ;
+
+			SaResult result = SaResult.data(StpUtil.getTokenValue());
+			result.put("adminToken" , adminToken) ;
+
+			return result ;
 		}
 		return SaResult.error("无效ticket：" + ticket); 
 	}

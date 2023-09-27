@@ -21,6 +21,7 @@ spring:
 
 # sa-token配置
 sa-token:
+  token-name: satoken
   sso:
     auth-url: http://sa-sso-server.com:27001/login
     is-http: true
@@ -28,7 +29,7 @@ sa-token:
     slo-url: http://sa-sso-server.com:27001/sso/signout
     get-data-url: http://sa-sso-server.com:27001/sso/getData
   sign:
-    secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
+    secret-key:
 
 alinesno:
   infra:
