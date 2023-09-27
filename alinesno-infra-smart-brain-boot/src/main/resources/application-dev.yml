@@ -22,12 +22,13 @@ spring:
 # sa-token配置
 sa-token:
   token-name: satoken
+  host-path: http://alinesno-infra-base-identity-auth-application.beta.base.infra.linesno.com
   sso:
-    auth-url: http://sa-sso-server.com:27001/login
+    auth-url: ${sa-token.host-path}/login
     is-http: true
-    check-ticket-url: http://sa-sso-server.com:27001/sso/checkTicket
-    slo-url: http://sa-sso-server.com:27001/sso/signout
-    get-data-url: http://sa-sso-server.com:27001/sso/getData
+    check-ticket-url: ${sa-token.host-path}/sso/checkTicket
+    slo-url: ${sa-token.host-path}/sso/signout
+    get-data-url: ${sa-token.host-path}/sso/getData
   sign:
     secret-key:
 

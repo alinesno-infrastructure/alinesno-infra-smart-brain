@@ -41,8 +41,7 @@ onMounted(() => {
 
 // 重定向至认证中心
 function goSsoAuthUrl() {
-    var backUrl = "http://192.168.101.18/login"
-    var clientLoginUrl =  'http://192.168.101.18/sso/login?back=' + encodeURIComponent(backUrl); 
+    var clientLoginUrl =  location.origin + '/sso/login?back=' + encodeURIComponent(location.href); 
     console.log('clientLoginUrl = ' + clientLoginUrl) ;
 
     useUserStore().goSsoAuthUrl(clientLoginUrl).then((res) => {

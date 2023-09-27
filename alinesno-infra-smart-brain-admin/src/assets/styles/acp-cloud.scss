@@ -8,19 +8,18 @@ $chartColor: #3b5998;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  background-color: $main-acp-bg;
+  background-color: #fff ;
   position: fixed;
   top: 0px;
   right: 0px;
   left: 0px;
   z-index: 1000;
-  box-shadow: 0 2px 4px 0 var(--cb-color-shadow, rgba(0, 0, 0, 0.16));
+  border-bottom: 1px solid #e5e5e5 ;
 
   .header-logo-label {
     font-size: 16px;
     margin-left: 10px;
-    text-shadow: 0 0 0px black;
-    color: #fff;
+    color: #222 ;
     font-weight: bold;
   }
 
@@ -82,10 +81,11 @@ $chartColor: #3b5998;
       position: relative;
       padding: 0px 10px;
       border: 0px;
-      color: #fff;
+      color: #222 ;
       height: $base-topheader-height;
       line-height: $base-topheader-height;
       font-size: 12px;
+      font-weight: 550;
       display: block !important;
     }
 
@@ -107,13 +107,15 @@ $chartColor: #3b5998;
 }
 
 .dashboard-home {
-  background-color: $main-acp-bg;
+  background-color: #f5f5f5 ;
   border: 0px;
-  color: #fff;
+  padding: 5px 10px;
+  color: #222 ;
   margin-left: 20px;
   font-weight: 500;
   font-size: 12px;
 }
+
 
 .dropdown-container {
   .f-e-l {

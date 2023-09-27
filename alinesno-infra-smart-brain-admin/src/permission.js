@@ -14,44 +14,13 @@ NProgress.configure({ showSpinner: false });
 
 const whiteList = ['/login', '/register' , '/sso/login'];
 
-// 是否登录
-// const isLogin = ref(false);
-
 router.beforeEach((to, from, next) => {
   NProgress.start()
-
-  // // 获取参数
-  // const back = getParam('back') || router.currentRoute.value.query.back;
-  // const ticket = getParam('ticket') || router.currentRoute.value.query.ticket;
-
-  // console.log('back = ' + back + ' , ticket = ' + ticket) ;
-  // console.log('获取 back 参数：', back)
-  // console.log('获取 ticket 参数：', ticket)
-
-  // useUserStore().isSsoLogin().then((res) => {
-  //   console.log('/isLogin 返回数据：', res);
-  //   isLogin.value = res.data;
-
-  //   if(!isLogin.value){
-
-  //     var clientLoginUrl =  encodeURIComponent(location.href) ; 
-  //     console.log('clientLoginUrl = ' + clientLoginUrl) ;
-
-  //     useUserStore().goSsoAuthUrl(clientLoginUrl).then((res) => {
-  //       console.log('/sso/getSsoAuthUrl 返回数据', res);
-
-  //       debugger
-  //       location.href = res.data;
-  //     });
-
-  //   }
-
-  // }) ;
 
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
     /* has token*/
-    if (to.path === '/login') {
+    if (to.path === '/login' || to.path === '/sso/login') {
       next({ path: '/' })
       NProgress.done()
     } else {
@@ -85,7 +54,7 @@ router.beforeEach((to, from, next) => {
       // 在免登录白名单，直接进入
       next()
     } else {
-      next(`/login?redirect=${to.fullPath}`) // 否则全部重定向到登录页
+      next(`/sso/login?redirect=${to.fullPath}`) // 否则全部重定向到登录页
       NProgress.done()
     }
   }
