@@ -16,44 +16,16 @@
     <properties>
         <docker.base.images>registry.cn-shenzhen.aliyuncs.com/alinesno-infra-base/openjdk:17.0.2-jdk</docker.base.images>
 		<docker.user>root</docker.user>
-		<kaptcha.version>2.3.3</kaptcha.version>
 	</properties>
 
 	<dependencies>
 
+		<!-- 引用工程服务_start -->
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.5.13</version>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-web-api-sso</artifactId>
+			<version>${revision}</version>
 		</dependency>
-
-		<!-- Sa-Token 权限认证, 在线文档：https://sa-token.cc/ -->
-		<dependency>
-			<groupId>cn.dev33</groupId>
-			<artifactId>sa-token-spring-boot3-starter</artifactId>
-			<version>1.36.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.boot</groupId>
-					<artifactId>spring-boot-starter-web</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>com.dtflys.forest</groupId>
-			<artifactId>forest-spring-boot3-starter</artifactId>
-			<version>1.5.33</version>
-		</dependency>
-
-		<!-- Sa-Token 插件：整合SSO -->
-		<dependency>
-			<groupId>cn.dev33</groupId>
-			<artifactId>sa-token-sso</artifactId>
-			<version>1.36.0</version>
-		</dependency>
-
-		<!-- 引用服务 -->
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-domain</artifactId>
@@ -69,13 +41,7 @@
 			<artifactId>alinesno-infra-smart-brain-api</artifactId>
 			<version>${revision}</version>
 		</dependency>
-
-		<!-- 验证码 -->
-		<dependency>
-			<groupId>pro.fessional</groupId>
-			<artifactId>kaptcha</artifactId>
-			<version>${kaptcha.version}</version>
-		</dependency>
+		<!-- 引用工程服务_end -->
 
 	</dependencies>
 
