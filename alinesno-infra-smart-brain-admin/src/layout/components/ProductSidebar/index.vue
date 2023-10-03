@@ -12,6 +12,22 @@
       <el-menu-item index="3" @click="openSmartService">
         <i class="fa-solid fa-user-shield"></i>
       </el-menu-item>
+
+      <el-menu-item index="4" @click="openServiceList">
+        <i class="fa-solid fa-sailboat"></i>
+      </el-menu-item>
+
+      <el-menu-item index="5" @click="jumpTo">
+        <i class="fa-solid fa-desktop"></i>
+      </el-menu-item>
+
+      <el-menu-item index="6" @click="openServiceList">
+        <i class="fa-solid fa-sailboat"></i>
+      </el-menu-item>
+
+      <el-menu-item index="7" @click="openSmartService">
+        <i class="fa-solid fa-user-shield"></i>
+      </el-menu-item>
     </el-menu>
 
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
