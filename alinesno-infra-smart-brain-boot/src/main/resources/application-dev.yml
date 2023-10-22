@@ -33,6 +33,13 @@ sa-token:
     secret-key:
 
 alinesno:
+  base:
+    brain:
+      # milvus 向量数据库
+      milvus:
+        config:
+          ipAddr: xxx.xxx.xxx.xxx
+          port: 19531
   infra:
     smart:
       brain:
