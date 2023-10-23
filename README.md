@@ -15,4 +15,5 @@ Client调用方  <--获取结果-->|
 
 ## 鸣谢
 
+- interpreter部分集成参考[open-interpreter]()代码和思路
 - 项目此处集成[chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web)前端
