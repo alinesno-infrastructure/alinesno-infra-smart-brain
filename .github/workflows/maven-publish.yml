@@ -67,7 +67,7 @@ jobs:
           echo '      <id>mirror</id>' >> nexus-config.xml
           echo '      <mirrorOf>central,jcenter,!rdc-releases,!rdc-snapshots</mirrorOf>' >> nexus-config.xml
           echo '      <name>mirror</name>' >> nexus-config.xml
-          echo '      <url>https://repo.maven.apache.org/maven2</url>' >> nexus-config.xml
+          echo '      <url>https://maven.aliyun.com/nexus/content/groups/public</url>' >> nexus-config.xml
           echo '    </mirror>' >> nexus-config.xml
           echo '    <mirror>' >> nexus-config.xml
           echo '      <id>rdc-releases</id>' >> nexus-config.xml
@@ -95,7 +95,7 @@ jobs:
           echo '      <repositories>' >> nexus-config.xml
           echo '        <repository>' >> nexus-config.xml
           echo '          <id>central</id>' >> nexus-config.xml
-          echo '          <url>https://repo.maven.apache.org/maven2</url>' >> nexus-config.xml
+          echo '          <url>https://maven.aliyun.com/nexus/content/groups/public</url>' >> nexus-config.xml
           echo '          <releases>' >> nexus-config.xml
           echo '            <enabled>true</enabled>' >> nexus-config.xml
           echo '          </releases>' >> nexus-config.xml
@@ -105,7 +105,7 @@ jobs:
           echo '        </repository>' >> nexus-config.xml
           echo '        <repository>' >> nexus-config.xml
           echo '          <id>snapshots</id>' >> nexus-config.xml
-          echo '          <url>https://repo.maven.apache.org/maven2</url>' >> nexus-config.xml
+          echo '          <url>https://maven.aliyun.com/nexus/content/groups/public</url>' >> nexus-config.xml
           echo '          <releases>' >> nexus-config.xml
           echo '            <enabled>false</enabled>' >> nexus-config.xml
           echo '          </releases>' >> nexus-config.xml
