@@ -147,7 +147,7 @@ jobs:
 
       - name: Deploy to AliyunCR
         run: |
-          mvn -B -U -f ${{ env.PROJECT_NAME }}/pom.xml clean compile jib:build jib:dockerBuild \
+          mvn -B -U -s nexus-config.xml -f ${{ env.PROJECT_NAME }}/pom.xml clean compile jib:build jib:dockerBuild \
                         -Ddocker.registry.name=${{ env.ALIYUN_CR_NAMESPACE }} \
                         -Djib.to.tags=${{ env.PRO_VERSION }}.${{ env.BUILD_NUMBER }} \
                         -Djib.to.auth.username=${{secrets.ALIYUN_CR_USERNAME}} \
