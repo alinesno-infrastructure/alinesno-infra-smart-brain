@@ -183,7 +183,7 @@ jobs:
           user: ${{ secrets.SERVER_BATA_USER_01 }}
           pass: ${{ secrets.SERVER_BATA_KEY_01 }}
           local: "./deploy/*"
-          remote: /home/github-action/
+          remote: /home/github-action/${{ env.PROJECT_NAME }}
 
       - name: SSH Pipelines
         uses: cross-the-world/ssh-pipeline@master
@@ -213,4 +213,4 @@ jobs:
             export DB_MYSQL_USRENAME=${{ secrets.DEV_DB_MYSQL_USRENAME }}
             export DB_MYSQL_PASSWORD=${{ secrets.DEV_DB_MYSQL_PASSWORD }}
 
-            envsubst < /home/github-action/kubernetes-${{ env.CURRENT_PROFIRE }}.yml | kubectl apply -f -
+            envsubst < /home/github-action/${{ env.PROJECT_NAME }}/kubernetes-${{ env.CURRENT_PROFIRE }}.yml | kubectl apply -f -
