@@ -7,6 +7,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.BeanUtils;
 
+/**
+ * 生成的任务和内容
+ *
+ * @author luoxiaodong
+ * @since 1.0.0
+ */
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("generate_task")

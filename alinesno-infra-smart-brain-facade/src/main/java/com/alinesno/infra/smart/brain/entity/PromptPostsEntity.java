@@ -22,6 +22,13 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	// fields
 
 	/**
+	 * 数据来源接口(即跟prompt结合的数据源)
+ 	 */
+	@Excel(name="数据来源接口(即跟prompt结合的数据源)")
+	@TableField("data_source_api")
+	private String dataSourceApi ;
+
+	/**
 	 * 指令使用次数
 	 */
 	@Excel(name="使用次数")

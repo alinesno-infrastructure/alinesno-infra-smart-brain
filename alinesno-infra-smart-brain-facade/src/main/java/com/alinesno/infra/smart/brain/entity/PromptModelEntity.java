@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 模型管理实体类
+ * 模型管理实体类(ChatGPT/文心一言/科大讯飞/llama2)
  *
  * @author luoxiaodong
  * @version 1.0.0
