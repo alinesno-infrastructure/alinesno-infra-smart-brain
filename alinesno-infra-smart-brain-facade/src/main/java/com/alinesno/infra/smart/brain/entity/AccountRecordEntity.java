@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.brain.entity;
 
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import java.util.Date;
 
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
@@ -28,6 +30,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="账户ID")
     @TableField("account_id")
+	@ColumnType(length=10)
+	@ColumnComment("账户ID")
     private String accountId;
 
     /**
@@ -35,6 +39,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="账户名称")
     @TableField("account_name")
+	@ColumnType(length=50)
+	@ColumnComment("账户名称")
     private String accountName;
 
     /**
@@ -42,6 +48,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="代理")
     @TableField("agent")
+	@ColumnType(length=255)
+	@ColumnComment("代理")
     private String agent;
 
     /**
@@ -49,6 +57,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="创建时间")
     @TableField("create_time")
+	@ColumnType(length=19)
+	@ColumnComment("创建时间")
     private Date createTime;
 
     /**
@@ -56,6 +66,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="IP地址")
     @TableField("ip")
+	@ColumnType(length=15)
+	@ColumnComment("IP地址")
     private String ip;
 
     /**
@@ -63,6 +75,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="登录名")
     @TableField("login_name")
+	@ColumnType(length=50)
+	@ColumnComment("登录名")
     private String loginName;
 
     /**
@@ -70,6 +84,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="方法")
     @TableField("method")
+	@ColumnType(length=255)
+	@ColumnComment("方法")
     private String method;
 
     /**
@@ -77,6 +93,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="方法描述")
     @TableField("method_desc")
+	@ColumnType(length=255)
+	@ColumnComment("方法描述")
     private String methodDesc;
 
     /**
@@ -84,6 +102,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="方法时间")
     @TableField("method_time")
+	@ColumnType(length=8)
+	@ColumnComment("方法时间")
     private Long methodTime;
 
     /**
@@ -91,6 +111,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="操作")
     @TableField("operation")
+	@ColumnType(length=255)
+	@ColumnComment("操作")
     private String operation;
 
     /**
@@ -98,6 +120,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="参数")
     @TableField("params")
+	@ColumnType(length=255)
+	@ColumnComment("参数")
     private String params;
 
     /**
@@ -105,6 +129,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="角色权限")
     @TableField("role_power")
+	@ColumnType(length=10)
+	@ColumnComment("角色权限")
     private String rolePower;
 
     /**
@@ -112,6 +138,8 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="URL")
     @TableField("url")
+	@ColumnType(length=255)
+	@ColumnComment("URL")
     private String url;
 
     /**
@@ -119,6 +147,7 @@ public class AccountRecordEntity extends InfraBaseEntity {
      */
     @Excel(name="记录类型")
     @TableField("record_type")
+	@ColumnType(length=20)
+	@ColumnComment("记录类型")
     private String recordType;
-
 }
