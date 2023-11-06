@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.brain.entity;
 
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -25,6 +27,8 @@ public class SourceSystemEntity extends InfraBaseEntity {
      */
     @Excel(name="来源系统")
     @TableField("source_system")
+	@ColumnType(length=50)
+	@ColumnComment("来源系统")
     private String sourceSystem;
 
     /**
@@ -32,6 +36,7 @@ public class SourceSystemEntity extends InfraBaseEntity {
      */
     @Excel(name="系统标识")
     @TableField("system_id")
+	@ColumnType(length=50)
+	@ColumnComment("系统标识")
     private Long systemId;
-
 }
