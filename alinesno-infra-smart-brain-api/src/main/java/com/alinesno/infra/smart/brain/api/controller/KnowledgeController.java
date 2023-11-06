@@ -4,8 +4,8 @@ import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.PromptCatalogEntity;
-import com.alinesno.infra.smart.brain.service.IPromptCatalogService;
+import com.alinesno.infra.smart.brain.entity.KnowledgeEntity;
+import com.alinesno.infra.smart.brain.service.IKnowledgeService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -27,11 +27,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/promptCatalog")
-public class PromptCatalogController extends BaseController<PromptCatalogEntity, IPromptCatalogService> {
+@RequestMapping("/api/infra/smart/brain/knowledge")
+public class KnowledgeController extends BaseController<KnowledgeEntity, IKnowledgeService> {
 
     @Autowired
-    private IPromptCatalogService service;
+    private IKnowledgeService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -49,7 +49,7 @@ public class PromptCatalogController extends BaseController<PromptCatalogEntity,
     }
 
     @Override
-    public IPromptCatalogService getFeign() {
+    public IKnowledgeService getFeign() {
         return this.service;
     }
 }

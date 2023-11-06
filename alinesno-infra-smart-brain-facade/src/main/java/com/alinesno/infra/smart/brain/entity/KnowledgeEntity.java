@@ -18,8 +18,8 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("source_system")
-public class SourceSystemEntity extends InfraBaseEntity {
+@TableName("knowledge")
+public class KnowledgeEntity extends InfraBaseEntity {
     // fields
 
     /**

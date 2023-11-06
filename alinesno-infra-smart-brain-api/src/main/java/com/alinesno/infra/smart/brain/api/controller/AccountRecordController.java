@@ -6,7 +6,6 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.brain.entity.AccountRecordEntity;
 import com.alinesno.infra.smart.brain.service.IAccountRecordService;
-import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -26,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 1.0.0
  */
 @Slf4j
-@Api(tags = "BusinessLog")
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/smart/brain/accountRecord")
