@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -28,6 +29,8 @@ public class PromptPostsEntity extends InfraBaseEntity {
  	 */
 	@Excel(name="数据来源接口(即跟prompt结合的数据源)")
 	@TableField("data_source_api")
+	@ColumnType(length=128)
+	@ColumnComment("数据来源接口(即跟prompt结合的数据源)")
 	private String dataSourceApi ;
 
 	/**
@@ -35,7 +38,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="使用次数")
 	@TableField("use_count")
-	@ColumnType(length=10)
+	@ColumnType(length=5)
 	@ColumnComment("指令使用次数")
 	private Long useCount;
 
@@ -44,7 +47,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令管理员")
 	@TableField("prompt_author")
-	@ColumnType(length=50)
+	@ColumnType(length=64)
 	@ColumnComment("指令管理员")
 	private String promptAuthor;
 
@@ -53,7 +56,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令内容")
 	@TableField("prompt_content")
-	@ColumnType(length=255)
+	@ColumnType(value = MySqlTypeConstant.LONGTEXT)
 	@ColumnComment("指令内容")
 	private String promptContent;
 
@@ -62,7 +65,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令名称")
 	@TableField("prompt_name")
-	@ColumnType(length=255)
+	@ColumnType(length=64)
 	@ColumnComment("指令名称")
 	private String promptName;
 
@@ -71,7 +74,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令密钥")
 	@TableField("prompt_password")
-	@ColumnType(length=255)
+	@ColumnType(length=16)
 	@ColumnComment("指令密钥")
 	private String promptPassword;
 
@@ -80,7 +83,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令状态")
 	@TableField("prompt_status")
-	@ColumnType(length=10)
+	@ColumnType(length=2)
 	@ColumnComment("指令状态")
 	private Long promptStatus;
 
@@ -89,7 +92,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令标题")
 	@TableField("prompt_title")
-	@ColumnType(length=255)
+	@ColumnType(length=64)
 	@ColumnComment("指令标题")
 	private String promptTitle;
 
@@ -98,7 +101,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="指令类型")
 	@TableField("prompt_type")
-	@ColumnType(length=20)
+	@ColumnType(length=64)
 	@ColumnComment("指令类型")
 	private String promptType;
 
@@ -107,7 +110,7 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 */
 	@Excel(name="对外")
 	@TableField("to_ping")
-	@ColumnType(length=255)
+	@ColumnType(length=5)
 	@ColumnComment("对外")
 	private String toPing;
 }

@@ -23,12 +23,13 @@ const router = useRouter();
 
 // 菜单列表
 const menuItems = ref([
-  {id:'7' , icon:'fa-solid fa-feather' , link:'/brain/app/index' , desc:'应用管理'},
+  {id:'2' , icon:'fa-solid fa-feather' , link:'/brain/application/index' , desc:'应用管理'},
   {id:'3' , icon:'fa-solid fa-masks-theater' , link:'/brain/prompt/index' , desc:'定义Prompt'},
-  {id:'2' , icon:'fa-solid fa-server' , link:'/brain/catalog/index' , desc:'业务分类'},
-  {id:'4' , icon:'fa-solid fa-plane-departure' , link:'/brain/task/index' , desc:'生成任务'},
-  {id:'8' , icon:'fa-solid fa-laptop-file' , link:'/brain/posts/index' , desc:'生成内容'},
-  {id:'5' , icon:'fa-solid fa-house-tsunami' , link:'/brain/requestRecord/index' , desc:'请求记录'},
+  {id:'4' , icon:'fa-solid fa-server' , link:'/brain/catalog/index' , desc:'业务分类'},
+  {id:'5' , icon:'fa-solid fa-plane-departure' , link:'/brain/task/index' , desc:'生成任务'},
+  // {id:'6' , icon:'fa-solid fa-laptop-file' , link:'/brain/posts/index' , desc:'生成内容'},
+  {id:'7' , icon:'fa-solid fa-house-tsunami' , link:'/brain/record/index' , desc:'请求记录'},
+  {id:'8' , icon:'fa-solid fa-swatchbook' , link:'/brain/knowledge/index' , desc:'资源库管理'},
 ]);
 
 // 打开服务市场

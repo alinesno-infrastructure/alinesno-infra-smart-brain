@@ -60,7 +60,7 @@ const opertionAssets = ref([
   {id:'1' , title:'我的生成文档' , count:45} ,
   {id:'6' , title:'项目集成情况' , count:45} ,
   {id:'2' , title:'自定义Prompt' , count:145} ,
-  {id:'3' , title:'任务生成中' , count:65} ,
+  {id:'3' , title:'导入知识库' , count:65} ,
   {id:'4' , title:'任务生成完成' , count:85} ,
   {id:'5' , title:'任务生成异常' , count:45} ,
   {id:'7' , title:'AI调用次数' , count:14865745} ,

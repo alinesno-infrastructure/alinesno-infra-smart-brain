@@ -2,10 +2,9 @@ package com.alinesno.infra.smart.brain.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.entity.AppStatisticsEntity;
-import com.alinesno.infra.smart.brain.service.IAppStatisticsService;
 import com.alinesno.infra.smart.brain.mapper.AppStatisticsMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.alinesno.infra.smart.brain.service.IAppStatisticsService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 
@@ -16,9 +15,8 @@ import org.springframework.stereotype.Service;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@Slf4j
 @Service
 public class AppStatisticsServiceImpl extends IBaseServiceImpl<AppStatisticsEntity, AppStatisticsMapper> implements IAppStatisticsService {
-    //日志记录
-    @SuppressWarnings("unused")
-    private static final Logger log = LoggerFactory.getLogger(AppStatisticsServiceImpl.class);
+
 }

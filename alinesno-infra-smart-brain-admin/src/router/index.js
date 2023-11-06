@@ -89,6 +89,51 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       },
+
+      // >>>>>>>>>>>>>>>>>>>>>> brain_router_start >>>>>>>>>>>>>>>>>>>>>>>>>>
+      {
+        path: '/brain/application/index',
+        component: () => import('@/views/brain/application/index'),
+        name: '/brain/application/index',
+        meta: { title: '应用管理', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/prompt/index',
+        component: () => import('@/views/brain/prompt/index'),
+        name: '/brain/prompt/index',
+        meta: { title: '定义Prompt', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/catalog/index',
+        component: () => import('@/views/brain/catalog/index'),
+        name: '/brain/catalog/index',
+        meta: { title: '业务分类', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/task/index',
+        component: () => import('@/views/brain/task/index'),
+        name: '/brain/task/index',
+        meta: { title: '生成任务', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/posts/index',
+        component: () => import('@/views/brain/posts/index'),
+        name: '/brain/posts/index',
+        meta: { title: '生成内容', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/record/index',
+        component: () => import('@/views/brain/record/index'),
+        name: '/brain/record/index',
+        meta: { title: '请求记录', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/brain/knowledge/index',
+        component: () => import('@/views/brain/knowledge/index'),
+        name: '/brain/knowledge/index',
+        meta: { title: '资料库管理', icon: 'dashboard', affix: true }
+      },
+      // >>>>>>>>>>>>>>>>>>>>>> brain_router_end >>>>>>>>>>>>>>>>>>>>>>>>>>
     ]
   },
   {

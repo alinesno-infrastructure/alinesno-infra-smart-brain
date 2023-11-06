@@ -32,6 +32,20 @@ sa-token:
   sign:
     secret-key:
 
+# 自动生成表
+actable:
+  table:
+    auto: update
+  model:
+    pack: com.alinesno.infra.smart.brain.entity
+  database:
+    type: mysql
+  index:
+    prefix: alinesno_smart_brain_idx_
+  unique:
+    prefix: alinesno_smart_brain_uni_
+
+
 alinesno:
   base:
     brain:

@@ -4,8 +4,8 @@ import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
-import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
+import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -29,11 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "BusinessLog")
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/generateTask")
-public class GenerateTaskController extends BaseController<GenerateTaskEntity, IGenerateTaskService> {
+@RequestMapping("/api/infra/smart/brain/promptPosts")
+public class PromptPostsController extends BaseController<PromptPostsEntity, IPromptPostsService> {
 
     @Autowired
-    private IGenerateTaskService service;
+    private IPromptPostsService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -51,7 +51,7 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
     }
 
     @Override
-    public IGenerateTaskService getFeign() {
+    public IPromptPostsService getFeign() {
         return this.service;
     }
 }
