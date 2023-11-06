@@ -50,6 +50,11 @@ public class GenerateTaskEntity extends InfraBaseEntity {
 	@ColumnComment("任务状态,0排队中/1运行中/2已完成/9失败")
     private int taskStatus ;  // 0排队中/1运行中/2已完成/9失败
 
-    public void copyFrom(GenerateTaskEntity task) {
+    public void copyFrom(GenerateTaskEntity other) {
+        try {
+            BeanUtils.copyProperties(other, this);
+        } catch (Exception e) {
+            throw new RuntimeException("Error copying properties", e);
+        }
     }
 }
