@@ -19,6 +19,7 @@ CREATE TABLE `generate_task` (
   `update_time` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `operator_id` BIGINT COMMENT '操作员 用户权限: 只能看到自己操作的数据',
   `last_update_operator_id` BIGINT COMMENT '最后更新操作员 用户权限: 只能看到自己操作的数据',
+  `assistant_content` VARCHAR(255) COMMENT '生成内容',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

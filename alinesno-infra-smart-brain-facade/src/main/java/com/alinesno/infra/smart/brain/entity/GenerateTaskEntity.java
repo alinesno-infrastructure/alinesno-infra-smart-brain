@@ -49,4 +49,7 @@ public class GenerateTaskEntity extends InfraBaseEntity {
 	@ColumnType(length=10)
 	@ColumnComment("任务状态,0排队中/1运行中/2已完成/9失败")
     private int taskStatus ;  // 0排队中/1运行中/2已完成/9失败
+
+    public void copyFrom(GenerateTaskEntity task) {
+    }
 }
