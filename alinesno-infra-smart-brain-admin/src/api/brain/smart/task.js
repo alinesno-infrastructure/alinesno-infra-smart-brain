@@ -25,7 +25,7 @@ var managerUrl = {
 }
 
 // 查询数据库列表
-export function listDatabase(query) {
+export function listTask(query) {
   return request({
     url: managerUrl.datatables ,
     method: 'post',
@@ -34,7 +34,7 @@ export function listDatabase(query) {
 }
 
 // 查询数据库详细
-export function getDatabase(databaseId) {
+export function getTask(databaseId) {
   return request({
     url: managerUrl.detailUrl + '/' + parseStrEmpty(databaseId),
     method: 'get'
@@ -42,7 +42,7 @@ export function getDatabase(databaseId) {
 }
 
 // 新增数据库
-export function addDatabase(data) {
+export function addTask(data) {
   return request({
     url: managerUrl.saveUrl ,
     method: 'post',
@@ -51,7 +51,7 @@ export function addDatabase(data) {
 }
 
 // 修改数据库
-export function updateDatabase(data) {
+export function updateTask(data) {
   return request({
     url: managerUrl.updateUrl ,
     method: 'put',
@@ -60,7 +60,7 @@ export function updateDatabase(data) {
 }
 
 // 删除数据库
-export function delDatabase(databaseId) {
+export function delTask(databaseId) {
   return request({
     url: managerUrl.removeUrl + '/' + parseStrEmpty(databaseId),
     method: 'delete'

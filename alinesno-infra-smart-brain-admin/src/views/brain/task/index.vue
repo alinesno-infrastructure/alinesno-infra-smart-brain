@@ -1,14 +1,14 @@
 <template>
    <div class="app-container">
       <el-row :gutter="20">
-         <!--数据库数据-->
+         <!--任务数据-->
          <el-col :span="24" :xs="24">
             <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
-               <el-form-item label="数据库名称" prop="dbName">
-                  <el-input v-model="queryParams.dbName" placeholder="请输入数据库名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="任务名称" prop="dbName">
+                  <el-input v-model="queryParams.dbName" placeholder="请输入任务名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
-               <el-form-item label="数据库名称" prop="dbName">
-                  <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入数据库名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="任务名称" prop="dbName">
+                  <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入任务名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
                <el-form-item>
                   <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -31,17 +31,17 @@
                <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
             </el-row>
 
-            <el-table v-loading="loading" :data="DatabaseList" @selection-change="handleSelectionChange">
+            <el-table v-loading="loading" :data="TaskList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
                <el-table-column label="图标" align="center" with="80" key="status" v-if="columns[5].visible">
                </el-table-column>
 
                <!-- 业务字段-->
-               <el-table-column label="数据库名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
-               <el-table-column label="数据库描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="任务名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
+               <el-table-column label="任务描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
                <el-table-column label="表数据量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
                <el-table-column label="类型" align="center" key="dbType" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="数据库地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
+               <el-table-column label="任务地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
                <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" />
 
                <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
@@ -53,13 +53,13 @@
                <!-- 操作字段  -->
                <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
                   <template #default="scope">
-                     <el-tooltip content="修改" placement="top" v-if="scope.row.DatabaseId !== 1">
+                     <el-tooltip content="修改" placement="top" v-if="scope.row.TaskId !== 1">
                         <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                           v-hasPermi="['system:Database:edit']"></el-button>
+                           v-hasPermi="['system:Task:edit']"></el-button>
                      </el-tooltip>
-                     <el-tooltip content="删除" placement="top" v-if="scope.row.DatabaseId !== 1">
+                     <el-tooltip content="删除" placement="top" v-if="scope.row.TaskId !== 1">
                         <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                           v-hasPermi="['system:Database:remove']"></el-button>
+                           v-hasPermi="['system:Task:remove']"></el-button>
                      </el-tooltip>
                   </template>
 
@@ -69,13 +69,13 @@
          </el-col>
       </el-row>
 
-      <!-- 添加或修改数据库配置对话框 -->
+      <!-- 添加或修改任务配置对话框 -->
       <el-dialog :title="title" v-model="open" width="900px" append-to-body>
          <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
             <el-row>
                <el-col :span="24">
                   <el-form-item label="名称" prop="dbName">
-                     <el-input v-model="form.dbName" placeholder="请输入数据库名称" maxlength="50" />
+                     <el-input v-model="form.dbName" placeholder="请输入任务名称" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
@@ -99,7 +99,7 @@
                </el-col>
                <el-col :span="24">
                   <el-form-item label="密码" prop="dbPasswd">
-                     <el-input v-model="form.dbPasswd" placeholder="请输入数据库密码" type="password" maxlength="30" show-password />
+                     <el-input v-model="form.dbPasswd" placeholder="请输入任务密码" type="password" maxlength="30" show-password />
                   </el-form-item>
                </el-col>
             </el-row>
@@ -107,7 +107,7 @@
             <el-row>
                <el-col :span="24">
                   <el-form-item label="备注" prop="dbDesc">
-                     <el-input v-model="form.dbDesc" placeholder="请输入数据库备注"></el-input>
+                     <el-input v-model="form.dbDesc" placeholder="请输入任务备注"></el-input>
                   </el-form-item>
                </el-col>
             </el-row>
@@ -123,21 +123,21 @@
    </div>
 </template>
 
-<script setup name="Database">
+<script setup name="Task">
 
 import {
-   listDatabase,
-   delDatabase,
-   getDatabase,
-   updateDatabase,
-   addDatabase
+   listTask,
+   delTask,
+   getTask,
+   updateTask,
+   addTask
 } from "@/api/brain/smart/task";
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 // 定义变量
-const DatabaseList = ref([]);
+const TaskList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -152,11 +152,11 @@ const roleOptions = ref([]);
 
 // 列显隐信息
 const columns = ref([
-   { key: 0, label: `数据库名称`, visible: true },
-   { key: 1, label: `数据库描述`, visible: true },
+   { key: 0, label: `任务名称`, visible: true },
+   { key: 1, label: `任务描述`, visible: true },
    { key: 2, label: `表数据量`, visible: true },
    { key: 3, label: `类型`, visible: true },
-   { key: 4, label: `数据库地址`, visible: true },
+   { key: 4, label: `任务地址`, visible: true },
    { key: 5, label: `状态`, visible: true },
    { key: 6, label: `更新时间`, visible: true }
 ]);
@@ -181,12 +181,12 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
-/** 查询数据库列表 */
+/** 查询任务列表 */
 function getList() {
    loading.value = true;
-   listDatabase(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+   listTask(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
       loading.value = false;
-      DatabaseList.value = res.rows;
+      TaskList.value = res.rows;
       total.value = res.total;
    });
 };
@@ -207,9 +207,9 @@ function resetQuery() {
 };
 /** 删除按钮操作 */
 function handleDelete(row) {
-   const DatabaseIds = row.id || ids.value;
-   proxy.$modal.confirm('是否确认删除数据库编号为"' + DatabaseIds + '"的数据项？').then(function () {
-      return delDatabase(DatabaseIds);
+   const TaskIds = row.id || ids.value;
+   proxy.$modal.confirm('是否确认删除任务编号为"' + TaskIds + '"的数据项？').then(function () {
+      return delTask(TaskIds);
    }).then(() => {
       getList();
       proxy.$modal.msgSuccess("删除成功");
@@ -228,7 +228,7 @@ function reset() {
    form.value = {
       id: undefined,
       deptId: undefined,
-      DatabaseName: undefined,
+      TaskName: undefined,
       nickName: undefined,
       password: undefined,
       phonenumber: undefined,
@@ -247,17 +247,17 @@ function cancel() {
 function handleAdd() {
    reset();
    open.value = true;
-   title.value = "添加数据库";
+   title.value = "添加任务";
 };
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
    reset();
-   const DatabaseId = row.id || ids.value;
-   getDatabase(DatabaseId).then(response => {
+   const TaskId = row.id || ids.value;
+   getTask(TaskId).then(response => {
       form.value = response.data;
       open.value = true;
-      title.value = "修改数据库";
+      title.value = "修改任务";
    });
 };
 
@@ -265,14 +265,14 @@ function handleUpdate(row) {
 function submitForm() {
    proxy.$refs["databaseRef"].validate(valid => {
       if (valid) {
-         if (form.value.DatabaseId != undefined) {
-            updateDatabase(form.value).then(response => {
+         if (form.value.TaskId != undefined) {
+            updateTask(form.value).then(response => {
                proxy.$modal.msgSuccess("修改成功");
                open.value = false;
                getList();
             });
          } else {
-            addDatabase(form.value).then(response => {
+            addTask(form.value).then(response => {
                proxy.$modal.msgSuccess("新增成功");
                open.value = false;
                getList();
