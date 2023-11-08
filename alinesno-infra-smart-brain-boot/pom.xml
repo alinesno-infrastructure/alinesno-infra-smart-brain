@@ -41,6 +41,11 @@
 			<artifactId>alinesno-infra-smart-brain-api</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-brain-vector</artifactId>
+			<version>${revision}</version>
+		</dependency>
 		<!-- 引用工程服务_end -->
 
 	</dependencies>

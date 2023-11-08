@@ -52,8 +52,8 @@ alinesno:
       # milvus 向量数据库
       milvus:
         config:
-          ipAddr: xxx.xxx.xxx.xxx
-          port: 19531
+          ipAddr: 127.0.0.1
+          port: 19530
   infra:
     smart:
       brain:

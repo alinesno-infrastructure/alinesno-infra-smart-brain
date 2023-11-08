@@ -1,5 +1,6 @@
-package com.alinesno.infra.base.brain.vector.service;
+package com.alinesno.infra.base.brain.vector.service.impl;
 
+import com.alinesno.infra.smart.brain.vector.service.IMilvusSearchService;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
@@ -9,6 +10,8 @@ import io.milvus.param.MetricType;
 import io.milvus.param.R;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.partition.ShowPartitionsParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
@@ -17,8 +20,10 @@ import java.util.concurrent.ExecutionException;
 /**
  * 此处功能代码参考 <a href="https://juejin.cn/post/7251501842986762301">SpringBoot整合Milvus</a>
  */
-public class MilvusSearchServiceImpl {
+@Service
+public class MilvusSearchServiceImpl implements IMilvusSearchService {
 
+    @Autowired
     private MilvusServiceClient milvusServiceClient;
 
     /**
@@ -28,6 +33,7 @@ public class MilvusSearchServiceImpl {
      * @param topK 最相似的向量个数
      * @return
      */
+    @Override
     public List<Long> search(String collectionName, List<List<Float>> vectors, Integer topK) {
 
         Assert.notNull(collectionName, "collectionName  is null");
@@ -62,6 +68,7 @@ public class MilvusSearchServiceImpl {
      * @param exp 过滤条件：status=1
      * @return
      */
+    @Override
     public List<Long> search(String collectionName, List<List<Float>> vectors, Integer topK, String exp) {
         Assert.notNull(collectionName, "collectionName  is null");
         Assert.notNull(vectors, "vectors is null");
@@ -96,6 +103,7 @@ public class MilvusSearchServiceImpl {
      * @param topK
      * @return
      */
+    @Override
     public List<Long> searchAsync(String collectionName, List<List<Float>> vectors,
                                   List<String> partitionList, Integer topK) throws ExecutionException, InterruptedException {
 
@@ -126,6 +134,7 @@ public class MilvusSearchServiceImpl {
      * @param collectionName 表名
      * @return
      */
+    @Override
     public List<String> getPartitionsList(String collectionName) {
         Assert.notNull(collectionName, "collectionName  is null");
         ShowPartitionsParam searchParam = ShowPartitionsParam.newBuilder().withCollectionName(collectionName).build();

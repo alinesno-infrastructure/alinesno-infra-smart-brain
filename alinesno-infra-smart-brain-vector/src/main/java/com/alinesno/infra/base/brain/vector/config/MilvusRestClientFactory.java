@@ -2,10 +2,12 @@ package com.alinesno.infra.base.brain.vector.config;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.ConnectParam;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 此处功能代码参考 <a href="https://juejin.cn/post/7251501842986762301">SpringBoot整合Milvus</a>
  */
+@Slf4j
 public class MilvusRestClientFactory {
 
     private static String  IP_ADDR;
@@ -14,10 +16,8 @@ public class MilvusRestClientFactory {
 
     private MilvusServiceClient milvusServiceClient;
 
-    private ConnectParam.Builder  connectParamBuilder;
 
-
-    private static MilvusRestClientFactory milvusRestClientFactory = new MilvusRestClientFactory();
+    private static final MilvusRestClientFactory milvusRestClientFactory = new MilvusRestClientFactory();
 
     private MilvusRestClientFactory(){
 
@@ -36,7 +36,7 @@ public class MilvusRestClientFactory {
 
 
     public void init() {
-        connectParamBuilder =  connectParamBuilder(IP_ADDR,PORT);
+        ConnectParam.Builder connectParamBuilder = connectParamBuilder(IP_ADDR, PORT);
         ConnectParam connectParam = connectParamBuilder.build();
         milvusServiceClient =new MilvusServiceClient(connectParam);
     }
@@ -52,7 +52,7 @@ public class MilvusRestClientFactory {
             try {
                 milvusServiceClient.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.error("milvus error:{}" , e.getMessage());
             }
         }
     }
