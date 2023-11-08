@@ -47,15 +47,13 @@ actable:
 
 
 alinesno:
-  base:
-    brain:
-      # milvus 向量数据库
-      milvus:
-        config:
-          ipAddr: 127.0.0.1
-          port: 19530
   infra:
     smart:
+      # milvus 向量数据库
+      milvus:
+        ip-addr: 127.0.0.1
+        port: 19530
+      # openapi config
       brain:
         openapi:
           host:

@@ -1,4 +1,4 @@
-package com.alinesno.infra.base.brain.vector.service.impl;
+package com.alinesno.infra.smart.brain.vector.service.impl;
 
 import com.alinesno.infra.smart.brain.vector.dto.CollectFieldType;
 import com.alinesno.infra.smart.brain.vector.dto.InsertField;

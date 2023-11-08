@@ -1,4 +1,4 @@
-package com.alinesno.infra.base.brain.vector.config;
+package com.alinesno.infra.smart.brain.vector.config;
 
 import io.milvus.client.MilvusServiceClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,13 +15,13 @@ public class MilvusConfiguration {
     /**
      *  milvus ip addr
      */
-    @Value("${alinesno.base.brain.milvus.ip-addr}")
+    @Value("${alinesno.infra.smart.milvus.ip-addr:127.0.0.1}")
     private String ipAddr;
 
     /**
      * milvus   port
      */
-    @Value("${alinesno.base.brain.milvus.port}")
+    @Value("${alinesno.infra.smart.milvus.port:19530}")
     private Integer  port;
 
     @Bean

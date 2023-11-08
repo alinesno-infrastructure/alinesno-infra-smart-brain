@@ -1,4 +1,4 @@
-package com.alinesno.infra.base.brain.vector.config;
+package com.alinesno.infra.smart.brain.vector.config;
 
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.ConnectParam;
