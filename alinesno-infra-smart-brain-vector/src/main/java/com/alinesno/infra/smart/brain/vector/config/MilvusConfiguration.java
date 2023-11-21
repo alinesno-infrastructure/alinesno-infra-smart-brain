@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.brain.vector.config;
 
 import io.milvus.client.MilvusServiceClient;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,7 +11,11 @@ import org.springframework.context.annotation.Scope;
  * 此处功能代码参考 <a href="https://juejin.cn/post/7251501842986762301">SpringBoot整合Milvus</a>
  */
 @Configuration
+@Data
 public class MilvusConfiguration {
+
+    @Value("${alinesno.infra.smart.embedding.addr:127.0.0.1}")
+    private String embeddingAddr;
 
     /**
      *  milvus ip addr

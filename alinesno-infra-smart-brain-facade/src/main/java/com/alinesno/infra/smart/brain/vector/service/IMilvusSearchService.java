@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.brain.vector.service;
 
+import com.alinesno.infra.smart.brain.api.PDFDataDto;
+
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -7,6 +9,14 @@ import java.util.concurrent.ExecutionException;
  * 这个接口表示了一个用于在Milvus集合中搜索向量并获取有关集合及其分区信息的服务。
  */
 public interface IMilvusSearchService {
+
+
+    /**
+     * 从向量数据库中搜索
+     * @param search_vectors
+     * @return
+     */
+    List<PDFDataDto> search(List<List<Float>> search_vectors);
 
     /**
      * 在指定的集合中搜索相似向量，并返回前K个最近邻居的ID列表。

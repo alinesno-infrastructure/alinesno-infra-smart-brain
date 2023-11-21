@@ -1,19 +1,26 @@
 package com.alinesno.infra.smart.brain.vector.service.impl;
 
+import com.alinesno.infra.smart.brain.api.PDFDataDto;
 import com.alinesno.infra.smart.brain.vector.service.IMilvusSearchService;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.ByteString;
 import io.milvus.client.MilvusServiceClient;
+import io.milvus.common.clientenum.ConsistencyLevelEnum;
 import io.milvus.grpc.SearchResults;
 import io.milvus.param.MetricType;
 import io.milvus.param.R;
+import io.milvus.param.collection.LoadCollectionParam;
+import io.milvus.param.collection.ReleaseCollectionParam;
 import io.milvus.param.dml.SearchParam;
 import io.milvus.param.partition.ShowPartitionsParam;
+import io.milvus.response.SearchResultsWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -25,6 +32,60 @@ public class MilvusSearchServiceImpl implements IMilvusSearchService {
 
     @Autowired
     private MilvusServiceClient milvusServiceClient;
+
+    @Override
+    public List<PDFDataDto> search(List<List<Float>> search_vectors) {
+        milvusServiceClient.loadCollection(
+                LoadCollectionParam.newBuilder()
+                        .withCollectionName("pdf_data")
+                        .build()
+        );
+
+        final Integer SEARCH_K = 4;
+        final String SEARCH_PARAM = "{\"nprobe\":10}";
+
+        List<String> ids = List.of("id");
+        List<String> contents = List.of("content");
+        List<String> contentWordCounts = List.of("content_word_count");
+
+        SearchParam searchParam = SearchParam.newBuilder()
+                .withCollectionName("pdf_data")
+                .withConsistencyLevel(ConsistencyLevelEnum.STRONG)
+                .withOutFields(ids)
+                .withOutFields(contents)
+                .withOutFields(contentWordCounts)
+                .withTopK(SEARCH_K)
+                .withVectors(search_vectors)
+                .withVectorFieldName("content_vector")
+                .withParams(SEARCH_PARAM)
+                .build();
+
+        R<SearchResults> respSearch = milvusServiceClient.search(searchParam);
+        List<PDFDataDto> pdfDataList = new ArrayList<>();
+
+        if(respSearch.getStatus() == R.Status.Success.getCode()){
+            SearchResults resp = respSearch.getData();
+            //判断是否查到结果
+            if(!resp.hasResults()){
+                return new ArrayList<>();
+            }
+            for (int i = 0; i < search_vectors.size(); ++i) {
+                SearchResultsWrapper wrapperSearch = new SearchResultsWrapper(resp.getResults());
+                List<Long> id = (List<Long>) wrapperSearch.getFieldData("id", 0);
+                List<String> content = (List<String>) wrapperSearch.getFieldData("content", 0);
+                List<Integer> contentWordCount = (List<Integer>) wrapperSearch.getFieldData("content_word_count", 0);
+                PDFDataDto pdfData = new PDFDataDto(id.get(0),content.get(0),contentWordCount.get(0));
+                pdfDataList.add(pdfData);
+            }
+        }
+
+        milvusServiceClient.releaseCollection(
+                ReleaseCollectionParam.newBuilder()
+                        .withCollectionName("pdf_data")
+                        .build());
+
+        return pdfDataList;
+    }
 
     /**
      * 同步搜索milvus

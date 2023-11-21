@@ -1,11 +1,17 @@
 package com.alinesno.infra.smart.brain.api.provider;
 
+import com.alinesno.infra.smart.brain.constants.BrainConstants;
+import com.alinesno.infra.smart.brain.utils.parse.PdfParseUtil;
+import com.alinesno.infra.smart.brain.utils.parse.WordParseUtil;
+import com.alinesno.infra.smart.brain.utils.parse.XmindUtil;
 import com.alinesno.infra.smart.brain.vector.dto.CollectFieldType;
 import com.alinesno.infra.smart.brain.vector.dto.InsertField;
 import com.alinesno.infra.smart.brain.vector.service.IMilvusDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +23,31 @@ public class MilvusDataController {
 
     @Autowired
     private IMilvusDataService milvusDataService;
+
+    /**
+     * 文件上传，支持PDF、Word、Xmind
+     * @param file
+     * @throws Exception
+     */
+    @PostMapping("/upload")
+    public void upload(MultipartFile file) throws Exception {
+        List<String> sentenceList = new ArrayList<>();
+        String fileSuffix = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+        if (BrainConstants.PDF.equalsIgnoreCase(fileSuffix)){
+            sentenceList = PdfParseUtil.parse(file.getInputStream());
+        }
+        if (BrainConstants.DOCX.equalsIgnoreCase(fileSuffix)){
+            sentenceList = WordParseUtil.getContentDocx(file.getInputStream());
+        }
+        if (BrainConstants.DOC.equalsIgnoreCase(fileSuffix)){
+            sentenceList = WordParseUtil.getContentDoc(file.getInputStream());
+        }
+        if (BrainConstants.XMIND.equalsIgnoreCase(fileSuffix)){
+            sentenceList = XmindUtil.xmindToList(file.getInputStream());
+        }
+        milvusDataService.save(sentenceList);
+    }
+
 
     /**
      * 创建集合的REST API接口

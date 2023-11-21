@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.brain.vector.service.impl;
 import com.alinesno.infra.smart.brain.vector.dto.CollectFieldType;
 import com.alinesno.infra.smart.brain.vector.dto.InsertField;
 import com.alinesno.infra.smart.brain.vector.service.IMilvusDataService;
+import com.alinesno.infra.smart.brain.vector.utils.EmbeddingClient;
 import io.milvus.client.MilvusServiceClient;
 import io.milvus.param.collection.CreateCollectionParam;
 import io.milvus.param.collection.FieldType;
@@ -19,6 +20,9 @@ public class MilvusDataServiceImpl implements IMilvusDataService {
 
     @Autowired
     private MilvusServiceClient milvusServiceClient;
+
+    @Autowired
+    private EmbeddingClient embeddingClient ;
 
     /**
      * 创建包含指定字段类型的集合的参数构建方法。
@@ -79,4 +83,39 @@ public class MilvusDataServiceImpl implements IMilvusDataService {
                 .build();
         milvusServiceClient.delete(deleteParam);
     }
+
+    @Override
+    public void doEmbedding(String msg) {
+
+        List<String> sentenceList = new ArrayList<>();
+        sentenceList.add(msg);
+
+        this.save(sentenceList);
+    }
+
+    @Override
+    public void save(List<String> sentenceList){
+
+        List<Integer> contentWordCount = new ArrayList<>();
+        List<List<Float>> contentVector;
+
+        for(String str : sentenceList){
+            contentWordCount.add(str.length());
+        }
+        contentVector = embeddingClient.doEmbedding(sentenceList);
+
+        List<InsertParam.Field> fields = new ArrayList<>();
+        fields.add(new InsertParam.Field("content", sentenceList));
+        fields.add(new InsertParam.Field("content_word_count", contentWordCount));
+        fields.add(new InsertParam.Field("content_vector", contentVector));
+
+        InsertParam insertParam = InsertParam.newBuilder()
+                .withCollectionName("pdf_data")
+                .withFields(fields)
+                .build();
+
+        //插入数据
+        milvusServiceClient.insert(insertParam);
+    }
+
 }

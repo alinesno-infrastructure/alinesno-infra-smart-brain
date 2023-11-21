@@ -1,9 +1,11 @@
 package com.alinesno.infra.smart.brain.vector.service;
 
 
+import com.alinesno.infra.smart.brain.api.PDFDataDto;
 import com.alinesno.infra.smart.brain.vector.dto.CollectFieldType;
 import com.alinesno.infra.smart.brain.vector.dto.InsertField;
 
+import java.io.InputStream;
 import java.util.List;
 
 
@@ -35,4 +37,13 @@ public interface IMilvusDataService {
      * @param deleteExpr 删除表达式。
      */
     void deleteData(String collectionName, String deleteExpr);
+
+    /**
+     * 调用python的M3E接口服务，返回问句的向量化数据
+     * @param msg
+     */
+    void doEmbedding(String msg) ;
+
+    void save(List<String> sentenceList);
+
 }
