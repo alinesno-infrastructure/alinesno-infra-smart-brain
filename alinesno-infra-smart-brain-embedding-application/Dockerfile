@@ -9,8 +9,8 @@ COPY . /app
 
 # 安装所需的依赖项
 COPY requirements.txt requirements.txt
-# RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install -i https://mirrors.aliyun.com/pypi/simple/ -r requirements.txt
+# RUN pip3 install -r requirements.txt
 
 # 暴露端口
 EXPOSE 5000
