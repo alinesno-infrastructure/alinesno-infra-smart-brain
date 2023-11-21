@@ -30,7 +30,7 @@ jobs:
 
       - uses: aliyun/acr-login@v1
         with:
-          region-id: 'cn-hangzhou' # example: cn-hangzhou
+          region-id: 'cn-shenzhen' # example: cn-hangzhou
           access-key-id: '${{secrets.ALIYUN_CR_USERNAME}}'
           access-key-secret: '${{secrets.ALIYUN_CR_PASSWORD}}'
 
