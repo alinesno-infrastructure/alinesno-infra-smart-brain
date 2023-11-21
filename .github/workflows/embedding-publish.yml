@@ -30,9 +30,9 @@ jobs:
 
       - uses: aliyun/acr-login@v1
         with:
-          login-server: ${{ env.ALIYUN_CR_REGISTORY }}
-          access-key-id: "${{secrets.ALIYUN_CR_USERNAME}}"
-          access-key-secret: "${{secrets.ALIYUN_CR_PASSWORD}}"
+          login-server: 'https://${{ env.ALIYUN_CR_REGISTORY }}'
+          access-key-id: '${{secrets.ALIYUN_CR_USERNAME}}'
+          access-key-secret: '${{secrets.ALIYUN_CR_PASSWORD}}'
 
       - name: Deploy to AliyunCR
         run: |
