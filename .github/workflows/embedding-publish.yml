@@ -28,11 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: aliyun/acr-login@v1
+      - name: Login to ACR
+        uses: aliyun/acr-login@v1
         with:
           login-server: 'https://${{ env.ALIYUN_CR_REGISTORY }}'
-          access-key-id: '${{secrets.ALIYUN_CR_USERNAME}}'
-          access-key-secret: '${{secrets.ALIYUN_CR_PASSWORD}}'
+          username: '${{secrets.ALIYUN_CR_USERNAME}}'
+          password: '${{secrets.ALIYUN_CR_PASSWORD}}'
 
       - name: Deploy to AliyunCR
         run: |
