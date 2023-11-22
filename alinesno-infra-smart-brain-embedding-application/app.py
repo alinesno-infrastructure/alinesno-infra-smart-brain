@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 @app.route('/embeddings',methods=['post'])
 def embeddings():
     sentences = flask.request.form['text']
-    model = SentenceTransformer('moka-ai_m3e-base')
+    model = SentenceTransformer('moka-ai/m3e-base')
     embeddings = model.encode(sentences)
 
     print(embeddings)
@@ -24,4 +24,4 @@ if __name__ == '__main__':
     app.debug = False
     handler = logging.FileHandler('flask.log')
     app.logger.addHandler(handler)
-    app.run(port=5000, debug=False, host='0.0.0.0')
+    app.run(port=5001, debug=False, host='0.0.0.0')
