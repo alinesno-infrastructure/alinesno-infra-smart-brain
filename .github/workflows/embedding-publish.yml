@@ -44,10 +44,10 @@ jobs:
       - name: local remote scp
         uses: cross-the-world/scp-pipeline@master
         with:
-          host: ${{ secrets.SERVER_BATA_HOST_01 }}
-          port: ${{ secrets.SERVER_BATA_PORT_01 }}
-          user: ${{ secrets.SERVER_BATA_USER_01 }}
-          pass: ${{ secrets.SERVER_BATA_KEY_01 }}
+          host: ${{ secrets.SERVER_BETA_HOST_03 }}
+          port: ${{ secrets.SERVER_BETA_PORT_03 }}
+          user: ${{ secrets.SERVER_BETA_USER_03 }}
+          pass: ${{ secrets.SERVER_BETA_KEY_03 }}
           local: "./deploy/*"
           remote: /home/github-action/${{ env.PROJECT_NAME }}
 
@@ -56,10 +56,10 @@ jobs:
         env:
           WELCOME: "ssh pipeline"
         with:
-          host: ${{ secrets.SERVER_BATA_HOST_01 }}
-          port: ${{ secrets.SERVER_BATA_PORT_01 }}
-          user: ${{ secrets.SERVER_BATA_USER_01 }}
-          pass: ${{ secrets.SERVER_BATA_KEY_01 }}
+          host: ${{ secrets.SERVER_BETA_HOST_03 }}
+          port: ${{ secrets.SERVER_BETA_PORT_03 }}
+          user: ${{ secrets.SERVER_BETA_USER_03 }}
+          pass: ${{ secrets.SERVER_BETA_KEY_03 }}
           connect_timeout: 30s
           script: |
             export PROJECT_NAME=${{ env.PROJECT_NAME }}
@@ -72,6 +72,6 @@ jobs:
             export CHATGPT_PROXY=${{ secrets.DEV_CHATGPT_PROXY }}
             export CHATGPT_SK=${{ secrets.DEV_CHATGPT_SK }}
 
-            export INFRA_DEV_DOMAIN=${{ secrets.INFRA_BETA_SMART_DOMAIN }}
+            export INFRA_DEV_DOMAIN=${{ secrets.INFRA_BETA_AI_DOMAIN }}
 
             envsubst < /home/github-action/${{ env.PROJECT_NAME }}/kubernetes-embedding-${{ env.CURRENT_PROFIRE }}.yml | kubectl apply -f -
