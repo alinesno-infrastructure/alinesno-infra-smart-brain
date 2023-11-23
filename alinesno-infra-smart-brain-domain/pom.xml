@@ -13,7 +13,18 @@
 	<artifactId>alinesno-infra-smart-brain-domain</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<langchain4j.version>0.24.0</langchain4j.version>
+	</properties>
+
 	<dependencies>
+
+		<!-- 集成langchain -->
+		<dependency>
+			<groupId>dev.langchain4j</groupId>
+			<artifactId>langchain4j-spring-boot-starter</artifactId>
+			<version>${langchain4j.version}</version>
+		</dependency>
 
 		<!-- 引用公共门面服务 -->
 		<dependency>
