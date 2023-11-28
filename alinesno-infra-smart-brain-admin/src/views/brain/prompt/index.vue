@@ -4,11 +4,11 @@
          <!--指令数据-->
          <el-col :span="24" :xs="24">
             <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
-               <el-form-item label="指令名称" prop="dbName">
-                  <el-input v-model="queryParams.dbName" placeholder="请输入指令名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="指令名称" prop="promptName">
+                  <el-input v-model="queryParams.promptName" placeholder="请输入指令名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
-               <el-form-item label="指令名称" prop="dbName">
-                  <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入指令名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="指令名称" prop="promptName">
+                  <el-input v-model="queryParams['condition[promptName|like]']" placeholder="请输入指令名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
                <el-form-item>
                   <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -33,16 +33,35 @@
 
             <el-table v-loading="loading" :data="PromptList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
-               <el-table-column label="图标" align="center" with="80" key="status" v-if="columns[5].visible">
+
+               <el-table-column label="图标" align="center" width="100" key="status" v-if="columns[5].visible">
+                  <template #default="scope">
+                     <div class="role-icon">
+                        <img :src="'http://data.linesno.com/icons/circle/Delivery boy-' + ((scope.$index + 1)%5 + 1) + '.png'" />
+                     </div>
+                  </template>
                </el-table-column>
 
                <!-- 业务字段-->
-               <el-table-column label="指令名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
-               <el-table-column label="指令描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="表数据量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="类型" align="center" key="dbType" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="指令地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
-               <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" />
+               <el-table-column label="指令名称" align="left" key="promptName" prop="promptName" v-if="columns[0].visible">
+                  <template #default="scope">
+                     <div>
+                        {{ scope.row.promptName }}
+                     </div>
+                     <div style="font-size: 13px;color: #a5a5a5;">
+                        会话次数: 12734 有效沟通:198312
+                     </div>
+                  </template>
+               </el-table-column>
+               <el-table-column label="使用次数" align="center" width="150" key="useCount" prop="useCount" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="配置指令" align="center" width="150" key="promptContent" prop="promptContent" v-if="columns[2].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     <el-button type="primary" text bg icon="Paperclip">配置(2)</el-button>
+                  </template>
+               </el-table-column>
+               <el-table-column label="类型" align="center" width="120" key="promptType" prop="promptType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="数据来源" align="center" key="dataSourceApi" prop="dataSourceApi" v-if="columns[4].visible" width="200" />
+               <el-table-column label="状态" align="center" width="120" key="hasStatus" v-if="columns[5].visible" />
 
                <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
                   <template #default="scope">
@@ -74,40 +93,28 @@
          <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="名称" prop="dbName">
-                     <el-input v-model="form.dbName" placeholder="请输入指令名称" maxlength="50" />
+                  <el-form-item label="名称" prop="promptName">
+                     <el-input v-model="form.promptName" placeholder="请输入指令名称" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="连接" prop="jdbcUrl">
-                     <el-input v-model="form.jdbcUrl" placeholder="请输入jdbcUrl连接地址" maxlength="128" />
+                  <el-form-item label="数据来源" prop="dataSourceApi">
+                     <el-input v-model="form.dataSourceApi" placeholder="请输入dataSourceApi数据来源" maxlength="128" />
                   </el-form-item>
                </el-col>
                <el-col :span="24">
-                  <el-form-item label="类型" prop="dbType">
-                     <el-input v-model="form.dbType" placeholder="请输入类型" maxlength="50" />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="用户名" prop="dbUsername">
-                     <el-input v-model="form.dbUsername" placeholder="请输入连接用户名" maxlength="30" />
-                  </el-form-item>
-               </el-col>
-               <el-col :span="24">
-                  <el-form-item label="密码" prop="dbPasswd">
-                     <el-input v-model="form.dbPasswd" placeholder="请输入指令密码" type="password" maxlength="30" show-password />
+                  <el-form-item label="类型" prop="promptType">
+                     <el-input v-model="form.promptType" placeholder="请输入类型" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
 
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="备注" prop="dbDesc">
-                     <el-input v-model="form.dbDesc" placeholder="请输入指令备注"></el-input>
+                  <el-form-item label="备注" prop="promptDesc">
+                     <el-input v-model="form.promptDesc" placeholder="请输入指令备注"></el-input>
                   </el-form-item>
                </el-col>
             </el-row>
@@ -166,16 +173,14 @@ const data = reactive({
    queryParams: {
       pageNum: 1,
       pageSize: 10,
-      dbName: undefined,
-      dbDesc: undefined
+      promptName: undefined,
+      promptDesc: undefined
    },
    rules: {
-      dbName: [{ required: true, message: "名称不能为空", trigger: "blur" }] , 
-      jdbcUrl: [{ required: true, message: "连接不能为空", trigger: "blur" }],
-      dbType: [{ required: true, message: "类型不能为空", trigger: "blur" }] , 
-      dbUsername: [{ required: true , message: "用户名不能为空", trigger: "blur"}],
-      dbPasswd: [{ required: true, message: "密码不能为空", trigger: "blur" }] , 
-      dbDesc: [{ required: true, message: "备注不能为空", trigger: "blur" }] 
+      promptName: [{ required: true, message: "名称不能为空", trigger: "blur" }] , 
+      dataSourceApi: [{ required: true, message: "连接不能为空", trigger: "blur" }],
+      promptType: [{ required: true, message: "类型不能为空", trigger: "blur" }] , 
+      promptDesc: [{ required: true, message: "备注不能为空", trigger: "blur" }] 
    }
 });
 
@@ -285,3 +290,12 @@ function submitForm() {
 getList();
 
 </script>
+
+<style lang="scss" scoped>
+.role-icon {
+  img {
+    width:45px;
+    height:45px;
+  }
+}
+</style>

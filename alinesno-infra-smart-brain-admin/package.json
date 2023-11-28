@@ -15,6 +15,8 @@
     "@vueup/vue-quill": "1.1.0",
     "@vueuse/core": "9.5.0",
     "axios": "1.6.0",
+    "codemirror": ">=5.64.0 <6",
+    "codemirror-editor-vue3": "^2.4.1",
     "echarts": "5.4.0",
     "element-plus": "2.2.27",
     "file-saver": "2.0.5",

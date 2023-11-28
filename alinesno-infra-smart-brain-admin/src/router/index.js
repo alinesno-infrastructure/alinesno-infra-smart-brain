@@ -104,6 +104,12 @@ export const constantRoutes = [
         meta: { title: '定义Prompt', icon: 'dashboard', affix: true }
       },
       {
+        path: '/brain/prompt/editor',
+        component: () => import('@/views/brain/prompt/editor'),
+        name: '/brain/prompt/editor',
+        meta: { title: '定义Prompt', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/brain/catalog/index',
         component: () => import('@/views/brain/catalog/index'),
         name: '/brain/catalog/index',

@@ -4,6 +4,7 @@ import Cookies from 'js-cookie'
 
 import ElementPlus from 'element-plus'
 import locale from 'element-plus/lib/locale/lang/zh-cn' // 中文语言
+import { InstallCodemirro } from "codemirror-editor-vue3"
 
 import '@/assets/styles/index.scss' // global css
 
@@ -70,6 +71,7 @@ app.use(store)
 app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
+app.use(InstallCodemirro) 
 
 directive(app)
 
