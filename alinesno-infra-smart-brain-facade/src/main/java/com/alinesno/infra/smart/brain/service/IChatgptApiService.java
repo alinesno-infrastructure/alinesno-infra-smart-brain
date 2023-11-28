@@ -1,7 +1,11 @@
 package com.alinesno.infra.smart.brain.service;
 
+import com.alinesno.infra.smart.brain.api.dto.PromptMessage;
+import com.alinesno.infra.smart.brain.api.dto.RequestData;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponse;
 import com.alinesno.infra.smart.brain.client.ChatGPTOpenAiStreamClient;
+
+import java.util.List;
 
 /**
  * 聊天GPT API服务接口
@@ -25,6 +29,8 @@ public interface IChatgptApiService {
 	 * @return 聊天响应
 	 */
 	ChatResponse chat();
+
+	ChatResponse chatCompletions(RequestData data);
 
 	/**
 	 * 获取配置

@@ -12,6 +12,7 @@ import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
 import com.plexpt.chatgpt.entity.chat.Message;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
+import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,7 +71,7 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
         Message message = Message.of(userMessage.trim());
 
         ChatCompletion chatCompletion = ChatCompletion.builder()
-                .model(ChatCompletion.Model.GPT_4.getName())
+                .model(ChatCompletion.Model.GPT_3_5_TURBO.getName())
                 .messages(Arrays.asList(system, message))
                 .temperature(0.5)
                 .build();
@@ -80,7 +81,10 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
             private boolean isFinish = false ;
             private final StringBuilder stringBuilder = new StringBuilder();
 
+            final StopWatch stopWatch = StopWatch.createStarted();
+
             public void onEvent(@NotNull EventSource eventSource, String id, String type, @NotNull String data) {
+
                 if (data.equals("[DONE]")) {
                     isFinish = true ;
                     log.debug("任务{}输出结束:{}" , dto.getId() , isFinish);
@@ -99,11 +103,17 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 }
 
                 if(isFinish){
+
+                    stopWatch.stop();
+                    System.out.println("方法执行时间：" + stopWatch.getTime() / 1000.0 + " 秒");
+
                     dto.setAssistantContent(stringBuilder.toString());
 
                     TaskEvent taskEvent = new TaskEvent(dto)  ;
                     taskEvent.setId(dto.getId());
                     taskEvent.setAssistantContent(stringBuilder.toString());
+
+                    log.debug("assistant content: \r\n{}" , dto.getAssistantContent());
 
                     chatEventPublisher.publishEvent(taskEvent);
                 }

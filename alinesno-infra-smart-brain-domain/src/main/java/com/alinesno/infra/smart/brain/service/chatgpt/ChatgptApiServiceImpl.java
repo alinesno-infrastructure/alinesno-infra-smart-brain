@@ -1,10 +1,10 @@
 package com.alinesno.infra.smart.brain.service.chatgpt;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.smart.brain.api.dto.RequestData;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponse;
 import com.alinesno.infra.smart.brain.client.ChatGPTOpenAiStreamClient;
 import com.alinesno.infra.smart.brain.service.IChatgptApiService;
-import com.plexpt.chatgpt.entity.billing.CreditGrantsResponse;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,11 +99,6 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 		json.put("timeoutMs", timeout_ms);
 		json.put("httpsProxy", "-");
 
-//		json.put("balanceAvailable", balance.getTotalAvailable());
-//		json.put("balanceUsed", balance.getTotalUsed());
-//		json.put("balanceTotal", balance.getTotalGranted());
-//		json.put("balance", balance.getTotalAvailable());
-
 		ChatResponse r = ChatResponse.success() ;
 		r.setData(json);
 
@@ -130,6 +125,11 @@ public class ChatgptApiServiceImpl implements IChatgptApiService {
 		}
 
 		return ChatResponse.successMsg(msg);
+	}
+
+	@Override
+	public ChatResponse chatCompletions(RequestData data) {
+		return null;
 	}
 
 }

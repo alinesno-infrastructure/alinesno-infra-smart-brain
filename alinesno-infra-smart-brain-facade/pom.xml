@@ -14,8 +14,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<chatgpt.version>4.1.2</chatgpt.version>
-		<chatgpt-java.version>1.0.7</chatgpt-java.version>
+		<chatgpt.version>4.2.0</chatgpt.version>
 	</properties>
 
 	<dependencies>
@@ -48,12 +47,6 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.30</version>
 		</dependency>
-
-<!--		<dependency>-->
-<!--			<groupId>com.unfbx</groupId>-->
-<!--			<artifactId>chatgpt-java</artifactId>-->
-<!--			<version>${chatgpt-java.version}</version>-->
-<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

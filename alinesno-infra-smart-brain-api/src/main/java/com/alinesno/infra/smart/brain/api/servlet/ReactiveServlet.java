@@ -66,14 +66,27 @@ public class ReactiveServlet extends HttpServlet {
 		ChatRequestDto chatRequestDto = JSONObject.parseObject(requestBody, ChatRequestDto.class) ;
 		
 		Flux<Object> flux = Flux.create(emitter -> {
-			
+
+			Message systemMessage = Message
+					.builder()
+					.role(Message.Role.SYSTEM.getValue())
+					.content(chatRequestDto.getSystemMessage())
+					.build();
+
 			Message message = Message
 					.builder()
-					.role(Message.Role.ASSISTANT.getValue())
+					.role(Message.Role.USER.getValue())
 					.content(chatRequestDto.getPrompt())
 					.build();
 
-			ChatCompletion chatCompletion = ChatCompletion.builder().messages(List.of(message)).build();
+			ChatCompletion chatCompletion = ChatCompletion
+					.builder()
+					.messages(List.of(systemMessage , message))
+					.temperature(chatRequestDto.getTemperature())
+					.maxTokens(chatRequestDto.getTokens())
+					.topP(chatRequestDto.getTop_p())
+					.build();
+
 			chatgptApiService.getClient().streamChatCompletion(chatCompletion, new EventSourceListener() {
 			
 				String contentText = "" ; 
