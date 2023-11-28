@@ -33,16 +33,40 @@
 
             <el-table v-loading="loading" :data="TaskList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
-               <el-table-column label="图标" align="center" with="80" key="status" v-if="columns[5].visible">
+               <el-table-column label="图标" align="center" width="70" key="status" v-if="columns[5].visible">
+                  <template #default="scope">
+                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 2" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
+                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 1" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
+                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
+                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
+                  </template>
                </el-table-column>
-
+               <el-table-column label="业务ID" align="center" width="80" key="businessId" prop="businessId" />
                <!-- 业务字段-->
-               <el-table-column label="任务名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
-               <el-table-column label="任务描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="表数据量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="类型" align="center" key="dbType" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="任务地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
-               <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" />
+               <el-table-column label="GPT角色设定" align="left" key="systemContent" prop="systemContent" v-if="columns[0].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     {{ scope.row.systemContent }}
+                  </template>
+               </el-table-column>
+               <el-table-column label="任务描述" align="left" key="userContent" prop="dbuserContentDesc" v-if="columns[1].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     {{ scope.row.userContent }}
+                  </template>
+               </el-table-column>
+               <el-table-column label="生成内容" align="center" width="150" key="assistantContent" prop="assistantContent" v-if="columns[2].visible" :show-overflow-tooltip="true" >
+                  <template #default="scope">
+                     <el-button type="primary" text bg icon="Paperclip">查看</el-button>
+                  </template>
+               </el-table-column>
+               <el-table-column label="类型" align="center" key="dbType" width="120" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="任务状态" align="center" width="150" key="taskStatus" v-if="columns[5].visible" >
+                  <template #default="scope">
+                     <el-button v-if="scope.row.taskStatus == 0" type="info" text bg icon="Paperclip">排队</el-button>
+                     <el-button v-if="scope.row.taskStatus == 2"  type="success" text bg icon="Paperclip">成功</el-button>
+                     <el-button v-if="scope.row.taskStatus == 1"  type="primary" text bg icon="Loading">运行</el-button>
+                     <el-button v-if="scope.row.taskStatus == 9" type="danger" text bg icon="Paperclip">失败</el-button>
+                  </template>
+               </el-table-column>
 
                <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
                   <template #default="scope">
@@ -150,6 +174,14 @@ const dateRange = ref([]);
 const postOptions = ref([]);
 const roleOptions = ref([]);
 
+const customColors = [
+  { color: '#f56c6c', percentage: 20 },
+  { color: '#e6a23c', percentage: 40 },
+  { color: '#5cb87a', percentage: 60 },
+  { color: '#1989fa', percentage: 80 },
+  { color: '#6f7ad3', percentage: 100 },
+]
+
 // 列显隐信息
 const columns = ref([
    { key: 0, label: `任务名称`, visible: true },
@@ -178,6 +210,16 @@ const data = reactive({
       dbDesc: [{ required: true, message: "备注不能为空", trigger: "blur" }] 
    }
 });
+
+const customColorMethod = (percentage) => {
+  if (percentage < 30) {
+    return '#909399';
+  }
+  if (percentage < 70) {
+    return '#e6a23c';
+  }
+  return '#67c23a';
+};
 
 const { queryParams, form, rules } = toRefs(data);
 

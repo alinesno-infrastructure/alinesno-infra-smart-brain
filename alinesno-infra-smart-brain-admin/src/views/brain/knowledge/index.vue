@@ -39,9 +39,9 @@
                <!-- 业务字段-->
                <el-table-column label="知识库名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
                <el-table-column label="知识库描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="表数据量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="集成名称" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
+               <el-table-column label="索引数量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
                <el-table-column label="类型" align="center" key="dbType" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="知识库地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
                <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" />
 
                <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
