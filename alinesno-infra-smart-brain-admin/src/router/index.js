@@ -134,9 +134,9 @@ export const constantRoutes = [
         meta: { title: '请求记录', icon: 'dashboard', affix: true }
       },
       {
-        path: '/smart/assistant/loaderData/index',
-        component: () => import('@/views/smart/assistant/loaderData/index'),
-        name: '/smart/assistant/loaderData/index',
+        path: '/brain/loaderData/index',
+        component: () => import('@/views/brain/loaderData/index'),
+        name: '/brain/loaderData/index',
         meta: { title: '数据管理', icon: 'dashboard', affix: true }
       },
       // >>>>>>>>>>>>>>>>>>>>>> brain_router_end >>>>>>>>>>>>>>>>>>>>>>>>>>
