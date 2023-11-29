@@ -25,11 +25,10 @@ const router = useRouter();
 const menuItems = ref([
   {id:'2' , icon:'fa-solid fa-feather' , link:'/brain/application/index' , desc:'应用管理'},
   {id:'3' , icon:'fa-solid fa-masks-theater' , link:'/brain/prompt/index' , desc:'定义Prompt'},
-  {id:'4' , icon:'fa-solid fa-server' , link:'/brain/catalog/index' , desc:'业务分类'},
-  {id:'5' , icon:'fa-solid fa-plane-departure' , link:'/brain/task/index' , desc:'生成任务'},
-  // {id:'6' , icon:'fa-solid fa-laptop-file' , link:'/brain/posts/index' , desc:'生成内容'},
-  {id:'7' , icon:'fa-solid fa-house-tsunami' , link:'/brain/record/index' , desc:'请求记录'},
-  {id:'8' , icon:'fa-solid fa-server' , link:'/brain/loaderData/index' , desc:'知识库管理'},
+  {id:'5' , icon:'fa-brands fa-wordpress' , link:'/brain/task/index' , desc:'生成任务'},
+  {id:'8' , icon:'fa-solid fa-file-pdf' , link:'/brain/loaderData/index' , desc:'知识库管理'},
+  {id:'4' , icon:'fa-brands fa-skype' , link:'/brain/catalog/index' , desc:'业务分类'},
+  {id:'7' , icon:'fa-solid fa-chart-simple' , link:'/brain/record/index' , desc:'请求记录'},
 ]);
 
 // 打开服务市场
