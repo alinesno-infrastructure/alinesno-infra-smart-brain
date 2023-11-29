@@ -1,11 +1,11 @@
 package com.alinesno.infra.smart.brain.api.controller;
 
-import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.KnowledgeEntity;
-import com.alinesno.infra.smart.brain.service.IKnowledgeService;
+import com.alinesno.infra.smart.brain.entity.VectorDatasetEntity;
+import com.alinesno.infra.smart.brain.service.IVectorDatasetService;
+import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -18,28 +18,30 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 处理与BusinessLogEntity相关的请求的Controller。
- * 继承自BaseController类并实现IBusinessLogService接口。
- *
- * @author luoxiaodong
+ * 应用构建Controller
+ * 处理与ApplicationEntity相关的请求
+ * 继承自BaseController类并实现IApplicationService接口
+ * 
  * @version 1.0.0
+ * @since 2023-09-30
  */
 @Slf4j
+@Api(tags = "VectorDataset")
 @RestController
-@Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/knowledge")
-public class KnowledgeController extends BaseController<KnowledgeEntity, IKnowledgeService> {
+@Scope("prototype")
+@RequestMapping("/api/infra/smart/assistant/vectorDataset")
+public class VectorDatasetController extends BaseController<VectorDatasetEntity, IVectorDatasetService> {
 
     @Autowired
-    private IKnowledgeService service;
+    private IVectorDatasetService service;
 
     /**
-     * 获取BusinessLogEntity的DataTables数据。
-     *
-     * @param request HttpServletRequest对象。
-     * @param model Model对象。
-     * @param page DatatablesPageBean对象。
-     * @return 包含DataTables数据的TableDataInfo对象。
+     * 获取ApplicationEntity的DataTables数据
+     * 
+     * @param request HttpServletRequest对象
+     * @param model Model对象
+     * @param page DatatablesPageBean对象
+     * @return 包含DataTables数据的TableDataInfo对象
      */
     @ResponseBody
     @PostMapping("/datatables")
@@ -49,8 +51,7 @@ public class KnowledgeController extends BaseController<KnowledgeEntity, IKnowle
     }
 
     @Override
-    public IKnowledgeService getFeign() {
+    public IVectorDatasetService getFeign() {
         return this.service;
     }
 }
-
