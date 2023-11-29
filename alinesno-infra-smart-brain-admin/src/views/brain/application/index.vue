@@ -4,11 +4,11 @@
          <!--应用数据-->
          <el-col :span="24" :xs="24">
             <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
-               <el-form-item label="应用名称" prop="dbName">
-                  <el-input v-model="queryParams.dbName" placeholder="请输入应用名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="应用名称" prop="name">
+                  <el-input v-model="queryParams.name" placeholder="请输入应用名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
-               <el-form-item label="应用名称" prop="dbName">
-                  <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入应用名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="应用名称" prop="name">
+                  <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入应用名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
                <el-form-item>
                   <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -33,16 +33,37 @@
 
             <el-table v-loading="loading" :data="ApplicationList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
-               <el-table-column label="图标" align="center" with="80" key="status" v-if="columns[5].visible">
+
+               <el-table-column label="图标" align="center" width="80px" prop="icon" v-if="columns[0].visible">
+                  <template #default="scope">
+                  <div class="role-icon">
+                     <img :src="'http://data.linesno.com/icons/dataset/dataset_' + (scope.$index + 8) + '.png'" style="width:40px;height:40px;border-radius: 50%;" />
+                  </div>
+                  </template>
                </el-table-column>
 
                <!-- 业务字段-->
-               <el-table-column label="应用名称" align="center" key="dbName" prop="dbName" v-if="columns[0].visible" />
-               <el-table-column label="应用描述" align="center" key="dbDesc" prop="dbDesc" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="表数据量" align="center" key="nickName" prop="nickName" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="类型" align="center" key="dbType" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="应用地址" align="center" key="jdbcUrl" prop="jdbcUrl" v-if="columns[4].visible" width="120" />
-               <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" />
+               <el-table-column label="应用名称" align="left" key="name" prop="name" v-if="columns[0].visible" >
+                  <template #default="scope">
+                     <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+                        {{ scope.row.showName }}
+                     </div>
+                     <div style="font-size: 13px;color: #a5a5a5;">
+                        {{ scope.row.name }}
+                     </div>
+                  </template>
+               </el-table-column>
+               <el-table-column label="所属领域" align="center" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="应用密钥" align="center" key="appKey" prop="appKey" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+                  <template #default="scope">
+                     {{ scope.row.appKey }} &nbsp;&nbsp; <el-button type="primary" text bg icon="CopyDocument">复制</el-button>
+                  </template>
+               </el-table-column>
+               <el-table-column label="状态" align="center" key="hasStatus" v-if="columns[5].visible" width="200">
+                  <template #default="scope">
+                     <el-button type="primary" text bg icon="Check">正常</el-button>
+                  </template>
+               </el-table-column>
 
                <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
                   <template #default="scope">
@@ -74,43 +95,33 @@
          <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="名称" prop="dbName">
-                     <el-input v-model="form.dbName" placeholder="请输入应用名称" maxlength="50" />
+                  <el-form-item label="应用全名" prop="name">
+                     <el-input v-model="form.name" placeholder="请输入应用名称" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="连接" prop="jdbcUrl">
-                     <el-input v-model="form.jdbcUrl" placeholder="请输入jdbcUrl连接地址" maxlength="128" />
-                  </el-form-item>
-               </el-col>
-               <el-col :span="24">
-                  <el-form-item label="类型" prop="dbType">
-                     <el-input v-model="form.dbType" placeholder="请输入类型" maxlength="50" />
+                  <el-form-item label="简称" prop="showName">
+                     <el-input v-model="form.showName" placeholder="请输入类型" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="用户名" prop="dbUsername">
-                     <el-input v-model="form.dbUsername" placeholder="请输入连接用户名" maxlength="30" />
+                  <el-form-item label="所属领域" prop="domain">
+                     <el-input v-model="form.domain" placeholder="请输入所属领域" maxlength="128" />
                   </el-form-item>
                </el-col>
+            </el-row>
+            <el-row>
                <el-col :span="24">
-                  <el-form-item label="密码" prop="dbPasswd">
-                     <el-input v-model="form.dbPasswd" placeholder="请输入应用密码" type="password" maxlength="30" show-password />
+                  <el-form-item label="应用描述" prop="remark">
+                     <el-input v-model="form.remark" placeholder="请输入连接用户名" maxlength="30" />
                   </el-form-item>
                </el-col>
             </el-row>
 
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="备注" prop="dbDesc">
-                     <el-input v-model="form.dbDesc" placeholder="请输入应用备注"></el-input>
-                  </el-form-item>
-               </el-col>
-            </el-row>
          </el-form>
          <template #footer>
             <div class="dialog-footer">
@@ -166,16 +177,15 @@ const data = reactive({
    queryParams: {
       pageNum: 1,
       pageSize: 10,
-      dbName: undefined,
-      dbDesc: undefined
+      name: undefined,
+      appKey: undefined
    },
    rules: {
-      dbName: [{ required: true, message: "名称不能为空", trigger: "blur" }] , 
-      jdbcUrl: [{ required: true, message: "连接不能为空", trigger: "blur" }],
-      dbType: [{ required: true, message: "类型不能为空", trigger: "blur" }] , 
-      dbUsername: [{ required: true , message: "用户名不能为空", trigger: "blur"}],
-      dbPasswd: [{ required: true, message: "密码不能为空", trigger: "blur" }] , 
-      dbDesc: [{ required: true, message: "备注不能为空", trigger: "blur" }] 
+      name: [{ required: true, message: "名称不能为空", trigger: "blur" }] , 
+      domain: [{ required: true, message: "连接不能为空", trigger: "blur" }],
+      showName: [{ required: true, message: "类型不能为空", trigger: "blur" }] , 
+      remark: [{ required: true , message: "用户名不能为空", trigger: "blur"}],
+      appKey: [{ required: true, message: "备注不能为空", trigger: "blur" }] 
    }
 });
 

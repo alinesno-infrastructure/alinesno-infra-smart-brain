@@ -1,21 +1,22 @@
 package com.alinesno.infra.smart.brain.api.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.brain.entity.ApplicationEntity;
 import com.alinesno.infra.smart.brain.service.IApplicationService;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -46,6 +47,13 @@ public class ApplicationController extends BaseController<ApplicationEntity , IA
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    @Override
+    public AjaxResult save(Model model ,  @RequestBody ApplicationEntity entity) throws Exception {
+       entity.setAppKey(IdWorker.getIdStr());
+       entity.setHasStatus(HasStatusEnums.LEGAL.value);
+       return super.save(model , entity) ;
     }
 
     @Override

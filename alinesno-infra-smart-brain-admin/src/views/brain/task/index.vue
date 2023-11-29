@@ -33,12 +33,20 @@
 
             <el-table v-loading="loading" :data="TaskList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
-               <el-table-column label="图标" align="center" width="70" key="status" v-if="columns[5].visible">
+               <el-table-column label="图标" align="center" width="50" key="status" v-if="columns[5].visible">
                   <template #default="scope">
-                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 2" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
-                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 1" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
-                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
-                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100"  :color="customColorMethod"/>
+                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 2" :stroke-width="25" :percentage="100">
+                        <el-button text></el-button>
+                     </el-progress>
+                     <el-progress :text-inside="true" status="danger" v-if="scope.row.taskStatus == 1" :stroke-width="25" :percentage="100">
+                        <el-button text></el-button>
+                     </el-progress>
+                     <el-progress :text-inside="true" status="primary" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100">
+                        <el-button text></el-button>
+                     </el-progress>
+                     <el-progress :text-inside="true" status="info" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100" >
+                        <el-button text></el-button>
+                     </el-progress>
                   </template>
                </el-table-column>
                <el-table-column label="业务ID" align="center" width="80" key="businessId" prop="businessId" />
