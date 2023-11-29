@@ -3,7 +3,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 
 // 接口配置项
-var prefix = '/api/infra/smart/assistant/vectorDataset/' ;
+var prefix = '/api/infra/smart/brain/vectorDataset/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
   createUrl: prefix + 'add' ,

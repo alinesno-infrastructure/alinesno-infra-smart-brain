@@ -29,7 +29,7 @@ const menuItems = ref([
   {id:'5' , icon:'fa-solid fa-plane-departure' , link:'/brain/task/index' , desc:'生成任务'},
   // {id:'6' , icon:'fa-solid fa-laptop-file' , link:'/brain/posts/index' , desc:'生成内容'},
   {id:'7' , icon:'fa-solid fa-house-tsunami' , link:'/brain/record/index' , desc:'请求记录'},
-  {id:'4' , icon:'fa-solid fa-server' , link:'/smart/assistant/loaderData/index' , desc:'知识库管理'},
+  {id:'4' , icon:'fa-solid fa-server' , link:'/brain/loaderData/index' , desc:'知识库管理'},
 ]);
 
 // 打开服务市场

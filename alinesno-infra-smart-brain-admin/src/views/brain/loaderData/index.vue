@@ -273,7 +273,7 @@ import {
   getApplication,
   updateApplication,
   addApplication,
-} from "@/api/smart/assistant/loaderData";
+} from "@/api/smart/brain/loaderData";
 import {reactive} from "vue";
 
 const router = useRouter();

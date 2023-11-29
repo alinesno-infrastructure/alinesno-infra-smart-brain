@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "VectorDataset")
 @RestController
 @Scope("prototype")
-@RequestMapping("/api/infra/smart/assistant/vectorDataset")
+@RequestMapping("/api/infra/smart/brain/vectorDataset")
 public class VectorDatasetController extends BaseController<VectorDatasetEntity, IVectorDatasetService> {
 
     @Autowired
