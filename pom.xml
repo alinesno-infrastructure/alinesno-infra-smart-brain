@@ -24,8 +24,7 @@
         <!-- 应用服务 -->
         <module>alinesno-infra-smart-brain-facade</module>  <!-- 接口和引用 -->
         <module>alinesno-infra-smart-brain-vector</module>  <!-- 向量数据库 -->
-        <module>alinesno-infra-smart-brain-interp</module>  <!-- 解释器 -->
-        <module>alinesno-infra-smart-brain-inference</module>  <!-- 领域服务 -->
+        <module>alinesno-infra-smart-brain-inference</module>  <!-- 推荐服务 -->
         <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
         <module>alinesno-infra-smart-brain-adapter</module> <!-- 适配层 -->
         <module>alinesno-infra-smart-brain-api</module>  <!-- 接口服务 -->
