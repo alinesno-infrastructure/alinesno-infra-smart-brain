@@ -1,10 +1,14 @@
-# alinesno-infra-smart-brain
+## 概述
+
+Brain服务提供了一组接口用于生成和处理自然语言内容，基于OpenAI GPT-3.5模型，以解决业务场景中的自然语言处理需求。这些接口包括流式内容响应、实时内容响应和离线内容生成接口。
+
+## alinesno-infra-smart-brain
 
 **alinesno-infra-smart-brain** 是一个用于进行自然语言生成和推理的服务，基于预训练模型，旨在提供强大的平台大脑服务。
 
 ## alinesno-infra-smart-brain-inference
 
-推理模块旨在针对多种场景进行多样化推理，采用流程化的方式进行推理。每个推理场景下都包含多个推理过程。当前项目主要集中在软件开发场景下的推理。
+推天理模块旨在针对多种场景进行多样化推理，采用流程化的方式进行推理。每个推理场景下都包含多个推理过程。当前项目主要集中在软件开发场景下的推理。
 
 ## 服务交互
 
@@ -21,14 +25,8 @@
 
 ## API
 
-### 对话接口
 
-- `POST /chat/fastchat`: 直接与 LLM 模型进行对话
-- `POST /chat/chat`: 通过 LLMChain 与 LLM 模型对话
-- `POST /chat/knowledge_base_chat`: 与知识库进行对话
-- `POST /chat/search_engine_chat`: 与搜索引擎进行对话
-
-### 知识库管理
+## 知识库管理
 
 - `POST /knowledge_base/rebuild_vectors`: 根据文档内容重新构建向量库，并以流式输出处理进度
 - `GET /knowledge_base/list_knowledge_bases`: 获取知识库列表
@@ -38,6 +36,167 @@
 - `POST /knowledge_base/upload_doc`: 将文件上传至知识库
 - `POST /knowledge_base/delete_doc`: 删除知识库内指定文件
 - `POST /knowledge_base/update_doc`: 更新现有文件至知识库
+
+## 推理接口使用
+
+以下是使用Java进行接口调用的示例：
+
+1. 添加maven依赖：
+
+```xml
+<dependency>
+    <groupId>com.alinesno.infra.smart</groupId>
+    <artifactId>alinesno-infra-smart-brain-client</artifactId>
+    <version>${revision}</version>
+</dependency>
+```
+
+配置网关接口:
+
+```yaml
+alinesno:
+    gateway:
+        smart.brain.gateway: http://xxxxx
+```
+
+2. 调用接口：
+
+```java
+// 获取流式接口
+GptChatResponse gptChatProcess;
+
+// 获取实时接口
+GptChatResponse gptChatCompletions;
+
+// 生成任务接口
+GptChatResponse gptChatTask;
+
+// 查询任务接口
+GptChatContent gptChatContent;
+```
+
+### 获取流式内容响应接口(`/api/gpt/chat-process`)
+
+场景：用于前端或业务内容，支持交互式对话
+
+请求内容：
+
+```json
+{
+    "prompt": "测试发送",
+    "options": {
+        "conversationId": "",
+        "parentMessageId": "as-k0ixmi02q0"
+    },
+    "systemMessage": "You are ChatGPT, a large language model trained by OpenAI. Follow the user's instructions carefully. Respond using markdown.",
+    "temperature": 0.8,
+    "top_p": 1,
+    "tokens": 1000
+}
+```
+
+返回内容：
+
+```json
+{
+    "role": "assistant",
+    "parentMessageId": "as-k0ixmi02q0",
+    "id": "chatcmpl-8RVK6Zn1xAsFDzDTgqvipVZeIRkzH",
+    "text": "",
+    "detail": {
+        "created": 1701565954,
+        "model": "gpt-3.5-turbo-0613",
+        "id": "chatcmpl-8RVK6Zn1xAsFDzDTgqvipVZeIRkzH",
+        "choices": [
+            {
+                "delta": {
+                    "role": "assistant",
+                    "content": ""
+                },
+                "index": 0
+            }
+        ],
+        "object": "chat.completion.chunk"
+    }
+}
+```
+
+### 获取实时内容响应接口(`/api/gpt/chat-completions`)
+
+场景：生成内容较少，实时返回的内容
+
+请求内容：
+
+```json
+{
+    "businessId": 65730,
+    "systemContent": "",
+    "promptId": "789",
+    "userContent": ""
+}
+```
+
+返回内容：
+
+```json
+{
+    "choices": [
+        {
+            "finish_reason": "stop",
+            "index": 0,
+            "message": {
+                "content": "The 2020 World Series was played in Texas at Globe Life Field in Arlington.",
+                "role": "assistant"
+            }
+        }
+    ],
+    "created": 1677664795,
+    "id": "chatcmpl-7QyqpwdfhqwajicIEznoc6Q47XAyW",
+    "model": "gpt-3.5-turbo-0613",
+    "object": "chat.completion",
+    "usage": {
+        "completion_tokens": 17,
+        "prompt_tokens": 57,
+        "total_tokens": 74
+    }
+}
+```
+
+### 获取离线内容生成接口(`/api/gpt/chat-task`)
+
+场景：用于处理生成内容过多、时间过长的问题
+
+请求内容：
+
+```json
+{
+    "businessId": 65730,
+    "systemContent": "",
+    "promptId": "789",
+    "userContent": ""
+}
+```
+
+返回内容：
+
+```json
+{
+    "businessId": 67423,
+    "gen_content": "", 
+    "code_content": [
+        {
+            "language": "",
+            "content": ""
+        },
+        {
+            "language": "",
+            "content": ""
+        }
+    ]
+}
+```
+
+这些接口允许对自然语言模型进行交互式或批量操作，并提供实时或离线的内容生成能力，以满足不同场景下的需求。
 
 ## 鸣谢
 
