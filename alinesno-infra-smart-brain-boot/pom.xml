@@ -38,7 +38,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-api</artifactId>
+			<artifactId>alinesno-infra-smart-brain-gateway</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>

@@ -10,7 +10,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>alinesno-infra-smart-brain-api</artifactId>
+	<artifactId>alinesno-infra-smart-brain-gateway</artifactId>
 	<packaging>jar</packaging>
 
 	<dependencies>
