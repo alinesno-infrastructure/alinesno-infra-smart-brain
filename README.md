@@ -23,20 +23,7 @@ Brain服务提供了一组接口用于生成和处理自然语言内容，基于
 - 执行服务每个服务在`adapter`里面进一步添加模板解析的能力来调用本服务，来进行多方的适配管理(DDD的概念)
 - 处理完成之后，数据还有其它统一进入到数据仓库里面，为后期的专家服务提供知识来源，同时也是向量仓数据来源之一(注意是之一)
 
-## API
-
-
-## 知识库管理
-
-- `POST /knowledge_base/rebuild_vectors`: 根据文档内容重新构建向量库，并以流式输出处理进度
-- `GET /knowledge_base/list_knowledge_bases`: 获取知识库列表
-- `POST /knowledge_base/create_knowledge_base`: 创建知识库
-- `POST /knowledge_base/delete_knowledge_base`: 删除知识库
-- `GET /knowledge_base/list_docs`: 获取知识库内文件列表
-- `POST /knowledge_base/upload_doc`: 将文件上传至知识库
-- `POST /knowledge_base/delete_doc`: 删除知识库内指定文件
-- `POST /knowledge_base/update_doc`: 更新现有文件至知识库
-
+ 
 ## 推理接口使用
 
 以下是使用Java进行接口调用的示例：
@@ -197,6 +184,20 @@ GptChatContent gptChatContent;
 ```
 
 这些接口允许对自然语言模型进行交互式或批量操作，并提供实时或离线的内容生成能力，以满足不同场景下的需求。
+
+### 知识库管理
+
+> 待完善
+
+- `POST /knowledge_base/rebuild_vectors`: 根据文档内容重新构建向量库，并以流式输出处理进度
+- `GET /knowledge_base/list_knowledge_bases`: 获取知识库列表
+- `POST /knowledge_base/create_knowledge_base`: 创建知识库
+- `POST /knowledge_base/delete_knowledge_base`: 删除知识库
+- `GET /knowledge_base/list_docs`: 获取知识库内文件列表
+- `POST /knowledge_base/upload_doc`: 将文件上传至知识库
+- `POST /knowledge_base/delete_doc`: 删除知识库内指定文件
+- `POST /knowledge_base/update_doc`: 更新现有文件至知识库
+
 
 ## 鸣谢
 
