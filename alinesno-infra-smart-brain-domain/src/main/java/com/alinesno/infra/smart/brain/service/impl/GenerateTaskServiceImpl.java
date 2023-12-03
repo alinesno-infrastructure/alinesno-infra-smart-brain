@@ -1,19 +1,22 @@
 package com.alinesno.infra.smart.brain.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.mapper.GenerateTaskMapper;
 import com.alinesno.infra.smart.brain.scheduler.TaskProcessor;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -25,6 +28,16 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
     @Override
     public void commitTask(BrainTaskDto dto) {
+
+        // 判断业务ID是否存在
+        String bId = dto.getBusinessId() ;
+        Assert.notNull(bId , "业务ID为空") ;
+
+        LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
+        wrapper.eq(GenerateTaskEntity::getBusinessId , bId)  ;
+
+        long count = this.count(wrapper) ;
+        Assert.isTrue(count == 0 , "业务ID["+bId+"]已存在");
 
         GenerateTaskEntity entity = new GenerateTaskEntity() ;
         BeanUtils.copyProperties(dto , entity);
@@ -52,5 +65,24 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         queryWrapper.lambda().in(GenerateTaskEntity::getTaskStatus, TaskStatus.QUEUED.getValue(), TaskStatus.RUNNING.getValue(), TaskStatus.FAILED.getValue());
 
         return list(queryWrapper);
+    }
+
+    @Override
+    public TaskContentDto getContentByBusinessId(String businessId) {
+
+        LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
+        wrapper.eq(GenerateTaskEntity::getBusinessId , businessId)  ;
+
+        GenerateTaskEntity generateTask = this.getOne(wrapper) ;
+
+        TaskContentDto dto = new TaskContentDto() ;
+        dto.setBusinessId(businessId);
+        dto.setGenContent(generateTask.getAssistantContent());
+
+        // TODO 解析代码
+        List<TaskContentDto.CodeContent> codeContents = new ArrayList<>() ;
+        dto.setCodeContent(codeContents);
+
+        return dto ;
     }
 }

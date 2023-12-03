@@ -1,12 +1,11 @@
-package com.alinesno.infra.smart.brain.api.controller;
+package com.alinesno.infra.smart.brain.gateway.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
-import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
-import io.swagger.annotations.Api;
+import com.alinesno.infra.smart.brain.entity.AccountRecordEntity;
+import com.alinesno.infra.smart.brain.service.IAccountRecordService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -26,14 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
  * @version 1.0.0
  */
 @Slf4j
-@Api(tags = "BusinessLog")
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/generateTask")
-public class GenerateTaskController extends BaseController<GenerateTaskEntity, IGenerateTaskService> {
+@RequestMapping("/api/infra/smart/brain/accountRecord")
+public class AccountRecordController extends BaseController<AccountRecordEntity, IAccountRecordService> {
 
     @Autowired
-    private IGenerateTaskService service;
+    private IAccountRecordService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -51,7 +49,7 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
     }
 
     @Override
-    public IGenerateTaskService getFeign() {
+    public IAccountRecordService getFeign() {
         return this.service;
     }
 }

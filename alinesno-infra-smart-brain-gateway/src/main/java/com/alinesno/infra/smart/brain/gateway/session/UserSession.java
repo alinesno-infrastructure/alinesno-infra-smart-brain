@@ -1,4 +1,4 @@
-package com.alinesno.infra.smart.brain.api.session;
+package com.alinesno.infra.smart.brain.gateway.session;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;

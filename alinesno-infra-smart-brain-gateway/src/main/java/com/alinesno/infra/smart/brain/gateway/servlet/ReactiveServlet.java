@@ -1,10 +1,10 @@
-package com.alinesno.infra.smart.brain.api.servlet;
-
+package com.alinesno.infra.smart.brain.gateway.servlet;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.brain.api.dto.ChatRequestDto;
 import com.alinesno.infra.smart.brain.api.reponse.ChatResponseDto;
-import com.alinesno.infra.smart.brain.service.IChatgptApiService;
+import com.alinesno.infra.smart.brain.gateway.utils.ChatUtils;
+import com.alinesno.infra.smart.brain.service.ILLMApiService;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
 import com.plexpt.chatgpt.entity.chat.Message;
 import jakarta.servlet.AsyncContext;
@@ -13,14 +13,13 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
@@ -29,21 +28,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * GPT响应配置
  * @author luoxiaodong
  * @version 1.0.0
  */
-@WebServlet(urlPatterns = "/api/chat-process", asyncSupported = true )
+@Slf4j
+@WebServlet(urlPatterns = "/api/llm/chatProcess", asyncSupported = true )
 public class ReactiveServlet extends HttpServlet {
-	
-	private static final Logger log = LoggerFactory.getLogger(ReactiveServlet.class);
 
 	@Autowired
-	private IChatgptApiService chatgptApiService;
-	
+	private ILLMApiService llmApiService ;
+
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse resp) throws IOException {
 		
@@ -67,27 +64,9 @@ public class ReactiveServlet extends HttpServlet {
 		
 		Flux<Object> flux = Flux.create(emitter -> {
 
-			Message systemMessage = Message
-					.builder()
-					.role(Message.Role.SYSTEM.getValue())
-					.content(chatRequestDto.getSystemMessage())
-					.build();
+			ChatCompletion chatCompletion = ChatUtils.convert(chatRequestDto) ;
 
-			Message message = Message
-					.builder()
-					.role(Message.Role.USER.getValue())
-					.content(chatRequestDto.getPrompt())
-					.build();
-
-			ChatCompletion chatCompletion = ChatCompletion
-					.builder()
-					.messages(List.of(systemMessage , message))
-					.temperature(chatRequestDto.getTemperature())
-					.maxTokens(chatRequestDto.getTokens())
-					.topP(chatRequestDto.getTop_p())
-					.build();
-
-			chatgptApiService.getClient().streamChatCompletion(chatCompletion, new EventSourceListener() {
+			llmApiService.getClient().streamChatCompletion(chatCompletion, new EventSourceListener() {
 			
 				String contentText = "" ; 
 				

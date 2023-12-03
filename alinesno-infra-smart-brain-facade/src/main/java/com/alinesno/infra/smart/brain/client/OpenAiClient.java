@@ -4,10 +4,9 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.ContentType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import okhttp3.*;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import okhttp3.sse.EventSources;
@@ -25,15 +24,17 @@ import java.util.concurrent.TimeUnit;
  * @author luoxiaodong
  * @version 1.0.0
  */
-public class ChatGPTOpenAiStreamClient {
+@NoArgsConstructor
+public class OpenAiClient {
 
-    private static final Logger log = LoggerFactory.getLogger(ChatGPTOpenAiStreamClient.class) ;
+    private static final Logger log = LoggerFactory.getLogger(OpenAiClient.class) ;
 
     private String apiKey;
+
     /**
      * 自定义api host使用builder的方式构造client
      */
-    private String apiHost ; //  = OpenAIConst.OPENAI_HOST;
+    private String apiHost ;
 
     private OkHttpClient okHttpClient;
     /**
@@ -53,6 +54,7 @@ public class ChatGPTOpenAiStreamClient {
      */
     private Proxy proxy;
 
+
     /**
      * 创建OpenAiClient，自定义OkHttpClient
      *
@@ -62,7 +64,7 @@ public class ChatGPTOpenAiStreamClient {
      * @param readTimeout    超时 单位秒
      * @param proxy          代理
      */
-    public ChatGPTOpenAiStreamClient(String apiKey, long connectTimeout, long writeTimeout, long readTimeout, Proxy proxy) {
+    public OpenAiClient(String apiKey, long connectTimeout, long writeTimeout, long readTimeout, Proxy proxy) {
         this.apiKey = apiKey;
         this.connectTimeout = connectTimeout;
         this.writeTimeout = writeTimeout;
@@ -79,7 +81,7 @@ public class ChatGPTOpenAiStreamClient {
      * @param writeTimeout   写超时 单位秒
      * @param readTimeout    超时 单位秒
      */
-    public ChatGPTOpenAiStreamClient(String apiKey, long connectTimeout, long writeTimeout, long readTimeout) {
+    public OpenAiClient(String apiKey, long connectTimeout, long writeTimeout, long readTimeout) {
         this.apiKey = apiKey;
         this.connectTimeout = connectTimeout;
         this.writeTimeout = writeTimeout;
@@ -93,7 +95,7 @@ public class ChatGPTOpenAiStreamClient {
      *
      * @param apiKey key
      */
-    public ChatGPTOpenAiStreamClient(String apiKey) {
+    public OpenAiClient(String apiKey) {
         this.apiKey = apiKey;
         this.okHttpClient(30, 30, 30, null);
     }
@@ -105,21 +107,17 @@ public class ChatGPTOpenAiStreamClient {
      * @param apiKey key
      * @param proxy  网络代理
      */
-    public ChatGPTOpenAiStreamClient(String apiKey, Proxy proxy) {
+    public OpenAiClient(String apiKey, Proxy proxy) {
         this.apiKey = apiKey;
         this.proxy = proxy;
         this.okHttpClient(30, 30, 30, proxy);
     }
 
-    private ChatGPTOpenAiStreamClient(Builder builder) {
+    private OpenAiClient(Builder builder) {
         if (StrUtil.isBlank(builder.apiKey)) {
             throw new RuntimeException();
         }
         apiKey = builder.apiKey;
-
-//        if (StrUtil.isBlank(builder.apiHost)) {
-//            builder.apiHost ; // = OpenAIConst.OPENAI_HOST;
-//        }
 
         apiHost = builder.apiHost;
 
@@ -159,19 +157,6 @@ public class ChatGPTOpenAiStreamClient {
     @SuppressWarnings({ "deprecation", "unused" })
 	public void streamCompletions(Completion completion, EventSourceListener eventSourceListener) {
 
-//        if (Objects.isNull(eventSourceListener)) {
-//            log.error("参数异常：EventSourceListener不能为空，可以参考：com.unfbx.chatgpt.sse.ConsoleEventSourceListener");
-//            throw new BaseException(CommonError.PARAM_ERROR);
-//        }
-
-//        if (StrUtil.isBlank(completion.getPrompt())) {
-//            log.error("参数异常：Prompt不能为空");
-//            throw new BaseException(CommonError.PARAM_ERROR);
-//        }
-//        if (!completion.isStream()) {
-//            completion.setStream(true);
-//        }
-
         try {
             EventSource.Factory factory = EventSources.createFactory(this.okHttpClient);
             ObjectMapper mapper = new ObjectMapper();
@@ -189,18 +174,30 @@ public class ChatGPTOpenAiStreamClient {
     }
 
     /**
-     * 问答接口-简易版
+     * 同步回答
      *
-     * @param question            请求参数
-     * @param eventSourceListener sse监听器
+     * @param completion
+     * @return
      */
-//    public void streamCompletions(String question, EventSourceListener eventSourceListener) {
-//        Completion q = Completion.builder()
-//                .prompt(question)
-//                .stream(true)
-//                .build();
-//        this.streamCompletions(q, eventSourceListener);
-//    }
+    @SuppressWarnings({ "deprecation", "unused" })
+    public Response chatCompletions(ChatCompletion completion) {
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            String requestBody = mapper.writeValueAsString(completion);
+            Request request = new Request.Builder()
+                    .url(this.apiHost + "v1/chat/completions")
+                    .post(RequestBody.create(MediaType.parse(ContentType.JSON.getValue()), requestBody))
+                    .header("Authorization", "Bearer " + this.apiKey)
+                    .build();
+
+            return this.okHttpClient.newCall(request).execute() ;
+
+        } catch (Exception e) {
+            log.error("请求参数解析异常：{0}", e);
+        }
+        return null;
+    }
 
     /**
      * 流式输出，最新版的GPT-3.5 chat completion 更加贴近官方网站的问答模型
@@ -212,11 +209,6 @@ public class ChatGPTOpenAiStreamClient {
 	public void streamChatCompletion(ChatCompletion chatCompletion, EventSourceListener eventSourceListener) {
 
         log.debug("open host = {} , key = {}" , apiHost , apiKey);
-
-//        if (Objects.isNull(eventSourceListener)) {
-//            log.error("参数异常：EventSourceListener不能为空，可以参考：com.unfbx.chatgpt.sse.ConsoleEventSourceListener");
-//            throw new BaseException(CommonError.PARAM_ERROR);
-//        }
 
         if (!chatCompletion.isStream()) {
             chatCompletion.setStream(true);
@@ -233,86 +225,25 @@ public class ChatGPTOpenAiStreamClient {
                     .post(RequestBody.create(MediaType.parse(ContentType.JSON.getValue()), requestBody))
                     .header("Authorization", "Bearer " + apiKey)
                     .build();
-            
+
             //创建事件
             EventSource eventSource = factory.newEventSource(request, eventSourceListener);
-            
+
         } catch (Exception e) {
             log.error("请求参数解析异常：{0}", e);
         }
     }
 
     /**
-     * 流式输出，最新版的GPT-3.5 chat completion 更加贴近官方网站的问答模型
-     *
-     * @param messages            问答列表
-     * @param eventSourceListener sse监听器
-     * @see ConsoleEventSourceListener
-     */
-//    public void streamChatCompletion(List<Message> messages, EventSourceListener eventSourceListener) {
-//        ChatCompletion chatCompletion = ChatCompletion.builder()
-//                .messages(messages)
-//                .stream(true)
-//                .build();
-//        this.streamChatCompletion(chatCompletion, eventSourceListener);
-//    }
-
-    /**
-     * OpenAi账户余额查询
-     *
-     * @return 余额信息
-     */
-//    @SneakyThrows
-//    @SuppressWarnings("rawtypes")
-//    public CreditGrantsResponse creditGrants() {
-//
-//        Request request = new Request.Builder()
-//                .url(this.apiHost + "dashboard/billing/credit_grants")
-//                .header(Header.AUTHORIZATION.getValue(), "Bearer " + this.apiKey)
-//        	    .build();
-//
-//        log.debug("okHttpClient = {}" , this.okHttpClient) ;
-//
-//		Response response = this.okHttpClient.newCall(request).execute();
-//
-//        assert response.body() != null;
-//
-//        String body = response.body().string() ;
-//        log.info("调用查询余额请求返回值：{}", body);
-//
-//        if (!response.isSuccessful()) {
-//            if (response.code() == CommonError.OPENAI_AUTHENTICATION_ERROR.code()
-//                    || response.code() == CommonError.OPENAI_LIMIT_ERROR.code()
-//                    || response.code() == CommonError.OPENAI_SERVER_ERROR.code()) {
-//
-//                OpenAiResponse openAiResponse = JSONUtil.toBean(body, OpenAiResponse.class);
-//                log.error(openAiResponse.getError().getMessage());
-//
-//                throw new BaseException(openAiResponse.getError().getMessage());
-//            }
-//            String errorMsg = response.body().string();
-//            log.error("询余额请求异常：{}", errorMsg);
-//            OpenAiResponse openAiResponse = JSONUtil.toBean(errorMsg, OpenAiResponse.class);
-//            if (Objects.nonNull(openAiResponse.getError())) {
-//                log.error(openAiResponse.getError().getMessage());
-//                throw new BaseException(openAiResponse.getError().getMessage());
-//            }
-//            throw new BaseException(CommonError.RETRY_ERROR);
-//        }
-//        ObjectMapper mapper = new ObjectMapper();
-//        // 读取Json 返回值
-//        return mapper.readValue(body, CreditGrantsResponse.class);
-//    }
-
-    /**
      * 构造
      *
      * @return
      */
-    public static ChatGPTOpenAiStreamClient.Builder builder() {
-        return new ChatGPTOpenAiStreamClient.Builder();
+    public static OpenAiClient.Builder builder() {
+        return new OpenAiClient.Builder();
     }
 
+    @Data
     public static final class Builder {
         private @NotNull String apiKey;
         /**
@@ -326,7 +257,6 @@ public class ChatGPTOpenAiStreamClient {
         private Proxy proxy;
 
         public Builder() {
-            apiKey = null;
         }
 
         public Builder apiKey(@NotNull String val) {
@@ -363,36 +293,8 @@ public class ChatGPTOpenAiStreamClient {
             return this;
         }
 
-        public ChatGPTOpenAiStreamClient build() {
-            return new ChatGPTOpenAiStreamClient(this);
+        public OpenAiClient build() {
+            return new OpenAiClient(this);
         }
-    }
-
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public void setApiHost(String apiHost) {
-        this.apiHost = apiHost;
-    }
-
-    public void setOkHttpClient(OkHttpClient okHttpClient) {
-        this.okHttpClient = okHttpClient;
-    }
-
-    public void setConnectTimeout(long connectTimeout) {
-        this.connectTimeout = connectTimeout;
-    }
-
-    public void setWriteTimeout(long writeTimeout) {
-        this.writeTimeout = writeTimeout;
-    }
-
-    public void setReadTimeout(long readTimeout) {
-        this.readTimeout = readTimeout;
-    }
-
-    public void setProxy(Proxy proxy) {
-        this.proxy = proxy;
     }
 }

@@ -4,19 +4,16 @@ import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.util.stream.Stream;
 
@@ -33,13 +30,13 @@ public class BrainTaskControllerTest {
     @Mock
     private IGenerateTaskService generateTaskService;
 
-    @BeforeEach
-    public void setup() {
-        // 初始化Mockito注解
-        MockitoAnnotations.openMocks(this);
-        // 初始化MockMvc对象
-        mockMvc = MockMvcBuilders.standaloneSetup(new BrainTaskController(generateTaskService)).build();
-    }
+//    @BeforeEach
+//    public void setup() {
+//        // 初始化Mockito注解
+//        MockitoAnnotations.openMocks(this);
+//        // 初始化MockMvc对象
+//        mockMvc = MockMvcBuilders.standaloneSetup(new BrainTaskController(generateTaskService)).build();
+//    }
 
     @ParameterizedTest
     @MethodSource("provideBrainTaskDto")

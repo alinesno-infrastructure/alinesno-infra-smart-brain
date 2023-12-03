@@ -1,21 +1,22 @@
-package com.alinesno.infra.smart.brain.api.controller;
+package com.alinesno.infra.smart.brain.gateway.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.AccountRecordEntity;
-import com.alinesno.infra.smart.brain.service.IAccountRecordService;
+import com.alinesno.infra.smart.brain.entity.ApplicationEntity;
+import com.alinesno.infra.smart.brain.service.IApplicationService;
+import com.baomidou.mybatisplus.core.toolkit.IdWorker;
+import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -27,11 +28,11 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/accountRecord")
-public class AccountRecordController extends BaseController<AccountRecordEntity, IAccountRecordService> {
+@RequestMapping("/api/infra/smart/brain/application")
+public class ApplicationController extends BaseController<ApplicationEntity , IApplicationService> {
 
     @Autowired
-    private IAccountRecordService service;
+    private IApplicationService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -49,7 +50,14 @@ public class AccountRecordController extends BaseController<AccountRecordEntity,
     }
 
     @Override
-    public IAccountRecordService getFeign() {
+    public AjaxResult save(Model model ,  @RequestBody ApplicationEntity entity) throws Exception {
+       entity.setAppKey(IdWorker.getIdStr());
+       entity.setHasStatus(HasStatusEnums.LEGAL.value);
+       return super.save(model , entity) ;
+    }
+
+    @Override
+    public IApplicationService getFeign() {
         return this.service;
     }
 }

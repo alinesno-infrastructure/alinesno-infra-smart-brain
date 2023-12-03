@@ -1,10 +1,11 @@
-package com.alinesno.infra.smart.brain.api.controller;
+package com.alinesno.infra.smart.brain.gateway.controller;
 
+import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.VectorDatasetEntity;
-import com.alinesno.infra.smart.brain.service.IVectorDatasetService;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -18,30 +19,29 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * 应用构建Controller
- * 处理与ApplicationEntity相关的请求
- * 继承自BaseController类并实现IApplicationService接口
- * 
+ * 处理与BusinessLogEntity相关的请求的Controller。
+ * 继承自BaseController类并实现IBusinessLogService接口。
+ *
+ * @author luoxiaodong
  * @version 1.0.0
- * @since 2023-09-30
  */
 @Slf4j
-@Api(tags = "VectorDataset")
+@Api(tags = "BusinessLog")
 @RestController
-@Scope("prototype")
-@RequestMapping("/api/infra/smart/brain/vectorDataset")
-public class VectorDatasetController extends BaseController<VectorDatasetEntity, IVectorDatasetService> {
+@Scope(SpringInstanceScope.PROTOTYPE)
+@RequestMapping("/api/infra/smart/brain/generateTask")
+public class GenerateTaskController extends BaseController<GenerateTaskEntity, IGenerateTaskService> {
 
     @Autowired
-    private IVectorDatasetService service;
+    private IGenerateTaskService service;
 
     /**
-     * 获取ApplicationEntity的DataTables数据
-     * 
-     * @param request HttpServletRequest对象
-     * @param model Model对象
-     * @param page DatatablesPageBean对象
-     * @return 包含DataTables数据的TableDataInfo对象
+     * 获取BusinessLogEntity的DataTables数据。
+     *
+     * @param request HttpServletRequest对象。
+     * @param model Model对象。
+     * @param page DatatablesPageBean对象。
+     * @return 包含DataTables数据的TableDataInfo对象。
      */
     @ResponseBody
     @PostMapping("/datatables")
@@ -51,7 +51,8 @@ public class VectorDatasetController extends BaseController<VectorDatasetEntity,
     }
 
     @Override
-    public IVectorDatasetService getFeign() {
+    public IGenerateTaskService getFeign() {
         return this.service;
     }
 }
+

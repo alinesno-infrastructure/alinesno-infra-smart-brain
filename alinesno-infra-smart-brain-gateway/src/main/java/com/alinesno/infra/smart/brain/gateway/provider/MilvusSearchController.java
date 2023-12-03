@@ -1,4 +1,4 @@
-package com.alinesno.infra.smart.brain.api.provider;
+package com.alinesno.infra.smart.brain.gateway.provider;
 
 import com.alinesno.infra.smart.brain.vector.service.IMilvusSearchService;
 import org.springframework.beans.factory.annotation.Autowired;

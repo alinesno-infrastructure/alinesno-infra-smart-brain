@@ -10,12 +10,11 @@ import com.plexpt.chatgpt.entity.chat.ChatChoice;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
 import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
 import com.plexpt.chatgpt.entity.chat.Message;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -27,10 +26,9 @@ import java.util.List;
 /**
  * 文件处理服务接口的实现类
  */
+@Slf4j
 @Service
 public class FileProcessingServiceImpl implements IFileProcessingService {
-
-    private static final Logger log = LoggerFactory.getLogger(FileProcessingServiceImpl.class) ;
 
     @Value("${alinesno.infra.smart.brain.openapi.key:}")
     private String apiKey;
