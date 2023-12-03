@@ -27,12 +27,12 @@
         <module>alinesno-infra-smart-brain-inference</module>  <!-- 推荐服务 -->
         <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
         <module>alinesno-infra-smart-brain-adapter</module> <!-- 适配层 -->
-        <module>alinesno-infra-smart-brain-api</module>  <!-- 接口服务 -->
+        <module>alinesno-infra-smart-brain-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-brain-client</module>  <!-- 对外引用 -->
         <module>alinesno-infra-smart-brain-boot</module>  <!-- 启动服务 -->
 
         <!-- 前端服务
-        <module>alinesno-infra-smart-brain-admin</module>
+        <module>alinesno-infra-smart-brain-ui</module>
         -->
     </modules>
 
