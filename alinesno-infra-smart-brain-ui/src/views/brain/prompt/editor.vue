@@ -19,7 +19,7 @@
       </div>
       <el-input type="textarea" :rows="10" v-model="inputText" placeholder="输入对话信息" class="input-text"></el-input>
 
-      <el-button @click="addMessage" class="add-button">添加信息</el-button>
+      <el-button @click="addMessage" class="add-button">添加对话</el-button>
 
       <div v-for="(message, index) in messages" :key="index" class="message">
         <div class="message-content">
@@ -76,7 +76,7 @@ function addMessage() {
   console.log('current post id = '  + props.currentPostId);
 
   messages.value.push({ role: selectedRole.value, content: inputText.value });
-  messages = ref([])
+  // messages = ref([])
   inputText.value = "";
 }
 
@@ -95,7 +95,9 @@ function saveJson() {
 
 function handlePromptContent(){
   getPromptContent(props.currentPostId).then(response => {
-    messages.value = response.data ;
+    if(response.data){
+      messages.value = response.data ;
+    }
   })
 }
 
