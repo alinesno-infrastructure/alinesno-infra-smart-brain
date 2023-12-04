@@ -109,8 +109,8 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	 * 对外
 	 */
 	@Excel(name="对外")
-	@TableField("to_ping")
-	@ColumnType(length=5)
+	@TableField("to_pin")
+	@ColumnType(length=10)
 	@ColumnComment("对外")
-	private String toPing;
+	private String toPin;
 }

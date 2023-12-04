@@ -21,7 +21,18 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
-    downloadfile: prefix + "downloadfile"
+    downloadfile: prefix + "downloadfile",
+    updatePromptContent: prefix + "updatePromptContent",
+    getPromptContent: prefix + "getPromptContent",
+}
+
+// 列新PromptContent 
+export function updatePromptContent(data , postId) {
+  return request({
+    url: managerUrl.updatePromptContent + '?postId=' + postId,
+    method: 'post',
+    data: data
+  })
 }
 
 // 查询数据库列表
@@ -30,6 +41,14 @@ export function listPrompt(query) {
     url: managerUrl.datatables ,
     method: 'post',
     params: query
+  })
+}
+
+// 获取PromptContent内容  
+export function getPromptContent(postId) {
+  return request({
+    url: managerUrl.getPromptContent+ '?postId=' + parseStrEmpty(postId),
+    method: 'get'
   })
 }
 

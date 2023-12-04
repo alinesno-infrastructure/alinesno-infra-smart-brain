@@ -1,65 +1,161 @@
 <template>
-  <Codemirror
-    v-model:value="code"
-    :options="cmOptions"
-    border
-    ref="cmRef"
-    height="500"
-    width="800"
-    @change="onChange"
-    @input="onInput"
-    @ready="onReady"
-  >
-  </Codemirror>
+  <div class="chat-container">
+    <div class="main-content">
+
+      <div class="sidebar">
+        <el-select
+          v-model="selectedRole"
+          placeholder="选择角色"
+          class="role-select"
+          @change="handleRoleChange"
+        >
+          <el-option
+            v-for="role in roles"
+            :key="role.value"
+            :label="role.label"
+            :value="role.value"
+          ></el-option>
+        </el-select>
+      </div>
+      <el-input type="textarea" :rows="10" v-model="inputText" placeholder="输入对话信息" class="input-text"></el-input>
+
+      <el-button @click="addMessage" class="add-button">添加信息</el-button>
+
+      <div v-for="(message, index) in messages" :key="index" class="message">
+        <div class="message-content">
+          <el-select v-model="message.role" placeholder="选择角色" class="message-role-select">
+            <el-option
+              v-for="role in roles"
+              :key="role.value"
+              :label="role.label"
+              :value="role.value"
+            ></el-option>
+          </el-select>
+          <el-input type="textarea" :rows="1" v-model="message.content" placeholder="输入对话信息" class="message-input-text"></el-input>
+        </div>
+        <el-button @click="deleteMessage(index)" type="danger" class="delete-button">删除</el-button>
+      </div>
+
+      <div class="dialog-footer">
+          <el-button type="primary" @click="saveJson" class="save-button">保存</el-button>
+      </div>
+
+    </div>
+  </div>
 </template>
-<script lang="ts" setup>
-  import { ref, onMounted, onUnmounted } from "vue"
-  import "codemirror/mode/markdown/markdown.js"
-  import Codemirror from "codemirror-editor-vue3"
-  import type { CmComponentRef } from "codemirror-editor-vue3"
-  import type { Editor, EditorConfiguration } from "codemirror"
 
-  const code = ref(
-    `var i = 0;
-for (; i < 9; i++) {
-    console.log(i);
-    // more statements
+<script setup>
+
+import {
+  updatePromptContent , 
+  getPromptContent , 
+} from "@/api/brain/smart/prompt";
+
+const props = defineProps({
+    currentPostId: {
+      type: String,
+      require: true,
+    },
+})
+
+const { proxy } = getCurrentInstance();
+const selectedRole = ref("")
+const inputText = ref("")
+const roles = ref([
+  { value: 'system', label: '系统(system)' },
+  { value: 'user', label: '用户(user)' },
+  { value: 'assistants', label: '助手(assistants)' }
+])
+const messages = ref([])
+
+function handleRoleChange() {
+  // 处理角色切换
 }
-`
-  )
-  const cmRef = ref<CmComponentRef>()
-  const cmOptions: EditorConfiguration = {
-    mode: "text/markdown"
-  }
 
-  const onChange = (val: string, cm: Editor) => {
-    console.log(val)
-    console.log(cm.getValue())
-  }
+function addMessage() {
+  console.log('current post id = '  + props.currentPostId);
 
-  const onInput = (val: string) => {
-    console.log(val)
-  }
+  messages.value.push({ role: selectedRole.value, content: inputText.value });
+  messages = ref([])
+  inputText.value = "";
+}
 
-  const onReady = (cm: Editor) => {
-    console.log(cm.focus())
-  }
+function deleteMessage(index) {
+  messages.value.splice(index, 1);
+}
 
-  onMounted(() => {
-    setTimeout(() => {
-      cmRef.value?.refresh()
-    }, 1000)
+function saveJson() {
+    const json = JSON.stringify(messages.value);
+    console.log(json);
 
-   //  setTimeout(() => {
-   //    cmRef.value?.resize(300, 200)
-   //  }, 2000)
+    updatePromptContent(json , props.currentPostId).then(response => {
+      proxy.$modal.msgSuccess("修改成功");
+    });
+}
 
-   //  setTimeout(() => {
-   //    cmRef.value?.cminstance.isClean()
-   //  }, 3000)
+function handlePromptContent(){
+  getPromptContent(props.currentPostId).then(response => {
+    messages.value = response.data ;
   })
+}
 
-  onUnmounted(() => {
-    cmRef.value?.destroy()
-  })
+handlePromptContent() ;
+
+console.log('message.value = ' + messages.value) ;
+
 </script>
+
+<style>
+.chat-container {
+  display: flex;
+  margin: 0 auto;
+}
+
+.sidebar {
+  flex: 1;
+}
+
+.main-content {
+  flex: 3;
+}
+
+.role-select {
+  margin-bottom: 10px;
+}
+
+.input-text {
+  margin-bottom: 10px;
+}
+
+.add-button {
+  margin-bottom: 20px;
+}
+
+.message-role-select {
+  margin-right: 20px;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.message-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.message-input-text {
+  flex: 1;
+}
+
+.delete-button {
+  margin-left: 10px;
+}
+
+.save-button {
+  margin-top: 20px;
+}
+</style>

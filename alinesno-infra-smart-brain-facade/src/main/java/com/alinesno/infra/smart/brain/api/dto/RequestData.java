@@ -10,7 +10,7 @@ public class RequestData {
 
     private String model;
     private long temperature ;
-    private List<PromptMessage> messages;
+    private List<PromptMessageDto> messages;
 
     public String toJson() {
         Gson gson = new Gson();
