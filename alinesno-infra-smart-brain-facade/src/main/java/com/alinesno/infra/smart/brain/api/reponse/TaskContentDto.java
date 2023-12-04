@@ -13,6 +13,11 @@ public class TaskContentDto {
     private String businessId;
 
     /**
+     * 任务状态
+     */
+    private int taskStatus ;
+
+    /**
      * 生成内容
      */
     private String genContent;
@@ -34,6 +39,11 @@ public class TaskContentDto {
          * 代码内容
          */
         private String content;
+
+        public CodeContent(String language , String content){
+            this.language = language ;
+            this.content = content ;
+        }
 
     }
 

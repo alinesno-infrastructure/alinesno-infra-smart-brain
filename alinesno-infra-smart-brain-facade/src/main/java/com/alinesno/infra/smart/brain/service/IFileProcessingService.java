@@ -1,8 +1,6 @@
 package com.alinesno.infra.smart.brain.service;// FileProcessingService.java
-import com.alinesno.infra.smart.brain.api.BrainTaskDto;
-import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 
-import java.util.concurrent.CompletableFuture;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 
 /**
  * 文件处理服务接口

@@ -6,6 +6,7 @@ import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.mapper.PromptPostsMapper;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import com.alinesno.infra.smart.brain.utils.PromptUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,9 +38,18 @@ public class PromptPostsServiceImpl extends IBaseServiceImpl<PromptPostsEntity, 
     public void savePromptPost(PromptPostsEntity entity) {
 
         // 生成调用唯一码
-        entity.setToPin(PromptUtils.generateShortUuid());
+        entity.setPromptId(PromptUtils.generateShortUuid());
 
         this.save(entity) ;
+    }
+
+    @Override
+    public PromptPostsEntity getByPromptId(String promptId) {
+
+        LambdaQueryWrapper<PromptPostsEntity> wrapper = new LambdaQueryWrapper<>() ;
+        wrapper.eq(PromptPostsEntity::getPromptId, promptId) ;
+
+        return this.getOne(wrapper);
     }
 
 }

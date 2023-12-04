@@ -26,4 +26,12 @@ public interface IPromptPostsService extends IBaseService<PromptPostsEntity> {
      * @param entity
      */
     void savePromptPost(PromptPostsEntity entity);
+
+    /**
+     * 通过Pin码查询实体信息
+     * @param promptId
+     * @return
+     */
+    PromptPostsEntity getByPromptId(String promptId);
+
 }

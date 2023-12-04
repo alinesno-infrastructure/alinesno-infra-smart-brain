@@ -1,10 +1,14 @@
 package com.alinesno.infra.smart.brain.inference.llm.chatgpt;// FileProcessingServiceImpl.java
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.inference.event.ChatEventPublisher;
 import com.alinesno.infra.smart.brain.inference.event.TaskEvent;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
+import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import com.plexpt.chatgpt.ChatGPTStream;
 import com.plexpt.chatgpt.entity.chat.ChatChoice;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
@@ -20,7 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,6 +48,9 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
     @Autowired
     private ChatEventPublisher chatEventPublisher ;
 
+    @Autowired
+    private IPromptPostsService promptPostsService ;
+
     /**
      * 实现处理文件的方法
      * @param dto 文件路径
@@ -53,24 +60,13 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
     @Async
     public void processFile(GenerateTaskEntity dto) {
 
-        String systemMessage = dto.getSystemContent() ;
-        String userMessage = dto.getUserContent() ;
+        initClient() ;
 
-        if(chatGPTStream == null){
-            chatGPTStream = ChatGPTStream.builder()
-                    .timeout(600)
-                    .apiKey(apiKey)
-                    .apiHost(apiHost)
-                    .build()
-                    .init();
-        }
-
-        Message system = Message.ofSystem(systemMessage.trim());
-        Message message = Message.of(userMessage.trim());
+        List<Message> messages = getMessages(dto);
 
         ChatCompletion chatCompletion = ChatCompletion.builder()
                 .model(ChatCompletion.Model.GPT_3_5_TURBO.getName())
-                .messages(Arrays.asList(system, message))
+                .messages(messages)
                 .temperature(0.5)
                 .build();
 
@@ -117,6 +113,50 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 }
             }
         });
+    }
+
+    @NotNull
+    private List<Message> getMessages(GenerateTaskEntity dto) {
+
+        String promptId = dto.getPromptId() ;
+        log.debug("promptId = {}" , promptId);
+
+        PromptPostsEntity postsEntity = promptPostsService.getByPromptId(promptId) ;
+        List<PromptMessageDto> promptMessageList = JSONArray.parseArray(postsEntity.getPromptContent() , PromptMessageDto.class) ;
+
+        List<Message> messages = new ArrayList<>() ;
+
+        for(PromptMessageDto msg : promptMessageList){
+            Message message = null ;
+
+            if(Message.Role.SYSTEM.getValue().equals(msg.getRole())){
+                message = Message.ofSystem(msg.getContent().trim());
+            }else if(Message.Role.ASSISTANT.getValue().equals(msg.getRole())){
+                message = Message.ofAssistant(msg.getContent().trim());
+            }else if(Message.Role.USER.getValue().equals(msg.getRole())){
+                message = Message.of(msg.getContent().trim());
+            }
+
+            if(message != null){
+                messages.add(message) ;
+            }
+
+        }
+
+        log.debug("message = {}", messages.toString());
+
+        return messages;
+    }
+
+    private void initClient(){
+        if(chatGPTStream == null){
+            chatGPTStream = ChatGPTStream.builder()
+                    .timeout(4500)
+                    .apiKey(apiKey)
+                    .apiHost(apiHost)
+                    .build()
+                    .init();
+        }
     }
 
 }

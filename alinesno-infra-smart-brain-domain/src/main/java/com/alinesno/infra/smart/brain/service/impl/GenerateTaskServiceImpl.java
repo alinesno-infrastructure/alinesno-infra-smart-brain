@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.mapper.GenerateTaskMapper;
 import com.alinesno.infra.smart.brain.scheduler.TaskProcessor;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -75,12 +75,14 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
         GenerateTaskEntity generateTask = this.getOne(wrapper) ;
 
+        // 封装成DTO类对象
         TaskContentDto dto = new TaskContentDto() ;
+
+        dto.setTaskStatus(generateTask.getTaskStatus());
         dto.setBusinessId(businessId);
         dto.setGenContent(generateTask.getAssistantContent());
 
-        // TODO 解析代码
-        List<TaskContentDto.CodeContent> codeContents = new ArrayList<>() ;
+        List<TaskContentDto.CodeContent> codeContents = CodeBlockParser.parseCodeBlocks(generateTask.getAssistantContent())  ;
         dto.setCodeContent(codeContents);
 
         return dto ;

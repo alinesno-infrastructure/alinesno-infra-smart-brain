@@ -22,4 +22,5 @@ public class BrainTaskDto {
     private String promptId; // GPT角色ID
     private String systemContent; // GPT角色设定
     private String userContent; // GPT用户信息
+
 }

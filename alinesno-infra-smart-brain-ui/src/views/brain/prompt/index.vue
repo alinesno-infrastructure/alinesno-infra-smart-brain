@@ -49,7 +49,7 @@
                         {{ scope.row.promptName }}
                      </div>
                      <div style="font-size: 13px;color: #a5a5a5;">
-                        会话次数: 12734  调用码: {{ scope.row.toPin }}
+                        会话次数: 12734  调用码: {{ scope.row.promptId }}
                      </div>
                   </template>
                </el-table-column>
