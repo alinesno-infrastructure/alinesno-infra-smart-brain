@@ -97,10 +97,10 @@ function saveJson() {
 
 function handlePromptContent(){
   getPromptContent(props.currentPostId).then(response => {
-    loading.value = false ;
     if(response.data){
       messages.value = response.data ;
     }
+    loading.value = false ;
   })
 }
 
