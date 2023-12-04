@@ -310,7 +310,7 @@ function handleUpdate(row) {
 function submitForm() {
    proxy.$refs["databaseRef"].validate(valid => {
       if (valid) {
-         if (form.value.PromptId != undefined) {
+         if (form.value.id != undefined) {
             updatePrompt(form.value).then(response => {
                proxy.$modal.msgSuccess("修改成功");
                open.value = false;
