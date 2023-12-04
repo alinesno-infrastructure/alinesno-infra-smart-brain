@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.mapper.GenerateTaskMapper;
 import com.alinesno.infra.smart.brain.scheduler.TaskProcessor;
+import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -14,6 +15,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -25,6 +27,12 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
     @Autowired
     private TaskProcessor taskProcessor ;
+
+    @Autowired
+    private IFileProcessingService fileProcessingService ;
+
+    @Autowired
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor ;
 
     @Override
     public void commitTask(BrainTaskDto dto) {
@@ -46,7 +54,13 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
         this.save(entity) ;
 
-        taskProcessor.addTaskToDisruptor(entity);
+        // 执行项目生成
+        threadPoolTaskExecutor.execute(new Runnable() {
+            @Override
+            public void run() {
+                fileProcessingService.processFile(entity);
+            }
+        });
     }
 
     @Override
