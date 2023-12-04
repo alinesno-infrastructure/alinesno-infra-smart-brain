@@ -10,6 +10,7 @@ import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,10 +61,10 @@ public class PromptPostsController extends BaseController<PromptPostsEntity, IPr
      *
      * @return
      */
+    @SneakyThrows
     @GetMapping("/getPromptContent")
     public AjaxResult getPromptContent(String postId){
         PromptPostsEntity e = service.getById(postId)  ;
-
         List<PromptMessageDto> prompts = JSONArray.parseArray(e.getPromptContent() , PromptMessageDto.class) ;
 
         return AjaxResult.success(prompts) ;

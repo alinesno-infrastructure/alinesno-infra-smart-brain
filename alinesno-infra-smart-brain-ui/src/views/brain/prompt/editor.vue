@@ -1,5 +1,5 @@
 <template>
-  <div class="chat-container">
+  <div class="chat-container" v-loading="loading">
     <div class="main-content">
 
       <div class="sidebar">
@@ -59,6 +59,8 @@ const props = defineProps({
 })
 
 const { proxy } = getCurrentInstance();
+
+const loading = ref(true)
 const selectedRole = ref("")
 const inputText = ref("")
 const roles = ref([
@@ -95,6 +97,7 @@ function saveJson() {
 
 function handlePromptContent(){
   getPromptContent(props.currentPostId).then(response => {
+    loading.value = false ;
     if(response.data){
       messages.value = response.data ;
     }
