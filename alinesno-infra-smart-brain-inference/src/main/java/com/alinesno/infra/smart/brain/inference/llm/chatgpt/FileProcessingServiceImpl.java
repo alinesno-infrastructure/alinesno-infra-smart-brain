@@ -2,13 +2,17 @@ package com.alinesno.infra.smart.brain.inference.llm.chatgpt;// FileProcessingSe
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
+import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.inference.event.ChatEventPublisher;
-import com.alinesno.infra.smart.brain.inference.event.TaskEvent;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
+import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
 import com.plexpt.chatgpt.ChatGPTStream;
 import com.plexpt.chatgpt.entity.chat.ChatChoice;
 import com.plexpt.chatgpt.entity.chat.ChatCompletion;
@@ -50,6 +54,9 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
     @Autowired
     private IPromptPostsService promptPostsService ;
+
+//    @Autowired
+//    private IGenerateTaskService generateTaskService ;
 
     /**
      * 实现处理文件的方法
@@ -97,19 +104,27 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 }
 
                 if(isFinish){
-
                     stopWatch.stop();
                     System.out.println("方法执行时间：" + stopWatch.getTime() / 1000.0 + " 秒");
 
-                    dto.setAssistantContent(stringBuilder.toString());
+                    String genContent = stringBuilder.toString() ;
 
-                    TaskEvent taskEvent = new TaskEvent(dto)  ;
-                    taskEvent.setId(dto.getId());
-                    taskEvent.setAssistantContent(stringBuilder.toString());
+                    // 判断是否获取到代码内容(这里返回的结果里面一定要有代码)
+                    List<TaskContentDto.CodeContent> codeContents =  CodeBlockParser.parseCodeBlocks(genContent) ;
+
+                    IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
+
+                    if(codeContents.isEmpty()){ // 未完成，则重新生成内容
+                        dto.setRetryCount(dto.getRetryCount() + 1);
+                        dto.setTaskStatus(TaskStatus.FAILED.getValue());
+                        generateTaskService.update(dto);
+                    }else{
+                        dto.setAssistantContent(genContent);
+                        dto.setTaskStatus(TaskStatus.COMPLETED.getValue());
+                        generateTaskService.update(dto);
+                    }
 
                     log.debug("assistant content: \r\n{}" , dto.getAssistantContent());
-
-                    chatEventPublisher.publishEvent(taskEvent);
                 }
             }
         });

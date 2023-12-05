@@ -25,7 +25,7 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
      * 查询所有未完成的任务
      * @return
      */
-    List<GenerateTaskEntity> getAllUnfinishedTasks();
+    List<GenerateTaskEntity> getAllUnfinishedTasks(int retryCount);
 
     /**
      * 获取到LLM生成的内容
@@ -33,4 +33,11 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
      * @return
      */
     TaskContentDto getContentByBusinessId(String businessId);
+
+    /**
+     * 重置重试次数
+     * @param taskId
+     */
+    void resetRetry(Long taskId);
+
 }

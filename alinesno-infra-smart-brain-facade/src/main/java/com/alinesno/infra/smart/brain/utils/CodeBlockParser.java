@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.brain.utils;
 
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,19 +20,26 @@ public class CodeBlockParser {
      * @return 包含解析后代码块的 TaskContentDto.CodeContent 对象列表。
      */
     public static List<TaskContentDto.CodeContent> parseCodeBlocks(String content) {
-        List<TaskContentDto.CodeContent> codeBlocks = new ArrayList<>();
-        String regex = "```(.*?)```"; // 用于匹配代码块的正则表达式
-        Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
-        Matcher matcher = pattern.matcher(content);
 
-        while (matcher.find()) {
-            String block = matcher.group(1).trim();
-            int langIndex = block.indexOf("\n");
-            if (langIndex != -1) {
-                String lang = block.substring(0, langIndex).trim();
-                String code = block.substring(langIndex).trim();
-                codeBlocks.add(new TaskContentDto.CodeContent(lang, code));
+        List<TaskContentDto.CodeContent> codeBlocks = new ArrayList<>();
+
+        if(StringUtils.isNotBlank(content)) {
+
+            String regex = "```(.*?)```"; // 用于匹配代码块的正则表达式
+            Pattern pattern = Pattern.compile(regex, Pattern.DOTALL);
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String block = matcher.group(1).trim();
+                int langIndex = block.indexOf("\n");
+                if (langIndex != -1) {
+                    String lang = block.substring(0, langIndex).trim();
+                    String code = block.substring(langIndex).trim();
+                    codeBlocks.add(new TaskContentDto.CodeContent(lang, code));
+                }
             }
+
+            return codeBlocks;
         }
 
         return codeBlocks;

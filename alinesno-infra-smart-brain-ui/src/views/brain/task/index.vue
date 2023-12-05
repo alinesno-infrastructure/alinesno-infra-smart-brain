@@ -44,29 +44,33 @@
                      <el-progress :text-inside="true" status="primary" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100">
                         <el-button text></el-button>
                      </el-progress>
-                     <el-progress :text-inside="true" status="info" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100" >
+                     <el-progress :text-inside="true" status="info" v-if="scope.row.taskStatus == 9" :stroke-width="25" :percentage="100" >
                         <el-button text></el-button>
                      </el-progress>
                   </template>
                </el-table-column>
-               <el-table-column label="业务ID" align="center" width="80" key="businessId" prop="businessId" />
+               <el-table-column label="业务ID" align="center" width="350" key="businessId" prop="businessId" >
+                  <template #default="scope">
+                     {{ scope.row.businessId }} &nbsp;&nbsp; <el-button type="primary" text bg icon="CopyDocument">复制</el-button>
+                  </template>
+               </el-table-column>
                <!-- 业务字段-->
                <el-table-column label="GPT角色设定" align="left" key="systemContent" prop="systemContent" v-if="columns[0].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
-                     {{ scope.row.systemContent }}
+                     {{ scope.row.taskDesc }}
                   </template>
                </el-table-column>
-               <el-table-column label="任务描述" align="left" key="userContent" prop="dbuserContentDesc" v-if="columns[1].visible" :show-overflow-tooltip="true">
+               <el-table-column label="角色标识" align="center" width="150px" key="systemContent" prop="systemContent" v-if="columns[1].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
-                     {{ scope.row.userContent }}
+                     {{ scope.row.promptId }}
                   </template>
                </el-table-column>
                <el-table-column label="生成内容" align="center" width="150" key="assistantContent" prop="assistantContent" v-if="columns[2].visible" :show-overflow-tooltip="true" >
                   <template #default="scope">
-                     <el-button type="primary" text bg icon="Paperclip">查看</el-button>
+                     <el-button type="primary" text bg icon="Paperclip" @click="handleTaskContent(scope.row)">查看</el-button>
                   </template>
                </el-table-column>
-               <el-table-column label="类型" align="center" key="dbType" width="120" prop="dbType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="重试次数" align="center" key="retryCount" width="120" prop="retryCount" v-if="columns[3].visible" :show-overflow-tooltip="true" />
                <el-table-column label="任务状态" align="center" width="150" key="taskStatus" v-if="columns[5].visible" >
                   <template #default="scope">
                      <el-button v-if="scope.row.taskStatus == 0" type="info" text bg icon="Paperclip">排队</el-button>
@@ -85,13 +89,14 @@
                <!-- 操作字段  -->
                <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
                   <template #default="scope">
+                     <el-tooltip content="重置" placement="top" v-if="scope.row.TaskId !== 1">
+                        <el-button link type="primary" icon="Position" @click="handleResetRetry(scope.row)" v-hasPermi="['system:Task:edit']"></el-button>
+                     </el-tooltip>
                      <el-tooltip content="修改" placement="top" v-if="scope.row.TaskId !== 1">
-                        <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                           v-hasPermi="['system:Task:edit']"></el-button>
+                        <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:Task:edit']"></el-button>
                      </el-tooltip>
                      <el-tooltip content="删除" placement="top" v-if="scope.row.TaskId !== 1">
-                        <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                           v-hasPermi="['system:Task:remove']"></el-button>
+                        <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:Task:remove']"></el-button>
                      </el-tooltip>
                   </template>
 
@@ -102,51 +107,18 @@
       </el-row>
 
       <!-- 添加或修改任务配置对话框 -->
-      <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-         <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
+      <el-dialog :title="title" v-model="open" width="900px" :labelPosition="top" append-to-body>
+         <el-form :model="form" label-width="0px">
             <el-row>
                <el-col :span="24">
-                  <el-form-item label="名称" prop="dbName">
-                     <el-input v-model="form.dbName" placeholder="请输入任务名称" maxlength="50" />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="连接" prop="jdbcUrl">
-                     <el-input v-model="form.jdbcUrl" placeholder="请输入jdbcUrl连接地址" maxlength="128" />
-                  </el-form-item>
-               </el-col>
-               <el-col :span="24">
-                  <el-form-item label="类型" prop="dbType">
-                     <el-input v-model="form.dbType" placeholder="请输入类型" maxlength="50" />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="用户名" prop="dbUsername">
-                     <el-input v-model="form.dbUsername" placeholder="请输入连接用户名" maxlength="30" />
-                  </el-form-item>
-               </el-col>
-               <el-col :span="24">
-                  <el-form-item label="密码" prop="dbPasswd">
-                     <el-input v-model="form.dbPasswd" placeholder="请输入任务密码" type="password" maxlength="30" show-password />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="备注" prop="dbDesc">
-                     <el-input v-model="form.dbDesc" placeholder="请输入任务备注"></el-input>
+                  <el-form-item prop="currentTaskContent">
+                     <el-input rows="20" type="textarea" v-model="currentTaskContent" placeholder="请输入任务名称" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
          </el-form>
          <template #footer>
             <div class="dialog-footer">
-               <el-button type="primary" @click="submitForm">确 定</el-button>
                <el-button @click="cancel">取 消</el-button>
             </div>
          </template>
@@ -162,6 +134,7 @@ import {
    delTask,
    getTask,
    updateTask,
+   resetRetry,
    addTask
 } from "@/api/brain/smart/task";
 
@@ -181,6 +154,7 @@ const title = ref("");
 const dateRange = ref([]);
 const postOptions = ref([]);
 const roleOptions = ref([]);
+const currentTaskContent = ref("")
 
 const customColors = [
   { color: '#f56c6c', percentage: 20 },
@@ -310,6 +284,25 @@ function handleUpdate(row) {
       title.value = "修改任务";
    });
 };
+
+/** 重置重试试数 */
+function handleResetRetry(row){
+   if(row.taskStatus == 1){
+      proxy.$modal.msgWaring("任务正在生成中.");
+      return ; 
+   }
+   resetRetry(row.id).then(response => {
+      proxy.$modal.msgSuccess("重置成功.");
+      getList() ;
+   });
+}
+
+/** 查询当前内容 */
+function handleTaskContent(row){
+   open.value = true;
+   title.value = row.taskDesc ;
+   currentTaskContent.value = row.assistantContent ;
+}
 
 /** 提交按钮 */
 function submitForm() {

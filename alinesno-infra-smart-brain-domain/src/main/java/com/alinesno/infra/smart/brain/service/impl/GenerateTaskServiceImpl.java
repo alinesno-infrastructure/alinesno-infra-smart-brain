@@ -4,18 +4,18 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.mapper.GenerateTaskMapper;
-import com.alinesno.infra.smart.brain.scheduler.TaskProcessor;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -26,13 +26,10 @@ import java.util.List;
 public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity, GenerateTaskMapper> implements IGenerateTaskService {
 
     @Autowired
-    private TaskProcessor taskProcessor ;
-
-    @Autowired
     private IFileProcessingService fileProcessingService ;
 
     @Autowired
-    private ThreadPoolTaskExecutor threadPoolTaskExecutor ;
+    private IPromptPostsService postsService ;
 
     @Override
     public void commitTask(BrainTaskDto dto) {
@@ -50,17 +47,15 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         GenerateTaskEntity entity = new GenerateTaskEntity() ;
         BeanUtils.copyProperties(dto , entity);
 
+        // 获取到PromptPost内容
+        PromptPostsEntity postsEntity = postsService.getByPromptId(dto.getPromptId()) ;
+        entity.setTaskDesc(postsEntity.getPromptName());
+
         entity.setTaskStatus(TaskStatus.RUNNING.getValue());
 
         this.save(entity) ;
 
-        // 执行项目生成
-        threadPoolTaskExecutor.execute(new Runnable() {
-            @Override
-            public void run() {
-                fileProcessingService.processFile(entity);
-            }
-        });
+        fileProcessingService.processFile(entity);
     }
 
     @Override
@@ -73,10 +68,12 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
     }
 
     @Override
-    public List<GenerateTaskEntity> getAllUnfinishedTasks() {
+    public List<GenerateTaskEntity> getAllUnfinishedTasks(int retryCount) {
 
         QueryWrapper<GenerateTaskEntity> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().in(GenerateTaskEntity::getTaskStatus, TaskStatus.QUEUED.getValue(), TaskStatus.RUNNING.getValue(), TaskStatus.FAILED.getValue());
+        queryWrapper.lambda()
+                .le(GenerateTaskEntity::getRetryCount , retryCount)
+                .in(GenerateTaskEntity::getTaskStatus, TaskStatus.QUEUED.getValue(), TaskStatus.FAILED.getValue());
 
         return list(queryWrapper);
     }
@@ -100,5 +97,17 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         dto.setCodeContent(codeContents);
 
         return dto ;
+    }
+
+    @Override
+    public void resetRetry(Long taskId) {
+       GenerateTaskEntity task = this.getById(taskId)  ;
+
+       task.setRetryCount(0);
+       task.setTaskStatus(TaskStatus.RUNNING.getValue());
+
+       this.update(task) ;
+
+        fileProcessingService.processFile(task);
     }
 }

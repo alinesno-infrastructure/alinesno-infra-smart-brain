@@ -21,7 +21,8 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
-    downloadfile: prefix + "downloadfile"
+    downloadfile: prefix + "downloadfile",
+    resetRetry: prefix + "resetRetry"
 }
 
 // 查询数据库列表
@@ -34,9 +35,9 @@ export function listTask(query) {
 }
 
 // 查询数据库详细
-export function getTask(databaseId) {
+export function getTask(taskId) {
   return request({
-    url: managerUrl.detailUrl + '/' + parseStrEmpty(databaseId),
+    url: managerUrl.detailUrl + '/' + parseStrEmpty(taskId),
     method: 'get'
   })
 }
@@ -60,9 +61,17 @@ export function updateTask(data) {
 }
 
 // 删除数据库
-export function delTask(databaseId) {
+export function delTask(taskId) {
   return request({
-    url: managerUrl.removeUrl + '/' + parseStrEmpty(databaseId),
+    url: managerUrl.removeUrl + '/' + parseStrEmpty(taskId),
     method: 'delete'
+  })
+}
+
+// 重置重试次数 
+export function resetRetry(taskId) {
+  return request({
+    url: managerUrl.resetRetry + '?taskId=' + parseStrEmpty(taskId),
+    method: 'get'
   })
 }
