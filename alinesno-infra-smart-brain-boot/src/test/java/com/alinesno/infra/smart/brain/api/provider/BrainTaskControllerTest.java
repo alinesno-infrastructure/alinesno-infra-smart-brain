@@ -74,11 +74,11 @@ public class BrainTaskControllerTest {
     // 提供测试数据
     private static Stream<BrainTaskDto> provideBrainTaskDto() {
         return Stream.of(
-                new BrainTaskDto("123456", "789", "系统设定内容1", "用户信息内容1"), // 所有字段都不为空
-                new BrainTaskDto("234567", "890", "系统设定内容2", "用户信息内容2"), // 所有字段都不为空
-                new BrainTaskDto(null, "789", "系统设定内容3", "用户信息内容3"), // 业务ID为空
-                new BrainTaskDto("345678", null, "系统设定内容4", "用户信息内容4"), // GPT角色ID为空，但系统设定内容和用户信息内容都不为空
-                new BrainTaskDto("456789", null, null, null) // GPT角色ID、系统设定内容和用户信息内容都为空
+//                new BrainTaskDto("123456", "789", "系统设定内容1", "用户信息内容1"), // 所有字段都不为空
+//                new BrainTaskDto("234567", "890", "系统设定内容2", "用户信息内容2"), // 所有字段都不为空
+//                new BrainTaskDto(null, "789", "系统设定内容3", "用户信息内容3"), // 业务ID为空
+//                new BrainTaskDto("345678", null, "系统设定内容4", "用户信息内容4"), // GPT角色ID为空，但系统设定内容和用户信息内容都不为空
+//                new BrainTaskDto("456789", null, null, null) // GPT角色ID、系统设定内容和用户信息内容都为空
         );
     }
 

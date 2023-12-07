@@ -17,10 +17,6 @@ public class PromptIdValidator implements ConstraintValidator<ValidPromptId, Bra
 
     @Override
     public boolean isValid(BrainTaskDto dto, ConstraintValidatorContext context) {
-        if (dto.getPromptId() != null) {
-            return true;
-        } else {
-            return dto.getSystemContent() != null && dto.getUserContent() != null;
-        }
+        return dto.getPromptId() != null ;
     }
 }

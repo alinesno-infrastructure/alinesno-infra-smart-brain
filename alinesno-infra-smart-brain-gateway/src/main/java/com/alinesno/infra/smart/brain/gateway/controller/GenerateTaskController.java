@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.brain.gateway.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -9,6 +10,7 @@ import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,20 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     *
+     * @return
+     */
+    @SneakyThrows
+    @GetMapping("/getPromptContent")
+    public AjaxResult getPromptContent(String taskId){
+
+        GenerateTaskEntity e = service.getById(taskId)  ;
+        JSONObject prompts = JSONObject.parseObject(e.getParams() , JSONObject.class) ;
+
+        return AjaxResult.success(prompts) ;
     }
 
     /**

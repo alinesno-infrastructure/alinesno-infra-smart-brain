@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.brain.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
@@ -51,6 +52,7 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         PromptPostsEntity postsEntity = postsService.getByPromptId(dto.getPromptId()) ;
         entity.setTaskDesc(postsEntity.getPromptName());
 
+        entity.setParams(JSONObject.toJSONString(dto.getParams()));
         entity.setTaskStatus(TaskStatus.RUNNING.getValue());
 
         this.save(entity) ;

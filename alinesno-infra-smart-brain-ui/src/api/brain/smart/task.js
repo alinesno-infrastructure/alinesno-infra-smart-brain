@@ -22,7 +22,16 @@ var managerUrl = {
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
     downloadfile: prefix + "downloadfile",
-    resetRetry: prefix + "resetRetry"
+    resetRetry: prefix + "resetRetry",
+    getPromptContent: prefix + "getPromptContent"
+}
+
+// 获取PromptContent内容  
+export function getPromptContent(taskId) {
+  return request({
+    url: managerUrl.getPromptContent+ '?taskId=' + parseStrEmpty(taskId),
+    method: 'get'
+  })
 }
 
 // 查询数据库列表

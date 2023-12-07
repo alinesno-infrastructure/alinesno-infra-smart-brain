@@ -15,6 +15,12 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.31</version>
+		</dependency>
+
 		<!-- 引用公共门面服务 -->
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>

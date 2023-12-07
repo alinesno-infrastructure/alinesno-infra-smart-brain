@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.brain.inference.llm.chatgpt;// FileProcessingSe
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
@@ -9,6 +10,7 @@ import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.inference.event.ChatEventPublisher;
+import com.alinesno.infra.smart.brain.inference.tools.TemplateParser;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
@@ -30,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 文件处理服务接口的实现类
@@ -116,10 +119,13 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
                     if(codeContents.isEmpty()){ // 未完成，则重新生成内容
                         dto.setRetryCount(dto.getRetryCount() + 1);
+                        dto.setAssistantContent(genContent);
                         dto.setTaskStatus(TaskStatus.FAILED.getValue());
+                        dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));
                         generateTaskService.update(dto);
                     }else{
                         dto.setAssistantContent(genContent);
+                        dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));
                         dto.setTaskStatus(TaskStatus.COMPLETED.getValue());
                         generateTaskService.update(dto);
                     }
@@ -138,18 +144,25 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
         PromptPostsEntity postsEntity = promptPostsService.getByPromptId(promptId) ;
         List<PromptMessageDto> promptMessageList = JSONArray.parseArray(postsEntity.getPromptContent() , PromptMessageDto.class) ;
+        Map<String , Object> params = JSONObject.parseObject(dto.getParams() , Map.class) ;
 
         List<Message> messages = new ArrayList<>() ;
 
         for(PromptMessageDto msg : promptMessageList){
             Message message = null ;
 
+            // 模板解析处理
+            String contentTemplate = msg.getContent().trim() ;
+            if(params != null){
+                contentTemplate = TemplateParser.parserTemplate(contentTemplate , params) ;
+            }
+
             if(Message.Role.SYSTEM.getValue().equals(msg.getRole())){
-                message = Message.ofSystem(msg.getContent().trim());
+                message = Message.ofSystem(contentTemplate);
             }else if(Message.Role.ASSISTANT.getValue().equals(msg.getRole())){
-                message = Message.ofAssistant(msg.getContent().trim());
+                message = Message.ofAssistant(contentTemplate);
             }else if(Message.Role.USER.getValue().equals(msg.getRole())){
-                message = Message.of(msg.getContent().trim());
+                message = Message.of(contentTemplate);
             }
 
             if(message != null){

@@ -35,59 +35,66 @@
                <el-table-column type="selection" width="50" align="center" />
                <el-table-column label="图标" align="center" width="50" key="status" v-if="columns[5].visible">
                   <template #default="scope">
-                     <el-progress :text-inside="true" status="success" v-if="scope.row.taskStatus == 2" :stroke-width="25" :percentage="100">
-                        <el-button text></el-button>
-                     </el-progress>
-                     <el-progress :text-inside="true" status="danger" v-if="scope.row.taskStatus == 1" :stroke-width="25" :percentage="100">
-                        <el-button text></el-button>
-                     </el-progress>
-                     <el-progress :text-inside="true" status="primary" v-if="scope.row.taskStatus == 0" :stroke-width="25" :percentage="100">
-                        <el-button text></el-button>
-                     </el-progress>
-                     <el-progress :text-inside="true" status="info" v-if="scope.row.taskStatus == 9" :stroke-width="25" :percentage="100" >
-                        <el-button text></el-button>
-                     </el-progress>
-                  </template>
-               </el-table-column>
-               <el-table-column label="业务ID" align="center" width="350" key="businessId" prop="businessId" >
-                  <template #default="scope">
-                     {{ scope.row.businessId }} &nbsp;&nbsp; <el-button type="primary" text bg icon="CopyDocument">复制</el-button>
+                     <div class="role-icon">
+                        <img :src="'http://data.linesno.com/icons/circle/Delivery boy-' + ((scope.$index + 1)%5 + 1) + '.png'" />
+                     </div>
                   </template>
                </el-table-column>
                <!-- 业务字段-->
                <el-table-column label="GPT角色设定" align="left" key="systemContent" prop="systemContent" v-if="columns[0].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
-                     {{ scope.row.taskDesc }}
+                     <div>
+                        {{ scope.row.taskDesc }}
+                     </div>
+                     <div style="font-size: 13px;color: #a5a5a5;">
+                        业务标识: {{ scope.row.businessId }} 
+                     </div>
                   </template>
                </el-table-column>
-               <el-table-column label="角色标识" align="center" width="150px" key="systemContent" prop="systemContent" v-if="columns[1].visible" :show-overflow-tooltip="true">
+               <!-- <el-table-column label="业务ID" align="left" width="150" key="businessId" prop="businessId" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     {{ scope.row.businessId }} 
+                  </template>
+               </el-table-column> -->
+               <el-table-column label="请求参数" align="center" width="120" key="promptContent" prop="promptContent" v-if="columns[2].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">查看</el-button>
+                  </template>
+               </el-table-column>
+               <!-- <el-table-column label="角色标识" align="center" width="150px" key="systemContent" prop="systemContent" v-if="columns[1].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
                      {{ scope.row.promptId }}
                   </template>
-               </el-table-column>
+               </el-table-column> -->
                <el-table-column label="生成内容" align="center" width="150" key="assistantContent" prop="assistantContent" v-if="columns[2].visible" :show-overflow-tooltip="true" >
                   <template #default="scope">
                      <el-button type="primary" text bg icon="Paperclip" @click="handleTaskContent(scope.row)">查看</el-button>
                   </template>
                </el-table-column>
-               <el-table-column label="重试次数" align="center" key="retryCount" width="120" prop="retryCount" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="重试次数" align="center" key="retryCount" width="100" prop="retryCount" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+               <el-table-column label="消耗时间" align="center" key="usageTime" width="100" prop="usageTime" v-if="columns[3].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     {{ scope.row.usageTime }} 秒
+                  </template>
+               </el-table-column>
                <el-table-column label="任务状态" align="center" width="150" key="taskStatus" v-if="columns[5].visible" >
                   <template #default="scope">
-                     <el-button v-if="scope.row.taskStatus == 0" type="info" text bg icon="Paperclip">排队</el-button>
+                     <el-button v-if="scope.row.taskStatus == 0" type="info"  text bg icon="Paperclip">排队</el-button>
                      <el-button v-if="scope.row.taskStatus == 2"  type="success" text bg icon="Paperclip">成功</el-button>
-                     <el-button v-if="scope.row.taskStatus == 1"  type="primary" text bg icon="Loading">运行</el-button>
+                     <el-button v-if="scope.row.taskStatus == 1"  type="primary" loading text bg icon="Loading">运行</el-button>
                      <el-button v-if="scope.row.taskStatus == 9" type="danger" text bg icon="Paperclip">失败</el-button>
                   </template>
                </el-table-column>
 
-               <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
+               <el-table-column label="完成时间" align="center" prop="finishTime" v-if="columns[6].visible" width="160">
                   <template #default="scope">
-                     <span>{{ parseTime(scope.row.addTime) }}</span>
+                     <span v-if="scope.row.finishTime">{{ parseTime(scope.row.finishTime) }}</span>
+                     <span v-else>{{ parseTime(scope.row.addTime) }}</span>
                   </template>
                </el-table-column>
 
                <!-- 操作字段  -->
-               <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+               <el-table-column label="操作" align="center" width="130" class-name="small-padding fixed-width">
                   <template #default="scope">
                      <el-tooltip content="重置" placement="top" v-if="scope.row.TaskId !== 1">
                         <el-button link type="primary" icon="Position" @click="handleResetRetry(scope.row)" v-hasPermi="['system:Task:edit']"></el-button>
@@ -105,6 +112,11 @@
             <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList" />
          </el-col>
       </el-row>
+
+       <!-- 添加或修改指令配置对话框 -->
+       <el-dialog :title="promptTitle" v-model="promptOpen" width="900px" destroy-on-close append-to-body>
+         <PromptEditor :currentPostId="currentPostId" :currentPromptContent="currentPromptContent" />
+      </el-dialog>
 
       <!-- 添加或修改任务配置对话框 -->
       <el-dialog :title="title" v-model="open" width="900px" :labelPosition="top" append-to-body>
@@ -138,6 +150,9 @@ import {
    addTask
 } from "@/api/brain/smart/task";
 
+import { onMounted, onBeforeUnmount } from 'vue';
+import PromptEditor from "./prompt.vue"
+
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
@@ -155,6 +170,11 @@ const dateRange = ref([]);
 const postOptions = ref([]);
 const roleOptions = ref([]);
 const currentTaskContent = ref("")
+
+const promptTitle = ref("");
+const currentPostId = ref("");
+const currentPromptContent = ref([]);
+const promptOpen = ref(false);
 
 const customColors = [
   { color: '#f56c6c', percentage: 20 },
@@ -287,10 +307,6 @@ function handleUpdate(row) {
 
 /** 重置重试试数 */
 function handleResetRetry(row){
-   if(row.taskStatus == 1){
-      proxy.$modal.msgWaring("任务正在生成中.");
-      return ; 
-   }
    resetRetry(row.id).then(response => {
       proxy.$modal.msgSuccess("重置成功.");
       getList() ;
@@ -303,6 +319,19 @@ function handleTaskContent(row){
    title.value = row.taskDesc ;
    currentTaskContent.value = row.assistantContent ;
 }
+
+/** 配置Prompt */
+function configPrompt(row){
+   promptTitle.value = "查询角色参数";
+   promptOpen.value = true ;
+   currentPostId.value = row.id;
+
+   // if(row.promptContent){
+   //    currentPromptContent.value = JSON.parse(row.promptContent);
+   // }
+
+}
+
 
 /** 提交按钮 */
 function submitForm() {
@@ -325,6 +354,30 @@ function submitForm() {
    });
 };
 
+const timer = ref(null);
+
+onMounted(() => {
+  // 创建定时器
+  timer.value = setInterval(() => {
+    console.log('执行中...');
+    getList() ;
+  }, 5000);
+});
+
+onBeforeUnmount(() => {
+  // 在组件销毁前清除定时器
+  clearInterval(timer.value);
+});
+
 getList();
 
 </script>
+
+<style lang="scss" scoped>
+.role-icon {
+  img {
+    width:35px;
+    height:35px;
+  }
+}
+</style>
