@@ -112,4 +112,21 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
         fileProcessingService.processFile(task);
     }
+
+    @Override
+    public void modifyContent(TaskContentDto dto) {
+
+       LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
+       wrapper.eq(GenerateTaskEntity::getBusinessId , dto.getBusinessId()) ;
+       wrapper.orderByDesc(GenerateTaskEntity::getAddTime) ;
+       wrapper.last("limit 1") ;
+
+       GenerateTaskEntity task = getOne(wrapper) ;
+
+       if(task != null){
+           task.setAssistantContent(dto.getGenContent());
+           update(task);
+       }
+
+    }
 }

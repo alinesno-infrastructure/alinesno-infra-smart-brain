@@ -40,4 +40,10 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
      */
     void resetRetry(Long taskId);
 
+    /**
+     * 更新生成内容
+     * @param dto
+     */
+    void modifyContent(TaskContentDto dto);
+
 }

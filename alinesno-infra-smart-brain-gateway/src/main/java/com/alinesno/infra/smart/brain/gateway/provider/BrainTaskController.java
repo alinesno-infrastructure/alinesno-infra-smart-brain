@@ -85,6 +85,19 @@ public class BrainTaskController {
     }
 
     /**
+     * 更新生成内容
+     * @param dto
+     * @return
+     */
+    @PostMapping("/modifyContent")
+    public AjaxResult modifyContent(@RequestBody TaskContentDto dto) {
+
+        generateTaskService.modifyContent(dto) ;
+
+        return AjaxResult.success(); // 返回成功结果
+    }
+
+    /**
      * 提交任务并将结果保存到CMS中
      * @param dto 任务数据传输对象
      * @return 返回提交结果
