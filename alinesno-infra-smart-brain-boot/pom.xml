@@ -43,11 +43,6 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-vector</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-inference</artifactId>
 			<version>${revision}</version>
 		</dependency>
