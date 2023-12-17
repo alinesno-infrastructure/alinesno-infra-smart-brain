@@ -356,18 +356,18 @@ function submitForm() {
 
 const timer = ref(null);
 
-onMounted(() => {
-  // 创建定时器
-  timer.value = setInterval(() => {
-    console.log('执行中...');
-    getList() ;
-  }, 5000);
-});
+// onMounted(() => {
+//   // 创建定时器
+//   timer.value = setInterval(() => {
+//     console.log('执行中...');
+//     getList() ;
+//   }, 5000);
+// });
 
-onBeforeUnmount(() => {
-  // 在组件销毁前清除定时器
-  clearInterval(timer.value);
-});
+// onBeforeUnmount(() => {
+//   // 在组件销毁前清除定时器
+//   clearInterval(timer.value);
+// });
 
 getList();
 
