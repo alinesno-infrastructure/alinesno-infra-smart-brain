@@ -39,7 +39,14 @@ public class CodeBlockParser {
                 }
             }
 
-            return codeBlocks;
+        }
+
+        if(codeBlocks.isEmpty()){
+            FileType fileType = LanguageIdentifier.identifyLanguage(content) ;
+
+            if(!fileType.isUnknown()){  // 针对于内容结果为yaml或者sql直接返回的场景
+                codeBlocks.add(new TaskContentDto.CodeContent(fileType.getValue(), content));
+            }
         }
 
         return codeBlocks;
