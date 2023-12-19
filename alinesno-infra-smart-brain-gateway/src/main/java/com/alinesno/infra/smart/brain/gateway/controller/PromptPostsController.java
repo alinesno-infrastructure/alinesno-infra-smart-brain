@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.brain.gateway.controller;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -76,10 +77,159 @@ public class PromptPostsController extends BaseController<PromptPostsEntity, IPr
      */
     @PostMapping("/updatePromptContent")
     public AjaxResult updatePromptContent(@RequestBody List<PromptMessageDto> messageDto , String postId){
-
         service.updatePromptContent(messageDto , postId) ;
-
         return ok() ;
+    }
+
+    @GetMapping("/catalogTreeSelect")
+    public AjaxResult catalogTreeSelect(){
+        String dataJson = "[\n" +
+                "    {\n" +
+                "        \"id\":1,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"01_人才管理专家团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":4,\n" +
+                "                \"parentId\":1,\n" +
+                "                \"label\":\"04_培训专家团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\":2,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"02_方案架构师团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":5,\n" +
+                "                \"parentId\":2,\n" +
+                "                \"label\":\"05_项目管理团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":1,\n" +
+                "                \"parentId\":2,\n" +
+                "                \"label\":\"01_解决方案设计团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":2,\n" +
+                "                \"parentId\":2,\n" +
+                "                \"label\":\"02_需求分析团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\":3,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"03_工程师团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":6,\n" +
+                "                \"parentId\":3,\n" +
+                "                \"label\":\"06_数据库设计团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":7,\n" +
+                "                \"parentId\":3,\n" +
+                "                \"label\":\"07_接口测试团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":8,\n" +
+                "                \"parentId\":3,\n" +
+                "                \"label\":\"08_技术工程师团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":3,\n" +
+                "                \"parentId\":3,\n" +
+                "                \"label\":\"03_技术架构团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\":4,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"04_数据挖掘团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":13,\n" +
+                "                \"parentId\":4,\n" +
+                "                \"label\":\"13_数据服务团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":14,\n" +
+                "                \"parentId\":4,\n" +
+                "                \"label\":\"14_数据分析团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":10,\n" +
+                "                \"parentId\":4,\n" +
+                "                \"label\":\"10_数据规划团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":12,\n" +
+                "                \"parentId\":4,\n" +
+                "                \"label\":\"12_数据挖掘(计算)团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":11,\n" +
+                "                \"parentId\":4,\n" +
+                "                \"label\":\"11_数据采集团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\":5,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"05_运维管理团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":9,\n" +
+                "                \"parentId\":5,\n" +
+                "                \"label\":\"09_运维管理团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"id\":6,\n" +
+                "        \"parentId\":0,\n" +
+                "        \"label\":\"06_业务运营团队\",\n" +
+                "        \"weight\":0,\n" +
+                "        \"children\":[\n" +
+                "            {\n" +
+                "                \"id\":15,\n" +
+                "                \"parentId\":6,\n" +
+                "                \"label\":\"15_产品市场团队\",\n" +
+                "                \"weight\":0\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"id\":16,\n" +
+                "                \"parentId\":6,\n" +
+                "                \"label\":\"16_产品客服团队\",\n" +
+                "                \"weight\":0\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "]" ;
+        return AjaxResult.success("success" , JSONArray.parse(dataJson)) ;
     }
 
     @Override

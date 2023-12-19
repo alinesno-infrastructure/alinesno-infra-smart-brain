@@ -23,7 +23,16 @@ var managerUrl = {
     changeField: prefix + "changeField",
     downloadfile: prefix + "downloadfile",
     updatePromptContent: prefix + "updatePromptContent",
+    catalogTreeSelect: prefix + "catalogTreeSelect",
     getPromptContent: prefix + "getPromptContent",
+}
+
+// 查询部门下拉树结构
+export function catalogTreeSelect() {
+  return request({
+    url: managerUrl.catalogTreeSelect , 
+    method: 'get'
+  })
 }
 
 // 列新PromptContent 

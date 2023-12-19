@@ -21,15 +21,34 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
+    listCatalogExcludeChild: prefix + "listCatalogExcludeChild",
+    list: prefix + "list",
     downloadfile: prefix + "downloadfile"
 }
 
 // 查询数据库列表
 export function listCatalog(query) {
   return request({
+    url: managerUrl.list,
+    method: 'get',
+    params: query
+  })
+}
+
+// 查询数据库列表
+export function datatableCatalog(query) {
+  return request({
     url: managerUrl.datatables ,
     method: 'post',
     params: query
+  })
+}
+
+// 查询数据库详细
+export function listCatalogExcludeChild() {
+  return request({
+    url: managerUrl.listCatalogExcludeChild , 
+    method: 'get'
   })
 }
 

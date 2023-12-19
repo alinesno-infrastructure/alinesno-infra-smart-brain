@@ -12,10 +12,6 @@ import org.springframework.boot.web.servlet.ServletComponentScan;
  * @author LuoAnDong
  * @since 2023年8月3日 上午6:23:43
  */
-@EnableActable
-@EnableInfraSsoApi
-@ServletComponentScan
-@MapperScan("com.alinesno.infra.smart.brain.mapper")
 @SpringBootApplication
 public class SmartBrainApplication {
 

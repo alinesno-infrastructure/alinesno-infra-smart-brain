@@ -1,120 +1,147 @@
 <template>
    <div class="app-container">
-      <el-row :gutter="20">
-         <!--类型数据-->
-         <el-col :span="24" :xs="24">
-            <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
-               <el-form-item label="类型名称" prop="name">
-                  <el-input v-model="queryParams.name" placeholder="请输入类型名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
-               </el-form-item>
-               <el-form-item label="类型名称" prop="name">
-                  <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入类型名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
-               </el-form-item>
-               <el-form-item>
-                  <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-                  <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-               </el-form-item>
-            </el-form>
+      <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch">
+         <el-form-item label="部门名称" prop="deptName">
+            <el-input
+               v-model="queryParams.deptName"
+               placeholder="请输入部门名称"
+               clearable
+               @keyup.enter="handleQuery"
+            />
+         </el-form-item>
+         <!-- <el-form-item label="状态" prop="status">
+            <el-select v-model="queryParams.status" placeholder="部门状态" clearable>
+               <el-option
+                  v-for="dict in sys_normal_disable"
+                  :key="dict.value"
+                  :label="dict.label"
+                  :value="dict.value"
+               />
+            </el-select>
+         </el-form-item> -->
+         <el-form-item>
+            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
+            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+         </el-form-item>
+      </el-form>
 
-            <el-row :gutter="10" class="mb8">
-
-               <el-col :span="1.5">
-                  <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
-               </el-col>
-               <el-col :span="1.5">
-                  <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate">修改</el-button>
-               </el-col>
-               <el-col :span="1.5">
-                  <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete">删除</el-button>
-               </el-col>
-
-               <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
-            </el-row>
-
-            <el-table v-loading="loading" :data="CatalogList" @selection-change="handleSelectionChange">
-               <el-table-column type="selection" width="50" align="center" />
-
-               <el-table-column label="图标" align="center" width="80px" prop="icon" v-if="columns[0].visible">
-                  <template #default="scope">
-                  <div class="role-icon">
-                     <img :src="'http://data.linesno.com/icons/dataset/dataset_' + (scope.$index + 8) + '.png'" style="width:45px;height:45px;border-radius: 50%;" />
-                  </div>
-                  </template>
-               </el-table-column>
-
-               <!-- 业务字段-->
-               <el-table-column label="类型名称" align="left" width="200" key="name" prop="name" v-if="columns[0].visible">
-                  <template #default="scope">
-                  <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
-                     {{ scope.row.name }}
-                  </div>
-                  <div style="font-size: 13px;color: #a5a5a5;">
-                     {{ scope.row.name }}
-                  </div>
-                  </template>
-               </el-table-column>
-               <el-table-column label="类型描述" align="left" key="description" prop="description" v-if="columns[1].visible" :show-overflow-tooltip="true">
-                  <template #default="scope">
-                     <div>
-                        {{ scope.row.description }}
-                     </div>
-                     <div style="font-size: 13px;color: #a5a5a5;">
-                        会话次数: 12734 有效沟通:198312
-                     </div>
-                  </template>
-               </el-table-column>
-               <el-table-column label="生成式数量" align="center" width="150" key="promptCount" prop="promptCount" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="状态" align="center" width="100" key="hasStatus" v-if="columns[5].visible" />
-
-               <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[6].visible" width="160">
-                  <template #default="scope">
-                     <span>{{ parseTime(scope.row.addTime) }}</span>
-                  </template>
-               </el-table-column>
-
-               <!-- 操作字段  -->
-               <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
-                  <template #default="scope">
-                     <el-tooltip content="修改" placement="top" v-if="scope.row.CatalogId !== 1">
-                        <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                           v-hasPermi="['system:Catalog:edit']"></el-button>
-                     </el-tooltip>
-                     <el-tooltip content="删除" placement="top" v-if="scope.row.CatalogId !== 1">
-                        <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                           v-hasPermi="['system:Catalog:remove']"></el-button>
-                     </el-tooltip>
-                  </template>
-
-               </el-table-column>
-            </el-table>
-            <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum" v-model:limit="queryParams.pageSize" @pagination="getList" />
+      <el-row :gutter="10" class="mb8">
+         <el-col :span="1.5">
+            <el-button
+               type="primary"
+               plain
+               icon="Plus"
+               @click="handleAdd"
+               v-hasPermi="['system:dept:add']"
+            >新增</el-button>
          </el-col>
+         <el-col :span="1.5">
+            <el-button
+               type="info"
+               plain
+               icon="Sort"
+               @click="toggleExpandAll"
+            >展开/折叠</el-button>
+         </el-col>
+         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
       </el-row>
 
-      <!-- 添加或修改类型配置对话框 -->
-      <el-dialog :title="title" v-model="open" width="700px" append-to-body>
-         <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
+      <el-table
+         v-if="refreshTable"
+         v-loading="loading"
+         :data="deptList"
+         row-key="deptId"
+         :default-expand-all="isExpandAll"
+         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
+      >
+         <el-table-column prop="deptName" label="部门名称"></el-table-column>
+         <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
+         <el-table-column prop="status" label="状态" width="100">
+            <template #default="scope">
+               <!-- <dict-tag :options="sys_normal_disable" :value="scope.row.status" /> -->
+            </template>
+         </el-table-column>
+         <el-table-column label="创建时间" align="center" prop="createTime" width="200">
+            <template #default="scope">
+               <span>{{ parseTime(scope.row.createTime) }}</span>
+            </template>
+         </el-table-column>
+         <el-table-column label="操作" align="center" width="250" class-name="small-padding fixed-width">
+            <template #default="scope">
+               <el-button
+                  type="text"
+                  icon="Edit"
+                  @click="handleUpdate(scope.row)"
+                  v-hasPermi="['system:dept:edit']"
+               >修改</el-button>
+               <el-button
+                  type="text"
+                  icon="Plus"
+                  @click="handleAdd(scope.row)"
+                  v-hasPermi="['system:dept:add']"
+               >新增</el-button>
+               <el-button
+                  v-if="scope.row.parentId != 0"
+                  type="text"
+                  icon="Delete"
+                  @click="handleDelete(scope.row)"
+                  v-hasPermi="['system:dept:remove']"
+               >删除</el-button>
+            </template>
+         </el-table-column>
+      </el-table>
+
+      <!-- 添加或修改部门对话框 -->
+      <el-dialog :title="title" v-model="open" width="600px" append-to-body>
+         <el-form ref="deptRef" :model="form" :rules="rules" label-width="80px">
             <el-row>
-               <el-col :span="24">
-                  <el-form-item label="父类" prop="name">
-                     <el-select clearable v-model="form.parentId" style="width:100%" placeholder="可多选" :multiple-limit="10">
-                        <el-option v-for="item in 10" :key="item" :label="item" :value="item" />
-                     </el-select>
+               <el-col :span="24" v-if="form.parentId !== 0">
+                  <!-- <el-form-item label="上级部门" prop="parentId">
+                     <el-tree-select
+                        v-model="form.parentId"
+                        :data="deptOptions"
+                        :props="{ value: 'deptId', label: 'deptName', children: 'children' }"
+                        value-key="deptId"
+                        placeholder="选择上级部门"
+                        check-strictly
+                     />
+                  </el-form-item> -->
+               </el-col>
+               <el-col :span="12">
+                  <el-form-item label="部门名称" prop="deptName">
+                     <el-input v-model="form.deptName" placeholder="请输入部门名称" />
                   </el-form-item>
                </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="名称" prop="name">
-                     <el-input v-model="form.name" placeholder="请输入类型名称" maxlength="50" />
+               <el-col :span="12">
+                  <el-form-item label="显示排序" prop="orderNum">
+                     <el-input-number v-model="form.orderNum" controls-position="right" :min="0" />
                   </el-form-item>
                </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="描述" prop="description">
-                     <el-input v-model="form.description" placeholder="请输入jdbcUrl连接地址" maxlength="128" />
+               <el-col :span="12">
+                  <el-form-item label="负责人" prop="leader">
+                     <el-input v-model="form.leader" placeholder="请输入负责人" maxlength="20" />
                   </el-form-item>
+               </el-col>
+               <el-col :span="12">
+                  <el-form-item label="联系电话" prop="phone">
+                     <el-input v-model="form.phone" placeholder="请输入联系电话" maxlength="11" />
+                  </el-form-item>
+               </el-col>
+               <el-col :span="12">
+                  <el-form-item label="邮箱" prop="email">
+                     <el-input v-model="form.email" placeholder="请输入邮箱" maxlength="50" />
+                  </el-form-item>
+               </el-col>
+               <el-col :span="12">
+                  <!-- <el-form-item label="部门状态">
+                     <el-radio-group v-model="form.status">
+                        <el-radio
+                           v-for="dict in sys_normal_disable"
+                           :key="dict.value"
+                           :label="dict.value"
+                        >{{ dict.label }}</el-radio>
+                     </el-radio-group>
+                  </el-form-item> -->
                </el-col>
             </el-row>
          </el-form>
@@ -125,168 +152,148 @@
             </div>
          </template>
       </el-dialog>
-
    </div>
 </template>
 
 <script setup name="Catalog">
-
-import {
-   listCatalog,
-   delCatalog,
-   getCatalog,
-   updateCatalog,
-   addCatalog
+import { 
+   listCatalog, 
+   datatableCatalog, 
+   getCatalog, 
+   delCatalog, 
+   addCatalog, 
+   updateCatalog, 
+   listCatalogExcludeChild 
 } from "@/api/brain/smart/catalog";
 
-const router = useRouter();
 const { proxy } = getCurrentInstance();
+const { sys_normal_disable } = ref([]) ; // proxy.useDict("sys_normal_disable");
 
-// 定义变量
-const checkboxList = ref([])
-const CatalogList = ref([]);
+const deptList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
-const ids = ref([]);
-const single = ref(true);
-const multiple = ref(true);
-const total = ref(0);
 const title = ref("");
-const dateRange = ref([]);
-const postOptions = ref([]);
-const roleOptions = ref([]);
-
-// 列显隐信息
-const columns = ref([
-   { key: 0, label: `类型名称`, visible: true },
-   { key: 1, label: `类型描述`, visible: true },
-   { key: 2, label: `表数据量`, visible: true },
-   { key: 3, label: `类型`, visible: true },
-   { key: 4, label: `类型地址`, visible: true },
-   { key: 5, label: `状态`, visible: true },
-   { key: 6, label: `更新时间`, visible: true }
-]);
+const deptOptions = ref([]);
+const isExpandAll = ref(true);
+const refreshTable = ref(true);
 
 const data = reactive({
-   form: {},
-   queryParams: {
-      pageNum: 1,
-      pageSize: 10,
-      name: undefined,
-      description: undefined
-   },
-   rules: {
-      name: [{ required: true, message: "名称不能为空", trigger: "blur" }] , 
-      description: [{ required: true, message: "连接不能为空", trigger: "blur" }],
-      promptCount: [{ required: true, message: "类型不能为空", trigger: "blur" }] , 
-      parentId: [{ required: true , message: "用户名不能为空", trigger: "blur"}],
-   }
+  form: {},
+  queryParams: {
+    deptName: undefined,
+    status: undefined
+  },
+  rules: {
+    parentId: [{ required: true, message: "上级部门不能为空", trigger: "blur" }],
+    deptName: [{ required: true, message: "部门名称不能为空", trigger: "blur" }],
+    orderNum: [{ required: true, message: "显示排序不能为空", trigger: "blur" }],
+    email: [{ type: "email", message: "请输入正确的邮箱地址", trigger: ["blur", "change"] }],
+    phone: [{ pattern: /^1[3|4|5|6|7|8|9][0-9]\d{8}$/, message: "请输入正确的手机号码", trigger: "blur" }]
+  },
 });
 
 const { queryParams, form, rules } = toRefs(data);
 
-/** 查询类型列表 */
+/** 查询部门列表 */
 function getList() {
-   loading.value = true;
-   listCatalog(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
-      loading.value = false;
-      CatalogList.value = res.rows;
-      total.value = res.total;
-   });
-};
-
-/** 搜索按钮操作 */
-function handleQuery() {
-   queryParams.value.pageNum = 1;
-   getList();
-};
-
-/** 重置按钮操作 */
-function resetQuery() {
-   dateRange.value = [];
-   proxy.resetForm("queryRef");
-   queryParams.value.deptId = undefined;
-   proxy.$refs.deptTreeRef.setCurrentKey(null);
-   handleQuery();
-};
-/** 删除按钮操作 */
-function handleDelete(row) {
-   const CatalogIds = row.id || ids.value;
-   proxy.$modal.confirm('是否确认删除类型编号为"' + CatalogIds + '"的数据项？').then(function () {
-      return delCatalog(CatalogIds);
-   }).then(() => {
-      getList();
-      proxy.$modal.msgSuccess("删除成功");
-   }).catch(() => { });
-};
-
-/** 选择条数  */
-function handleSelectionChange(selection) {
-   ids.value = selection.map(item => item.id);
-   single.value = selection.length != 1;
-   multiple.value = !selection.length;
-};
-
-/** 重置操作表单 */
-function reset() {
-   form.value = {
-      id: undefined,
-      deptId: undefined,
-      CatalogName: undefined,
-      promptCount: undefined,
-      password: undefined,
-      phonenumber: undefined,
-      status: "0",
-      remark: undefined,
-   };
-   proxy.resetForm("databaseRef");
-};
+  loading.value = true;
+  listCatalog(queryParams.value).then(response => {
+    console.log('response = ' + response.data) ;
+    console.log('proxy.handleTree(response.data, "deptId") = ' + proxy.handleTree(response.data, "deptId"));
+    deptList.value = proxy.handleTree(response.data, "deptId");
+    loading.value = false;
+  });
+}
 /** 取消按钮 */
 function cancel() {
-   open.value = false;
-   reset();
-};
-
+  open.value = false;
+  reset();
+}
+/** 表单重置 */
+function reset() {
+  form.value = {
+    deptId: undefined,
+    parentId: undefined,
+    deptName: undefined,
+    orderNum: 0,
+    leader: undefined,
+    phone: undefined,
+    email: undefined,
+    status: "0"
+  };
+  proxy.resetForm("deptRef");
+}
+/** 搜索按钮操作 */
+function handleQuery() {
+  getList();
+}
+/** 重置按钮操作 */
+function resetQuery() {
+  proxy.resetForm("queryRef");
+  handleQuery();
+}
 /** 新增按钮操作 */
-function handleAdd() {
-   reset();
-   open.value = true;
-   title.value = "添加类型";
-};
-
+function handleAdd(row) {
+  reset();
+  listCatalog().then(response => {
+    deptOptions.value = proxy.handleTree(response.data, "deptId");
+  });
+  if (row != undefined) {
+    form.value.parentId = row.deptId;
+  }
+  open.value = true;
+  title.value = "添加部门";
+}
+/** 展开/折叠操作 */
+function toggleExpandAll() {
+  refreshTable.value = false;
+  isExpandAll.value = !isExpandAll.value;
+  nextTick(() => {
+    refreshTable.value = true;
+  });
+}
 /** 修改按钮操作 */
 function handleUpdate(row) {
-   reset();
-   const CatalogId = row.id || ids.value;
-   getCatalog(CatalogId).then(response => {
-      form.value = response.data;
-      open.value = true;
-      title.value = "修改类型";
-   });
-};
-
+  reset();
+  listCatalogExcludeChild(row.deptId).then(response => {
+    deptOptions.value = proxy.handleTree(response.data, "deptId");
+  });
+  getCatalog(row.deptId).then(response => {
+    form.value = response.data;
+    open.value = true;
+    title.value = "修改部门";
+  });
+}
 /** 提交按钮 */
 function submitForm() {
-   proxy.$refs["databaseRef"].validate(valid => {
-      if (valid) {
-         if (form.value.CatalogId != undefined) {
-            updateCatalog(form.value).then(response => {
-               proxy.$modal.msgSuccess("修改成功");
-               open.value = false;
-               getList();
-            });
-         } else {
-            addCatalog(form.value).then(response => {
-               proxy.$modal.msgSuccess("新增成功");
-               open.value = false;
-               getList();
-            });
-         }
+  proxy.$refs["deptRef"].validate(valid => {
+    if (valid) {
+      if (form.value.deptId != undefined) {
+        updateCatalog(form.value).then(response => {
+          proxy.$modal.msgSuccess("修改成功");
+          open.value = false;
+          getList();
+        });
+      } else {
+        addCatalog(form.value).then(response => {
+          proxy.$modal.msgSuccess("新增成功");
+          open.value = false;
+          getList();
+        });
       }
-   });
-};
+    }
+  });
+}
+/** 删除按钮操作 */
+function handleDelete(row) {
+  proxy.$modal.confirm('是否确认删除名称为"' + row.deptName + '"的数据项?').then(function() {
+    return delCatalog(row.deptId);
+  }).then(() => {
+    getList();
+    proxy.$modal.msgSuccess("删除成功");
+  }).catch(() => {});
+}
 
 getList();
-
 </script>

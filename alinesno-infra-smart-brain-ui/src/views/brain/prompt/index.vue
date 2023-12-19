@@ -1,8 +1,34 @@
 <template>
    <div class="app-container">
       <el-row :gutter="20">
+         <!--部门数据-->
+         <el-col :span="4" :xs="24">
+            <div class="head-container">
+               <el-input
+                  v-model="deptName"
+                  placeholder="请输入部门名称"
+                  clearable
+                  prefix-icon="Search"
+                  style="margin-bottom: 20px"
+               />
+            </div>
+            <div class="head-container">
+               <el-tree
+                  :data="deptOptions"
+                  :props="{ label: 'label', children: 'children' }"
+                  :expand-on-click-node="false"
+                  :filter-node-method="filterNode"
+                  ref="deptTreeRef"
+                  node-key="id"
+                  highlight-current
+                  default-expand-all
+                  @node-click="handleNodeClick"
+               />
+            </div>
+         </el-col>
+
          <!--指令数据-->
-         <el-col :span="24" :xs="24">
+         <el-col :span="20" :xs="24">
             <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
                <el-form-item label="指令名称" prop="promptName">
                   <el-input v-model="queryParams.promptName" placeholder="请输入指令名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
@@ -32,9 +58,9 @@
             </el-row>
 
             <el-table v-loading="loading" :data="PromptList" @selection-change="handleSelectionChange">
-               <el-table-column type="selection" width="50" align="center" />
+               <el-table-column type="selection" width="50" :align="'center'" />
 
-               <el-table-column label="图标" align="center" width="100" key="status" v-if="columns[5].visible">
+               <el-table-column label="图标" :align="'center'" width="100" key="status" v-if="columns[5].visible">
                   <template #default="scope">
                      <div class="role-icon">
                         <img :src="'http://data.linesno.com/icons/circle/Delivery boy-' + ((scope.$index + 1)%5 + 1) + '.png'" />
@@ -157,6 +183,7 @@ import {
    delPrompt,
    getPrompt,
    updatePrompt,
+   catalogTreeSelect,
    addPrompt
 } from "@/api/brain/smart/prompt";
 
@@ -182,6 +209,7 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
+const deptOptions = ref(undefined);
 const postOptions = ref([]);
 const roleOptions = ref([]);
 
@@ -256,6 +284,13 @@ function handleSelectionChange(selection) {
    multiple.value = !selection.length;
 };
 
+/** 查询部门下拉树结构 */
+function getDeptTree() {
+  catalogTreeSelect().then(response => {
+    deptOptions.value = response.data;
+  });
+};
+
 /** 配置Prompt */
 function configPrompt(row){
    promptTitle.value = "配置角色Prompt";
@@ -327,6 +362,7 @@ function submitForm() {
    });
 };
 
+getDeptTree();
 getList();
 
 </script>
