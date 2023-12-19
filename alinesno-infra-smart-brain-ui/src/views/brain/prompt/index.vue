@@ -90,8 +90,8 @@
                      <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
                   </template>
                </el-table-column>
-               <el-table-column label="类型" align="center" width="120" key="promptType" prop="promptType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
-               <el-table-column label="数据来源" align="center" key="dataSourceApi" prop="dataSourceApi" v-if="columns[4].visible" width="200" />
+               <!-- <el-table-column label="类型" align="center" width="120" key="promptType" prop="promptType" v-if="columns[3].visible" :show-overflow-tooltip="true" /> -->
+               <!-- <el-table-column label="数据来源" align="center" key="dataSourceApi" prop="dataSourceApi" v-if="columns[4].visible" width="200" /> -->
                <el-table-column label="状态" align="center" width="120" key="hasStatus" v-if="columns[5].visible" >
                   <template #default="scope">
                      <el-switch
