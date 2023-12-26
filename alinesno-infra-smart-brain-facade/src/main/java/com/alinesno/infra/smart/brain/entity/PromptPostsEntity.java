@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 import cn.afterturn.easypoi.excel.annotation.Excel;
+import com.gitee.sunchenbin.mybatis.actable.annotation.TableComment;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -20,9 +21,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("prompt_posts")
+@TableComment("Prompt指令实体类")
 public class PromptPostsEntity extends InfraBaseEntity {
-
-	// fields
 
 	/**
 	 * 数据来源接口(即跟prompt结合的数据源)
@@ -113,4 +113,25 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	@ColumnType(length=10)
 	@ColumnComment("对外")
 	private String promptId;
+
+	@TableField
+	@ColumnComment("最大Token")
+	@ColumnType
+	private int maxToken ;
+
+	@TableField
+	@ColumnComment("模型名称")
+	@ColumnType
+	private String modelName ;
+
+	@TableField
+	@ColumnComment("冷静度")
+	@ColumnType
+	private int temperature ;
+
+	@TableField
+	@ColumnComment("概率范围")
+	@ColumnType
+	private int topP ;
+
 }

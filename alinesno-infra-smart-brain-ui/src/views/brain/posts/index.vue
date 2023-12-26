@@ -88,6 +88,14 @@
                <el-col :span="24">
                   <el-form-item label="类型" prop="dbType">
                      <el-input v-model="form.dbType" placeholder="请输入类型" maxlength="50" />
+                     <el-tree-select
+                        v-model="form.deptId"
+                        :data="deptOptions"
+                        :props="{ value: 'id', label: 'label', children: 'children' }"
+                        value-key="id"
+                        placeholder="请选择归属部门"
+                        check-strictly
+                     />
                   </el-form-item>
                </el-col>
             </el-row>

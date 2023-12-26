@@ -44,7 +44,7 @@ import OperationWorkspaceApps from './operation-workspace/apps.vue'
 import OperationWorkspaceService from './operation-workspace/service.vue'
 
 const currentEnvClusterObj = ref({
-  appName: 'AGI推理集成管理服务',
+  appName: 'AGI推理指令管理服务',
   clusterName: '基于多个主流(GPT/星火/自定义Llama2等)大模型的服务调用和管理'  , 
   apiServerUrl: 'http://portal.infra.linesno.com'
 }) 

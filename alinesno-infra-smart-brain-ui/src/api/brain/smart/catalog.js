@@ -13,7 +13,7 @@ var prefix = '/api/infra/smart/brain/promptCatalog/' ;
 var managerUrl = {
     datatables : prefix +"datatables" ,
     createUrl: prefix + 'add' ,
-    saveUrl: prefix + 'save' ,
+    saveUrl: prefix + 'insertCatalog' ,
     updateUrl: prefix +"modify" ,
     statusUrl: prefix +"changeStatus" ,
     cleanUrl: prefix + "clean",
@@ -21,9 +21,17 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
-    listCatalogExcludeChild: prefix + "listCatalogExcludeChild",
     list: prefix + "list",
+    excludeChild: prefix + "excludeChild",
     downloadfile: prefix + "downloadfile"
+}
+
+// 查询部门列表（排除节点）
+export function listCatalogExcludeChild(deptId) {
+  return request({
+    url: managerUrl.excludeChild+ '/' + deptId , 
+    method: 'get'
+  })
 }
 
 // 查询数据库列表
@@ -41,14 +49,6 @@ export function datatableCatalog(query) {
     url: managerUrl.datatables ,
     method: 'post',
     params: query
-  })
-}
-
-// 查询数据库详细
-export function listCatalogExcludeChild() {
-  return request({
-    url: managerUrl.listCatalogExcludeChild , 
-    method: 'get'
   })
 }
 

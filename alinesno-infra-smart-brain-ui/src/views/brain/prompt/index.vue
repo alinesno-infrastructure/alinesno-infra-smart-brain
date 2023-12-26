@@ -1,12 +1,12 @@
 <template>
    <div class="app-container">
       <el-row :gutter="20">
-         <!--部门数据-->
+         <!--类型数据-->
          <el-col :span="4" :xs="24">
             <div class="head-container">
                <el-input
                   v-model="deptName"
-                  placeholder="请输入部门名称"
+                  placeholder="请输入类型名称"
                   clearable
                   prefix-icon="Search"
                   style="margin-bottom: 20px"
@@ -60,10 +60,10 @@
             <el-table v-loading="loading" :data="PromptList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" :align="'center'" />
 
-               <el-table-column label="图标" :align="'center'" width="100" key="status" v-if="columns[5].visible">
+               <el-table-column label="图标" :align="'center'" width="80" key="status" v-if="columns[5].visible">
                   <template #default="scope">
                      <div class="role-icon">
-                        <img :src="'http://data.linesno.com/icons/circle/Delivery boy-' + ((scope.$index + 1)%5 + 1) + '.png'" />
+                        <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + ((scope.$index + 1)%10 + 5) + '.png'" />
                      </div>
                   </template>
                </el-table-column>
@@ -74,8 +74,8 @@
                      <div>
                         {{ scope.row.promptName }}
                      </div>
-                     <div style="font-size: 13px;color: #a5a5a5;">
-                        会话次数: 12734  调用码: {{ scope.row.promptId }}
+                     <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" v-copyText="scope.row.promptId">
+                        会话次数: 12734  调用码: {{ scope.row.promptId }} <el-icon><CopyDocument /></el-icon>
                      </div>
                   </template>
                </el-table-column>
@@ -90,9 +90,9 @@
                      <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
                   </template>
                </el-table-column>
-               <!-- <el-table-column label="类型" align="center" width="120" key="promptType" prop="promptType" v-if="columns[3].visible" :show-overflow-tooltip="true" /> -->
+               <el-table-column label="类型" align="center" width="200" key="promptType" prop="promptType" v-if="columns[3].visible" :show-overflow-tooltip="true" />
                <!-- <el-table-column label="数据来源" align="center" key="dataSourceApi" prop="dataSourceApi" v-if="columns[4].visible" width="200" /> -->
-               <el-table-column label="状态" align="center" width="120" key="hasStatus" v-if="columns[5].visible" >
+               <el-table-column label="状态" align="center" width="100" key="hasStatus" v-if="columns[5].visible" >
                   <template #default="scope">
                      <el-switch
                         v-model="scope.row.hasStatus"
@@ -109,7 +109,7 @@
                </el-table-column>
 
                <!-- 操作字段  -->
-               <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
+               <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width">
                   <template #default="scope">
                      <el-tooltip content="修改" placement="top" v-if="scope.row.PromptId !== 1">
                         <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
@@ -128,7 +128,7 @@
       </el-row>
 
       <!-- 添加或修改指令配置对话框 -->
-      <el-dialog :title="promptTitle" v-model="promptOpen" width="900px" destroy-on-close append-to-body>
+      <el-dialog :title="promptTitle" v-model="promptOpen" width="1024" destroy-on-close append-to-body>
 
          <PromptEditor :currentPostId="currentPostId" :currentPromptContent="currentPromptContent" />
 
@@ -137,6 +137,20 @@
       <!-- 添加或修改指令配置对话框 -->
       <el-dialog :title="title" v-model="open" width="900px" append-to-body>
          <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
+            <el-row>
+               <el-col :span="24">
+                  <el-form-item style="width: 100%;" label="类型" prop="promptType">
+                     <el-tree-select
+                        v-model="form.promptType"
+                        :data="deptOptions"
+                        :props="{ value: 'id', label: 'label', children: 'children' }"
+                        value-key="id"
+                        placeholder="请选择归属类型"
+                        check-strictly
+                     />
+                  </el-form-item>
+               </el-col>
+            </el-row>
             <el-row>
                <el-col :span="24">
                   <el-form-item label="名称" prop="promptName">
@@ -148,11 +162,6 @@
                <el-col :span="24">
                   <el-form-item label="数据来源" prop="dataSourceApi">
                      <el-input v-model="form.dataSourceApi" placeholder="请输入dataSourceApi数据来源" maxlength="128" />
-                  </el-form-item>
-               </el-col>
-               <el-col :span="24">
-                  <el-form-item label="类型" prop="promptType">
-                     <el-input v-model="form.promptType" placeholder="请输入类型" maxlength="50" />
                   </el-form-item>
                </el-col>
             </el-row>
@@ -230,7 +239,8 @@ const data = reactive({
       pageNum: 1,
       pageSize: 10,
       promptName: undefined,
-      promptDesc: undefined
+      promptDesc: undefined,
+      catalogId: undefined
    },
    rules: {
       promptName: [{ required: true, message: "名称不能为空", trigger: "blur" }] ,
@@ -252,6 +262,13 @@ function getList() {
    });
 };
 
+// 节点单击事件
+function handleNodeClick(data) {
+   queryParams.value.catalogId = data.id;
+   console.log('data.id = ' + data.id)
+   getList();
+}
+
 /** 搜索按钮操作 */
 function handleQuery() {
    queryParams.value.pageNum = 1;
@@ -262,7 +279,9 @@ function handleQuery() {
 function resetQuery() {
    dateRange.value = [];
    proxy.resetForm("queryRef");
-   queryParams.value.deptId = undefined;
+
+   queryParams.value.catalogId = undefined;
+
    proxy.$refs.deptTreeRef.setCurrentKey(null);
    handleQuery();
 };
@@ -284,7 +303,7 @@ function handleSelectionChange(selection) {
    multiple.value = !selection.length;
 };
 
-/** 查询部门下拉树结构 */
+/** 查询类型下拉树结构 */
 function getDeptTree() {
   catalogTreeSelect().then(response => {
     deptOptions.value = response.data;
@@ -366,12 +385,3 @@ getDeptTree();
 getList();
 
 </script>
-
-<style lang="scss" scoped>
-.role-icon {
-  img {
-    width:45px;
-    height:45px;
-  }
-}
-</style>
