@@ -60,7 +60,7 @@
             <el-table v-loading="loading" :data="PromptList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" :align="'center'" />
 
-               <el-table-column label="图标" :align="'center'" width="80" key="status" v-if="columns[5].visible">
+               <el-table-column label="图标" :align="'center'" width="70" key="status" v-if="columns[5].visible">
                   <template #default="scope">
                      <div class="role-icon">
                         <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + ((scope.$index + 1)%10 + 5) + '.png'" />
@@ -79,13 +79,13 @@
                      </div>
                   </template>
                </el-table-column>
-               <el-table-column label="使用次数" align="center" width="150" key="useCount" prop="useCount" v-if="columns[2].visible" :show-overflow-tooltip="true">
+               <el-table-column label="使用次数" align="center" width="100" key="useCount" prop="useCount" v-if="columns[2].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
                      <span v-if="scope.row.useCount">{{ scope.row.useCount }}</span>
                      <span v-else>0</span>
                   </template>
                </el-table-column>
-               <el-table-column label="Prompt配置" align="center" width="150" key="promptContent" prop="promptContent" v-if="columns[2].visible" :show-overflow-tooltip="true">
+               <el-table-column label="Prompt配置" align="center" width="130" key="promptContent" prop="promptContent" v-if="columns[2].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
                      <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
                   </template>
