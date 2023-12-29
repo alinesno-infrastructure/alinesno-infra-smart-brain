@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -33,8 +34,12 @@ public class LoadTaskProcess {
     private void loadTasks() {
 
         List<GenerateTaskEntity> tasks = generateTaskService.getAllUnfinishedTasks(maxRetryCount);
+
         for (GenerateTaskEntity task : tasks) {
+
             task.setTaskStatus(TaskStatus.RUNNING.getValue());
+            task.setUpdateTime(new Date());
+
             generateTaskService.update(task);
 
             fileProcessingService.processFile(task);
