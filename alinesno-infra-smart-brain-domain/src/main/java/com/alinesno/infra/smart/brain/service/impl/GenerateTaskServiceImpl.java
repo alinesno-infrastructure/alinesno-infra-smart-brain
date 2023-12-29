@@ -87,9 +87,14 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         wrapper.eq(GenerateTaskEntity::getBusinessId , businessId)  ;
 
         GenerateTaskEntity generateTask = this.getOne(wrapper) ;
-
         // 封装成DTO类对象
         TaskContentDto dto = new TaskContentDto() ;
+
+        if(generateTask == null){  // 数据内容为空
+            dto.setTaskStatus(TaskStatus.RUNNING.getValue()); // 数据还在生成中
+            return dto ;
+        }
+
 
         dto.setTaskStatus(generateTask.getTaskStatus());
         dto.setBusinessId(businessId);
