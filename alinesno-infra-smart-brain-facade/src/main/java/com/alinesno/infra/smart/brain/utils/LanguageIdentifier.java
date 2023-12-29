@@ -61,13 +61,16 @@ public class LanguageIdentifier {
     }
 
     private static boolean isYAML(String content) {
-        try {
-            Yaml yaml = new Yaml();
-            yaml.load(content);
-            return true;
-        } catch (ParserException e) {
-            return false;
+        if(StringUtils.hasLength(content)) {
+            try {
+                Yaml yaml = new Yaml();
+                yaml.load(content);
+                return true;
+            } catch (ParserException e) {
+                return false;
+            }
         }
+        return false ;
     }
 
     private static boolean isMarkdown(String content) {
