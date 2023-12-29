@@ -55,6 +55,7 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
         entity.setParams(JSONObject.toJSONString(dto.getParams()));
         entity.setTaskStatus(TaskStatus.RUNNING.getValue());
+        entity.setUpdateTime(new Date());
 
         this.save(entity) ;
 
