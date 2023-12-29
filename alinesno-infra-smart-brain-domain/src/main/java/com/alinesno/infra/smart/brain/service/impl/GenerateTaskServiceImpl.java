@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -133,5 +134,22 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
            update(task);
        }
 
+    }
+
+    @Override
+    public List<GenerateTaskEntity> getAllUnstableTasks(int jobOutTime) {
+        QueryWrapper<GenerateTaskEntity> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda()
+                .lt(GenerateTaskEntity::getUpdateTime , DateAddInterval(new Date(), - jobOutTime))
+                .eq(GenerateTaskEntity::getTaskStatus, TaskStatus.RUNNING.getValue()) ;
+
+        return list(queryWrapper);
+    }
+
+    // 辅助方法，根据当前时间和指定秒数计算时间间隔
+    private Date DateAddInterval(Date currentDate, int seconds) {
+        long currentMilliseconds = currentDate.getTime();
+        long intervalMilliseconds = seconds * 1000L;
+        return new Date(currentMilliseconds + intervalMilliseconds);
     }
 }

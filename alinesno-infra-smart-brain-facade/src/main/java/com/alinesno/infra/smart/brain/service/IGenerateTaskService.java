@@ -46,4 +46,10 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
      */
     void modifyContent(TaskContentDto dto);
 
+    /**
+     * 查询出所有进行超时而且异常的任务
+     * @param jobOutTime
+     * @return
+     */
+    List<GenerateTaskEntity> getAllUnstableTasks(int jobOutTime);
 }
