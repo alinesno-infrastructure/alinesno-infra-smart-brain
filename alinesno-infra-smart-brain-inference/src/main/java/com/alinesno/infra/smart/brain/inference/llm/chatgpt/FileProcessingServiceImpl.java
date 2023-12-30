@@ -118,7 +118,7 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                     IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
 
                     if(codeContents.isEmpty()){ // 未完成，则重新生成内容
-                        dto.setRetryCount(dto.getRetryCount() + 1);
+//                        dto.setRetryCount(dto.getRetryCount() + 1);
                         dto.setAssistantContent(genContent);
                         dto.setTaskStatus(TaskStatus.FAILED.getValue());
                         dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));

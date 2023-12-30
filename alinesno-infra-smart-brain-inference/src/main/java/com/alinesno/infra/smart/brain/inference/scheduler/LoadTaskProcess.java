@@ -30,7 +30,7 @@ public class LoadTaskProcess {
     @Value("${alinesno.infra.smart.brain.max-retry:5}")
     private int maxRetryCount ;
 
-    @Scheduled(initialDelay = 10000 , fixedDelay = 60000)
+    @Scheduled(initialDelay = 10000 , fixedDelay = 30000)
     private void loadTasks() {
 
         List<GenerateTaskEntity> tasks = generateTaskService.getAllUnfinishedTasks(maxRetryCount);
@@ -39,7 +39,7 @@ public class LoadTaskProcess {
 
             task.setTaskStatus(TaskStatus.RUNNING.getValue());
             task.setUpdateTime(new Date());
-
+            task.setRetryCount(task.getTaskStatus()+1);
             generateTaskService.update(task);
 
             fileProcessingService.processFile(task);
