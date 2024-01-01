@@ -2,25 +2,21 @@ package com.alinesno.infra.smart.brain.gateway.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
-import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
-import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskHistoryEntity;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskHistoryService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -33,11 +29,11 @@ import java.util.List;
 @Api(tags = "BusinessLog")
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
-@RequestMapping("/api/infra/smart/brain/generateTask")
-public class GenerateTaskController extends BaseController<GenerateTaskEntity, IGenerateTaskService> {
+@RequestMapping("/api/infra/smart/brain/generateTaskHistory")
+public class GenerateTaskHistoryController extends BaseController<GenerateTaskHistoryEntity, IGenerateTaskHistoryService> {
 
     @Autowired
-    private IGenerateTaskService service;
+    private IGenerateTaskHistoryService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -51,17 +47,6 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
-
-        String genStatus = request.getParameter("genStatus") ;
-
-        if(StringUtils.isNotBlank(genStatus)){
-            List<ConditionDto> conditionDto = page.getConditionList() ;
-            ConditionDto c = new ConditionDto() ;
-            c.setColumn("task_status");
-            c.setValue(genStatus);
-            conditionDto.add(c);
-        }
-
         return this.toPage(model, this.getFeign(), page);
     }
 
@@ -73,25 +58,14 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
     @GetMapping("/getPromptContent")
     public AjaxResult getPromptContent(String taskId){
 
-        GenerateTaskEntity e = service.getById(taskId)  ;
+        GenerateTaskHistoryEntity e = service.getById(taskId)  ;
         JSONObject prompts = JSONObject.parseObject(e.getParams() , JSONObject.class) ;
 
         return AjaxResult.success(prompts) ;
     }
 
-    /**
-     * 重置次数
-     * @param taskId
-     * @return
-     */
-    @GetMapping("/resetRetry")
-    public AjaxResult resetRetry(Long taskId){
-        service.resetRetry(taskId)  ;
-        return ok() ;
-    }
-
     @Override
-    public IGenerateTaskService getFeign() {
+    public IGenerateTaskHistoryService getFeign() {
         return this.service;
     }
 }

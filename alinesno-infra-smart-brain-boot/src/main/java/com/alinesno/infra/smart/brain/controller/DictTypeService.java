@@ -1,47 +1,43 @@
 package com.alinesno.infra.smart.brain.controller;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DictTypeService {
 
     public Object selectDictTypeById(String dictId) {
+
+        // 0排队中/1运行中/2已完成/9失败
+
         String str = "[\n" +
                 "        {\n" +
-                "            \"createBy\": \"admin\",\n" +
-                "            \"createTime\": \"2023-04-23 16:13:26\",\n" +
-                "            \"updateBy\": null,\n" +
-                "            \"updateTime\": null,\n" +
-                "            \"remark\": \"正常状态\",\n" +
                 "            \"dictCode\": 6,\n" +
                 "            \"dictSort\": 1,\n" +
-                "            \"dictLabel\": \"正常\",\n" +
-                "            \"dictValue\": \"0\",\n" +
+                "            \"dictLabel\": \"已失败\",\n" +
+                "            \"dictValue\": \"9\",\n" +
                 "            \"dictType\": \"sys_normal_disable\",\n" +
-                "            \"cssClass\": \"\",\n" +
-                "            \"listClass\": \"primary\",\n" +
-                "            \"isDefault\": \"Y\",\n" +
-                "            \"status\": \"0\",\n" +
-                "            \"default\": true\n" +
                 "        },\n" +
                 "        {\n" +
-                "            \"createBy\": \"admin\",\n" +
-                "            \"createTime\": \"2023-04-23 16:13:26\",\n" +
-                "            \"updateBy\": null,\n" +
-                "            \"updateTime\": null,\n" +
-                "            \"remark\": \"停用状态\",\n" +
-                "            \"dictCode\": 7,\n" +
-                "            \"dictSort\": 2,\n" +
-                "            \"dictLabel\": \"停用\",\n" +
+                "            \"dictCode\": 6,\n" +
+                "            \"dictSort\": 1,\n" +
+                "            \"dictLabel\": \"已完成\",\n" +
+                "            \"dictValue\": \"2\",\n" +
+                "            \"dictType\": \"sys_normal_disable\",\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"dictCode\": 6,\n" +
+                "            \"dictSort\": 1,\n" +
+                "            \"dictLabel\": \"排队中\",\n" +
                 "            \"dictValue\": \"1\",\n" +
                 "            \"dictType\": \"sys_normal_disable\",\n" +
-                "            \"cssClass\": \"\",\n" +
-                "            \"listClass\": \"danger\",\n" +
-                "            \"isDefault\": \"N\",\n" +
-                "            \"status\": \"0\",\n" +
-                "            \"default\": false\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"dictCode\": 7,\n" +
+                "            \"dictSort\": 2,\n" +
+                "            \"dictLabel\": \"运行中\",\n" +
+                "            \"dictValue\": \"0\",\n" +
+                "            \"dictType\": \"sys_normal_disable\",\n" +
                 "        }\n" +
                 "    ]" ;
 

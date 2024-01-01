@@ -7,8 +7,16 @@
                <el-form-item label="任务名称" prop="dbName">
                   <el-input v-model="queryParams.dbName" placeholder="请输入任务名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
                </el-form-item>
-               <el-form-item label="任务名称" prop="dbName">
-                  <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入任务名称" clearable style="width: 240px" @keyup.enter="handleQuery" />
+               <el-form-item label="任务状态" prop="dbName">
+                  <!-- <el-input v-model="queryParams['condition[dbName|like]']" placeholder="请输入任务状态" clearable style="width: 240px" @keyup.enter="handleQuery" /> -->
+                  <el-select v-model="queryParams.genStatus" placeholder="请选择任务状态" clearable>
+                     <el-option
+                        v-for="dict in gen_status"
+                        :key="dict.value"
+                        :label="dict.label"
+                        :value="dict.value"
+                     />
+                  </el-select>
                </el-form-item>
                <el-form-item>
                   <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -61,11 +69,6 @@
                      <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">查看</el-button>
                   </template>
                </el-table-column>
-               <!-- <el-table-column label="角色标识" align="center" width="150px" key="systemContent" prop="systemContent" v-if="columns[1].visible" :show-overflow-tooltip="true">
-                  <template #default="scope">
-                     {{ scope.row.promptId }}
-                  </template>
-               </el-table-column> -->
                <el-table-column label="生成内容" align="center" width="150" key="assistantContent" prop="assistantContent" v-if="columns[2].visible" :show-overflow-tooltip="true" >
                   <template #default="scope">
                      <el-button type="primary" text bg icon="Paperclip" @click="handleTaskContent(scope.row)">查看</el-button>
@@ -77,6 +80,11 @@
                      {{ scope.row.usageTime }} 秒
                   </template>
                </el-table-column>
+               <el-table-column label="角色标识" align="center" width="150px" key="systemContent" prop="systemContent" v-if="columns[1].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                     <el-button type="primary" text bg icon="Paperclip" @click="handleTaskHistory(scope.row)">生成历史</el-button>
+                  </template>
+               </el-table-column>
                <el-table-column label="任务状态" align="center" width="150" key="taskStatus" v-if="columns[5].visible" >
                   <template #default="scope">
                      <el-button v-if="scope.row.taskStatus == 0" type="info"  text bg icon="Paperclip">排队</el-button>
@@ -86,10 +94,10 @@
                   </template>
                </el-table-column>
 
-               <el-table-column label="完成时间" align="center" prop="finishTime" v-if="columns[6].visible" width="160">
+               <el-table-column label="最近更新" align="center" prop="finishTime" v-if="columns[6].visible" width="160">
                   <template #default="scope">
                      <span v-if="scope.row.finishTime">{{ parseTime(scope.row.finishTime) }}</span>
-                     <span v-else>{{ parseTime(scope.row.addTime) }}</span>
+                     <span v-else>{{ parseTime(scope.row.updateTime) }}</span>
                   </template>
                </el-table-column>
 
@@ -116,6 +124,11 @@
        <!-- 添加或修改指令配置对话框 -->
        <el-dialog :title="promptTitle" v-model="promptOpen" width="900px" destroy-on-close append-to-body>
          <PromptEditor :currentPostId="currentPostId" :currentPromptContent="currentPromptContent" />
+      </el-dialog>
+
+       <!-- 添加或修改指令配置对话框 -->
+       <el-dialog title="内容生成历史" v-model="promptHistoryOpen" width="900px" destroy-on-close append-to-body>
+         <PromptHistoryPanel :currentBusinessId="currentBusinessId" />
       </el-dialog>
 
       <!-- 添加或修改任务配置对话框 -->
@@ -151,10 +164,12 @@ import {
 } from "@/api/brain/smart/task";
 
 import { onMounted, onBeforeUnmount } from 'vue';
-import PromptEditor from "./prompt.vue"
+import PromptEditor from "./prompt"
+import PromptHistoryPanel from "./history"
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
+const { gen_status } = proxy.useDict("gen_status");
 
 // 定义变量
 const TaskList = ref([]);
@@ -173,8 +188,10 @@ const currentTaskContent = ref("")
 
 const promptTitle = ref("");
 const currentPostId = ref("");
+const currentBusinessId = ref("");
 const currentPromptContent = ref([]);
 const promptOpen = ref(false);
+const promptHistoryOpen = ref(false);
 
 const customColors = [
   { color: '#f56c6c', percentage: 20 },
@@ -201,6 +218,7 @@ const data = reactive({
       pageNum: 1,
       pageSize: 10,
       dbName: undefined,
+      genStatus: undefined,
       dbDesc: undefined
    },
    rules: {
@@ -274,7 +292,7 @@ function reset() {
       deptId: undefined,
       TaskName: undefined,
       nickName: undefined,
-      password: undefined,
+      genStatus: undefined,
       phonenumber: undefined,
       status: "0",
       remark: undefined,
@@ -332,6 +350,11 @@ function configPrompt(row){
 
 }
 
+/** 查询生成历史记录 */
+function handleTaskHistory(row){
+   promptHistoryOpen.value = true ;
+   currentBusinessId.value = row.id;
+}
 
 /** 提交按钮 */
 function submitForm() {

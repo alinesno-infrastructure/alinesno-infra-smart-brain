@@ -7,11 +7,13 @@ import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
+import com.alinesno.infra.smart.brain.entity.GenerateTaskHistoryEntity;
 import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.inference.event.ChatEventPublisher;
 import com.alinesno.infra.smart.brain.inference.tools.TemplateParser;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskHistoryService;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
@@ -25,6 +27,7 @@ import okhttp3.sse.EventSource;
 import okhttp3.sse.EventSourceListener;
 import org.apache.commons.lang3.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
@@ -57,9 +60,6 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
     @Autowired
     private IPromptPostsService promptPostsService ;
-
-//    @Autowired
-//    private IGenerateTaskService generateTaskService ;
 
     /**
      * 实现处理文件的方法
@@ -107,6 +107,9 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 }
 
                 if(isFinish){
+
+                    IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
+
                     stopWatch.stop();
                     System.out.println("方法执行时间：" + stopWatch.getTime() / 1000.0 + " 秒");
 
@@ -115,10 +118,7 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                     // 判断是否获取到代码内容(这里返回的结果里面一定要有代码)
                     List<TaskContentDto.CodeContent> codeContents =  CodeBlockParser.parseCodeBlocks(genContent) ;
 
-                    IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
-
                     if(codeContents.isEmpty()){ // 未完成，则重新生成内容
-//                        dto.setRetryCount(dto.getRetryCount() + 1);
                         dto.setAssistantContent(genContent);
                         dto.setTaskStatus(TaskStatus.FAILED.getValue());
                         dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));
@@ -130,10 +130,24 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                         generateTaskService.update(dto);
                     }
 
+                    // 记录历史记录
+                    recordHistory(dto , genContent) ;
+
                     log.debug("assistant content: \r\n{}" , dto.getAssistantContent());
                 }
             }
+
         });
+    }
+
+    private void recordHistory(GenerateTaskEntity dto, String genContent) {
+        IGenerateTaskHistoryService generateTaskHistoryService = SpringContext.getBean(IGenerateTaskHistoryService.class) ;
+
+        GenerateTaskHistoryEntity generateTaskHistoryEntity = new GenerateTaskHistoryEntity() ;
+        BeanUtils.copyProperties(dto , generateTaskHistoryEntity);
+        dto.setAssistantContent(genContent);
+
+        generateTaskHistoryService.save(generateTaskHistoryEntity) ;
     }
 
     @NotNull
