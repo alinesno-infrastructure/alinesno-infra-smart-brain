@@ -4,7 +4,7 @@
          <!--类型数据-->
          <el-col :span="24" :xs="24">
 
-            <el-table v-loading="loading" :data="CatalogList" @selection-change="handleSelectionChange">
+            <el-table v-loading="loading" :data="TaskHistoryList" @selection-change="handleSelectionChange">
                <el-table-column type="selection" width="50" align="center" />
 
                <el-table-column label="图标" align="center" width="80px" prop="icon" v-if="columns[0].visible">
@@ -48,13 +48,13 @@
                <!-- 操作字段  -->
                <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width">
                   <template #default="scope">
-                     <el-tooltip content="修改" placement="top" v-if="scope.row.CatalogId !== 1">
+                     <el-tooltip content="修改" placement="top" v-if="scope.row.TaskHistoryId !== 1">
                         <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                           v-hasPermi="['system:Catalog:edit']"></el-button>
+                           v-hasPermi="['system:TaskHistory:edit']"></el-button>
                      </el-tooltip>
-                     <el-tooltip content="删除" placement="top" v-if="scope.row.CatalogId !== 1">
+                     <el-tooltip content="删除" placement="top" v-if="scope.row.TaskHistoryId !== 1">
                         <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                           v-hasPermi="['system:Catalog:remove']"></el-button>
+                           v-hasPermi="['system:TaskHistory:remove']"></el-button>
                      </el-tooltip>
                   </template>
 
@@ -102,14 +102,14 @@
    </div>
 </template>
 
-<script setup name="Catalog">
+<script setup name="TaskHistory">
 
 import {
-   listCatalog,
-   delCatalog,
-   getCatalog,
-   updateCatalog,
-   addCatalog
+   listTaskHistory,
+   delTaskHistory,
+   getTaskHistory,
+   updateTaskHistory,
+   addTaskHistory
 } from "@/api/brain/smart/taskHistory";
 
 const props = defineProps({
@@ -124,7 +124,7 @@ const { proxy } = getCurrentInstance();
 
 // 定义变量
 const checkboxList = ref([])
-const CatalogList = ref([]);
+const TaskHistoryList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -169,9 +169,9 @@ const { queryParams, form, rules } = toRefs(data);
 /** 查询类型列表 */
 function getList() {
    loading.value = true;
-   listCatalog(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+   listTaskHistory(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
       loading.value = false;
-      CatalogList.value = res.rows;
+      TaskHistoryList.value = res.rows;
       total.value = res.total;
    });
 };
@@ -192,9 +192,9 @@ function resetQuery() {
 };
 /** 删除按钮操作 */
 function handleDelete(row) {
-   const CatalogIds = row.id || ids.value;
-   proxy.$modal.confirm('是否确认删除类型编号为"' + CatalogIds + '"的数据项？').then(function () {
-      return delCatalog(CatalogIds);
+   const TaskHistoryIds = row.id || ids.value;
+   proxy.$modal.confirm('是否确认删除类型编号为"' + TaskHistoryIds + '"的数据项？').then(function () {
+      return delTaskHistory(TaskHistoryIds);
    }).then(() => {
       getList();
       proxy.$modal.msgSuccess("删除成功");
@@ -213,7 +213,7 @@ function reset() {
    form.value = {
       id: undefined,
       deptId: undefined,
-      CatalogName: undefined,
+      TaskHistoryName: undefined,
       promptCount: undefined,
       password: undefined,
       phonenumber: undefined,
@@ -238,8 +238,8 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
    reset();
-   const CatalogId = row.id || ids.value;
-   getCatalog(CatalogId).then(response => {
+   const TaskHistoryId = row.id || ids.value;
+   getTaskHistory(TaskHistoryId).then(response => {
       form.value = response.data;
       open.value = true;
       title.value = "修改类型";
@@ -250,14 +250,14 @@ function handleUpdate(row) {
 function submitForm() {
    proxy.$refs["databaseRef"].validate(valid => {
       if (valid) {
-         if (form.value.CatalogId != undefined) {
-            updateCatalog(form.value).then(response => {
+         if (form.value.TaskHistoryId != undefined) {
+            updateTaskHistory(form.value).then(response => {
                proxy.$modal.msgSuccess("修改成功");
                open.value = false;
                getList();
             });
          } else {
-            addCatalog(form.value).then(response => {
+            addTaskHistory(form.value).then(response => {
                proxy.$modal.msgSuccess("新增成功");
                open.value = false;
                getList();

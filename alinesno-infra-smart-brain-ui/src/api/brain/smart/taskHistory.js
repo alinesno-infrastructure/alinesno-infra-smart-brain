@@ -23,19 +23,19 @@ var managerUrl = {
     changeField: prefix + "changeField",
     downloadfile: prefix + "downloadfile",
     resetRetry: prefix + "resetRetry",
-    getPromptContent: prefix + "getPromptContent"
+    getTaskHistory: prefix + "getTaskHistory"
 }
 
-// 获取PromptContent内容  
-export function getPromptContent(taskId) {
-  return request({
-    url: managerUrl.getPromptContent+ '?taskId=' + parseStrEmpty(taskId),
-    method: 'get'
-  })
-}
+// 获取TaskHistory内容  
+// export function getTaskHistory(taskId) {
+//   return request({
+//     url: managerUrl.getTaskHistory+ '?taskId=' + parseStrEmpty(taskId),
+//     method: 'get'
+//   })
+// }
 
 // 查询数据库列表
-export function listTask(query) {
+export function listTaskHistory(query) {
   return request({
     url: managerUrl.datatables ,
     method: 'post',
@@ -44,7 +44,7 @@ export function listTask(query) {
 }
 
 // 查询数据库详细
-export function getTask(taskId) {
+export function getTaskHistory(taskId) {
   return request({
     url: managerUrl.detailUrl + '/' + parseStrEmpty(taskId),
     method: 'get'
@@ -52,7 +52,7 @@ export function getTask(taskId) {
 }
 
 // 新增数据库
-export function addTask(data) {
+export function addTaskHistory(data) {
   return request({
     url: managerUrl.saveUrl ,
     method: 'post',
@@ -61,7 +61,7 @@ export function addTask(data) {
 }
 
 // 修改数据库
-export function updateTask(data) {
+export function updateTaskHistory(data) {
   return request({
     url: managerUrl.updateUrl ,
     method: 'put',
@@ -70,7 +70,7 @@ export function updateTask(data) {
 }
 
 // 删除数据库
-export function delTask(taskId) {
+export function delTaskHistory(taskId) {
   return request({
     url: managerUrl.removeUrl + '/' + parseStrEmpty(taskId),
     method: 'delete'
