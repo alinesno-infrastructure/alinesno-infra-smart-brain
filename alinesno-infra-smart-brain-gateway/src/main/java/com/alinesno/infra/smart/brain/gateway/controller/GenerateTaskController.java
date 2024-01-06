@@ -6,6 +6,7 @@ import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.wrapper.Wrapper;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
@@ -56,10 +57,19 @@ public class GenerateTaskController extends BaseController<GenerateTaskEntity, I
 
         if(StringUtils.isNotBlank(genStatus)){
             List<ConditionDto> conditionDto = page.getConditionList() ;
+
             ConditionDto c = new ConditionDto() ;
             c.setColumn("task_status");
             c.setValue(genStatus);
+
             conditionDto.add(c);
+
+            ConditionDto oc = new ConditionDto() ;
+            oc.setColumn("add_time");
+            oc.setValue("desc");
+            oc.setType(Wrapper.ORDER_BY);
+
+            conditionDto.add(oc);
         }
 
         return this.toPage(model, this.getFeign(), page);
