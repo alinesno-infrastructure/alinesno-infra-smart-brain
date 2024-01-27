@@ -153,6 +153,9 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
 
     @Override
     public void resetRetryTask(GenerateTaskEntity dto) {
+
+        log.debug("任务:{}，业务bId:{},重试次数:{}" , dto.getTaskDesc() , dto.getBusinessId() , dto.getRetryCount());
+
         if(dto.getRetryCount() > maxRetryCount){
             dto.setRetryCount(dto.getRetryCount()+1);
             dto.setTaskStatus(TaskStatus.RUNNING.getValue());
@@ -163,6 +166,7 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
             dto.setTaskStatus(TaskStatus.FAILED.getValue());
             update(dto);
         }
+
     }
 
     // 辅助方法，根据当前时间和指定秒数计算时间间隔
