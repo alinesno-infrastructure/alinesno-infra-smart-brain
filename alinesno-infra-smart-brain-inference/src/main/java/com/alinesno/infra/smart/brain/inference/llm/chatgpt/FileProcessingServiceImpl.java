@@ -74,6 +74,11 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
         List<Message> messages = getMessages(dto);
 
+        if(messages.isEmpty()){
+            log.warn("消息内容为空，任务不处理:{}" , dto);
+           return ;
+        }
+
         ChatCompletion chatCompletion = ChatCompletion.builder()
                 .model(ChatCompletion.Model.GPT_3_5_TURBO.getName())
                 .messages(messages)
@@ -119,10 +124,13 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                     List<TaskContentDto.CodeContent> codeContents =  CodeBlockParser.parseCodeBlocks(genContent) ;
 
                     if(codeContents.isEmpty()){ // 未完成，则重新生成内容
+
                         dto.setAssistantContent(genContent);
                         dto.setTaskStatus(TaskStatus.FAILED.getValue());
                         dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));
-                        generateTaskService.update(dto);
+
+                        generateTaskService.resetRetryTask(dto);
+
                     }else{
                         dto.setAssistantContent(genContent);
                         dto.setUsageTime((long) (stopWatch.getTime() / 1000.0));

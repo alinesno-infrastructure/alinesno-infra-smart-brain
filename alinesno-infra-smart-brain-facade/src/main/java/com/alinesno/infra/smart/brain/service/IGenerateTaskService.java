@@ -52,4 +52,11 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
      * @return
      */
     List<GenerateTaskEntity> getAllUnstableTasks(int jobOutTime);
+
+    /**
+     * 重新运行任务服务
+     * @param dto
+     */
+    void resetRetryTask(GenerateTaskEntity dto);
+
 }

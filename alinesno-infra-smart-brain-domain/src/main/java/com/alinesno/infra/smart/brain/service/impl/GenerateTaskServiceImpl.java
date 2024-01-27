@@ -17,6 +17,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -26,6 +27,9 @@ import java.util.List;
 @Slf4j
 @Service
 public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity, GenerateTaskMapper> implements IGenerateTaskService {
+
+    @Value("${alinesno.infra.smart.brain.max-retry:5}")
+    private int maxRetryCount ;
 
     @Autowired
     private IFileProcessingService fileProcessingService ;
@@ -145,6 +149,20 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
                 .eq(GenerateTaskEntity::getTaskStatus, TaskStatus.RUNNING.getValue()) ;
 
         return list(queryWrapper);
+    }
+
+    @Override
+    public void resetRetryTask(GenerateTaskEntity dto) {
+        if(dto.getRetryCount() > maxRetryCount){
+            dto.setRetryCount(dto.getRetryCount()+1);
+            dto.setTaskStatus(TaskStatus.RUNNING.getValue());
+            update(dto);
+            fileProcessingService.processFile(dto);
+        }else {
+            dto.setRetryCount(dto.getRetryCount());
+            dto.setTaskStatus(TaskStatus.FAILED.getValue());
+            update(dto);
+        }
     }
 
     // 辅助方法，根据当前时间和指定秒数计算时间间隔

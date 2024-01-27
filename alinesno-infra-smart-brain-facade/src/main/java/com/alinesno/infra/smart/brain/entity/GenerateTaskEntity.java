@@ -9,6 +9,7 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.Date;
 
@@ -18,6 +19,7 @@ import java.util.Date;
  * @author luoxiaodong
  * @since 1.0.0
  */
+@ToString
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("generate_task")
