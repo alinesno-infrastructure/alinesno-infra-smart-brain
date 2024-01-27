@@ -5,6 +5,7 @@ public enum TaskStatus {
     QUEUED(0, "排队中"),
     RUNNING(1, "运行中"),
     COMPLETED(2, "已完成"),
+    EXCEPTION(3, "运行异常"),
     FAILED(9, "失败");
 
     private final int value;

@@ -72,7 +72,8 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
 
         initClient() ;
 
-        List<Message> messages = getMessages(dto);
+        IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
+        List<Message> messages = getMessages(dto , generateTaskService);
 
         if(messages.isEmpty()){
             log.warn("消息内容为空，任务不处理:{}" , dto);
@@ -112,8 +113,6 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
                 }
 
                 if(isFinish){
-
-                    IGenerateTaskService generateTaskService = SpringContext.getBean(IGenerateTaskService.class) ;
 
                     stopWatch.stop();
                     System.out.println("方法执行时间：" + stopWatch.getTime() / 1000.0 + " 秒");
@@ -159,16 +158,31 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
     }
 
     @NotNull
-    private List<Message> getMessages(GenerateTaskEntity dto) {
+    private List<Message> getMessages(GenerateTaskEntity dto , IGenerateTaskService generateTaskService) {
 
         String promptId = dto.getPromptId() ;
         log.debug("promptId = {}" , promptId);
+        List<Message> messages = new ArrayList<>() ;
 
+        try{
+            parseMessage(dto, promptId, messages);
+        }catch(Exception e){
+            log.error("模板解析异常:{}" , e.getMessage());
+            dto.setTaskStatus(TaskStatus.EXCEPTION.getValue());
+            dto.setRetryCount(Integer.MAX_VALUE);
+            generateTaskService.update(dto) ;
+        }
+
+        log.debug("message = {}", messages);
+
+        return messages;
+    }
+
+    private void parseMessage(GenerateTaskEntity dto, String promptId, List<Message> messages) {
         PromptPostsEntity postsEntity = promptPostsService.getByPromptId(promptId) ;
         List<PromptMessageDto> promptMessageList = JSONArray.parseArray(postsEntity.getPromptContent() , PromptMessageDto.class) ;
         Map<String , Object> params = JSONObject.parseObject(dto.getParams() , Map.class) ;
 
-        List<Message> messages = new ArrayList<>() ;
 
         for(PromptMessageDto msg : promptMessageList){
             Message message = null ;
@@ -192,10 +206,6 @@ public class FileProcessingServiceImpl implements IFileProcessingService {
             }
 
         }
-
-        log.debug("message = {}", messages.toString());
-
-        return messages;
     }
 
     private void initClient(){
