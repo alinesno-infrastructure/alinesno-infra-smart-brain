@@ -248,7 +248,7 @@ public class CountRest extends SuperController {
                 "                \"name\": \"smart-brain-智能推理服务\",\n" +
                 "                \"systemCode\": \"smart-brain\",\n" +
                 "                \"groupCode\": \"interior_api\",\n" +
-                "                \"uri\": \"http://alinesno-infra-smart-brain-boot:8080\",\n" +
+                "                \"uri\": \"http://alinesno-infra-smart-expert-boot:8080\",\n" +
                 "                \"path\": \"/smart-brain/**\",\n" +
                 "                \"method\": null,\n" +
                 "                \"host\": \"\",\n" +

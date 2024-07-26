@@ -46,7 +46,7 @@
         <module>alinesno-infra-smart-expert-boot</module>  <!-- 启动服务 -->
 
         <!-- 前端服务
-        <module>alinesno-infra-smart-brain-ui</module>
+        <module>alinesno-infra-smart-expert-ui</module>
         -->
     </modules>
 
