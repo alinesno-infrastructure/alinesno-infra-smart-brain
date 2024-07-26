@@ -1,0 +1,104 @@
+server:
+  port: 30304
+
+# spring 配置
+spring:
+  application:
+    name: alinesno-infra-smart-expert-boot
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3309/dev_alinesno_infra_smart_assistant_v100?characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true
+    username: root
+    password:  adminer
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+  devtools:
+    restart:
+      enabled: true
+
+actable:
+  table:
+    auto: update
+  model:
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity
+  database:
+    type: mysql
+  index:
+    prefix: alinesno_smart_assistant_idx_
+  unique:
+    prefix: alinesno_smart_assistant_uni_
+
+#logging:
+#  level:
+#    root: DEBUG
+
+# sa-token配置
+sa-token:
+  token-name: satoken
+  host-path: http://alinesno-infra-base-identity-auth-application.beta.base.infra.linesno.com
+  sso:
+    auth-url: ${sa-token.host-path}/login
+    is-http: true
+    check-ticket-url: ${sa-token.host-path}/sso/checkTicket
+    slo-url: ${sa-token.host-path}/sso/signout
+    get-data-url: ${sa-token.host-path}/sso/getData
+  sign:
+    secret-key:
+
+# wechat token
+alinesno.infra:
+  gateway:
+    host:
+  smart:
+    comment-link:
+    assistant:
+      plugin:
+        central: http://data.linesno.com/plugins/
+        path: ${user.home}/.smart-assistant/plugins
+    dingtalk:
+      app-key:
+      app-secret:
+      robot-code:
+    wechat:
+      token: xxxxx
+
+# liteflow 配置
+liteflow:
+  print-banner: false
+  rule-source-ext-data-map:
+    applicationName: ${spring.application.name}
+
+    #是否开启SQL日志
+    sqlLogEnabled: true
+
+    #以下是chain表的配置，这个一定得有
+    chainTableName: role_chain
+    chainApplicationNameField: chain_application_name
+    chainNameField: chain_name
+    elDataField: el_data
+    chainEnableField: enable
+
+    #以下是script表的配置，如果你没使用到脚本，下面可以不配置
+    scriptTableName: role_chain_script
+    scriptApplicationNameField: application_name
+    scriptIdField: script_id
+    scriptNameField: script_name
+    scriptDataField: script_data
+    scriptTypeField: script_type
+    scriptLanguageField: script_language
+    scriptEnableField: enable
+
+alinesno:
+  infra:
+    smart:
+      # milvus 向量数据库
+      milvus:
+        ip-addr: 127.0.0.1
+        port: 19530
+      # openapi config
+      brain:
+        openapi:
+          host:
+          key:
