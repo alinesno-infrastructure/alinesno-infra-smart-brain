@@ -78,6 +78,13 @@ export const constantRoutes = [
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       }, 
 
+     {
+       path: '/demo',
+       component: () => import('@/views/demo'),
+       name: '/demo',
+       meta: { title: '流程定义', icon: 'dashboard', affix: true }
+     },
+
       // >>>>>>>>>>>>>>>>>>>> assistant_router_start >>>>>>>>>>>>>>>>>>
 //      {
 //        path: '/smart/assistant/chainScript/index',
