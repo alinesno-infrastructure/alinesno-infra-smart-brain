@@ -48,6 +48,8 @@ sa-token:
   sign:
     secret-key:
 
+
+
 # wechat token
 alinesno.infra:
   gateway:
@@ -91,8 +93,14 @@ liteflow:
     scriptLanguageField: script_language
     scriptEnableField: enable
 
+
 alinesno:
+  file:
+    local:
+      path:
   infra:
+    gateway:
+      host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
     smart:
       # milvus 向量数据库
       milvus:
