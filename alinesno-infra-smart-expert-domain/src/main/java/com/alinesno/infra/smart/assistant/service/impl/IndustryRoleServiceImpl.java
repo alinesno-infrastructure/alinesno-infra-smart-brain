@@ -13,6 +13,7 @@ import com.alinesno.infra.smart.assistant.redis.PublishRedisService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.INoticeService;
 import com.alinesno.infra.smart.assistant.service.IRoleChainService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +24,7 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -100,6 +102,17 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         params.put("label1" , msg) ;
 
         runRoleChainByRoleId(params , roleId , noticeDto);
+    }
+
+    @Override
+    public List<IndustryRoleEntity> getNewestRole() {
+
+        LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.orderByDesc(IndustryRoleEntity::getAddTime);
+        queryWrapper.last("limit 8");
+
+        return this.list(queryWrapper);
     }
 
 }
