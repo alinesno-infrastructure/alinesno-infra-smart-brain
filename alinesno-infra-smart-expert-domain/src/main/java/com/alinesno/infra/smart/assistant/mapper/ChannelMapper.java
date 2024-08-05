@@ -1,7 +1,7 @@
 package com.alinesno.infra.smart.assistant.mapper;
 
 import com.alinesno.infra.common.facade.mapper.repository.IBaseMapper;
-import com.alinesno.infra.smart.assistant.entity.ChannelEntity;
+import com.alinesno.infra.smart.assistant.entity.PluginEntity;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,6 +11,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @author luoxiaodong
  */
 @Mapper
-public interface ChannelMapper extends IBaseMapper<ChannelEntity> {
+public interface ChannelMapper extends IBaseMapper<PluginEntity> {
 
 }
