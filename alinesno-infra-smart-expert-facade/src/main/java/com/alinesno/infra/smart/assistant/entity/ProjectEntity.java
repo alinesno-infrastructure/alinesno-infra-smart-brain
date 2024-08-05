@@ -19,78 +19,39 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("application")
+@TableName("project")
 public class ProjectEntity extends InfraBaseEntity {
 
-    /**
-     * 应用名称
-     */
-    @ColumnType(length = 50)
-    @ColumnComment("应用名称")
-    @TableField("name")
-    private String name;
 
     /**
-     * 应用Icons
+     * 项目名称
      */
-    @ColumnType(length = 100)
-    @ColumnComment("应用Icons")
-    @TableField("icons")
-    private String icons;
+    @TableField("project_name")
+    @ColumnType(length=32)
+    @ColumnComment("项目名称")
+    private String projectName;
 
     /**
-     * 所属领域
+     * 项目描述
      */
-    @ColumnType(length = 50)
-    @ColumnComment("所属领域")
-    @TableField("domain")
-    private String domain;
+    @TableField("project_desc")
+    @ColumnType(length=256)
+    @ColumnComment("项目描述")
+    private String projectDesc;
 
     /**
-     * 显示名称
+     * 项目代码
      */
-    @ColumnType(length = 50)
-    @ColumnComment("显示名称")
-    @TableField("show_name")
-    private String showName;
+    @TableField("project_code")
+    @ColumnType(length=50)
+    @ColumnComment("项目代码")
+    private String projectCode;
 
     /**
-     * 域名
+     * 所开通渠道
      */
-    @ColumnType(length = 100)
-    @ColumnComment("域名")
-    @TableField("domain_name")
-    private String domainName;
-
-    /**
-     * 安全存储路径
-     */
-    @ColumnType(length = 200)
-    @ColumnComment("安全存储路径")
-    @TableField("storage_path")
-    private String storagePath;
-
-    /**
-     * 应用目标（k8s/docker/jar）
-     */
-    @ColumnType(length = 20)
-    @ColumnComment("应用目标")
-    @TableField("target")
-    private String target;
-
-    /**
-     * 日志监控
-     */
-    @ColumnType(length = 50)
-    @ColumnComment("日志监控")
-    @TableField("logger_watch")
-    private String loggerWatch;
-
-    /**
-     * Prometheus监控
-     */
-    @ColumnType(length = 50)
-    @ColumnComment("Prometheus监控")
-    @TableField("prothrombins_watch")
-    private String prothrombinsWatch;
+    @TableField("document_type")
+    @ColumnType(length=255)
+    @ColumnComment("所开通渠道")
+    private String documentType ;
 }
