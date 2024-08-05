@@ -86,7 +86,12 @@
 			<artifactId>alinesno-infra-smart-brain-inference</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<!-- 引用GPT推理工程服务_end -->
+        <dependency>
+            <groupId>com.alinesno.infra.smart</groupId>
+            <artifactId>alinesno-infra-smart-expert-initialize</artifactId>
+			<version>${revision}</version>
+        </dependency>
+        <!-- 引用GPT推理工程服务_end -->
 
 <!--		<dependency>-->
 <!--			<groupId>org.springframework.boot</groupId>-->
