@@ -129,29 +129,25 @@
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
       <el-form :model="form" :rules="rules" ref="ApplicationRef" label-width="80px">
-        <el-row>
-          <el-col :span="24">
+        <el-row v-if="isEditor">
+          <el-col :span="12">
             <el-form-item  label="脚本名称" prop="scriptName">
               <el-input v-model="form.scriptName" placeholder="请输入脚本名称" maxlength="50"/>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
+          <el-col :span="12">
             <el-form-item label="流程标识" prop="scriptId">
               <el-input v-model="form.scriptId" placeholder="请输入流程标识" maxlength="50"/>
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row>
-          <el-col :span="24">
+        <el-row v-if="isEditor">
+          <el-col :span="12">
             <el-form-item label="流程类型" prop="scriptType">
               <el-input v-model="form.scriptType" placeholder="请输入流程类型" maxlength="50"/>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
+          <el-col :span="12">
             <el-form-item label="脚本语言" prop="scriptLanguage">
               <el-input v-model="form.scriptLanguage" placeholder="请输入脚本语言" maxlength="100"/>
             </el-form-item>
@@ -160,7 +156,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="脚本内容" prop="scriptData">
-              <el-input type="textarea" v-model="form.scriptData" placeholder="请输入脚本内容" maxlength="1024"/>
+              <el-input type="textarea" v-model="form.scriptData" resize="none" :rows="textareaRow" placeholder="请输入脚本内容" maxlength="1024"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -240,11 +236,15 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-const deptName = ref("");
+
+const textareaRow = ref(10);
+const isEditor = ref(true);
+
 const deptOptions = ref(undefined);
 const initPassword = ref(undefined);
 const postOptions = ref([]);
 const roleOptions = ref([]);
+
 /*** 应用导入参数 */
 const upload = reactive({
   // 是否显示弹出层（应用导入）
@@ -382,21 +382,40 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
+
+  textareaRow.value = 10 ;
+  isEditor.value = true ;
+
   const applicationId = row.id || ids.value;
   getApplication(applicationId).then(response => {
     form.value = response.data;
-    form.value.applicationId = applicationId;
+    form.value.id = applicationId;
     open.value = true;
-    title.value = "修改应用";
-
+    title.value = "修改脚本名称";
   });
 };
+
+/** 编辑脚本 */
+function configScript(row){
+  reset();
+
+  textareaRow.value = 20 ;
+  isEditor.value = false ;
+
+  const applicationId = row.id || ids.value;
+  getApplication(applicationId).then(response => {
+    form.value = response.data;
+    form.value.id = applicationId;
+    open.value = true;
+    title.value = "修改脚本";
+  });
+}
 
 /** 提交按钮 */
 function submitForm() {
   proxy.$refs["ApplicationRef"].validate(valid => {
     if (valid) {
-      if (form.value.applicationId != undefined) {
+      if (form.value.id != undefined) {
         updateApplication(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
