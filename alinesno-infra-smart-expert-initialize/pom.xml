@@ -32,13 +32,25 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-			<scope>compile</scope>
+			<version>${revision}</version>
 		</dependency>
+        <dependency>
+            <groupId>com.alinesno.infra.smart</groupId>
+            <artifactId>alinesno-infra-smart-expert-facade</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.alinesno.infra.smart</groupId>
+            <artifactId>alinesno-infra-smart-expert-plugin</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>
