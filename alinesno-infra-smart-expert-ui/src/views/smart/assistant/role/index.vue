@@ -164,14 +164,12 @@
     <el-dialog :title="chainTitle" v-model="chainOpen" width="900px" append-to-body>
       <el-form :model="chainForm" :rules="chainRules" ref="ChainRef" label-width="80px">
         <el-row>
-          <el-col :span="24">
+          <el-col :span="12">
             <el-form-item  label="流程名称" prop="chainName">
               <el-input v-model="chainForm.chainName" placeholder="请输入链路名称" maxlength="50"/>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
+          <el-col :span="12">
             <el-form-item  label="流程描述" prop="chainDescription">
               <el-input v-model="chainForm.chainDescription" placeholder="请输入流程描述" maxlength="50"/>
             </el-form-item>
@@ -180,7 +178,17 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="流程数据" prop="elData">
-              <el-input v-model="chainForm.elData" placeholder="请输入链路流程" maxlength="120"/>
+              <!-- <el-input v-model="chainForm.elData" placeholder="请输入链路流程" maxlength="120"/> -->
+              <el-tree-select
+                v-model="chainForm.elData"
+                :data="chainTreeData"
+                multiple
+                :render-after-expand="false"
+                show-checkbox
+                check-strictly
+                check-on-click-node
+                style="width: 240px"
+              />
             </el-form-item>
           </el-col>
         </el-row>
@@ -364,6 +372,78 @@ const deptOptions = ref(undefined);
 const initPassword = ref(undefined);
 const postOptions = ref([]);
 const roleOptions = ref([]);
+
+const chainTreeData = ref([
+  {
+    value: '1',
+    label: 'Level one 1',
+    children: [
+      {
+        value: '1-1',
+        label: 'Level two 1-1',
+        children: [
+          {
+            value: '1-1-1',
+            label: 'Level three 1-1-1',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    value: '2',
+    label: 'Level one 2',
+    children: [
+      {
+        value: '2-1',
+        label: 'Level two 2-1',
+        children: [
+          {
+            value: '2-1-1',
+            label: 'Level three 2-1-1',
+          },
+        ],
+      },
+      {
+        value: '2-2',
+        label: 'Level two 2-2',
+        children: [
+          {
+            value: '2-2-1',
+            label: 'Level three 2-2-1',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    value: '3',
+    label: 'Level one 3',
+    children: [
+      {
+        value: '3-1',
+        label: 'Level two 3-1',
+        children: [
+          {
+            value: '3-1-1',
+            label: 'Level three 3-1-1',
+          },
+        ],
+      },
+      {
+        value: '3-2',
+        label: 'Level two 3-2',
+        children: [
+          {
+            value: '3-2-1',
+            label: 'Level three 3-2-1',
+          },
+        ],
+      },
+    ],
+  },
+]) ;
+
 /*** 应用导入参数 */
 const upload = reactive({
   // 是否显示弹出层（应用导入）
