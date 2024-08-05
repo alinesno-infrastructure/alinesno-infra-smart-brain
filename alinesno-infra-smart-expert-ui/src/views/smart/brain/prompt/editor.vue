@@ -167,6 +167,7 @@ console.log('message.value = ' + messages.value);
 
 .message-role-select {
   margin-right: 20px;
+  width:200px;
 }
 
 .message {
