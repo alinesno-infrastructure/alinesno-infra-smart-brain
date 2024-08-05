@@ -22,9 +22,9 @@
                   ref="deptTreeRef"
                   node-key="id"
                   highlight-current
-                  default-expand-all
                   @node-click="handleNodeClick"
                />
+                  <!-- default-expand-all -->
             </div>
          </el-col>
 
@@ -115,11 +115,11 @@
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
           </el-table-column>
-          <el-table-column label="知识库" align="center" width="120"  key="roleLevel" prop="roleLevel" v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <!-- <el-table-column label="知识库" align="center" width="120"  key="roleLevel" prop="roleLevel" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text bg icon="CopyDocument"  @click="handleLangChain(scope.row)" >配置</el-button>
             </template>
-          </el-table-column>
+          </el-table-column> -->
           <!--
           <el-table-column label="角色技能" align="center" width="150"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
@@ -437,7 +437,8 @@ function imagePath(row){
   if(row.roleAvatar){
     roleAvatar = row.roleAvatar ; 
   }
-  return import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/role/displayImage/" + roleAvatar ; 
+  // return import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/role/displayImage/" + roleAvatar ; 
+  return 'http://alinesno-infra-smart-assistant-ui.beta.smart.infra.linesno.com/prod-api/api/infra/smart/assistant/role/displayImage/' + roleAvatar ; 
 }
 
 /** 查询应用列表 */
