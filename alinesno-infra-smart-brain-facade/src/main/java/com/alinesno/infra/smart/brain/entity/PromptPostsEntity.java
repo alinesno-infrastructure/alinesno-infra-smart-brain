@@ -11,6 +11,7 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.TableComment;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 /**
  * Prompt指令集实体类
@@ -18,6 +19,7 @@ import lombok.EqualsAndHashCode;
  * @author luoxiaodong
  * @version 1.0.0
  */
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("prompt_posts")
@@ -133,5 +135,46 @@ public class PromptPostsEntity extends InfraBaseEntity {
 	@ColumnComment("概率范围")
 	@ColumnType
 	private int topP ;
+
+	/**
+	 * 构造函数
+	 * @param promptId
+	 * @param useCount
+	 * @param promptAuthor
+	 * @param promptName
+	 * @param promptPassword
+	 * @param promptStatus
+	 * @param promptTitle
+	 * @param promptType
+	 * @param maxToken
+	 * @param modelName
+	 * @param temperature
+	 * @param topP
+	 */
+	public PromptPostsEntity(String promptId,
+							 Long useCount,
+							 String promptAuthor,
+							 String promptName,
+							 String promptPassword,
+							 Long promptStatus,
+							 String promptTitle,
+							 String promptType,
+							 int maxToken,
+							 String modelName,
+							 int temperature,
+							 int topP) {
+		this.useCount = useCount;
+		this.promptAuthor = promptAuthor;
+		this.promptName = promptName;
+		this.promptPassword = promptPassword;
+		this.promptStatus = promptStatus;
+		this.promptTitle = promptTitle;
+		this.promptType = promptType;
+		this.promptId = promptId;
+		this.maxToken = maxToken;
+		this.modelName = modelName;
+		this.temperature = temperature;
+		this.topP = topP;
+	}
 
 }
