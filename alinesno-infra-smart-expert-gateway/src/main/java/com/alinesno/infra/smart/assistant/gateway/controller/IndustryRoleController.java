@@ -64,7 +64,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @Autowired
     private CloudStorageConsumer storageConsumer ;
 
-    @Value("${alinesno.file.local.path}")
+    @Value("${alinesno.file.local.path:/tmp/}")
     private String localPath  ;
 
     /**
