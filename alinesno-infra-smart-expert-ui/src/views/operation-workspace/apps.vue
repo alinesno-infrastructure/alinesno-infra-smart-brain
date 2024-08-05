@@ -34,7 +34,7 @@
           <div class="panel-body" style="height: auto;position: relative;">
             <div class="acp-app-list">
               <ul>
-                <li class="app-items" style="width:100%" v-for="item in selectedPermissionScenarios" :key="item">
+                <li class="app-items" style="width:100%" v-for="item in selectedUseScenarios" :key="item">
                   <div class="app-info">
                     <div class="app-item-title">
                         <i :class="item.icon" :alt="item.name" />
@@ -57,18 +57,18 @@
 <script setup>
 
 const advantages = [
-  { icon: 'fa-solid fa-shield-alt', title: '系统安全性提升', description: '通过灵活的权限管理和细粒度的权限控制。' },
-  { icon: 'fa-solid fa-chart-line', title: '精准的权限管理', description: '支持不同角色和岗位的个性化权限设置，确保用户只能访问其具备权限的功能和资源。' },
-  { icon: 'fa-solid fa-clipboard-list', title: '全面的日志记录', description: '提供完善的日志记录功能，帮助追踪和审计系统的使用情况。' },
-  { icon: 'fa-solid fa-chart-bar', title: '实时应用监控', description: '强大的应用监控功能可以实时监控系统的运行状态和性能指标，。' },
-  { icon: 'fa-solid fa-cogs', title: '灵活的企业定制', description: '允许企业进行主题配置和企业配置，提升用户体验，增强企业形象。' },
-  { icon: 'fa-solid fa-users-cog', title: '高效的权限管理', description: '帮助企业和机构高效管理系统中的权限，提升系统安全性和用户体验。' }
+  { icon: 'fa-solid fa-desktop', title: '直观的仪表板', description: '提供清晰的概览界面，便于用户快速了解项目的整体状态和关键指标。' },
+  { icon: 'fa-solid fa-user-tag', title: '精细的专家管理', description: '支持专家角色和类型的定制化管理，确保每个专家能充分发挥其专业领域的能力。' },
+  { icon: 'fa-solid fa-code', title: '可编程的工作流', description: '通过定义脚本和工作流记录，实现自动化任务处理和监控，提高效率与准确性。' },
+  { icon: 'fa-solid fa-file-import', title: '智能的Prompt管理', description: '允许用户创建、编辑和组织Prompt模板，以适应各种应用场景，促进创意和生产力。' },
+  { icon: 'fa-solid fa-server', title: '强大的监控能力', description: '实时监控系统API调用及性能，帮助优化系统资源并确保高可用性。' },
+  { icon: 'fa-solid fa-robot', title: '先进的Agent技术', description: '利用Agent技术自动执行任务，支持复杂的业务逻辑，提升自动化水平。' }
 ];
 
-const selectedPermissionScenarios = [
-  { icon: 'fa-solid fa-building', name: '集团权限管理', description: '用于管理集团内部各个子公司或部门的权限。' },
-  { icon: 'fa-solid fa-cogs', name: '系统级权限控制', description: '用于管理系统级别的权限，包括系统功能的权限设置，确保系统安全和稳定运行。' },
-  { icon: 'fa-solid fa-users-cog', name: '角色权限分配', description: '用于将权限按角色进行分配和管理，提高系统的安全性和管理效率。' },
+const selectedUseScenarios = [
+  { icon: 'fa-solid fa-lightbulb', name: '创意写作辅助', description: '利用高级Prompt技术，帮助用户快速生成高质量的文章、故事或诗歌等创意作品。' },
+  { icon: 'fa-solid fa-briefcase', name: '商业报告生成', description: '通过定义特定的Prompt模板，自动化生成各种商业报告，如市场分析、销售总结等。' },
+  { icon: 'fa-solid fa-clipboard-list', name: '任务自动化', description: '借助Agent技术，自动执行日常任务，如数据整理、文档更新等工作，减少人工干预。' },
 ];
 
 </script>
