@@ -6,6 +6,10 @@ export function getToken() {
   return Cookies.get(TokenKey)
 }
 
+export function getSaToken() {
+  return localStorage.getItem('satoken');
+}
+
 export function setToken(token) {
   return Cookies.set(TokenKey, token)
 }
