@@ -11,4 +11,10 @@ import com.alinesno.infra.smart.assistant.entity.ProjectEntity;
  */
 public interface IProjectService extends IBaseService<ProjectEntity> {
 
+    /**
+     * 初始化默认应用
+     * @param userId
+     */
+    void initDefaultApp(long userId);
+
 }
