@@ -8,30 +8,19 @@
         <div class="data-card">
             <ul class="count-list summary-panel">
               <li class="count-data bg-red" v-for="(item , index) in runCountArr" :key="index">
-                <i :class="item.icon"></i>
+                <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
                   <a target="_blank" :href="item.link">
                     <img :src="'http://data.linesno.com/icons/header/' + (index +1) + '.jpg'" style="width:40px;height:40px;float:left; border-radius: 8px" />
                     <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);">
-                      {{ item.name }} (<span style="font-weight: 600;font-size:15px">8</span>/<span style="font-size:12px">{{ index }}</span>)
+                      {{ item.roleName }} (<span style="font-weight: 600;font-size:15px">8</span>/<span style="font-size:12px">{{ index }}</span>)
                       <br/>
-                      <span class="label" style="font-size: 13px;line-height: 13px;font-weight: lighter;">{{ item.count }}</span>
+                      <span class="label" style="font-size: 13px;line-height: 13px;font-weight: lighter;">{{ item.responsibilities }}</span>
                     </div>
                   </a>
                 </span>
               </li>
             </ul>
-          <!-- <ul class="count-list summary-panel">
-            <li class="count-data bg-red" v-for="(item , index) in runCountArr" :key="index">
-              <i :class="item.icon"></i>
-              <span class="label-tip">
-                <a target="_blank" :href="item.link">
-                  {{ item.name }}
-                </a>
-              </span>
-              <span class="label">{{ item.count }}</span>
-            </li>
-          </ul> -->
         </div>
       </el-col>
 
@@ -63,16 +52,33 @@
 
 <script setup>
 
+import { 
+  getNewestRole 
+} from '@/api/smart/assistant/dashboard.js'
+
 const runCountArr = ref([
-    {name:'需求文档分析专家' , count:'正在分析数据工程结构，分析需求文档中', icon:'fa-solid fa-file-shield' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {name:'项目功能细化分析专家' , count:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
-    {name:'K8S问题排查专家' , count:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {name:'Ansible自动化工程师' , count:'生成自动化运营平台，正在集成业务服务', icon:'fas fa-train' , link:"https://192.168.1.161:8000/view/%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E4%BB%BB%E5%8A%A1/"} ,
-    {name:'产品客户服务专家' , count:'客户服务专家列表结构，正在跟客户沟通中', icon:'fas fa-server' , link: "https://192.168.1.79/-/ide/project/capinfo-platform-jm/capinfo-platform-operation-manager/edit/jm-gjj/-/"} ,
-    {name:'项目功能细化分析专家' , count:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
-    {name:'K8S问题排查专家' , count:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {name:'开发编码规范专家' , count:'编码结构的失败服务，正在进一步编码中', icon:'fas fa-pencil-ruler'} ,
+    {roleName:'需求文档分析专家' , responsibilities:'正在分析数据工程结构，分析需求文档中', icon:'fa-solid fa-file-shield' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
+    {roleName:'项目功能细化分析专家' , responsibilities:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
+    {roleName:'K8S问题排查专家' , responsibilities:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
+    {roleName:'Ansible自动化工程师' , responsibilities:'生成自动化运营平台，正在集成业务服务', icon:'fas fa-train' , link:"https://192.168.1.161:8000/view/%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E4%BB%BB%E5%8A%A1/"} ,
+    {roleName:'产品客户服务专家' , responsibilities:'客户服务专家列表结构，正在跟客户沟通中', icon:'fas fa-server' , link: "https://192.168.1.79/-/ide/project/capinfo-platform-jm/capinfo-platform-operation-manager/edit/jm-gjj/-/"} ,
+    {roleName:'项目功能细化分析专家' , responsibilities:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
+    {roleName:'K8S问题排查专家' , responsibilities:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
+    {roleName:'开发编码规范专家' , responsibilities:'编码结构的失败服务，正在进一步编码中', icon:'fas fa-pencil-ruler'} ,
 ]);
+
+// 随机图标 
+const icons = ref([
+    {icon:'fa-solid fa-file-shield'},
+    {icon:'fas fa-shipping-fast'},
+    {icon:'fa-solid fa-feather-pointed'},
+    {icon:'fas fa-train'},
+    {icon:'fas fa-server'},
+    {icon:'fas fa-shipping-fast'},
+    {icon:'fa-solid fa-feather-pointed'},
+    {icon:'fas fa-pencil-ruler'} 
+]);
+
 
 const opertionAssets = ref([
   {id:'1' , title:'专家角色' , count:15} ,
@@ -83,6 +89,25 @@ const opertionAssets = ref([
   {id:'7' , title:'接口调用' , count:40} ,
   {id:'2' , title:'存在知识库' , count:7649145} ,
 ])
+
+/** 获取最新角色 */
+function handleNewestRole(){
+  getNewestRole().then(response => {
+    runCountArr.value = response.data;
+  });
+}
+
+// 编写一个方法来随机选择一个icon
+function getRandomIcon() {
+  console.log('icons length = ' + icons.value.length) ;
+
+  const randomIndex = Math.floor(Math.random() * icons.value.length);
+  console.log('icons[randomIndex] = ' + randomIndex) ;
+
+  return icons.value[randomIndex].icon;
+}
+
+handleNewestRole() ;
 
 </script>
 
