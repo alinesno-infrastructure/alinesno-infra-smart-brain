@@ -142,7 +142,7 @@ public class CommonLoginController {
 
         Menu dashboardMenu = new Menu("Dashboard", "/dashboard", false, "noRedirect", "Layout", true, new Menu.Meta("仪盘表", "dashboard", false, null), List.of(
                 new Menu("Dashboard", "index", false, false , "dashboard", new Menu.Meta("概览", "dashboard", false, null)) ,
-                new Menu("Project", "smart/brain/application/index", false, false , "smart/brain/application/index", new Menu.Meta("项目管理", "monitor", false, null))
+                new Menu("Project", "smart/assistant/project/index", false, false , "smart/assistant/project/index", new Menu.Meta("项目管理", "monitor", false, null))
         ));
 
         Menu expertMenu = new Menu("Expert", "/expert", false, "noRedirect", "Layout", true, new Menu.Meta("专家配置", "post", false, null),
@@ -151,7 +151,7 @@ public class CommonLoginController {
                         new Menu("RoleCatalog", "smart/assistant/roleCatalog/index", false, false, "smart/assistant/roleCatalog/index", new Menu.Meta("专家类型", "post", false, null)),
                         new Menu("ChainScript", "smart/assistant/chainScript/index", false,false,  "smart/assistant/chainScript/index", new Menu.Meta("脚本定义", "dict", false, null)),
                         new Menu("WorkflowRecord", "smart/assistant/workflowRecord/index", false,false,  "smart/assistant/workflowRecord/index", new Menu.Meta("流程监控", "message", false, null)),
-                        new Menu("Channel", "smart/assistant/channel/index", false, false, "smart/assistant/channel/index", new Menu.Meta("专家插件", "peoples", false, null))
+                        new Menu("Channel", "smart/assistant/plugin/index", false, false, "smart/assistant/plugin/index", new Menu.Meta("流程插件", "peoples", false, null))
                 ));
 
         List<Menu> menus = getMenus(dashboardMenu, expertMenu);
