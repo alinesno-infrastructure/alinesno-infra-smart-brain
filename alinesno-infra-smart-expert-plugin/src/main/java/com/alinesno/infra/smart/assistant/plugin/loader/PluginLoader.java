@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.assistant.plugin.loader;
 
+import com.alinesno.infra.common.core.context.SpringContext;
+import com.alinesno.infra.smart.assistant.entity.PluginEntity;
 import com.alinesno.infra.smart.assistant.role.utils.YAMLMapper;
+import com.alinesno.infra.smart.assistant.service.IPluginService;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 加载插件
@@ -77,6 +81,7 @@ public class PluginLoader {
                     log.debug("本地插件已经存在:{}" , localPath);
                 }
 
+                pluginInfoList.add(plugin) ;
             }
         } catch (IOException e) {
             log.error("下载异常: {}", e.getMessage());
@@ -84,6 +89,7 @@ public class PluginLoader {
 
         return pluginInfoList;
     }
+
 
     /**
      * 从指定URL下载插件并保存到本地目录
