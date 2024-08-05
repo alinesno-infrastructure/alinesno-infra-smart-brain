@@ -6,6 +6,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.RoleChainEntity;
 import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -37,4 +38,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param roleId
      */
     void runChainAgent(TaskContentDto businessId, long roleId);
+
+    /**
+     * 获取最新的角色
+      * @return
+     */
+    List<IndustryRoleEntity> getNewestRole();
+
 }
