@@ -63,7 +63,8 @@
                <el-table-column label="图标" :align="'center'" width="70" key="status" v-if="columns[5].visible">
                   <template #default="scope">
                      <div class="role-icon">
-                        <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + ((scope.$index + 1)%10 + 5) + '.png'" />
+                        <img style="width:40px;height:40px;border-radius: 5px;" 
+                             :src="'http://data.linesno.com/icons/sepcialist/dataset_' + ((scope.$index + 1)%10 + 5) + '.png'" />
                      </div>
                   </template>
                </el-table-column>
