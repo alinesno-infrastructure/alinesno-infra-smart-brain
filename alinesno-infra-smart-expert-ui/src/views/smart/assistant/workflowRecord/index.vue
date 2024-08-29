@@ -22,7 +22,7 @@
                           </div>
                           <div style="float: left;">
                               <div style="line-height: 20px;margin-bottom: 5px;font-size: 15px;">
-                                {{ item.roleName }}
+                                {{ truncateString(item.roleName , 10) }}
                               </div>
                               <div style="font-size: 13px; color: rgb(165, 165, 165); cursor: pointer;">
                                 {{ item.roleLevel }}
