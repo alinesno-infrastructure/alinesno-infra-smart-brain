@@ -161,6 +161,14 @@ public class CommonLoginController {
 
     @NotNull
     private static List<Menu> getMenus(Menu dashboardMenu, Menu expertMenu) {
+
+        Menu channelMenu = new Menu("Channel", "/channel", false, "noRedirect", "Layout", true, new Menu.Meta("频道管理", "monitor", false, null),
+                List.of(
+                        new Menu("Channel", "base/im/channel/index", false,false, "base/im/channel/index", new Menu.Meta("频道管理", "message", false, null)),
+                        new Menu("ChannelAccount", "base/im/channelAccount/index", false,false, "base/im/channelAccount/index", new Menu.Meta("用户频道", "peoples", false, null)),
+                        new Menu("Message", "base/im/message/index", false,false, "base/im/message/index", new Menu.Meta("消息管理", "form", false, null))
+                ));
+
         Menu promptMenu = new Menu("Prompt", "/prompt", false, "noRedirect", "Layout", true, new Menu.Meta("提示管理", "log", false, null),
                         List.of(
                                 new Menu("Prompt", "smart/brain/prompt/index", false,false, "smart/brain/prompt/index", new Menu.Meta("定义Prompt", "message", false, null)),
@@ -174,7 +182,6 @@ public class CommonLoginController {
                         new Menu("Analyse", "smart/assistant/analyse/index", false,false, "smart/assistant/analyse/index", new Menu.Meta("接口监控", "server", false, null))
                 ));
 
-        List<Menu> menus = List.of(dashboardMenu, expertMenu, promptMenu, monitorMenu);
-        return menus;
+        return List.of(dashboardMenu, expertMenu, promptMenu, monitorMenu);
     }
 }
