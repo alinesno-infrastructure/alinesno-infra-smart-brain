@@ -22,7 +22,7 @@ public class ClearUnstableJob {
     @Autowired
     private IGenerateTaskService generateTaskService ;
 
-    @Scheduled(initialDelay = 30000 , fixedDelay = 60000)
+    @Scheduled(initialDelay = 10 , fixedDelay = 60000)
     private void loadTasks() {
 
         List<GenerateTaskEntity> tasks = generateTaskService.getAllUnstableTasks(JOB_OUT_TIME);
