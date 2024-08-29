@@ -6,13 +6,12 @@ import com.alinesno.infra.common.web.log.aspect.LogAspect;
 import com.alinesno.infra.smart.assistant.initialize.IAssistantInitService;
 import com.dtflys.forest.springboot.annotation.ForestScan;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScans;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -25,10 +24,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableRetry
 @EnableInfraSsoApi
 @EnableActable
+@ServletComponentScan(basePackages = {"com.alinesno.infra.smart.brain"})
 @Configuration
 @ForestScan(basePackages = "com.alinesno.infra.smart.assistant.adapter")
-@MapperScan({"com.alinesno.infra.smart.assistant.mapper" , "com.alinesno.infra.smart.brain.mapper"})
-@ComponentScan({"com.alinesno.infra.smart.assistant","com.alinesno.infra.smart.brain"})
+@MapperScan({"com.alinesno.infra.smart.assistant.mapper" , "com.alinesno.infra.base.im.mapper" , "com.alinesno.infra.smart.brain.mapper"})
+@ComponentScan({"com.alinesno.infra.smart.assistant","com.alinesno.infra.smart.brain" , "com.alinesno.infra.base.im"})
 public class AppConfiguration implements CommandLineRunner {
 
     @Autowired
@@ -43,20 +43,20 @@ public class AppConfiguration implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.debug("项目启动初始化");
 
-        // 初始化提示分类
-        assistantInitService.promptCatalog();
-
-        // 初始化提示
-        assistantInitService.prompt();
-
-        // 初始化分类
-        assistantInitService.expertCatalog();
-
-        // 初始化专家
-        assistantInitService.expert();
-
-        // 初始化插件
-        assistantInitService.initPlugin();
+//        // 初始化提示分类
+//        assistantInitService.promptCatalog();
+//
+//        // 初始化提示
+//        assistantInitService.prompt();
+//
+//        // 初始化分类
+//        assistantInitService.expertCatalog();
+//
+//        // 初始化专家
+//        assistantInitService.expert();
+//
+//        // 初始化插件
+//        assistantInitService.initPlugin();
     }
 
 }
