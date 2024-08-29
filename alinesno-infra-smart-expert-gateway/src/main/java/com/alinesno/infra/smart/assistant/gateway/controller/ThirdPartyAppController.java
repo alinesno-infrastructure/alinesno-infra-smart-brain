@@ -1,11 +1,11 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
-import com.alinesno.infra.smart.assistant.entity.ThirdPartyAppEntity;
-import com.alinesno.infra.smart.assistant.service.IThirdPartyAppService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.entity.ThirdPartyAppEntity;
+import com.alinesno.infra.smart.assistant.service.IThirdPartyAppService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.builder.ToStringBuilder;
