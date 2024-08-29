@@ -15,7 +15,7 @@ var managerUrl = {
   removeUrl: prefix + "delete" ,
   exportUrl: prefix + "exportExcel",
   changeField: prefix + "changeField",
-  downloadfile: prefix + "downloadfile",
+  downloadFile: prefix + "downloadFile",
   getRoleChainByChainId: prefix + "getRoleChainByChainId",
   saveRoleChainInfo: prefix + "saveRoleChainInfo",
   catalogTreeSelect: prefix + "catalogTreeSelect",
