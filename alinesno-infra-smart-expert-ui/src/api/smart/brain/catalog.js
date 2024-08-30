@@ -23,7 +23,7 @@ var managerUrl = {
     changeField: prefix + "changeField",
     list: prefix + "list",
     excludeChild: prefix + "excludeChild",
-    downloadfile: prefix + "downloadfile"
+    downloadFile: prefix + "downloadFile"
 }
 
 // 查询部门列表（排除节点）
