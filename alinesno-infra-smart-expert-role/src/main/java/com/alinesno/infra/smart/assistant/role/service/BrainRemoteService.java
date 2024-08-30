@@ -1,10 +1,8 @@
 package com.alinesno.infra.smart.assistant.role.service;
 
-import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.smart.assistant.adapter.SmartBrainConsumer;
-import com.alinesno.infra.smart.assistant.api.adapter.BrainTaskDto;
-import com.alinesno.infra.smart.assistant.api.adapter.TaskContentDto;
+import com.alinesno.infra.smart.brain.api.BrainTaskDto;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
+import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.retry.annotation.Backoff;
@@ -21,7 +19,7 @@ import java.util.Map;
 public class BrainRemoteService {
 
     @Autowired
-    private SmartBrainConsumer smartBrainConsumer ;
+    private IGenerateTaskService generateTaskService ;
 
     /**
      * 提交任务
@@ -35,11 +33,11 @@ public class BrainRemoteService {
         BrainTaskDto dto = new BrainTaskDto() ;
 
         dto.setPromptId(promptId);
-        dto.setBusinessId(businessId);
+//        dto.setBusinessId(businessId);
         dto.setParams(params);
 
-        AjaxResult result = smartBrainConsumer.chatTask(dto) ;
-        log.debug("result = {}" , result);
+        String backBusinessId = generateTaskService.commitTask(dto) ;
+        log.debug("businessId = {}" , backBusinessId);
     }
 
     /**
@@ -51,12 +49,11 @@ public class BrainRemoteService {
     public TaskContentDto chatContent(String businessId) {
 
         try{
-            AjaxResult result = smartBrainConsumer.chatContent(businessId) ;
+            TaskContentDto result = generateTaskService.getContentByBusinessId(businessId) ;
 
             log.debug("chatContent result = {}" , result);
 
-            String resultData = result.get("data").toString() ;
-            return JSONObject.parseObject(resultData, TaskContentDto.class);
+            return result ;
         }catch (Exception e){
             throw new RuntimeException("远程请求异常:" + e.getMessage()) ;
         }
