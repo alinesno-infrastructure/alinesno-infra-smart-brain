@@ -11,9 +11,11 @@ public interface IGenerateTaskService extends IBaseService<GenerateTaskEntity> {
 
     /**
      * 提交任务
+     *
      * @param dto
+     * @return
      */
-    void commitTask(BrainTaskDto dto);
+    String commitTask(BrainTaskDto dto);
 
     /**
      * 提交任务到CMS服务中
