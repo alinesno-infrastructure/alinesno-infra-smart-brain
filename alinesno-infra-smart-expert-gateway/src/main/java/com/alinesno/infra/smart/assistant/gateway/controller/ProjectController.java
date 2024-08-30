@@ -2,7 +2,6 @@ package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
-import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.entity.ProjectEntity;
 import com.alinesno.infra.smart.assistant.service.IProjectService;
