@@ -23,17 +23,18 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity
+    pack: > 
+      com.alinesno.infra.smart.assistant.entity;
+      com.alinesno.infra.smart.assistant.queue.entity;
+      com.alinesno.infra.smart.assistant.plugin.entity;
+      com.alinesno.infra.smart.brain.entity;
+      com.alinesno.infra.base.im.entity;
   database:
     type: mysql
   index:
     prefix: alinesno_smart_assistant_idx_
   unique:
     prefix: alinesno_smart_assistant_uni_
-
-#logging:
-#  level:
-#    root: DEBUG
 
 # sa-token配置
 sa-token:
@@ -48,24 +49,25 @@ sa-token:
   sign:
     secret-key:
 
-
-
 # wechat token
 alinesno.infra:
   gateway:
-    host:
+    host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
   smart:
-    comment-link:
+    # milvus 向量数据库
+    milvus:
+      ip-addr: 127.0.0.1
+      port: 19530
     assistant:
       plugin:
         central: http://data.linesno.com/plugins/
         path: ${user.home}/.smart-assistant/plugins
-    dingtalk:
-      app-key:
-      app-secret:
-      robot-code:
-    wechat:
-      token: xxxxx
+    brain:
+      qianwen:
+        key:  sk-xxxxxxxxx
+      openapi:
+        host: http://api.qianwen.cn/v1/chat/completions
+        key: sk-xxxxxxxxx
 
 # liteflow 配置
 liteflow:
@@ -92,23 +94,3 @@ liteflow:
     scriptTypeField: script_type
     scriptLanguageField: script_language
     scriptEnableField: enable
-
-
-alinesno:
-  file:
-    local:
-      path:
-  infra:
-    gateway:
-      host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
-    smart:
-      # milvus 向量数据库
-      milvus:
-        ip-addr: 127.0.0.1
-        port: 19530
-      brain:
-        qianwen:
-          key: xxx
-        openapi:
-          host: xxx
-          key: xxx
