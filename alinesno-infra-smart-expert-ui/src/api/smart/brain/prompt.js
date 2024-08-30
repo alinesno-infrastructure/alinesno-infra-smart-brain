@@ -21,7 +21,7 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
-    downloadfile: prefix + "downloadfile",
+    downloadFile: prefix + "downloadFile",
     updatePromptContent: prefix + "updatePromptContent",
     catalogTreeSelect: prefix + "catalogTreeSelect",
     getPromptContent: prefix + "getPromptContent",
