@@ -17,7 +17,6 @@ import com.yomahub.liteflow.core.FlowExecutor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;
 import java.util.Map;
@@ -38,16 +37,16 @@ public abstract class PlatformExpert implements IBaseExpertService {
     protected int DEFAULT_SLEEP_TIME = 5*1000 ; // 默认生成内容等待时间
     protected int MAX_RETRY_COUNT = 100 ;  // 默认重试次数
 
-    @Value("${alinesno.infra.smart.comment-link}")
-    protected String platformUrl ;
+//    @Value("${alinesno.infra.smart.comment-link}")
+//    protected String platformUrl ;
 
     private int defaultThreadPool = 200 ;
 
     @Autowired
     protected BrainRemoteService brainRemoteService ;
 
-    @Autowired
-    protected IDingtalkNoticeService dingtalkNoticeService ;
+//    @Autowired
+//    protected IDingtalkNoticeService dingtalkNoticeService ;
 
     @Autowired
     protected FlowExecutor flowExecutor;
