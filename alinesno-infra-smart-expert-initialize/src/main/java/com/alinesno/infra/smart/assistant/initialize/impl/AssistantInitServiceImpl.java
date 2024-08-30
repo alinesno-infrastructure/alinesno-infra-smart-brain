@@ -141,7 +141,12 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
         rootEntities.add(others) ;
 
-        promptCatalogService.saveBatch(rootEntities) ;
+        AtomicLong id = new AtomicLong(1L);
+        rootEntities.forEach(entity -> {
+            entity.setId(id.getAndIncrement());
+        }) ;
+
+        promptCatalogService.saveOrUpdateBatch(rootEntities) ;
     }
 
     private PromptCatalogEntity createEntity(String name, String description, long parentId, PromptCatalogEntity parent) {
@@ -167,28 +172,33 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         promptPostsEntityList.add(new PromptPostsEntity("5l1jPKV8", 12734L, "Admin1",  "培训试卷信息指令", "password1", 1L, "Title1", "Type1",  100, "Model1", 25, 50));
         promptPostsEntityList.add(new PromptPostsEntity("Zo5ueZ34", 12734L, "Admin2", "Ansible服务脚本指令", "password2", 1L, "Title2", "Type2",  150, "Model2", 30, 60));
         promptPostsEntityList.add(new PromptPostsEntity("XPGeYb4a", 12734L, "Admin3", "K8S部署脚本生成工程师", "password3", 1L, "Title3", "Type3",  120, "Model3", 28, 55));
-        promptPostsEntityList.add(new PromptPostsEntity("RUABZdu2", 12734L, "Admin4", "API接口转成SpringBoot代码专家", "password4", 1L, "Title4", "Type4",  110, "Model4", 26, 52));
-        promptPostsEntityList.add(new PromptPostsEntity("Qoh7hgA3", 12734L, "Admin5", "接口用例生成专家", "password5", 1L, "Title5", "Type5",  130, "Model5", 29, 58));
+        promptPostsEntityList.add(new PromptPostsEntity("RUABZdu2", 12734L, "Admin4", "API接口转成SpringBoot代码指令", "password4", 1L, "Title4", "Type4",  110, "Model4", 26, 52));
+        promptPostsEntityList.add(new PromptPostsEntity("Qoh7hgA3", 12734L, "Admin5", "接口用例生成指令", "password5", 1L, "Title5", "Type5",  130, "Model5", 29, 58));
 
-        promptPostsEntityList.add(new PromptPostsEntity("JQxPeLRJ", 12734L, "Admin6", "服务接口生成专家", "password6", 1L, "Title6", "Type6",  140, "Model6", 27, 54));
-        promptPostsEntityList.add(new PromptPostsEntity("KTHkQiDg", 12734L, "Admin7", "培训内容推荐专家", "password7", 1L, "Title7", "Type7",  105, "Model7", 24, 48));
-        promptPostsEntityList.add(new PromptPostsEntity("OyezG1Hk", 12734L, "Admin8", "产品软文_内容编写专家", "password8", 1L, "Title8", "Type8", 115, "Model8", 22, 44));
-        promptPostsEntityList.add(new PromptPostsEntity("35lxXaDe", 12734L, "Admin9", "产品软文_目录大纲专家", "password9", 1L, "Title9", "Type9", 125, "Model9", 23, 46));
-        promptPostsEntityList.add(new PromptPostsEntity("gDT9coiQ", 12734L, "Admin10", "服务工程生成专家", "password10", 1L, "Title10", "Type10", 135, "Model10", 21, 42));
+        promptPostsEntityList.add(new PromptPostsEntity("JQxPeLRJ", 12734L, "Admin6", "服务接口生成指令", "password6", 1L, "Title6", "Type6",  140, "Model6", 27, 54));
+        promptPostsEntityList.add(new PromptPostsEntity("KTHkQiDg", 12734L, "Admin7", "培训内容推荐指令", "password7", 1L, "Title7", "Type7",  105, "Model7", 24, 48));
+        promptPostsEntityList.add(new PromptPostsEntity("OyezG1Hk", 12734L, "Admin8", "产品软文_内容编写指令", "password8", 1L, "Title8", "Type8", 115, "Model8", 22, 44));
+        promptPostsEntityList.add(new PromptPostsEntity("35lxXaDe", 12734L, "Admin9", "产品软文_目录大纲指令", "password9", 1L, "Title9", "Type9", 125, "Model9", 23, 46));
+        promptPostsEntityList.add(new PromptPostsEntity("gDT9coiQ", 12734L, "Admin10", "服务工程生成指令", "password10", 1L, "Title10", "Type10", 135, "Model10", 21, 42));
 
-        promptPostsEntityList.add(new PromptPostsEntity("0ucP2rvS", 12734L, "Admin11", "数据库表结构设计专家", "password11", 1L, "Title11", "Type11", 155, "Model11", 31, 62));
-        promptPostsEntityList.add(new PromptPostsEntity("IR0i5mjt", 12734L, "Admin12", "实时数据采集专家", "password12", 1L, "Title12", "Type12", 145, "Model12", 32, 64));
-        promptPostsEntityList.add(new PromptPostsEntity("uy7Qsfti", 12734L, "Admin13", "培训题目设计专家", "password13", 1L, "Title13", "Type13", 160, "Model13", 33, 66));
-        promptPostsEntityList.add(new PromptPostsEntity("kGLGZK9j", 12734L, "Admin14", "平台菜单生成专家", "password14", 1L, "Title14", "Type14", 170, "Model14", 34, 68));
-        promptPostsEntityList.add(new PromptPostsEntity("hfSZuEkT", 12734L, "Admin15", "数据库实体设计专家", "password15", 1L, "Title15", "Type15", 180, "Model15", 35, 70));
+        promptPostsEntityList.add(new PromptPostsEntity("0ucP2rvS", 12734L, "Admin11", "数据库表结构设计指令", "password11", 1L, "Title11", "Type11", 155, "Model11", 31, 62));
+        promptPostsEntityList.add(new PromptPostsEntity("IR0i5mjt", 12734L, "Admin12", "实时数据采集指令", "password12", 1L, "Title12", "Type12", 145, "Model12", 32, 64));
+        promptPostsEntityList.add(new PromptPostsEntity("uy7Qsfti", 12734L, "Admin13", "培训题目设计指令", "password13", 1L, "Title13", "Type13", 160, "Model13", 33, 66));
+        promptPostsEntityList.add(new PromptPostsEntity("kGLGZK9j", 12734L, "Admin14", "平台菜单生成指令", "password14", 1L, "Title14", "Type14", 170, "Model14", 34, 68));
+        promptPostsEntityList.add(new PromptPostsEntity("hfSZuEkT", 12734L, "Admin15", "数据库实体设计指令", "password15", 1L, "Title15", "Type15", 180, "Model15", 35, 70));
 
         promptPostsEntityList.add(new PromptPostsEntity("wbqZCMp8", 12734L, "Admin16", "需求分析_项目非功能性需求", "password16", 1L, "Title16", "Type16", 190, "Model16", 36, 72));
-        promptPostsEntityList.add(new PromptPostsEntity("3hmyCqhJ", 12734L, "Admin17", "需求分析_项目功能细化分析专家", "password17", 1L, "Title17", "Type17", 200, "Model17", 37, 74));
-        promptPostsEntityList.add(new PromptPostsEntity("RgPSt3oS", 12734L, "Admin18", "需求分析_项目功能分析专家", "password18", 1L, "Title18", "Type18", 210, "Model18", 38, 76));
-        promptPostsEntityList.add(new PromptPostsEntity("V5yZ1l3H", 12734L, "Admin19", "需求分析_项目介绍分析专家", "password19", 1L, "Title19", "Type19", 220, "Model19", 39, 78));
-        promptPostsEntityList.add(new PromptPostsEntity("mOO5Fq5s", 12734L, "Admin20", "需求分析_需求文档分析专家", "password20", 1L, "Title20", "Type20", 230, "Model20", 40, 80));
+        promptPostsEntityList.add(new PromptPostsEntity("3hmyCqhJ", 12734L, "Admin17", "需求分析_项目功能细化分析指令", "password17", 1L, "Title17", "Type17", 200, "Model17", 37, 74));
+        promptPostsEntityList.add(new PromptPostsEntity("RgPSt3oS", 12734L, "Admin18", "需求分析_项目功能分析指令", "password18", 1L, "Title18", "Type18", 210, "Model18", 38, 76));
+        promptPostsEntityList.add(new PromptPostsEntity("V5yZ1l3H", 12734L, "Admin19", "需求分析_项目介绍分析指令", "password19", 1L, "Title19", "Type19", 220, "Model19", 39, 78));
+        promptPostsEntityList.add(new PromptPostsEntity("mOO5Fq5s", 12734L, "Admin20", "需求分析_需求文档分析指令", "password20", 1L, "Title20", "Type20", 230, "Model20", 40, 80));
 
-        promptPostsService.saveBatch(promptPostsEntityList) ;
+        AtomicLong id = new AtomicLong(1L);
+        promptPostsEntityList.forEach(entity -> {
+            entity.setId(id.getAndIncrement());
+        }) ;
+
+        promptPostsService.saveOrUpdateBatch(promptPostsEntityList) ;
 
     }
 
@@ -258,7 +268,12 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         IndustryRoleCatalogEntity techOpsTeam = createExpertEntity("技术运营团队", "技术运营团队", productResearchDept.getId(), productResearchDept);
         allEntities.add(techOpsTeam);
 
-        industryRoleCatalogService.saveBatch(allEntities) ;
+        AtomicLong id = new AtomicLong(1L);
+        allEntities.forEach(entity -> {
+            entity.setId(id.getAndIncrement());
+        });
+
+        industryRoleCatalogService.saveOrUpdateBatch(allEntities) ;
     }
 
     public static IndustryRoleCatalogEntity createExpertEntity(String name, String desc, Long parentId, IndustryRoleCatalogEntity parent) {
