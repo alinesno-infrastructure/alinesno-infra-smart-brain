@@ -77,13 +77,24 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       }, 
-
-     {
-       path: '/demo',
-       component: () => import('@/views/demo'),
-       name: '/demo',
-       meta: { title: '流程定义', icon: 'dashboard', affix: true }
-     },
+      {
+        path: '/demo',
+        component: () => import('@/views/demo'),
+        name: '/demo',
+        meta: { title: '流程定义', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/channelHome',
+        component: () => import('@/views/base/specialist/channelHome'),
+        name: '/channelHome',
+        meta: { title: '首页', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/chat',
+        component: () => import('@/views/base/specialist/index'),
+        name: '/chat',
+        meta: { title: '聊天', icon: 'dashboard', affix: true }
+      },
 
       // >>>>>>>>>>>>>>>>>>>> assistant_router_start >>>>>>>>>>>>>>>>>>
 //      {
