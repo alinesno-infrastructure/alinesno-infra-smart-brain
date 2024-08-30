@@ -106,8 +106,9 @@ alinesno:
       milvus:
         ip-addr: 127.0.0.1
         port: 19530
-      # openapi config
       brain:
+        qianwen:
+          key: xxx
         openapi:
-          host:
-          key:
+          host: xxx
+          key: xxx
