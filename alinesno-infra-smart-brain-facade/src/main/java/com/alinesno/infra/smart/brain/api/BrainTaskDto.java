@@ -18,9 +18,6 @@ import java.util.Map;
 @ValidPromptId
 public class BrainTaskDto {
 
-    @NotNull(message = "businessId cannot be null")
-    private String businessId; // 业务ID
-
     @NotNull(message = "promptId cannot be null")
     private String promptId; // GPT角色ID
 
