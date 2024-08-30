@@ -1,7 +1,7 @@
 package com.alinesno.infra.smart.assistant.role.context;
 
-import com.alinesno.infra.smart.assistant.api.adapter.TaskContentDto;
 import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.yomahub.liteflow.slot.DefaultContext;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
