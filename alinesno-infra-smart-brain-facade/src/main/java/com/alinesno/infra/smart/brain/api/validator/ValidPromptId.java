@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.brain.api.validator;
 
-import com.alinesno.infra.smart.brain.api.validator.PromptIdValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
