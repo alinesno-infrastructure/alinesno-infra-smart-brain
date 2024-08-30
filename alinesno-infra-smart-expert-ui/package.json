@@ -20,7 +20,7 @@
     "codemirror": ">=5.64.0 <6",
     "codemirror-editor-vue3": "^2.4.1",
     "echarts": "5.4.0",
-    "element-plus": "^2.4.3",
+    "element-plus": "^2.8.0",
     "file-saver": "2.0.5",
     "fuse.js": "6.6.2",
     "highlight.js": "^11.7.0",
