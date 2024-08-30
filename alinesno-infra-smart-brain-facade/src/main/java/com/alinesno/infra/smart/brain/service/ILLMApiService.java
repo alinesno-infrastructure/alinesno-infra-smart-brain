@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.brain.service;
 
-import com.alinesno.infra.smart.brain.client.OpenAiClient;
+import com.plexpt.chatgpt.entity.chat.ChatCompletion;
+import okhttp3.Response;
+import okhttp3.sse.EventSourceListener;
 
 /**
  * 聊天GPT API服务接口
@@ -11,11 +13,18 @@ import com.alinesno.infra.smart.brain.client.OpenAiClient;
  */
 public interface ILLMApiService {
 
-	/**
-	 * 获取聊天GPT OpenAi流客户端
-	 *
-	 * @return 聊天GPT OpenAi流客户端
-	 */
-	OpenAiClient getClient();
+    /**
+     * 获取聊天内容
+     * @param completion
+     * @return
+     */
+    Response chatCompletions(ChatCompletion completion);
+
+    /**
+     * 流式回答
+     * @param chatCompletion
+     * @param eventSourceListener
+     */
+    void streamChatCompletion(ChatCompletion chatCompletion, EventSourceListener eventSourceListener);
 
 }
