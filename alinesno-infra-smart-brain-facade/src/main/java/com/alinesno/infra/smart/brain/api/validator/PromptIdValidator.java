@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.brain.api.validator;
 
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
-import com.alinesno.infra.smart.brain.api.validator.ValidPromptId;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
