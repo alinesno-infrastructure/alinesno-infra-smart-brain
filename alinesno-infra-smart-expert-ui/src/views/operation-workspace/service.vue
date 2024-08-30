@@ -70,8 +70,6 @@ const opertionAssets = ref([
   {id:'3' , title:'数据渠道' , count:65} ,
   {id:'4' , title:'渠道统计' , count:85} ,
   {id:'6' , title:'业务服务' , count:145} ,
-  {id:'7' , title:'接口调用' , count:40} ,
-  {id:'2' , title:'存在知识库' , count:7649145} ,
 ])
 
 const apps = ref([
