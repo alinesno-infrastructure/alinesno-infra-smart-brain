@@ -1,9 +1,9 @@
 package com.alinesno.infra.smart.assistant.role;
 
 import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.smart.assistant.api.adapter.TaskContentDto;
 import com.alinesno.infra.smart.assistant.role.context.RoleChainContext;
 import com.alinesno.infra.smart.assistant.role.utils.YamlUtils;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.yomahub.liteflow.annotation.LiteflowComponent;
 import com.yomahub.liteflow.core.NodeComponent;
 import lombok.SneakyThrows;
