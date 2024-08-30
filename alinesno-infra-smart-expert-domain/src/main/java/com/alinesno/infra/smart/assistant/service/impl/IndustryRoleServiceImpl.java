@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
-import com.alinesno.infra.smart.assistant.api.adapter.TaskContentDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.NoticeEntity;
@@ -13,6 +12,7 @@ import com.alinesno.infra.smart.assistant.redis.PublishRedisService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.INoticeService;
 import com.alinesno.infra.smart.assistant.service.IRoleChainService;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
