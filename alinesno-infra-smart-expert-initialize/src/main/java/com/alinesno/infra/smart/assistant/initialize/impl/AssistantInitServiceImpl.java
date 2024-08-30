@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.PluginEntity;
 import com.alinesno.infra.smart.assistant.initialize.IAssistantInitService;
 import com.alinesno.infra.smart.assistant.initialize.utils.ExpertListCreator;
+import com.alinesno.infra.smart.assistant.initialize.utils.PromptPostCreator;
 import com.alinesno.infra.smart.assistant.plugin.AssistantPluginProperties;
 import com.alinesno.infra.smart.assistant.plugin.loader.PluginLoader;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
@@ -53,150 +54,15 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
     @Override
     public void promptCatalog() {
-        List<PromptCatalogEntity> rootEntities = new ArrayList<>();
-
-        PromptCatalogEntity rootEntity = new PromptCatalogEntity();
-        rootEntity.setName("研发智能体指令");
-        rootEntity.setDescription("研发智能体指令");
-        rootEntity.setIcon("");
-        rootEntity.setOrderNum(1);
-        rootEntity.setParentId(0L);
-        rootEntity.setChildren(new ArrayList<>());
-
-        // 人才管理指令
-        PromptCatalogEntity personalAssistant = createEntity("人才管理指令", "人才管理指令", 0L, rootEntity);
-        PromptCatalogEntity contentRecommendation = createEntity("内容推荐指令", "内容推荐指令", 0L, personalAssistant);
-        PromptCatalogEntity trainingExpert = createEntity("培训专家指令", "培训专家指令", 0L, personalAssistant);
-
-        rootEntities.add(personalAssistant) ;
-        rootEntities.add(contentRecommendation) ;
-        rootEntities.add(trainingExpert) ;
-
-        // 解决方案指令
-        PromptCatalogEntity solutions = createEntity("解决方案指令", "解决方案指令", 8L, rootEntity);
-        PromptCatalogEntity solutionDesign = createEntity("解决方案设计指令", "解决方案设计指令", 0L, solutions);
-        PromptCatalogEntity requirementAnalysis = createEntity("需求分析设计指令", "需求分析设计指令", 0L, solutions);
-        PromptCatalogEntity projectManagement = createEntity("项目管理指令", "项目管理指令", 0L, solutions);
-
-        rootEntities.add(solutions) ;
-        rootEntities.add(solutionDesign) ;
-        rootEntities.add(requirementAnalysis) ;
-        rootEntities.add(projectManagement) ;
-
-        // 技术工程师指令
-        PromptCatalogEntity technicalEngineer = createEntity("技术工程师指令", "技术工程师指令", 0L, rootEntity);
-        PromptCatalogEntity technicalArchitecture = createEntity("技术架构指令", "技术架构指令", 0L, technicalEngineer);
-        PromptCatalogEntity databaseDesign = createEntity("数据库设计指令", "数据库设计指令", 0L, technicalEngineer);
-        PromptCatalogEntity interfaceTesting = createEntity("接口测试指令", "接口测试指令", 0L, technicalEngineer);
-        PromptCatalogEntity developerInstructions = createEntity("开发工程师指令", "开发工程师指令", 0L, technicalEngineer);
-
-        rootEntities.add(technicalEngineer) ;
-        rootEntities.add(technicalArchitecture) ;
-        rootEntities.add(databaseDesign) ;
-        rootEntities.add(interfaceTesting) ;
-        rootEntities.add(developerInstructions) ;
-
-        // 数据挖掘指令
-        PromptCatalogEntity dataMining = createEntity("数据挖掘指令", "数据挖掘指令", 0L, rootEntity);
-        PromptCatalogEntity dataPlanning = createEntity("数据规划指令", "数据规划指令", 0L, dataMining);
-        PromptCatalogEntity dataCollection = createEntity("数据采集指令", "数据采集指令", 0L, dataMining);
-        PromptCatalogEntity dataMiningCalculation = createEntity("数据挖掘(计算)指令", "数据挖掘(计算)指令", 0L, dataMining);
-        PromptCatalogEntity dataServices = createEntity("数据服务指令", "数据服务指令", 0L, dataMining);
-
-        rootEntities.add(dataMining) ;
-        rootEntities.add(dataPlanning) ;
-        rootEntities.add(dataCollection) ;
-        rootEntities.add(dataMiningCalculation) ;
-        rootEntities.add(dataServices) ;
-
-        // 数据分析指令
-        PromptCatalogEntity dataAnalysis = createEntity("数据分析指令", "数据分析指令", 0L, rootEntity);
-        PromptCatalogEntity indicatorAnalysis = createEntity("指标分析指令", "指标分析指令", 0L, dataAnalysis);
-        PromptCatalogEntity dataReporting = createEntity("数据报表指令", "数据报表指令", 0L, dataAnalysis);
-
-        rootEntities.add(dataAnalysis) ;
-        rootEntities.add(indicatorAnalysis) ;
-        rootEntities.add(dataReporting) ;
-
-        // 运营管理指令
-        PromptCatalogEntity operationManagement = createEntity("运营管理指令", "运营管理指令", 0L, rootEntity);
-        PromptCatalogEntity scriptWriting = createEntity("脚本编写指令", "脚本编写指令", 0L, operationManagement);
-        PromptCatalogEntity continuousRelease = createEntity("持续发布指令", "持续发布指令", 0L, operationManagement);
-
-        rootEntities.add(operationManagement) ;
-        rootEntities.add(scriptWriting) ;
-        rootEntities.add(continuousRelease) ;
-
-        // 业务运营指令
-        PromptCatalogEntity businessOperation = createEntity("业务运营指令", "业务运营指令", 0L, rootEntity);
-        PromptCatalogEntity productMarket = createEntity("产品市场指令", "产品市场指令", 0L, businessOperation);
-        PromptCatalogEntity productCustomerService = createEntity("产品客服指令", "产品客服指令", 0L, businessOperation);
-
-        rootEntities.add(businessOperation) ;
-        rootEntities.add(productMarket) ;
-        rootEntities.add(productCustomerService) ;
-
-        // 其它指令
-        PromptCatalogEntity others = createEntity("其它指令", "其它指令", 0L, rootEntity);
-
-        rootEntities.add(others) ;
-
-        AtomicLong id = new AtomicLong(1L);
-        rootEntities.forEach(entity -> {
-            entity.setId(id.getAndIncrement());
-        }) ;
+        List<PromptCatalogEntity> rootEntities = PromptPostCreator.createPromptCatalog() ;
 
         promptCatalogService.saveOrUpdateBatch(rootEntities) ;
-    }
-
-    private PromptCatalogEntity createEntity(String name, String description, long parentId, PromptCatalogEntity parent) {
-        PromptCatalogEntity entity = new PromptCatalogEntity();
-
-        entity.setId(IdUtil.getSnowflakeNextId());
-        entity.setName(name);
-        entity.setDescription(description);
-        entity.setIcon("");
-        entity.setOrderNum(1);
-        entity.setParentId(parent.getId());
-        entity.setChildren(new ArrayList<>());
-
-        return entity ;
     }
 
     @Override
     public void prompt() {
 
-        List<PromptPostsEntity> promptPostsEntityList = new ArrayList<>();
-
-        // 添加所有指令对象
-        promptPostsEntityList.add(new PromptPostsEntity("5l1jPKV8", 12734L, "Admin1",  "培训试卷信息指令", "password1", 1L, "Title1", "Type1",  100, "Model1", 25, 50));
-        promptPostsEntityList.add(new PromptPostsEntity("Zo5ueZ34", 12734L, "Admin2", "Ansible服务脚本指令", "password2", 1L, "Title2", "Type2",  150, "Model2", 30, 60));
-        promptPostsEntityList.add(new PromptPostsEntity("XPGeYb4a", 12734L, "Admin3", "K8S部署脚本生成工程师", "password3", 1L, "Title3", "Type3",  120, "Model3", 28, 55));
-        promptPostsEntityList.add(new PromptPostsEntity("RUABZdu2", 12734L, "Admin4", "API接口转成SpringBoot代码指令", "password4", 1L, "Title4", "Type4",  110, "Model4", 26, 52));
-        promptPostsEntityList.add(new PromptPostsEntity("Qoh7hgA3", 12734L, "Admin5", "接口用例生成指令", "password5", 1L, "Title5", "Type5",  130, "Model5", 29, 58));
-
-        promptPostsEntityList.add(new PromptPostsEntity("JQxPeLRJ", 12734L, "Admin6", "服务接口生成指令", "password6", 1L, "Title6", "Type6",  140, "Model6", 27, 54));
-        promptPostsEntityList.add(new PromptPostsEntity("KTHkQiDg", 12734L, "Admin7", "培训内容推荐指令", "password7", 1L, "Title7", "Type7",  105, "Model7", 24, 48));
-        promptPostsEntityList.add(new PromptPostsEntity("OyezG1Hk", 12734L, "Admin8", "产品软文_内容编写指令", "password8", 1L, "Title8", "Type8", 115, "Model8", 22, 44));
-        promptPostsEntityList.add(new PromptPostsEntity("35lxXaDe", 12734L, "Admin9", "产品软文_目录大纲指令", "password9", 1L, "Title9", "Type9", 125, "Model9", 23, 46));
-        promptPostsEntityList.add(new PromptPostsEntity("gDT9coiQ", 12734L, "Admin10", "服务工程生成指令", "password10", 1L, "Title10", "Type10", 135, "Model10", 21, 42));
-
-        promptPostsEntityList.add(new PromptPostsEntity("0ucP2rvS", 12734L, "Admin11", "数据库表结构设计指令", "password11", 1L, "Title11", "Type11", 155, "Model11", 31, 62));
-        promptPostsEntityList.add(new PromptPostsEntity("IR0i5mjt", 12734L, "Admin12", "实时数据采集指令", "password12", 1L, "Title12", "Type12", 145, "Model12", 32, 64));
-        promptPostsEntityList.add(new PromptPostsEntity("uy7Qsfti", 12734L, "Admin13", "培训题目设计指令", "password13", 1L, "Title13", "Type13", 160, "Model13", 33, 66));
-        promptPostsEntityList.add(new PromptPostsEntity("kGLGZK9j", 12734L, "Admin14", "平台菜单生成指令", "password14", 1L, "Title14", "Type14", 170, "Model14", 34, 68));
-        promptPostsEntityList.add(new PromptPostsEntity("hfSZuEkT", 12734L, "Admin15", "数据库实体设计指令", "password15", 1L, "Title15", "Type15", 180, "Model15", 35, 70));
-
-        promptPostsEntityList.add(new PromptPostsEntity("wbqZCMp8", 12734L, "Admin16", "需求分析_项目非功能性需求", "password16", 1L, "Title16", "Type16", 190, "Model16", 36, 72));
-        promptPostsEntityList.add(new PromptPostsEntity("3hmyCqhJ", 12734L, "Admin17", "需求分析_项目功能细化分析指令", "password17", 1L, "Title17", "Type17", 200, "Model17", 37, 74));
-        promptPostsEntityList.add(new PromptPostsEntity("RgPSt3oS", 12734L, "Admin18", "需求分析_项目功能分析指令", "password18", 1L, "Title18", "Type18", 210, "Model18", 38, 76));
-        promptPostsEntityList.add(new PromptPostsEntity("V5yZ1l3H", 12734L, "Admin19", "需求分析_项目介绍分析指令", "password19", 1L, "Title19", "Type19", 220, "Model19", 39, 78));
-        promptPostsEntityList.add(new PromptPostsEntity("mOO5Fq5s", 12734L, "Admin20", "需求分析_需求文档分析指令", "password20", 1L, "Title20", "Type20", 230, "Model20", 40, 80));
-
-        AtomicLong id = new AtomicLong(1L);
-        promptPostsEntityList.forEach(entity -> {
-            entity.setId(id.getAndIncrement());
-        }) ;
+        List<PromptPostsEntity> promptPostsEntityList = PromptPostCreator.createPromptPostEntity() ;
 
         promptPostsService.saveOrUpdateBatch(promptPostsEntityList) ;
 
