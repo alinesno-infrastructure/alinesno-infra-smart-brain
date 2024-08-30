@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.brain.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
@@ -38,23 +39,16 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
     private IPromptPostsService postsService ;
 
     @Override
-    public void commitTask(BrainTaskDto dto) {
-
-        // 判断业务ID是否存在
-        String bId = dto.getBusinessId() ;
-        Assert.notNull(bId , "业务ID为空") ;
-
-        LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.eq(GenerateTaskEntity::getBusinessId , bId)  ;
-
-        long count = this.count(wrapper) ;
-        Assert.isTrue(count == 0 , "业务ID["+bId+"]已存在");
+    public String commitTask(BrainTaskDto dto) {
 
         GenerateTaskEntity entity = new GenerateTaskEntity() ;
         BeanUtils.copyProperties(dto , entity);
+        entity.setBusinessId(IdUtil.getSnowflakeNextIdStr());
 
         // 获取到PromptPost内容
         PromptPostsEntity postsEntity = postsService.getByPromptId(dto.getPromptId()) ;
+        Assert.notNull(postsEntity , "未找到PromptPost内容");
+
         entity.setTaskDesc(postsEntity.getPromptName());
 
         entity.setParams(JSONObject.toJSONString(dto.getParams()));
@@ -64,6 +58,8 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         this.save(entity) ;
 
         fileProcessingService.processFile(entity);
+
+        return entity.getBusinessId() ;
     }
 
     @Override
