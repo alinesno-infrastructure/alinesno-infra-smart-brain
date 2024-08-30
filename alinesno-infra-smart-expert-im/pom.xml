@@ -55,8 +55,13 @@
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-			<scope>compile</scope>
+			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
+			<version>${revision}</version>
 		</dependency>
 
 	</dependencies>
