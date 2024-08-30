@@ -1,9 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.loader;
 
-import com.alinesno.infra.common.core.context.SpringContext;
-import com.alinesno.infra.smart.assistant.entity.PluginEntity;
 import com.alinesno.infra.smart.assistant.role.utils.YAMLMapper;
-import com.alinesno.infra.smart.assistant.service.IPluginService;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +19,6 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 加载插件
@@ -68,6 +64,7 @@ public class PluginLoader {
             for (PluginInfo plugin : agent.agents) {
 
                 log.debug("plugin = {}" , plugin);
+
                 String pluginJar = plugin.getJarName() ;
 
                 String pluginUrl = pluginCentralUrl + pluginJar;
@@ -77,6 +74,7 @@ public class PluginLoader {
                     log.debug("下载插件:{}" , pluginUrl);
                     downloadPlugin(pluginUrl, localPath);
                     log.debug("下载插件成功:{}" , localPath);
+
                 }else{
                     log.debug("本地插件已经存在:{}" , localPath);
                 }
