@@ -22,7 +22,7 @@ var managerUrl = {
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
     defaultProject: prefix + "defaultProject",
-    downloadfile: prefix + "downloadfile"
+    downloadFile: prefix + "downloadFile"
 }
 
 // 获取默认应用
