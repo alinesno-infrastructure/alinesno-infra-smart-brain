@@ -40,19 +40,20 @@ public class BrainTaskController {
 
         ChatCompletion chatCompletion = ChatUtils.convert(chatRequestDto) ;
 
-        Response response = llmApiService.getClient().chatCompletions(chatCompletion) ;
-        if(response.isSuccessful()){
+        try (Response response = llmApiService.chatCompletions(chatCompletion)) {
+            if (response.isSuccessful()) {
 
-            assert response.body() != null;
-            String responseBody = response.body().string() ;
+                assert response.body() != null;
+                String responseBody = response.body().string();
 
-            log.debug("Response: " + responseBody);
-            return AjaxResult.success("操作成功" , JSONObject.parseObject(responseBody)) ;
-        }else{
-            log.error("Request failed: " + response.code() + " " + response.message());
+                log.debug("Response: " + responseBody);
+                return AjaxResult.success("操作成功", JSONObject.parseObject(responseBody));
+            } else {
+                log.error("Request failed: " + response.code() + " " + response.message());
+            }
+
+            return AjaxResult.error(response.message());
         }
-
-        return AjaxResult.error(response.message()) ;
     }
 
     /**
@@ -64,11 +65,9 @@ public class BrainTaskController {
     public AjaxResult chatTask(@Validated @RequestBody BrainTaskDto dto) {
 
         log.debug("dto = {}" , dto);
-
         // 处理提交任务的逻辑
-        generateTaskService.commitTask(dto) ;
-
-        return AjaxResult.success(); // 返回成功结果
+        String businessId = generateTaskService.commitTask(dto) ;
+        return AjaxResult.success("任务提交成功." , businessId); // 返回成功结果
     }
 
     /**
