@@ -57,18 +57,18 @@
 <script setup>
 
 const advantages = [
-  { icon: 'fa-solid fa-desktop', title: '直观的仪表板', description: '提供清晰的概览界面，便于用户快速了解项目的整体状态和关键指标。' },
-  { icon: 'fa-solid fa-user-tag', title: '精细的专家管理', description: '支持专家角色和类型的定制化管理，确保每个专家能充分发挥其专业领域的能力。' },
-  { icon: 'fa-solid fa-code', title: '可编程的工作流', description: '通过定义脚本和工作流记录，实现自动化任务处理和监控，提高效率与准确性。' },
-  { icon: 'fa-solid fa-file-import', title: '智能的Prompt管理', description: '允许用户创建、编辑和组织Prompt模板，以适应各种应用场景，促进创意和生产力。' },
-  { icon: 'fa-solid fa-server', title: '强大的监控能力', description: '实时监控系统API调用及性能，帮助优化系统资源并确保高可用性。' },
-  { icon: 'fa-solid fa-robot', title: '先进的Agent技术', description: '利用Agent技术自动执行任务，支持复杂的业务逻辑，提升自动化水平。' }
+  { icon: 'fa-solid fa-desktop', title: '直观的仪表板', description: '便于用户快速了解项目的整体状态和关键指标。' },
+  { icon: 'fa-solid fa-user-tag', title: '精细的专家管理', description: '确保每个专家能充分发挥其专业领域的能力。' },
+  { icon: 'fa-solid fa-code', title: '可编程的工作流', description: '实现自动化任务处理和监控，提高效率与准确性。' },
+  { icon: 'fa-solid fa-file-import', title: '智能的Prompt管理', description: '编辑和组织Prompt模板，以适应各种应用场景。' },
+  { icon: 'fa-solid fa-server', title: '强大的监控能力', description: '实时监控系统API调用及性能' },
+  { icon: 'fa-solid fa-robot', title: '先进的Agent技术', description: '利用Agent技术自动执行任务，支持复杂的业务逻辑' }
 ];
 
 const selectedUseScenarios = [
-  { icon: 'fa-solid fa-lightbulb', name: '创意写作辅助', description: '利用高级Prompt技术，帮助用户快速生成高质量的文章、故事或诗歌等创意作品。' },
-  { icon: 'fa-solid fa-briefcase', name: '商业报告生成', description: '通过定义特定的Prompt模板，自动化生成各种商业报告，如市场分析、销售总结等。' },
-  { icon: 'fa-solid fa-clipboard-list', name: '任务自动化', description: '借助Agent技术，自动执行日常任务，如数据整理、文档更新等工作，减少人工干预。' },
+  { icon: 'fa-solid fa-lightbulb', name: '创意写作辅助', description: '利用高级Prompt技术，帮助用户快速生成高质量的文章。' },
+  { icon: 'fa-solid fa-briefcase', name: '商业报告生成', description: '通过定义特定的Prompt模板，自动化生成各种商业报告。' },
+  { icon: 'fa-solid fa-clipboard-list', name: '任务自动化', description: '借助Agent技术，自动执行日常任务，如数据整理。' },
 ];
 
 </script>
