@@ -2,9 +2,9 @@ package com.alinesno.infra.smart.assistant.queue.provider;
 
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
-import com.alinesno.infra.smart.assistant.api.adapter.TaskContentDto;
 import com.alinesno.infra.smart.assistant.entity.MessageQueueEntity;
 import com.alinesno.infra.smart.assistant.service.IMessageQueueService;
+import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
