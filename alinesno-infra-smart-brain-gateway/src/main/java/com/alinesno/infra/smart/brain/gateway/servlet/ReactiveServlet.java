@@ -66,7 +66,7 @@ public class ReactiveServlet extends HttpServlet {
 
 			ChatCompletion chatCompletion = ChatUtils.convert(chatRequestDto) ;
 
-			llmApiService.getClient().streamChatCompletion(chatCompletion, new EventSourceListener() {
+			llmApiService.streamChatCompletion(chatCompletion, new EventSourceListener() {
 			
 				String contentText = "" ; 
 				
