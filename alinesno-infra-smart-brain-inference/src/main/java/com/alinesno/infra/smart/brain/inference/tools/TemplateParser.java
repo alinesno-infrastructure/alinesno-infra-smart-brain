@@ -30,7 +30,7 @@ public class TemplateParser {
      * @param paramMap
      * @return
      */
-    public static String parserTemplate(String templates , Map<String , Object> paramMap){
+    public static String parserTemplate(String templates , Map<?, ?> paramMap){
 
         try {
 
@@ -43,9 +43,6 @@ public class TemplateParser {
             // 执行模板填充
             StringWriter stringWriter = new StringWriter();
             template.process(params, stringWriter);
-
-            // 输出填充后的结果
-            System.out.println(stringWriter.toString());
 
             return stringWriter.toString() ;
 
