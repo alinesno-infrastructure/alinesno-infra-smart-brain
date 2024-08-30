@@ -112,6 +112,14 @@ export function selectDictLabels(datas, value, separator) {
   return actions.join('').substring(0, actions.join('').length - 1);
 }
 
+// 字符长度截取
+export function truncateString(str, maxLength) {
+  if (!str || str.length <= maxLength) {
+       return str;
+   }
+   return str.substring(0, maxLength) + '...';
+}
+
 // 字符串格式化(%s )
 export function sprintf(str) {
   var args = arguments, flag = true, i = 1;
