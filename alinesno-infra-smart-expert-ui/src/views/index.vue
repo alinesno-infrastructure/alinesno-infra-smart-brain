@@ -22,10 +22,6 @@
     <!-- 应用统计 -->
     <OperationWorkspaceStatus />
 
-    <!-- 应用套件和状态
-    <OperationWorkspaceService />
-    -->
-
     <!-- 运行应用列表 -->
     <OperationWorkspaceApps />
 
@@ -35,7 +31,6 @@
 <script setup name="Index">
 
 import OperationWorkspaceApps from './operation-workspace/apps.vue'
-import OperationWorkspaceService from './operation-workspace/service.vue'
 import OperationWorkspaceStatus from './operation-workspace/countStatics.vue'
 
 
