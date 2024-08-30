@@ -42,18 +42,15 @@ spec:
           value: |
             -Dspring.data.redis.host=${REDIS_HOST}
             -Dspring.data.redis.password=${REDIS_KEY}
+
             -Dspring.datasource.url=jdbc:mysql://${DB_MYSQL_URL}/dev_alinesno_infra_smart_assistant_v100?serverTimezone=GMT%2B8&zeroDateTimeBehavior=CONVERT_TO_NULL
             -Dspring.datasource.username=${DB_MYSQL_USRENAME}
             -Dspring.datasource.password=${DB_MYSQL_PASSWORD}
 
-            -Dalinesno.infra.smart.dingtalk.robot-code=${DINGTALK_ROBOT_CODE}
-            -Dalinesno.infra.smart.dingtalk.app-key=${DINGTALK_APP_KEY}
-            -Dalinesno.infra.smart.dingtalk.app-secret=${DINGTALK_APP_SECRET}
-            -Dalinesno.infra.smart.dingtalk.robot.webhook=${DINGTALK_ROBOT_WEBHOOK}
-            -Dalinesno.infra.smart.dingtalk.robot.secret=${DINGTALK_ROBOT_SECRET}
-            -Dalinesno.infra.smart.comment-link=${DINGTALK_ROBOT_COMENT_LINK}
+            -Dalinesno.infra.smart.brain.openapi.host=${CHATGPT_PROXY}
+            -Dalinesno.infra.smart.brain.openapi.key=${CHATGPT_SK}
+            -Dalinesno.infra.smart.brain.qianwen.key=${QIANWEN_SK}
 
-            -Dalinesno.infra.smart.wechat.token=${WECHAT_MP_TOKEN}
             -Dalinesno.infra.gateway.host=${INFRA_GAGTEWAY}
             -Dserver.port=8080
         ports:
