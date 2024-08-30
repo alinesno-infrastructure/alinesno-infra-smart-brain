@@ -1,7 +1,7 @@
 <template>
   <div style="padding-top:0px;">
     <el-row class="acp-dashboard-panel" :gutter="20">
-      <el-col class="panel-col"  :span="19" style="padding:0px">
+      <el-col class="panel-col"  :span="19" style="padding:0px !important">
           <div class="panel-header">
             <div class="header-title"><i class="fa-solid fa-link"></i> Agent运营团队</div>
           </div>
@@ -24,7 +24,7 @@
         </div>
       </el-col>
 
-      <el-col class="panel-col"  :span="5" style="padding:0px">
+      <el-col class="panel-col"  :span="5" style="padding:0px !important">
               <div class="grid-content">
                 <div class="panel-header">
                   <div class="header-title"><i class="fa-solid fa-user-nurse"></i> 助手服务统计</div>
@@ -38,10 +38,6 @@
                       </div>
                     </li>
                   </ul>
-                </div>
-                <div class="panel-footer">
-                  <div class="footer-link">
-                  </div>
                 </div>
               </div>
             </el-col>
@@ -86,8 +82,6 @@ const opertionAssets = ref([
   {id:'3' , title:'数据渠道' , count:65} ,
   {id:'4' , title:'渠道统计' , count:85} ,
   {id:'6' , title:'业务服务' , count:145} ,
-  {id:'7' , title:'接口调用' , count:40} ,
-  {id:'2' , title:'存在知识库' , count:7649145} ,
 ])
 
 /** 获取最新角色 */
@@ -462,7 +456,7 @@ li.product_list_li.count-li {
       position: relative;
       text-align: left;
       margin-right: 8px;
-      padding: 10px 15px;
+      padding: 10px 10px;
       width: calc(33% - 16px);
       text-decoration: none;
       overflow: hidden;
@@ -470,9 +464,8 @@ li.product_list_li.count-li {
       border-style: solid;
       border-radius: 2px;
       transition: all 0.1s linear;
-      height: 70px;
-      margin-bottom: 10px;
-      margin-top: 5px;
+      height: 60px;
+      margin-top: 6px;
       margin-left: 10px;
 
       i{
