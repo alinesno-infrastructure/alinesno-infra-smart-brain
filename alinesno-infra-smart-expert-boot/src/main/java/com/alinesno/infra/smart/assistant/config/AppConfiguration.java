@@ -43,20 +43,23 @@ public class AppConfiguration implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.debug("项目启动初始化");
 
-//        // 初始化提示分类
-//        assistantInitService.promptCatalog();
-//
-//        // 初始化提示
-//        assistantInitService.prompt();
-//
-//        // 初始化分类
-//        assistantInitService.expertCatalog();
-//
-//        // 初始化专家
-//        assistantInitService.expert();
-//
-//        // 初始化插件
-//        assistantInitService.initPlugin();
+        // 初始化提示分类
+        assistantInitService.promptCatalog();
+
+        // 初始化提示
+        assistantInitService.prompt();
+
+        // 初始化分类
+        assistantInitService.expertCatalog();
+
+        // 初始化专家
+        assistantInitService.expert();
+
+        // 初始化插件
+        assistantInitService.initPlugin();
+
+        // 初始化频道
+        assistantInitService.initChannel();
     }
 
 }
