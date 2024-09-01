@@ -5,7 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.entity.MessageEntity;
-import com.alinesno.infra.base.im.enums.MessageType;
+import com.alinesno.infra.smart.im.enums.MessageType;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
 import com.alinesno.infra.base.im.service.IMessageService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
