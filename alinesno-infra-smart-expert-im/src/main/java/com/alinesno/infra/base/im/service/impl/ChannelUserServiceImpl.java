@@ -35,6 +35,11 @@ public class ChannelUserServiceImpl extends IBaseServiceImpl<ChannelUserEntity, 
                 .map(ChannelUserEntity::getAccountId)
                 .toList();
 
+        log.info("agentIds:{}" , agentIds) ;
+        if(agentIds.isEmpty()){
+            return new ArrayList<>() ;
+        }
+
         List<IndustryRoleEntity> list = roleService.listByIds(agentIds) ; // smartAssistantConsumer.getAgentListByIds(agentIds) ;
         List<UserEntity> userList = new ArrayList<>() ;
 
