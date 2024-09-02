@@ -22,6 +22,29 @@
 			<version>${revision}</version>
 		</dependency>
 
+		<!-- 引用业务服务_start -->
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-facade</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-plugin</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-im</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 引用业务服务_end -->
+
 		<dependency>
 			<groupId>com.thoughtworks.xstream</groupId>
 			<artifactId>xstream</artifactId>
@@ -33,23 +56,6 @@
             <artifactId>gson</artifactId>
         </dependency>
 
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
-			<version>${revision}</version>
-		</dependency>
-        <dependency>
-            <groupId>com.alinesno.infra.smart</groupId>
-            <artifactId>alinesno-infra-smart-expert-facade</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.alinesno.infra.smart</groupId>
-            <artifactId>alinesno-infra-smart-expert-plugin</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-            <scope>compile</scope>
-        </dependency>
 
     </dependencies>
 
