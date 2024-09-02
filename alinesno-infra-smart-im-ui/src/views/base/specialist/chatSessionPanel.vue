@@ -24,7 +24,7 @@
               #{{ item.channelName }}
             </div>
             <div class="chatChannel-desc">
-              {{ item.channelDesc }}
+              {{ truncateString(item.channelDesc,12) }}
             </div>
             <el-button type="danger" 
                 :class="item.showTools && item.channelType !== '1' ?'show-tools':'hide-tools'"  
