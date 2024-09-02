@@ -15,7 +15,6 @@
               <!-- <img class="channel-image" :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index + 5) + '.png'" /> -->
               <img class="channel-image" :src="imagePath(item)" />
               <div class="channel-text">
-
                 <span class="channel-type">
                     <i v-if="item.channelType === '9'" class="fa-solid fa-users-gear"></i> 
                     <i v-if="item.channelType === '2'" class="fa-solid fa-user-ninja"></i> 
@@ -23,10 +22,9 @@
                 </span>
 
                 #{{ item.channelName }}
-
-              </div>
-              <div class="channel-desc">
-                {{ item.channelDesc }}
+                <div class="channel-desc">
+                  {{ truncateString(item.channelDesc,25) }}
+                </div> 
               </div>
               <el-button type="primary" @click="handleSetChannelId(item.id)" style="position: absolute;right: 10px;" text bg>
                 <i class="fa-solid fa-user-tag icon-btn"></i> 加入 
@@ -172,8 +170,10 @@ defineExpose({
   }
 
   .channel-desc {
-    margin-left: 10px;
-    font-size: 13px;
+    font-size: 12px;
+    font-weight: normal;
+    color: #a5a5a5;
+    line-height: 1rem;
   }
 
   .icon-btn{
