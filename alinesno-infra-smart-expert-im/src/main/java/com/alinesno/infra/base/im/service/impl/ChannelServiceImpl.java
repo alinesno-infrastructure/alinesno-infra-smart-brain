@@ -2,7 +2,8 @@ package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.entity.ChannelEntity;
-import com.alinesno.infra.base.im.enums.ChannelType;
+import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.base.im.mapper.ChannelMapper;
 import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
@@ -64,22 +65,11 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         if(personPublicChannel.isEmpty()){
             ChannelEntity e = new ChannelEntity() ;
 
-//            // 创建 Random 对象
-//            Random random = new Random();
-//
-//            // 生成 1 到 60 之间的随机数（包括 1 和 60）
-//            int min = 1;
-//            int max = 60;
-//            int randomNumber = random.nextInt(max - min + 1) + min;
-//
-//            // 打印生成的随机数
-//            log.debug("随机数为: " + randomNumber);
-
             e.setChannelName("个人公共频道");
             e.setChannelDesc("公共频道服务，用于公共交流");
             e.setChannelType(ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
 
-            e.setIcon("1746473582053335042") ;
+            e.setIcon(ImConstants.DEFAULT_AVATAR) ;
             e.setChannelId(IdUtil.nanoId());
 
             this.save(e) ;
