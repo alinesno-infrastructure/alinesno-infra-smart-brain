@@ -1,6 +1,10 @@
 package com.alinesno.infra.smart.assistant.initialize.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.alinesno.infra.base.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.enums.ChannelType;
+import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -24,6 +28,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -39,6 +44,9 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
     @Autowired
     private AssistantPluginProperties assistantPluginProperties;
+
+    @Autowired
+    private IChannelService agentChannelService ;
 
     @Autowired
     private IPromptCatalogService promptCatalogService ;
@@ -226,5 +234,65 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         log.debug("保存插件信息到数据库:{}" , pluginEntities.size());
     }
 
+    @Override
+    public void initChannel() {
+        // 生成推荐频道列表
+        List<ChannelEntity> recommendChannels = Arrays.asList(
+                createChannel("代码审查与优化频道", "在这里，开发者可以提交自己的代码进行同行评审，也可以参与他人的代码审查，共同寻找优化点，提高代码质量。", ChannelType.RECOMMEND_CHANNEL, 16L, "code_reviewer", "https://example.com/images/code_review.jpg"),
+                createChannel("DevOps 实践与CI/CD 频道", "分享和学习持续集成（CI）和持续部署（CD）的最佳实践，讨论自动化构建和部署流程，提升团队的DevOps能力。", ChannelType.RECOMMEND_CHANNEL, 17L, "devops_engineer", "https://example.com/images/devops_ci_cd.jpg"),
+                createChannel("前端框架与库频道", "专注于Vue3和Element Plus等前端框架和技术栈的最新动态，提供教程和案例研究，促进前端开发者之间的知识共享。", ChannelType.RECOMMEND_CHANNEL, 18L, "frontend_developer", "https://example.com/images/frontend_frameworks.jpg"),
+                createChannel("微服务架构设计频道", "探讨微服务架构的设计原则和实践经验，包括服务划分、通信协议选择和服务治理策略等，帮助团队构建可扩展的应用程序。", ChannelType.RECOMMEND_CHANNEL, 19L, "architect", "https://example.com/images/microservices_architecture.jpg"),
+                createChannel("安全与合规性频道", "讨论软件开发生命周期中的安全措施和合规要求，如代码审计、数据加密及隐私保护等，确保应用的安全性和合法性。", ChannelType.RECOMMEND_CHANNEL, 20L, "security_specialist", "https://example.com/images/security_compliance.jpg")
+        );
+
+        // 假设 createChannel 方法已经被定义
+        List<ChannelEntity> exampleChannels = Arrays.asList(
+                createChannel("解决方案编写频道", "分享和讨论各种技术难题的解决方案，帮助团队提高开发效率。", ChannelType.PUBLIC_CHANNEL, 1L, "solution_writer", "https://example.com/images/solution_writing.jpg"),
+                createChannel("数据库设计频道", "专注于数据库模式设计的最佳实践，探讨高效的数据结构。", ChannelType.PUBLIC_CHANNEL, 2L, "db_designer", "https://example.com/images/db_design.jpg"),
+                createChannel("需求方案编写分享频道", "提供一个平台给产品经理分享需求文档，并获取反馈。", ChannelType.PUBLIC_CHANNEL, 3L, "product_manager", "https://example.com/images/requirement_sharing.jpg"),
+                createChannel("测试策略讨论频道", "讨论如何制定有效的测试计划以及执行策略。", ChannelType.PUBLIC_CHANNEL, 4L, "qa_engineer", "https://example.com/images/testing_strategy.jpg"),
+                createChannel("UI/UX 设计分享频道", "展示最新的UI/UX设计趋势，提供设计师交流空间。", ChannelType.PUBLIC_CHANNEL, 5L, "ui_ux_designer", "https://example.com/images/ui_ux_design.jpg"),
+                createChannel("敏捷开发实践频道", "探索敏捷开发方法论的应用实例，分享敏捷团队的日常经验和挑战。", ChannelType.PUBLIC_CHANNEL, 6L, "agile_practitioner", "https://example.com/images/agile_practices.jpg"),
+                createChannel("后端架构设计频道", "探讨后端系统的架构设计，包括服务化、模块化等方面的知识。", ChannelType.PUBLIC_CHANNEL, 7L, "backend_architect", "https://example.com/images/backend_architecture.jpg"),
+                createChannel("前端性能优化频道", "针对前端应用的加载速度、响应时间和用户体验等方面提出优化建议。", ChannelType.PUBLIC_CHANNEL, 8L, "frontend_optimizer", "https://example.com/images/frontend_performance.jpg"),
+                createChannel("移动应用开发频道", "分享iOS和Android平台上的应用开发经验，涵盖从设计到发布的全过程。", ChannelType.PUBLIC_CHANNEL, 9L, "mobile_developer", "https://example.com/images/mobile_app_development.jpg"),
+                createChannel("云原生技术频道", "介绍云原生技术栈及其在现代云计算环境下的应用案例。", ChannelType.PUBLIC_CHANNEL, 10L, "cloud_native_specialist", "https://example.com/images/cloud_native_technology.jpg")
+        );
+
+        log.debug("保存推荐频道信息到数据库:{}" , recommendChannels.size());
+        exampleChannels.forEach(item -> {
+            item.setChannelId(IdUtil.nanoId(8));
+            item.setIcon(ImConstants.DEFAULT_AVATAR);
+        });
+        recommendChannels.forEach(item -> {
+            item.setChannelId(IdUtil.nanoId(8));
+            item.setIcon(ImConstants.DEFAULT_AVATAR);
+        }) ;
+
+        agentChannelService.saveOrUpdateBatch(exampleChannels) ;
+        agentChannelService.saveOrUpdateBatch(recommendChannels) ;
+    }
+
+    /**
+     * 创建频道实体
+     *
+     * @param name        频道名称
+     * @param description 描述
+     * @param type        类型
+     * @param id          ID
+     * @param creator     创建者
+     * @param imageUrl    图片链接
+     * @return 创建的频道实体
+     */
+    private static ChannelEntity createChannel(String name, String description, ChannelType type, Long id, String creator, String imageUrl) {
+        ChannelEntity channel = new ChannelEntity();
+        channel.setChannelName(name);
+        channel.setChannelDesc(description);
+        channel.setChannelType(type.getValue());
+        channel.setId(id);
+        channel.setOperatorId(id);
+        channel.setIcon(imageUrl);
+        return channel;
+    }
 
 }
