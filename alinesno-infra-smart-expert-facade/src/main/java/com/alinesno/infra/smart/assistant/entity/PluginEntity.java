@@ -14,7 +14,7 @@ import javax.persistence.Entity;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@TableName("channel")
+@TableName("plugins")
 public class PluginEntity extends InfraBaseEntity {
 
     @ColumnComment("渠道名称")
