@@ -1,5 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
+import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
@@ -35,11 +36,17 @@ public class ImChatAvatarController {
     @GetMapping("/displayImage/{imageId}")
     public ResponseEntity<byte[]> displayImage(@PathVariable("imageId") String imageId){
 
-        byte[] byteBody = storageConsumer.download(imageId , progress -> {
-            System.out.println("total bytes: " + progress.getTotalBytes());
-            System.out.println("current bytes: " + progress.getCurrentBytes());
-            System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-        }) ;
+        byte[] byteBody = null ;
+        try{
+            byteBody = storageConsumer.download(imageId , progress -> {
+                System.out.println("total bytes: " + progress.getTotalBytes());
+                System.out.println("current bytes: " + progress.getCurrentBytes());
+                System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
+            }) ;
+        }catch(Exception e){
+            log.error("文件下载失败:{}" , e.getMessage());
+            byteBody =  ResourceUtil.readBytes("default_avatar.jpeg") ;
+        }
 
         return new ResponseEntity<>(byteBody, new HttpHeaders(), HttpStatus.OK);
     }
