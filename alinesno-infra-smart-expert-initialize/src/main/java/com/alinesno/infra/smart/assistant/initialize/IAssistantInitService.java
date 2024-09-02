@@ -30,4 +30,5 @@ public interface IAssistantInitService {
      */
     void initPlugin() ;
 
+    void initChannel();
 }
