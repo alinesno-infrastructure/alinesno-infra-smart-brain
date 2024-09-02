@@ -93,13 +93,6 @@
         </dependency>
         <!-- 引用GPT推理工程服务_end -->
 
-<!--		<dependency>-->
-<!--			<groupId>org.springframework.boot</groupId>-->
-<!--			<artifactId>spring-boot-devtools</artifactId>-->
-<!--			<scope>runtime</scope>-->
-<!--			<optional>true</optional>-->
-<!--		</dependency>-->
-
 	</dependencies>
 
 </project>
