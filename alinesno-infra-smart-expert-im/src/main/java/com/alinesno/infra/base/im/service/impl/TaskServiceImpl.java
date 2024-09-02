@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.dto.TableItem;
 import com.alinesno.infra.base.im.entity.MessageEntity;
-import com.alinesno.infra.base.im.enums.TaskStatusEnums;
+import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
 import com.alinesno.infra.base.im.service.IMessageService;
 import com.alinesno.infra.base.im.service.ITaskService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
