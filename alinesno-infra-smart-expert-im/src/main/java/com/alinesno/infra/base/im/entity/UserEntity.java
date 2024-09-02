@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.im.entity;
 
-import com.alinesno.infra.base.im.enums.AccountType;
+import com.alinesno.infra.smart.im.enums.AccountType;
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
