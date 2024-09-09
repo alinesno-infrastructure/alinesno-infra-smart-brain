@@ -174,7 +174,7 @@ public class ImChatController extends SuperController {
             agentInfo.setReaderType("html");
             agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
             agentInfo.setDateTime(DateUtil.formatDateTime(new Date()));
-            agentInfo.setIcon("1746437666131714049");
+            agentInfo.setIcon("1830185154541305857");
             agentInfo.setDateTime(DateUtil.formatDateTime(new Date()));
 
             chatMessageDtos.add(agentInfo) ;
