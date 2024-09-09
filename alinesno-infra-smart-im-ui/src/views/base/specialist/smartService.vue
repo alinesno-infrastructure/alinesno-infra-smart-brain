@@ -31,22 +31,31 @@
               <el-row :gutter="20">
                 <el-col :span="18">
                     <div class="message-input">
-                      <textarea
+                      
+                      <!-- <textarea
                         class="input-chat-box"
                         v-model="message"
                         @input="handleInput"
                         @keydown="handleKeyDown" 
-                        placeholder="请向你Agent,输入你的命令 ..." />
+                        placeholder="请向你Agent,输入你的命令 ..." /> -->
 
-                      <ul v-if="showDropdown" class="mention-dropdown">
+                        <el-mention
+                            class="input-chat-box"
+                            v-model="value"
+                            :options="options"
+                            :prefix="['@', '#']"
+                            placeholder="输入@可指定角色, #可指定输出结果"
+                            @search="handleSearch"
+                          />
+
+                      <!-- <ul v-if="showDropdown" class="mention-dropdown">
                         <li v-for="(user, index) in users" :key="index" @click="mentionUser(user)">
-                          <!-- <img style="width:25px;height:25px;border-radius: 5px;position: absolute;" :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index + 35) + '.png'" /> -->
                           <img style="width:30px;height:30px;border-radius: 5px;position: absolute;" :src="imagePath(user)" />
                           <div style="margin-left: 30px;margin-top: 5px;">
                             {{ user.roleName }}
                           </div>
                         </li>
-                      </ul>
+                      </ul> -->
 
                     </div>
                 </el-col>
@@ -181,6 +190,21 @@ const data = reactive({
 });
 
 const { queryParams, form, rules } = toRefs(data);
+
+// 定义模拟数据
+const MOCK_DATA = {
+  '@': ['Fuphoenixes', 'kooriookami', 'Jeremy', 'btea'],
+  '#': ['1.0', '2.0', '3.0'],
+};
+
+// 初始化值
+const value = ref('');
+const options = ref([]);
+
+// 搜索处理函数
+const handleSearch = (searchValue, prefix) => {
+  options.value = (MOCK_DATA[prefix] || []).map(val => ({ value: val }));
+};
 
 const handleClose = () => {
   // dialogVisible.value = false ; 
@@ -500,6 +524,16 @@ handlelistAllUser() ;
 
 </script>
 
+
+<style lang="scss">
+  .input-chat-box {
+    .el-input__wrapper{
+      box-shadow: none !important;
+      background-color: #fafafa; 
+    }
+  }
+</style>
+
 <style lang="scss" scoped>
 .icon-btn{
   font-size: 20px;
@@ -517,7 +551,7 @@ handlelistAllUser() ;
   .input-chat-box {
     width: 100%;
     height: 41px;
-    padding: 10px;
+    padding: 4px;
     resize: none;
     background: #fafafa;
     font-size: 14px;
@@ -525,6 +559,7 @@ handlelistAllUser() ;
     border-radius: 5px;
     outline:none;
     outline:0;
+
   }
 
   .mention-dropdown {
