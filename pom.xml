@@ -30,6 +30,11 @@
         <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
         <module>alinesno-infra-smart-brain-gateway</module>  <!-- 接口服务 -->
 
+        <!-- 推理服务 -->
+        <module>alinesno-infra-smart-inferen-facade</module>  <!-- 接口和引用 -->
+        <module>alinesno-infra-smart-inferen-domain</module>
+        <module>alinesno-infra-smart-inferen-agent</module>
+
 		<!-- 助手服务 -->
         <module>alinesno-infra-smart-expert-facade</module>  <!-- 接口和引用 -->
         <module>alinesno-infra-smart-expert-domain</module>  <!-- 领域服务 -->
