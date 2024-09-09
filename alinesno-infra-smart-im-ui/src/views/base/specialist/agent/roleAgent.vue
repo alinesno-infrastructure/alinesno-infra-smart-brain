@@ -17,11 +17,11 @@
 
         <el-table v-loading="loading" :data="UserList" @selection-change="handleSelectionChange">
           <el-table-column type="index" width="40" align="center"/>
-          <el-table-column label="图标" align="center" width="50px" prop="icon" v-if="columns[0].visible">
+          <el-table-column align="center" width="60px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
               <div class="role-icon">
                 <!-- <img :src="'http://data.linesno.com/icons/circle/Delivery boy-' + ((scope.$index + 1)%5 + 1) + '.png'" /> -->
-                <img :src="imagePath(scope.row)" style="width:40px;height:40px;border-radius: 5px"/>
+                <img :src="imagePath(scope.row)" style="width:40px;height:40px;border-radius: 10px"/>
               </div>
             </template>
           </el-table-column>
@@ -30,7 +30,7 @@
               <div style="font-size: 14px;font-weight: 500;color: #3b5998;">
                 {{ scope.row.roleName }}
               </div>
-              <div style="font-size: 13px;color: #a5a5a5;">
+              <div style="font-size: 12px;color: #a5a5a5;">
                  {{ scope.row.roleLevel }}
               </div>
             </template>
@@ -138,7 +138,7 @@ const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 8,
     roleName: undefined,
     roleName: undefined,
     responsibilities: undefined,
