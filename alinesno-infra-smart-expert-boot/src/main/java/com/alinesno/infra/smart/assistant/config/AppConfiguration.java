@@ -27,8 +27,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ServletComponentScan(basePackages = {"com.alinesno.infra.smart.brain"})
 @Configuration
 @ForestScan(basePackages = "com.alinesno.infra.smart.assistant.adapter")
-@MapperScan({"com.alinesno.infra.smart.assistant.mapper" , "com.alinesno.infra.base.im.mapper" , "com.alinesno.infra.smart.brain.mapper"})
-@ComponentScan({"com.alinesno.infra.smart.assistant","com.alinesno.infra.smart.brain" , "com.alinesno.infra.base.im"})
+@MapperScan({
+        "com.alinesno.infra.smart.assistant.mapper" ,
+        "com.alinesno.infra.base.im.mapper" ,
+        "com.alinesno.infra.smart.brain.mapper" ,
+        "com.alinesno.infra.smart.inference.mapper"
+})
+@ComponentScan({
+        "com.alinesno.infra.smart.assistant",
+        "com.alinesno.infra.smart.brain" ,
+        "com.alinesno.infra.base.im" ,
+        "com.alinesno.infra.smart.inference"
+})
 public class AppConfiguration implements CommandLineRunner {
 
     @Autowired
