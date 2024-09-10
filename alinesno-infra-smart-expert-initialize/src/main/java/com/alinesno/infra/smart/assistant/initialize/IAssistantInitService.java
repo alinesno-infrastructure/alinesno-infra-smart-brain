@@ -30,5 +30,8 @@ public interface IAssistantInitService {
      */
     void initPlugin() ;
 
+    /**
+     * 初始化渠道
+     */
     void initChannel();
 }
