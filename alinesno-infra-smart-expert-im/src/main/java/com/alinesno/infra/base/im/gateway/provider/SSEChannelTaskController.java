@@ -1,73 +1,68 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.base.im.gateway.utils.SSEUtils;
+import com.alinesno.infra.base.im.service.ISSEService;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.Map;
+import javax.lang.exception.RpcServiceRuntimeException;
+import java.util.concurrent.CompletableFuture;
 
 /**
- * 频道SSE消息推送，主要用于任务及任务状态的推送
+ * SSEController 类，主要用于处理服务器发送的事件（SSE）的请求。
  */
-@RestController
 @Slf4j
-@CrossOrigin
-@RequestMapping(value = "/v1/api/infra/base/im/sseChannelTask")
+@RestController
+@RequestMapping(value = "/v1/api/infra/base/im/sse/")
 public class SSEChannelTaskController {
 
-    public static final String CHANNEL_TASK_PRE = "task_9527" ;
-    public static final String CHANNEL_MESSAGE_PRE = "message_9527" ;
-
     @Autowired
-    private SSEUtils sseUtils;
-
-    @GetMapping(value = "/createSseConnect", produces="text/event-stream;charset=UTF-8")
-    public SseEmitter createSseConnect(String type) {
-        log.debug("连接频道:{}" , type);
-        return sseUtils.connect(getPre(type));
-    }
-
-    @PostMapping("/sendSseMessage")
-    public void sendSseMessage(@RequestParam("message")  String message , String type){
-        boolean isSend =  sseUtils.sendSseMessage(getPre(type), "123456789", message);
-        log.debug("is Send message = {}" , isSend);
-    }
- 
-    @GetMapping(value = "/listSseConnect")
-    public AjaxResult listSseConnect(){
-        Map<String, SseEmitter> sseEmitterMap = sseUtils.listSseConnect();
-        return AjaxResult.success(sseEmitterMap);
-    }
- 
- 
-    /**
-     * 关闭SSE连接
-     *
-     **/
-    @GetMapping("/closeSseConnect")
-    public AjaxResult closeSseConnect(String type) {
-
-        log.debug("closeSseConnect = {}" , type);
-
-        sseUtils.deleteChannel(getPre(type));
-        return AjaxResult.success();
-    }
+    private ISSEService service;
 
     /**
-     * 获取到类型
-     * @param type
+     * 建立SSE连接
+     * @param clientId
      * @return
      */
-    private String getPre(String type) {
-        if("task".equals(type)){
-            return CHANNEL_TASK_PRE ;
-        } else if("message".equals(type)){
-            return CHANNEL_MESSAGE_PRE ;
-        }
-        return "" ;
+    @GetMapping(value = "openConn/{clientId}", produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    public SseEmitter connect(@PathVariable("clientId") String clientId) {
+
+        final SseEmitter emitter = service.getConn(clientId);
+        CompletableFuture.runAsync(() -> {
+            try {
+                service.send(clientId , null);
+            } catch (Exception e) {
+                throw new RpcServiceRuntimeException("推送数据异常");
+            }
+        });
+
+        return emitter;
+    }
+
+    /**
+     * 关闭SSE连接
+     * @param clientId
+     * @return
+     */
+    @GetMapping("closeConn/{clientId}")
+    public AjaxResult closeConn(@PathVariable("clientId") String clientId) {
+        service.closeConn(clientId);
+        return AjaxResult.success("连接已关闭");
+    }
+
+    /**
+     * 关闭所有SSE连接
+     */
+    @GetMapping("closeAllConn")
+    public AjaxResult closeAllConn() {
+        service.closeAllConn();
+        return AjaxResult.success("所有连接已关闭");
     }
 
 }
