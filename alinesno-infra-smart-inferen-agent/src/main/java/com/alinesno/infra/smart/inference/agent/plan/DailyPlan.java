@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.inference.agent.plan;
 
-import com.alinesno.infra.smart.inference.agent.plan.Plan;
 import lombok.Data;
 
 import java.time.LocalDate;
