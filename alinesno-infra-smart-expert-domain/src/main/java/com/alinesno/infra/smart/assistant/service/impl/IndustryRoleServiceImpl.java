@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -113,6 +114,30 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         queryWrapper.last("limit 8");
 
         return this.list(queryWrapper);
+    }
+
+    @Override
+    public List<IndustryRoleEntity> getRoleByUserName(List<String> users) {
+
+        LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.in(IndustryRoleEntity::getRoleName, users);
+
+        if (list(queryWrapper) != null) {
+            return list(queryWrapper);
+        }
+
+        return null;
+    }
+
+    @Override
+    public IndustryRoleEntity getDefaultHelpAgent() {
+
+        IndustryRoleEntity role = new IndustryRoleEntity() ;
+        role.setId(IdUtil.getSnowflakeNextId());
+        role.setRoleName("AIP智能体小助理");
+        role.setRoleAvatar("1830185154541305857");
+
+        return role;
     }
 
 }
