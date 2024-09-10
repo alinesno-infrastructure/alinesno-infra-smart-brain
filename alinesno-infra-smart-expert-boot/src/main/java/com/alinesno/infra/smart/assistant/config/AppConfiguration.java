@@ -5,16 +5,19 @@ import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
 import com.alinesno.infra.common.web.log.aspect.LogAspect;
 import com.alinesno.infra.smart.assistant.initialize.IAssistantInitService;
 import com.dtflys.forest.springboot.annotation.ForestScan;
+import jakarta.servlet.MultipartConfigElement;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.util.unit.DataSize;
 
 /**
  * 统一配置中心
@@ -43,6 +46,15 @@ public class AppConfiguration implements CommandLineRunner {
 
     @Autowired
     private IAssistantInitService assistantInitService ;
+
+    @Bean
+    public MultipartConfigElement getMultipartConfig() {
+        MultipartConfigFactory config = new MultipartConfigFactory() ;
+        config.setMaxFileSize(DataSize.parse("20MB")); 		// 设置上传文件的单个大小限制
+        config.setMaxRequestSize(DataSize.parse("100MB")); 		// 设置总的上传的大小限制
+        config.setLocation(System.getProperty("java.io.tmpdir")); 				// 设置临时保存目录
+        return config.createMultipartConfig() ;	// 创建一个上传配置
+    }
 
     @Bean
     public LogAspect getLogAspect() {
