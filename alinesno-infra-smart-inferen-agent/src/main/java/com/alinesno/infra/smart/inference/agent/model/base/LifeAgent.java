@@ -1,12 +1,14 @@
 package com.alinesno.infra.smart.inference.agent.model.base;
 
-import com.alinesno.infra.smart.inference.agent.model.bean.Reflection;
-import com.alinesno.infra.smart.inference.agent.model.bean.SocialConnection;
 import com.alinesno.infra.smart.inference.agent.event.Event;
 import com.alinesno.infra.smart.inference.agent.goal.Goal;
+import com.alinesno.infra.smart.inference.agent.model.bean.Reflection;
+import com.alinesno.infra.smart.inference.agent.model.bean.SocialConnection;
 import com.alinesno.infra.smart.inference.agent.plan.DailyPlan;
 import com.alinesno.infra.smart.inference.agent.plan.Plan;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.time.LocalDate;
