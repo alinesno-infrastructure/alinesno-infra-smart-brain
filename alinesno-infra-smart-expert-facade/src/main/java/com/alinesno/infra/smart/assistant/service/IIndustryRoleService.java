@@ -45,4 +45,16 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      */
     List<IndustryRoleEntity> getNewestRole();
 
+    /**
+     * 通过用户名获取角色
+     * @param users
+     * @return
+     */
+    List<IndustryRoleEntity> getRoleByUserName(List<String> users);
+
+    /**
+     * 获取到帮助助手Agent角色(平台有一个默认的帮助角色)
+     * @return
+     */
+    IndustryRoleEntity getDefaultHelpAgent();
 }
