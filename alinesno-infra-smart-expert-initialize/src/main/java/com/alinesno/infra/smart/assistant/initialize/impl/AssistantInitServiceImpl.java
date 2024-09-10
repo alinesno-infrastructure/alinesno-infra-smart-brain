@@ -2,8 +2,6 @@ package com.alinesno.infra.smart.assistant.initialize.impl;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.entity.ChannelEntity;
-import com.alinesno.infra.smart.im.constants.ImConstants;
-import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
@@ -21,6 +19,8 @@ import com.alinesno.infra.smart.brain.entity.PromptCatalogEntity;
 import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.service.IPromptCatalogService;
 import com.alinesno.infra.smart.brain.service.IPromptPostsService;
+import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.enums.ChannelType;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
