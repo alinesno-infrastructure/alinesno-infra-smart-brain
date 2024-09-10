@@ -7,11 +7,11 @@
         <div class="process-panel">
           <ul>
             <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
-              <!-- <img style="width:30px;height:30px;border-radius: 5px;position: absolute;" :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index + 40) + '.png'" /> -->
               <img style="width:30px;height:30px;border-radius: 5px;position: absolute;" :src="imagePath(item)" />
               <div style="margin-left: 40px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;color: #2c3e50;">
                 {{ item.roleName }}
-                <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button>
+                <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button> -->
+                <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
               </div>
             </li>
             <li class="item-process" style="background-color: #fff;text-align: center;">
@@ -65,6 +65,7 @@ function handleGetChannelAgent(){
 
   getChannelAgent(channelId).then(response => {
     favouriteList.value = response.data ;
+    emit('mentionUser' , response.data) ; 
     loading.value = false ; 
   })
 }
