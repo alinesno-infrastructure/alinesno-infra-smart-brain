@@ -26,7 +26,7 @@ public class ImChatAvatarController {
     @Autowired
     private CloudStorageConsumer storageConsumer ;
 
-    @Value("${alinesno.file.local.path}")
+    @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
 
     /**
@@ -39,9 +39,9 @@ public class ImChatAvatarController {
         byte[] byteBody = null ;
         try{
             byteBody = storageConsumer.download(imageId , progress -> {
-                System.out.println("total bytes: " + progress.getTotalBytes());
-                System.out.println("current bytes: " + progress.getCurrentBytes());
-                System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
+//                System.out.println("total bytes: " + progress.getTotalBytes());
+//                System.out.println("current bytes: " + progress.getCurrentBytes());
+//                System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
             }) ;
         }catch(Exception e){
             log.error("文件下载失败:{}" , e.getMessage());
