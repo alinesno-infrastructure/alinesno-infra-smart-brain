@@ -5,7 +5,6 @@ import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.MessageQueueEntity;
 import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
-import com.alinesno.infra.smart.assistant.im.service.IDingtalkNoticeService;
 import com.alinesno.infra.smart.assistant.role.common.TableItem;
 import com.alinesno.infra.smart.assistant.role.event.MessageQueueEvent;
 import com.alinesno.infra.smart.assistant.role.event.PublishService;
