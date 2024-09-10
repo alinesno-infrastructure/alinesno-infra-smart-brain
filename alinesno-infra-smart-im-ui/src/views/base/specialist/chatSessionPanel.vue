@@ -43,10 +43,10 @@
       </div>
     </el-scrollbar>
 
-    <!-- 频道弹窗 -->
+    <!-- 创建频道弹窗 -->
     <ChannelGroup ref="createChildComp" />
 
-    <!-- 频道弹窗 -->
+    <!-- 所有频道弹窗 -->
     <ChannelGroupDiscover ref="addChildComp" />
 
   </div>
