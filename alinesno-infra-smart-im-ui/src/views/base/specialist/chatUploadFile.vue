@@ -74,8 +74,7 @@ function handleOpenUpload(val){
 
 /** 下载模板操作 */
 function importTemplate() {
-  proxy.download("/v1/api/infra/base/im/knowledge/importTemplate", {
-  }, `user_template_${new Date().getTime()}.xlsx`);
+  proxy.download("/v1/api/infra/base/im/knowledge/importTemplate", {}, `user_template_${new Date().getTime()}.xlsx`);
 };
 /**文件上传中处理 */
 const handleFileUploadProgress = (event, file, fileList) => {
@@ -88,8 +87,6 @@ const handleFileSuccess = (response, file, fileList) => {
   proxy.$refs["uploadRef"].handleRemove(file);
 
   emit("handlePushResponseMessageList" , response.data) ;
-
-//   proxy.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
 };
 /** 提交上传文件 */
 function submitFileForm() {
