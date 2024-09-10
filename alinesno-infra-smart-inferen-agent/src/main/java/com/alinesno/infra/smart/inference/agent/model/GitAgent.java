@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.inference.agent.model;
 
 import com.alinesno.infra.smart.inference.agent.model.base.LifeAgent;
 import com.alinesno.infra.smart.inference.enums.Level;
-import lombok.*;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
