@@ -30,6 +30,9 @@ public class MessageEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "消息内容")
     private String content;
 
+    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "格式化消息内容")
+    private String formatContent ;
+
     @Column(type = MySqlTypeConstant.VARCHAR, length = 20, isNull = true, comment = "聊天类型")
 	private String msgType ; // 聊天类型
 
