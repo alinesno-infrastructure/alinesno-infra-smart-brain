@@ -21,23 +21,15 @@
             {{ item.name }} 
           </div>
           <div class="say-message-info" v-else> 
-
-            <!-- <div v-if="item.roleType != 'person'" style="float:left;text-align: right;">
-              <el-button v-if="index%2==0" type="primary" link loading size="default"></el-button>
-              <el-button v-if="index%2==1" type="primary" link size="default"><el-icon><CircleCheck /></el-icon></el-button>
-            </div> -->
-
             {{ item.name }}  
             <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
           </div>
 
           <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
 
-
           <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
               <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
               <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
-              <!-- <el-button type="primary" link icon="Refresh" size="small" @click="handleRecyleGenContent(item)">审批</el-button> -->
           </div>
 
         </div>
@@ -90,10 +82,11 @@ const pushMessageList = (mess) => {
     businessId: '1733452663532019712' ,  
     dateTime: '2023-12-11 16:32:10' ,  
     readerType:'html', 
-    icon:'1746465675916124161' , 
+    icon:'1830185154541305857' , 
     name: '软件工程师罗小东', 
     date: '12-10 13:58:21', 
-    chatText: chatText });
+    chatText: chatText 
+  });
 
   initChatBoxScroll();
 };
@@ -101,12 +94,12 @@ const pushMessageList = (mess) => {
 // 推送消息到当前面板
 const currentResponseMessageList = (message) => {
   messageList.value = message ; 
-
   initChatBoxScroll();
 }
 
 // 推送消息到当前面板
 const pushResponseMessageList = (message) => {
+  console.log('--->>> message = ' + message);
   messageList.value.push(message) ; 
   initChatBoxScroll();
 }
