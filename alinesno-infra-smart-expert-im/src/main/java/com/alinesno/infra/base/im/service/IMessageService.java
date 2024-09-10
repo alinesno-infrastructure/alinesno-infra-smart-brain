@@ -1,6 +1,7 @@
 package com.alinesno.infra.base.im.service;
 
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
+import com.alinesno.infra.base.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.base.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.entity.MessageEntity;
 import com.alinesno.infra.common.facade.services.IBaseService;
@@ -31,6 +32,7 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @param personDto
      * @param channelId
      */
+    @Deprecated
     void saveChatMessage(List<WebMessageDto> dtoList, IndustryRoleEntity roleDto , ChatMessageDto personDto, long channelId , long businessId);
 
     /**
@@ -39,4 +41,18 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @param channelId
      */
     void saveChatMessage(ChatMessageDto personDto, Long channelId);
+
+    /**
+     * 用户发送消息给智能体角色
+     *
+     * @param message
+     * @param personDto
+     */
+    void sendUserMessage(ChatSendMessageDto message, List<ChatMessageDto> personDto);
+
+    /**
+     * 每个频道最开始的Hello World信息
+     * @param channelId
+     */
+    void initChannelHelp(String channelId);
 }
