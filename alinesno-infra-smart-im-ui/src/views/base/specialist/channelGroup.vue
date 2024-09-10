@@ -19,7 +19,7 @@
       </ul>
 
       <div style="font-size: 13px;margin-bottom: 10px;width: 100%;">
-        从模板开始进入
+        进入推荐频道 
       </div>
       
       <el-scrollbar height="400px">
@@ -28,7 +28,6 @@
             <div class="channel-item">
 
               <img class="channel-image" :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index + 5) + '.png'" />
-              <!-- <img class="channel-image" :src="imagePath(item)" /> -->
 
               <div class="channel-text">
                 #{{ item.name }}
@@ -37,7 +36,7 @@
                 {{ item.desc }}
               </div>
               <el-button type="primary" @click="handleSetChannelId(item.id)" style="position: absolute;right: 10px;" text bg>
-                <i class="fa-solid fa-hammer icon-btn"></i> 创建 
+                <i class="fa-solid fa-hammer icon-btn"></i> 进入
               </el-button>
             </div>
           </li>
@@ -52,13 +51,6 @@
           </template>
         </el-page-header>
         <el-form :model="form" :rules="rules" label-position="top" ref="userRef" label-width="80px">
-          <!-- <el-row>
-              <el-col :span="24">
-                <el-form-item label="频道图标" prop="icon">
-                  <el-avatar :size="size" src="http://data.linesno.com/icons/sepcialist/dataset_55.png" />
-                </el-form-item>
-              </el-col>
-          </el-row> -->
           <el-row>
             <el-col :span="24" class="editor-after-div">
               <el-form-item
@@ -124,7 +116,6 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <!-- <el-button type="primary">加入频道</el-button> -->
       </span>
     </template>
 
