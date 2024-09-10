@@ -1,16 +1,14 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
+import com.alinesno.infra.base.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.base.im.dto.RobotMessageDto;
-import com.alinesno.infra.base.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.entity.UserEntity;
-import com.alinesno.infra.base.im.gateway.utils.AgentUtils;
 import com.alinesno.infra.base.im.service.IChannelUserService;
 import com.alinesno.infra.base.im.service.IMessageService;
 import com.alinesno.infra.base.im.service.ITaskService;
+import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -26,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -75,27 +72,39 @@ public class ImChatController extends SuperController {
      * @return
      */
     @PostMapping("/sendUserMessage")
-    public AjaxResult sendUserMessage(@RequestBody List<WebMessageDto> dtoList , long channelId , String type){
+    public AjaxResult sendUserMessage(@RequestBody ChatSendMessageDto message){
 
-        log.debug("dtoList = {}" , JSONObject.toJSONString(dtoList));
+        log.debug("message = {}" , message);
+        List<IndustryRoleEntity> roleList = roleService.listByIds(message.getUsers()) ;
 
-        String text = AgentUtils.getText(dtoList)  ;
-        long roleId = AgentUtils.getRoleId(dtoList) ;
-        String preBusinessId = AgentUtils.getPreBusinessId(dtoList)  ;
-        long businessId = IdUtil.getSnowflakeNextId(); // 生成一个唯一的业务ID
+        List<ChatMessageDto> personDto = new ArrayList<>() ;
+        roleList.forEach(r -> {
+            personDto.add(AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId())) ;
+        });
 
-        IndustryRoleEntity roleDto = roleService.getById(roleId)  ;
+        messageService.sendUserMessage(message , personDto);
 
-        // 提交任务给处理服务，让它后台执行处理
-        taskService.addTask(channelId , businessId , roleId , text , preBusinessId , roleDto);
+        return AjaxResult.success("操作成功." , personDto) ;
 
-        ChatMessageDto personDto = AgentUtils.getChatMessageDto(dtoList, roleDto , businessId , text);
+//        log.debug("dtoList = {}" , JSONObject.toJSONString(dtoList));
+//        String text = AgentUtils.getText(dtoList)  ;
+//        long roleId = AgentUtils.getRoleId(dtoList) ;
+//        String preBusinessId = AgentUtils.getPreBusinessId(dtoList)  ;
+//        long businessId = IdUtil.getSnowflakeNextId(); // 生成一个唯一的业务ID
+//
+//        IndustryRoleEntity roleDto = roleService.getById(roleId)  ;
+//
+//        // 提交任务给处理服务，让它后台执行处理
+//        taskService.addTask(channelId , businessId , roleId , text , preBusinessId , roleDto);
+//
+//        ChatMessageDto personDto = AgentUtils.getChatMessageDto(dtoList, roleDto , businessId , text);
+//
+//        // 保存消息实体
+//        // long receiverId = 1L ; // 当前用户的id
+//
+//        messageService.saveChatMessage(dtoList , roleDto , personDto , channelId , businessId) ;
+//        return AjaxResult.success(personDto) ;
 
-        // 保存消息实体
-//        long receiverId = 1L ; // 当前用户的id
-
-        messageService.saveChatMessage(dtoList , roleDto , personDto , channelId , businessId) ;
-        return AjaxResult.success(personDto) ;
     }
 
 
@@ -160,25 +169,8 @@ public class ImChatController extends SuperController {
     @GetMapping("/chatMessage")
     public AjaxResult chatMessage(String channelId){
 
+        messageService.initChannelHelp(channelId) ;
         List<ChatMessageDto> chatMessageDtos = messageService.listByChannelId(channelId) ;
-
-        if(chatMessageDtos == null || chatMessageDtos.isEmpty()){
-            chatMessageDtos = new ArrayList<>()  ;
-
-            // 完成之后发送消息给前端
-            ChatMessageDto agentInfo = new ChatMessageDto() ;
-
-            agentInfo.setChatText("你好，你可以查看一下使用教程<a target='_blank' href='http://portal.infra.linesno.com'>教程</a>或者@你想咨询的Agent.");
-            agentInfo.setName("Agent小助理");
-            agentInfo.setRoleType("agent");
-            agentInfo.setReaderType("html");
-            agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
-            agentInfo.setDateTime(DateUtil.formatDateTime(new Date()));
-            agentInfo.setIcon("1830185154541305857");
-            agentInfo.setDateTime(DateUtil.formatDateTime(new Date()));
-
-            chatMessageDtos.add(agentInfo) ;
-        }
 
         return AjaxResult.success(chatMessageDtos) ;
     }
