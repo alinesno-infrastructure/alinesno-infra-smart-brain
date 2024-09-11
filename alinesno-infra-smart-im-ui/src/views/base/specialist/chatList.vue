@@ -150,8 +150,9 @@ function readerHtml(chatText) {
 
 /** 发送业务代码到消息框中 */
 function handleBusinessIdToMessageBox(item){
-  const businessIdMessage = '#' + item.businessId + ' ' ;
+  const businessIdMessage = ' #' + item.businessId + ' ' ;
   emit('sendMessageToChatBox' , businessIdMessage) ; 
+  emit('handleSelectPreBusinessId' , item.businessId) ; 
 }
 
 /** 编辑生成内容和更新生成内容 */
@@ -165,7 +166,7 @@ function handleEditGenContent(item){
 const handleRecyleGenContent = (item) => {
   console.log('handleRecyleGenContent item = ' + item) ;
 
-  const businessIdMessage = '#' + item.businessId + ' ' ;
+  const businessIdMessage = ' #' + item.businessId + ' ' ;
   emit('sendMessageToChatBox' , businessIdMessage) ; 
 }
 
