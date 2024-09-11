@@ -38,11 +38,7 @@ public class ImChatAvatarController {
 
         byte[] byteBody = null ;
         try{
-            byteBody = storageConsumer.download(imageId , progress -> {
-//                System.out.println("total bytes: " + progress.getTotalBytes());
-//                System.out.println("current bytes: " + progress.getCurrentBytes());
-//                System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-            }) ;
+            byteBody = storageConsumer.download(imageId , progress -> {}) ;
         }catch(Exception e){
             log.error("文件下载失败:{}" , e.getMessage());
             byteBody =  ResourceUtil.readBytes("default_avatar.jpeg") ;
