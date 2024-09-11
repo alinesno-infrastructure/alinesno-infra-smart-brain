@@ -1,53 +1,95 @@
 <template>
-  <el-scrollbar height="100vh">
-    <div class="acp-dashboard" style="max-width:1240px;width:80%;margin:auto;margin-bottom: 80px; padding: 0px 10px !important;background: #fff;">
 
-      <div class="flex justify-space-between mb-4 flex-wrap gap-4" style="padding:10px;">
-        <!-- <el-button v-for="button in buttons" icon="Search" :key="button.text" :type="button.type" text bg>{{ button.text }}</el-button> -->
+  <div class="app-container">
+
+      <!-- 模板选择 -->
+      <div class="template-header">
+          <div class="vc-div div_l14lqa17 top-container" v-loading="loadingFilter">
+              <div class="vc-div div_l14lqa16">
+                  <div style="padding-bottom: 20px;font-weight: 550; border-bottom: var(--card-border-width, 1px) var(--card-border-style, solid) var(--card-border-color, #e3e4e6);margin-bottom: 20px;">
+                      <i class="el-icon-link"></i> 应用频道广场
+                      <span style="font-size:13px;color:#a5a5a5">
+                          应用模板中心会自动上传到你的项目git基线
+                      </span>
+                  </div>
+                  <div class="vc-div div_l14lqa15">
+                      <div class="vc-div div_l14lqa0k" style="margin-bottom:10px" v-for="(item, index) in filterRules"
+                          :key="index">
+                          <div class="vc-div div_l14lqa0h">
+                              <div class="vc-div div_l14lqa0e tagMain">
+                                  <div class="vc-text" title="">
+                                      {{ item.name }}
+                                  </div>
+                              </div>
+                              <div class="vc-div div_l14lqa0g">
+                                  <div class="vc-div div_l14lqa0f tagNormal" v-for="(i, ind) in item.items"
+                                      :key="ind">
+                                      <div class="vc-text" title="">
+                                          {{ i.name }}
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                  </div>
+              </div>
+          </div>
       </div>
 
-      <div class="channel-panel-header">
-          推荐频道 
-          <span style="font-size: 13px;color: #a5a5a5;">这里包含所有需要运营的Agent频道服务列表，你可以理解成一个Agent就是一个员工</span>
-      </div>
-      <div class="channel-panel-body" v-loading="loading">
-        <el-row>
-          <el-col class="channel-item-box" :span="3" v-for="(item,index) in recChatChannel" :key="item">
-            <div class="img-bannel">
-              <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (1 + (index+1) * 1)+ '.png'" />
-            </div>
-            <div class="channel-info-box">
-              <div class="title">
-                <!-- <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (10 + (index+1) * 1)+ '.png'" style="width: 30px;height: 30px;border-radius: 50%;margin-left: -40px;position: absolute;margin-top: 5px;" /> -->
-                {{ truncateString(item.channelName,9) }}
-              </div>
-              <div class="title-desc">{{ truncateString(item.channelDesc,8) }}</div>
-            </div>
+      <div class="gen-template-box" v-if="publicChatChannel.length == 0">
+          <el-col :sm="24">
+              <el-empty description="还没有创建模板,可以根据提示链接创建自己的工程模板">
+                  <el-link type="primary" icon="el-icon-link">如何创建工程模板?</el-link>
+              </el-empty>
           </el-col>
-        </el-row> 
       </div>
-      <div class="channel-panel-header">
-          频道市场 
-          <span style="font-size: 13px;color: #a5a5a5;">这里包含所有需要运营的Agent服务列表，你可以理解成一个Agent就是一个员工</span>
-      </div>
-      <div class="channel-panel-body" v-loading="loading">
-        <el-row>
-          <el-col class="channel-item-box" :span="3" v-for="(item,index) in publicChatChannel" :key="item">
-            <div class="img-bannel">
-              <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (11 + (index+1) * 1)+ '.png'" />
-            </div>
-            <div class="channel-info-box">
-              <div class="title">
-                <!-- <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (10 + (index+1) * 1)+ '.png'" style="width: 30px;height: 30px;border-radius: 50%;margin-left: -40px;position: absolute;margin-top: 5px;" /> -->
-                {{ truncateString(item.channelName,9) }}
+
+      <!-- 模板内容 -->
+      <div class="vc-div div_l14lqa1k tpl-container" v-loading="loading || loadingFilter">
+
+          <div class="vc-div div_l14lqa1j tpl-item" v-for="(item, index) in publicChatChannel" :key="index">
+              <div class="vc-div div_l14lqa19 tpl-item-image">
+                  <img class="vc-image--yida image_l14lqa18" 
+                    :src="imagePath(item)" 
+                    style="height: 90px; object-fit: cover; border-radius: 0px;">
               </div>
-              <div class="title-desc">{{ truncateString(item.channelDesc,8) }}</div>
-            </div>
-          </el-col>
-        </el-row> 
+              <div class="vc-div div_l14lqa1i" data-spm-anchor-id="0.0.0.i3.72032480dZzISR">
+                  <div class="vc-div div_l14lqa1c tpl-item-title">
+                      <div class="vc-text text_l14lqa1a" title=""
+                          style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;">
+                          {{ item.channelName }}
+                      </div>
+                  </div>
+                  <div class="vc-div tpl-item-description">
+                      <div class="vc-text text_l14lqa1d" :title="item.tempDesc" style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 2;">
+                          {{ truncateString(item.channelDesc,35) }}
+                      </div>
+                  </div>
+                  <div class="vc-div div_l14lqa1h tpl-item-footer">
+                      <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
+                        <el-button @click="enterChannel(item)" type="primary" text bg>
+                            <i class="fa-solid fa-location-arrow"></i>&nbsp;进入
+                        </el-button>
+                      </div>
+                      <div class="vc-text" style="line-height:35px">
+                          <i class="fa-solid fa-fire"></i> 已启用 {{ item.id }} 
+                      </div>
+                  </div>
+              </div>
+          </div>
+
       </div>
-    </div>
-  </el-scrollbar>
+
+      <div style="margin-left:calc(100vh - 15%);margin-bottom: 60px;">
+        <pagination v-show="queryParams.total > 0" :total="queryParams.total" 
+            v-model:page="queryParams.pageNum" 
+            v-model:limit="queryParams.pageSize" 
+            @pagination="getList"/>
+      </div>
+
+  </div>
+
 </template>
 
 <script setup>
@@ -56,22 +98,52 @@ import {
   allMyChannel , 
 } from '@/api/base/im/channel'
 
+const router = useRouter();
 const loading = ref(false)
 
 const publicChatChannel = ref([]);
 const recChatChannel = ref([]);
 
-const buttons = ref([
-  { type: '', text: '最新' },
-  { type: 'primary', text: '需求讨论' },
-  { type: 'success', text: '架构设计' },
-  { type: 'success', text: '架构设计' },
-  { type: 'warning', text: '市场运维' },
-  { type: 'danger', text: '项目规范' },
-  { type: 'info', text: '市场推广' },
-  { type: 'warning', text: '市场运维' },
-  { type: 'danger', text: '项目规范' },
-])
+const filterRules = ref([
+    {"name": "场景", "codeValue": "initializr.admin.project.template.screen","items": [
+            {"code": "screen_code_1","name": "旅游预订"},
+            {"code": "screen_code_2","name": "在线购物"},
+            {"code": "screen_code_3","name": "社交媒体"},
+            {"code": "screen_code_4","name": "健身健康"},
+            {"code": "screen_code_5","name": "在线视频"}
+        ]
+    },
+    {"name": "类型","codeValue": "initializr.admin.project.template.type","items": [
+            {"code": "type_code_1","name": "移动应用"},
+            {"code": "type_code_2","name": "网页应用"},
+            {"code": "type_code_4","name": "社交平台"},
+            {"code": "type_code_5","name": "健身应用"}
+        ]
+    }
+]);
+
+const data = reactive({
+  form: {},
+  queryParams: {
+    total: 100,
+    pageNum: 1,
+    pageSize: 8,
+    roleName: undefined,
+    roleName: undefined,
+    responsibilities: undefined,
+    status: undefined,
+    deptId: undefined
+  },
+});
+
+const {queryParams} = toRefs(data);
+
+function enterChannel(item){
+    router.push({
+        path: '/chat',
+        query: { 'channel': item.id}
+    })
+}
 
 /** 查询所所有我在参与的频道 */
 function handleAllMyChannel() {
@@ -79,8 +151,8 @@ function handleAllMyChannel() {
   allMyChannel().then(response => {
     let items = response.data;
 
-    publicChatChannel.value = items.filter(item => item.channelType === '9');
-    recChatChannel.value = items.filter(item => item.channelType === '3');
+    publicChatChannel.value = items ; // .filter(item => item.channelType === '9');
+    // recChatChannel.value = items.filter(item => item.channelType === '3');
 
     loading.value = false; 
   })
@@ -90,44 +162,21 @@ handleAllMyChannel();
 
 </script>
 
-<style lang="scss" scoped>
 
-.channel-panel-header{
-  padding: 10px;
+<style scoped lang="scss">
+
+.gen-template-box {
+  width: 100%;
+  text-align: center;
+  float: left;
+  margin-top: 100px;
 }
 
-.channel-panel-body{
-
-  .channel-info-box {
-    margin: 10px;
-    line-height: 1.2rem;
-    // padding-left: 30px;
-  }
-
-  .channel-item-box{
-    margin-bottom: 10px;
-  }
-
-  .title {
-    font-size: 13px;
-    font-weight: normal;
-  }
-
-  .title-desc {
-    font-size: 13px;
-    color: #a5a5a5;
-  }
-
-  .img-bannel {
-    margin: 10px;
-    height: 80px;
-    overflow: hidden;
-    border-radius: 5px;
-
-    img {
-      width:100%;
-      border-radius: 5px;
-    }
-  }
+.vc-text.text_l14lqa1e.active {
+  color: #fff;
+  background: #005bd5;
 }
+
 </style>
+
+
