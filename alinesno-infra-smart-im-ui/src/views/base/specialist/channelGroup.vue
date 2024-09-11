@@ -27,13 +27,13 @@
           <li v-for="(item, index) in chatChannelTemplate" :key="index">
             <div class="channel-item">
 
-              <img class="channel-image" :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index + 5) + '.png'" />
+              <img class="channel-image" :src="imagePath(item)" />
 
               <div class="channel-text">
-                #{{ item.name }}
+                #{{ item.channelName }}
               </div>
               <div class="channel-desc">
-                {{ item.desc }}
+                {{ truncateString(item.channelDesc,15) }}
               </div>
               <el-button type="primary" @click="handleSetChannelId(item.id)" style="position: absolute;right: 10px;" text bg>
                 <i class="fa-solid fa-hammer icon-btn"></i> 进入
@@ -53,16 +53,9 @@
         <el-form :model="form" :rules="rules" label-position="top" ref="userRef" label-width="80px">
           <el-row>
             <el-col :span="24" class="editor-after-div">
-              <el-form-item
-                  label="头像"
-                  :rules="[{
-                      required: true,
-                      message: '请上传运行效果',
-                      trigger: 'blur',
-                    },]"
-                >
+              <el-form-item label="头像" prop="channelImage">
                   <el-upload
-                    :file-list="fileList"
+                    :file-list="form.channelImage"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
@@ -101,7 +94,9 @@
                   </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="12" v-if="form.channelType === '9'">
+              <el-col :span="1">
+              </el-col>
+              <el-col :span="11" v-if="form.channelType === '9'">
                 <el-form-item label="进入密钥" prop="channelKey">
                     <el-input size="large" v-model="form.channelKey" placeholder="请输入进入密钥" maxlength="30" />
                 </el-form-item>
@@ -127,14 +122,14 @@
 
 let { proxy } = getCurrentInstance();
 import {getToken} from "@/utils/auth";
-import Cookies from 'js-cookie'
 
 import {
   createChannel , 
+  getRecommendChannel,
   getDefaultChannelId
 } from '@/api/base/im/channel'
 
-import { reactive, ref , onMounted } from 'vue'
+import { reactive, ref , onMounted, nextTick } from 'vue'
 import { getParam } from '@/utils/ruoyi'
 import { ElLoading } from 'element-plus'
 
@@ -147,6 +142,7 @@ const data = reactive({
     channelType: '2'
   },
   rules: {
+    // channelImage: [{ required: true, message: "频道头像不能为空", trigger: "blur" }],
     channelName: [{ required: true, message: "频道名称不能为空", trigger: "blur" }],
     channelDesc: [{ required: true, message: "频道描述不能为空", trigger: "blur" }],
     channelType: [{ required: true, message: "频道类型不能为空", trigger: "blur" }],
@@ -155,14 +151,7 @@ const data = reactive({
 
 const { form, rules } = toRefs(data);
 
-const chatChannelTemplate = ref([
-  { id: '1', name: '公共频道', desc: '这是公共讨论服务频道', icon: '' },
-  { id: '2', name: '数据库设计频道', desc: '关于数据库设计的讨论', icon: '' },
-  { id: '3', name: '代码模块生成频道', desc: '讨论代码模块生成相关话题', icon: '' },
-  { id: '4', name: '数据分析频道', desc: '数据分析技术和方法的讨论', icon: '' },
-  { id: '5', name: '考核题目设计频道', desc: '考核题目设计相关讨论', icon: '' },
-  { id: '6', name: '文档生成频道', desc: '讨论文档生成工具和最佳实践', icon: '' },
-]);
+const chatChannelTemplate = ref([]);
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -200,7 +189,6 @@ function handleSetChannelId(channelId){
       path: '/chat',
       query: { 'channel': channelId }
   })
-  // window.location.reload();
 }
 
 /** 图片上传成功 */
@@ -220,12 +208,19 @@ const beforeAvatarUpload = (rawFile) => {
 };
 
 /** 显示图片 */
-function imagePath(row){
-  let roleAvatar = '1746435800232665090' ; 
-  if(row.icon){
-    roleAvatar = row.icon ; 
-  }
-  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+// function imagePath(row){
+//   let roleAvatar = '1746435800232665090' ; 
+//   if(row.icon){
+//     roleAvatar = row.icon ; 
+//   }
+//   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+// }
+
+/** 获取到推荐频道列表 */
+function handleRecommendChannel(){
+  getRecommendChannel().then(response => {
+    chatChannelTemplate.value = response.data ;
+  })
 }
 
 /** 创建频道 */
@@ -256,7 +251,6 @@ onMounted(() => {
   const channelId = getParam("channel");
 
   if(channelId == undefined) {
-    // centerDialogVisible.value = true;
 
     const loading = ElLoading.service({
       lock: true,
@@ -274,6 +268,9 @@ onMounted(() => {
 
 function handleOpenChannel(val){
     centerDialogVisible.value = val;
+    nextTick(() => {
+      handleRecommendChannel() ;
+    })
 }
 
 defineExpose({
