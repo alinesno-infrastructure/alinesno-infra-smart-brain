@@ -45,4 +45,10 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * @return
      */
     Long getDefaultChannelId();
+
+    /**
+     * 获取到推荐频道
+     * @return
+     */
+    List<ChannelEntity> getRecommendChannel();
 }
