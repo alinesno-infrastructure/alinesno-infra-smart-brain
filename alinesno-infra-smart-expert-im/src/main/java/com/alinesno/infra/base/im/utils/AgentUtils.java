@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.utils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
+import com.alinesno.infra.base.im.dto.MessageTaskInfo;
 import com.alinesno.infra.base.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.enums.DocumentTypeEnum;
@@ -107,15 +108,15 @@ public class AgentUtils {
         return personDto;
     }
 
-    /**
-     * 获取上一个节点的业务ID
-     * @param dtoList
-     * @return
-     */
-    public static String getPreBusinessId(List<WebMessageDto> dtoList) {
-        WebMessageDto dto = getTypeText(dtoList , "business");
-        return dto.getBusinessId() ;
-    }
+//    /**
+//     * 获取上一个节点的业务ID
+//     * @param dtoList
+//     * @return
+//     */
+//    public static String getPreBusinessId(List<WebMessageDto> dtoList) {
+//        WebMessageDto dto = getTypeText(dtoList , "business");
+//        return dto.getBusinessId() ;
+//    }
 
     private static WebMessageDto getTypeText(List<WebMessageDto> dtoList , String type){
         for(WebMessageDto dto : dtoList){
@@ -124,5 +125,51 @@ public class AgentUtils {
             }
         }
         return new WebMessageDto();
+    }
+
+    /**
+     * 完成任务调试
+     * @return
+     */
+    public static ChatMessageDto genTaskStatusMessageDto(MessageTaskInfo taskInfo , String usageTime) {
+
+        String agentName = taskInfo.getRoleDto().getRoleName() ;
+        String icon = taskInfo.getRoleDto().getRoleAvatar() ;
+        String businessId = taskInfo.getBusinessId() ;
+
+        String getLinkInfo = getLinkInfo(usageTime, businessId);
+
+        // 发送消息给前端
+        ChatMessageDto personDto = new ChatMessageDto() ;
+        personDto.setChatText(getLinkInfo);
+
+        personDto.setName(agentName);
+        personDto.setIcon(icon) ;
+
+        personDto.setRoleType("agent");
+        personDto.setReaderType("html");
+        personDto.setBusinessId(IdUtil.getSnowflakeNextId());
+
+        personDto.setLoading(false);
+        personDto.setDateTime(DateUtil.formatDateTime(new Date()));
+
+        return personDto;
+
+    }
+
+    /**
+     * 得到连接类型
+     * @return
+     */
+    private static String getLinkInfo(String usageTime , String businessId) {
+
+        String linkPath = "#";
+
+        return "### <i class='fa-brands fa-redhat'></i> 任务已经处理\n" +
+                "- 任务: 执行简单业务服务任务类型 \n" +
+                "- 持续时间: "+usageTime+" \n" +
+                "- <i class='fa-solid fa-file-pdf'></i> 内容: <a href='" + linkPath + "'>查看生成结果</a>\n" +
+                "- <i class='fa-solid fa-hourglass-end'></i> 完成时间: " + DateUtil.now() + "\n" +
+                "\n";
     }
 }
