@@ -2,8 +2,6 @@ package com.alinesno.infra.smart.assistant.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.RoleChainEntity;
-import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 
 import java.util.List;
@@ -23,14 +21,14 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param entity
      * @param roleId
      */
-    void saveRoleChainInfo(RoleChainEntity entity, String roleId);
+    void saveRoleChainInfo(String roleId);
 
     /**
      * 运行角色工作流
      * @param params
      * @param roleId
      */
-    void runRoleChainByRoleId(Map<String , Object> params , long roleId , NoticeDto noticeDto);
+    void runRoleChainByRoleId(Map<String , Object> params , long roleId);
 
     /**
      * 运行下一个角色业务
