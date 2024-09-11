@@ -22,7 +22,10 @@
 
             <div class="robot-chat-body" v-loading="loading">
               <!-- 聊天窗口_start -->
-              <ChatList ref="chatListRef" @sendMessageToChatBox="sendMessageToChatBox" @handleEditorContent="handleEditorContent" />
+              <ChatList ref="chatListRef" 
+                @sendMessageToChatBox="sendMessageToChatBox" 
+                @handleSelectPreBusinessId="handleSelectPreBusinessId" 
+                @handleEditorContent="handleEditorContent" />
               <!-- 聊天窗口_end -->
             </div>
 
@@ -34,13 +37,14 @@
 
                         <el-mention
                             class="input-chat-box"
+                            @keydown.ctrl.enter.prevent="keyDown"
                             v-model="message"
                             :options="mentionOptions"
-                            :prefix="['@', '#']"
+                            :prefix="['@']"
                             placeholder="输入@可指定角色, #可指定输出结果"
                             @select="handleSelect"
                           >
-                          <template #label="{ item, index }">
+                          <template #label="{ item }">
                             {{ item.label }}
                           </template>
                         </el-mention> 
@@ -53,12 +57,6 @@
                     <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top" >
                       <el-button type="danger" text bg size="large" @click="sendMessage('send')">
                         <i class="fa-solid fa-paper-plane icon-btn"></i>
-                      </el-button>
-                    </el-tooltip>
-
-                    <el-tooltip class="box-item" effect="dark" content="审批重新生成" placement="top" >
-                      <el-button type="warning" text bg size="large" @click="sendMessage('replay')" >
-                        <i class="fa-solid fa-feather icon-btn"></i>
                       </el-button>
                     </el-tooltip>
 
@@ -84,6 +82,7 @@
 
     <!-- 任务运行状态 -->
     <el-dialog v-model="taskFlowDialogVisible" title="频道任务运行状态" width="60%" :before-close="handleClose" destroy-on-close append-to-body>
+      <br/>
       <AgentTaskFlow />
       <template #footer>
         <span class="dialog-footer">
@@ -92,7 +91,13 @@
       </template>
     </el-dialog>
 
+    <!-- 材料上传界面 -->
     <ChatUploadFile ref="uploadChildComp" @handlePushResponseMessageList="handlePushResponseMessageList" />
+
+    <!-- 文档编辑界面 -->
+    <el-dialog v-model="editDialogVisible" title="任务内容自定义界面" width="60%" destroy-on-close append-to-body>
+      <ChatMessageEditor />
+    </el-dialog>
 
   </div>
 </template>
@@ -106,11 +111,11 @@ import ChatList from './chatList'
 import ChatUploadFile from './chatUploadFile'
 import SmartServiceAgent from './smartServiceAgent';
 import AgentTaskFlow from './agentTaskFlow'
+import ChatMessageEditor from './chatMessageEditor'
 
 // --->>> 引入方法 -->>
 import { chatAssistantContent , updateAssistantContent , chatMessage, sendUserMessage}from '@/api/base/im/robot'
 import { getChannel } from "@/api/base/im/channel";
-import { listAllUser} from "@/api/base/im/user";
 import { getParam } from '@/utils/ruoyi'
 import { formatMessage } from '@/utils/chat'
 import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
@@ -128,15 +133,17 @@ const taskFlowDialogVisible = ref(false)
 const currentTaskContent = ref("")
 const uploadChildComp = ref(null) 
 const selectedUsers = ref([]);
+const selectedBusinessId = ref([]);
 const channelUsers = ref([]);
 
 const message = ref('');
-let users = [] ;
 const channelInfo = ref({})
 const mentionOptions = ref([]);
 
 const mentionUser = (itemArr) => {
   if(itemArr.length == 0){
+    channelUsers.value = [];
+    mentionOptions.value = [{}];
     return ;
   }
   channelUsers.value = itemArr ;
@@ -173,6 +180,7 @@ const sendMessage = (type) => {
 
   message.value = '';
   selectedUsers.value = [];
+  selectedBusinessId.value = [] ;
 };
 
 /** 同步消息到后端 */
@@ -185,7 +193,7 @@ function handleSendUserMessage(message , type){
     return item.id ;
   }) 
 
-  sendUserMessage(message , users, channelId , type).then(response => {
+  sendUserMessage(message , users, selectedBusinessId.value , channelId , type).then(response => {
     console.log("发送消息", response.data);
     response.data.forEach(item => {
       chatListRef.value.pushResponseMessageList(item);
@@ -205,7 +213,12 @@ function handleUploadFile(){
 
 // 发送消息到发送窗口
 const sendMessageToChatBox = (msg) => {
-  message.value += msg ; 
+  message.value += msg ;
+}
+
+/** 选择业务id */
+const handleSelectPreBusinessId= (bId) => {
+    selectedBusinessId.value.push(bId);
 }
 
 /** 获取到会话信息 */
@@ -227,14 +240,15 @@ function handleChatMessage(channelId) {
 /** 编辑生成内容 */
 function handleEditorContent(bId){
   editDialogVisible.value = true ; 
-
-  console.log('bId = ' + bId) ;
   businessId.value = bId ;
 
   chatAssistantContent(bId).then(response => {
-    currentTaskContent.value = response.data.assistantContent; 
     editorLoading.value = false ;
   })
+}
+
+function keyDown(e) {
+  sendMessage('send')
 }
 
 /** 查询当前频道 */
@@ -244,13 +258,6 @@ function handleGetChannel(channelId){
         channelInfo.value = response.data ;
       })
     }
-}
-
-/** 获取到所有角色 */
-function handlelistAllUser(){
-  listAllUser().then(response => {
-    users = response.data ; 
-  })
 }
 
 /** 连接sse */
@@ -265,7 +272,7 @@ function handleSseConnect(channelId){
             if (!event.data.includes('[DONE]')) {
               const data = JSON.parse(event.data);
 
-              console.log('--->>> channelId = ' + channelId + ' , data = ' + data);
+              console.log('--->>> channelId = ' + channelId + ' , data = ' + JSON.stringify(data));
 
               handlePushResponseMessageList(data);
             }else{
@@ -281,12 +288,12 @@ function handleSseConnect(channelId){
 /** 监听路由变化 */
 watch(() =>  router.currentRoute.value.path,(toPath) => {
     const channelId = getParam("channel");
+
     handleGetChannel(channelId);
     handleChatMessage(channelId) ;
 
     },{immediate: true,deep: true}
 )
   
-handlelistAllUser() ;
 
 </script>
