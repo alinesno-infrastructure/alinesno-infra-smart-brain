@@ -4,59 +4,30 @@
   <div class="container-main" style="padding-bottom:50px;background-color: #fff;">
       <div class="tpl-app app-main-content" v-loading="fullscreenLoading" style="max-width: 1240px;">
 
-            <!-- 
-            <div class="header">
-                自动化Agent列表
-                <span style="font-size: 13px;color: #a5a5a5;">这里包含所有需要运营的Agent服务列表，你可以理解成一个Agent就是一个员工</span>
-            </div>
-            <div class="popular">
-                <div class="popular-item" 
-                    v-for="(item , index) in productList"
-                    :key="index"
-                    >
-                    <img :alt="item.name" 
-                        class="popular-item__banner" 
-                        :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index+5)+ '.png'" />
-                    <h1 class="popular-item__title">
-                        {{ item.name }} 
-                    </h1>
-                    <div class="popular-item__desc"> 
-                        Agent是集成自动化能力的基础服务模块建设能力
-                    </div>
-                </div>
-            </div>  
-            -->
-
             <section class="section" v-for="(type, index) in productList" :key="index">
                 <h2 class="section-title">
                     <i :class="type.banner" /> {{ type.name }}
                 </h2>
+                <br/>
                 <div class="section-body">
-                    <div class="app-item border-bottom" v-for="(item, i) in type.agents" :key="i">
+                    <div class="app-item border-bottom export-item" v-for="(item, i) in type.agents" :key="i">
                         <div class="app-item__icon wk wk-icon-user">
-                          <!-- <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (i+1 + (index+1) * 1)+ '.png'" style="width:45px;height:45px;border-radius: 5px" /> -->
                           <img :src="imagePath(item)" style="width:45px;height:45px;border-radius: 5px"/>
                         </div>
                         <div class="content">
-                            <h3 class="app-item__title">
+                            <h3 class="app-item__title" style="margin-top:5px;margin-bottom:5px;">
                                 {{ item.roleName }}
-                                <a class="cf-service-nav-item-label" style="margin-left:10px"
-                                    @click="saveCollectProduct(item)" :title="item.name">
-                                    <el-button type="text" size="medium"><i class="fa-regular fa-star"></i> 收藏</el-button>
+                                <a class="cf-service-nav-item-label" style="margin-left:10px;margin-right:10px;float:right" @click="saveCollectProduct(item)" :title="item.name">
+                                    <el-button type="primary" text bg>
+                                       <i class="fa-solid fa-location-arrow"></i>&nbsp;咨询
+                                    </el-button>
                                 </a>
-
                             </h3>
                             <div class="app-item__desc">
-                                业务基础服务规划和建设，描述待补充
+                               {{ truncateString(item.responsibilities,20) }} 
                             </div>
                         </div>
-                        <!--
-                        <div class="app-item__control">
-                            <a class="cf-service-nav-item-label" @click="openService(item)" :title="item.name">
-                                <el-button type="text" size="medium" icon="el-icon-link">集成Agent</el-button>
-                            </a>
-                        </div>
-                        -->
+               
                     </div>
                 </div>
             </section>
@@ -199,7 +170,7 @@ handleGetProductList() ;
               display: flex;
               align-items: center;
               justify-content: center;
-              margin-top: 15px;
+              margin-top: 0px;
               width: 48px;
               height: 48px;
               margin-right: 5px;
@@ -275,4 +246,14 @@ span.design {
   color: #d5d5d5 !important;
   border: 1px solid #d5d5d5 !important;
 }
+
+.export-item {
+    border-bottom: 0px;
+    background: #fafafa;
+    padding-bottom: 20px;
+    border-radius: 5px !important;
+    padding-left: 20px !important;
+    margin-bottom: 10px !important;
+}
+
 </style>
