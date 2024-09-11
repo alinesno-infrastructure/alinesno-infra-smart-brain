@@ -41,9 +41,9 @@ export function addUserChain(data) {
 }
 
 // 获取到所有角色
-export function listAllUser() {
+export function listAllUser(channelId) {
   return request({
-    url: managerUrl.listAllUser , 
+    url: managerUrl.listAllUser + '?channelId=' + parseStrEmpty(channelId) , 
     method: 'get'
   })
 }
