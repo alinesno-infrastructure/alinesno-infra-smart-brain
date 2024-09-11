@@ -32,4 +32,8 @@ public class ChannelEntity extends InfraBaseEntity {
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "频道进入key")
     private String channelKey ;
+
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
+    private String knowledgeId ;
+
 }
