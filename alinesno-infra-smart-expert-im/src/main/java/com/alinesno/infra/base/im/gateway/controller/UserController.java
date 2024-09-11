@@ -1,9 +1,7 @@
 package com.alinesno.infra.base.im.gateway.controller;
 
-import com.alinesno.infra.base.im.entity.ChannelUserEntity;
-import com.alinesno.infra.base.im.entity.UserEntity;
-import com.alinesno.infra.base.im.service.IChannelUserService;
-import com.alinesno.infra.base.im.service.IUserService;
+import com.alinesno.infra.base.im.entity.ChannelRoleEntity;
+import com.alinesno.infra.base.im.service.IChannelRoleService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -35,13 +33,13 @@ import java.util.List;
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/base/im/user")
-public class UserController extends BaseController<UserEntity, IUserService> {
+public class UserController extends BaseController<IndustryRoleEntity, IIndustryRoleService> {
+
+//    @Autowired
+//    private IUserService service;
 
     @Autowired
-    private IUserService service;
-
-    @Autowired
-    private IChannelUserService channelUserService ;
+    private IChannelRoleService channelUserService ;
 
     @Autowired
     private IIndustryRoleService roleService;
@@ -80,14 +78,14 @@ public class UserController extends BaseController<UserEntity, IUserService> {
         Assert.notNull(channelId , "频道为空");
         Assert.notNull(roleId, "角色为空");
 
-        LambdaQueryWrapper<ChannelUserEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.eq(ChannelUserEntity::getChannelId , channelId)
-                .eq(ChannelUserEntity::getAccountType, roleId) ;
+        LambdaQueryWrapper<ChannelRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
+        wrapper.eq(ChannelRoleEntity::getChannelId , channelId)
+                .eq(ChannelRoleEntity::getAccountType, roleId) ;
 
         long count = channelUserService.count(wrapper) ;
         Assert.isTrue(count == 0 , "角色已经在频道里面");
 
-        ChannelUserEntity channelUser = new ChannelUserEntity() ;
+        ChannelRoleEntity channelUser = new ChannelRoleEntity() ;
 
         channelUser.setAccountType("agent");
         channelUser.setChannelId(channelId);
@@ -104,15 +102,13 @@ public class UserController extends BaseController<UserEntity, IUserService> {
      */
     @GetMapping("/listAllUser")
     public AjaxResult listAllUser(String channelId){
-
-        List<UserEntity> roleEntityList = channelUserService.getChannelAgent(channelId)  ;
-
+        List<IndustryRoleEntity> roleEntityList = channelUserService.getChannelAgent(channelId)  ;
         return AjaxResult.success(roleEntityList) ;
     }
 
     @Override
-    public IUserService getFeign() {
-        return this.service;
+    public IIndustryRoleService getFeign() {
+        return this.roleService;
     }
 }
 
