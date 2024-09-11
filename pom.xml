@@ -20,7 +20,7 @@
         <alinesno.infra.version>${revision}</alinesno.infra.version>
 
         <!-- 定义liteflow版本 -->
-        <liteflow.version>2.11.3</liteflow.version>
+<!--        <liteflow.version>2.11.3</liteflow.version>-->
     </properties>
 
     <modules>
