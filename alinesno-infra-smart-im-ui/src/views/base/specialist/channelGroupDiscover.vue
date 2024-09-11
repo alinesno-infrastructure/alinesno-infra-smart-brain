@@ -1,6 +1,6 @@
 <template>
 
-  <el-dialog v-model="centerDialogVisible" title="加入频道" width="70%" align-center>
+  <el-dialog v-model="centerDialogVisible" title="加入频道" width="60%" align-center>
 
     <div class="channel-box-panel">
 
@@ -22,7 +22,7 @@
 
                 #{{ item.channelName }}
                 <div class="channel-desc">
-                  {{ truncateString(item.channelDesc,25) }}
+                  {{ truncateString(item.channelDesc,15) }}
                 </div> 
               </div>
               <el-button type="primary" @click="handleSetChannelId(item.id)" style="position: absolute;right: 10px;" text bg>
@@ -116,7 +116,7 @@ defineExpose({
   }
 
   .channel-item-li{
-    width: calc(50% - 20px);
+    width: calc(33% - 20px);
     float: left;
     margin-right: 10px;
     margin-left: 10px;
