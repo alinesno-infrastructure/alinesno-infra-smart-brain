@@ -35,7 +35,7 @@ import { nextTick } from 'vue'
 import { getParam } from '@/utils/ruoyi'
 
 import {
-  closeChannelSSE  ,
+  // closeChannelSSE  ,
   getFlowTaskNotice
 } from "@/api/base/im/channel";
 
@@ -56,51 +56,51 @@ const tableData = ref([
   }
 ])
 
-const initEventSource = () =>{
-  nextTick(() => {
+// const initEventSource = () =>{
+//   nextTick(() => {
 
-    if (typeof (EventSource) !== 'undefined') {
+//     if (typeof (EventSource) !== 'undefined') {
 
-      let ssePath = import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/sseChannelTask/createSseConnect?type=task" ;
-      evtSource = new EventSource(ssePath , { withCredentials: false }) // 后端接口，要配置允许跨域属性
+//       let ssePath = import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/sseChannelTask/createSseConnect?type=task" ;
+//       evtSource = new EventSource(ssePath , { withCredentials: false }) // 后端接口，要配置允许跨域属性
 
-      // 与事件源的连接刚打开时触发
-      evtSource.onopen = function(e){
-        console.log(e);
-      }
+//       // 与事件源的连接刚打开时触发
+//       evtSource.onopen = function(e){
+//         console.log(e);
+//       }
 
-      // 当从事件源接收到数据时触发
-      evtSource.onmessage = function(e){
-        console.log(e.data);
+//       // 当从事件源接收到数据时触发
+//       evtSource.onmessage = function(e){
+//         console.log(e.data);
 
-        if(e.data){
-          // 插入测试数据
-          tableData.value.splice(tableData.value.length, 0, JSON.parse(e.data)) ; 
+//         if(e.data){
+//           // 插入测试数据
+//           tableData.value.splice(tableData.value.length, 0, JSON.parse(e.data)) ; 
 
-          // 保留最后100条数据，删除多余数据
-          if (tableData.value.length > 20) {
-              tableData.value.splice(0, tableData.value.length - 20);
-          }
-        }
+//           // 保留最后100条数据，删除多余数据
+//           if (tableData.value.length > 20) {
+//               tableData.value.splice(0, tableData.value.length - 20);
+//           }
+//         }
 
-        initChatBoxScroll();
-      }
-      // 与事件源的连接无法打开时触发
-      evtSource.onerror = function(e){
-        console.log(e);
-        evtSource.close(); // 关闭连接
-      }
-      // 也可以侦听命名事件，即自定义的事件
-      evtSource.addEventListener('msg', function(e) {
-        console.log(e.data)
-      })
-    } else {
-      console.log('当前浏览器不支持使用EventSource接收服务器推送事件!');
-    }
+//         initChatBoxScroll();
+//       }
+//       // 与事件源的连接无法打开时触发
+//       evtSource.onerror = function(e){
+//         console.log(e);
+//         evtSource.close(); // 关闭连接
+//       }
+//       // 也可以侦听命名事件，即自定义的事件
+//       evtSource.addEventListener('msg', function(e) {
+//         console.log(e.data)
+//       })
+//     } else {
+//       console.log('当前浏览器不支持使用EventSource接收服务器推送事件!');
+//     }
 
-  })
+//   })
   
-}
+// }
 
 function initChatBoxScroll() {
   nextTick(() => {
