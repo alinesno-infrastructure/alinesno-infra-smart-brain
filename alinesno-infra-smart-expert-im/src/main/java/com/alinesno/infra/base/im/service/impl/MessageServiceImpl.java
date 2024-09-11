@@ -4,11 +4,15 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.base.im.dto.MessageTaskInfo;
 import com.alinesno.infra.base.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.entity.MessageEntity;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
 import com.alinesno.infra.base.im.service.IMessageService;
+import com.alinesno.infra.base.im.service.ITaskService;
 import com.alinesno.infra.base.im.utils.MessageFormatter;
+import com.alinesno.infra.base.im.utils.TaskUtils;
+import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -26,10 +30,10 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
-public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , MessageMapper> implements IMessageService {
+public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageMapper> implements IMessageService {
 
     @Autowired
-    private IIndustryRoleService industryRoleService ;
+    private IIndustryRoleService industryRoleService;
 
     @Override
     public void saveUserMessage(List<WebMessageDto> parsedMessages, Long channelId) {
@@ -56,7 +60,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
         }
         String chatText = chatTextBuilder.toString();
 
-        MessageEntity msg = new MessageEntity() ;
+        MessageEntity msg = new MessageEntity();
 
         msg.setMessageId(IdUtil.getSnowflakeNextId());
         msg.setChannelId(channelId);
@@ -66,27 +70,27 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
         msg.setRoleType("person");
         msg.setName("软件工程师罗小东");
         msg.setReceiverId(receiverId.toString());
-        msg.setContent(chatText)  ; // JSONObject.toJSONString(parsedMessages));
+        msg.setContent(chatText); // JSONObject.toJSONString(parsedMessages));
 
-        this.save(msg) ;
+        this.save(msg);
     }
 
     @Override
     public List<ChatMessageDto> listByChannelId(String channelId) {
 
-        List<ChatMessageDto> list = new ArrayList<>() ;
+        List<ChatMessageDto> list = new ArrayList<>();
 
-        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.eq(MessageEntity::getChannelId , channelId)
-                .orderByAsc(MessageEntity::getAddTime) ;
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByAsc(MessageEntity::getAddTime);
 
-        List<MessageEntity> entityList = list(wrapper) ;
+        List<MessageEntity> entityList = list(wrapper);
 
-        if(!entityList.isEmpty()){
-            for(MessageEntity e : entityList){
-                ChatMessageDto dto = new ChatMessageDto() ;
+        if (!entityList.isEmpty()) {
+            for (MessageEntity e : entityList) {
+                ChatMessageDto dto = new ChatMessageDto();
 
-                dto.setChatText(StringUtils.isBlank(e.getFormatContent())?e.getContent():e.getFormatContent());
+                dto.setChatText(StringUtils.isBlank(e.getFormatContent()) ? e.getContent() : e.getFormatContent());
 
                 dto.setName(e.getName());
                 dto.setIcon(e.getIcon());
@@ -96,16 +100,16 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
                 dto.setBusinessId(e.getBusinessId());
                 dto.setDateTime(DateUtil.formatDateTime(e.getAddTime()));
 
-                list.add(dto) ;
+                list.add(dto);
             }
         }
 
-        return list ;
+        return list;
     }
 
     @Deprecated
     @Override
-    public void saveChatMessage(List<WebMessageDto> parsedMessages, IndustryRoleEntity roleDto , ChatMessageDto personDto, long channelId , long businessId) {
+    public void saveChatMessage(List<WebMessageDto> parsedMessages, IndustryRoleEntity roleDto, ChatMessageDto personDto, long channelId, long businessId) {
 //        // 处理解析后的消息对象
 //        StringBuilder receiverId = new StringBuilder();
 //        for (WebMessageDto message : parsedMessages) {
@@ -156,15 +160,16 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
     @Override
     public void saveChatMessage(ChatMessageDto personDto, Long channelId) {
 
-        MessageEntity entity = new MessageEntity() ;
+        MessageEntity entity = new MessageEntity();
 
-        entity.setContent(personDto.getChatText().toString()) ;
+        entity.setContent(personDto.getChatText().toString());
+        entity.setFormatContent(personDto.getChatText().toString());
         entity.setName(personDto.getName());
         entity.setRoleType(personDto.getRoleType());
         entity.setReaderType(personDto.getReaderType());
         entity.setBusinessId(IdUtil.getSnowflakeNextId());
-        entity.setAddTime(new Date()) ;
-        entity.setIcon(personDto.getIcon()) ;
+        entity.setAddTime(new Date());
+        entity.setIcon(personDto.getIcon());
         entity.setMessageId(IdUtil.getSnowflakeNextId());
 
         entity.setMessageId(IdUtil.getSnowflakeNextId());
@@ -172,11 +177,13 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
         entity.setSenderId(IdUtil.getSnowflakeNextId());
         entity.setReceiverId(IdUtil.getSnowflakeNextIdStr());
 
-        save(entity) ;
+        save(entity);
     }
 
     @Override
-    public void sendUserMessage(ChatSendMessageDto message, List<ChatMessageDto> personDto) {
+    public void sendUserMessage(ChatSendMessageDto message, List<IndustryRoleEntity> roleList, List<ChatMessageDto> personDto) {
+
+        ITaskService taskService = SpringContext.getBean(ITaskService.class) ;
 
         // 生成消息记录
         // 处理解析后的消息对象
@@ -189,26 +196,30 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
                 ids
         );
 
-        save(msg) ;
+        save(msg);
 
         // 保存返回消息
-       for(ChatMessageDto dto : personDto) {
-           saveChatMessage(dto , message.getChannelId()) ;
-       }
+        for (ChatMessageDto dto : personDto) {
+            saveChatMessage(dto, message.getChannelId());
+        }
 
-       // 触发执行任务
+        // 触发执行任务
+        for (IndustryRoleEntity role : roleList) {
+            MessageTaskInfo taskInfo = TaskUtils.genderTaskInfo(message, role);
+            taskService.addTask(taskInfo);
+        }
 
     }
 
     @Override
     public void initChannelHelp(String channelId) {
 
-        long count = count(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getChannelId , channelId)) ;
-        if(count == 0){
+        long count = count(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getChannelId, channelId));
+        if (count == 0) {
             // 完成之后发送消息给前端
-            MessageEntity agentInfo = new MessageEntity() ;
+            MessageEntity agentInfo = new MessageEntity();
 
-            IndustryRoleEntity defaultHelpAgent = industryRoleService.getDefaultHelpAgent() ;
+            IndustryRoleEntity defaultHelpAgent = industryRoleService.getDefaultHelpAgent();
 
             agentInfo.setFormatContent("你好，你可以查看一下使用教程<a target='_blank' href='http://portal.infra.linesno.com'>教程</a>或者@你想咨询的Agent.");
             agentInfo.setName(defaultHelpAgent.getRoleName());
@@ -230,20 +241,20 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity , Message
 
     }
 
-    private static MessageEntity getMessageEntity(Long channelId, String content ,  String chatText , String receiverId) {
-        MessageEntity msg = new MessageEntity() ;
+    private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId) {
+        MessageEntity msg = new MessageEntity();
 
         msg.setMessageId(IdUtil.getSnowflakeNextId());
         msg.setChannelId(channelId);
         msg.setSenderId(IdUtil.getSnowflakeNextId());
 
-        msg.setIcon("1808349839242747906") ;
+        msg.setIcon("1808349839242747906");
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setAddTime(new Date());
         msg.setName("软件工程师罗小东");
         msg.setReceiverId(receiverId);
-        msg.setContent(content)  ;
+        msg.setContent(content);
         msg.setFormatContent(chatText);
 
         return msg;
