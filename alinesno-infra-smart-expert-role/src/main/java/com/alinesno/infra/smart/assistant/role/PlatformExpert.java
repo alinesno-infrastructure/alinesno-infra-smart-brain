@@ -3,16 +3,9 @@ package com.alinesno.infra.smart.assistant.role;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
-import com.alinesno.infra.smart.assistant.entity.MessageQueueEntity;
-import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
 import com.alinesno.infra.smart.assistant.role.common.TableItem;
-import com.alinesno.infra.smart.assistant.role.event.MessageQueueEvent;
 import com.alinesno.infra.smart.assistant.role.event.PublishService;
 import com.alinesno.infra.smart.assistant.role.service.BrainRemoteService;
-import com.alinesno.infra.smart.assistant.service.IRoleChainService;
-import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
-import com.alinesno.infra.smart.assistant.service.IWorkflowNodeExecutionService;
-import com.yomahub.liteflow.core.FlowExecutor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,20 +40,20 @@ public abstract class PlatformExpert implements IBaseExpertService {
 //    @Autowired
 //    protected IDingtalkNoticeService dingtalkNoticeService ;
 
-    @Autowired
-    protected FlowExecutor flowExecutor;
+//    @Autowired
+//    protected FlowExecutor flowExecutor;
 
     @Autowired
     protected PublishService publishService ;
 
-    @Autowired
-    protected IWorkflowExecutionService workflowExecutionService ;
+//    @Autowired
+//    protected IWorkflowExecutionService workflowExecutionService ;
 
-    @Autowired
-    protected IRoleChainService roleChainService ;
+//    @Autowired
+//    protected IRoleChainService roleChainService ;
 
-    @Autowired
-    protected IWorkflowNodeExecutionService workflowNodeExecutionService ;
+//    @Autowired
+//    protected IWorkflowNodeExecutionService workflowNodeExecutionService ;
 
     private static ExecutorService executor = null ;
 
@@ -82,7 +75,7 @@ public abstract class PlatformExpert implements IBaseExpertService {
     }
 
     @Override
-    public void processExpert(Map<String, Object> params, String chainName , Long chainId, NoticeDto noticeDto){
+    public void processExpert(Map<String, Object> params, String chainName , Long chainId){
 
     }
 
@@ -95,13 +88,13 @@ public abstract class PlatformExpert implements IBaseExpertService {
 
         log.debug("业务服务:{}生成成功，内容:{}" , businessId , resultMap);
 
-        MessageQueueEntity e = new MessageQueueEntity()  ;
-
-        e.setBusinessId(businessId);
-        e.setAssistantContent(resultMap);
-
-        MessageQueueEvent queueEvent = new MessageQueueEvent(e) ;
-        publishService.publishEvent(queueEvent);
+//        MessageQueueEntity e = new MessageQueueEntity()  ;
+//
+//        e.setBusinessId(businessId);
+//        e.setAssistantContent(resultMap);
+//
+//        MessageQueueEvent queueEvent = new MessageQueueEvent(e) ;
+//        publishService.publishEvent(queueEvent);
 
     }
 
