@@ -30,3 +30,8 @@ export function imagePath(row){
   }
   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
 }
+
+/** 显示图片 */
+export function imagePathByPath(roleAvatar){
+  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+}
