@@ -21,7 +21,7 @@ spring:
 
 actable:
   table:
-    auto: update
+    auto: create
   model:
     pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.base.im.entity;
   database:
@@ -64,28 +64,28 @@ alinesno.infra:
         host: http://api.qianwen.cn/v1/chat/completions
         key: sk-xxxxxxxxx
 
-# liteflow 配置
-liteflow:
-  print-banner: false
-  rule-source-ext-data-map:
-    applicationName: ${spring.application.name}
-
-    #是否开启SQL日志
-    sqlLogEnabled: true
-
-    #以下是chain表的配置，这个一定得有
-    chainTableName: role_chain
-    chainApplicationNameField: chain_application_name
-    chainNameField: chain_name
-    elDataField: el_data
-    chainEnableField: enable
-
-    #以下是script表的配置，如果你没使用到脚本，下面可以不配置
-    scriptTableName: role_chain_script
-    scriptApplicationNameField: application_name
-    scriptIdField: script_id
-    scriptNameField: script_name
-    scriptDataField: script_data
-    scriptTypeField: script_type
-    scriptLanguageField: script_language
-    scriptEnableField: enable
+## liteflow 配置
+#liteflow:
+#  print-banner: false
+#  rule-source-ext-data-map:
+#    applicationName: ${spring.application.name}
+#
+#    #是否开启SQL日志
+#    sqlLogEnabled: true
+#
+#    #以下是chain表的配置，这个一定得有
+#    chainTableName: role_chain
+#    chainApplicationNameField: chain_application_name
+#    chainNameField: chain_name
+#    elDataField: el_data
+#    chainEnableField: enable
+#
+#    #以下是script表的配置，如果你没使用到脚本，下面可以不配置
+#    scriptTableName: role_chain_script
+#    scriptApplicationNameField: application_name
+#    scriptIdField: script_id
+#    scriptNameField: script_name
+#    scriptDataField: script_data
+#    scriptTypeField: script_type
+#    scriptLanguageField: script_language
+#    scriptEnableField: enable
