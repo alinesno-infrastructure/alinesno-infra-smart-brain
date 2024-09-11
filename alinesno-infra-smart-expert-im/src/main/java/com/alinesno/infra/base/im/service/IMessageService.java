@@ -46,9 +46,10 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * 用户发送消息给智能体角色
      *
      * @param message
+     * @param roleList
      * @param personDto
      */
-    void sendUserMessage(ChatSendMessageDto message, List<ChatMessageDto> personDto);
+    void sendUserMessage(ChatSendMessageDto message, List<IndustryRoleEntity> roleList, List<ChatMessageDto> personDto);
 
     /**
      * 每个频道最开始的Hello World信息
