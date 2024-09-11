@@ -1,6 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.utils;
 
-import com.yomahub.liteflow.annotation.LiteflowComponent;
+//import com.yomahub.liteflow.annotation.LiteflowComponent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
@@ -43,13 +43,13 @@ public class ClassLoaderUtil {
             log.error("出现异常：{}",e.getMessage());
         }
 
-        try {
-            if (cla.getAnnotation(LiteflowComponent.class) != null) {
-                return true;
-            }
-        }catch (Exception e){
-            log.error("出现异常：{}",e.getMessage());
-        }
+//        try {
+//            if (cla.getAnnotation(LiteflowComponent.class) != null) {
+//                return true;
+//            }
+//        }catch (Exception e){
+//            log.error("出现异常：{}",e.getMessage());
+//        }
 
         try {
             if (cla.getAnnotation(Repository.class) != null) {
