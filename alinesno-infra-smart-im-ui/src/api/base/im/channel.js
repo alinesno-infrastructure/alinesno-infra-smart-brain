@@ -19,11 +19,20 @@ var managerUrl = {
   downloadfile: prefix + "downloadfile" , 
   createChannel: prefix + "createChannel" ,
   allMyChannel: prefix + "allMyChannel" ,
+  getRecommendChannel: prefix + "getRecommendChannel" ,
   allPublicChannel: prefix + "allPublicChannel" ,
   joinChannel: prefix + "joinChannel" ,
   getDefaultChannelId: prefix + "getDefaultChannelId" ,
-  closeChannelSSE: "/v1/api/infra/base/im/sseChannelTask/closeSseConnect" ,
-  getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+  // closeChannelSSE: "/v1/api/infra/base/im/sseChannelTask/closeSseConnect" ,
+  // getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+}
+
+// 获取到推荐频道
+export function getRecommendChannel(){
+  return request({
+    url: managerUrl.getRecommendChannel , 
+    method: 'get'
+  })
 }
 
 // 获取任务实例完成通知
@@ -35,12 +44,12 @@ export function getFlowTaskNotice(){
 }
 
 // 关闭频道SSE
-export function closeChannelSSE(channel , type){
-  return request({
-    url: managerUrl.closeChannelSSE + '?channel=' + channel + '&type=' + type, 
-    method: 'get'
-  })
-}
+// export function closeChannelSSE(channel , type){
+//   return request({
+//     url: managerUrl.closeChannelSSE + '?channel=' + channel + '&type=' + type, 
+//     method: 'get'
+//   })
+// }
 
 // 获取默认频道 
 export function getDefaultChannelId(){
