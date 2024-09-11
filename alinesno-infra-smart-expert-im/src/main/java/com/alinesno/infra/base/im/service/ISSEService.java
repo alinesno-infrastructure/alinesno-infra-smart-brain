@@ -1,10 +1,12 @@
 package com.alinesno.infra.base.im.service;
 
 import com.alinesno.infra.base.im.dto.ChatMessageDto;
+import com.alinesno.infra.base.im.dto.MessageTaskInfo;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * SSE服务接口，用于处理服务器发送事件（SSE）的相关操作.
@@ -38,4 +40,10 @@ public interface ISSEService {
      * 关闭所有SSE连接.
      */
     void closeAllConn();
+
+    /**
+     * 连接队列则发送之前未处理的消息
+     * @param clientId
+     */
+    void sendQueueMessage(@NotBlank String clientId, List<MessageTaskInfo> messageList);
 }
