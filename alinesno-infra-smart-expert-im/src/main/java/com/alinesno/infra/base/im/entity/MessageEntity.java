@@ -33,22 +33,22 @@ public class MessageEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "格式化消息内容")
     private String formatContent ;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, isNull = true, comment = "聊天类型")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, comment = "聊天类型")
 	private String msgType ; // 聊天类型
 
     @Column(type = MySqlTypeConstant.DATETIME, comment = "发送时间")
     private Date sendTime;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, isNull = true, comment = "消息状态")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, comment = "消息状态")
     private String status;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, isNull = true, comment = "角色类型")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 20, comment = "角色类型")
     private String roleType;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 255, isNull = true, comment = "角色图标")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, comment = "角色图标")
     private String icon ;
 
-    @Column(type = MySqlTypeConstant.LONGTEXT, isNull = true, comment = "发送人名称")
+    @Column(type = MySqlTypeConstant.VARCHAR , comment = "发送人名称")
     private String name;
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 6, isNull = true, comment = "读取方式")
