@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.loader;
 
 import com.alinesno.infra.smart.assistant.plugin.utils.ClassLoaderUtil;
-import com.yomahub.liteflow.annotation.LiteflowComponent;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -37,6 +36,11 @@ public class PluginImportBeanDefinitionRegistrar extends JarLauncher implements 
     private String basePath ;
 
     /**
+     * 是否加载
+     */
+    private boolean enable;
+
+    /**
      * 存储插件地址
      */
     private String central ;
@@ -51,6 +55,10 @@ public class PluginImportBeanDefinitionRegistrar extends JarLauncher implements 
     @SneakyThrows
     @Override
     public void registerBeanDefinitions(AnnotationMetadata importingClassMetadata, BeanDefinitionRegistry registry) {
+
+        if(!enable){
+            return;
+        }
 
         List<PluginLoader.PluginInfo> list = PluginLoader.loadPlugin(central , basePath);
         log.debug("list = {}" , list);
@@ -108,11 +116,11 @@ public class PluginImportBeanDefinitionRegistrar extends JarLauncher implements 
         BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(c);
         BeanDefinition beanDefinition = builder.getBeanDefinition();
 
-        // 配置注册bean的名称
-        if(c.getAnnotation(LiteflowComponent.class) != null){
-            LiteflowComponent liteflowComponent = c.getAnnotation(LiteflowComponent.class) ;
-            className = liteflowComponent.value() ;
-        }
+//        // 配置注册bean的名称
+//        if(c.getAnnotation(LiteflowComponent.class) != null){
+//            LiteflowComponent liteflowComponent = c.getAnnotation(LiteflowComponent.class) ;
+//            className = liteflowComponent.value() ;
+//        }
 
         if (ClassLoaderUtil.isSpringBeanClass(c)) {
             registry.registerBeanDefinition(className, beanDefinition);
@@ -128,6 +136,7 @@ public class PluginImportBeanDefinitionRegistrar extends JarLauncher implements 
     public void setEnvironment(Environment environment) {
         this.basePath = environment.getProperty("alinesno.infra.smart.assistant.plugin.path");
         this.central = environment.getProperty("alinesno.infra.smart.assistant.plugin.central");
+        this.enable = Boolean.parseBoolean(environment.getProperty("alinesno.infra.smart.assistant.plugin.enable" , String.valueOf(false)));
         this.packagePrefix = environment.getProperty("alinesno.infra.smart.assistant.plugin.prefix" , "com.alinesno.infra.smart.assistant.plugin");
     }
 
