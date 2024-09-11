@@ -22,19 +22,6 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     @Override
     public String createChannel(ChannelEntity entity) {
 
-//        // 创建 Random 对象
-//        Random random = new Random();
-//
-//        // 生成 1 到 60 之间的随机数（包括 1 和 60）
-//        int min = 1;
-//        int max = 60;
-//        int randomNumber = random.nextInt(max - min + 1) + min;
-//
-//        // 打印生成的随机数
-//        log.debug("随机数为: " + randomNumber);
-
-//        entity.setIcon("http://data.linesno.com/icons/sepcialist/dataset_" +randomNumber+ ".png");
-
         entity.setChannelId(IdUtil.nanoId());
         entity.setChannelType(entity.getChannelType()) ;
 
@@ -108,6 +95,17 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         }
 
         return channelId;
+    }
+
+    @Override
+    public List<ChannelEntity> getRecommendChannel() {
+        log.debug("获取推荐频道");
+
+        LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>() ;
+        queryWrapper.eq(ChannelEntity::getChannelType, ChannelType.RECOMMEND_CHANNEL.getValue()) ;
+
+        return list(queryWrapper);
+
     }
 
 }
