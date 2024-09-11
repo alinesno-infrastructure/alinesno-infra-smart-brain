@@ -1,10 +1,7 @@
 package com.alinesno.infra.smart.assistant.role.context;
 
-import com.alinesno.infra.smart.assistant.im.dto.NoticeDto;
 import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
-import com.yomahub.liteflow.slot.DefaultContext;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import java.util.List;
 import java.util.Map;
@@ -12,9 +9,8 @@ import java.util.Map;
 /**
  * 自定义上下文
  */
-@EqualsAndHashCode(callSuper = true)
 @Data
-public class RoleChainContext extends DefaultContext {
+public class RoleChainContext {
 
     private String businessId ;  // 业务ID
     private String channel ;  // 频道ID
@@ -25,7 +21,7 @@ public class RoleChainContext extends DefaultContext {
 
     private String assistantYamlContent ; // assistant的回复内容
     private TaskContentDto assistantContent ; // Brain服务回复
-    private NoticeDto noticeDto ; // 机器人请求
+//    private NoticeDto noticeDto ; // 机器人请求
 
     // 执行周期
     private long startTime ;  // 开始时间
