@@ -89,6 +89,16 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     }
 
     /**
+     * 查询出推荐频道
+     * @return
+     */
+    @GetMapping("/getRecommendChannel")
+    public AjaxResult getRecommendChannel(){
+        List<ChannelEntity> channelEntities = service.getRecommendChannel() ;
+        return AjaxResult.success(channelEntities) ;
+    }
+
+    /**
      * 查询出我所有的渠道
      * @return
      */
