@@ -1,34 +1,31 @@
 package com.alinesno.infra.base.im.service;
 
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.TableItem;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.base.im.dto.MessageTaskInfo;
 
-import java.util.HashMap;
+import javax.validation.constraints.NotNull;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 提交任务的服务
  */
 public interface ITaskService {
 
-    Map<Long , TableItem> flowTaskBox = new HashMap<>() ;
-
     /**
      * 保存任务
      */
-    void addTask(long channelId , long businessId , long roleId , String text, String preBusinessId , IndustryRoleEntity roleDto ) ;
+    void addTask(@NotNull MessageTaskInfo taskInfo) ;
 
     /**
-     * 获取已经完成的任务通知
+     * 获取到完成的任务列表
      * @return
      */
-    List<ChatMessageDto> getTaskMessage() ;
+    List<MessageTaskInfo> getTaskMessage(MessageTaskInfo taskInfo) ;
 
     /**
-     * 获取到任务执行的通知
+     * 获取到完成的任务列表
+     * @param channelId
      * @return
      */
-    List<TableItem> getFlowTaskNotice();
+    List<MessageTaskInfo> getTaskMessage(String channelId) ;
+
 }
