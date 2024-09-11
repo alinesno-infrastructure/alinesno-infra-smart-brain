@@ -9,10 +9,8 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.RoleChainEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.assistant.service.IRoleChainService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,8 +56,8 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @Autowired
     private IIndustryRoleCatalogService catalogService ;
 
-    @Autowired
-    private IRoleChainService roleChainService ;
+//    @Autowired
+//    private IRoleChainService roleChainService ;
 
     @Autowired
     private CloudStorageConsumer storageConsumer ;
@@ -123,7 +121,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         Map<String , Object> params = new HashMap<>() ;
         params.put("label1" , executeOrder) ;
 
-        service.runRoleChainByRoleId(params , roleId , null) ;
+        service.runRoleChainByRoleId(params , roleId) ;
 
         return ok() ;
     }
@@ -136,10 +134,12 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @GetMapping("/getRoleChainByChainId")
     public AjaxResult getRoleChainByChainId(String roleId){
 
-        IndustryRoleEntity role = service.getById(roleId) ;
-        RoleChainEntity roleChain = roleChainService.getById(role.getChainId()) ;
+//        IndustryRoleEntity role = service.getById(roleId) ;
+//        RoleChainEntity roleChain = roleChainService.getById(role.getChainId()) ;
+//
+//        return AjaxResult.success(roleChain==null?new RoleChainEntity():roleChain) ;
 
-        return AjaxResult.success(roleChain==null?new RoleChainEntity():roleChain) ;
+        return ok();
     }
 
     @GetMapping("/catalogTreeSelect")
@@ -197,14 +197,13 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
 
     /**
      * 保存角色工作流
-     * @param entity
      * @return
      */
-    @PostMapping("/saveRoleChainInfo")
-    public AjaxResult saveRoleChainInfo(@RequestBody RoleChainEntity entity , String roleId){
-        service.saveRoleChainInfo(entity , roleId) ;
-        return ok() ;
-    }
+//    @PostMapping("/saveRoleChainInfo")
+//    public AjaxResult saveRoleChainInfo(@RequestBody RoleChainEntity entity , String roleId){
+//        service.saveRoleChainInfo(entity , roleId) ;
+//        return ok() ;
+//    }
 
     @Override
     public IIndustryRoleService getFeign() {
