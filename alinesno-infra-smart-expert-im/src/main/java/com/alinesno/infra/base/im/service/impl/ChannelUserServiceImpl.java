@@ -1,11 +1,11 @@
 package com.alinesno.infra.base.im.service.impl;
 
-import com.alinesno.infra.base.im.entity.ChannelRoleEntity;
 import com.alinesno.infra.base.im.mapper.ChannelRoleMapper;
-import com.alinesno.infra.base.im.service.IChannelRoleService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.entity.ChannelRoleEntity;
+import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
