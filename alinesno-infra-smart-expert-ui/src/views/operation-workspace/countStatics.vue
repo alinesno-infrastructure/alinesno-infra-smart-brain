@@ -11,7 +11,7 @@
                 <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
                   <a target="_blank" :href="item.link">
-                    <img :src="'http://data.linesno.com/icons/header/' + (index +1) + '.jpg'" style="width:40px;height:40px;float:left; border-radius: 8px" />
+                    <img :src="imagePath(item.roleAvatar)" style="width:40px;height:40px;float:left; border-radius: 8px" />
                     <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);">
                       {{ item.roleName }} (<span style="font-weight: 600;font-size:15px">8</span>/<span style="font-size:12px">{{ index }}</span>)
                       <br/>
