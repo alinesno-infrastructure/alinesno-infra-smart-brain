@@ -1,13 +1,13 @@
 package com.alinesno.infra.base.im.gateway.controller;
 
-import com.alinesno.infra.base.im.entity.ChannelRoleEntity;
-import com.alinesno.infra.base.im.service.IChannelRoleService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.entity.ChannelRoleEntity;
+import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
