@@ -46,6 +46,11 @@ export function parseTime(time, pattern) {
   return time_str
 }
 
+/** 显示图片 */
+export function imagePath(icon){
+  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + icon ; 
+}
+
 // 表单重置
 export function resetForm(refName) {
   if (this.$refs[refName]) {
