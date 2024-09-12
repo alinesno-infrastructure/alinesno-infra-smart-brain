@@ -18,7 +18,7 @@
                           v-for="(item,index) in roleList" :key="index">
 
                           <div style="float: left;margin-right: 10px;">
-                              <img :src="'http://data.linesno.com/icons/sepcialist/dataset_' + (index +15)+ '.png'" style="width: 45px; height: 45px; border-radius: 5px;">
+                              <img :src="imagePath(item.roleAvatar)"  style="width: 45px; height: 45px; border-radius: 5px;">
                           </div>
                           <div style="float: left;">
                               <div style="line-height: 20px;margin-bottom: 5px;font-size: 15px;">
