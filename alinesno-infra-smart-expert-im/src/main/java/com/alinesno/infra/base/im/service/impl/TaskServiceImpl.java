@@ -1,12 +1,13 @@
 package com.alinesno.infra.base.im.service.impl;
 
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.MessageTaskInfo;
-import com.alinesno.infra.base.im.service.IMessageService;
-import com.alinesno.infra.base.im.service.ISSEService;
-import com.alinesno.infra.base.im.service.ITaskService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
-import com.alinesno.infra.base.im.utils.TaskUtils;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.im.service.ISSEService;
+import com.alinesno.infra.smart.im.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -26,6 +27,9 @@ public class TaskServiceImpl implements ITaskService {
 
     @Autowired
     private IMessageService messageService ;
+
+    @Autowired
+    private IIndustryRoleService roleService ;
 
     @Autowired
     private ISSEService sseService;
@@ -67,20 +71,20 @@ public class TaskServiceImpl implements ITaskService {
     private void processTask() {
         MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
         if (taskInfo != null) {
-            long startTime = System.currentTimeMillis() ;
             try {
                 log.info("任务处理中: {}", taskInfo);
 
-                Thread.sleep(5000);
-
-                long endTime = System.currentTimeMillis() ;
-
-                String usageTime = TaskUtils.formatTimeDifference(startTime, endTime);
-                taskInfo.setUsageTime(usageTime);
+                WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+                taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
 
                 log.info("任务处理完成: {}", taskInfo);
 
-                ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo , usageTime) ;
+                ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo , genContent.getUsageTimeSeconds()) ;
+                queMessage.setChatText(genContent.getGenContent());
+
+                queMessage.setRoleId(taskInfo.getRoleId());
+                queMessage.setAccountId(taskInfo.getAccountId());
+
                 sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
 
                 // 保存到消息记录表中
@@ -89,7 +93,6 @@ public class TaskServiceImpl implements ITaskService {
             } catch (Exception e) {
                 log.error("发送消息通知前端失败:{}" , e.getMessage());
                 errorTaskQueue.add(taskInfo);
-                // throw new RuntimeException(e);
             } finally {
                 // 在finally块中保证线程结束
                 log.debug("任务处理完成.");
