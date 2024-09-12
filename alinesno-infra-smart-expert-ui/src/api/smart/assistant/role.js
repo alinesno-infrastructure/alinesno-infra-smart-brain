@@ -20,9 +20,18 @@ var managerUrl = {
   saveRoleChainInfo: prefix + "saveRoleChainInfo",
   catalogTreeSelect: prefix + "catalogTreeSelect",
   runRoleChainByRoleId: prefix + "runRoleChainByRoleId",
+  updatePromptContent: prefix + "updatePromptContent",
   listAllRole: prefix + "listAllRole",
 }
 
+// 更新角色PromptContent
+export function updatePromptContent(data , id) {
+  return request({
+    url: managerUrl.updatePromptContent + "?roleId=" + parseStrEmpty(id) , 
+    method: 'post',
+    data: data
+  })
+}
 
 // 查询部门下拉树结构
 export function catalogTreeSelect() {
