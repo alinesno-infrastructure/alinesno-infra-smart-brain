@@ -1,26 +1,21 @@
 package com.alinesno.infra.smart.assistant.initialize.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.base.im.entity.ChannelEntity;
-import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.PluginEntity;
 import com.alinesno.infra.smart.assistant.initialize.IAssistantInitService;
 import com.alinesno.infra.smart.assistant.initialize.utils.ExpertListCreator;
-import com.alinesno.infra.smart.assistant.initialize.utils.PromptPostCreator;
 import com.alinesno.infra.smart.assistant.plugin.AssistantPluginProperties;
 import com.alinesno.infra.smart.assistant.plugin.loader.PluginLoader;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IPluginService;
-import com.alinesno.infra.smart.brain.entity.PromptCatalogEntity;
-import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
-import com.alinesno.infra.smart.brain.service.IPromptCatalogService;
-import com.alinesno.infra.smart.brain.service.IPromptPostsService;
 import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.enums.ChannelType;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -48,8 +43,8 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
     @Autowired
     private IChannelService agentChannelService ;
 
-    @Autowired
-    private IPromptCatalogService promptCatalogService ;
+//    @Autowired
+//    private IPromptCatalogService promptCatalogService ;
 
     @Autowired
     private IIndustryRoleCatalogService industryRoleCatalogService ;
@@ -57,24 +52,24 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
     @Autowired
     private IIndustryRoleService industryRoleService ;
 
-    @Autowired
-    private IPromptPostsService promptPostsService ;
+//    @Autowired
+//    private IPromptPostsService promptPostsService ;
 
-    @Override
-    public void promptCatalog() {
-        List<PromptCatalogEntity> rootEntities = PromptPostCreator.createPromptCatalog() ;
-
-        promptCatalogService.saveOrUpdateBatch(rootEntities) ;
-    }
-
-    @Override
-    public void prompt() {
-
-        List<PromptPostsEntity> promptPostsEntityList = PromptPostCreator.createPromptPostEntity() ;
-
-        promptPostsService.saveOrUpdateBatch(promptPostsEntityList) ;
-
-    }
+//    @Override
+//    public void promptCatalog() {
+//        List<PromptCatalogEntity> rootEntities = PromptPostCreator.createPromptCatalog() ;
+//
+//        promptCatalogService.saveOrUpdateBatch(rootEntities) ;
+//    }
+//
+//    @Override
+//    public void prompt() {
+//
+//        List<PromptPostsEntity> promptPostsEntityList = PromptPostCreator.createPromptPostEntity() ;
+//
+//        promptPostsService.saveOrUpdateBatch(promptPostsEntityList) ;
+//
+//    }
 
     @Override
     public void expertCatalog() {
@@ -88,7 +83,9 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
         // 创建技术研发部
         IndustryRoleCatalogEntity techResearchDept = createExpertEntity("技术研发部", "技术研发部", root.getId(), root);
-        allEntities.add(techResearchDept);
+        techResearchDept.setId(9527L);
+        industryRoleCatalogService.saveOrUpdate(techResearchDept);
+//        allEntities.add(techResearchDept);
 
         // 创建需求分析团队
         IndustryRoleCatalogEntity demandAnalysisTeam = createExpertEntity("需求分析团队", "需求分析团队", techResearchDept.getId(), techResearchDept);
@@ -116,7 +113,9 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
         // 创建产品研发部
         IndustryRoleCatalogEntity productResearchDept = createExpertEntity("产品研发部", "产品研发部", root.getId(), root);
-        allEntities.add(productResearchDept);
+        techResearchDept.setId(9528L);
+        industryRoleCatalogService.saveOrUpdate(productResearchDept);
+//        allEntities.add(productResearchDept);
 
         // 创建人才培养团队
         IndustryRoleCatalogEntity talentCultivationTeam = createExpertEntity("人才培养团队", "人才培养团队", productResearchDept.getId(), productResearchDept);
