@@ -1,28 +1,51 @@
 package com.alinesno.infra.smart.brain.api.reponse;
 
 import com.google.gson.Gson;
+import lombok.Getter;
 
 /**
  * DTO（Data Transfer Object）用于封装聊天响应的数据。
  * @author luoxiaodong
  * @version 1.0.0
  */
+@Getter
 public class ChatResponseDto {
 
-	private String role;
-	private String id;
-	private String parentMessageId;
-	private String text;
-	private Object detail;
-
 	/**
-	 * 获取角色信息。
+	 * -- GETTER --
+	 *  获取角色信息。
 	 *
 	 * @return 角色信息。
 	 */
-	public String getRole() {
-		return role;
-	}
+	private String role;
+	/**
+	 * -- GETTER --
+	 *  获取消息ID。
+	 *
+	 * @return 消息ID。
+	 */
+	private String id;
+	/**
+	 * -- GETTER --
+	 *  获取父消息ID。
+	 *
+	 * @return 父消息ID。
+	 */
+	private String parentMessageId;
+	/**
+	 * -- GETTER --
+	 *  获取文本内容。
+	 *
+	 * @return 文本内容。
+	 */
+	private String text;
+	/**
+	 * -- GETTER --
+	 *  获取详细信息。
+	 *
+	 * @return 详细信息。
+	 */
+	private Object detail;
 
 	/**
 	 * 设置角色信息。
@@ -31,15 +54,6 @@ public class ChatResponseDto {
 	 */
 	public void setRole(String role) {
 		this.role = role;
-	}
-
-	/**
-	 * 获取消息ID。
-	 *
-	 * @return 消息ID。
-	 */
-	public String getId() {
-		return id;
 	}
 
 	/**
@@ -52,15 +66,6 @@ public class ChatResponseDto {
 	}
 
 	/**
-	 * 获取父消息ID。
-	 *
-	 * @return 父消息ID。
-	 */
-	public String getParentMessageId() {
-		return parentMessageId;
-	}
-
-	/**
 	 * 设置父消息ID。
 	 *
 	 * @param parentMessageId 父消息ID。
@@ -70,30 +75,12 @@ public class ChatResponseDto {
 	}
 
 	/**
-	 * 获取文本内容。
-	 *
-	 * @return 文本内容。
-	 */
-	public String getText() {
-		return text;
-	}
-
-	/**
 	 * 设置文本内容。
 	 *
 	 * @param text 文本内容。
 	 */
 	public void setText(String text) {
 		this.text = text;
-	}
-
-	/**
-	 * 获取详细信息。
-	 *
-	 * @return 详细信息。
-	 */
-	public Object getDetail() {
-		return detail;
 	}
 
 	/**
