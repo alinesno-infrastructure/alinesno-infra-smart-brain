@@ -1,9 +1,9 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.base.im.dto.MessageTaskInfo;
-import com.alinesno.infra.base.im.service.ISSEService;
-import com.alinesno.infra.base.im.service.ITaskService;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.service.ISSEService;
+import com.alinesno.infra.smart.im.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
