@@ -4,7 +4,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
 import com.alinesno.infra.smart.brain.api.dto.ChatRequestDto;
-import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.gateway.utils.ChatUtils;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
 import com.alinesno.infra.smart.brain.service.ILLMApiService;
@@ -70,45 +69,44 @@ public class BrainTaskController {
         return AjaxResult.success("任务提交成功." , businessId); // 返回成功结果
     }
 
-    /**
-     * 查询离线任务内容
-     * @param businessId 业务ID
-     * @return 返回提交结果
-     */
-    @PostMapping("/chatContent")
-    public AjaxResult chatContent(String businessId) {
+//    /**
+//     * 查询离线任务内容
+//     * @param businessId 业务ID
+//     * @return 返回提交结果
+//     */
+//    @PostMapping("/chatContent")
+//    public AjaxResult chatContent(String businessId) {
+//        TaskContentDto taskContentDto =  generateTaskService.getContentByBusinessId(businessId) ;
+//        return AjaxResult.success(taskContentDto); // 返回成功结果
+//    }
 
-        TaskContentDto taskContentDto =  generateTaskService.getContentByBusinessId(businessId) ;
+//    /**
+//     * 更新生成内容
+//     * @param dto
+//     * @return
+//     */
+//    @PostMapping("/modifyContent")
+//    public AjaxResult modifyContent(@RequestBody TaskContentDto dto) {
+//
+//        generateTaskService.modifyContent(dto) ;
+//
+//        return AjaxResult.success(); // 返回成功结果
+//    }
+//
+//    /**
+//     * 提交任务并将结果保存到CMS中
+//     * @param dto 任务数据传输对象
+//     * @return 返回提交结果
+//     */
+//    @PostMapping("/commitTaskToCms")
+//    public AjaxResult commitTaskToCms( @Validated @RequestBody BrainTaskDto dto) {
+//        // 处理提交任务并保存到CMS的逻辑
+//
+//        log.debug("dto = {}" , dto);
+//
+//        generateTaskService.commitTaskToCms(dto) ;
+//
+//        return AjaxResult.success(); // 返回成功结果
+//    }
 
-        return AjaxResult.success(taskContentDto); // 返回成功结果
-    }
-
-    /**
-     * 更新生成内容
-     * @param dto
-     * @return
-     */
-    @PostMapping("/modifyContent")
-    public AjaxResult modifyContent(@RequestBody TaskContentDto dto) {
-
-        generateTaskService.modifyContent(dto) ;
-
-        return AjaxResult.success(); // 返回成功结果
-    }
-
-    /**
-     * 提交任务并将结果保存到CMS中
-     * @param dto 任务数据传输对象
-     * @return 返回提交结果
-     */
-    @PostMapping("/commitTaskToCms")
-    public AjaxResult commitTaskToCms( @Validated @RequestBody BrainTaskDto dto) {
-        // 处理提交任务并保存到CMS的逻辑
-
-        log.debug("dto = {}" , dto);
-
-        generateTaskService.commitTaskToCms(dto) ;
-
-        return AjaxResult.success(); // 返回成功结果
-    }
 }
