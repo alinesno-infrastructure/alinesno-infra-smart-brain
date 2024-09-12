@@ -1,13 +1,13 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.base.im.entity.ChannelEntity;
 import com.alinesno.infra.base.im.mapper.ChannelMapper;
-import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.enums.ChannelType;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
