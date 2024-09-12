@@ -2,21 +2,22 @@ package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.ChatSendMessageDto;
-import com.alinesno.infra.base.im.dto.MessageTaskInfo;
-import com.alinesno.infra.base.im.dto.WebMessageDto;
-import com.alinesno.infra.base.im.entity.MessageEntity;
+import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
-import com.alinesno.infra.base.im.service.IMessageService;
-import com.alinesno.infra.base.im.service.ITaskService;
 import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.base.im.utils.TaskUtils;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
+import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.im.service.ITaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -39,11 +40,12 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     public void saveUserMessage(List<WebMessageDto> parsedMessages, Long channelId) {
 
         // 处理解析后的消息对象
-        StringBuilder receiverId = new StringBuilder();
+        StringBuilder roleIds = new StringBuilder();
+
         for (WebMessageDto message : parsedMessages) {
             if (MessageType.MENTION.getValue().equals(message.getType())) {
-                receiverId.append(message.getId());
-                receiverId.append("\\|");
+                roleIds.append(message.getId());
+                roleIds.append("\\|");
             }
         }
         StringBuilder chatTextBuilder = new StringBuilder();
@@ -62,15 +64,17 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         MessageEntity msg = new MessageEntity();
 
-        msg.setMessageId(IdUtil.getSnowflakeNextId());
         msg.setChannelId(channelId);
-        msg.setSenderId(IdUtil.getSnowflakeNextId());
 
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setName("软件工程师罗小东");
-        msg.setReceiverId(receiverId.toString());
         msg.setContent(chatText); // JSONObject.toJSONString(parsedMessages));
+
+//        msg.setRoleId(roleIds);
+//        msg.setSenderId(IdUtil.getSnowflakeNextId());
+//        msg.setMessageId(IdUtil.getSnowflakeNextId());
+//        msg.setReceiverId(receiverId.toString());
 
         this.save(msg);
     }
@@ -170,12 +174,15 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setBusinessId(IdUtil.getSnowflakeNextId());
         entity.setAddTime(new Date());
         entity.setIcon(personDto.getIcon());
-        entity.setMessageId(IdUtil.getSnowflakeNextId());
 
-        entity.setMessageId(IdUtil.getSnowflakeNextId());
+//        entity.setMessageId(IdUtil.getSnowflakeNextId());
+//        entity.setMessageId(IdUtil.getSnowflakeNextId());
+//        entity.setSenderId(IdUtil.getSnowflakeNextId());
+//        entity.setReceiverId(IdUtil.getSnowflakeNextIdStr());
+
         entity.setChannelId(channelId);
-        entity.setSenderId(IdUtil.getSnowflakeNextId());
-        entity.setReceiverId(IdUtil.getSnowflakeNextIdStr());
+        entity.setRoleId(personDto.getRoleId());
+        entity.setAccountId(personDto.getAccountId());
 
         save(entity);
     }
@@ -185,7 +192,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         ITaskService taskService = SpringContext.getBean(ITaskService.class) ;
 
-        // 生成消息记录
         // 处理解析后的消息对象
         String ids = message.getUsers().stream().map(String::valueOf).collect(Collectors.joining(","));
 
@@ -196,6 +202,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
                 ids
         );
 
+        msg.setAccountId(message.getAccountId());
         save(msg);
 
         // 保存返回消息
@@ -225,35 +232,53 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             agentInfo.setName(defaultHelpAgent.getRoleName());
             agentInfo.setIcon(defaultHelpAgent.getRoleAvatar());
 
-            agentInfo.setMessageId(IdUtil.getSnowflakeNextId());
             agentInfo.setRoleType("agent");
             agentInfo.setReaderType("html");
 
             agentInfo.setAddTime(new Date());
-
-            agentInfo.setSenderId(defaultHelpAgent.getId());
-            agentInfo.setChannelId(Long.valueOf(channelId));
-            agentInfo.setReceiverId(IdUtil.getSnowflakeNextIdStr());
             agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
+
+            agentInfo.setChannelId(Long.valueOf(channelId));
+            agentInfo.setRoleId(defaultHelpAgent.getId());
+
+//            agentInfo.setMessageId(IdUtil.getSnowflakeNextId());
+//            agentInfo.setSenderId(defaultHelpAgent.getId());
+//            agentInfo.setReceiverId(IdUtil.getSnowflakeNextIdStr());
 
             save(agentInfo);
         }
 
     }
 
+    @Override
+    public List<PromptMessageDto> queryChannelLastMessage(long channel, long accountId, long roleId, int size) {
+        LambdaQueryWrapper<MessageEntity> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.eq(MessageEntity::getChannelId, channel)
+                .eq(MessageEntity::getRoleId, roleId)
+                .eq(MessageEntity::getAccountId, accountId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit " + size);
+
+        List<MessageEntity> list = list(queryWrapper);
+
+        return list.stream().map(item -> new PromptMessageDto(item.getRoleType(), item.getFormatContent())).collect(Collectors.toList());
+    }
+
     private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId) {
         MessageEntity msg = new MessageEntity();
 
-        msg.setMessageId(IdUtil.getSnowflakeNextId());
         msg.setChannelId(channelId);
-        msg.setSenderId(IdUtil.getSnowflakeNextId());
+
+//        msg.setSenderId(IdUtil.getSnowflakeNextId());
+//        msg.setMessageId(IdUtil.getSnowflakeNextId());
+//        msg.setReceiverId(receiverId);
 
         msg.setIcon("1808349839242747906");
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setAddTime(new Date());
         msg.setName("软件工程师罗小东");
-        msg.setReceiverId(receiverId);
         msg.setContent(content);
         msg.setFormatContent(chatText);
 
