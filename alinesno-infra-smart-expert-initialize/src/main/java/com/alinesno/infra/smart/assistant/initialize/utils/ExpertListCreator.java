@@ -1,9 +1,15 @@
 package com.alinesno.infra.smart.assistant.initialize.utils;
 
+import cn.hutool.core.io.resource.ResourceUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import lombok.Data;
+import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class ExpertListCreator {
 
@@ -11,7 +17,7 @@ public class ExpertListCreator {
         List<IndustryRoleEntity> expertList = new ArrayList<>();
 
         // 定义专家列表中的每个专家
-        addExpert(expertList, "1808076798197686273", "软文编辑(SEO专家)", "1", "用于文案的SEO描述", "高级工程师");
+        addExpert(expertList, "1808076798197686273", "软文编辑(SEO专家)", "1", "用于文案的SEO描述", "高级工程师" , "demoSingleExpert");
         addExpert(expertList, "1808349307635687426", "K8S报告生成Agent", "1", "生成K8S报告内容，与其它平台进行交互", "高级工程师");
         addExpert(expertList, "1808349384961875969", "K8S问题排查专家", "1", "针对于K8S问题排查并给出合理建议", "高级工程师");
         addExpert(expertList, "1808349417669058562", "软文编辑(集成内容平台)", "1", "集成CMS平台服务，集成内容平台", "高级工程师", "1747618610907394049");
@@ -40,21 +46,38 @@ public class ExpertListCreator {
         addExpert(expertList, "1808349647059738625", "需求编写分析师", "9", "需求拆分和编写", "高级工程师", "1740826553479004162");
         addExpert(expertList, "1808349617330511874", "培训题目设计专家", "9", "培训题目设计专家，用于考核题目设计", "高级工程师", "1740826156165169153");
 
+        List<PostBean> posts = createPromptPostEntity() ;
+
+        AtomicLong id = new AtomicLong(1L);
+        expertList.forEach(entity -> {
+            entity.setId(id.getAndIncrement());
+            String promptContent = posts.stream().filter(post -> post.getId() == entity.getId()).findFirst().map(PostBean::getPrompt_content).orElse("");
+            entity.setPromptContent(promptContent);
+        });
+
         return expertList;
+    }
+
+    @SneakyThrows
+    public static List<PostBean> createPromptPostEntity(){
+        final String jsonArr = ResourceUtil.readUtf8Str("prompt-post.json");
+        return JSONArray.parseArray(jsonArr , PostBean.class);
+    }
+
+    @Data
+    public static class PostBean {
+        private long id ;
+        private String prompt_content ;
     }
 
     private static void addExpert(List<IndustryRoleEntity> list, String roleAvatar, String roleName, String industryCatalog, String responsibilities, String roleLevel) {
         IndustryRoleEntity expert = new IndustryRoleEntity();
+
         expert.setRoleAvatar(roleAvatar);
         expert.setRoleName(roleName);
         expert.setIndustryCatalog(Long.parseLong(industryCatalog));
         expert.setResponsibilities(responsibilities);
         expert.setRoleLevel(roleLevel);
-
-        // 如果有 chainId 字段，则添加
-        if (!list.isEmpty() && ((IndustryRoleEntity) list.get(list.size() - 1)).getChainId() != null) {
-            expert.setChainId(((IndustryRoleEntity) list.get(list.size() - 1)).getChainId());
-        }
 
         list.add(expert);
     }
@@ -66,7 +89,8 @@ public class ExpertListCreator {
         expert.setIndustryCatalog(Long.parseLong(industryCatalog));
         expert.setResponsibilities(responsibilities);
         expert.setRoleLevel(roleLevel);
-        expert.setChainId(Long.parseLong(chainId));
+
+        expert.setChainId(AssistantConstants.PREFIX_ASSISTANT +  chainId);
 
         list.add(expert);
     }
