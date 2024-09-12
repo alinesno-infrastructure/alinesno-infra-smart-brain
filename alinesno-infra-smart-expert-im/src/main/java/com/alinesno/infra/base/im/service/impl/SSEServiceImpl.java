@@ -1,10 +1,10 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.lang.Assert;
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.MessageTaskInfo;
-import com.alinesno.infra.base.im.service.ISSEService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.service.ISSEService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
