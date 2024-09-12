@@ -8,12 +8,12 @@ public interface IAssistantInitService {
     /**
      * 初始化指令分类
      */
-    void promptCatalog() ;
+    // void promptCatalog() ;
 
     /**
      * 初始化指令
      */
-    void prompt() ;
+    // void prompt() ;
 
     /**
      * 初始化角色分类
