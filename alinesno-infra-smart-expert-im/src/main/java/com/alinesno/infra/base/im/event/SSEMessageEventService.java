@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.im.event;
 
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
