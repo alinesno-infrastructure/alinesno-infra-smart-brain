@@ -1,12 +1,12 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.io.FileTypeUtil;
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.service.IMessageService;
-import com.alinesno.infra.base.im.service.ITaskService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchController;
+import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.im.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
