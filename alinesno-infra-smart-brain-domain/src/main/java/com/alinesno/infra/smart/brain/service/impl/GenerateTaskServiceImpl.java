@@ -1,26 +1,18 @@
 package com.alinesno.infra.smart.brain.service.impl;
 
-import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.brain.api.BrainTaskDto;
-import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
 import com.alinesno.infra.smart.brain.entity.GenerateTaskEntity;
-import com.alinesno.infra.smart.brain.entity.PromptPostsEntity;
 import com.alinesno.infra.smart.brain.enums.TaskStatus;
 import com.alinesno.infra.smart.brain.mapper.GenerateTaskMapper;
 import com.alinesno.infra.smart.brain.service.IFileProcessingService;
 import com.alinesno.infra.smart.brain.service.IGenerateTaskService;
-import com.alinesno.infra.smart.brain.service.IPromptPostsService;
-import com.alinesno.infra.smart.brain.utils.CodeBlockParser;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
@@ -35,31 +27,33 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
     @Autowired
     private IFileProcessingService fileProcessingService ;
 
-    @Autowired
-    private IPromptPostsService postsService ;
+//    @Autowired
+//    private IPromptPostsService postsServiVkce ;
 
     @Override
     public String commitTask(BrainTaskDto dto) {
 
-        GenerateTaskEntity entity = new GenerateTaskEntity() ;
-        BeanUtils.copyProperties(dto , entity);
-        entity.setBusinessId(IdUtil.getSnowflakeNextIdStr());
+//        GenerateTaskEntity entity = new GenerateTaskEntity() ;
+//        BeanUtils.copyProperties(dto , entity);
+//        entity.setBusinessId(IdUtil.getSnowflakeNextIdStr());
+//
+//        // 获取到PromptPost内容
+//        PromptPostsEntity postsEntity = postsService.getByPromptId(dto.getPromptId()) ;
+//        Assert.notNull(postsEntity , "未找到PromptPost内容");
+//
+//        entity.setTaskDesc(postsEntity.getPromptName());
+//
+//        entity.setParams(JSONObject.toJSONString(dto.getParams()));
+//        entity.setTaskStatus(TaskStatus.RUNNING.getValue());
+//        entity.setUpdateTime(new Date());
+//
+//        this.save(entity) ;
+//
+//        fileProcessingService.processFile(entity);
+//
+//        return entity.getBusinessId() ;
 
-        // 获取到PromptPost内容
-        PromptPostsEntity postsEntity = postsService.getByPromptId(dto.getPromptId()) ;
-        Assert.notNull(postsEntity , "未找到PromptPost内容");
-
-        entity.setTaskDesc(postsEntity.getPromptName());
-
-        entity.setParams(JSONObject.toJSONString(dto.getParams()));
-        entity.setTaskStatus(TaskStatus.RUNNING.getValue());
-        entity.setUpdateTime(new Date());
-
-        this.save(entity) ;
-
-        fileProcessingService.processFile(entity);
-
-        return entity.getBusinessId() ;
+        return null ;
     }
 
     @Override
@@ -82,31 +76,31 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         return list(queryWrapper);
     }
 
-    @Override
-    public TaskContentDto getContentByBusinessId(String businessId) {
-
-        LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.eq(GenerateTaskEntity::getBusinessId , businessId)  ;
-
-        GenerateTaskEntity generateTask = this.getOne(wrapper) ;
-        // 封装成DTO类对象
-        TaskContentDto dto = new TaskContentDto() ;
-
-        if(generateTask == null){  // 数据内容为空
-            dto.setTaskStatus(TaskStatus.RUNNING.getValue()); // 数据还在生成中
-            return dto ;
-        }
-
-
-        dto.setTaskStatus(generateTask.getTaskStatus());
-        dto.setBusinessId(businessId);
-        dto.setGenContent(generateTask.getAssistantContent());
-
-        List<TaskContentDto.CodeContent> codeContents = CodeBlockParser.parseCodeBlocks(generateTask.getAssistantContent())  ;
-        dto.setCodeContent(codeContents);
-
-        return dto ;
-    }
+//    @Override
+//    public TaskContentDto getContentByBusinessId(String businessId) {
+//
+//        LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
+//        wrapper.eq(GenerateTaskEntity::getBusinessId , businessId)  ;
+//
+//        GenerateTaskEntity generateTask = this.getOne(wrapper) ;
+//        // 封装成DTO类对象
+//        TaskContentDto dto = new TaskContentDto() ;
+//
+//        if(generateTask == null){  // 数据内容为空
+//            dto.setTaskStatus(TaskStatus.RUNNING.getValue()); // 数据还在生成中
+//            return dto ;
+//        }
+//
+//
+//        dto.setTaskStatus(generateTask.getTaskStatus());
+//        dto.setBusinessId(businessId);
+//        dto.setGenContent(generateTask.getAssistantContent());
+//
+//        List<TaskContentDto.CodeContent> codeContents = CodeBlockParser.parseCodeBlocks(generateTask.getAssistantContent())  ;
+//        dto.setCodeContent(codeContents);
+//
+//        return dto ;
+//    }
 
     @Override
     public void resetRetry(Long taskId) {
@@ -120,22 +114,22 @@ public class GenerateTaskServiceImpl extends IBaseServiceImpl<GenerateTaskEntity
         fileProcessingService.processFile(task);
     }
 
-    @Override
-    public void modifyContent(TaskContentDto dto) {
-
-       LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
-       wrapper.eq(GenerateTaskEntity::getBusinessId , dto.getBusinessId()) ;
-       wrapper.orderByDesc(GenerateTaskEntity::getAddTime) ;
-       wrapper.last("limit 1") ;
-
-       GenerateTaskEntity task = getOne(wrapper) ;
-
-       if(task != null){
-           task.setAssistantContent(dto.getGenContent());
-           update(task);
-       }
-
-    }
+//    @Override
+//    public void modifyContent(TaskContentDto dto) {
+//
+//       LambdaQueryWrapper<GenerateTaskEntity> wrapper = new LambdaQueryWrapper<>() ;
+//       wrapper.eq(GenerateTaskEntity::getBusinessId , dto.getBusinessId()) ;
+//       wrapper.orderByDesc(GenerateTaskEntity::getAddTime) ;
+//       wrapper.last("limit 1") ;
+//
+//       GenerateTaskEntity task = getOne(wrapper) ;
+//
+//       if(task != null){
+//           task.setAssistantContent(dto.getGenContent());
+//           update(task);
+//       }
+//
+//    }
 
     @Override
     public List<GenerateTaskEntity> getAllUnstableTasks(int jobOutTime) {
