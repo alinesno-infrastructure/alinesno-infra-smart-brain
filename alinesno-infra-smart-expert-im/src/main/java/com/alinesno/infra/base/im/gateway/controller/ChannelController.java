@@ -2,13 +2,13 @@ package com.alinesno.infra.base.im.gateway.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.base.im.entity.ChannelEntity;
-import com.alinesno.infra.base.im.service.IChannelService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
