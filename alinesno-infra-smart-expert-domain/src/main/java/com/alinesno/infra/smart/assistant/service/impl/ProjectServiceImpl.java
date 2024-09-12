@@ -33,8 +33,8 @@ public class ProjectServiceImpl extends IBaseServiceImpl<ProjectEntity, ProjectM
         project.setOperatorId(userId);
         project.setFieldProp(DEFAULT_PROJECT_FIELD);
 
-        project.setProjectName("默认监控应用");
-        project.setProjectDesc("包含所有的监控渠道查看权限，用于开发和验证场景");
+        project.setProjectName("默认助手应用");
+        project.setProjectDesc("包含所有的助手渠道查看权限，用于开发和验证场景");
         project.setProjectCode(code);
 //        project.setDocumentType(ProviderChannelEnum.getAllNameStr());
 
