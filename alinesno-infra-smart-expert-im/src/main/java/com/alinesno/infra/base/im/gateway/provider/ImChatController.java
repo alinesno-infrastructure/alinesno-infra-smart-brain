@@ -2,16 +2,16 @@ package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.ChatSendMessageDto;
-import com.alinesno.infra.base.im.service.IChannelRoleService;
-import com.alinesno.infra.base.im.service.IMessageService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.service.IChannelRoleService;
+import com.alinesno.infra.smart.im.service.IMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
@@ -73,14 +73,18 @@ public class ImChatController extends SuperController {
         Assert.isTrue(message.getUsers() != null && !message.getUsers().isEmpty(), "请选择处理专家.");
 
         log.debug("message = {}" , JSONUtil.toJsonPrettyStr(message));
+        long currentAccountId = 1L ;
 
         List<IndustryRoleEntity> roleList = roleService.listByIds(message.getUsers()) ;
 
         List<ChatMessageDto> personDto = new ArrayList<>() ;
         roleList.forEach(r -> {
-            personDto.add(AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId())) ;
+            ChatMessageDto msg =  AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId()) ;
+            msg.setAccountId(currentAccountId);
+            personDto.add(msg) ;
         });
 
+        message.setAccountId(currentAccountId);
         messageService.sendUserMessage(message , roleList , personDto);
 
         return AjaxResult.success("操作成功." , personDto) ;
