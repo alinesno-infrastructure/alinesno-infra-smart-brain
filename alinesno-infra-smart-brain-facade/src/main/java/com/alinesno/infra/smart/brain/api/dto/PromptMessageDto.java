@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.brain.api.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+@ToString
 @NoArgsConstructor
 @Data
 public class PromptMessageDto {
