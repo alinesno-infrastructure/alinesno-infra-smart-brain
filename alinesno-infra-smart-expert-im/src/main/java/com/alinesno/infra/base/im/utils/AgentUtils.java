@@ -2,10 +2,10 @@ package com.alinesno.infra.base.im.utils;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.base.im.dto.ChatMessageDto;
-import com.alinesno.infra.base.im.dto.MessageTaskInfo;
-import com.alinesno.infra.base.im.dto.WebMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.enums.DocumentTypeEnum;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
@@ -72,6 +72,7 @@ public class AgentUtils {
         ChatMessageDto personDto = new ChatMessageDto() ;
         personDto.setChatText("收到，任务我已经在处理，请稍等1-2分钟 :-)");
 
+        personDto.setRoleId(roleDto.getId());
         personDto.setName(roleDto.getRoleName());
         personDto.setIcon(roleDto.getRoleAvatar()) ;
 
