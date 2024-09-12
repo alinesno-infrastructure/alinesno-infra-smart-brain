@@ -1,6 +1,6 @@
 package com.alinesno.infra.smart.brain.api;
 
-import com.alinesno.infra.smart.brain.api.validator.ValidPromptId;
+//import com.alinesno.infra.smart.brain.api.validator.ValidPromptId;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,7 +15,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Data
-@ValidPromptId
+//@ValidPromptId
 public class BrainTaskDto {
 
     @NotNull(message = "promptId cannot be null")
