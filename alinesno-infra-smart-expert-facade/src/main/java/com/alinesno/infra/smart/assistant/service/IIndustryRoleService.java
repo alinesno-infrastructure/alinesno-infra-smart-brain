@@ -1,11 +1,12 @@
 package com.alinesno.infra.smart.assistant.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.brain.api.reponse.TaskContentDto;
+import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * 应用构建Service接口
@@ -14,28 +15,6 @@ import java.util.Map;
  * @author luoxiaodong
  */
 public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
-
-    /**
-     * 保存角色工作流信息
-     *
-     * @param entity
-     * @param roleId
-     */
-    void saveRoleChainInfo(String roleId);
-
-    /**
-     * 运行角色工作流
-     * @param params
-     * @param roleId
-     */
-    void runRoleChainByRoleId(Map<String , Object> params , long roleId);
-
-    /**
-     * 运行下一个角色业务
-     * @param businessId
-     * @param roleId
-     */
-    void runChainAgent(TaskContentDto businessId, long roleId);
 
     /**
      * 获取最新的角色
@@ -55,4 +34,19 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     IndustryRoleEntity getDefaultHelpAgent();
+
+    /**
+     * 更新角色提示信息
+     * @param messageDto
+     * @param roleId
+     */
+    void updatePromptContent(List<PromptMessageDto> messageDto, String roleId);
+
+    /**
+     * 运行执行RoleAgent角色
+     *
+     * @param taskInfo
+     * @return
+     */
+    WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo);
 }
