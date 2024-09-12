@@ -21,6 +21,7 @@
                   :filter-node-method="filterNode"
                   ref="deptTreeRef"
                   node-key="id"
+                  default-expand-all 
                   highlight-current
                   @node-click="handleNodeClick"
                />
@@ -86,17 +87,17 @@
           <el-table-column label="图标" align="center" width="60px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
               <div class="role-icon">
-                <img :src="imagePath(scope.row)" />
+                <img :src="imagePath(scope.row.roleAvatar)" />
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="角色名称" align="left" width="180" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="角色名称" align="left" width="220" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
-                {{ scope.row.roleName }}
+                {{ truncateString(scope.row.roleName , 10) }}
               </div>
-              <div style="font-size: 13px;color: #a5a5a5;">
-                 {{ scope.row.roleLevel }}
+                     <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" v-copyText="scope.row.chainId">
+                代码:{{ truncateString(scope.row.chainId,20) }}
               </div>
             </template>
           </el-table-column>
@@ -106,7 +107,7 @@
                 {{ scope.row.responsibilities }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
-                会话次数: 12734 有效沟通:198312
+                会话次数: 12734 
               </div>
             </template>
           </el-table-column>
@@ -115,31 +116,13 @@
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
           </el-table-column>
-          <!-- <el-table-column label="知识库" align="center" width="120"  key="roleLevel" prop="roleLevel" v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <el-table-column label="配置Prompt" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="CopyDocument"  @click="handleLangChain(scope.row)" >配置</el-button>
-            </template>
-          </el-table-column> -->
-          <!--
-          <el-table-column label="角色技能" align="center" width="150"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <el-button type="primary" text bg icon="Paperclip"  @click="handleLangChain(scope.row)" >配置</el-button>
+              <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
             </template>
           </el-table-column>
-          -->
-          <el-table-column label="流程定义" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[8].visible">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Postcard" @click="handleLangChain(scope.row)" >专家链路</el-button>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width" v-if="columns[8].visible">
-            <template #default="scope">
-              <el-tooltip content="运行对话" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="Position" @click="handleRunChain(scope.row)" v-hasPermi="['system:Role:edit']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="对话记录" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="ChatLineSquare" @click="handleUpdate(scope.row)" v-hasPermi="['system:Role:edit']"></el-button>
-              </el-tooltip>
               <el-tooltip content="更新" placement="top" v-if="scope.row.roleId !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:Role:edit']"></el-button>
               </el-tooltip>
@@ -160,47 +143,10 @@
       </el-col>
     </el-row>
 
-    <!-- 添加或修改角色链路 -->
-    <el-dialog :title="chainTitle" v-model="chainOpen" width="900px" append-to-body>
-      <el-form :model="chainForm" :rules="chainRules" ref="ChainRef" label-width="80px">
-        <el-row>
-          <el-col :span="12">
-            <el-form-item  label="流程名称" prop="chainName">
-              <el-input v-model="chainForm.chainName" placeholder="请输入链路名称" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item  label="流程描述" prop="chainDescription">
-              <el-input v-model="chainForm.chainDescription" placeholder="请输入流程描述" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="流程数据" prop="elData">
-              <!-- <el-input v-model="chainForm.elData" placeholder="请输入链路流程" maxlength="120"/> -->
-              <el-tree-select
-                v-model="chainForm.elData"
-                :data="chainTreeData"
-                multiple
-                :render-after-expand="false"
-                show-checkbox
-                check-strictly
-                check-on-click-node
-                style="width: 240px"
-              />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitChainForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
+      <!-- 添加或修改指令配置对话框 -->
+      <el-dialog :title="promptTitle" v-model="promptOpen" width="980px" :before-close="handleClosePrompt" destroy-on-close append-to-body>
+         <PromptEditor :currentPrompt="currentPrompt" />
+      </el-dialog>
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
@@ -268,13 +214,13 @@
           </el-col>
         </el-row>
 
-        <el-row>
+        <!-- <el-row>
           <el-col :span="24">
             <el-form-item label="数据源" prop="dataSourceApi">
               <el-input v-model="form.dataSourceApi" placeholder="请输入角色数据来源接口" maxlength="512"/>
             </el-form-item>
           </el-col>
-        </el-row> 
+        </el-row>  -->
 
       </el-form>
       <template #footer>
@@ -284,45 +230,7 @@
         </div>
       </template>
     </el-dialog>
-
-    <!-- 应用导入对话框 -->
-    <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
-      <el-upload
-          ref="uploadRef"
-          :limit="1"
-          accept=".xlsx, .xls"
-          :headers="upload.headers"
-          :action="upload.url + '?updateSupport=' + upload.updateSupport"
-          :disabled="upload.isUploading"
-          :on-progress="handleFileUploadProgress"
-          :on-success="handleFileSuccess"
-          :auto-upload="false"
-          drag
-      >
-        <el-icon class="el-icon--upload">
-          <upload-filled/>
-        </el-icon>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <template #tip>
-          <div class="el-upload__tip text-center">
-            <div class="el-upload__tip">
-              <el-checkbox v-model="upload.updateSupport"/>
-              是否更新已经存在的应用数据
-            </div>
-            <span>仅允许导入xls、xlsx格式文件。</span>
-            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;"
-                     @click="importTemplate">下载模板
-            </el-link>
-          </div>
-        </template>
-      </el-upload>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitFileForm">确 定</el-button>
-          <el-button @click="upload.open = false">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
+    
   </div>
 </template>
 
@@ -335,16 +243,15 @@ import {
   updateRole,
   catalogTreeSelect,
   addRole,
-  getRoleChainByChainId,
   saveRoleChainInfo,
-  runRoleChainByRoleId,
 } from "@/api/smart/assistant/role";
 
-import {
-  addRoleChain , 
-  updateRoleChain,
-} from "@/api/smart/assistant/chain"
+// import {
+//   addRoleChain , 
+//   updateRoleChain,
+// } from "@/api/smart/assistant/chain"
 
+import PromptEditor from "./editor.vue"
 import { ElMessage } from 'element-plus'
 import {reactive} from "vue";
 
@@ -366,83 +273,16 @@ const imageUrl = ref('')
 
 const chainOpen = ref(false);
 const chainTitle = ref("");
+const promptTitle = ref("");
+const currentPrompt = ref("");
+const currentPromptContent = ref([]);
+const promptOpen = ref(false);
 
 const deptName = ref("");
 const deptOptions = ref(undefined);
 const initPassword = ref(undefined);
 const postOptions = ref([]);
 const roleOptions = ref([]);
-
-const chainTreeData = ref([
-  {
-    value: '1',
-    label: 'Level one 1',
-    children: [
-      {
-        value: '1-1',
-        label: 'Level two 1-1',
-        children: [
-          {
-            value: '1-1-1',
-            label: 'Level three 1-1-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    value: '2',
-    label: 'Level one 2',
-    children: [
-      {
-        value: '2-1',
-        label: 'Level two 2-1',
-        children: [
-          {
-            value: '2-1-1',
-            label: 'Level three 2-1-1',
-          },
-        ],
-      },
-      {
-        value: '2-2',
-        label: 'Level two 2-2',
-        children: [
-          {
-            value: '2-2-1',
-            label: 'Level three 2-2-1',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    value: '3',
-    label: 'Level one 3',
-    children: [
-      {
-        value: '3-1',
-        label: 'Level two 3-1',
-        children: [
-          {
-            value: '3-1-1',
-            label: 'Level three 3-1-1',
-          },
-        ],
-      },
-      {
-        value: '3-2',
-        label: 'Level two 3-2',
-        children: [
-          {
-            value: '3-2-1',
-            label: 'Level three 3-2-1',
-          },
-        ],
-      },
-    ],
-  },
-]) ;
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -511,16 +351,6 @@ const data = reactive({
 
 const {queryParams, form, rules , chainForm , chainRules} = toRefs(data);
 
-/** 显示图片 */
-function imagePath(row){
-  let roleAvatar = '1746435800232665090' ; 
-  if(row.roleAvatar){
-    roleAvatar = row.roleAvatar ; 
-  }
-  // return import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/role/displayImage/" + roleAvatar ; 
-  return 'http://alinesno-infra-smart-assistant-ui.beta.smart.infra.linesno.com/prod-api/api/infra/smart/assistant/role/displayImage/' + roleAvatar ; 
-}
-
 /** 查询应用列表 */
 function getList() {
   loading.value = true;
@@ -546,6 +376,12 @@ const beforeAvatarUpload = (rawFile) => {
   }
   return true;
 };
+
+/** 关闭对话框 */
+function handleClosePrompt(){
+   promptOpen.value = false;
+  getList();
+}
 
 // 节点单击事件
 function handleNodeClick(data) {
@@ -584,30 +420,40 @@ function handleDelete(row) {
   });
 };
 
+/** 配置Prompt */
+function configPrompt(row){
+   promptTitle.value = "配置角色Prompt";
+   promptOpen.value = true ;
+   currentPrompt.value = row ;
+
+  //  if(row.promptContent){
+  //     currentPromptContent.value = JSON.parse(row.promptContent);
+  //  }
+}
+
 /** 运行一次专家链路 */
-function handleRunChain(row){
+// function handleRunChain(row){
 
-  loading.value = true;
-  let text = '测试数据' ; 
-  runRoleChainByRoleId(row.id , text).then(response => {
-    proxy.$modal.msgSuccess("运行成功.");
-    loading.value = false;
-  })
-}
+//   loading.value = true;
+//   let text = '测试数据' ; 
+//   runRoleChainByRoleId(row.id , text).then(response => {
+//     proxy.$modal.msgSuccess("运行成功.");
+//     loading.value = false;
+//   })
+// }
 
-/** 配置用户链路流程 */
-function handleLangChain(row){
-  const roleId = row.id || ids.value;
+// /** 配置用户链路流程 */
+// function handleLangChain(row){
+//   const roleId = row.id || ids.value;
 
-  getRoleChainByChainId(roleId).then(response => {
-    chainForm.value = response.data;
-    chainForm.value.roleId = roleId;
+//   getRoleChainByChainId(roleId).then(response => {
+//     chainForm.value = response.data;
+//     chainForm.value.roleId = roleId;
 
-    chainOpen.value = true;
-    chainTitle.value = "配置链路";
-  });
-
-}
+//     chainOpen.value = true;
+//     chainTitle.value = "配置链路";
+//   });
+// }
 
 /** 选择条数  */
 function handleSelectionChange(selection) {
