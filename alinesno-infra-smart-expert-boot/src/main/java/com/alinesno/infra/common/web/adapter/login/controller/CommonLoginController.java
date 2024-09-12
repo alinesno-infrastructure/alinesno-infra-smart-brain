@@ -149,7 +149,7 @@ public class CommonLoginController {
                 List.of(
                         new Menu("Role", "smart/assistant/role/index", false,false,  "smart/assistant/role/index", new Menu.Meta("专家管理", "tree", false, null)),
                         new Menu("RoleCatalog", "smart/assistant/roleCatalog/index", false, false, "smart/assistant/roleCatalog/index", new Menu.Meta("专家类型", "post", false, null)),
-                        new Menu("ChainScript", "smart/assistant/chainScript/index", false,false,  "smart/assistant/chainScript/index", new Menu.Meta("脚本定义", "dict", false, null)),
+                        // new Menu("ChainScript", "smart/assistant/chainScript/index", false,false,  "smart/assistant/chainScript/index", new Menu.Meta("脚本定义", "dict", false, null)),
                         new Menu("WorkflowRecord", "smart/assistant/workflowRecord/index", false,false,  "smart/assistant/workflowRecord/index", new Menu.Meta("流程监控", "message", false, null)),
                         new Menu("Channel", "smart/assistant/plugin/index", false, false, "smart/assistant/plugin/index", new Menu.Meta("流程插件", "peoples", false, null))
                 ));
@@ -162,19 +162,19 @@ public class CommonLoginController {
     @NotNull
     private static List<Menu> getMenus(Menu dashboardMenu, Menu expertMenu) {
 
-        Menu channelMenu = new Menu("Channel", "/channel", false, "noRedirect", "Layout", true, new Menu.Meta("频道管理", "monitor", false, null),
+        Menu channelMenu = new Menu("Prompt", "/prompt", false, "noRedirect", "Layout", true, new Menu.Meta("频道管理", "monitor", false, null),
                 List.of(
-                        new Menu("Channel", "base/im/channel/index", false,false, "base/im/channel/index", new Menu.Meta("频道管理", "message", false, null)),
-                        new Menu("ChannelAccount", "base/im/channelAccount/index", false,false, "base/im/channelAccount/index", new Menu.Meta("用户频道", "peoples", false, null)),
-                        new Menu("Message", "base/im/message/index", false,false, "base/im/message/index", new Menu.Meta("消息管理", "form", false, null))
+                        new Menu("ChannelList", "smart/assistant/channel/index", false,false, "smart/assistant/channel/index", new Menu.Meta("频道管理", "message", false, null)),
+                        new Menu("ChannelAccount", "smart/assistant/channelAccount/index", false,false, "smart/assistant/channelAccount/index", new Menu.Meta("用户频道", "peoples", false, null)),
+                        new Menu("Message", "smart/assistant/message/index", false,false, "smart/assistant/message/index", new Menu.Meta("消息管理", "form", false, null))
                 ));
 
-        Menu promptMenu = new Menu("Prompt", "/prompt", false, "noRedirect", "Layout", true, new Menu.Meta("提示管理", "log", false, null),
-                        List.of(
-                                new Menu("Prompt", "smart/brain/prompt/index", false,false, "smart/brain/prompt/index", new Menu.Meta("定义Prompt", "message", false, null)),
-                                new Menu("Task", "smart/brain/task/index", false,false, "smart/brain/task/index", new Menu.Meta("生成任务", "peoples", false, null)),
-                                new Menu("Catalog", "smart/brain/catalog/index", false,false, "smart/brain/catalog/index", new Menu.Meta("Prompt目录", "form", false, null))
-                        ));
+//        Menu promptMenu = new Menu("Prompt", "/prompt", false, "noRedirect", "Layout", true, new Menu.Meta("提示管理", "log", false, null),
+//                        List.of(
+//                                new Menu("Prompt", "smart/brain/prompt/index", false,false, "smart/brain/prompt/index", new Menu.Meta("定义Prompt", "message", false, null)),
+//                                new Menu("Task", "smart/brain/task/index", false,false, "smart/brain/task/index", new Menu.Meta("生成任务", "peoples", false, null)),
+//                                new Menu("Catalog", "smart/brain/catalog/index", false,false, "smart/brain/catalog/index", new Menu.Meta("Prompt目录", "form", false, null))
+//                        ));
 
         Menu monitorMenu = new Menu("Monitor", "/monitor", false, "noRedirect", "Layout", true, new Menu.Meta("监控管理", "log", false, null),
                 List.of(
@@ -182,6 +182,6 @@ public class CommonLoginController {
                         new Menu("Analyse", "smart/assistant/analyse/index", false,false, "smart/assistant/analyse/index", new Menu.Meta("接口监控", "server", false, null))
                 ));
 
-        return List.of(dashboardMenu, expertMenu, promptMenu, monitorMenu);
+        return List.of(dashboardMenu, channelMenu , expertMenu, /* promptMenu,*/ monitorMenu);
     }
 }
