@@ -2,9 +2,8 @@ package com.alinesno.infra.smart.assistant.enums;
 
 public interface AssistantConstants {
 
-//    String BUSINESS_ID = "businessId" ;
-//    String BUSINESS_ASSISTANT_YAML_CONTENT = "assistantYamlContent" ;
+    String PREFIX_ASSISTANT = "Agent_" ;
+    String PREFIX_ASSISTANT_DEFAULT = "Agent_DefaultExpert" ;
 
-    String PREFIX_ASSISTANT = "agent_" ;
-
+    String AIP_HELP_AGENT =  "AIP_DEFAULT_HELP_AGENT";
 }
