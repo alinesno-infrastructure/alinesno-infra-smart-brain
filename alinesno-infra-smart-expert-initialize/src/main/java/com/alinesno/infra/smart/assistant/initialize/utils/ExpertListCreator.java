@@ -30,7 +30,7 @@ public class ExpertListCreator {
         addExpert(expertList, "1808350127865389057", "K8S运行状态专家", 9528L, "用于AIP产品运行K8S状态查询，生成每日运维报告并导出Word", "BHIWVhzr");
 
         // 产品运营团队(产品问答客服/业务咨询)
-        addExpert(expertList, "1808349647059738625", "业务咨询客服", 9528L, "AIP业务咨询问题，用于做客服类的咨询服务，定义于产品业务对外咨询类", "OAbtlQYU");  //P
+        addExpert(expertList, "1808349647059738625", "业务咨询客服", 9528L, "AIP业务咨询问题，用于做客服类的咨询服务，定义于产品业务对外咨询类", "pRFDrSJH");  //P
         addExpert(expertList, "1808350238808924161", "产品列表客服", 9528L, "AIP产品问答客服，用于产品有多少还有有哪些哪类型的产品资产", "OAbtlQYU"); //P
         addExpert(expertList, "1808350003370057729", "邮件发送专家", 9528L, "团队内部人员邮件发送和附近内容发送", "RmCXXzKU");
 
