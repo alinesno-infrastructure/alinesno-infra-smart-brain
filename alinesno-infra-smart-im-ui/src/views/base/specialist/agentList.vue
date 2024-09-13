@@ -17,9 +17,9 @@
                         <div class="content">
                             <h3 class="app-item__title" style="margin-top:5px;margin-bottom:5px;">
                                 {{ item.roleName }}
-                                <a class="cf-service-nav-item-label" style="margin-left:10px;margin-right:10px;float:right" @click="saveCollectProduct(item)" :title="item.name">
-                                    <el-button type="primary" text bg>
-                                       <i class="fa-solid fa-location-arrow"></i>&nbsp;咨询
+                                <a class="cf-service-nav-item-label" style="margin-left:10px;margin-right:10px;float:right" :title="item.name">
+                                    <el-button type="primary" text >
+                                       <i class="fa-solid fa-location-arrow"></i>&nbsp;{{ item.chatCount }}
                                     </el-button>
                                 </a>
                             </h3>
