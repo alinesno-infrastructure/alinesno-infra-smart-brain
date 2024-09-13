@@ -8,6 +8,12 @@ import java.util.List;
 public interface IChannelService extends IBaseService<ChannelEntity> {
 
     /**
+     * 初始化个人频道，每个人有且仅有一个人频道
+     * @param accountId
+     */
+    void initPersonChannel(long accountId);
+
+    /**
      * 保存和创建Channel
      *
      * @param entity
@@ -35,10 +41,10 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
 
     /**
      * 用户加入频道
-     * @param userId
+     * @param roleId
      * @param channelId
      */
-    void jobChannel(long userId, String channelId);
+    void jobChannel(long roleId, long channelId);
 
     /**
      * 获取到默认的渠道
@@ -51,4 +57,11 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * @return
      */
     List<ChannelEntity> getRecommendChannel();
+
+    /**
+     * 用户加入频道
+     * @param accountId
+     * @param channelId
+     */
+    void accountJoinChannel(long accountId, long channelId);
 }
