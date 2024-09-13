@@ -59,36 +59,9 @@ public class IndustryRoleEntity extends InfraBaseEntity {
 	@ColumnComment("指令内容")
 	private String promptContent;
 
-
-//    @TableField("data_source_api") // MyBatis-Plus 字段注解
-//    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 512)
-//    @ColumnComment("数据源API")
-//    private String dataSourceApi ; // 数据源API
-
-//    @TableField("skills") // MyBatis-Plus 字段注解
-//    @ColumnType(value = MySqlTypeConstant.TEXT)
-//    @ColumnComment("所需技能描述")
-//    private String skills; // 所需技能描述
-//
-//    @TableField("experience") // MyBatis-Plus 字段注解
-//    @ColumnType(value = MySqlTypeConstant.TEXT)
-//    @ColumnComment("经验要求描述")
-//    private String experience; // 经验要求描述
-
-
-//    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 32)
-//    @ColumnComment("关联的PromptId")
-//    @TableField("prompt_id") // MyBatis-Plus 字段注解
-//    private String promptId ; // 其他角色相关字段
-
-//    @TableField("salary_range") // MyBatis-Plus 字段注解
-//    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 100)
-//    @ColumnComment("薪资范围")
-//    private String salaryRange; // 薪资范围
-//
-//    @TableField("education") // MyBatis-Plus 字段注解
-//    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 100)
-//    @ColumnComment("教育背景要求")
-//    private String education; // 教育背景要求
-
+    @Excel(name="会议次数")
+    @TableField("chat_count")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 11)
+    @ColumnComment("会话次数")
+    private Long chatCount = 0L ;
 }
