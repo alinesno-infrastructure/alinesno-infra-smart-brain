@@ -57,13 +57,14 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
 
         List<ConditionDto> condition =  page.getConditionList() ;
-
         String catalogId =  request.getParameter("industryCatalog") ;
 
         if(StringUtils.isNotBlank(catalogId)){
             ConditionDto dto = new ConditionDto() ;
+
             dto.setColumn("industry_catalog");
             dto.setValue(catalogId);
+            dto.setType("eq");
 
             condition.add(dto) ;
             page.setConditionList(condition);
