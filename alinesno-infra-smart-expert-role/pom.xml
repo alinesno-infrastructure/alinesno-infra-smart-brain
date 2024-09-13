@@ -38,6 +38,7 @@
 			<version>2.3.31</version>
 		</dependency>
 
+
 		<!-- 引入千问大模型 API -->
 		<dependency>
 			<groupId>com.alibaba</groupId>
