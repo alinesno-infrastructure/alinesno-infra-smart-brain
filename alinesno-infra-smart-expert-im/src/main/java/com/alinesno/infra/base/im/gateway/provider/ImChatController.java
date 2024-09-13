@@ -27,20 +27,11 @@ import java.util.List;
 @RequestMapping(value = "/v1/api/infra/base/im/chat/")
 public class ImChatController extends SuperController {
 
-//    @Autowired
-//    private IMessageQueueService messageQueueService; ;
-
     @Autowired
     private IMessageService messageService ;
 
     @Autowired
     private IChannelRoleService channelUserService ;
-
-//    @Autowired
-//    private IGenerateTaskService generateTaskService ;
-
-//    @Autowired
-//    private ITaskService taskService ;
 
     @Autowired
     private IIndustryRoleService roleService ;
@@ -54,12 +45,6 @@ public class ImChatController extends SuperController {
      */
     @GetMapping("/chatAssistantContent")
     public AjaxResult chatAssistantContent(long businessId){
-
-//        MessageQueueEntity messageQueueDto = messageQueueService.queryMessage(businessId+"") ; //  smartBrainConsumer.chatContent(businessId) ;
-//        log.debug("chatContent result = {}" , messageQueueDto);
-//
-//        return AjaxResult.success(messageQueueDto) ;
-
         return AjaxResult.success();
     }
 
@@ -90,65 +75,6 @@ public class ImChatController extends SuperController {
         return AjaxResult.success("操作成功." , personDto) ;
     }
 
-
-//    /**
-//     * 获取到消息信息
-//     * @return
-//     */
-//    @PostMapping("/updateAssistantContent")
-//    public AjaxResult updateAssistantContent(@RequestBody TaskContentDto dto){
-//
-////        generateTaskService.modifyContent(dto);
-//
-//        return ok() ;
-//    }
-
-//    /**
-//     * 执行下一个节点的任务
-//     * @return
-//     */
-//    @GetMapping("/runChainAgent")
-//    public AjaxResult runChainAgent(String businessId , String roleId){
-//
-//        log.debug("businessId = {} , roleId = {}" , businessId , roleId);
-//
-////        TaskContentDto dto = generateTaskService.getContentByBusinessId(businessId) ;
-////        log.debug("chatContent result = {}" , dto);
-//
-////        String resultData = result.get("data").toString() ;
-////        TaskContentDto ta = null ;
-////        if(resultData != null) {
-////            ta = JSONObject.parseObject(resultData, TaskContentDto.class);
-////        }
-////        smartAssistantConsumer.runChainAgent(ta , roleId) ;
-//
-//        return ok() ;
-//    }
-
-//    /**
-//     * 轮训任务结果，这里假设并发不高的情况下执行
-//     * TODO 后续再进一步优化
-//     * @return
-//     */
-//    @GetMapping("/getTaskNotice")
-//    public AjaxResult getTaskNotice(){
-////        return AjaxResult.success("查询成功" , taskService.getTaskMessage()) ;
-//
-//        return AjaxResult.success();
-//    }
-
-//    /**
-//     * 轮训任务运行状态，这里假设并发不高的情况下执行
-//     * TODO 后续再进一步优化
-//     * @return
-//     */
-//    @GetMapping("/getFlowTaskNotice")
-//    public AjaxResult getFlowTaskNotice(){
-////        return AjaxResult.success("查询成功" , taskService.getFlowTaskNotice()) ;
-//
-//        return AjaxResult.success();
-//    }
-
     /**
      * 获取到消息信息
      * @return
@@ -156,7 +82,8 @@ public class ImChatController extends SuperController {
     @GetMapping("/chatMessage")
     public AjaxResult chatMessage(String channelId){
 
-        messageService.initChannelHelp(channelId) ;
+        long accountId = 1L ;
+        messageService.initChannelHelp(channelId , accountId) ;
         List<ChatMessageDto> chatMessageDtos = messageService.listByChannelId(channelId) ;
 
         return AjaxResult.success(chatMessageDtos) ;
@@ -181,25 +108,5 @@ public class ImChatController extends SuperController {
     public AjaxResult getAllCatalog(){
         return AjaxResult.success(roleCatalogService.allCatalog()) ;
     }
-
-
-//    /**
-//     * 发送消息给钉钉
-//     * @return
-//     */
-//    @SneakyThrows
-//    @GetMapping("/send")
-//    public AjaxResult robotSend() {
-//
-//        RobotMessageDto dto = new RobotMessageDto() ;
-//
-//        dto.setAtAll(false);
-//        dto.setMessageType("markdown");
-//        dto.setMessageContent("你要求生成的Java计算机考核题目已经生成，请查看连接.");
-//
-//        // smartAssistantConsumer.sendMessageWebhook(dto, null) ;
-//
-//        return ok() ;
-//    }
 
 }
