@@ -15,7 +15,7 @@ import java.util.List;
  * AIP业务咨询专家
  */
 @Slf4j
-@Service(AssistantConstants.PREFIX_ASSISTANT + "MNigoYFn")
+@Service(AssistantConstants.PREFIX_ASSISTANT + "pRFDrSJH")
 public class AIPCustomerServiceExpert extends ExpertService {
 
     @Override
