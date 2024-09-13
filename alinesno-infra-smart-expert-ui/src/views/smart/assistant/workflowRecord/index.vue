@@ -61,21 +61,6 @@
             </el-form>
 
             <el-row :gutter="10" class="mb8">
-              <el-col :span="1.5">
-                <el-button type="primary" plain icon="Plus" @click="handleNodeRecord">新增
-                </el-button>
-              </el-col>
-              <el-col :span="1.5">
-                <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate"
-                  v-hasPermi="['system:Application:edit']">修改
-                </el-button>
-              </el-col>
-              <el-col :span="1.5">
-                <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete"
-                  v-hasPermi="['system:Application:remove']">删除
-                </el-button>
-              </el-col>
-
               <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
             </el-row>
 
@@ -94,7 +79,7 @@
                 :show-overflow-tooltip="true">
                 <template #default="scope">
                   <div style="font-size: 14px;font-weight: 500;color: #3b5998;">
-                    {{ scope.row.workflowName }}#{{ scope.row.buildNumber }}
+                    {{ scope.row.id }}#{{ scope.row.buildNumber }}
                   </div>
                   <div style="font-size: 12px;color: #a5a5a5;">
                     执行时间: {{ scope.row.usageTimeSeconds }}
@@ -102,15 +87,11 @@
                 </template>
               </el-table-column>
 
-              <!-- <el-table-column label="流程描述" align="left" key="stepWithTime" prop="stepWithTime" v-if="columns[3].visible" /> -->
-
               <el-table-column label="执行状态" align="center" key="workflowStatus" prop="workflowStatus"
                 v-if="columns[3].visible" width="100" :show-overflow-tooltip="true">
                 <template #default="scope">
-                  <el-button v-if="scope.row.workflowStatus === 'success'" type="success" :icon="CircleCheck" text
-                    bg>成功</el-button>
-                  <el-button v-if="scope.row.workflowStatus === 'fail'" type="warning" :icon="Warning" text
-                    bg>失败</el-button>
+                  <el-button v-if="scope.row.status === 'Completed'" type="success" :icon="CircleCheck" text bg>成功</el-button>
+                  <el-button v-if="scope.row.status === 'fail'" type="warning" :icon="Warning" text bg>失败</el-button>
                 </template>
               </el-table-column>
               <el-table-column label="执行记录" align="center" key="id" prop="id" v-if="columns[5].visible"
