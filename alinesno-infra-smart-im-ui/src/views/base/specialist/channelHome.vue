@@ -73,7 +73,7 @@
                         </el-button>
                       </div>
                       <div class="vc-text" style="line-height:35px">
-                          <i class="fa-solid fa-fire"></i> 已启用 {{ item.id }} 
+                          <i class="fa-solid fa-fire"></i> 已启用 
                       </div>
                   </div>
               </div>
