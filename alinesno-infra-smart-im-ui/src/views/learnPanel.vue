@@ -83,7 +83,7 @@ const learnPanel = [
     data: [
       { id: '1', label: '新手入门指南', icon: "fas fa-dove", link: 'http://alinesno-platform.linesno.com/firstlearn/index.html' },
       { id: '2', label: '团队学习成长', icon: "fab fa-earlybirds", link: 'http://alinesno-platform.linesno.com/firstlearn/02_%E5%AD%A6%E4%B9%A0%E6%88%90%E9%95%BF%E4%B8%AD%E5%BF%83.html' },
-      { id: '3', label: '中台示例中心', icon: "fas fa-bus-alt", link: 'http://alinesno-platform.linesno.com/firstlearn/03_%E4%B8%AD%E5%8F%B0%E7%A4%BA%E4%BE%8B%E4%B8%AD%E5%BF%83.html' },
+      { id: '3', label: '平台示例中心', icon: "fas fa-bus-alt", link: 'http://alinesno-platform.linesno.com/firstlearn/03_%E4%B8%AD%E5%8F%B0%E7%A4%BA%E4%BE%8B%E4%B8%AD%E5%BF%83.html' },
       { id: '4', label: '架构设计学习', icon: "fab fa-angular", link: 'http://alinesno-platform.linesno.com/firstlearn/04_%E4%B8%AD%E5%8F%B0%E8%AE%BE%E8%AE%A1%E8%A7%86%E9%A2%91.html' },
       { id: '5', label: '管理手册地图', icon: "fas fa-bus-alt", link: 'http://alinesno-platform.linesno.com/firstlearn/32_%E7%AE%A1%E7%90%86%E6%89%8B%E5%86%8C%E5%9C%B0%E5%9B%BE.html' },
     ]
@@ -91,7 +91,7 @@ const learnPanel = [
   {
     'title': '技术自动化管理',
     data: [
-      { id: '11', label: '中台运营管理', icon: 'fas fa-laptop-code', link: 'http://alinesno-platform.linesno.com/firstlearn/28_%E4%B8%AD%E5%8F%B0%E8%BF%90%E8%90%A5%E7%AE%A1%E7%90%86.html' },
+      { id: '11', label: '平台运营管理', icon: 'fas fa-laptop-code', link: 'http://alinesno-platform.linesno.com/firstlearn/28_%E4%B8%AD%E5%8F%B0%E8%BF%90%E8%90%A5%E7%AE%A1%E7%90%86.html' },
       { id: '12', label: '研发调用体系', icon: 'fab fa-pinterest-square', link: 'http://alinesno-platform.linesno.com/firstlearn/29_%E7%A0%94%E5%8F%91%E8%B0%83%E7%94%A8%E4%BD%93%E7%B3%BB.html' },
       { id: '13', label: '工程容器化', icon: "fab fa-angular", link: 'http://alinesno-platform.linesno.com/firstlearn/30_%E5%B7%A5%E7%A8%8B%E5%AE%B9%E5%99%A8%E5%8C%96.html' },
       { id: '15', label: '自动化运营管理', icon: "fab fa-angular", link: 'http://alinesno-platform.linesno.com/firstlearn/31_%E6%8C%81%E7%BB%AD%E9%9B%86%E6%88%90%E7%AE%A1%E7%90%86.html' },
