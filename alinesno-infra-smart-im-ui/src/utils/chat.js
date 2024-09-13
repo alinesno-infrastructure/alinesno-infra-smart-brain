@@ -25,7 +25,7 @@ export function formatMessage(message, selectedUsers) {
 /** 显示图片 */
 export function imagePath(row){
   let roleAvatar = '1746435800232665090' ; 
-  if(row.icon){
+  if(row && row.icon){
     roleAvatar = row.icon; 
   }
   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
