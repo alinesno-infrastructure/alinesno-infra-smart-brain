@@ -82,12 +82,23 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="频道类型" align="center" key="channelType" width="150" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
-          <el-table-column label="状态" align="center" key="hasStatus" width="80" prop="hasStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <el-table-column label="频道类型" align="center" key="channelType" width="150" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Link" v-if="scope.row.hasStauts === '1'">正常</el-button>
-              <el-button type="danger" text bg icon="Link" v-if="scope.row.hasStauts === '0'">异常</el-button>
+              <el-button v-if="scope.row.channelType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i> 个人频道</el-button>
+              <el-button v-if="scope.row.channelType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i> 私人频道</el-button>
+              <el-button v-if="scope.row.channelType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i> 推荐频道</el-button>
+              <el-button v-if="scope.row.channelType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i> 公共频道</el-button>
             </template>
+          </el-table-column>
+          <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+              <template #default="scope">
+                <el-switch
+                    v-model="scope.row.hasStatus"
+                    :active-value="0"
+                    :inactive-value="1"
+                    @change="handleChangStatusField('hasStatus' , scope.row.hasStatus, scope.row.id)"
+                />
+              </template>
           </el-table-column>
           <el-table-column label="更新时间" align="center" prop="addTime" v-if="columns[7].visible" width="160">
             <template #default="scope">
