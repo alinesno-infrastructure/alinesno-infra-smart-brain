@@ -7,9 +7,8 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.im.entity.ChannelRoleEntity;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -35,11 +34,11 @@ import java.util.List;
 @RequestMapping("/api/infra/base/im/user")
 public class UserController extends BaseController<IndustryRoleEntity, IIndustryRoleService> {
 
-//    @Autowired
-//    private IUserService service;
+    @Autowired
+    private IChannelRoleService channelRoleService ;
 
     @Autowired
-    private IChannelRoleService channelUserService ;
+    private IChannelService channelService; ;
 
     @Autowired
     private IIndustryRoleService roleService;
@@ -78,20 +77,7 @@ public class UserController extends BaseController<IndustryRoleEntity, IIndustry
         Assert.notNull(channelId , "频道为空");
         Assert.notNull(roleId, "角色为空");
 
-        LambdaQueryWrapper<ChannelRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.eq(ChannelRoleEntity::getChannelId , channelId)
-                .eq(ChannelRoleEntity::getAccountType, roleId) ;
-
-        long count = channelUserService.count(wrapper) ;
-        Assert.isTrue(count == 0 , "角色已经在频道里面");
-
-        ChannelRoleEntity channelUser = new ChannelRoleEntity() ;
-
-        channelUser.setAccountType("agent");
-        channelUser.setChannelId(channelId);
-        channelUser.setAccountId(roleId);
-
-        channelUserService.save(channelUser) ;
+        channelService.jobChannel(roleId, channelId);
 
         return AjaxResult.success() ;
     }
@@ -102,7 +88,7 @@ public class UserController extends BaseController<IndustryRoleEntity, IIndustry
      */
     @GetMapping("/listAllUser")
     public AjaxResult listAllUser(String channelId){
-        List<IndustryRoleEntity> roleEntityList = channelUserService.getChannelAgent(channelId)  ;
+        List<IndustryRoleEntity> roleEntityList = channelRoleService.getChannelAgent(channelId)  ;
         return AjaxResult.success(roleEntityList) ;
     }
 
