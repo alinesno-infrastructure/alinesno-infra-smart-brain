@@ -1,9 +1,11 @@
 package com.alinesno.infra.smart.assistant.role.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -49,6 +51,27 @@ public class TemplateParser {
             throw new RuntimeException(e.getMessage()) ;
         }
 
+    }
+
+    /**
+     * 将JSON字符串转换为YAML字符串。
+     *
+     * @param jsonStr JSON格式的字符串
+     * @return YAML格式的字符串
+     */
+    public static String convertJsonToYaml(String jsonStr) {
+        ObjectMapper objectMapper = new ObjectMapper();
+        Yaml yaml = new Yaml();
+
+        try {
+            // 将JSON字符串转换为Map对象
+            Map<?,?> map = objectMapper.readValue(jsonStr, Map.class);
+
+            // 将Map对象转换为YAML字符串
+            return yaml.dump(map);
+        } catch (IOException e) {
+            throw new RuntimeException("Error converting JSON to YAML", e);
+        }
     }
 
 }
