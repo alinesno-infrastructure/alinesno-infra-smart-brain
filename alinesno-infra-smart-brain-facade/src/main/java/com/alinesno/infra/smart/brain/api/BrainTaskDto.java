@@ -19,7 +19,7 @@ import java.util.Map;
 public class BrainTaskDto {
 
     @NotNull(message = "promptId cannot be null")
-    private String promptId; // GPT角色ID
+    private String roleId ; // GPT角色ID
 
     private Map<String , Object> params ; // params
 
