@@ -13,9 +13,11 @@
                   <a target="_blank" :href="item.link">
                     <img :src="imagePath(item.roleAvatar)" style="width:40px;height:40px;float:left; border-radius: 8px" />
                     <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);">
-                      {{ item.roleName }} (<span style="font-weight: 600;font-size:15px">8</span>/<span style="font-size:12px">{{ index }}</span>)
+                      {{ item.roleName }} 
                       <br/>
-                      <span class="label" style="font-size: 13px;line-height: 13px;font-weight: lighter;">{{ item.responsibilities }}</span>
+                      <span class="label" style="font-size: 13px;line-height: 13px;font-weight: lighter;">
+                        {{ truncateString(item.responsibilities,18) }}
+                      </span>
                     </div>
                   </a>
                 </span>
