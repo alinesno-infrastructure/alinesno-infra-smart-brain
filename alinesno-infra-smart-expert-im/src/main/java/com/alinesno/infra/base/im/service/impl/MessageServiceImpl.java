@@ -69,12 +69,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setName("软件工程师罗小东");
-        msg.setContent(chatText); // JSONObject.toJSONString(parsedMessages));
-
-//        msg.setRoleId(roleIds);
-//        msg.setSenderId(IdUtil.getSnowflakeNextId());
-//        msg.setMessageId(IdUtil.getSnowflakeNextId());
-//        msg.setReceiverId(receiverId.toString());
+        msg.setContent(chatText);
 
         this.save(msg);
     }
@@ -114,51 +109,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     @Deprecated
     @Override
     public void saveChatMessage(List<WebMessageDto> parsedMessages, IndustryRoleEntity roleDto, ChatMessageDto personDto, long channelId, long businessId) {
-//        // 处理解析后的消息对象
-//        StringBuilder receiverId = new StringBuilder();
-//        for (WebMessageDto message : parsedMessages) {
-//            if (MessageType.MENTION.getValue().equals(message.getType())) {
-//                receiverId.append(message.getId());
-//                receiverId.append("\\|");
-//            }
-//        }
-//        StringBuilder chatTextBuilder = new StringBuilder();
-//
-//        // 假设Content是一个自定义类，包含type、text、username和businessId属性
-//        for (WebMessageDto content : parsedMessages) {
-//            if ("text".equals(content.getType())) {
-//                chatTextBuilder.append("<span class=\"mention-text\">").append(content.getText()).append("</span>");
-//            } else if ("mention".equals(content.getType())) {
-//                chatTextBuilder.append("<span class=\"mention\">@").append(content.getUsername()).append("</span>");
-//            } else if ("business".equals(content.getType())) {
-//                chatTextBuilder.append("<span class=\"mention-business\">#").append(content.getBusinessId()).append("</span>");
-//            }
-//        }
-//        MessageEntity msg = getMessageEntity(channelId, chatTextBuilder, receiverId);
-//
-//        save(msg) ;
-//
-//
-//        MessageEntity entity = new MessageEntity() ;
-//
-//        entity.setContent(personDto.getChatText().toString()) ;
-//
-//        entity.setIcon(personDto.getIcon()) ;
-//        entity.setName(personDto.getName());
-//
-//        entity.setRoleType(personDto.getRoleType());
-//        entity.setReaderType(personDto.getReaderType());
-//        entity.setBusinessId(businessId);
-//        entity.setAddTime(new Date()) ;
-//
-//        entity.setMessageId(IdUtil.getSnowflakeNextId());
-//        entity.setChannelId(channelId);
-//
-//        entity.setSenderId(roleDto.getId()); // 发送者ID
-//
-//        entity.setReceiverId(receiverId.toString());
-//
-//        save(entity) ;
     }
 
     @Override
@@ -171,15 +121,10 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setName(personDto.getName());
         entity.setRoleType(personDto.getRoleType());
         entity.setReaderType(personDto.getReaderType());
-        entity.setBusinessId(IdUtil.getSnowflakeNextId());
         entity.setAddTime(new Date());
         entity.setIcon(personDto.getIcon());
 
-//        entity.setMessageId(IdUtil.getSnowflakeNextId());
-//        entity.setMessageId(IdUtil.getSnowflakeNextId());
-//        entity.setSenderId(IdUtil.getSnowflakeNextId());
-//        entity.setReceiverId(IdUtil.getSnowflakeNextIdStr());
-
+        entity.setBusinessId(personDto.getBusinessId());
         entity.setChannelId(channelId);
         entity.setRoleId(personDto.getRoleId());
         entity.setAccountId(personDto.getAccountId());
@@ -213,13 +158,28 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         // 触发执行任务
         for (IndustryRoleEntity role : roleList) {
             MessageTaskInfo taskInfo = TaskUtils.genderTaskInfo(message, role);
+
+            // 更新角色会话次数
+            role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
+            industryRoleService.update(role) ;
+
+            // 执行任务
+            if ("function".equals(message.getType())){
+                taskInfo.setFunctionCall(true);
+            }
+
+            // 当前只能处理一条业务消息(TODO 处理多条前端业务消息)
+            if(message.getBusinessIds() != null && !message.getBusinessIds().isEmpty()){
+                taskInfo.setPreBusinessId(String.valueOf(message.getBusinessIds().get(0)));
+            }
+
             taskService.addTask(taskInfo);
         }
 
     }
 
     @Override
-    public void initChannelHelp(String channelId) {
+    public void initChannelHelp(String channelId , long accountId) {
 
         long count = count(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getChannelId, channelId));
         if (count == 0) {
@@ -229,21 +189,19 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             IndustryRoleEntity defaultHelpAgent = industryRoleService.getDefaultHelpAgent();
 
             agentInfo.setFormatContent("你好，你可以查看一下使用教程<a target='_blank' href='http://portal.infra.linesno.com'>教程</a>或者@你想咨询的Agent.");
+
             agentInfo.setName(defaultHelpAgent.getRoleName());
             agentInfo.setIcon(defaultHelpAgent.getRoleAvatar());
+            agentInfo.setRoleId(defaultHelpAgent.getId());
 
             agentInfo.setRoleType("agent");
             agentInfo.setReaderType("html");
 
+            agentInfo.setAccountId(accountId) ;
             agentInfo.setAddTime(new Date());
             agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
 
             agentInfo.setChannelId(Long.valueOf(channelId));
-            agentInfo.setRoleId(defaultHelpAgent.getId());
-
-//            agentInfo.setMessageId(IdUtil.getSnowflakeNextId());
-//            agentInfo.setSenderId(defaultHelpAgent.getId());
-//            agentInfo.setReceiverId(IdUtil.getSnowflakeNextIdStr());
 
             save(agentInfo);
         }
@@ -269,10 +227,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         MessageEntity msg = new MessageEntity();
 
         msg.setChannelId(channelId);
-
-//        msg.setSenderId(IdUtil.getSnowflakeNextId());
-//        msg.setMessageId(IdUtil.getSnowflakeNextId());
-//        msg.setReceiverId(receiverId);
 
         msg.setIcon("1808349839242747906");
         msg.setReaderType("html");
