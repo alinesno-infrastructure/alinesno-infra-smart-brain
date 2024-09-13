@@ -32,6 +32,8 @@ public class MessageTaskInfo implements Serializable {
     private IndustryRoleEntity roleDto ;
     // 消息任务的执行时间
     private String usageTime ;
+    // 是否执行方法
+    private boolean functionCall ;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
