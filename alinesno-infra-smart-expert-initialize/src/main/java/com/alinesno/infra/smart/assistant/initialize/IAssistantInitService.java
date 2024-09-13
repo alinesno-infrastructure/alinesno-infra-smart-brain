@@ -6,16 +6,6 @@ package com.alinesno.infra.smart.assistant.initialize;
 public interface IAssistantInitService {
 
     /**
-     * 初始化指令分类
-     */
-    // void promptCatalog() ;
-
-    /**
-     * 初始化指令
-     */
-    // void prompt() ;
-
-    /**
      * 初始化角色分类
      */
     void expertCatalog() ;
