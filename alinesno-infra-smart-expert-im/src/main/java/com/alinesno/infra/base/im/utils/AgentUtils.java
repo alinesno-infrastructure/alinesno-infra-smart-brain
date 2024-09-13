@@ -2,12 +2,12 @@ package com.alinesno.infra.base.im.utils;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
-import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.im.enums.DocumentTypeEnum;
-import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Date;
@@ -51,13 +51,14 @@ public class AgentUtils {
         personDto.setChatText(chatText);
 
         personDto.setName("Agent小助理");
-        personDto.setRoleType("person");
+        personDto.setRoleType("agent");
         personDto.setReaderType("html");
         personDto.setBusinessId(IdUtil.getSnowflakeNextId());
-        personDto.setDateTime(DateUtil.formatDateTime(new Date()));
+
         personDto.setIcon("1830185154541305857") ;
-        personDto.setDateTime(DateUtil.formatDateTime(new Date()));
+
         personDto.setLoading(false);
+        personDto.setDateTime(DateUtil.formatDateTime(new Date()));
 
         return personDto;
     }
