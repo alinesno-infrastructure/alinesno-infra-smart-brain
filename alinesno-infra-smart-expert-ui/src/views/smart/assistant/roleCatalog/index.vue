@@ -9,16 +9,6 @@
               @keyup.enter="handleQuery"
            />
         </el-form-item>
-        <el-form-item label="状态" prop="hasStatus">
-           <el-select v-model="queryParams.hasStatus" placeholder="分类状态" clearable>
-              <el-option
-                 v-for="dict in sys_normal_disable"
-                 :key="dict.value"
-                 :label="dict.label"
-                 :value="dict.value"
-              />
-           </el-select>
-        </el-form-item>
         <el-form-item>
            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -54,21 +44,21 @@
         :default-expand-all="isExpandAll"
         :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
 
-        <el-table-column prop="name" label="分类名称">
+        <el-table-column prop="name" width="250px" label="分类名称">
            <template #default="scope">
               {{ scope.row.name }}
            </template>
         </el-table-column>
         <el-table-column prop="description" label="类型描述" ></el-table-column>
-        <el-table-column prop="orderNum" label="排序" width="200"></el-table-column>
-        <el-table-column prop="hasStatus" label="状态" width="100">
+        <el-table-column prop="orderNum" align="center" label="排序" width="200"></el-table-column>
+        <el-table-column prop="hasStatus" align="center" label="状态" width="100">
            <template #default="scope">
               <dict-tag :options="sys_normal_disable" :value="scope.row.hasStatus" />
            </template>
         </el-table-column>
         <el-table-column label="创建时间" align="center" prop="createTime" width="200">
            <template #default="scope">
-              <span>{{ parseTime(scope.row.createTime) }}</span>
+              <span>{{ parseTime(scope.row.addTime) }}</span>
            </template>
         </el-table-column>
         <el-table-column label="操作" align="center" width="200" class-name="small-padding fixed-width">
