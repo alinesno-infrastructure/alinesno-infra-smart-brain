@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
+import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
@@ -17,24 +18,24 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
 /**
  * 应用构建Service业务层处理
- * 
- * @version 1.0.0
+ *
  * @author luoxiaodong
+ * @version 1.0.0
  */
 @Slf4j
 @Service
 public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity, IndustryRoleMapper> implements IIndustryRoleService {
 
-
     @Autowired
-    private IWorkflowExecutionService workflowExecutionService ;
+    private IWorkflowExecutionService workflowExecutionService;
 
-    private static final Gson gson = new Gson() ;
+    private static final Gson gson = new Gson();
 
     @Override
     public List<IndustryRoleEntity> getNewestRole() {
@@ -62,34 +63,64 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     @Override
     public IndustryRoleEntity getDefaultHelpAgent() {
 
-        IndustryRoleEntity role = new IndustryRoleEntity() ;
+        log.info("getDefaultHelpAgent");
+
+        IndustryRoleEntity role = new IndustryRoleEntity();
+
         role.setId(IdUtil.getSnowflakeNextId());
         role.setRoleName("AIP智能体小助理");
         role.setRoleAvatar("1830185154541305857");
 
-        return role;
+        return role ;
     }
 
     @Override
     public void updatePromptContent(List<PromptMessageDto> messageDto, String roleId) {
-        IndustryRoleEntity e = getById(roleId) ;
+        IndustryRoleEntity e = getById(roleId);
         e.setPromptContent(gson.toJson(messageDto));
-        this.update(e) ;
+        this.update(e);
     }
 
     @Override
     public WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo) {
 
-        long roleId = taskInfo.getRoleId() ;
-        IndustryRoleEntity role = getById(roleId) ;
+        long roleId = taskInfo.getRoleId();
+        IndustryRoleEntity role = getById(roleId);
 
         // 获取到节点的执行内容信息
-        String businessIds = taskInfo.getPreBusinessId() ;
-        WorkflowExecutionEntity workflowExecutionEntity = workflowExecutionService.getById(businessIds) ;
+        WorkflowExecutionEntity workflowExecutionEntity = null;
 
-        IBaseExpertService baseExpertService = (IBaseExpertService) SpringContext.getBean(role.getChainId());
+        String preBusinessId = taskInfo.getPreBusinessId();  // 获取到前一个节点的业务ID
+        log.info("preBusinessId:{}", preBusinessId);
 
-        return baseExpertService.runRoleAgent(role , workflowExecutionEntity , taskInfo);
+        if (StringUtils.hasLength(preBusinessId)) {
+            workflowExecutionEntity = workflowExecutionService.getById(preBusinessId);
+        }
+
+        log.debug("role.getChainId() = {}", role.getChainId());
+        IBaseExpertService expertService = getiBaseExpertService(role);
+
+        return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+    }
+
+    /**
+     * 根据行业角色获取专家服务
+     *
+     * @param role 行业角色实体对象，包含了链ID等信息，用于定位特定的专家服务实例
+     * @return 返回对应的专家服务接口实现对象如果无法获取到合适的实现对象，将返回默认角色的专家服务
+     */
+    private static IBaseExpertService getiBaseExpertService(IndustryRoleEntity role) {
+        IBaseExpertService expertService = null;
+
+        // 从Spring上下文中根据链ID获取Bean
+        try{
+            expertService = (IBaseExpertService) SpringContext.getBean(role.getChainId());
+        }catch (Exception e){
+            log.error("无法获取到指定的专家服务实例，使用默认角色", e);
+            expertService = (IBaseExpertService) SpringContext.getBean(AssistantConstants.PREFIX_ASSISTANT_DEFAULT); // 使用默认角色
+        }
+
+        return expertService;
     }
 
 }
