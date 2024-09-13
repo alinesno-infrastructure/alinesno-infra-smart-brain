@@ -9,48 +9,34 @@ import lombok.SneakyThrows;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class ExpertListCreator {
 
     public static List<IndustryRoleEntity> createExpertList() {
         List<IndustryRoleEntity> expertList = new ArrayList<>();
 
-        // 定义专家列表中的每个专家
-        addExpert(expertList, "1808076798197686273", "软文编辑(SEO专家)", "1", "用于文案的SEO描述", "高级工程师" , "demoSingleExpert");
-        addExpert(expertList, "1808349307635687426", "K8S报告生成Agent", "1", "生成K8S报告内容，与其它平台进行交互", "高级工程师");
-        addExpert(expertList, "1808349384961875969", "K8S问题排查专家", "1", "针对于K8S问题排查并给出合理建议", "高级工程师");
-        addExpert(expertList, "1808349417669058562", "软文编辑(集成内容平台)", "1", "集成CMS平台服务，集成内容平台", "高级工程师", "1747618610907394049");
-        addExpert(expertList, "1808349453119315970", "测试插件角色", "2", "测试插件角色", "高级工程师", "1747032636625973250");
-        addExpert(expertList, "1808349526427361282", "数据库设计(实体模型专家)", "2", "数据库设计(实体模型专家)", "高级工程师", "1746667911722803202");
-        addExpert(expertList, "1808349483804844034", "数据库设计(实体设计专家)", "2", "数据库设计(实体设计专家)", "高级工程师", "1746667792004784130");
-        addExpert(expertList, "1808349555338698754", "SpringBoot接口编写工程师", "2", "根据API接口使用Spring接口代码", "高级工程师");
-        addExpert(expertList, "1808349584682049538", "Ansible自动化工程师", "3", "实现Ansible自动化脚本处理", "高级工程师");
-        addExpert(expertList, "1808349924122877953", "K8S脚本生成工程师", "3", "生成k8s脚本和部署服务脚本", "高级工程师");
-        addExpert(expertList, "1808349978535583746", "测试工程师(用例配置)", "3", "测试工程师(用例配置)", "高级工程师");
-        addExpert(expertList, "1808349957312405505", "测试工程师(接口生成)", "4", "测试工程师(接口生成)", "高级工程师");
-        addExpert(expertList, "1808350003370057729", "开发编码规范专家", "4", "开发技术规范说明", "高级工程师");
-        addExpert(expertList, "1808350041093627906", "产品客户服务专家", "4", "产品客户服务专家，用于产品问答", "高级工程师");
-        addExpert(expertList, "1808350152938938369", "代码生成专家", "5", "根据数据库生成代码结构", "高级工程师");
-        addExpert(expertList, "1808350127865389057", "学习内容推荐专家", "5", "学习内容推荐专家", "高级工程师", "1745421374942576641");
-        addExpert(expertList, "1808350176838082561", "软文编辑(文案编写)", "5", "软文推广(文案编写)", "高级工程师", "1745079855849852929");
-        addExpert(expertList, "1808350214041559041", "软文编辑(目录大纲)", "5", "软文推广(目录大纲)编写", "高级工程师", "1745079705807015937");
-        addExpert(expertList, "1808350238808924161", "需求分析(项目非功能性需求)", "6", "需求分析_项目非功能性需求", "高级工程师", "1742415641032724482");
-        addExpert(expertList, "1808349886575468546", "需求分析(项目功能细化分析专家)", "6", "需求分析_项目功能细化分析专家", "高级工程师", "1742415517179121666");
-        addExpert(expertList, "1808349839242747906", "需求分析(项目功能分析专家)", "6", "需求分析_项目功能分析专家", "高级工程师", "1742415455845814273");
-        addExpert(expertList, "1808349808288784386", "需求分析(项目介绍分析专家)", "7", "需求分析_项目介绍分析专家", "高级工程师", "1742415392373411841");
-        addExpert(expertList, "1808349774163927042", "需求分析(需求文档分析专家)", "7", "需求分析_需求文档分析专家", "高级工程师", "1742415269484498945");
-        addExpert(expertList, "1808349751040729090", "项目菜单生成专家", "8", "用于平台菜单生成专家", "高级工程师");
-        addExpert(expertList, "1808349728060137473", "服务工程生成专家", "8", "用于服务工程生成专家", "高级工程师", "1741645177548931074");
-        addExpert(expertList, "1808349692358221826", "数据库设计专家", "8", "数据库设计专家，用于数据库设计", "高级工程师", "1740826360738152450");
-        addExpert(expertList, "1808349647059738625", "需求编写分析师", "9", "需求拆分和编写", "高级工程师", "1740826553479004162");
-        addExpert(expertList, "1808349617330511874", "培训题目设计专家", "9", "培训题目设计专家，用于考核题目设计", "高级工程师", "1740826156165169153");
+        // 示例团队专家演示
+        addExpert(expertList, "1808349384961875969", "考核题目生成专家", 9527L, "用于一些面试、考核培训题目生成并导出成Word/Excel等或者Markdown等", "MNigoYFn"); //P
+        addExpert(expertList, "1808349417669058562", "毕业论文大纲设计专家", 9527L, "用于毕业论文大纲的拟定，包括论文标题的规划", "mMcYgPEU" );
+        addExpert(expertList, "1808349453119315970", "毕业论文内容编辑专家", 9527L, "毕业论文内容生成和集成，并导出成Word文档输出", "GMFJPycO");
+
+        // 方案编写团队
+        addExpert(expertList, "1808349924122877953", "解决方案大纲设计专家", 9528L, "解决方案标题大纲拟定和编写", "lUYQZGWP");
+        addExpert(expertList, "1808349957312405505", "解决方案内容编写专家", 9528L, "解决方案内容生成并导出成Word/Excel等或者Markdown等", "HOkuqHBm");
+
+        // 产品运维团队(数据库备份/代码定时同步/K8S状态查询检测)
+        addExpert(expertList, "1808350041093627906", "数据库备份专家", 9528L, "用于AIP产品运营数据库备份管理和配置", "ensXkJnK");
+        addExpert(expertList, "1808350152938938369", "Git代码备份专家", 9528L, "用于AIP基线git代码备份管理", "qoNUPQFN");
+        addExpert(expertList, "1808350127865389057", "K8S运行状态专家", 9528L, "用于AIP产品运行K8S状态查询，生成每日运维报告并导出Word", "BHIWVhzr");
+
+        // 产品运营团队(产品问答客服/业务咨询)
+        addExpert(expertList, "1808349647059738625", "业务咨询客服", 9528L, "AIP业务咨询问题，用于做客服类的咨询服务，定义于产品业务对外咨询类", "OAbtlQYU");  //P
+        addExpert(expertList, "1808350238808924161", "产品列表客服", 9528L, "AIP产品问答客服，用于产品有多少还有有哪些哪类型的产品资产", "OAbtlQYU"); //P
+        addExpert(expertList, "1808350003370057729", "邮件发送专家", 9528L, "团队内部人员邮件发送和附近内容发送", "RmCXXzKU");
 
         List<PostBean> posts = createPromptPostEntity() ;
 
-        AtomicLong id = new AtomicLong(1L);
         expertList.forEach(entity -> {
-            entity.setId(id.getAndIncrement());
             String promptContent = posts.stream().filter(post -> post.getId() == entity.getId()).findFirst().map(PostBean::getPrompt_content).orElse("");
             entity.setPromptContent(promptContent);
         });
@@ -70,27 +56,29 @@ public class ExpertListCreator {
         private String prompt_content ;
     }
 
-    private static void addExpert(List<IndustryRoleEntity> list, String roleAvatar, String roleName, String industryCatalog, String responsibilities, String roleLevel) {
-        IndustryRoleEntity expert = new IndustryRoleEntity();
-
-        expert.setRoleAvatar(roleAvatar);
-        expert.setRoleName(roleName);
-        expert.setIndustryCatalog(Long.parseLong(industryCatalog));
-        expert.setResponsibilities(responsibilities);
-        expert.setRoleLevel(roleLevel);
-
-        list.add(expert);
+    private static void addExpert(List<IndustryRoleEntity> list,
+                                  String roleAvatar,
+                                  String roleName,
+                                  long industryCatalog,
+                                  String responsibilities,
+                                  String chainId) {
+        extracted(list, roleAvatar, roleName, industryCatalog, responsibilities, chainId, null);
     }
 
-    private static void addExpert(List<IndustryRoleEntity> list, String roleAvatar, String roleName, String industryCatalog, String responsibilities, String roleLevel, String chainId) {
+    private static void extracted(List<IndustryRoleEntity> list, String roleAvatar, String roleName, long industryCatalog, String responsibilities, String chainId, String fileType) {
         IndustryRoleEntity expert = new IndustryRoleEntity();
         expert.setRoleAvatar(roleAvatar);
+        expert.setId(Long.valueOf(roleAvatar));
         expert.setRoleName(roleName);
-        expert.setIndustryCatalog(Long.parseLong(industryCatalog));
+        expert.setIndustryCatalog(industryCatalog);
         expert.setResponsibilities(responsibilities);
-        expert.setRoleLevel(roleLevel);
+        expert.setRoleLevel("高级工程师");
 
-        expert.setChainId(AssistantConstants.PREFIX_ASSISTANT +  chainId);
+        if(fileType != null){
+            expert.setFieldProp(fileType);
+        }
+
+        expert.setChainId(AssistantConstants.PREFIX_ASSISTANT + chainId);
 
         list.add(expert);
     }
