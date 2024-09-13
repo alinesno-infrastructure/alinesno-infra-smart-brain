@@ -71,21 +71,6 @@
 			<artifactId>alinesno-infra-smart-brain-domain</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-adapter</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-gateway</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-inference</artifactId>
-			<version>${revision}</version>
-		</dependency>
         <dependency>
             <groupId>com.alinesno.infra.smart</groupId>
             <artifactId>alinesno-infra-smart-expert-initialize</artifactId>
