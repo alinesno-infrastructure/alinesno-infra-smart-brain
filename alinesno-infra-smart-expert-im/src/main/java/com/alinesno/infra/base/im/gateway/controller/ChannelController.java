@@ -105,8 +105,25 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @GetMapping("/allMyChannel")
     public AjaxResult allMyChannel(){
 
+        long accountId = 1L ;
+        service.initPersonChannel(1L);
+
         List<ChannelEntity> channelEntities = service.allMyChannel() ;
         return AjaxResult.success(channelEntities) ;
+    }
+
+    /**
+     * 加入频道
+     * @param channelId
+     * @return
+     */
+    @GetMapping("/joinChannel")
+    public AjaxResult joinChannel(long channelId){
+
+        long accountId = 1L ;
+        service.accountJoinChannel(accountId, channelId) ;
+
+        return AjaxResult.success() ;
     }
 
     /**
@@ -118,20 +135,6 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
 
         List<ChannelEntity> channelEntities = service.allPublicChannel() ;
         return AjaxResult.success(channelEntities) ;
-    }
-
-    /**
-     * 加入频道
-     * @param channelId
-     * @return
-     */
-    @GetMapping("/joinChannel")
-    public AjaxResult joinChannel(String channelId){
-
-        long userId = IdUtil.getSnowflakeNextId() ;
-        service.jobChannel(userId , channelId) ;
-
-        return AjaxResult.success() ;
     }
 
     @Override
