@@ -18,7 +18,9 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.plexpt.chatgpt.entity.chat.Message;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -28,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 
 // 创建父类 ITExpert 并声明为抽象类
+@EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
-public abstract class ExpertService implements IBaseExpertService {
+public abstract class ExpertService extends ExpertToolsService implements IBaseExpertService {
 
     @Autowired
     protected QianWenLLM qianWenLLM;
@@ -41,8 +44,17 @@ public abstract class ExpertService implements IBaseExpertService {
     @Autowired
     private IWorkflowExecutionService workflowExecutionService ;
 
+    /**
+     * 执行角色
+     * @param role                    角色信息
+     * @param workflowExecutionEntity 工作流执行实体
+     * @param taskInfo                消息任务信息
+     * @return
+     */
     @Override
     public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, MessageTaskInfo taskInfo) {
+
+        WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
 
         // 任务开始记录
         WorkflowExecutionEntity record = new WorkflowExecutionEntity() ;
@@ -52,27 +64,48 @@ public abstract class ExpertService implements IBaseExpertService {
         record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
         workflowExecutionService.save(record);
 
-        // 处理业务
-        String gentContent = handleRole(role , workflowExecutionEntity , taskInfo);
+        if(taskInfo.isFunctionCall()){  // 执行方法
+            // 执行任务并记录
+            String gentContent = workflowExecutionEntity.getGenContent() ;
+            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
+
+            String result = handleFunctionCall(role , workflowExecutionEntity , codeContentList , taskInfo);
+
+            BeanUtils.copyProperties(record, recordDto);
+            recordDto.setGenContent(result);
+        }else{
+            // 处理业务
+            String gentContent = handleRole(role , workflowExecutionEntity , taskInfo);
+
+            // 解析出生成的内容
+            record.setGenContent(gentContent);
+            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
+
+            BeanUtils.copyProperties(record, recordDto);
+            recordDto.setCodeContent(codeContentList);
+        }
 
         // 处理完成之后记录更新
         record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
         record.setEndTime(System.currentTimeMillis());
         record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
 
-        // 解析出生成的内容
-        record.setGenContent(gentContent);
-
-        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
-
         workflowExecutionService.update(record);
 
-        WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
-        BeanUtils.copyProperties(record, recordDto);
-
-        recordDto.setCodeContent(codeContentList);
-
         return recordDto;
+    }
+
+    /**
+     * 处理函数调用
+     *
+     * @param role
+     * @param workflowExecutionEntity
+     * @param codeContentList
+     * @param taskInfo
+     * @return
+     */
+    protected String handleFunctionCall(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, List<CodeContent> codeContentList, MessageTaskInfo taskInfo) {
+        return null ;
     }
 
     /**
@@ -83,6 +116,11 @@ public abstract class ExpertService implements IBaseExpertService {
      */
     protected abstract String handleRole(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, MessageTaskInfo taskInfo) ;
 
+    /**
+     * 查询历史消息
+     * @param taskInfo
+     * @return
+     */
     protected List<PromptMessageDto> queryChannelLastMessage(MessageTaskInfo taskInfo) {
 
         long channel = taskInfo.getChannelId() ;
@@ -93,19 +131,47 @@ public abstract class ExpertService implements IBaseExpertService {
         return messageService.queryChannelLastMessage(channel , accountId , roleId , siz);
     }
 
+    /**
+     * 解析消息
+     * @param promptContent
+     * @param params
+     * @return
+     */
     protected List<PromptMessage> parseMessage(String promptContent , String params) {
-        List<PromptMessageDto> promptMessageList = JSONArray.parseArray(promptContent , PromptMessageDto.class) ;
+        Map<String, Object> paramMap = new HashMap<>() ;
+        paramMap.put("label1" , params);
+        return getPromptMessages(promptContent, params, paramMap);
+    }
 
+    /**
+     * 解析消息
+     * @param promptContent
+     * @param params
+     * @return
+     */
+    protected List<PromptMessage> parseMessage(String promptContent , String params , String promptDoc) {
+        Map<String, Object> paramMap = new HashMap<>() ;
+        paramMap.put("label1" , params);
+        paramMap.put("prompt_doc" , promptDoc);
+        return getPromptMessages(promptContent, params, paramMap);
+    }
+
+    /**
+     * 获取提示消息
+     * @param promptContent
+     * @param params
+     * @param paramMap
+     * @return
+     */
+    @NotNull
+    private static List<PromptMessage> getPromptMessages(String promptContent, String params, Map<String, Object> paramMap) {
+        List<PromptMessageDto> promptMessageList = JSONArray.parseArray(promptContent, PromptMessageDto.class) ;
         List<PromptMessage> messages = new ArrayList<>();
 
         for(PromptMessageDto msg : promptMessageList){
             PromptMessage message = null ;
             // 模板解析处理
             String contentTemplate = msg.getContent().trim() ;
-
-            Map<String, Object> paramMap = new HashMap<>() ;
-
-            paramMap.put("label1" , params);
 
             if(params != null){
                 contentTemplate = TemplateParser.parserTemplate(contentTemplate , paramMap) ;
@@ -124,5 +190,18 @@ public abstract class ExpertService implements IBaseExpertService {
         }
 
         return messages;
+    }
+
+    public static String clearMessage(String message) {
+        String[] words = message.split(" ");
+
+        StringBuilder result = new StringBuilder();
+        for (String word : words) {
+            if (!word.startsWith("@") && !word.startsWith("#")) {
+                result.append(word);
+            }
+        }
+
+        return result.toString();
     }
 }
