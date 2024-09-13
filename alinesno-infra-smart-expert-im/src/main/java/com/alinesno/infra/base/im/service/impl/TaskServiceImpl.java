@@ -82,6 +82,7 @@ public class TaskServiceImpl implements ITaskService {
                 ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo , genContent.getUsageTimeSeconds()) ;
                 queMessage.setChatText(genContent.getGenContent());
 
+                queMessage.setBusinessId(genContent.getId());
                 queMessage.setRoleId(taskInfo.getRoleId());
                 queMessage.setAccountId(taskInfo.getAccountId());
 
@@ -91,7 +92,8 @@ public class TaskServiceImpl implements ITaskService {
                 messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
 
             } catch (Exception e) {
-                log.error("发送消息通知前端失败:{}" , e.getMessage());
+                e.printStackTrace();
+                log.error("发送消息通知前端失败:" + e);
                 errorTaskQueue.add(taskInfo);
             } finally {
                 // 在finally块中保证线程结束
