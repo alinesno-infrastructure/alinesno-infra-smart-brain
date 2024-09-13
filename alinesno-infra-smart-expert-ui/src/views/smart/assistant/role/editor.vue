@@ -110,6 +110,9 @@ function savePrompt() {
 
 // 保存Prompt
 function saveToServerPrompt() {
+
+  savePrompt();
+
   // 清除掉content为空的prompt
   prompts.value = prompts.value.filter(item => item.content !== '');
   console.log(JSON.stringify(prompts.value, null, 2));
