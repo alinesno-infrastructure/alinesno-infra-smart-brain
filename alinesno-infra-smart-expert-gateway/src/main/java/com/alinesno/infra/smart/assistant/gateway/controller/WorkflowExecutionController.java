@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
@@ -10,6 +11,7 @@ import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
@@ -17,6 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 应用构建Controller
@@ -52,21 +57,19 @@ public class WorkflowExecutionController extends BaseController<WorkflowExecutio
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
 
-//        String roleId = request.getParameter("roleId") ;
-//        if(StringUtils.isNotBlank(roleId)){
-//
-//            IndustryRoleEntity role = roleService.getById(roleId) ;
-//            Long workflowId = role.getChainId() ;
-//            List<ConditionDto> conditionDtos = new ArrayList<>() ;
-//
-//            ConditionDto conditionDto = new ConditionDto() ;
-//            conditionDto.setValue(workflowId+"");
-//            conditionDto.setColumn("workflow_id");
-//
-//            conditionDtos.add(conditionDto) ;
-//
-//            page.setConditionList(conditionDtos);
-//        }
+        String roleId = request.getParameter("roleId") ;
+        if(StringUtils.isNotBlank(roleId)){
+
+            List<ConditionDto> conditionDtos = new ArrayList<>() ;
+
+            ConditionDto conditionDto = new ConditionDto() ;
+            conditionDto.setValue(roleId);
+            conditionDto.setColumn("role_id");
+            conditionDto.setType("eq");
+
+            conditionDtos.add(conditionDto) ;
+            page.setConditionList(conditionDtos);
+        }
 
         return this.toPage(model, this.getFeign(), page);
     }
