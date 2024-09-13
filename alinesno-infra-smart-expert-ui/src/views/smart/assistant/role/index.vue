@@ -107,11 +107,11 @@
                 {{ scope.row.responsibilities }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
-                会话次数: 12734 
+                会话: {{ scope.row.chatCount }} 
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="所属领域" align="center" width="180" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
+          <el-table-column label="所属类型" align="center" width="180" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
@@ -120,6 +120,16 @@
             <template #default="scope">
               <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
             </template>
+          </el-table-column>
+          <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+              <template #default="scope">
+                <el-switch
+                    v-model="scope.row.hasStatus"
+                    :active-value="0"
+                    :inactive-value="1"
+                    @change="handleChangStatusField('hasStatus' , scope.row.hasStatus, scope.row.id)"
+                />
+              </template>
           </el-table-column>
           <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[8].visible">
             <template #default="scope">
