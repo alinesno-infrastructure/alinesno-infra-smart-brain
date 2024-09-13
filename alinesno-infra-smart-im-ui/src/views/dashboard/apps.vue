@@ -64,9 +64,9 @@
 <script setup>
 
 const solutionList = ref([
-  { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/051de32597041e41f73b97d61c67a13b-9cbdaf85e3bcf29b656fdedd8e6d1305.svg', name: '业务升级中台解决方案', desc: 'With Route 53 (3 分钟)' },
+  { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/051de32597041e41f73b97d61c67a13b-9cbdaf85e3bcf29b656fdedd8e6d1305.svg', name: '业务升级平台解决方案', desc: 'With Route 53 (3 分钟)' },
   { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/fb0cde6228b21d89ec222b45efec54e7-0856e92285f4e7ed254b2588d1fe1829.svg', name: '企业平台解决方案', desc: 'With Route 53 (3 分钟)' },
-  { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/7177e919b32ad97825f95e902595014b-1594766d92813b5baeb706c453f91de0.svg', name: '技术中台解决方案', desc: 'With Route 53 (3 分钟)' },
+  { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/7177e919b32ad97825f95e902595014b-1594766d92813b5baeb706c453f91de0.svg', name: '技术平台解决方案', desc: 'With Route 53 (3 分钟)' },
   { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/d88319dfa5d204f019b4284149886c59-7d586ea82f792b61a8c87de60565133d.svg', name: '数字化转型解决方案', desc: 'With EC2 (2 分钟)' },
   { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/f5d2c00d40914bff4f82f29f9ef768bc-53a84099cf556710383a52b4612a8612.svg', name: '信息孤岛解决方案', desc: 'With Route 53 (3 分钟)' },
   { icon: 'https://d1by4p17n947rt.cloudfront.net/icon/3da5e8169d2f1426f99fbef54575fe96-6382cb2dfdd2f74c99bc8a64a338358e.svg', name: '统一身份认证解决方案', desc: 'With Route 53 (3 分钟)' },
