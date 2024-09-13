@@ -60,6 +60,12 @@
                       </el-button>
                     </el-tooltip>
 
+                    <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top" >
+                      <el-button type="warning" text bg size="large" @click="sendMessage('function')" >
+                        <i class="fa-solid fa-feather icon-btn"></i>
+                      </el-button>
+                    </el-tooltip>
+
                     <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top" >
                       <el-button type="primary" text bg size="large" @click="handleUploadFile" >
                         <i class="fa-solid fa-file-word icon-btn"></i>
@@ -248,7 +254,11 @@ function handleEditorContent(bId){
 }
 
 function keyDown(e) {
+  if(!message.value){
+    return ;
+  }
   sendMessage('send')
+  message.value = '' ;
 }
 
 /** 查询当前频道 */
