@@ -21,6 +21,8 @@ public class IndustryRoleDto {
 
     private String roleLevel; // 角色等级
 
+    private String chatCount; // 会话次数
+
     // 假设存在一个静态方法 fromEntity，用于从 IndustryRoleEntity 转换为 IndustryRoleDto
     public static IndustryRoleDto fromEntity(IndustryRoleEntity entity) {
         // 实现将 IndustryRoleEntity 转换为 IndustryRoleDto 的逻辑
