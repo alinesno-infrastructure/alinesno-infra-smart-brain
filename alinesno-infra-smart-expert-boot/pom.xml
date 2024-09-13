@@ -55,6 +55,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-role-agents</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
 			<version>${revision}</version>
 		</dependency>
