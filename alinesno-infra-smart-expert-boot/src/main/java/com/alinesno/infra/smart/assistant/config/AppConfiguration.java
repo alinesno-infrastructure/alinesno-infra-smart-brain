@@ -52,7 +52,7 @@ public class AppConfiguration implements CommandLineRunner {
         MultipartConfigFactory config = new MultipartConfigFactory() ;
         config.setMaxFileSize(DataSize.parse("20MB")); 		// 设置上传文件的单个大小限制
         config.setMaxRequestSize(DataSize.parse("100MB")); 		// 设置总的上传的大小限制
-        config.setLocation(System.getProperty("java.io.tmpdir")); 				// 设置临时保存目录
+        config.setLocation(System.getProperty("java.io.tmpdir")); 	// 设置临时保存目录
         return config.createMultipartConfig() ;	// 创建一个上传配置
     }
 
@@ -65,22 +65,16 @@ public class AppConfiguration implements CommandLineRunner {
     public void run(String... args) throws Exception {
         log.debug("项目启动初始化");
 
-//        // 初始化提示分类
-//        assistantInitService.promptCatalog();
-//
-//        // 初始化提示
-//        assistantInitService.prompt();
-
-        // 初始化分类
+        // 初始化示例分类
         assistantInitService.expertCatalog();
 
-        // 初始化专家
+        // 初始化示例专家分类
         assistantInitService.expert();
 
         // 初始化插件
         assistantInitService.initPlugin();
 
-        // 初始化频道
+        // 初始化示例频道
         assistantInitService.initChannel();
     }
 
