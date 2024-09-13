@@ -56,7 +56,7 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * 每个频道最开始的Hello World信息
      * @param channelId
      */
-    void initChannelHelp(String channelId);
+    void initChannelHelp(String channelId , long accountId);
 
     /**
      * 查询出最近个人所在频道的消息
