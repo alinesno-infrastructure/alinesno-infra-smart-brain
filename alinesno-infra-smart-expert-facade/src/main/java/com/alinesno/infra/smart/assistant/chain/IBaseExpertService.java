@@ -1,9 +1,12 @@
 package com.alinesno.infra.smart.assistant.chain;
 
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+
+import java.util.List;
 
 // 创建 Expert 接口
 public interface IBaseExpertService {
@@ -17,5 +20,12 @@ public interface IBaseExpertService {
      * @return
      */
     WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, MessageTaskInfo taskInfo);
+
+    /**
+     * 获取到PromptMessage信息列表
+     * @param askInfo 用户咨询信息
+     * @return
+     */
+    List<PromptMessage> promptMessages(String askInfo , IndustryRoleEntity role) ;
 
 }
