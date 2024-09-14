@@ -101,8 +101,8 @@
     <ChatUploadFile ref="uploadChildComp" @handlePushResponseMessageList="handlePushResponseMessageList" />
 
     <!-- 文档编辑界面 -->
-    <el-dialog v-model="editDialogVisible" title="任务内容自定义界面" width="60%" destroy-on-close append-to-body>
-      <ChatMessageEditor />
+    <el-dialog v-model="editDialogVisible" title="任务内容编辑" width="60%" destroy-on-close append-to-body>
+      <ChatMessageEditor :businessId="businessId" />
     </el-dialog>
 
   </div>
@@ -136,7 +136,6 @@ const businessId  = ref("") ;
 const editorLoading = ref(true) ;
 const editDialogVisible = ref(false)
 const taskFlowDialogVisible = ref(false)
-const currentTaskContent = ref("")
 const uploadChildComp = ref(null) 
 const selectedUsers = ref([]);
 const selectedBusinessId = ref([]);
