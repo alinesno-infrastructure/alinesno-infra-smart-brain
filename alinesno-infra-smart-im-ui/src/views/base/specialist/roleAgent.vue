@@ -44,7 +44,7 @@
           <el-table-column label="所属团队" align="center" width="150" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
-                工程师团队
+                AIP运维团队({{ scope.row.industryCatalog }})
               </div>
             </template>
           </el-table-column>
