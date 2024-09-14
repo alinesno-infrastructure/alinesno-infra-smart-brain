@@ -1,9 +1,11 @@
 package com.alinesno.infra.smart.assistant.role.llm;
 
 import com.alibaba.dashscope.aigc.generation.Generation;
+import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.aigc.generation.models.QwenParam;
 import com.alibaba.dashscope.common.MessageManager;
+import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.Constants;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import lombok.SneakyThrows;
@@ -13,12 +15,32 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * // TODO 待优化线程池 https://help.aliyun.com/zh/dashscope/java-sdk-best-practices?spm=a2c4g.11186623.0.0.dabb3e25l88IO5
+ */
 @Slf4j
 @Service
 public class QianWenLLM {
 
     @Value("${alinesno.infra.smart.brain.qianwen.key:}")
     private String qianWenKey;
+
+    @SneakyThrows
+    public void getGeneration(MessageManager msgManager , ResultCallback<GenerationResult> callback) {
+
+        Constants.apiKey = qianWenKey ;
+        Generation gen = new Generation();
+
+        GenerationParam param =GenerationParam.builder()
+                .model(Generation.Models.QWEN_TURBO)
+                .messages(msgManager.get())
+                .resultFormat(GenerationParam.ResultFormat.MESSAGE)
+                .topP(0.8)
+                .incrementalOutput(true)
+                .build();
+
+        gen.streamCall(param, callback) ;
+    }
 
     @SneakyThrows
     public StringBuilder chatComponent(MessageManager msgManager) {
