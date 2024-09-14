@@ -20,6 +20,11 @@ public class WorkflowExecutionEntity extends BaseEntity {
     @TableField("role_id")
     private long roleId ;  // 角色ID
 
+    @ColumnComment("频道ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField("channel_id")
+    private long channelId;  // 频道ID
+
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @ColumnComment("构建次数")
     @TableField("build_number")
