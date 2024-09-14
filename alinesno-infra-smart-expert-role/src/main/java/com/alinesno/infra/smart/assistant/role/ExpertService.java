@@ -165,6 +165,15 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     }
 
     /**
+     * 获取到PromptMessage信息列表
+     * @param askInfo 用户咨询信息
+     * @return
+     */
+    public List<PromptMessage> promptMessages(String askInfo , IndustryRoleEntity role){
+        return parseMessage(role.getPromptContent() , askInfo);
+    }
+
+    /**
      * 获取提示消息
      * @param promptContent
      * @param params
