@@ -110,16 +110,6 @@ public class AgentUtils {
         return personDto;
     }
 
-//    /**
-//     * 获取上一个节点的业务ID
-//     * @param dtoList
-//     * @return
-//     */
-//    public static String getPreBusinessId(List<WebMessageDto> dtoList) {
-//        WebMessageDto dto = getTypeText(dtoList , "business");
-//        return dto.getBusinessId() ;
-//    }
-
     private static WebMessageDto getTypeText(List<WebMessageDto> dtoList , String type){
         for(WebMessageDto dto : dtoList){
             if(dto.getType().equals(type)){
@@ -137,9 +127,8 @@ public class AgentUtils {
 
         String agentName = taskInfo.getRoleDto().getRoleName() ;
         String icon = taskInfo.getRoleDto().getRoleAvatar() ;
-        String businessId = taskInfo.getBusinessId() ;
 
-        String getLinkInfo = getLinkInfo(usageTime, businessId);
+        String getLinkInfo = getLinkInfo(usageTime);
 
         // 发送消息给前端
         ChatMessageDto personDto = new ChatMessageDto() ;
@@ -163,7 +152,7 @@ public class AgentUtils {
      * 得到连接类型
      * @return
      */
-    private static String getLinkInfo(String usageTime , String businessId) {
+    private static String getLinkInfo(String usageTime) {
 
         String linkPath = "#";
 
