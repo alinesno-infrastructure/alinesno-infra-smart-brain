@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.role.agents.aipteam;
 
+import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
@@ -40,6 +41,17 @@ public class AIPCustomerServiceExpert extends ExpertService {
         log.debug("result:{}", gentContent);
 
         return gentContent ;
+    }
+
+    protected String handleFunctionCall(IndustryRoleEntity role,
+                                        WorkflowExecutionEntity workflowExecutionEntity,
+                                        List<CodeContent> codeContentList,
+                                        MessageTaskInfo taskInfo) {
+
+        String link = "https://www.kdocs.cn/l/cqZbwSTUGZNz";
+        String fileName = "AIP智能体平台产品手册_V1.0" ;
+
+        return generatorFileResponse("pptx", fileName , link) ;
     }
 
 }
