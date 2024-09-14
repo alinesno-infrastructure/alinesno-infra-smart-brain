@@ -59,20 +59,28 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         // 任务开始记录
         WorkflowExecutionEntity record = new WorkflowExecutionEntity() ;
         record.setRoleId(role.getId());
+        record.setChannelId(taskInfo.getChannelId());
         record.setBuildNumber(1) ;
         record.setStartTime(System.currentTimeMillis());
         record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
         workflowExecutionService.save(record);
 
         if(taskInfo.isFunctionCall()){  // 执行方法
-            // 执行任务并记录
-            String gentContent = workflowExecutionEntity.getGenContent() ;
-            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
 
-            String result = handleFunctionCall(role , workflowExecutionEntity , codeContentList , taskInfo);
+            String result = null ;
+            if(workflowExecutionEntity == null){
+               result = "请选择操作业务." ;
+            }else{
+                // 执行任务并记录
+                String gentContent = workflowExecutionEntity.getGenContent() ;
+                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
+
+                result = handleFunctionCall(role , workflowExecutionEntity , codeContentList , taskInfo);
+            }
 
             BeanUtils.copyProperties(record, recordDto);
             recordDto.setGenContent(result);
+
         }else{
             // 处理业务
             String gentContent = handleRole(role , workflowExecutionEntity , taskInfo);
