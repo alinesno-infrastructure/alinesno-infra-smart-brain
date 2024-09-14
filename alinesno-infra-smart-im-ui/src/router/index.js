@@ -38,6 +38,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/agentChat',
+    component: () => import('@/views/base/agent/agentChatPanel'),
+    hidden: true
+  },
+  {
     path: '/sso/login',
     component: () => import('@/views/loginSso'),
     hidden: true
