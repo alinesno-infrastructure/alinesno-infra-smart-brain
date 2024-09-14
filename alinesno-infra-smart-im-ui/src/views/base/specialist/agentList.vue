@@ -33,13 +33,8 @@
             </section>
       </div>
 
-      <el-dialog v-model="dialogVisible" :title="chatTitle" width="680" :before-close="handleClose">
+      <el-dialog v-model="dialogVisible" width="860" :before-close="handleClose">
         <iframe :src="roleChatUri" class="role-chat-iframe"></iframe>
-        <template #footer>
-        <div class="dialog-footer">
-            <el-button type="primary" @click="handleClose">结束聊天 </el-button>
-        </div>
-        </template>
     </el-dialog>
 
   </div>
@@ -49,7 +44,6 @@
 <script setup name="ServiceList">
 
 import { ElLoading } from 'element-plus'
-
 import { getAllCatalog } from "@/api/base/im/robot";
 
 const productList = ref([])
