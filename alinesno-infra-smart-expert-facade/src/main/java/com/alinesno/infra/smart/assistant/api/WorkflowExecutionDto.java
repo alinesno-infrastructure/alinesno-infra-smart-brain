@@ -11,6 +11,7 @@ public class WorkflowExecutionDto implements Serializable {
 
     private long id ; // 处理返回结果的id
     private long roleId ;  // 角色ID
+    private long channelId ; // 频道ID
     private Integer buildNumber; // 构建次数
     private String workflowName; // 节点名称或标识符
     private long startTime; // 工作流执行开始时间
@@ -20,5 +21,6 @@ public class WorkflowExecutionDto implements Serializable {
     private String logInfo; // 节点执行的日志信息
     private String genContent ; // 节点生成的内容
     private List<CodeContent> codeContent ; // 生成的代码工程列表
+    private boolean isCoding ; // 是否是代码编辑
 
 }
