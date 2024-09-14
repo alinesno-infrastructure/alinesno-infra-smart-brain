@@ -10,7 +10,6 @@
 
         <div class="chat-ai-header" :class="item.roleType == 'person' ? 'say-right-window' : ''">
           <div class="header-images">
-            <!-- <img :src="item.icon" /> -->
             <img :src="imagePath(item)" />
           </div>
         </div>
@@ -18,10 +17,13 @@
         <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''" style="max-width:calc(100% - 135px)">
           <div class="say-message-info" v-if="item.roleType == 'person'"> 
             <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }}</span> 
-            {{ item.name }} 
+            {{ item.name }}
           </div>
           <div class="say-message-info" v-else> 
-            {{ item.name }}  
+            {{ item.name }}
+
+            <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
+
             <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
           </div>
 
@@ -101,6 +103,14 @@ const currentResponseMessageList = (message) => {
 const pushResponseMessageList = (message) => {
   console.log('--->>> message = ' + message);
   messageList.value.push(message) ; 
+
+  messageList.value.forEach(item => {
+    console.log('--->>> item = ' + item);
+    if(item.loading && message.roleId == item.roleId && message.status === 'completed'){
+      item.loading = false;
+    }
+  });
+
   initChatBoxScroll();
 }
 
@@ -136,13 +146,13 @@ function highlightBlock(str, lang) {
 }
 
 /** 显示图片 */
-function imagePath(row){
-  let roleAvatar = '1746435800232665090' ; 
-  if(row.icon){
-    roleAvatar = row.icon ; 
-  }
-  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
-}
+// function imagePath(row){
+//   let roleAvatar = '1746435800232665090' ; 
+//   if(row.icon){
+//     roleAvatar = row.icon ; 
+//   }
+//   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+// }
 
 function readerHtml(chatText) {
   return mdi.render(chatText);
