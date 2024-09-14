@@ -5,6 +5,7 @@ import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
@@ -85,6 +86,8 @@ public class TaskServiceImpl implements ITaskService {
                 queMessage.setBusinessId(genContent.getId());
                 queMessage.setRoleId(taskInfo.getRoleId());
                 queMessage.setAccountId(taskInfo.getAccountId());
+                queMessage.setLoading(false);
+                queMessage.setStatus(TaskStatusEnums.COMPLETED.getValue());
 
                 sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
 
@@ -92,8 +95,7 @@ public class TaskServiceImpl implements ITaskService {
                 messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
 
             } catch (Exception e) {
-                e.printStackTrace();
-                log.error("发送消息通知前端失败:" + e);
+                log.error("发送消息通知前端失败:", e);
                 errorTaskQueue.add(taskInfo);
             } finally {
                 // 在finally块中保证线程结束
