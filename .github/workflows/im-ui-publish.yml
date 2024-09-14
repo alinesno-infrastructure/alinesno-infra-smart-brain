@@ -23,16 +23,26 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v1
         with:
-          node-version: 16.13.1
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-      - name: Install dependencies
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+      - name: Build and Package to Nexus
         run: |
           cd ${{ env.PROJECT_NAME }}
-          npm install
-          npm run build:prod
+          mvn clean package
 
       - name: Login to Aliyun Container Registry (ACR)
         uses: aliyun/acr-login@v1
