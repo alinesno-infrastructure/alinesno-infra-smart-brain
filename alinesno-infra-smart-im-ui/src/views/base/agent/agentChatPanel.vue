@@ -1,13 +1,19 @@
 <!-- 意见审批  -->
 <template>
-  <div class="acp-dashboard aip-chat-dashboard-panel" style="padding:0px !important;">
+  <div class="acp-dashboard aip-chat-dashboard-panel" 
+        v-loading="loading" 
+        element-loading-text="Loading..."
+        :element-loading-spinner="svg"
+        element-loading-svg-view-box="-10, -10, 50, 50"
+        element-loading-background="rgba(122, 122, 122, 0.8)"
+        style="padding:0px !important;">
     <div class="smart-container inner-smart-container">
       <el-row>
         <el-col :span="24">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
-              <div class="chat-header-title" style="padding-left: 28px;">
-                <img class="aip-chat-box-title-img" :src="imagePathByPath(roleInfo.roleAvatar)" />
+              <div class="chat-header-title">
+                <!-- <img class="aip-chat-box-title-img" :src="imagePathByPath(roleInfo.roleAvatar)" /> -->
                 {{ roleInfo.roleName}} 
               </div>
               <div class="chat-header-desc">
@@ -20,7 +26,7 @@
               </div>
             </div>
 
-            <div class="robot-chat-body inner-robot-chat-body" v-loading="loading">
+            <div class="robot-chat-body inner-robot-chat-body">
                 <!-- 聊天窗口_start -->
                 <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -32,31 +38,29 @@
                           :key="index">
 
                           <div class="chat-ai-header" :class="item.roleType == 'person' ? 'say-right-window' : ''">
-                          <div class="header-images">
-                              <img :src="imagePath(item)" />
-                          </div>
-                          </div>
+                            <div class="header-images">
+                                <img :src="imagePath(item)" />
+                            </div>
+                            </div>
 
-                          <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''" style="max-width:calc(100% - 135px)">
-                          <div class="say-message-info" v-if="item.roleType == 'person'"> 
-                              <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }}</span> 
-                              {{ item.name }}
-                          </div>
-                          <div class="say-message-info" v-else> 
-                              {{ item.name }}
+                            <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''" style="max-width:calc(100% - 135px)">
+                            <div class="say-message-info" v-if="item.roleType == 'person'"> 
+                                <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }}</span> 
+                                {{ item.name }}
+                            </div>
+                            <div class="say-message-info" v-else> 
+                                {{ item.name }}
 
-                              <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
+                                <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
 
-                              <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
-                          </div>
+                                <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
+                            </div>
 
-                          <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
+                            <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
 
-                          <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
-                              <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                              <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
-                          </div>
-
+                            <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
+                                <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">复制</el-button>
+                            </div> 
                           </div>
                       </div>
 
@@ -126,27 +130,16 @@ import { getParam } from '@/utils/ruoyi'
 import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
 import { onMounted } from "vue";
 
+const { proxy } = getCurrentInstance();
+
+const loading = ref(true)
 const roleId = ref(null);
 const roleInfo = ref({})
 const message = ref('');
 
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
-const messageList = ref([{
-    "channelId": 0,
-    "roleId": "1808349647059738625",
-    "accountId": 0,
-    "roleType": "agent",
-    "icon": "1808349647059738625",
-    "name": "业务咨询客服",
-    "dateTime": "2024-09-14 23:08:02",
-    "chatText": "收到，任务我已经在处理，请稍等1-2分钟 :-)",
-    "readerType": "html",
-    "status": null,
-    "businessId": "0",
-    "className": null,
-    "loading": false 
-}]);
+const messageList = ref([]);
 
 const mdi = new MarkdownIt({
   html: true,
@@ -182,6 +175,7 @@ function keyDown(e) {
   if(!message.value){
     return ;
   }
+  sendMessage('send');
   message.value = '' ;
 }
 
@@ -191,12 +185,23 @@ function readerHtml(chatText) {
 }
 
 // 推送消息到当前面板
-const pushResponseMessageList = (message) => {
-  console.log('--->>> message = ' + message);
-  messageList.value.push(message) ; 
+const pushResponseMessageList = (newMessage) => {
+  console.log(`--->>> newMessage = ${JSON.stringify(newMessage)}`);
 
+  // 查找是否有相同businessId的消息
+  const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
+
+  if (existingIndex !== -1) {
+    // 如果找到，更新该消息
+    messageList.value[existingIndex].chatText += newMessage.chatText;
+  } else {
+    // 否则，添加新消息
+    messageList.value.push(newMessage);
+  }
+
+  // 调用初始化滚动条的函数
   initChatBoxScroll();
-}
+};
 
 /** 连接sse */
 function handleSseConnect(roleId){
@@ -204,17 +209,14 @@ function handleSseConnect(roleId){
     if(roleId){
       handleCloseAllSse().then(res => {
 
-        
         let sseSource = openSseConnect(roleId) ;
         // 接收到数据
         sseSource.onmessage = function (event) {
-            let text = '' ; 
             if (!event.data.includes('[DONE]')) {
               const data = JSON.parse(event.data);
-              text += data.chatText ;
+              pushResponseMessageList(data);
             }else{
               console.log('消息接收结束.')  
-              pushResponseMessageList(data);
             }
         }
 
@@ -226,8 +228,13 @@ function handleSseConnect(roleId){
 /** 获取角色信息 */
 function handleGetInfo(roleId){
   getInfo(roleId).then(res => {
-    roleInfo.value = res.data
-    console.log('--->>> roleInfo = ' + JSON.stringify(roleInfo.value))
+    let role = res.role;
+    let msg = res.message;
+
+    roleInfo.value = role;
+    pushResponseMessageList(msg);
+
+    loading.value = false;
   })
 }
 
@@ -272,209 +279,11 @@ onMounted(() => {
   handleGetInfo(roleId.value);
 })
 
-
-// import { nextTick, ref } from 'vue'
-
-// import ChatList from './chatList'
-
-// --->>> 组件引入 -->>
-// import ChatUploadFile from './chatUploadFile'
-// import SmartServiceAgent from './smartServiceAgent';
-// import AgentTaskFlow from './roleTaskFlow'
-// import ChatMessageEditor from './chatMessageEditor'
-
-// --->>> 引入方法 -->>
-// import { chatAssistantContent , updateAssistantContent , chatMessage, sendUserMessage}from '@/api/base/im/robot'
-// import { getChannel } from "@/api/base/im/channel";
-
-// import { getParam } from '@/utils/ruoyi'
-// import { formatMessage } from '@/utils/chat'
-// import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
-
-// --->>> 定义变量 -->>
-// const chatListRef = ref();
-// const router = useRouter();
-// const {proxy} = getCurrentInstance();
-
-// const loading = ref(false)
-// const businessId  = ref("") ;
-// const editorLoading = ref(true) ;
-// const editDialogVisible = ref(false)
-// const taskFlowDialogVisible = ref(false)
-// const uploadChildComp = ref(null) 
-// const selectedUsers = ref([]);
-// const selectedBusinessId = ref([]);
-// const channelUsers = ref([]);
-
-// const message = ref('');
-
-// const mentionOptions = ref([]);
-
-// const mentionUser = (itemArr) => {
-//   if(itemArr.length == 0){
-//     channelUsers.value = [];
-//     mentionOptions.value = [{}];
-//     return ;
-//   }
-//   channelUsers.value = itemArr ;
-//   mentionOptions.value = itemArr.map(item => ({
-//       value: item.roleName,
-//       label: item.roleName,
-//       id: item.id
-//   }));
-// };
-
-// 选中处理函数
-// const handleSelect = (value, prefix) => {
-//   console.log(value, prefix);
-//   selectedUsers.value.push(value);
-// };
-
-// const handleClose = () => {
-//   editDialogVisible.value = false ;
-//   taskFlowDialogVisible.value = false ;
-// }
-
-/** 发送消息 */
-// const sendMessage = (type) => {
-
-//   if(!message.value){
-//     proxy.$modal.msgError("请输入消息内容.");
-//     return ;
-//   }
-
-//   const formattedMessage = formatMessage(message.value, channelUsers.value);
-
-//   chatListRef.value.pushMessageList(formattedMessage);
-//   handleSendUserMessage(message.value, type) ;
-
-//   message.value = '';
-//   selectedUsers.value = [];
-//   selectedBusinessId.value = [] ;
-// };
-
-/** 同步消息到后端 */
-// function handleSendUserMessage(message , type){
-
-//   let channelId = getParam("channel");
-
-//   // 只返回id列表
-//   let users = selectedUsers.value.map(item => {
-//     return item.id ;
-//   }) 
-
-//   sendUserMessage(message , users, selectedBusinessId.value , channelId , type).then(response => {
-//     console.log("发送消息", response.data);
-//     response.data.forEach(item => {
-//       chatListRef.value.pushResponseMessageList(item);
-//     })
-//   })
-// }
-
-/** 发送消息组服务组件 */
-// function handlePushResponseMessageList(item){
-//   chatListRef.value.pushResponseMessageList(item);
-// }
-
-/** 上传文档文件 */
-// function handleUploadFile(){
-//   uploadChildComp.value.handleOpenUpload(true);
-// }
-
-// 发送消息到发送窗口
-// const sendMessageToChatBox = (msg) => {
-//   message.value += msg ;
-// }
-
-/** 选择业务id */
-// const handleSelectPreBusinessId= (bId) => {
-//     selectedBusinessId.value.push(bId);
-// }
-
-/** 获取到会话信息 */
-// function handleChatMessage(channelId) {
-//   if(channelId){
-//     loading.value = true ;
-//     chatMessage(channelId).then(response => {
-//       const data = response.data ;
-//       chatListRef.value.currentResponseMessageList(data); 
-
-//       // 处理sse消息内容
-//       handleSseConnect(channelId);
-
-//       loading.value = false;
-//     })
-//   }
-// }
-
-/** 编辑生成内容 */
-// function handleEditorContent(bId){
-//   editDialogVisible.value = true ; 
-//   businessId.value = bId ;
-
-//   chatAssistantContent(bId).then(response => {
-//     editorLoading.value = false ;
-//   })
-// }
-
-// function keyDown(e) {
-//   if(!message.value){
-//     return ;
-//   }
-//   sendMessage('send')
-//   message.value = '' ;
-// }
-
-/** 查询当前频道 */
-// function handleGetChannel(channelId){
-//     if(channelId){
-//       getChannel(channelId).then(response => {
-//         channelInfo.value = response.data ;
-//       })
-//     }
-// }
-
-/** 连接sse */
-// function handleSseConnect(channelId){
-//   nextTick(() => {
-//     if(channelId){
-//       handleCloseAllSse().then(res => {
-
-//         let sseSource = openSseConnect(channelId) ;
-//         // 接收到数据
-//         sseSource.onmessage = function (event) {
-//             if (!event.data.includes('[DONE]')) {
-//               const data = JSON.parse(event.data);
-
-//               console.log('--->>> channelId = ' + channelId + ' , data = ' + JSON.stringify(data));
-
-//               handlePushResponseMessageList(data);
-//             }else{
-//               console.log('消息接收结束.')  
-//             }
-//         }
-
-//       })
-//     }
-//   })
-// }
-
-/** 监听路由变化 */
-// watch(() =>  router.currentRoute.value.path,(toPath) => {
-//     const channelId = getParam("channel");
-
-//     handleGetChannel(channelId);
-//     handleChatMessage(channelId) ;
-
-//     },{immediate: true,deep: true}
-// )
-  
-
 </script>
 
 <style lang="scss" scoped>
 .inner-smart-container {
-    max-width: 700px !important;
+    max-width: 960px !important;
 
     .robot-chat-windows{
       border:0px !important;
