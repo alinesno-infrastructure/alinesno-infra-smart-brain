@@ -22,6 +22,7 @@ public class ChatMessageDto {
     private String readerType ; // 读取方式和类型
 
     private boolean isLoading = false ; // 是否还在加载中
+    private String status ;  // 运行状态
 
     @JsonSerialize(using = ToStringSerializer.class)
     private long businessId ; // 生成的唯一业务ID标识
