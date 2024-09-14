@@ -42,8 +42,10 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
                 .eq(ChannelEntity::getChannelType , ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
 
         List<ChannelEntity> personPublicChannel = list(queryPersonPublicWrapper) ;
+
         if(personPublicChannel.isEmpty()){
             ChannelEntity e = new ChannelEntity() ;
+            e.setId(accountId);
 
             e.setChannelName("个人公共频道");
             e.setChannelDesc("公共频道服务，用于公共交流");
@@ -55,7 +57,11 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
             e.setOperatorId(accountId);
 
-            this.save(e) ;
+            try {
+                this.saveOrUpdate(e);
+            }catch(Exception ex) {
+                log.error("创建个人用户频道异常:{}", ex.getMessage());
+            }
         }
     }
 
@@ -139,7 +145,8 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         log.debug("获取推荐频道");
 
         LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>() ;
-        queryWrapper.eq(ChannelEntity::getChannelType, ChannelType.RECOMMEND_CHANNEL.getValue()) ;
+        queryWrapper.eq(ChannelEntity::getChannelType, ChannelType.PUBLIC_CHANNEL.getValue())
+                .last("limit 5");
 
         return list(queryWrapper);
 
