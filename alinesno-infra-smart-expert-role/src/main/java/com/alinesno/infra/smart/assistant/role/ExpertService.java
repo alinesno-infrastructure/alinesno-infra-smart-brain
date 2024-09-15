@@ -29,6 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_FUNCTION;
+import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_MODIFY;
+
 // 创建父类 ITExpert 并声明为抽象类
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
@@ -47,12 +50,12 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     /**
      * 执行角色
      * @param role                    角色信息
-     * @param workflowExecutionEntity 工作流执行实体
+     * @param workflowExecution 工作流执行实体
      * @param taskInfo                消息任务信息
      * @return
      */
     @Override
-    public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, MessageTaskInfo taskInfo) {
+    public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecution, MessageTaskInfo taskInfo) {
 
         WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
 
@@ -67,23 +70,45 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         if(taskInfo.isFunctionCall()){  // 执行方法
 
+            record.setFieldProp(TYPE_FUNCTION);
+
             String result = null ;
-            if(workflowExecutionEntity == null){
+            if(workflowExecution == null){
                result = "请选择操作业务." ;
             }else{
                 // 执行任务并记录
-                String gentContent = workflowExecutionEntity.getGenContent() ;
+                String gentContent = workflowExecution.getGenContent() ;
                 List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
 
-                result = handleFunctionCall(role , workflowExecutionEntity , codeContentList , taskInfo);
+                result = handleFunctionCall(role , workflowExecution , codeContentList , taskInfo);
             }
 
             BeanUtils.copyProperties(record, recordDto);
             recordDto.setGenContent(result);
 
-        }else{
+        }else if(taskInfo.isModify()){
+
+            record.setFieldProp(TYPE_MODIFY);
+
+            String result = null ;
+            if(workflowExecution == null){
+                result = "请选择操作业务." ;
+            }else{
+                // 执行任务并记录
+                String gentContent = workflowExecution.getGenContent() ;
+                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
+
+                result = handleModifyCall(role , workflowExecution , codeContentList , taskInfo);
+            }
+
+            BeanUtils.copyProperties(record, recordDto);
+            recordDto.setGenContent(result);
+        } else{
+
+            record.setFieldProp("role_call");
+
             // 处理业务
-            String gentContent = handleRole(role , workflowExecutionEntity , taskInfo);
+            String gentContent = handleRole(role , workflowExecution , taskInfo);
 
             // 解析出生成的内容
             record.setGenContent(gentContent);
@@ -104,25 +129,45 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     }
 
     /**
-     * 处理函数调用
-     *
+     * 内容修改调用
      * @param role
-     * @param workflowExecutionEntity
+     * @param workflowExecution
      * @param codeContentList
      * @param taskInfo
      * @return
      */
-    protected String handleFunctionCall(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, List<CodeContent> codeContentList, MessageTaskInfo taskInfo) {
-        return null ;
+    protected String handleModifyCall(IndustryRoleEntity role,
+                                    WorkflowExecutionEntity workflowExecution,
+                                    List<CodeContent> codeContentList,
+                                    MessageTaskInfo taskInfo) {
+        log.debug("handleModifyCall:{}", taskInfo);
+        return "已接收到处理消息";
+    }
+
+    /**
+     * 处理函数调用
+     *
+     * @param role
+     * @param workflowExecution
+     * @param codeContentList
+     * @param taskInfo
+     * @return
+     */
+    protected String handleFunctionCall(IndustryRoleEntity role,
+                                        WorkflowExecutionEntity workflowExecution,
+                                        List<CodeContent> codeContentList,
+                                        MessageTaskInfo taskInfo) {
+        log.debug("handleFunctionCall:{}", taskInfo);
+        return "已接收到任务执行消息";
     }
 
     /**
      * 处理业务流
      * @param role
-     * @param workflowExecutionEntity
+     * @param workflowExecution
      * @param taskInfo
      */
-    protected abstract String handleRole(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecutionEntity, MessageTaskInfo taskInfo) ;
+    protected abstract String handleRole(IndustryRoleEntity role, WorkflowExecutionEntity workflowExecution, MessageTaskInfo taskInfo) ;
 
     /**
      * 查询历史消息
