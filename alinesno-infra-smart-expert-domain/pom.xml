@@ -34,6 +34,13 @@
 			<version>0.1.0</version>
 		</dependency>
 
-	</dependencies>
+		<!-- 引入三方依赖 -->
+        <dependency>
+            <groupId>com.alinesno.infra.smart</groupId>
+            <artifactId>alinesno-infra-smart-expert-adapter</artifactId>
+			<version>${revision}</version>
+        </dependency>
+
+    </dependencies>
 
 </project>
