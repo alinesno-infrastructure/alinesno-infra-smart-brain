@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.role;
 
+import com.alibaba.dashscope.common.Message;
+import com.alibaba.dashscope.common.Role;
 import com.alinesno.infra.smart.im.enums.DocumentTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +14,60 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 public abstract class ExpertToolsService {
+
+    /**
+     * 创建一条消息，指定发送者角色和消息内容
+     *
+     * @param role 发送消息的角色，不会为null
+     * @param content 消息的内容，不能为null
+     * @return 返回创建的消息对象
+     * @throws IllegalArgumentException 如果content为null，则抛出此异常
+     */
+    protected Message createMessage(Role role, String content) {
+        // 检查内容是否为null，为null则抛出异常
+        if (content == null) {
+            throw new IllegalArgumentException("Content cannot be null");
+        }
+
+        // 使用Message的构建者模式创建并返回消息对象
+        return Message.builder()
+                .role(role.getValue())
+                .content(content)
+                .build();
+    }
+
+    /**
+     * 创建一条用户消息，指定消息内容
+     *
+     * @param content 消息的内容，不能为null
+     * @return 返回创建的用户消息对象
+     */
+    protected Message ofUser(String content) {
+        // 调用createMessage方法创建用户角色的消息
+        return createMessage(Role.USER, content);
+    }
+
+    /**
+     * 创建一条助手消息，指定消息内容
+     *
+     * @param content 消息的内容，不能为null
+     * @return 返回创建的助手消息对象
+     */
+    protected Message ofAssistant(String content) {
+        // 调用createMessage方法创建助手角色的消息
+        return createMessage(Role.ASSISTANT, content);
+    }
+
+    /**
+     * 创建一条系统消息，指定消息内容
+     * @param content
+     * @return
+     */
+    protected Message ofSystem(String content) {
+        // 调用createMessage方法创建系统角色的消息
+        return createMessage(Role.SYSTEM, content);
+    }
+
 
     /**
      * 生成文件响应的HTML字符串
