@@ -207,7 +207,7 @@ const pushResponseMessageList = (newMessage) => {
 function handleSseConnect(roleId){
   nextTick(() => {
     if(roleId){
-      handleCloseAllSse().then(res => {
+      // handleCloseAllSse().then(res => {
 
         let sseSource = openSseConnect(roleId) ;
         // 接收到数据
@@ -220,7 +220,7 @@ function handleSseConnect(roleId){
             }
         }
 
-      })
+      // })
     }
   })
 }
