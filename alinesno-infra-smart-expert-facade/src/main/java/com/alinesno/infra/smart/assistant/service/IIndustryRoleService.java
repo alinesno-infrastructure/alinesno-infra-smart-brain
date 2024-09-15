@@ -49,4 +49,10 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo);
+
+    /**
+     * 批量生成角色
+     * @param allEntities
+     */
+    void batchCreateRole(List<IndustryRoleEntity> allEntities);
 }
