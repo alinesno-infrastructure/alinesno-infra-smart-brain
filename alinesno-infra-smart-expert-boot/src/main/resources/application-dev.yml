@@ -15,6 +15,9 @@ spring:
       host: 127.0.0.1
       port: 6379
       password: aip@local
+  mvc:
+    async:
+      request-timeout: 3600000
   devtools:
     restart:
       enabled: true
