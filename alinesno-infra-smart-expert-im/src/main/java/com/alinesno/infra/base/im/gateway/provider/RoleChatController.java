@@ -143,12 +143,6 @@ public class RoleChatController extends SuperController {
             msgManager.add(msg);
         }
 
-        Message userMsg = Message
-                .builder()
-                .role(Role.USER.getValue())
-                .content(message.getContent())
-                .build();
-
         Semaphore semaphore = new Semaphore(0);
         StringBuilder fullContent = new StringBuilder();
         long bId = IdUtil.getSnowflakeNextId() ;
