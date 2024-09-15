@@ -5,6 +5,8 @@ import com.alinesno.infra.base.im.mapper.ChannelMapper;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.enums.HasStatusEnums;
+import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.im.constants.ImConstants;
 import com.alinesno.infra.smart.im.entity.AccountChannelEntity;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
@@ -31,6 +33,9 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
     @Autowired
     private IChannelRoleService channelRoleService ;
+
+    @Autowired
+    private BaseSearchConsumer baseSearchConsumer; ;
 
     @Override
     public void initPersonChannel(long accountId) {
@@ -70,6 +75,10 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
         entity.setChannelId(IdUtil.nanoId());
         entity.setChannelType(entity.getChannelType()) ;
+
+        // 创建频道知识库
+        R<String> createDataset = baseSearchConsumer.datasetCreate(entity.getChannelId() , entity.getChannelName()) ;
+        entity.setKnowledgeId(createDataset.getData());
 
         this.save(entity) ;
 
@@ -172,6 +181,26 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
             accountChannelService.save(accountChannelEntity);
         }
 
+    }
+
+    @Override
+    public void batchCreateChannel(List<ChannelEntity> recommendChannels) {
+        // 判断是否为空，不为空则输出warning
+        if (recommendChannels.isEmpty()) {
+            log.warn("传入的实体列表为空，无法创建角色");
+            return;
+        }
+
+        // 创建角色知识库
+        for (ChannelEntity channel : recommendChannels) {
+            // TODO 待集成批量添加知识库
+            R<String> result = baseSearchConsumer.datasetCreate(channel.getChannelDesc(), channel.getChannelName());
+            log.debug("创建知识库结果：" + result);
+            channel.setKnowledgeId(result.getData());
+        }
+
+        // 先保存用户信息
+        this.saveOrUpdateBatch(recommendChannels);
     }
 
 }
