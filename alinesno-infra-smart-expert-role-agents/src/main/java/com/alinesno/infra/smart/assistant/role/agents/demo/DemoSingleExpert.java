@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.role.agents.demo;
 
+import com.alibaba.dashscope.common.MessageManager;
 import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
@@ -21,9 +22,12 @@ import java.util.List;
 @Service(AssistantConstants.PREFIX_ASSISTANT + "MNigoYFn")
 public class DemoSingleExpert extends ExpertService {
 
+    /**
+     * 发送模板消息
+     */
     @Override
     public String handleRole(IndustryRoleEntity role,
-                             WorkflowExecutionEntity workflowExecutionEntity,
+                             WorkflowExecutionEntity workflowExecution,
                              MessageTaskInfo taskInfo) {
 
         String message = taskInfo.getText() ;
@@ -41,16 +45,47 @@ public class DemoSingleExpert extends ExpertService {
     }
 
     /**
+     * 内容评审修改
+     */
+    @Override
+    protected String handleModifyCall(IndustryRoleEntity role,
+                                        WorkflowExecutionEntity workflowExecution,
+                                        List<CodeContent> codeContentList,
+                                        MessageTaskInfo taskInfo) {
+
+        String chatText = clearMessage(taskInfo.getText()) ;
+        String preContent = workflowExecution.getGenContent() ;
+
+        MessageManager msgManager = new MessageManager(10);
+
+        // TODO 添加system prompt来进行条件的限制
+
+        String newPromptContent = "你现在根据我的反馈修改建议进行调整修改，但是不要改变原来的格式。\r\n" +
+                "原来的内容:\r\n" +
+                preContent + "\r\n" +
+                "我的修改意见:" + chatText + "\r\n" +
+                "修改后的内容:\r\n" +
+                "<在这里输出修改后的内容>\r\n" +
+                "注意:\r\n" +
+                "1. 原来的内容可以不用返回\r\n" +
+                "2. 如果包含json，在原基础格式上进行修改，不要改变原来的json格式";
+
+        msgManager.add(ofUser(newPromptContent)) ;
+
+        StringBuilder gentContent = qianWenLLM.chatComponent(msgManager) ;
+
+        log.debug("result:{}", gentContent.toString());
+
+        return gentContent.toString() ;
+    }
+
+
+    /**
      * 生成调用方法函数
-     * @param role
-     * @param workflowExecutionEntity
-     * @param codeContentList
-     * @param taskInfo
-     * @return
      */
     @Override
     protected String handleFunctionCall(IndustryRoleEntity role,
-                                        WorkflowExecutionEntity workflowExecutionEntity,
+                                        WorkflowExecutionEntity workflowExecution,
                                         List<CodeContent> codeContentList,
                                         MessageTaskInfo taskInfo) {
 
