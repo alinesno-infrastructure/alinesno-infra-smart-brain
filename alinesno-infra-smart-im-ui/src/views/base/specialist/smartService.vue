@@ -37,7 +37,6 @@
 
                         <el-mention
                             class="input-chat-box"
-                            @keydown.ctrl.enter.prevent="keyDown"
                             v-model="message"
                             :options="mentionOptions"
                             :prefix="['@']"
@@ -252,13 +251,6 @@ function handleEditorContent(bId){
   })
 }
 
-function keyDown(e) {
-  if(!message.value){
-    return ;
-  }
-  sendMessage('send')
-  message.value = '' ;
-}
 
 /** 查询当前频道 */
 function handleGetChannel(channelId){
@@ -293,6 +285,36 @@ function handleSseConnect(channelId){
     }
   })
 }
+
+/** 快捷键监听事件 */
+function keyDown(e) {
+  if(!message.value){
+    console.log("空消息,不处理.")
+    return ;
+  }
+
+  if (e.ctrlKey && e.keyCode == 13) { // 生成内容 
+    sendMessage('send')
+    message.value = '' ;
+  }else if (e.altKey && e.keyCode == 13) {  // 进行文案修改
+      sendMessage('modify')
+      message.value = '' ;
+  }else if(e.shiftKey && e.keyCode == 13){  // 调用方法
+      sendMessage('function')
+      message.value = '' ;
+  }
+
+}
+
+onMounted(() => {
+	//绑定监听事件
+	window.addEventListener('keydown', keyDown)
+});
+
+onUnmounted(() => {
+	//销毁事件
+	window.removeEventListener('keydown', keyDown, false)
+});
 
 /** 监听路由变化 */
 watch(() =>  router.currentRoute.value.path,(toPath) => {
