@@ -3,6 +3,8 @@ package com.alinesno.infra.smart.assistant.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -34,6 +36,9 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private IWorkflowExecutionService workflowExecutionService;
+
+    @Autowired
+    private BaseSearchConsumer baseSearchConsumer; ;
 
     private static final Gson gson = new Gson();
 
@@ -101,6 +106,27 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         IBaseExpertService expertService = getiBaseExpertService(role);
 
         return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+    }
+
+    @Override
+    public void batchCreateRole(List<IndustryRoleEntity> allEntities) {
+
+        // 判断是否为空，不为空则输出warning
+        if (allEntities.isEmpty()) {
+            log.warn("传入的实体列表为空，无法创建角色");
+            return;
+        }
+
+        // 创建角色知识库
+        for (IndustryRoleEntity role : allEntities) {
+            // TODO 待集成批量添加知识库
+            R<String> result = baseSearchConsumer.datasetCreate(role.getRoleName(), role.getResponsibilities());
+            log.debug("创建知识库结果：" + result);
+            role.setKnowledgeId(result.getData());
+        }
+
+        // 先保存用户信息
+        this.saveOrUpdateBatch(allEntities);
     }
 
     /**
