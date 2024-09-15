@@ -62,6 +62,10 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
             e.setOperatorId(accountId);
 
+            // 创建频道知识库
+            R<String> createDataset = baseSearchConsumer.datasetCreate(e.getChannelDesc() , e.getChannelName()) ;
+            e.setKnowledgeId(createDataset.getData());
+
             try {
                 this.saveOrUpdate(e);
             }catch(Exception ex) {
@@ -77,7 +81,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         entity.setChannelType(entity.getChannelType()) ;
 
         // 创建频道知识库
-        R<String> createDataset = baseSearchConsumer.datasetCreate(entity.getChannelId() , entity.getChannelName()) ;
+        R<String> createDataset = baseSearchConsumer.datasetCreate(entity.getChannelDesc() , entity.getChannelName()) ;
         entity.setKnowledgeId(createDataset.getData());
 
         this.save(entity) ;
