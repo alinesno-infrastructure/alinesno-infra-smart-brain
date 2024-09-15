@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.io.FileTypeUtil;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
@@ -52,7 +53,7 @@ public class KnowledgeController {
      * @param file 导入文件
      */
     @PostMapping(value = "/importData", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public AjaxResult importData(@RequestPart("file") MultipartFile file, Long channelId) throws Exception {
+    public AjaxResult importData(@RequestPart("file") MultipartFile file, long channelId) throws Exception {
 
         File tmpFile = new File(localPath , Objects.requireNonNull(file.getOriginalFilename())) ;
         file.transferTo(tmpFile);
@@ -68,7 +69,7 @@ public class KnowledgeController {
         // 上传到知识库角色
         String datasetId = channelEntity.getKnowledgeId() ;
 
-        AjaxResult result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
+        R<String> result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
             log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
             log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
             log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");  // 已上传百分比
