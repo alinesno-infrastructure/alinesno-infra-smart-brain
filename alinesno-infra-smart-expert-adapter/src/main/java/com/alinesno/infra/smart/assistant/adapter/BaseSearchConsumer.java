@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.assistant.adapter;
 
-import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.dtflys.forest.annotation.*;
@@ -20,7 +19,7 @@ public interface BaseSearchConsumer {
     * @return
     */
    @Post(url = "/api/base/search/vectorData/upload" , contentType = "multipart/form-data")
-   AjaxResult datasetUpload(@DataFile("file") String filePath , @Body("datasetId") String datasetId  , OnProgress onProgress) ;
+   R<String> datasetUpload(@DataFile("file") String filePath , @Body("datasetId") String datasetId  , OnProgress onProgress) ;
 
    /**
     * 创建知识库数据集
