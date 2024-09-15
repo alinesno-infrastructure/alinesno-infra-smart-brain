@@ -91,7 +91,7 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
     @Override
     public void expert() {
         List<IndustryRoleEntity> allEntities = ExpertListCreator.createExpertList() ;
-        industryRoleService.saveOrUpdateBatch(allEntities) ;
+        industryRoleService.batchCreateRole(allEntities) ;
     }
 
     @Override
@@ -176,7 +176,7 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
 
         log.debug("保存推荐频道信息到数据库:{}" , recommendChannels.size());
 
-        agentChannelService.saveOrUpdateBatch(recommendChannels) ;
+        agentChannelService.batchCreateChannel(recommendChannels) ;
 
         // 添加示例角色用户
         agentChannelService.jobChannel(1808349384961875969L, 1808349647059738625L);
