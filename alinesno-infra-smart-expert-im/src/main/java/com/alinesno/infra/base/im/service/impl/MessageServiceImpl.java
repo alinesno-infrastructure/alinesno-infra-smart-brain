@@ -2,10 +2,6 @@ package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
-import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
 import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.base.im.utils.TaskUtils;
@@ -13,7 +9,11 @@ import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -27,7 +27,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_FUNCTION;
+import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_MODIFY;
 
 @Slf4j
 @Service
@@ -164,8 +168,10 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             industryRoleService.update(role) ;
 
             // 执行任务
-            if ("function".equals(message.getType())){
+            if (Objects.equals(TYPE_FUNCTION, message.getType())) {
                 taskInfo.setFunctionCall(true);
+            } else if (Objects.equals(TYPE_MODIFY, message.getType())) {
+                taskInfo.setModify(true);
             }
 
             // 当前只能处理一条业务消息(TODO 处理多条前端业务消息)
