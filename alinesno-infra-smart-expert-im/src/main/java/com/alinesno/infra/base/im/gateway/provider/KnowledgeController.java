@@ -1,10 +1,12 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.io.FileTypeUtil;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchController;
+import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +32,10 @@ import java.util.Objects;
 public class KnowledgeController {
 
     @Autowired
-    private BaseSearchController searchController ;
+    private BaseSearchConsumer searchController ;
+
+    @Autowired
+    private IChannelService channelService ;
 
     @Autowired
     private ITaskService taskService ;
@@ -56,20 +61,22 @@ public class KnowledgeController {
 
         // 获取原始文件名
         String fileName = file.getOriginalFilename();
-        ChatMessageDto personDto = AgentUtils.getUploadChatMessageDto(fileName , fileType);
+        ChatMessageDto personDto = AgentUtils.getUploadChatMessageDto(fileName , fileType) ;
+
+        ChannelEntity channelEntity = channelService.getById(channelId) ;
 
         // 上传到知识库角色
-        String datasetId = "1735980565715537922" ;
+        String datasetId = channelEntity.getKnowledgeId() ;
 
-//        AjaxResult result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
-//            log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
-//            log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
-//            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");  // 已上传百分比
-//            if (progress.isDone()) {   // 是否上传完成
-//                log.debug("--------   Upload Completed!   --------");
-//            }
-//        }) ;
-//        log.debug("upload file result = {}" , result);
+        AjaxResult result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
+            log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
+            log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
+            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");  // 已上传百分比
+            if (progress.isDone()) {   // 是否上传完成
+                log.debug("--------   Upload Completed!   --------");
+            }
+        }) ;
+        log.debug("upload file result = {}" , result);
 
         FileUtils.forceDelete(tmpFile);
 
