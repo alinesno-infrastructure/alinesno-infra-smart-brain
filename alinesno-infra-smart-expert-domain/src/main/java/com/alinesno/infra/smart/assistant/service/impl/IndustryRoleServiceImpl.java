@@ -120,7 +120,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         // 创建角色知识库
         for (IndustryRoleEntity role : allEntities) {
             // TODO 待集成批量添加知识库
-            R<String> result = baseSearchConsumer.datasetCreate(role.getRoleName(), role.getResponsibilities());
+            R<String> result = baseSearchConsumer.datasetCreate(role.getResponsibilities() , role.getRoleName());
             log.debug("创建知识库结果：" + result);
             role.setKnowledgeId(result.getData());
         }
