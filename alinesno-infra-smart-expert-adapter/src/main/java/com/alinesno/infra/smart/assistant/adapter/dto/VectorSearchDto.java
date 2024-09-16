@@ -1,11 +1,13 @@
 package com.alinesno.infra.smart.assistant.adapter.dto;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 用于向量搜索的DTO类
  * 这个类封装了向量搜索请求的必要参数，以便在智能助手服务中使用
  */
+@NoArgsConstructor
 @Data
 public class VectorSearchDto {
 
@@ -13,7 +15,7 @@ public class VectorSearchDto {
      * 数据集的唯一标识符
      * 用于指定要进行向量搜索的数据集
      */
-    private String datasetId;
+    private long datesetId;
 
     /**
      * 用户输入的搜索文本
@@ -27,4 +29,9 @@ public class VectorSearchDto {
      */
     private int topK;
 
+    public VectorSearchDto(long datesetId, String searchText, int topK) {
+        this.datesetId = datesetId;
+        this.searchText = searchText;
+        this.topK = topK;
+    }
 }
