@@ -13,4 +13,7 @@ public interface ImConstants {
 
     // 修改类型的标识符
     String TYPE_MODIFY = "modify";
+
+    // 角色类型的标识符
+    String TYPE_ROLE = "role";
 }
