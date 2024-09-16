@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.role;
 
 import com.alibaba.fastjson.JSONArray;
+import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
@@ -29,14 +30,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_FUNCTION;
-import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_MODIFY;
+import static com.alinesno.infra.smart.im.constants.ImConstants.*;
 
 // 创建父类 ITExpert 并声明为抽象类
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
 @Data
 public abstract class ExpertService extends ExpertToolsService implements IBaseExpertService {
+
+    @Autowired
+    protected BaseSearchConsumer searchConsumer ;
 
     @Autowired
     protected QianWenLLM qianWenLLM;
@@ -105,7 +108,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
             recordDto.setGenContent(result);
         } else{
 
-            record.setFieldProp("role_call");
+            record.setFieldProp(TYPE_ROLE);
 
             // 处理业务
             String gentContent = handleRole(role , workflowExecution , taskInfo);
