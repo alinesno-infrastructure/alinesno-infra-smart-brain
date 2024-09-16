@@ -1,9 +1,12 @@
 package com.alinesno.infra.smart.assistant.adapter;
 
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorDto;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.dtflys.forest.annotation.*;
 import com.dtflys.forest.callback.OnProgress;
+
+import java.util.List;
 
 /**
  * 基础的搜索管理服务
@@ -31,6 +34,6 @@ public interface BaseSearchConsumer {
     * 查询数据集
     */
    @Post(url = "/api/base/search/vectorSearch/search")
-   R<String> datasetSearch(@JSONBody VectorSearchDto topK) ;
+   R<List<DocumentVectorDto>> datasetSearch(@JSONBody VectorSearchDto topK) ;
 
 }
