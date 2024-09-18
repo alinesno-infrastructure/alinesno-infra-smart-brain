@@ -290,7 +290,7 @@ onMounted(() => {
     }
 
     .inner-robot-chat-body {
-        height: calc(100vh - 75px);
+        height: calc(100vh - 100px);
     }
 }
 .scroll-panel {
