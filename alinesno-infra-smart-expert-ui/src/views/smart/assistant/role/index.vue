@@ -121,6 +121,11 @@
               <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
             </template>
           </el-table-column>
+          <el-table-column label="知识库" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <el-button type="warning" text bg icon="Promotion" @click="configKnowledge(scope.row)">配置</el-button>
+            </template>
+          </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
@@ -224,13 +229,13 @@
           </el-col>
         </el-row>
 
-        <!-- <el-row>
+        <el-row>
           <el-col :span="24">
-            <el-form-item label="数据源" prop="dataSourceApi">
-              <el-input v-model="form.dataSourceApi" placeholder="请输入角色数据来源接口" maxlength="512"/>
+            <el-form-item label="知识库" prop="knowledgeId">
+              <el-input v-model="form.knowledgeId" disabled="disabled" placeholder="请输入知识库ID" maxlength="512"/>
             </el-form-item>
           </el-col>
-        </el-row>  -->
+        </el-row> 
 
       </el-form>
       <template #footer>
@@ -429,6 +434,11 @@ function handleDelete(row) {
   }).catch(() => {
   });
 };
+
+/** 配置知识库 */
+function configKnowledge(row){
+  router.push({path: '/knowledge/knowledge/index', query: {roleId: row.id}});
+}
 
 /** 配置Prompt */
 function configPrompt(row){
