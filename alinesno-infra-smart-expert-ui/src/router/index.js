@@ -77,6 +77,14 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       },
+
+      {
+        path: '/knowledge/knowledge/index',
+        component: () => import('@/views/smart/assistant/role/knowledge/parseDataset'),
+        name: '/knowledge/knowledge/index',
+        meta: { title: '知识库配置', icon: 'dashboard', affix: true }
+      },
+
       // {
         // path: '/demo',
         // component: () => import('@/views/demo'),
