@@ -61,7 +61,7 @@ public class AIPCustomerServiceExpert extends ExpertService {
 
         String promptDoc;
         if(r.getData() != null && !r.getData().isEmpty()){
-            promptDoc = r.getData().stream().map(DocumentVectorDto::getDocument_content).reduce((a, b) -> a + "\n" + b).get();
+            promptDoc = r.getData().get(0).getDocument_content() ; // r.getData().stream().map(DocumentVectorDto::getDocument_content).reduce((a, b) -> a + "\n" + b).get();
         }else {
             promptDoc = "软件智能体平台（以下简称新基设)，全称alinesno-infrastructure-platform（简称AIP)，通过建设软件智能体平台，推动业务自动化转型和创新的发展，提高竞争力、降低成本、支持创新和业务拓展，以及提升团队协作效率\n" +
                     "\n" +
