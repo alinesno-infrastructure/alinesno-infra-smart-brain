@@ -72,55 +72,56 @@
 <script setup>
 import { ref } from 'vue'
 
-const textarea = ref('')
+// const textarea = ref('')
 
-import { getToken } from "@/utils/auth";
+// import { getToken } from "@/utils/auth";
 import {
-  listDataset,
-  delDataset,
-  getDataset,
-  updateDataset,
-  addDataset,
-  getSearch
-} from "@/api/smart/assistant/vectorDataset";
+  // listDataset,
+  // delDataset,
+  // getDataset,
+  // updateDataset,
+  // addDataset,
+  getSearchKnowledge
+} from "@/api/smart/assistant/roleKnowledge";
 import { reactive } from "vue";
 
-const route = useRoute();
-const router = useRouter();
+// const route = useRoute();
+// const router = useRouter();
 
 const { proxy } = getCurrentInstance();
 // const { sys_normal_disable, sys_Dataset_sex } = proxy.useDict("sys_normal_disable", "sys_Dataset_sex");
 
+const currentDatasetId = ref("")
 const datasetList = ref([]);
-const open = ref(false);
+// const open = ref(false);
 const loading = ref(false);
 const showSearch = ref(true);
-const ids = ref([]);
-const single = ref(true);
-const multiple = ref(true);
+// const ids = ref([]);
+// const single = ref(true);
+// const multiple = ref(true);
 const total = ref(0);
-const title = ref("");
+// const title = ref("");
 const dateRange = ref([]);
-const deptName = ref("");
-const deptOptions = ref(undefined);
-const initPassword = ref(undefined);
-const postOptions = ref([]);
-const roleOptions = ref([]);
+// const deptName = ref("");
+// const deptOptions = ref(undefined);
+// const initPassword = ref(undefined);
+// const postOptions = ref([]);
+// const roleOptions = ref([]);
 /*** 应用导入参数 */
-const upload = reactive({
-  // 是否显示弹出层（应用导入）
-  open: false,
-  // 弹出层标题（应用导入）
-  title: "",
-  // 是否禁用上传
-  isUploading: false,
-  // 是否更新已经存在的应用数据
-  updateSupport: 0,
-  // 设置上传的请求头部
-  headers: { Authorization: "Bearer " + getToken() },
-  // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/system/Dataset/importData"
-});
+// const upload = reactive({
+//   // 是否显示弹出层（应用导入）
+//   open: false,
+//   // 弹出层标题（应用导入）
+//   title: "",
+//   // 是否禁用上传
+//   isUploading: false,
+//   // 是否更新已经存在的应用数据
+//   updateSupport: 0,
+//   // 设置上传的请求头部
+//   headers: { Authorization: "Bearer " + getToken() },
+//   // 上传的地址
+//   url: import.meta.env.VITE_APP_BASE_API + "/system/Dataset/importData"
+// });
 // 列显隐信息
 const columns = ref([
   { key: 0, label: `图标`, visible: true },
@@ -155,10 +156,10 @@ const data = reactive({
           trigger: "blur"
       }],
       searchText: [{ required: true, message: "显示名称不能为空", trigger: "blur" }],
-      description: [{ required: true, message: "描述信息不能为空", trigger: "blur" }],
-      datasetStatus: [{ required: true, message: "域名不能为空", trigger: "blur" }],
-      accessPermission: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
-      datasetSize: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
+    //   description: [{ required: true, message: "描述信息不能为空", trigger: "blur" }],
+    //   datasetStatus: [{ required: true, message: "域名不能为空", trigger: "blur" }],
+    //   accessPermission: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
+    //   datasetSize: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
   }
 });
 
@@ -169,11 +170,10 @@ const { queryParams, form, rules } = toRefs(data);
 function getList() {
   loading.value = true;
 
-  let datasetId = route.query.datasetId ; 
-  console.log('datasetId = ' + datasetId) ; 
-  queryParams.value.datesetId = datasetId ;
+  console.log("currentDatasetId = " + currentDatasetId.value);
+  queryParams.value.datesetId = currentDatasetId.value
 
-  getSearch(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  getSearchKnowledge(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
       loading.value = false;
       datasetList.value = res.data;
       total.value = res.total;
@@ -208,117 +208,128 @@ function resetQuery() {
   handleQuery();
 };
 
-/** 删除按钮操作 */
-function handleDelete(row) {
-  const applicationIds = row.id || ids.value;
+// /** 删除按钮操作 */
+// function handleDelete(row) {
+//   const applicationIds = row.id || ids.value;
 
-  proxy.$modal.confirm('是否确认删除应用编号为"' + applicationIds + '"的数据项？').then(function () {
-      return delDataset(applicationIds);
-  }).then(() => {
-      getList();
-      proxy.$modal.msgSuccess("删除成功");
-  }).catch(() => {
-  });
-};
+//   proxy.$modal.confirm('是否确认删除应用编号为"' + applicationIds + '"的数据项？').then(function () {
+//       return delDataset(applicationIds);
+//   }).then(() => {
+//       getList();
+//       proxy.$modal.msgSuccess("删除成功");
+//   }).catch(() => {
+//   });
+// };
 
-/** 选择条数  */
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.id);
-  single.value = selection.length != 1;
-  multiple.value = !selection.length;
-};
+// /** 选择条数  */
+// function handleSelectionChange(selection) {
+//   ids.value = selection.map(item => item.id);
+//   single.value = selection.length != 1;
+//   multiple.value = !selection.length;
+// };
 
-/** 重置操作表单 */
-function reset() {
-  form.value = {
-      applicationId: undefined,
-      name: undefined,
-      ownerId: undefined,
-      description: undefined,
-      datasetStatus: undefined,
-      accessPermission: undefined,
-      datasetSize: undefined,
-  };
-  proxy.resetForm("DatasetRef");
-};
+// /** 重置操作表单 */
+// function reset() {
+//   form.value = {
+//       applicationId: undefined,
+//       name: undefined,
+//       ownerId: undefined,
+//       description: undefined,
+//       datasetStatus: undefined,
+//       accessPermission: undefined,
+//       datasetSize: undefined,
+//   };
+//   proxy.resetForm("DatasetRef");
+// };
 
-/** 取消按钮 */
-function cancel() {
-  open.value = false;
-  reset();
-};
+// /** 取消按钮 */
+// function cancel() {
+//   open.value = false;
+//   reset();
+// };
 
-/** 新增按钮操作 */
-function handleAdd() {
-  reset();
-  open.value = true;
-  title.value = "添加应用";
-};
+// /** 新增按钮操作 */
+// function handleAdd() {
+//   reset();
+//   open.value = true;
+//   title.value = "添加应用";
+// };
 
 /** 修改按钮操作 */
-function handleUpdate(row) {
-  reset();
-  const applicationId = row.id || ids.value;
-  getDataset(applicationId).then(response => {
-      form.value = response.data;
-      form.value.applicationId = applicationId;
-      open.value = true;
-      title.value = "修改应用";
+// function handleUpdate(row) {
+//   reset();
+//   const applicationId = row.id || ids.value;
+//   getDataset(applicationId).then(response => {
+//       form.value = response.data;
+//       form.value.applicationId = applicationId;
+//       open.value = true;
+//       title.value = "修改应用";
 
-  });
-};
+//   });
+// };
 
-/** 导入按钮操作 */
-function handleImport() {
-  upload.title = "数据集导入";
-  upload.open = true;
-};
+// /** 导入按钮操作 */
+// function handleImport() {
+//   upload.title = "数据集导入";
+//   upload.open = true;
+// };
 
-/** 下载模板操作 */
-function importTemplate() {
-  proxy.download("system/user/importTemplate", {
-  }, `user_template_${new Date().getTime()}.xlsx`);
-};
+// /** 下载模板操作 */
+// function importTemplate() {
+//   proxy.download("system/user/importTemplate", {
+//   }, `user_template_${new Date().getTime()}.xlsx`);
+// };
 
-/**文件上传中处理 */
-const handleFileUploadProgress = (event, file, fileList) => {
-  upload.isUploading = true;
-};
-/** 文件上传成功处理 */
-const handleFileSuccess = (response, file, fileList) => {
-  upload.open = false;
-  upload.isUploading = false;
-  proxy.$refs["uploadRef"].handleRemove(file);
-  proxy.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
-  getList();
-};
-/** 提交上传文件 */
-function submitFileForm() {
-  proxy.$refs["uploadRef"].submit();
-};
+// /**文件上传中处理 */
+// const handleFileUploadProgress = (event, file, fileList) => {
+//   upload.isUploading = true;
+// };
+// /** 文件上传成功处理 */
+// const handleFileSuccess = (response, file, fileList) => {
+//   upload.open = false;
+//   upload.isUploading = false;
+//   proxy.$refs["uploadRef"].handleRemove(file);
+//   proxy.$alert("<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>" + response.msg + "</div>", "导入结果", { dangerouslyUseHTMLString: true });
+//   getList();
+// };
+// /** 提交上传文件 */
+// function submitFileForm() {
+//   proxy.$refs["uploadRef"].submit();
+// };
 
-/** 提交按钮 */
-function submitForm() {
-  proxy.$refs["DatasetRef"].validate(valid => {
-      if (valid) {
-          if (form.value.applicationId != undefined) {
-              updateDataset(form.value).then(response => {
-                  proxy.$modal.msgSuccess("修改成功");
-                  open.value = false;
-                  getList();
-              });
-          } else {
-              addDataset(form.value).then(response => {
-                  proxy.$modal.msgSuccess("新增成功");
-                  open.value = false;
-                  getList();
-              });
-          }
-      }
-  });
-};
-
+// /** 提交按钮 */
+// function submitForm() {
+//   proxy.$refs["DatasetRef"].validate(valid => {
+//       if (valid) {
+//           if (form.value.applicationId != undefined) {
+//               updateDataset(form.value).then(response => {
+//                   proxy.$modal.msgSuccess("修改成功");
+//                   open.value = false;
+//                   getList();
+//               });
+//           } else {
+//               addDataset(form.value).then(response => {
+//                   proxy.$modal.msgSuccess("新增成功");
+//                   open.value = false;
+//                   getList();
+//               });
+//           }
+//       }
+//   });
+// };
+// 
 // getList();
+
+/** 初始化角色信息 */
+function initRoleData(role){
+  currentDatasetId.value = role.knowledgeId
+  getList();
+}
+
+defineExpose({
+    initRoleData
+})
+
 </script>
 
 <style lang="scss" scoped>
