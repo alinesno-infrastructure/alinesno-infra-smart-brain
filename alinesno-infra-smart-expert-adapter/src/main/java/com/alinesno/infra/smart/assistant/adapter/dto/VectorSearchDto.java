@@ -2,11 +2,13 @@ package com.alinesno.infra.smart.assistant.adapter.dto;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 /**
  * 用于向量搜索的DTO类
  * 这个类封装了向量搜索请求的必要参数，以便在智能助手服务中使用
  */
+@ToString
 @NoArgsConstructor
 @Data
 public class VectorSearchDto {
