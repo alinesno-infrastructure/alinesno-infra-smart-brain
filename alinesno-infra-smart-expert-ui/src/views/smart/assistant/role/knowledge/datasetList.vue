@@ -8,10 +8,6 @@
             <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入应用名称" clearable style="width: 240px"
               @keyup.enter="handleQuery" />
           </el-form-item>
-          <el-form-item label="所有者" prop="ownerId" label-width="100px">
-            <el-input v-model="queryParams['condition[ownerId|like]']" placeholder="请输入显示名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item>
 
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -27,7 +23,7 @@
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :data="DatasetKnowledgeList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="RoleKnowledgeList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
           <el-table-column label="类型" align="center" width="80px" prop="icon" v-if="columns[0].visible">
@@ -56,27 +52,16 @@
           </el-table-column>
           <el-table-column label="数据数量" align="center" width="130" key="documentCount" prop="documentCount"
             v-if="columns[2].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="状态" align="center" width="130" key="datasetStatus" prop="datasetStatus"
-            v-if="columns[4].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <el-button type="primary" text bg icon="Link">{{scope.row.hasStatus}}</el-button>
-            </template>
-          </el-table-column>
-          <el-table-column label="最后更新时间" align="center" prop="addTime" v-if="columns[7].visible" width="160">
-            <template #default="scope">
-              <span>{{ parseTime(scope.row.addTime) }}</span>
-            </template>
-          </el-table-column>
           <el-table-column label="操作" align="center" width="150" class-name="small-padding fixed-width"
             v-if="columns[8].visible">
             <template #default="scope">
               <el-tooltip content="修改" placement="top" v-if="scope.row.datasetKnowledgeId !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                  v-hasPermi="['system:DatasetKnowledge:edit']"></el-button>
+                  v-hasPermi="['system:RoleKnowledge:edit']"></el-button>
               </el-tooltip>
               <el-tooltip content="删除" placement="top" v-if="scope.row.datasetKnowledgeId !== 1">
                 <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                  v-hasPermi="['system:DatasetKnowledge:remove']"></el-button>
+                  v-hasPermi="['system:RoleKnowledge:remove']"></el-button>
               </el-tooltip>
             </template>
           </el-table-column>
@@ -85,62 +70,6 @@
           v-model:limit="queryParams.pageSize" @pagination="getList" />
       </el-col>
     </el-row>
-
-    <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="DatasetKnowledgeRef" label-width="100px">
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="文档名称" prop="documentName">
-              <el-input v-model="form.documentName" placeholder="请输入文档名称" maxlength="50" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="数据集数量" prop="ownerId">
-              <el-input v-model="form.ownerId" placeholder="请输入数据集数据" maxlength="50" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="状态" prop="datasetStatus">
-              <el-input v-model="form.datasetStatus" placeholder="请输入域名" maxlength="100" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="描述信息" prop="description">
-              <el-input v-model="form.description" placeholder="请输入描述信息" maxlength="100" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="访问权限" prop="accessPermission">
-              <el-input v-model="form.accessPermission" placeholder="请输入安全存储路径" maxlength="200" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="数据总量" prop="datasetSize">
-              <el-input v-model="form.datasetSize" placeholder="请输入应用目标" maxlength="20" />
-            </el-form-item>
-          </el-col>
-        </el-row>
-      </el-form>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog>
 
     <!-- 应用导入对话框 -->
     <el-dialog :title="upload.title" v-model="upload.open" width="800px" append-to-body>
@@ -158,12 +87,10 @@
         </el-col>
       </el-row>
       <el-upload ref="uploadRef" :limit="1" accept=".xlsx,.xls,.ppt,.docx,.doc,.pdf,.pptx,.md" :headers="upload.headers"
-        :action="upload.url +
-          '?updateSupport=' +
-          upload.updateSupport +
-          '&datasetId=' +
-          currentDatasetId
-          " :disabled="upload.isUploading" :on-progress="handleFileUploadProgress" :on-success="handleFileSuccess"
+        :action="upload.url +'?updateSupport=' +upload.updateSupport +'&datasetId=' +currentDatasetId" 
+        :disabled="upload.isUploading" 
+        :on-progress="handleFileUploadProgress" 
+        :on-success="handleFileSuccess"
         :auto-upload="false" drag>
         <el-icon class="el-icon--upload">
           <upload-filled />
@@ -192,23 +119,23 @@
   </div>
 </template>
 
-<script setup name="DatasetKnowledge">
+<script setup name="RoleKnowledge">
 import { getToken } from "@/utils/auth";
 import {
-  listDatasetKnowledge,
-  delDatasetKnowledge,
-  addDatasetKnowledge,
-} from "@/api/smart/assistant/datasetKnowledge";
+  listRoleKnowledge,
+  delRoleKnowledge,
+  addRoleKnowledge,
+} from "@/api/smart/assistant/roleKnowledge";
 
 import { reactive } from "vue";
 import { getParam } from "@/utils/ruoyi";
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
-// const { sys_normal_disable, sys_DatasetKnowledge_sex } = proxy.useDict("sys_normal_disable", "sys_DatasetKnowledge_sex");
+// const { sys_normal_disable, sys_RoleKnowledge_sex } = proxy.useDict("sys_normal_disable", "sys_RoleKnowledge_sex");
 
-const currentDatasetId = getParam("datasetId");
-const DatasetKnowledgeList = ref([]);
+const currentDatasetId = ref("")
+const RoleKnowledgeList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -219,11 +146,11 @@ const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 
-const deptName = ref("");
-const deptOptions = ref(undefined);
-const initPassword = ref(undefined);
-const postOptions = ref([]);
-const roleOptions = ref([]);
+// const deptName = ref("");
+// const deptOptions = ref(undefined);
+// const initPassword = ref(undefined);
+// const postOptions = ref([]);
+// const roleOptions = ref([]);
 
 const splitterTextType = ref([
   {
@@ -255,10 +182,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: { Authorization: "Bearer " + getToken() },
   // 上传的地址
-  url:
-    import.meta.env.VITE_APP_BASE_API +
-    "/api/infra/base/search/datasetKnowledge/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/roleKnowledge/importData"
 });
+
 // 列显隐信息
 const columns = ref([
   { key: 0, label: `图标`, visible: true },
@@ -277,12 +203,12 @@ const data = reactive({
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    datasetId: getParam("datasetId"),
-    DatasetKnowledgeName: undefined,
-    name: undefined,
-    ownerId: undefined,
-    status: undefined,
-    deptId: undefined,
+    datasetId: "",
+    // RoleKnowledgeName: undefined,
+    // name: undefined,
+    // ownerId: undefined,
+    // status: undefined,
+    // deptId: undefined,
   },
   rules: {
     datasetKnowledgeId: [
@@ -317,14 +243,15 @@ const { queryParams, form, rules } = toRefs(data);
 
 /** 查询应用列表 */
 function getList() {
-  console.log("currentDatasetId = " + currentDatasetId);
+  console.log("currentDatasetId = " + currentDatasetId.value);
+  queryParams.value.datasetId = currentDatasetId.value
 
   loading.value = true;
-  listDatasetKnowledge(
+  listRoleKnowledge(
     proxy.addDateRange(queryParams.value, dateRange.value)
   ).then((res) => {
     loading.value = false;
-    DatasetKnowledgeList.value = res.rows;
+    RoleKnowledgeList.value = res.rows;
     total.value = res.total;
   });
 }
@@ -353,7 +280,7 @@ function handleDelete(row) {
   proxy.$modal
     .confirm('是否确认删除应用编号为"' + datasetKnowledgeIds + '"的数据项？')
     .then(function () {
-      return delDatasetKnowledge(datasetKnowledgeIds);
+      return delRoleKnowledge(datasetKnowledgeIds);
     })
     .then(() => {
       getList();
@@ -380,7 +307,7 @@ function reset() {
     accessPermission: undefined,
     datasetSize: undefined,
   };
-  proxy.resetForm("DatasetKnowledgeRef");
+  proxy.resetForm("RoleKnowledgeRef");
 }
 
 /** 取消按钮 */
@@ -400,7 +327,7 @@ function handleAdd() {
 function handleUpdate(row) {
   reset();
   const datasetKnowledgeId = row.id || ids.value;
-  getDatasetKnowledge(datasetKnowledgeId).then((response) => {
+  getRoleKnowledge(datasetKnowledgeId).then((response) => {
     form.value = response.data;
     form.value.datasetKnowledgeId = datasetKnowledgeId;
     open.value = true;
@@ -448,16 +375,16 @@ function submitFileForm() {
 
 /** 提交按钮 */
 function submitForm() {
-  proxy.$refs["DatasetKnowledgeRef"].validate((valid) => {
+  proxy.$refs["RoleKnowledgeRef"].validate((valid) => {
     if (valid) {
       if (form.value.datasetKnowledgeId != undefined) {
-        updateDatasetKnowledge(form.value).then((response) => {
+        updateRoleKnowledge(form.value).then((response) => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
         });
       } else {
-        addDatasetKnowledge(form.value).then((response) => {
+        addRoleKnowledge(form.value).then((response) => {
           proxy.$modal.msgSuccess("新增成功");
           open.value = false;
           getList();
@@ -467,7 +394,15 @@ function submitForm() {
   });
 }
 
-getList();
+/** 初始化角色信息 */
+function initRoleData(role){
+  currentDatasetId.value = role.knowledgeId
+  getList();
+}
+
+defineExpose({
+    initRoleData
+})
 </script>
 
 <style lang="scss" scoped>
