@@ -55,7 +55,7 @@ public class AIPCustomerServiceExpert extends ExpertService {
 
         String promptContent = role.getPromptContent() ;
 
-        VectorSearchDto vectorSearchDto = new VectorSearchDto(Long.parseLong(role.getKnowledgeId()) , message ,10);
+        VectorSearchDto vectorSearchDto = new VectorSearchDto(Long.parseLong(role.getKnowledgeId()) , message ,2);
         R<List<DocumentVectorDto>> r = searchConsumer.datasetSearch(vectorSearchDto) ;
         log.debug("result:{}", r);
 
