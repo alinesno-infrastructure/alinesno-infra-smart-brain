@@ -1,18 +1,20 @@
 <template>
-  <div class="app-container" >
-        <el-page-header @back="goBack">
+  <div>
+      <!--
+      <el-page-header @back="goBack">
           <template #content>
               <span class="text-large font-600 mr-3" style="font-size: 16px;"> 配置知识库数据集</span>
           </template>
       </el-page-header>
+      -->
 
-      <div style="margin-top:20px">
+      <div>
           <el-tabs :tab-position="tabPosition" style="height: calc(100vh - 150px)" class="demo-tabs">
               <el-tab-pane style="height: 100%;" label="数据源管理">
-                  <DatasetList />
+                  <DatasetList ref="datasetListRef" />
               </el-tab-pane>
               <el-tab-pane label="向量性测试">
-                  <DatasetSearch />
+                  <DatasetSearch ref="datasetSearchRef" />
               </el-tab-pane>
           </el-tabs>
       </div>
@@ -25,14 +27,23 @@ import { ref } from 'vue'
 import DatasetList from './datasetList';
 import DatasetSearch from './datasetSearch';
 
-const tabPosition = ref('left')
+const tabPosition = ref('top')
 const router = useRouter();
 
-const goBack = () => {
-  console.log('go back')
-  let path = '/expert/smart/assistant/role/index';
-  router.push(path)
+const datasetListRef = ref(null)
+const datasetSearchRef = ref(null)
+
+/** 初始化角色信息 */
+function initRoleData(role){
+    console.log('parse Dataet roleId = ' + JSON.stringify(role))
+    datasetListRef.value.initRoleData(role);
+    datasetSearchRef.value.initRoleData(role);
 }
+
+defineExpose({
+    initRoleData
+})
+
 </script>
 
 <style lang="scss">
