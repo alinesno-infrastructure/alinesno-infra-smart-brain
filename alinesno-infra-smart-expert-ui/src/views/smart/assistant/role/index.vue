@@ -123,7 +123,7 @@
           </el-table-column>
           <el-table-column label="知识库" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="warning" text bg icon="Promotion" @click="configKnowledge(scope.row)">配置</el-button>
+              <el-button type="primary" text bg icon="Promotion" @click="configKnowledge(scope.row)">知识库</el-button>
             </template>
           </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
@@ -245,6 +245,27 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 知识库配置 -->
+    <el-drawer
+      v-model="knowDrawerDialog"
+      size="60%"
+      with-header="false"
+      :title="knowTitle"
+      :direction="right"
+      :before-close="handleCloseKnowDrawer">
+      <template #header>
+        <div class="role-icon">
+          <img :src="imagePath(knowRoleAvatar)" style="float:left" /> 
+          <div style="float: left;padding-top: 5px;margin-left: 10px;">
+            {{ knowTitle }}
+          </div> 
+        </div>
+      </template>
+      <template #default>
+        <KnowledgeDataset ref="knowledgeDatasetRef" />
+      </template>
+    </el-drawer>
     
   </div>
 </template>
@@ -260,6 +281,8 @@ import {
   addRole,
   saveRoleChainInfo,
 } from "@/api/smart/assistant/role";
+
+import KnowledgeDataset from '@/views/smart/assistant/role/knowledge/parseDataset'
 
 // import {
 //   addRoleChain , 
@@ -286,18 +309,24 @@ const title = ref("");
 const dateRange = ref([]);
 const imageUrl = ref('')
 
+const knowledgeDatasetRef = ref(null)
+const knowDrawerDialog = ref(false)
+const knowTitle = ref("")
+const knowRoleAvatar = ref("")
+
 const chainOpen = ref(false);
-const chainTitle = ref("");
+// const chainTitle = ref("");
 const promptTitle = ref("");
 const currentPrompt = ref("");
-const currentPromptContent = ref([]);
+// const currentPromptContent = ref([]);
 const promptOpen = ref(false);
 
 const deptName = ref("");
 const deptOptions = ref(undefined);
-const initPassword = ref(undefined);
-const postOptions = ref([]);
-const roleOptions = ref([]);
+
+// const initPassword = ref(undefined);
+// const postOptions = ref([]);
+// const roleOptions = ref([]);
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -437,7 +466,17 @@ function handleDelete(row) {
 
 /** 配置知识库 */
 function configKnowledge(row){
-  router.push({path: '/knowledge/knowledge/index', query: {roleId: row.id}});
+
+  knowDrawerDialog.value = true
+  knowTitle.value = '[' + row.roleName + ']知识库配置'
+  knowRoleAvatar.value = row.roleAvatar
+
+  nextTick(() => {
+    knowledgeDatasetRef.value.initRoleData(row);
+  });
+  
+  // router.push({path: '/knowledge/knowledge/index', query: {roleId: row.id}});
+  
 }
 
 /** 配置Prompt */
@@ -449,6 +488,11 @@ function configPrompt(row){
   //  if(row.promptContent){
   //     currentPromptContent.value = JSON.parse(row.promptContent);
   //  }
+}
+
+/** 关闭弹窗 */
+function handleCloseKnowledge(){
+   knowDrawerDialog.value = false
 }
 
 /** 运行一次专家链路 */
