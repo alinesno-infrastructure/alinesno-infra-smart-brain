@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.adapter;
 
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorDto;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
@@ -35,5 +36,11 @@ public interface BaseSearchConsumer {
     */
    @Post(url = "/api/base/search/vectorSearch/search")
    R<List<DocumentVectorDto>> datasetSearch(@JSONBody VectorSearchDto topK) ;
+
+   /**
+    * 分页查询数据集
+    */
+   @Post(url = "/api/infra/base/search/datasetKnowledge/datatables")
+   TableDataInfo datasetSearchPage(@Query("datasetId") String datasetId , @Query("pageNum") int pageNum , @Query("pageSize") int pageSize) ;
 
 }
