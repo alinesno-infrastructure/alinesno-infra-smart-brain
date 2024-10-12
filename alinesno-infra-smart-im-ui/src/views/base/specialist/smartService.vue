@@ -32,7 +32,7 @@
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
               <el-row :gutter="20">
-                <el-col :span="18">
+                <el-col :span="17">
                     <div class="message-input">
 
                         <el-mention
@@ -51,7 +51,7 @@
                     </div>
                 </el-col>
 
-                <el-col :span="6" style="text-align: right;">
+                <el-col :span="7" style="text-align: right;">
 
                     <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top" >
                       <el-button type="danger" text bg size="large" @click="sendMessage('send')">
