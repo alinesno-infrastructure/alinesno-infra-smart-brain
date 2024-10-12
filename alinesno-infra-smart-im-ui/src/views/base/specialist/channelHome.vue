@@ -1,6 +1,6 @@
 <template>
 
-  <div class="app-container">
+  <div class="app-container tpl-app">
 
       <!-- 模板选择 -->
       <div class="template-header">
@@ -68,12 +68,12 @@
                   </div>
                   <div class="vc-div div_l14lqa1h tpl-item-footer">
                       <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
-                        <el-button @click="enterChannel(item)" type="primary" text bg>
-                            <i class="fa-solid fa-location-arrow"></i>&nbsp;进入
+                        <el-button @click="handleChannelChat(item)" type="primary" text bg>
+                            <i class="fa-solid fa-location-arrow"></i>&nbsp;打开
                         </el-button>
                       </div>
-                      <div class="vc-text" style="line-height:35px">
-                          <i class="fa-solid fa-fire"></i> 已启用 
+                      <div class="vc-text"  @click="enterChannel(item)" style="cursor:pointer; line-height:35px">
+                          <i class="fa-solid fa-fire"></i> 进入
                       </div>
                   </div>
               </div>
@@ -87,6 +87,11 @@
             v-model:limit="queryParams.pageSize" 
             @pagination="getList"/>
       </div>
+      
+      <!-- 频道聊天 -->
+      <el-dialog v-model="dialogVisible" :title="chatTitle" width="80%" :before-close="handleClose">
+        <iframe :src="roleChatUri" class="role-chat-iframe"></iframe>
+      </el-dialog>
 
   </div>
 
@@ -103,6 +108,10 @@ const loading = ref(false)
 
 const publicChatChannel = ref([]);
 const recChatChannel = ref([]);
+
+const chatTitle = ref("")
+const dialogVisible = ref(false)
+const roleChatUri = ref("")
 
 const filterRules = ref([
     {"name": "场景", "codeValue": "initializr.admin.project.template.screen","items": [
@@ -156,6 +165,13 @@ function handleAllMyChannel() {
 
     loading.value = false; 
   })
+}
+
+/** 与单个频道发信息 */
+function handleChannelChat(item){
+    roleChatUri.value = "/channelChat?channel=" + item.id;
+    chatTitle.value = item.channelName;
+    dialogVisible.value = true ;
 }
 
 handleAllMyChannel();
