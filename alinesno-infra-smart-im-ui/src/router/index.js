@@ -43,6 +43,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/channelChat',
+    component: () => import('@/views/base/specialist/channelChatPanel'),
+    hidden: true
+  },
+  {
     path: '/sso/login',
     component: () => import('@/views/loginSso'),
     hidden: true
