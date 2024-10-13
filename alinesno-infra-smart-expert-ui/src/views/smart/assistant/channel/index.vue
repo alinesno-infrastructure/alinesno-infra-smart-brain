@@ -82,12 +82,19 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="频道类型" align="center" key="channelType" width="150" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <el-table-column label="频道类型" align="center" key="channelType" width="180" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button v-if="scope.row.channelType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i> 个人频道</el-button>
-              <el-button v-if="scope.row.channelType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i> 私人频道</el-button>
-              <el-button v-if="scope.row.channelType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i> 推荐频道</el-button>
-              <el-button v-if="scope.row.channelType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i> 公共频道</el-button>
+              <el-button v-if="scope.row.channelType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i>&nbsp;个人频道</el-button>
+              <el-button v-if="scope.row.channelType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i>&nbsp;私人频道</el-button>
+              <el-button v-if="scope.row.channelType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i>&nbsp;推荐频道</el-button>
+              <el-button v-if="scope.row.channelType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i>&nbsp;公共频道</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="成员" align="center" key="channelType" width="180" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <el-button text bg type="primary" @click="configAgent(scope.row)">
+                <i class="fa-solid fa-user-shield"></i>&nbsp;成员管理({{ scope.row.roles.length }})
+              </el-button>
             </template>
           </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
@@ -232,6 +239,31 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="configAgentDialogVisible" :title="channelAgentConfigTitle" width="50%">
+        <div style="text-align: center">
+          <el-transfer 
+              v-model="channelAgentList" 
+              filterable
+              style="text-align: left; width:100%; display: inline-block"
+              :titles="['源角色', '已选择']"
+              :format="{
+                noChecked: '${total}',
+                hasChecked: '${checked}/${total}',
+              }"
+              :filter-method="filterAgentMethod"
+              filter-placeholder="搜索角色" 
+            :data="agentList" />
+        </div>
+
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button @click="configAgentDialogVisible = false">关闭</el-button>
+            <el-button type="primary" @click="handleCloseAgentConfig">确认</el-button>
+          </div>
+        </template>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -243,7 +275,13 @@ import {
   getChannel,
   updateChannel,
   addChannel,
+  updateChannelAgent
 } from "@/api/smart/assistant/channel";
+
+import {
+  listAllRole
+} from '@/api/smart/assistant/role';
+
 import {reactive} from "vue";
 
 const router = useRouter();
@@ -260,11 +298,19 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-const deptName = ref("");
-const deptOptions = ref(undefined);
-const initPassword = ref(undefined);
-const postOptions = ref([]);
-const roleOptions = ref([]);
+
+// const deptName = ref("");
+// const deptOptions = ref(undefined);
+// const initPassword = ref(undefined);
+// const postOptions = ref([]);
+// const roleOptions = ref([]);
+
+const agentList = ref([])
+const configAgentDialogVisible = ref(false)
+const channelAgentConfigTitle = ref("")
+const channelAgentList = ref([])
+const currentChannelId = ref(0) ;
+
 /*** 应用导入参数 */
 const upload = reactive({
   // 是否显示弹出层（应用导入）
@@ -433,7 +479,52 @@ function submitForm() {
   });
 };
 
+/** 配置成员 */
+function configAgent(row){
+
+    configAgentDialogVisible.value = true ;
+    channelAgentConfigTitle.value = row.channelName + "成员" ; 
+    currentChannelId.value = row.id ;
+    channelAgentList.value = row.roles ;
+}
+
+/** 获取到所有的角色信息 */
+function handleListAllRole(){
+
+  listAllRole().then(res => {
+
+    for (let i = 0; i < res.data.length ; i++) {
+        let item = res.data[i]
+
+        agentList.value.push({
+          key: item.id ,
+          label: item.roleName , 
+          disabled: false ,
+      })
+    }
+  })
+}
+
+/** 关闭弹窗 */
+function handleCloseAgentConfig(){
+  configAgentDialogVisible.value = false ;
+
+  updateChannelAgent(currentChannelId.value , channelAgentList.value).then(res => {
+    proxy.$modal.msgSuccess("更新成功");
+    getList() ;
+  })
+  
+}
+
+/** 搜索过滤方法 */
+const filterAgentMethod = (query, item) => {
+  // return item.initial.includes(query)
+  return item ;
+}
+
 getList();
+handleListAllRole();
+
 </script>
 
 <style lang="scss" scoped>
