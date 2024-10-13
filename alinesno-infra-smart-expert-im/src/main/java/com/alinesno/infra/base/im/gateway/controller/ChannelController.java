@@ -1,13 +1,16 @@
 package com.alinesno.infra.base.im.gateway.controller;
 
-import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,6 +39,9 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @Autowired
     private IChannelService service;
 
+    @Autowired
+    private IChannelRoleService channelRoleService ;
+
     /**
      * 获取BusinessLogEntity的DataTables数据。
      *
@@ -47,8 +54,42 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
-        return this.toPage(model, this.getFeign(), page);
+        TableDataInfo tableDataInfo = this.toPage(model, this.getFeign(), page);
+
+        List<ChannelEntity> channelEntities = (List<ChannelEntity>) tableDataInfo.getRows();
+        List<JSONObject> rowsJsonList = new ArrayList<>() ;
+
+        if(channelEntities != null){
+            for (ChannelEntity channelEntity : channelEntities) {
+                JSONObject jsonObject = JSON.parseObject(JSONObject.toJSONString(channelEntity)) ;
+
+                // 查询出频道的角色
+                List<IndustryRoleEntity> roles = channelRoleService.getChannelAgent(channelEntity.getId()+"") ;
+                List<Long> roleIds = roles.stream().map(IndustryRoleEntity::getId).toList() ;
+
+                jsonObject.put("roles", roleIds);
+
+                rowsJsonList.add(jsonObject);
+            }
+
+            tableDataInfo.setRows(rowsJsonList);
+        }
+
+        return tableDataInfo;
     }
+
+    /**
+     * 更新频道角色 updateChannelAgent
+     */
+    @PostMapping("/updateChannelAgent")
+    public AjaxResult updateChannelAgent(@RequestBody ChannelAgentDto dto){
+        log.debug("dto = {}" , dto);
+
+        channelRoleService.updateChannelAgent(dto) ;
+
+        return AjaxResult.success() ;
+    }
+
 
     /**
      * createChannel
