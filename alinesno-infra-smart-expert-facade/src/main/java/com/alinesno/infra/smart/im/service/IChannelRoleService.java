@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.im.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.entity.ChannelRoleEntity;
 
@@ -16,4 +17,9 @@ public interface IChannelRoleService extends IBaseService<ChannelRoleEntity> {
      */
     List<IndustryRoleEntity> getChannelAgent(String channelId);
 
+    /**
+     * 更新频道角色信息
+     * @param dto
+     */
+    void updateChannelAgent(ChannelAgentDto dto);
 }
