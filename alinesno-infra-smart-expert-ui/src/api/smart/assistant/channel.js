@@ -22,8 +22,22 @@ var managerUrl = {
   allPublicChannel: prefix + "allPublicChannel" ,
   joinChannel: prefix + "joinChannel" ,
   getDefaultChannelId: prefix + "getDefaultChannelId" ,
+  updateChannelAgent: prefix + "updateChannelAgent" ,
   closeChannelSSE: "/v1/api/infra/base/im/sseChannelTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+}
+
+// 更新频道角色列表
+export function updateChannelAgent(channelId , rolesId) {
+  const data = {
+    channelId : channelId ,
+    rolesId : rolesId
+  }
+  return request({
+    url: managerUrl.updateChannelAgent , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 获取任务实例完成通知
