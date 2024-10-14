@@ -6,6 +6,8 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -18,6 +20,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -98,6 +101,28 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @GetMapping("/catalogTreeSelect")
     public AjaxResult catalogTreeSelect(){
         return AjaxResult.success("success" , catalogService.selectCatalogTreeList()) ;
+    }
+
+    /**
+     * 更新角色运行脚本
+     * @return
+     */
+    @PostMapping("/updateRoleScript")
+    public AjaxResult updateRoleScript(@RequestBody @Validated RoleScriptDto dto){
+        log.debug("dto = {}", dto);
+        service.updateRoleScript(dto);
+        return ok() ;
+    }
+
+    /**
+     * 验证脚本信息
+     * @return
+     */
+    @PostMapping("/validateRoleScript")
+    public AjaxResult validateRoleScript(@RequestBody @Validated RoleScriptDto dto){
+        log.debug("dto = {}", dto);
+        WorkflowExecutionDto output = service.validateRoleScript(dto);
+        return AjaxResult.success(output) ;
     }
 
     @Override
