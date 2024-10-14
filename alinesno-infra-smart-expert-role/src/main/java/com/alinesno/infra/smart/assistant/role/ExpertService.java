@@ -115,10 +115,15 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             // 解析出生成的内容
             record.setGenContent(gentContent);
-            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
 
-            BeanUtils.copyProperties(record, recordDto);
-            recordDto.setCodeContent(codeContentList);
+            try{
+                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent) ;
+
+                BeanUtils.copyProperties(record, recordDto);
+                recordDto.setCodeContent(codeContentList);
+            }catch(Exception e){
+               log.error("解析代码块异常:{}", e.getMessage()) ;
+            }
         }
 
         // 处理完成之后记录更新
