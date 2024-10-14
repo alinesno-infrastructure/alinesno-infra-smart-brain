@@ -66,6 +66,27 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("会话次数")
     private Long chatCount = 0L ;
 
+    @TableField
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
     private String knowledgeId ;
+
+    // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // 执行脚本
+    @TableField("execute_script")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("执行脚本")
+    private String executeScript ;
+
+    // 审核脚本
+    @TableField("audit_script")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("审核脚本")
+    private String auditScript ;
+
+    // 功能回调脚本
+    @TableField("function_callback_script")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("功能回调脚本")
+    private String functionCallbackScript ;
+
 }
