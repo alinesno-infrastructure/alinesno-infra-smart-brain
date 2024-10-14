@@ -56,10 +56,7 @@ public class DemoSingleExpert extends ExpertService {
         String chatText = clearMessage(taskInfo.getText()) ;
         String preContent = workflowExecution.getGenContent() ;
 
-        MessageManager msgManager = new MessageManager(10);
-
         // TODO 添加system prompt来进行条件的限制
-
         String newPromptContent = "你现在根据我的反馈修改建议进行调整修改，但是不要改变原来的格式。\r\n" +
                 "原来的内容:\r\n" +
                 preContent + "\r\n" +
@@ -70,8 +67,8 @@ public class DemoSingleExpert extends ExpertService {
                 "1. 原来的内容可以不用返回\r\n" +
                 "2. 如果包含json，在原基础格式上进行修改，不要改变原来的json格式";
 
+        MessageManager msgManager = new MessageManager(10);
         msgManager.add(ofUser(newPromptContent)) ;
-
         StringBuilder gentContent = qianWenLLM.chatComponent(msgManager) ;
 
         log.debug("result:{}", gentContent.toString());
