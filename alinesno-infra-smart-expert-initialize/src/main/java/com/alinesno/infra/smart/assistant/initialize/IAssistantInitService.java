@@ -18,7 +18,7 @@ public interface IAssistantInitService {
     /**
      * 初始化插件
      */
-    void initPlugin() ;
+//    void initPlugin() ;
 
     /**
      * 初始化渠道
