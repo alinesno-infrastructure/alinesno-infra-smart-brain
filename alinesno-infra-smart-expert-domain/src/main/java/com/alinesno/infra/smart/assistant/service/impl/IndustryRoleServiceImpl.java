@@ -5,11 +5,13 @@ import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
@@ -103,7 +105,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         log.debug("role.getChainId() = {}", role.getChainId());
-        IBaseExpertService expertService = getiBaseExpertService(role);
+        IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
         return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
     }
@@ -132,15 +134,15 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     /**
      * 根据行业角色获取专家服务
      *
-     * @param role 行业角色实体对象，包含了链ID等信息，用于定位特定的专家服务实例
+     * @param chainId 行业角色实体对象，包含了链ID等信息，用于定位特定的专家服务实例
      * @return 返回对应的专家服务接口实现对象如果无法获取到合适的实现对象，将返回默认角色的专家服务
      */
-    private static IBaseExpertService getiBaseExpertService(IndustryRoleEntity role) {
+    private static IBaseExpertService getiBaseExpertService(String chainId) {
         IBaseExpertService expertService = null;
 
         // 从Spring上下文中根据链ID获取Bean
         try{
-            expertService = (IBaseExpertService) SpringContext.getBean(role.getChainId());
+            expertService = (IBaseExpertService) SpringContext.getBean(chainId);
         }catch (Exception e){
             log.error("无法获取到指定的专家服务实例，使用默认角色", e);
             expertService = (IBaseExpertService) SpringContext.getBean(AssistantConstants.PREFIX_ASSISTANT_DEFAULT); // 使用默认角色
@@ -149,4 +151,66 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         return expertService;
     }
 
+    @Override
+    public void updateRoleScript(RoleScriptDto dto) {
+
+        IndustryRoleEntity role = getById(dto.getRoleId());
+
+        if(dto.getType().equals(ScriptPurposeEnums.EXECUTE.getValue())){  // 执行脚本
+            log.info("执行脚本：{}", dto.getScript());
+            role.setExecuteScript(dto.getScript());
+        } else if(dto.getType().equals(ScriptPurposeEnums.AUDIT.getValue())){  // 审核脚本
+            log.info("审核脚本：{}", dto.getScript());
+            role.setAuditScript(dto.getScript());
+        } else if(dto.getType().equals(ScriptPurposeEnums.FUNCTION_CALL.getValue())){  // 功能回调脚本
+            log.info("功能回调脚本：{}", dto.getScript());
+            role.setFunctionCallbackScript(dto.getScript());
+        }
+
+        // 只要保存有脚本，则设置成流程脚本
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+
+        this.update(role);
+    }
+
+    @Override
+    public WorkflowExecutionDto validateRoleScript(RoleScriptDto dto) {
+        log.debug("validateRoleScript:{}" , dto);
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+        taskInfo.setRoleId(dto.getRoleId());
+        taskInfo.setText(dto.getMessage());
+
+        long roleId = taskInfo.getRoleId();
+        IndustryRoleEntity role = getById(roleId);
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+
+        if(dto.getType().equals(ScriptPurposeEnums.EXECUTE.getValue())){  // 执行脚本
+            log.info("执行脚本：{}", dto.getScript());
+            taskInfo.setFunctionCall(false);
+            taskInfo.setModify(false);
+            role.setExecuteScript(dto.getScript());
+        } else if(dto.getType().equals(ScriptPurposeEnums.AUDIT.getValue())){  // 审核脚本
+            log.info("审核脚本：{}", dto.getScript());
+            taskInfo.setModify(true);
+            role.setAuditScript(dto.getScript());
+        } else if(dto.getType().equals(ScriptPurposeEnums.FUNCTION_CALL.getValue())){ // 功能回调脚本
+            role.setFunctionCallbackScript(dto.getScript());
+            taskInfo.setFunctionCall(true);
+        }
+
+        // 获取到节点的执行内容信息
+        WorkflowExecutionEntity workflowExecutionEntity = new WorkflowExecutionEntity();
+        String preGenContent = """
+                    ```json
+                    {"name":"测试脚本"}
+                    ```
+                """ ;
+        workflowExecutionEntity.setGenContent(preGenContent);
+
+        log.debug("role.getChainId() = {}", role.getChainId());
+        IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
+
+        return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+    }
 }
