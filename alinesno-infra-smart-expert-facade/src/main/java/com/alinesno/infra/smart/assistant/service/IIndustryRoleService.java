@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
@@ -55,4 +56,19 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param allEntities
      */
     void batchCreateRole(List<IndustryRoleEntity> allEntities);
+
+    /**
+     * 更新角色脚本信息
+     *
+     * @param dto 角色脚本数据传输对象，包含需要更新的角色脚本信息
+     */
+    void updateRoleScript(RoleScriptDto dto);
+
+    /**
+     * 验证角色脚本的合法性
+     *
+     * @param dto 角色脚本数据传输对象，包含需要验证的角色脚本信息
+     * @return
+     */
+    WorkflowExecutionDto validateRoleScript(RoleScriptDto dto);
 }
