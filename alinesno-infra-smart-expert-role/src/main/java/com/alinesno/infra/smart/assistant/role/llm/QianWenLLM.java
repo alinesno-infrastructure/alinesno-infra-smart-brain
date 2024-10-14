@@ -3,10 +3,9 @@ package com.alinesno.infra.smart.assistant.role.llm;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.aigc.generation.models.QwenParam;
-import com.alibaba.dashscope.common.MessageManager;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.Constants;
+import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,10 +47,10 @@ public class QianWenLLM {
         Constants.apiKey = qianWenKey ;
         Generation gen = new Generation();
 
-        QwenParam param = QwenParam.builder()
+        GenerationParam param = GenerationParam.builder()
                         .model(Generation.Models.QWEN_TURBO)
                         .messages(msgManager.get())
-                        .resultFormat(QwenParam.ResultFormat.MESSAGE)
+                        .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                         .topP(0.8)
                         .enableSearch(true)
                         .build();
