@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -66,14 +67,14 @@ public class ImChatAvatarController {
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
         if("img".equals(type)){  // 图片上传类型
-            AjaxResult ajaxResult = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
+            R<String> r = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
                 System.out.println("total bytes: " + progress.getTotalBytes());
                 System.out.println("current bytes: " + progress.getCurrentBytes());
                 System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
             }) ;
 
-            log.debug("ajaxResult= {}" , ajaxResult);
-            return ajaxResult ;
+            log.debug("ajaxResult= {}" , r);
+            return AjaxResult.success(r.getData()) ;
         }
 
         return AjaxResult.success();
