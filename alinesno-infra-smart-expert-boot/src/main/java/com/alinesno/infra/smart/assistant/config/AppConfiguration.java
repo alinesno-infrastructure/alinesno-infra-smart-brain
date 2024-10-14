@@ -76,6 +76,7 @@ public class AppConfiguration implements CommandLineRunner {
 
         // 初始化示例频道
         assistantInitService.initChannel();
+
     }
 
 }
