@@ -4,6 +4,7 @@ import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -94,13 +95,17 @@ public class FLowExpertService extends ExpertService {
 									   MessageTaskInfo taskInfo,
 									   String scriptText) {
 
+		ToolsUtil tools = new ToolsUtil() ;
+
 		// 创建 Binding 对象，用于绑定变量到 Groovy 脚本
 		Binding binding = new Binding();
 		binding.setVariable("role", role);
 		binding.setVariable("taskInfo", taskInfo);
 		binding.setVariable("workflow", workflow);
 		binding.setVariable("qianWenLLM", qianWenLLM);
+		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);
 		binding.setVariable("expertService", this);
+		binding.setVariable("tools", tools);
 		binding.setVariable("log", log);
 
 		// 创建 GroovyShell 实例
