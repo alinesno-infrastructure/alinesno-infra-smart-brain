@@ -2,10 +2,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>com.alinesno.infra.common</groupId>
-        <artifactId>alinesno-infra-platform-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.4</version>
+        <relativePath></relativePath>
     </parent>
 
     <artifactId>alinesno-ui</artifactId>
@@ -19,28 +19,7 @@
         <npm.registry.url>http://registry.npm.taobao.org/</npm.registry.url>
         <spring-cloud.version>2022.0.3</spring-cloud.version>
     </properties>
-
-    <dependencies>
-
-        <!-- 引用公共门面服务 -->
-        <dependency>
-            <groupId>com.alinesno.infra.common</groupId>
-            <artifactId>alinesno-infra-common-config</artifactId>
-            <version>${revision}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-gateway</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
+ 
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -63,8 +42,9 @@
                 <version>1.13.4</version>
 
                 <configuration>
-                    <!-- 若不方便访问官网，可使用国内淘宝镜像-->
+                    <!-- 若不方便访问官网，可使用国内淘宝镜像
                     <nodeDownloadRoot>https://npm.taobao.org/mirrors/node/</nodeDownloadRoot>
+                    -->
                     <npmDownloadRoot>https://registry.npm.taobao.org/npm/-/</npmDownloadRoot>
                     <yarnDownloadRoot>http://data.linesno.com/web-tools/yarn/</yarnDownloadRoot>
                 </configuration>
@@ -152,11 +132,7 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+ 
 
         </plugins>
     </build>
