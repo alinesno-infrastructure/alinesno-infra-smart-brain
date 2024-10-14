@@ -21,7 +21,7 @@ public class ExpertListCreator {
         addExpert(expertList, "1808349453119315970", "毕业论文内容编辑专家", 9527L, "毕业论文内容生成和集成，并导出成Word文档输出", "GMFJPycO");
 
         // 方案编写团队
-        addExpert(expertList, "1808349924122877953", "解决方案大纲设计专家", 9528L, "解决方案标题大纲拟定和编写", "lUYQZGWP");
+        addExpert(expertList, "1808349924122877953", "解决方案大纲设计专家(流程)", 9528L, "解决方案标题大纲拟定和编写(流程编写)", "ScriptFlow");
         addExpert(expertList, "1808349957312405505", "解决方案内容编写专家", 9528L, "解决方案内容生成并导出成Word/Excel等或者Markdown等", "HOkuqHBm");
 
         // 产品运维团队(数据库备份/代码定时同步/K8S状态查询检测)
