@@ -42,7 +42,8 @@
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
 			<artifactId>groovy-all</artifactId>
-			<version>3.0.9</version> <!-- 使用最新版本 -->
+			<version>3.0.9</version>  
+			<type>pom</type>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.gpars</groupId>
