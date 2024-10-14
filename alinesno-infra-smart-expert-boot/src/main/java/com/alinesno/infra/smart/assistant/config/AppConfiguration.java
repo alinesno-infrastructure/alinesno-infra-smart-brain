@@ -72,7 +72,7 @@ public class AppConfiguration implements CommandLineRunner {
         assistantInitService.expert();
 
         // 初始化插件
-        assistantInitService.initPlugin();
+//        assistantInitService.initPlugin();
 
         // 初始化示例频道
         assistantInitService.initChannel();
