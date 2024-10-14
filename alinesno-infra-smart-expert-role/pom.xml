@@ -38,6 +38,17 @@
 			<version>2.3.31</version>
 		</dependency>
 
+		<!-- 动态脚本 -->
+		<dependency>
+			<groupId>org.codehaus.groovy</groupId>
+			<artifactId>groovy-all</artifactId>
+			<version>3.0.9</version> <!-- 使用最新版本 -->
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.gpars</groupId>
+			<artifactId>gpars</artifactId>
+			<version>1.2.1</version> <!-- 请使用最新版本 -->
+		</dependency>
 
 		<!-- 引入千问大模型 API -->
 		<dependency>
