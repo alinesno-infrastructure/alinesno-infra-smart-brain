@@ -91,7 +91,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="角色名称" align="left" width="220" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="角色名称" align="left" width="200" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                 {{ truncateString(scope.row.roleName , 10) }}
@@ -121,9 +121,14 @@
               <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
             </template>
           </el-table-column>
-          <el-table-column label="知识库" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          <el-table-column label="知识库" align="center" width="100"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text bg icon="Promotion" @click="configKnowledge(scope.row)">知识库</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="执行脚本" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <el-button type="primary" text bg icon="Promotion" @click="configExecuteScript(scope.row)">脚本</el-button>
             </template>
           </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
@@ -249,7 +254,7 @@
     <!-- 知识库配置 -->
     <el-drawer
       v-model="knowDrawerDialog"
-      size="60%"
+      size="50%"
       with-header="false"
       :title="knowTitle"
       :direction="right"
@@ -264,6 +269,27 @@
       </template>
       <template #default>
         <KnowledgeDataset ref="knowledgeDatasetRef" />
+      </template>
+    </el-drawer>
+
+    <!-- 执行脚本配置 -->
+    <el-drawer
+      v-model="executeScriptDialog"
+      size="50%"
+      with-header="false"
+      :title="executeScriptTitle"
+      :direction="right"
+      :before-close="handleCloseScriptDrawer">
+      <template #header>
+        <div class="role-icon">
+          <img :src="imagePath(knowRoleAvatar)" style="float:left" /> 
+          <div style="float: left;padding-top: 5px;margin-left: 10px;">
+            {{ executeScriptTitle }}
+          </div> 
+        </div>
+      </template>
+      <template #default>
+        <ExecuteScriptPanel ref="executeScriptRef" />
       </template>
     </el-drawer>
     
@@ -283,6 +309,7 @@ import {
 } from "@/api/smart/assistant/role";
 
 import KnowledgeDataset from '@/views/smart/assistant/role/knowledge/parseDataset'
+import ExecuteScriptPanel from '@/views/smart/assistant/role/executeScriptPanel'
 
 // import {
 //   addRoleChain , 
@@ -294,7 +321,7 @@ import { ElMessage } from 'element-plus'
 import {reactive} from "vue";
 
 const router = useRouter();
-const {proxy} = getCurrentInstance();
+const { proxy } = getCurrentInstance();
 // const { sys_normal_disable, sys_Role_sex } = proxy.useDict("sys_normal_disable", "sys_Role_sex");
 
 const RoleList = ref([]);
@@ -313,6 +340,11 @@ const knowledgeDatasetRef = ref(null)
 const knowDrawerDialog = ref(false)
 const knowTitle = ref("")
 const knowRoleAvatar = ref("")
+
+// 执行脚本
+const executeScriptRef = ref(null)
+const executeScriptDialog = ref(false)
+const executeScriptTitle = ref("")
 
 const chainOpen = ref(false);
 // const chainTitle = ref("");
@@ -475,8 +507,20 @@ function configKnowledge(row){
     knowledgeDatasetRef.value.initRoleData(row);
   });
   
-  // router.push({path: '/knowledge/knowledge/index', query: {roleId: row.id}});
-  
+}
+
+/** 配置执行脚本 */
+function configExecuteScript(row){
+  // executeScriptDialog.value = true
+  // executeScriptTitle.value = '[' + row.roleName + ']执行脚本配置'
+  // knowRoleAvatar.value = row.roleAvatar
+
+  // nextTick(() => {
+  //   executeScriptRef.value.setCurrentRoleId(row.id);
+  // });
+
+  router.push({path:"/expert/smart/assistant/role/script" , query: {roleId: row.id}});
+
 }
 
 /** 配置Prompt */
