@@ -22,6 +22,26 @@ var managerUrl = {
   runRoleChainByRoleId: prefix + "runRoleChainByRoleId",
   updatePromptContent: prefix + "updatePromptContent",
   listAllRole: prefix + "listAllRole",
+  validateRoleScript: prefix + "validateRoleScript",
+  updateRoleScript: prefix + "updateRoleScript",
+}
+
+// 验证脚本任务
+export function validateRoleScript(data) {
+  return request({
+    url: managerUrl.validateRoleScript ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 提交脚本任务
+export function updateRoleScript(data) {
+  return request({
+    url: managerUrl.updateRoleScript , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 更新角色PromptContent
