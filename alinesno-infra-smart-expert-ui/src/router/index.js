@@ -77,7 +77,12 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       },
-
+      {
+        path: '/expert/smart/assistant/role/script',
+        component: () => import('@/views/smart/assistant/role/executeScriptPanel'),
+        name: '/expert/smart/assistant/role/script',
+        meta: { title: '脚本配置', icon: 'dashboard', affix: true }
+      },
       {
         path: '/knowledge/knowledge/index',
         component: () => import('@/views/smart/assistant/role/knowledge/parseDataset'),
@@ -85,84 +90,9 @@ export const constantRoutes = [
         meta: { title: '知识库配置', icon: 'dashboard', affix: true }
       },
 
-      // {
-        // path: '/demo',
-        // component: () => import('@/views/demo'),
-        // name: '/demo',
-        // meta: { title: '流程定义', icon: 'dashboard', affix: true }
-      // },
-      // {
-        // path: '/channelHome',
-        // component: () => import('@/views/base/specialist/channelHome'),
-        // name: '/channelHome',
-        // meta: { title: '首页', icon: 'dashboard', affix: true }
-      // },
-      // {
-        // path: '/chat',
-        // component: () => import('@/views/base/specialist/index'),
-        // name: '/chat',
-        // meta: { title: '聊天', icon: 'dashboard', affix: true }
-      // },
-
-      // >>>>>>>>>>>>>>>>>>>> assistant_router_start >>>>>>>>>>>>>>>>>>
-//      {
-//        path: '/smart/assistant/chainScript/index',
-//        component: () => import('@/views/smart/assistant/chainScript/index'),
-//        name: '/smart/assistant/chainScript/index',
-//        meta: { title: '流程定义', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/apikey/index',
-//        component: () => import('@/views/smart/assistant/apikey/index'),
-//        name: '/smart/assistant/apikey/index',
-//        meta: { title: '密钥管理', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/roleCatalog/index',
-//        component: () => import('@/views/smart/assistant/roleCatalog/index'),
-//        name: '/smart/assistant/roleCatalog/index',
-//        meta: { title: '角色类型管理', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/role/index',
-//        component: () => import('@/views/smart/assistant/role/index'),
-//        name: '/smart/assistant/role/index',
-//        meta: { title: '角色管理', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/channel/index',
-//        component: () => import('@/views/smart/assistant/channel/index'),
-//        name: '/smart/assistant/channel/index',
-//        meta: { title: '渠道管理', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/requestRecord/index',
-//        component: () => import('@/views/smart/assistant/requestRecord/index'),
-//        name: '/smart/assistant/requestRecord/index',
-//        meta: { title: '调用日志', icon: 'dashboard', affix: true }
-//      },
-//      {
-//        path: '/smart/assistant/workflowRecord/index',
-//        component: () => import('@/views/smart/assistant/workflowRecord/index'),
-//        name: '/smart/assistant/workflowRecord/index',
-//        meta: { title: '工作流日志', icon: 'dashboard', affix: true }
-//      },
-      // >>>>>>>>>>>>>>>>>>>> assistant_router_end >>>>>>>>>>>>>>>>>>
 
     ]
   },
-  // {
-  //   path: '/index',
-  //   component: () => import('@/views/smart/specialist/index'),
-  //   name: '/index',
-  //   meta: { title: '内容生成专家', icon: 'dashboard', affix: true }
-  // },
-  // {
-  //   path: '/smart/specialist/index',
-  //   component: () => import('@/views/smart/specialist/index'),
-  //   name: '/smart/specialist/index',
-  //   meta: { title: '内容生成专家', icon: 'dashboard', affix: true }
-  // },
   {
     path: '/user',
     component: Layout,
