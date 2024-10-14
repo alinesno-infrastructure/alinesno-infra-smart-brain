@@ -94,14 +94,14 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         industryRoleService.batchCreateRole(allEntities) ;
     }
 
-    @Override
-    public void initPlugin() {
-
-        log.debug("assistantPluginProperties = {}", assistantPluginProperties) ;
-
-        List<PluginLoader.PluginInfo> list = PluginLoader.loadPlugin(assistantPluginProperties.getCentral() , assistantPluginProperties.getPath());
-        savePluginToDb(list);
-    }
+//    @Override
+//    public void initPlugin() {
+//
+//        log.debug("assistantPluginProperties = {}", assistantPluginProperties) ;
+//
+//        List<PluginLoader.PluginInfo> list = PluginLoader.loadPlugin(assistantPluginProperties.getCentral() , assistantPluginProperties.getPath());
+//        savePluginToDb(list);
+//    }
 
     // 保存插件信息到数据库
     private void savePluginToDb(List<PluginLoader.PluginInfo> pluginInfoList) {
