@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.assistant.role.agents.demo;
 
-import com.alibaba.dashscope.common.MessageManager;
 import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
@@ -8,6 +7,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.ExpertService;
+import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import lombok.extern.slf4j.Slf4j;
