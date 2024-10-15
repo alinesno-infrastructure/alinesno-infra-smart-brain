@@ -63,19 +63,17 @@ public class AppConfiguration implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        log.debug("项目启动初始化");
 
-        // 初始化示例分类
-        assistantInitService.expertCatalog();
-
-        // 初始化示例专家分类
-        assistantInitService.expert();
-
-        // 初始化插件
-//        assistantInitService.initPlugin();
-
-        // 初始化示例频道
-        assistantInitService.initChannel();
+//        log.debug("项目启动初始化");
+//
+//         初始化示例分类
+//        assistantInitService.expertCatalog();
+//
+//        // 初始化示例专家分类
+//        assistantInitService.expert();
+//
+//        // 初始化示例频道
+//        assistantInitService.initChannel();
 
     }
 
