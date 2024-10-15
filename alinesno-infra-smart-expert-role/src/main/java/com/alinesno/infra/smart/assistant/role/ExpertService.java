@@ -317,7 +317,15 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * 上传文件到存储平台
      */
     public String uploadFile(String fileAbcPath) {
-        R<String> r = cloudStorageConsumer.uploadCallbackUrl(new File(fileAbcPath), "qiniu-kodo-pub");
+        File f = new File(fileAbcPath);
+
+        log.info("uploadFile:{}", f.getAbsolutePath());
+
+        if(!f.exists()){
+            return "文件"+fileAbcPath+"不存在.";
+        }
+
+        R<String> r = cloudStorageConsumer.uploadCallbackUrl(f, "qiniu-kodo-pub");
         return r.getData();
     }
 
