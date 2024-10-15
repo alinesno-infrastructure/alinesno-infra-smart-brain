@@ -13,6 +13,12 @@ import java.io.File;
 public interface CloudStorageConsumer {
 
     /**
+     * 上传文件到指定的存储平台并返回访问的url
+     */
+    @Post(url = "/api/base/storage/uploadCallbackUrl")
+    R<String> uploadCallbackUrl(@DataFile("file") File file, @Body("platform") String platform) ;
+
+    /**
      * 上传文件到存储
      *
      * @param file 待上传的文件，使用multipart/form-data方式提交
