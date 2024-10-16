@@ -5,6 +5,9 @@ import Cookies from 'js-cookie'
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
+import Antd from 'ant-design-vue'
+import 'ant-design-vue/dist/reset.css'
+
 import '@/assets/styles/index.scss' // global css
 
 import App from './App'
@@ -77,6 +80,8 @@ app.use(store)
 app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
+
+directive(Antd)
 
 directive(app)
 
