@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -168,7 +169,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         // 只要保存有脚本，则设置成流程脚本
-        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
 
         this.update(role);
     }
@@ -183,7 +184,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
         long roleId = taskInfo.getRoleId();
         IndustryRoleEntity role = getById(roleId);
-        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
 
         if(dto.getType().equals(ScriptPurposeEnums.EXECUTE.getValue())){  // 执行脚本
             log.info("执行脚本：{}", dto.getScript());
@@ -212,5 +213,14 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
         return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+    }
+
+    @Override
+    public void createRole(IndustryRoleEntity e) {
+
+        List<IndustryRoleEntity> allEntities = new ArrayList<>();
+        allEntities.add(e);
+
+        batchCreateRole(allEntities);
     }
 }
