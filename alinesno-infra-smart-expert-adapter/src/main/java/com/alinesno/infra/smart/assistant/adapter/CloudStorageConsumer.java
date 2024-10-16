@@ -9,7 +9,7 @@ import java.io.File;
 /**
  * 云文件存储上传
  */
-@BaseRequest(baseURL = "#{alinesno.infra.gateway.host}/base-storage" , connectTimeout = 30*1000)
+@BaseRequest(baseURL = "#{alinesno.infra.gateway.host}/base-storage" , connectTimeout = 360*1000)
 public interface CloudStorageConsumer {
 
     /**
