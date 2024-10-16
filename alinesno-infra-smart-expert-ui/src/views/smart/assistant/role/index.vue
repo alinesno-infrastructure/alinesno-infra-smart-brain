@@ -91,7 +91,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="角色名称" align="left" width="200" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="角色名称" align="left" width="180" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                 {{ truncateString(scope.row.roleName , 10) }}
@@ -111,24 +111,29 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="所属类型" align="center" width="180" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
+          <el-table-column label="所属类型" align="center" width="130" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
           </el-table-column>
-          <el-table-column label="配置Prompt" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          <el-table-column label="配置Prompt" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
+              <el-button type="primary" text icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
             </template>
           </el-table-column>
-          <el-table-column label="知识库" align="center" width="100"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          <el-table-column label="知识库" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Promotion" @click="configKnowledge(scope.row)">知识库</el-button>
+              <el-button type="primary" text icon="Promotion" @click="configKnowledge(scope.row)">知识库</el-button>
             </template>
           </el-table-column>
-          <el-table-column label="执行脚本" align="center" width="150"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          <el-table-column label="脚本" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Promotion" @click="configExecuteScript(scope.row)">脚本</el-button>
+              <el-button type="primary" text icon="Promotion" @click="configExecuteScript(scope.row)">脚本</el-button>
+            </template>
+          </el-table-column>
+          <el-table-column label="执行流程" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <el-button type="primary" text icon="Promotion" @click="configExecuteFlow(scope.row)">配置</el-button>
             </template>
           </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
@@ -485,18 +490,14 @@ function configKnowledge(row){
   
 }
 
+/** 配置执行流程 */
+function configExecuteFlow(row){
+  router.push({path:"/smart/assistant/role/createDefinition" , query: {roleId: row.id}});
+}
+
 /** 配置执行脚本 */
 function configExecuteScript(row){
-  // executeScriptDialog.value = true
-  // executeScriptTitle.value = '[' + row.roleName + ']执行脚本配置'
-  // knowRoleAvatar.value = row.roleAvatar
-
-  // nextTick(() => {
-  //   executeScriptRef.value.setCurrentRoleId(row.id);
-  // });
-
   router.push({path:"/expert/smart/assistant/role/script" , query: {roleId: row.id}});
-
 }
 
 /** 配置Prompt */
