@@ -7,7 +7,7 @@ var prefix = '/api/infra/smart/assistant/role/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
   createUrl: prefix + 'add' ,
-  saveUrl: prefix + 'save' ,
+  saveUrl: prefix + 'createRole' ,
   updateUrl: prefix +"modify" ,
   statusUrl: prefix +"changeStatus" ,
   cleanUrl: prefix + "clean",
