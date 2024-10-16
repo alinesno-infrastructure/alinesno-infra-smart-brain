@@ -175,23 +175,20 @@
             <el-col :span="24" class="editor-after-div">
               <el-form-item
                   label="头像"
-                  :rules="[{
-                      required: true,
-                      message: '请上传运行效果',
-                      trigger: 'blur',
-                    },]"
-                >
+                  :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
                   <el-upload
                     :file-list="fileList"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
+                    :limit="1"
                     :on-success="handleAvatarSuccess"
                     :before-upload="beforeAvatarUpload"
                     :headers="upload.headers"
                     :disabled="upload.isUploading"
                     :on-progress="handleFileUploadProgress"
                   >
+                    <!-- <img v-if="form.roleAvatar" style="width:100%;height:100%" :src="imagePath(form.roleAvatar)" /> -->
                     <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
                   </el-upload>
                 </el-form-item>
@@ -269,27 +266,6 @@
       </template>
       <template #default>
         <KnowledgeDataset ref="knowledgeDatasetRef" />
-      </template>
-    </el-drawer>
-
-    <!-- 执行脚本配置 -->
-    <el-drawer
-      v-model="executeScriptDialog"
-      size="50%"
-      with-header="false"
-      :title="executeScriptTitle"
-      :direction="right"
-      :before-close="handleCloseScriptDrawer">
-      <template #header>
-        <div class="role-icon">
-          <img :src="imagePath(knowRoleAvatar)" style="float:left" /> 
-          <div style="float: left;padding-top: 5px;margin-left: 10px;">
-            {{ executeScriptTitle }}
-          </div> 
-        </div>
-      </template>
-      <template #default>
-        <ExecuteScriptPanel ref="executeScriptRef" />
       </template>
     </el-drawer>
     
@@ -373,7 +349,7 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/role/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData"
 });
 // 列显隐信息
 const columns = ref([
@@ -607,7 +583,6 @@ function handleUpdate(row) {
     form.value.roleId = roleId;
     open.value = true;
     title.value = "修改应用";
-
   });
 };
 
