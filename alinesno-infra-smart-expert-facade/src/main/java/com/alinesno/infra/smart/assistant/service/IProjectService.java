@@ -17,4 +17,5 @@ public interface IProjectService extends IBaseService<ProjectEntity> {
      */
     void initDefaultApp(long userId);
 
+    ProjectEntity getProjectByAccountId(long userId);
 }
