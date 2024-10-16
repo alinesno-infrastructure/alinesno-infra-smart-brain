@@ -74,7 +74,7 @@ public class ImChatAvatarController {
             }) ;
 
             log.debug("ajaxResult= {}" , r);
-            return AjaxResult.success(r.getData()) ;
+            return AjaxResult.success("上传成功." , r.getData()) ;
         }
 
         return AjaxResult.success();
