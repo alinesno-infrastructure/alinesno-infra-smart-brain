@@ -41,4 +41,9 @@ public class ProjectServiceImpl extends IBaseServiceImpl<ProjectEntity, ProjectM
         save(project) ;
     }
 
+    @Override
+    public ProjectEntity getProjectByAccountId(long userId) {
+        return null;
+    }
+
 }
