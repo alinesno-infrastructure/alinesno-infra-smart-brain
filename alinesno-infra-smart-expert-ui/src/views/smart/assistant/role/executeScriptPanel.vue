@@ -46,7 +46,7 @@
                                 </div>
                             </template>
                             
-                            <el-skeleton v-if="!genContent" :rows="20" />
+                            <el-skeleton v-if="!genContent" :rows="10" />
                             <el-scrollbar v-else style="height: calc(-320px + 100vh); padding: 20px;">
                                 <div v-html="markdown.render(genContent)"></div>
                             </el-scrollbar>
