@@ -71,4 +71,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     WorkflowExecutionDto validateRoleScript(RoleScriptDto dto);
+
+    /**
+     * 创建角色
+     *
+     * @param e
+     */
+    void createRole(IndustryRoleEntity e);
 }
