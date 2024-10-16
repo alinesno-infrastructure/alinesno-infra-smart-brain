@@ -6,6 +6,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -41,6 +42,9 @@ import java.util.List;
 public class IndustryRoleController extends BaseController<IndustryRoleEntity, IIndustryRoleService> {
 
     @Autowired
+    private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
     private IIndustryRoleService service;
 
     @Autowired
@@ -74,6 +78,16 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         }
 
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     * 保存角色
+     */
+    @PostMapping("/createRole")
+    public AjaxResult createRole(@Validated @RequestBody IndustryRoleEntity e) {
+        log.debug("save:{}", ToStringBuilder.reflectionToString(e));
+        service.createRole(e) ;
+        return ok();
     }
 
     /**
