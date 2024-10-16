@@ -34,6 +34,7 @@ public class ScriptExpertService extends ExpertService {
 		String output = executeGroovyScript(role ,
 				workflowExecution ,
 				taskInfo ,
+				null ,
 				scriptText) ;
 		log.debug("handleRole output : {}", output);
 
@@ -55,6 +56,7 @@ public class ScriptExpertService extends ExpertService {
 		String output = executeGroovyScript(role ,
 				workflowExecution ,
 				taskInfo ,
+				codeContentList ,
 				scriptText) ;
 		log.debug("handleRole output : {}", output);
 
@@ -73,12 +75,10 @@ public class ScriptExpertService extends ExpertService {
 			return "scriptText is null or empty" ;
 		}
 
-		// 直接返回结果执行代码和内容
-		workflowExecution.setGenContent(codeContentList.get(0).getContent());
-
 		String output = executeGroovyScript(role ,
 				workflowExecution ,
 				taskInfo ,
+				codeContentList,
 				scriptText) ;
 		log.debug("handleRole output : {}", output);
 
@@ -91,12 +91,14 @@ public class ScriptExpertService extends ExpertService {
 	 * @param role
 	 * @param workflow
 	 * @param taskInfo
+	 * @param codeContentList
 	 * @param scriptText
 	 * @return
 	 */
 	private String executeGroovyScript(IndustryRoleEntity role,
 									   WorkflowExecutionEntity workflow ,
 									   MessageTaskInfo taskInfo,
+									   List<CodeContent> codeContentList,
 									   String scriptText) {
 
 		ToolsUtil tools = new ToolsUtil() ;
@@ -110,6 +112,11 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);
 		binding.setVariable("expertService", this);
 		binding.setVariable("tools", tools);
+
+		if(codeContentList != null && !codeContentList.isEmpty()){
+			binding.setVariable("codeContent", codeContentList.get(0));
+		}
+
 		binding.setVariable("contextMap", ContextManager.getInstance());
 		binding.setVariable("log", log);
 
