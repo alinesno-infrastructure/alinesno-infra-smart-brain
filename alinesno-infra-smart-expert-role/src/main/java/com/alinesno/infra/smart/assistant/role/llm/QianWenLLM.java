@@ -3,10 +3,11 @@ package com.alinesno.infra.smart.assistant.role.llm;
 import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
+import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.Constants;
-import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
+import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,20 @@ public class QianWenLLM {
                 .build();
 
         gen.streamCall(param, callback) ;
+    }
+
+    @SneakyThrows
+    public StringBuilder chatComponent(String prompt) {
+
+        Message promptMsg = Message.builder()
+                .role("user")
+                .content(prompt)
+                .build();
+
+        MessageManager msgManager = new MessageManager(10);
+        msgManager.add(promptMsg);
+
+        return chatComponent(msgManager) ;
     }
 
     @SneakyThrows
