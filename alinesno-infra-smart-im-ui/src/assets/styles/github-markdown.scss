@@ -817,7 +817,8 @@ html {
   padding: 0;
   margin: 0;
   word-break: normal;
-  white-space: pre;
+  // white-space: pre;
+  white-space: break-spaces ;
   background: transparent;
   border: 0;
 }
