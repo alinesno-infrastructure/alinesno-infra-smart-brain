@@ -89,8 +89,13 @@ export const constantRoutes = [
         name: '/knowledge/knowledge/index',
         meta: { title: '知识库配置', icon: 'dashboard', affix: true }
       },
-
-
+      {
+        path: '/smart/assistant/role/createDefinition',
+        name: '/smart/assistant/role/createDefinition',
+        hidden: false,
+        component: () => import('@/views/smart/assistant/role/createDefinition'),
+        meta: { title: '添加流程任务', icon: 'fa-solid fa-code-pull-request', affix: false }
+      },
     ]
   },
   {
