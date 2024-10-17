@@ -5,7 +5,7 @@
         <a-menu mode="vertical" class="flow-ant-menu-vertical">
           <a-menu-item key="7" @click="addType(7)">
             <img :src="parallelIcon" class="anticon" />
-            <span>Groovy操作</span>
+            <span>任务节点</span>
           </a-menu-item>
           <a-menu-item key="9" @click="addType(9)">
             <img :src="branchIcon2" class="anticon" />
