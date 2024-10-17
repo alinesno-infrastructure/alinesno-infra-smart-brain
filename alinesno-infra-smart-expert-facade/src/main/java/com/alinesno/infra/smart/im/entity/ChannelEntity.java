@@ -15,7 +15,7 @@ import lombok.EqualsAndHashCode;
 public class ChannelEntity extends InfraBaseEntity {
 
     @TableField("channel_desc")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 64, isNull = false, comment = "频道Desc")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = false, comment = "频道Desc")
 	private String channelDesc ;
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 256, isNull = false, comment = "频道Icon")
