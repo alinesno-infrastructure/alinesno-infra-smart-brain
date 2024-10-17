@@ -64,7 +64,6 @@ app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
 
-
 // 全局组件挂载
 app.component('DictTag', DictTag)
 app.component('Pagination', Pagination)
@@ -81,7 +80,7 @@ app.use(plugins)
 app.use(elementIcons)
 app.component('svg-icon', SvgIcon)
 
-directive(Antd)
+app.use(Antd)
 
 directive(app)
 
