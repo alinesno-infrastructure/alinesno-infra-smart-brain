@@ -7,8 +7,8 @@
         <div class="process-panel">
           <ul>
             <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
-              <img style="width:30px;height:30px;border-radius: 5px;position: absolute;" :src="imagePathByPath(item.roleAvatar)" />
-              <div style="margin-left: 40px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;color: #2c3e50;">
+              <img style="width:40px;height:40px;border-radius: 50%;position: absolute;" :src="imagePathByPath(item.roleAvatar)" />
+              <div style="margin-left: 50px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;color: #2c3e50;">
                 {{ item.roleName }}
                 <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button> -->
                 <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
