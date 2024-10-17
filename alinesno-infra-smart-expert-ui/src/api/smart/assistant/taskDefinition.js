@@ -9,7 +9,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
  */
 
 // 接口配置项
-var prefix = '/api/infra/data/scheduler/taskDefinition/' ;
+var prefix = '/api/infra/smart/assistant/taskDefinition/' ;
 var managerUrl = {
     datatables : prefix +"datatables" ,
     createUrl: prefix + 'add' ,
@@ -22,13 +22,43 @@ var managerUrl = {
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
     getTaskDefinition: prefix + "getTaskDefinition",
+    validateTask: prefix + "validateTask",
+    updateProcessDefinition: prefix + "updateProcessDefinition", // 更新job
+    commitProcessDefinition: prefix + "commitProcessDefinition", // 保存任务
     downloadFile: prefix + "downloadFile"
 }
 
-// 获取到任务列表
-export function getTaskDefinition(processDefinitionId) {
+// 校验任务
+export function validateTask(data){
   return request({
-    url: managerUrl.getTaskDefinition+ '?processDefinitionId=' + parseStrEmpty(processDefinitionId) ,
+    url: managerUrl.validateTask ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 更新任务
+export function updateProcessDefinition(data){
+  return request({
+    url: managerUrl.updateProcessDefinition,
+    method: 'post',
+    data: data
+  })
+}
+
+// 保存任务
+export function commitProcessDefinition(data , type){
+  return request({
+    url: managerUrl.commitProcessDefinition + '?type=' + parseStrEmpty(type) ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取到任务列表
+export function getTaskDefinition(roleId) {
+  return request({
+    url: managerUrl.getTaskDefinition+ '?roleId=' + parseStrEmpty(roleId) ,
     method: 'get'
   })
 }
