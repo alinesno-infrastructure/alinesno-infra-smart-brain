@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading">
+  <div v-loading="loading" class="channel-app-container">
 
     <!-- 控制列表 -->
     <el-container style="height: calc(100vh - 56px);">
