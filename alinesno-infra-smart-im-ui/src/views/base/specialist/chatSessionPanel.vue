@@ -1,5 +1,5 @@
 <template>
-  <div class="chatChannel-session-list-box">
+  <div class="chatChannel-session-list-box ">
 
     <!-- 创建频道 -->
     <div class="chatChannel-builder">
