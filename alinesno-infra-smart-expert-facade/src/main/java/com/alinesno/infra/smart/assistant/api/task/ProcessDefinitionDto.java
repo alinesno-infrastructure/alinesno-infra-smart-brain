@@ -22,10 +22,15 @@ public class ProcessDefinitionDto implements Serializable {
     private long projectId ;
 
     /**
+     * 角色ID
+     */
+    private long roleId ;
+
+    /**
      * 流程上下文信息
      * 包含了流程执行时的环境和配置信息
      */
-    private ProcessContextDto context ;
+//    private ProcessContextDto context ;
 
     /**
      * 流程任务列表
