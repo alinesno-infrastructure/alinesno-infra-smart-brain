@@ -96,21 +96,12 @@
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                 {{ truncateString(scope.row.roleName , 10) }}
               </div>
-                     <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" v-copyText="scope.row.chainId">
-                代码:{{ truncateString(scope.row.chainId,20) }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <div>
-                {{ scope.row.responsibilities }}
-              </div>
               <div style="font-size: 13px;color: #a5a5a5;">
                 会话: {{ scope.row.chatCount }} 
               </div>
             </template>
           </el-table-column>
+          <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true" />
           <el-table-column label="所属类型" align="center" width="130" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
@@ -118,24 +109,32 @@
           </el-table-column>
           <el-table-column label="配置Prompt" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text icon="Paperclip" @click="configPrompt(scope.row)">配置</el-button>
+              <el-button type="primary" text @click="configPrompt(scope.row)">
+                <i class="fa-solid fa-truck-fast"></i> 配置
+              </el-button>
             </template>
           </el-table-column>
           <el-table-column label="知识库" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text icon="Promotion" @click="configKnowledge(scope.row)">知识库</el-button>
+              <el-button type="primary" text @click="configKnowledge(scope.row)">
+                <i class="fa-solid fa-file-word"></i>知识库
+              </el-button>
             </template>
           </el-table-column>
           <el-table-column label="脚本" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text icon="Promotion" @click="configExecuteScript(scope.row)">脚本</el-button>
+              <el-button type="primary" text @click="configExecuteScript(scope.row)">
+                <i class="fa-solid fa-code"></i>脚本
+              </el-button>
             </template>
           </el-table-column>
+          <!--
           <el-table-column label="执行流程" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text icon="Promotion" @click="configExecuteFlow(scope.row)">配置</el-button>
             </template>
           </el-table-column>
+          -->
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
@@ -230,8 +229,11 @@
 
         <el-row>
           <el-col :span="24">
-            <el-form-item label="级别" prop="roleLevel">
-              <el-input v-model="form.roleLevel" placeholder="请输入角色级别" maxlength="100"/>
+            <el-form-item label="执行类型" prop="scriptType">
+              <el-radio-group v-model="form.scriptType">
+                <el-radio :value="script" label="script">脚本</el-radio>
+                <el-radio :value="flow" label="flow">流程</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
@@ -372,7 +374,8 @@ const columns = ref([
 
 const data = reactive({
   form: {
-    roleAvatar: null
+    roleAvatar: null,
+    scriptType: 'script'
   },
   queryParams: {
     pageNum: 1,
@@ -490,14 +493,17 @@ function configKnowledge(row){
   
 }
 
-/** 配置执行流程 */
-function configExecuteFlow(row){
-  router.push({path:"/smart/assistant/role/createDefinition" , query: {roleId: row.id}});
-}
-
 /** 配置执行脚本 */
 function configExecuteScript(row){
-  router.push({path:"/expert/smart/assistant/role/script" , query: {roleId: row.id}});
+
+  console.log('scriptType = ' + row.scriptType)
+
+  if(row.scriptType && row.scriptType == 'flow'){
+    router.push({path:"/smart/assistant/role/createDefinition" , query: {roleId: row.id}});
+  }else {
+    router.push({path:"/expert/smart/assistant/role/script" , query: {roleId: row.id}});
+  }
+
 }
 
 /** 配置Prompt */
