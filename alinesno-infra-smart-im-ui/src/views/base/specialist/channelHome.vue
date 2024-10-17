@@ -136,7 +136,7 @@
       <el-row>
 
         <el-col :span="6" v-for="(item, index) in publicChatChannel" :key="index" style="padding:8px;">
-          <div class="semi-card-container" @click="handleChannelChat(item)">
+          <div class="semi-card-container" @click="enterChannel(item)">
             <div class="semi-space cart-head-continer" style="gap: 16px;">
               <div class="cart-head-content">
                 <div class="cart-head-content">
