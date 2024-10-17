@@ -11,10 +11,10 @@
                     :element-loading-spinner="svg"
                 >
 
-                    <div style="margin-top:20px;margin-bottom:20px">
-                        <el-input v-model="chatMessage" size="large" style="width: 50%;" placeholder="输入需求描述信息." />
+                    <div style="margin-top: 20px;margin-bottom: 20px;display: inline-flex;width: 100%;">
+                        <el-input v-model="chatMessage" size="large" style="width: 100%;" placeholder="输入需求描述信息." />
 
-                        <div class="flow-setting-footer">
+                        <div class="flow-setting-footer" style="margin: 0px;">
                             <el-button type="primary" text bg @click="handleValidateTask()" size="large">
                                 <i class="fa-solid fa-truck-fast"></i>&nbsp;验证任务
                             </el-button>
@@ -24,18 +24,20 @@
                         </div>
 
                     </div>
+
                     <el-tabs :tab-position="tabPosition" v-model="scriptType" @tab-click="handleTabClick" class="demo-tabs">
 
                         <el-tab-pane name="execute" label="执行脚本">
-                            <CodeEditor ref="executeEditorRef" :lang="'java'" />
+                            <ScriptEditorPanel ref="executeEditorRef" :lang="'java'" />
                         </el-tab-pane>
                         <el-tab-pane name="audit" label="意见审核">
-                            <CodeEditor ref="auditEditorRef" :lang="'java'" />
+                            <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
                         </el-tab-pane>
                         <el-tab-pane name="functionCall" label="方法回调">
-                            <CodeEditor ref="functionCallEditorRef" :lang="'java'" />
+                            <ScriptEditorPanel ref="functionCallEditorRef" :lang="'java'" />
                         </el-tab-pane>
                     </el-tabs>
+
                 </el-col>
                 <el-col :span="12">
                     <div class="output-result-box">
@@ -62,11 +64,11 @@
 <script setup>
 
 import { validateRoleScript, updateRoleScript } from '@/api/smart/assistant/role'
-import CodeEditor from './CodeEditor.vue';
+import ScriptEditorPanel from './ScriptEditor.vue';
 import {
   getRole
 } from "@/api/smart/assistant/role";
-import { getParam } from '@/utils/ruoyi'
+// import { getParam } from '@/utils/ruoyi'
 
 import MarkdownIt from 'markdown-it';
 const markdown = new MarkdownIt()
