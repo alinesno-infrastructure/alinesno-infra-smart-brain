@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -7,9 +8,12 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.api.task.ParamsDto;
+import com.alinesno.infra.smart.assistant.api.task.ProcessDefinitionDto;
 import com.alinesno.infra.smart.assistant.api.task.ProcessTaskDto;
+import com.alinesno.infra.smart.assistant.api.task.ProcessTaskValidateDto;
 import com.alinesno.infra.smart.assistant.entity.TaskDefinitionEntity;
 import com.alinesno.infra.smart.assistant.enums.ExecutorTypeEnums;
+import com.alinesno.infra.smart.assistant.gateway.session.CurrentProjectSession;
 import com.alinesno.infra.smart.assistant.service.ITaskDefinitionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
@@ -19,6 +23,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -58,12 +64,12 @@ public class TaskDefinitionController extends BaseController<TaskDefinitionEntit
 
     // 通过processDefinitionId实现类获取到任务的定义
     @GetMapping("/getTaskDefinition")
-    public AjaxResult getTaskDefinition(long processDefinitionId) {
+    public AjaxResult getTaskDefinition(long roleId) {
 
-        log.debug("processDefinition:{}" , processDefinitionId);
+        log.debug("processDefinition:{}" , roleId);
 
         LambdaQueryWrapper<TaskDefinitionEntity> query = new LambdaQueryWrapper<>();
-        query.eq(TaskDefinitionEntity::getProcessId , processDefinitionId);
+        query.eq(TaskDefinitionEntity::getRoleId, roleId);
 
         List<TaskDefinitionEntity> list = service.list(query);
 
@@ -94,6 +100,40 @@ public class TaskDefinitionController extends BaseController<TaskDefinitionEntit
 
         return AjaxResult.success(dtoList) ;
     }
+
+    /**
+     * 验证脚本任务
+     * @param dto
+     * @return
+     */
+    @PostMapping("/validateTask")
+    public AjaxResult validateTask(@RequestBody @Validated ProcessTaskValidateDto dto){
+
+        log.debug("dto = {}", JSONUtil.toJsonPrettyStr(JSONObject.toJSONString(dto)));
+
+        // 运行任务验证
+        service.runProcessTask(dto) ;
+
+        return AjaxResult.success() ;
+    }
+
+    /**
+     * 保存流程定义信息
+     * @return
+     */
+    @PostMapping("/commitProcessDefinition")
+    public AjaxResult commitProcessDefinition(@RequestBody ProcessDefinitionDto dto , String type){
+        log.debug("type = {} , dto = {}", type , dto);
+
+        List<ProcessTaskDto> taskFlow = dto.getTaskFlow() ;
+        Assert.isTrue(taskFlow.size() > 1 , "流程定义为空,请定义流程.");
+
+        dto.setProjectId(CurrentProjectSession.get().getId());
+
+        long processId = type.equals("validate")? service.validateProcessDefinition(dto) : service.commitProcessDefinition(dto) ;
+        return AjaxResult.success("success" , processId) ;
+    }
+
 
     @Override
     public ITaskDefinitionService getFeign() {
