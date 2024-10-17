@@ -4,6 +4,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.ProjectEntity;
 import com.alinesno.infra.smart.assistant.mapper.ProjectMapper;
 import com.alinesno.infra.smart.assistant.service.IProjectService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.sqids.Sqids;
@@ -43,7 +44,12 @@ public class ProjectServiceImpl extends IBaseServiceImpl<ProjectEntity, ProjectM
 
     @Override
     public ProjectEntity getProjectByAccountId(long userId) {
-        return null;
+
+        LambdaQueryWrapper<ProjectEntity> query = new LambdaQueryWrapper<>();
+        query.eq(ProjectEntity::getOperatorId, userId)
+                .eq(ProjectEntity::getFieldProp, DEFAULT_PROJECT_FIELD);
+
+        return getOne(query);
     }
 
 }
