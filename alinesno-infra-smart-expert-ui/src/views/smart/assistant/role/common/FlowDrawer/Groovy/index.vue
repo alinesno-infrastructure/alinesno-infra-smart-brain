@@ -70,7 +70,7 @@ import { ElLoading } from 'element-plus'
 import flowNodeStore from '@/store/modules/flowNode'
 
 // import { getAllResource } from '@/api/data/scheduler/resource'
-import { validateTask } from '@/api/smart/assistant/processDefinition'
+import { validateTask } from '@/api/smart/assistant/taskDefinition'
 import { branchIcon2 } from '@/utils/flowMixin';
 import CodeEditor from '../../CodeEditor.vue';
 // import ContextParam from "../../../params/contextParam.vue";
