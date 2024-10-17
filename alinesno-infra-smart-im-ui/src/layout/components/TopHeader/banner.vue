@@ -7,9 +7,11 @@
       <a :title="saasTitle" target="_self" class="header-logo-label">
         <span>{{ saasTitle }} </span>
       </a>
+      <!--
       <div v-if="saasUrl" class="dashboard-home" @click="dashboardHome()">
         <i class="fa-solid fa-house"></i> 工作台
       </div>
+      -->
     </router-link>
   </div>
 </template>
@@ -27,7 +29,7 @@ export default {
     let saasTitle = 'AIP智能体平台'
     let enableLogo = true;
     let saasUrl = 'http://portal.infra.linesno.com/' ; // http://alinesno-infra-plat-console-ui.beta.plat.infra.linesno.com' ;
-    let saasLogoUrl = 'http://portal.infra.linesno.com/logo.png' ;
+    let saasLogoUrl = 'http://data.linesno.com/logo_2.png' ;
     let displayUrl = ''; 
 
 
