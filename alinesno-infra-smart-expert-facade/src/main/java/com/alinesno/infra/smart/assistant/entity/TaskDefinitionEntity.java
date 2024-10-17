@@ -26,7 +26,7 @@ public class TaskDefinitionEntity extends InfraBaseEntity {
     @TableField
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @ColumnComment("流程编码")
-    private long processId ;
+    private long roleId ;
 
     @TableField
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
