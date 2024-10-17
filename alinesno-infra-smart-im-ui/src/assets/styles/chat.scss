@@ -274,3 +274,25 @@ span.design {
     border: 0px;
 }
 }
+
+
+.CodeMirror pre.CodeMirror-line,
+.CodeMirror pre.CodeMirror-line-like {
+  line-height: 1.3rem !important;
+}
+
+.channel-app-container {
+
+  .el-aside{
+    border-right: 0px !important ;
+  }
+
+  .acp-dashboard{
+    background-color: #fff !important;
+
+    .smart-container .robot-chat-windows{
+      border-right: 0px !important ;
+      border-left: 0px !important ;
+    }
+  }
+}
