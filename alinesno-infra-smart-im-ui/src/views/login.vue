@@ -3,7 +3,7 @@
     <el-header style="z-index: 100;height: 45px;background: #3b5998;box-shadow: 0 2px 4px 0 var(--cb-color-shadow,rgba(0,0,0,.16));">
       <div>
         <div style="float: left;font-size: 30px;color: rgb(255, 255, 255);margin-top: 5px;">
-          <img src="http://portal.infra.linesno.com/logo.png" style="width:35px" alt="">
+          <img src="http://data.linesno.com/logo_2.png" style="width:35px" alt="">
         </div>
         <div class="banner-text">
           IM消息服务
