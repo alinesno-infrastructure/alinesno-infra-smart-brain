@@ -24,9 +24,17 @@ export function formatMessage(message, selectedUsers) {
 
 /** 显示图片 */
 export function imagePath(row){
+
+  let icon = row.icon 
+
+  // 如果是http前缀则直接返回
+  if(icon && icon.indexOf('http') === 0){
+    return icon ; 
+  }
+
   let roleAvatar = '1746435800232665090' ; 
-  if(row && row.icon){
-    roleAvatar = row.icon; 
+  if(icon && icon){
+    roleAvatar = icon; 
   }
   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
 }
