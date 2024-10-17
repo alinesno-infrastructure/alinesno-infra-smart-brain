@@ -53,7 +53,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
             e.setId(accountId);
 
             e.setChannelName("个人公共频道");
-            e.setChannelDesc("公共频道服务，用于公共交流");
+            e.setChannelDesc("公共频道服务，我的个人公共频道！这是一个开放且充满活力的空间，旨在为所有对技术、创新、生活方式以及个人成长，用于公共交流");
             e.setChannelType(ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
 
             e.setHasStatus(HasStatusEnums.LEGAL.value);
