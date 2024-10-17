@@ -49,6 +49,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("角色等级")
     private String roleLevel; // 角色等级
 
+    @TableField("script_type")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 50)
+    @ColumnComment("执行类型(脚本script|流程flow)")
+    private String scriptType ; // 执行类型(脚本script|流程flow|默认default)
+
     @TableField("other_attributes") // MyBatis-Plus 字段注解
     @ColumnType(value = MySqlTypeConstant.TEXT)
     @ColumnComment("其他角色相关字段")
