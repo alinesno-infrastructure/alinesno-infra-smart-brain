@@ -1,5 +1,5 @@
 <template>
-  <div v-loading="loading" class="channel-app-container">
+  <div v-loading="loading" class="channel-app-container channel-window-container">
 
     <!-- 控制列表 -->
     <el-container style="height: calc(100vh - 56px);">
@@ -108,13 +108,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="css">
-.CodeMirror pre.CodeMirror-line,
-.CodeMirror pre.CodeMirror-line-like {
-  line-height: 1.3rem !important;
-}
-
-.channel-app-container {
-
+.channel-window-container{
   .el-container{
     height: 100vh !important ;
 
@@ -123,20 +117,7 @@ onUnmounted(() => {
     }
   }
 
-  .el-aside{
-    border-right: 0px !important ;
-  }
-  
-  .acp-dashboard{
-    background-color: #fff !important;
-
-    .smart-container .robot-chat-windows{
-      border-right: 0px !important ;
-      border-left: 0px !important ;
-    }
-  }
 }
-
 </style>
 
 <style lang="scss">
