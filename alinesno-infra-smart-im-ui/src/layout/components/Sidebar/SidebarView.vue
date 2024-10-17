@@ -11,7 +11,7 @@
 export default {
   data () {
     return {
-      currentApplicationName: 'IM消息服务'
+      currentApplicationName: '智能体平台'
     }
   },
   mounted () {
