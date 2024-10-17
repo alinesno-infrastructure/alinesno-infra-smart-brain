@@ -1,9 +1,9 @@
 <template>
-  <div v-loading="loading" class="channel-app-container">
+  <div v-loading="loading" >
 
     <!-- 控制列表 -->
     <el-container style="height: calc(100vh - 56px);">
-      <el-aside width="330px" style="background: #fff;height:100%; padding:10px;border-right:1px solid rgba(6, 7, 9, 0.1)">
+      <el-aside width="330px" style="background: #fff;height:100%; padding:10px;">
         <ChatSessionPanel @onSendParams="handleGetParams" />
       </el-aside>
       <el-main style="padding:0px;">
