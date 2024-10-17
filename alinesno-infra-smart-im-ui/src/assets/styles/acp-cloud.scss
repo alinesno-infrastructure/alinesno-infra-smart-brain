@@ -168,7 +168,7 @@ $chartColor: #3b5998;
 
 // 主面板
 .acp-dashboard {
-  background-color: #fafafa;
+  background-color: #fff;
   height: 100%;
   padding: 10px !important;
 
@@ -837,8 +837,8 @@ $chartColor: #3b5998;
 // 专家体系
 .smart-container {
   margin: auto;
-  width: 100%;
-  max-width: 1300px;
+  width: 95%;
+  // max-width: 1300px;
 
   .robot-chat-help-container {
     margin-left: 10px;
