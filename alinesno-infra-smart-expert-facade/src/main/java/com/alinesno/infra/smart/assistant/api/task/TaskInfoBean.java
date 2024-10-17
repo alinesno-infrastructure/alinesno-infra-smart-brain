@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.api.task;
 
+import com.alinesno.infra.smart.assistant.entity.TaskDefinitionEntity;
 import lombok.Data;
 import lombok.ToString;
 
@@ -17,13 +18,13 @@ public class TaskInfoBean implements Serializable {
 
 //    // 环境定义
 //    private EnvironmentEntity environment ;
-//
+
 //    // 任务定义
 //    private ProcessDefinitionEntity process ;
-//
-//    // 任务列表
-//    private TaskDefinitionEntity task;
-//
+
+    // 任务列表
+    private TaskDefinitionEntity task;
+
 //    // 资源列表
 //    private List<ResourceEntity> resources;
 
