@@ -29,10 +29,6 @@ const props = defineProps({
     type: String,
     default: 'python' , 
   },
-  aa: {
-    type: String,
-    default: 'python' , 
-  },
   height: {
     type: String,
     default: '400px',
