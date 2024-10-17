@@ -59,11 +59,11 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         root.setId(9526L);
 
         // 技术演示团队
-        IndustryRoleCatalogEntity techResearchDept = createExpertEntity("示例团队", "用于演示和集成示例，包括开发示例，单智能体和多智能体的协作", root.getId(), root);
+        IndustryRoleCatalogEntity techResearchDept = createExpertEntity("示例简单团队", "用于演示和集成示例，包括开发示例，单智能体和多智能体的协作", root.getId(), root);
         techResearchDept.setId(9527L);
 
         // AIP运营团队
-        IndustryRoleCatalogEntity demandAnalysisTeam = createExpertEntity("AIP运营团队", "用于AIP产品的运营管理，包括文档、资讯、备份、管理方案等一套运营团队", root.getId(), root);
+        IndustryRoleCatalogEntity demandAnalysisTeam = createExpertEntity("示例运营团队", "用于AIP产品的运营管理，包括文档、资讯、备份、管理方案等一套运营团队", root.getId(), root);
         demandAnalysisTeam.setId(9528L);
 
         allEntities.add(root);
@@ -162,16 +162,16 @@ public class AssistantInitServiceImpl implements IAssistantInitService {
         // 生成推荐频道列表
         List<ChannelEntity> recommendChannels = Arrays.asList(
                 // 考核题目频道
-                createChannel("团队考核题目", "团队人员考核、面试题目生成频道", "1808349647059738625"),
+                createChannel("团队考核题目", "团队人员考核、面试题目生成频道,在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始…", "1808349647059738625"),
 
                 // AIP产品运营
-                createChannel("AIP产品运营", "AIP产品运营频道，包括产品文档、资讯、备份、管理方案等一套运营团队", "1808349728060137473"),
+                createChannel("AIP产品运营", "AIP产品运营频道，包括产品文档、资讯、备份、管理方案等一套运营团队,在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始…", "1808349728060137473"),
 
                 // AIP自动化运维
-                createChannel("AIP自动化运维", "AIP自动化运维频道，包括自动化测试、自动化部署、自动化监控等一套运营团队", "1808350041093627906"),
+                createChannel("AIP自动化运维", "AIP自动化运维频道，包括自动化测试、自动化部署、自动化监控等一套运营团队,在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始…", "1808350041093627906"),
 
                 // 论文编写频道
-                createChannel("毕业论文编写", "项目团队及相关大学生毕业论文编写频道", "1808349751040729090")
+                createChannel("毕业论文编写", "项目团队及相关大学生毕业论文编写频道,在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始…", "1808349751040729090")
         );
 
         log.debug("保存推荐频道信息到数据库:{}" , recommendChannels.size());
