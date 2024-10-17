@@ -1,6 +1,6 @@
 <!-- 意见审批  -->
 <template>
-  <div class="acp-dashboard aip-chat-dashboard-panel">
+  <div class="acp-dashboard aip-chat-dashboard-panel ">
     <div class="smart-container">
       <el-row>
         <el-col :span="17">
