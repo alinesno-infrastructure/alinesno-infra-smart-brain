@@ -17,7 +17,7 @@ jobs:
     env:
       # 版本管理
       PROJECT_NAME: 'alinesno-infra-smart-expert-boot'
-      PRO_VERSION: '1.0.0-SNAPSHOT'
+      PRO_VERSION: '1.1.0-SNAPSHOT'
       CURRENT_PROFIRE: 'dev'
       BUILD_NUMBER: ${{ github.run_number }}
 
