@@ -29,7 +29,10 @@ import org.springframework.util.unit.DataSize;
 @EnableActable
 @ServletComponentScan(basePackages = {"com.alinesno.infra.smart.brain"})
 @Configuration
-@ForestScan(basePackages = "com.alinesno.infra.smart.assistant.adapter")
+@ForestScan({
+        "com.alinesno.infra.common.web.adapter.base.consumer" ,
+        "com.alinesno.infra.smart.assistant.adapter"
+})
 @MapperScan({
         "com.alinesno.infra.smart.assistant.mapper" ,
         "com.alinesno.infra.base.im.mapper" ,
@@ -66,14 +69,14 @@ public class AppConfiguration implements CommandLineRunner {
 
         log.debug("项目启动初始化");
 
-        // 初始化示例分类
-        assistantInitService.expertCatalog();
-
-        // 初始化示例专家分类
-        assistantInitService.expert();
-
-        // 初始化示例频道
-        assistantInitService.initChannel();
+//        // 初始化示例分类
+//        assistantInitService.expertCatalog();
+//
+//        // 初始化示例专家分类
+//        assistantInitService.expert();
+//
+//        // 初始化示例频道
+//        assistantInitService.initChannel();
 
     }
 
