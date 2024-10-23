@@ -69,6 +69,14 @@
 			<version>${revision}</version>
         </dependency>
 
+		<!-- 引用公共数据权限_start -->
+        <dependency>
+            <groupId>com.alinesno.infra.common</groupId>
+            <artifactId>alinesno-infra-common-extend-datascope</artifactId>
+			<version>${revision}</version>
+        </dependency>
+		<!-- 引用公共数据权限_end -->
+
     </dependencies>
 
 </project>
