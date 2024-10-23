@@ -25,7 +25,7 @@
                                 {{ truncateString(item.roleName , 10) }}
                               </div>
                               <div style="font-size: 13px; color: rgb(165, 165, 165); cursor: pointer;">
-                                {{ item.roleLevel }}
+                                {{ item.responsibilities }}
                               </div>
                           </div>
                           <div style="float:right">
