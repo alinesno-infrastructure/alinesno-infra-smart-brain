@@ -1,6 +1,6 @@
 package com.alinesno.infra.smart.assistant.entity;
 
-import com.alinesno.infra.common.facade.mapper.entity.BaseEntity;
+import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @TableName("workflow_executions") // MyBatis-Plus 注解，指定表名
-public class WorkflowExecutionEntity extends BaseEntity {
+public class WorkflowExecutionEntity extends InfraBaseEntity {
 
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @ColumnComment("角色ID")
