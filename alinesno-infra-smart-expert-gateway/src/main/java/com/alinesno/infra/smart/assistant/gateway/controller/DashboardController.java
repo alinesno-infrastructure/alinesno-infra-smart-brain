@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -27,10 +29,11 @@ public class DashboardController {
     private IIndustryRoleService roleService;
 
     // 获取到最新更新的8个角色信息
+    @DataPermissionQuery
     @RequestMapping("/getNewestRole")
-    public AjaxResult getNewestRole() {
+    public AjaxResult getNewestRole(PermissionQuery query) {
 
-        List<IndustryRoleEntity> list = roleService.getNewestRole();
+        List<IndustryRoleEntity> list = roleService.getNewestRole(query);
 
         return AjaxResult.success(list) ;
     }
