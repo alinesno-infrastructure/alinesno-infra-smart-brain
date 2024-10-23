@@ -43,6 +43,7 @@ import org.springframework.util.unit.DataSize;
         "com.alinesno.infra.smart.assistant",
         "com.alinesno.infra.smart.brain" ,
         "com.alinesno.infra.base.im" ,
+        "com.alinesno.infra.common.extend.datasource" ,
         "com.alinesno.infra.smart.inference"
 })
 public class AppConfiguration implements CommandLineRunner {
