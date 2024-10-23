@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.core.utils.StringUtils;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleCatalogDto;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.TreeSelectDto;
@@ -34,9 +35,13 @@ public class IndustryRoleCatalogServiceImpl extends IBaseServiceImpl<IndustryRol
     private IIndustryRoleService roleService ;
 
     @Override
-    public List<IndustryRoleCatalogEntity> selectCatalogList(IndustryRoleCatalogEntity promptCatalog) {
+    public List<IndustryRoleCatalogEntity> selectCatalogList(IndustryRoleCatalogEntity promptCatalog, PermissionQuery query) {
 
-        List<IndustryRoleCatalogEntity> list = list() ;
+        LambdaQueryWrapper<IndustryRoleCatalogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(IndustryRoleCatalogEntity.class) ;
+        query.toWrapper(queryWrapper);
+
+        List<IndustryRoleCatalogEntity> list = list(queryWrapper) ;
 
         if(list == null || list.isEmpty()){
 
@@ -66,9 +71,13 @@ public class IndustryRoleCatalogServiceImpl extends IBaseServiceImpl<IndustryRol
     }
 
     @Override
-    public List<TreeSelectDto> selectCatalogTreeList() {
+    public List<TreeSelectDto> selectCatalogTreeList(PermissionQuery query) {
 
-        List<IndustryRoleCatalogEntity> deptTrees = buildDeptTree(list());
+        LambdaQueryWrapper<IndustryRoleCatalogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(IndustryRoleCatalogEntity.class) ;
+        query.toWrapper(queryWrapper);
+
+        List<IndustryRoleCatalogEntity> deptTrees = buildDeptTree(list(queryWrapper));
         return deptTrees.stream().map(TreeSelectDto::new).collect(Collectors.toList());
     }
 
