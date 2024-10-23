@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
@@ -44,6 +45,7 @@ public class ProjectController extends BaseController<ProjectEntity, IProjectSer
      * @param page DatatablesPageBean对象
      * @return 包含DataTables数据的TableDataInfo对象
      */
+    @DataPermissionScope
     @ResponseBody
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
