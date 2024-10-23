@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
@@ -46,9 +47,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     private static final Gson gson = new Gson();
 
     @Override
-    public List<IndustryRoleEntity> getNewestRole() {
+    public List<IndustryRoleEntity> getNewestRole(PermissionQuery query) {
 
         LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(IndustryRoleEntity.class) ;
+        query.toWrapper(queryWrapper);
+
         queryWrapper.orderByDesc(IndustryRoleEntity::getAddTime);
         queryWrapper.last("limit 8");
 
