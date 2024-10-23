@@ -77,7 +77,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     @Override
     public String createChannel(ChannelEntity entity) {
 
-        entity.setChannelId(IdUtil.nanoId());
+        entity.setChannelId(IdUtil.getSnowflakeNextIdStr());
         entity.setChannelType(entity.getChannelType()) ;
 
         // 创建频道知识库
