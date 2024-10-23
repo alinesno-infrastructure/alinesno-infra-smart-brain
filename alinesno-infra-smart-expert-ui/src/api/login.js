@@ -30,11 +30,8 @@ export function isSsoLogin(){
 // 用户退出
 export function ssoLogout() {
   return request({
-    url: '/sso/logout',
-    headers: {
-      isToken: false
-    },
-    method: 'post'
+    url: '/sso/logout' ,
+    method: 'get'
   })
 }
 
