@@ -7,7 +7,7 @@ var prefix = '/api/infra/base/im/channel/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
   createUrl: prefix + 'add' ,
-  saveUrl: prefix + 'save' ,
+  saveUrl: prefix + 'createChannel' ,
   updateUrl: prefix +"modify" ,
   statusUrl: prefix +"changeStatus" ,
   cleanUrl: prefix + "clean",
