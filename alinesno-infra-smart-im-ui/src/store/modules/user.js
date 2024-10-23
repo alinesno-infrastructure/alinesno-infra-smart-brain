@@ -1,4 +1,4 @@
-import { login, logout, getInfo , goSsoAuthUrl , doLoginByTicket , isSsoLogin } from '@/api/login'
+import { login, ssoLogout , logout, getInfo , goSsoAuthUrl , doLoginByTicket , isSsoLogin } from '@/api/login'
 import { getToken, setToken, removeToken } from '@/utils/auth'
 import defAva from '@/assets/images/profile.jpg'
 
@@ -95,7 +95,18 @@ const useUserStore = defineStore(
             reject(error)
           })
         })
-      }
+      },
+        // 单点登陆退出
+        ssoLogOut() {
+          return new Promise((resolve, reject) => {
+            ssoLogout().then(() => {
+              removeToken()
+              resolve()
+            }).catch(error => {
+              reject(error)
+            })
+          })
+        }
     }
   })
 
