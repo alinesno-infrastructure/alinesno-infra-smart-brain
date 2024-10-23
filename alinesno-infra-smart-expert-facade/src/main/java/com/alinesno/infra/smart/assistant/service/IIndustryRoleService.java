@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
@@ -21,7 +22,7 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * 获取最新的角色
       * @return
      */
-    List<IndustryRoleEntity> getNewestRole();
+    List<IndustryRoleEntity> getNewestRole(PermissionQuery query);
 
     /**
      * 通过用户名获取角色
