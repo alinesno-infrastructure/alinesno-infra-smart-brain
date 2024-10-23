@@ -75,6 +75,12 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard', affix: true }
       },
       {
+        path: '/single/agentChat',
+        component: () => import('@/views/base/agent/agentSingleChatPanel'),
+        name: '/single/agentChat',
+        meta: { title: '首页', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/chat',
         component: () => import('@/views/base/specialist/index'),
         name: '/chat',
