@@ -1,6 +1,10 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import com.alinesno.infra.common.core.utils.StringUtils;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -58,6 +62,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
      * @param page DatatablesPageBean对象
      * @return 包含DataTables数据的TableDataInfo对象
      */
+    @DataPermissionScope
     @ResponseBody
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
@@ -83,6 +88,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     /**
      * 保存角色
      */
+    @DataPermissionSave
     @PostMapping("/createRole")
     public AjaxResult createRole(@Validated @RequestBody IndustryRoleEntity e) {
         log.debug("save:{}", ToStringBuilder.reflectionToString(e));
@@ -94,10 +100,15 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
      * 运行角色流程
      * @return
      */
+    @DataPermissionQuery
     @GetMapping("/listAllRole")
-    public AjaxResult listAllRole(){
+    public AjaxResult listAllRole(PermissionQuery query){
+
         LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
+        wrapper.setEntityClass(IndustryRoleEntity.class);
+        query.toWrapper(wrapper);
         wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
+
         List<IndustryRoleEntity> roleEntityList = service.list(wrapper) ;
         return AjaxResult.success(roleEntityList) ;
     }
@@ -112,9 +123,10 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         return ok() ;
     }
 
+    @DataPermissionQuery
     @GetMapping("/catalogTreeSelect")
-    public AjaxResult catalogTreeSelect(){
-        return AjaxResult.success("success" , catalogService.selectCatalogTreeList()) ;
+    public AjaxResult catalogTreeSelect(PermissionQuery query){
+        return AjaxResult.success("success" , catalogService.selectCatalogTreeList(query)) ;
     }
 
     /**
