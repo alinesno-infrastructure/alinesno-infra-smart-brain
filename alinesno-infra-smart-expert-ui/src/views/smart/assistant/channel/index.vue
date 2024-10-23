@@ -139,59 +139,58 @@
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
       <el-form :model="form" :rules="rules" ref="ChannelRef" label-width="80px">
+          <el-row>
+            <el-col :span="24" class="editor-after-div">
+              <el-form-item
+                  label="头像"
+                  :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
+                  <el-upload
+                    :file-list="fileList"
+                    :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                    list-type="picture-card"
+                    :auto-upload="true"
+                    :limit="1"
+                    :on-success="handleAvatarSuccess"
+                    :before-upload="beforeAvatarUpload"
+                    :headers="upload.headers"
+                    :disabled="upload.isUploading"
+                    :on-progress="handleFileUploadProgress"
+                  >
+                    <!-- <img v-if="form.roleAvatar" style="width:100%;height:100%" :src="imagePath(form.roleAvatar)" /> -->
+                    <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                  </el-upload>
+                </el-form-item>
+            </el-col>
+          </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item  label="频道名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入频道名称" maxlength="50"/>
+            <el-form-item label="频道类型" prop="channelType">
+              <!-- <el-input v-model="form.channelType" placeholder="请输入机器人Key" maxlength="50"/> -->
+              <el-radio-group v-model="form.channelType">
+                <el-radio v-for="item in channelTypesArr" 
+                  :key="item.id" 
+                  :value="item.id"
+                  :label="item.id" size="large">{{ item.name }}</el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="频道类型" prop="toolType">
-              <el-input v-model="form.toolType" placeholder="请输入频道类型" maxlength="50"/>
+            <el-form-item  label="频道名称" prop="channelName">
+              <el-input v-model="form.channelName" placeholder="请输入频道名称" maxlength="30"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="频道描述" prop="channelDesc">
+              <el-input v-model="form.channelDesc" placeholder="请输入频道类型" maxlength="350"/>
             </el-form-item>
           </el-col>
         </el-row>
 
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="机器人Key" prop="robotKey">
-              <el-input v-model="form.robotKey" placeholder="请输入机器人Key" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="关联角色" prop="roleId">
-              <el-input v-model="form.roleId" placeholder="请输入角色Id" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="状态" prop="hasStatus">
-              <el-input v-model="form.hasStatus" placeholder="请输入状态" maxlength="100"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="使用场景" prop="screen">
-              <el-input v-model="form.screen" placeholder="请输入使用场景" maxlength="100"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="频道描述" prop="description">
-              <el-input v-model="form.description" placeholder="请输入频道描述" maxlength="200"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -299,11 +298,20 @@ const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 
+const imageUrl = ref('')
+
 // const deptName = ref("");
 // const deptOptions = ref(undefined);
 // const initPassword = ref(undefined);
 // const postOptions = ref([]);
 // const roleOptions = ref([]);
+
+const channelTypesArr = [
+  { "id": "9", "name": "公开频道" },  // 对外公开频道
+  { "id": "1", "name": "个人公共频道" },  // 个人公共频道
+  { "id": "3", "name": "推荐频道" },
+  { "id": "2", "name": "私有频道" }
+];
 
 const agentList = ref([])
 const configAgentDialogVisible = ref(false)
@@ -324,8 +332,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/system/Channel/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData"
 });
+
 // 列显隐信息
 const columns = ref([
   {key: 0, label: `图标`, visible: true},
@@ -352,14 +361,13 @@ const data = reactive({
     deptId: undefined
   },
   rules: {
-    applicationId: [{required: true, message: "应用编号不能为空", trigger: "blur"}],
-    name: [{required: true, message: "频道名称不能为空", trigger: "blur"}, {
+    channelName: [{required: true, message: "频道名称不能为空", trigger: "blur"}, {
       min: 2,
       max: 20,
       message: "频道名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
-    toolType: [{required: true, message: "频道类型不能为空", trigger: "blur"}],
+    channelDesc: [{required: true, message: "频道类型不能为空", trigger: "blur"}],
     screen: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
     hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
     description: [{required: true, message: "频道描述不能为空", trigger: "blur"}],
@@ -386,6 +394,21 @@ function handleQuery() {
   console.log(queryParams);
   queryParams.value.pageNum = 1;
   getList();
+};
+
+/** 图片上传成功 */
+const handleAvatarSuccess = (response, uploadFile) => {
+  imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  form.value.icon = response.data ;
+};
+
+/** 图片上传之前 */
+const beforeAvatarUpload = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!');
+    return false;
+  }
+  return true;
 };
 
 /** 重置按钮操作 */
