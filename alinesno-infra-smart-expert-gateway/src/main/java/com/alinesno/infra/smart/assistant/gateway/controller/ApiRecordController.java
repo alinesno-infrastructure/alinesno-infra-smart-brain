@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.extend.excel.utils.ExcelUtil;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -14,9 +15,8 @@ import com.alinesno.infra.smart.assistant.service.IApiRecordService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
@@ -31,14 +31,12 @@ import java.util.List;
  * @author LuoXiaoDong
  * @version 1.0.0
  */
+@Slf4j
 @Api(tags = "ApiRecord")
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/base/sensitive/api_record")
 public class ApiRecordController extends BaseController<ApiRecordEntity, IApiRecordService> {
-
-    // 日志记录
-    private static final Logger log = LoggerFactory.getLogger(ApiRecordController.class);
 
     @Autowired
     private IApiRecordService service;
@@ -51,6 +49,7 @@ public class ApiRecordController extends BaseController<ApiRecordEntity, IApiRec
      * @param page    DatatablesPageBean对象。
      * @return 包含DataTables数据的TableDataInfo对象。
      */
+    @DataPermissionScope
     @ResponseBody
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
