@@ -154,6 +154,7 @@
 import { ElLoading } from 'element-plus'
 import { getAllCatalog } from "@/api/base/im/robot";
 
+const router = useRouter();
 const productList = ref([])
 const chatTitle = ref("")
 const dialogVisible = ref(false)
@@ -362,9 +363,15 @@ function handleGetProductList() {
 
 /** 与单个Role发信息 */
 function handleRoleChat(item) {
-    roleChatUri.value = "/agentChat?roleId=" + item.id;
-    chatTitle.value = item.roleName;
-    dialogVisible.value = true;
+
+    router.push({
+        path: '/single/agentChat',
+        query: { 'roleId': item.id }
+    })
+    
+    // roleChatUri.value = "/agentChat?roleId=" + item.id;
+    // chatTitle.value = item.roleName;
+    // dialogVisible.value = true;
 }
 
 /** 关闭对话框 */
