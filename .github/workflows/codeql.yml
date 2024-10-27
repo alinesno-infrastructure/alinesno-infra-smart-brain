@@ -11,7 +11,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze 
+    name: Analyze
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
     timeout-minutes: ${{ (matrix.language == 'swift' && 120) || 360 }}
     permissions:
@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'java', 'javascript' ] 
+        language: [ 'java', 'javascript' ]
 
     steps:
     - name: Checkout repository
@@ -68,7 +68,7 @@ jobs:
           echo '      <mirrorOf>snapshots</mirrorOf>' >> nexus-config.xml
           echo '      <url>${{ secrets.NEXUS_REPOSITORY_SNAPSHOT }}</url>' >> nexus-config.xml
           echo '    </mirror>' >> nexus-config.xml
-          echo '  </mirrors>' >> nexus-config.xml 
+          echo '  </mirrors>' >> nexus-config.xml
 
           echo '  <profiles>' >> nexus-config.xml
           echo '    <profile>' >> nexus-config.xml
@@ -137,11 +137,11 @@ jobs:
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v2
       with:
-        languages: ${{ matrix.language }} 
- 
+        languages: ${{ matrix.language }}
+
     - name: Autobuild
       uses: github/codeql-action/autobuild@v2
- 
+
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
       with:
