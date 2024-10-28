@@ -85,7 +85,8 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByAsc(MessageEntity::getAddTime);
+                .orderByAsc(MessageEntity::getAddTime)
+                .last("limit 50");  // 查询出最近的50条数据
 
         List<MessageEntity> entityList = list(wrapper);
 
