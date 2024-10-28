@@ -7,6 +7,8 @@ import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <p>
@@ -28,6 +30,12 @@ public class WorkflowExecutionServiceImpl extends IBaseServiceImpl<WorkflowExecu
         lq.eq(WorkflowExecutionEntity::getWorkflowName , chainName) ;
 
         return mapper.selectCount(lq).intValue() ;
+    }
+
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Override
+    public void saveRecord(WorkflowExecutionEntity record) {
+        this.save(record);
     }
 
 
