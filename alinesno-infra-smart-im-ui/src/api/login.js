@@ -23,9 +23,6 @@ export function login(username, password, code, uuid) {
 export function isSsoLogin(){
   return request({
     url: '/sso/isLogin',
-    // headers: {
-    //   "satoken": "Bearer " + localStorage.getItem("satoken")
-    // },
     method: 'get'
   })
 }
