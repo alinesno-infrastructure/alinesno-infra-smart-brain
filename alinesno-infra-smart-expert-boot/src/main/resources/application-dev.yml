@@ -54,6 +54,7 @@ alinesno:
     # 排除路径
     excludes:
       - /sso/**
+      - /logout
       - /v1/api/infra/base/im/roleChat/**
       - /v1/api/infra/base/im/sse/**
       - /v1/api/infra/base/im/chat/**
@@ -72,7 +73,7 @@ alinesno:
           path: ${user.home}/.smart-assistant/plugins
       brain:
         qianwen:
-          key:  sk-xxxxx
+          key:  sk-xxxxxxxxx
         openapi:
           host: http://api.qianwen.cn/v1/chat/completions
           key: sk-xxxxxxxxx
