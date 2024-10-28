@@ -1,7 +1,12 @@
 package com.alinesno.infra.smart.assistant.role;
 
+import cn.hutool.core.util.IdUtil;
+import com.alibaba.dashscope.aigc.generation.GenerationResult;
+import com.alibaba.dashscope.common.ResultCallback;
+import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
@@ -11,8 +16,10 @@ import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
+import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
+import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
@@ -20,9 +27,11 @@ import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.im.service.ITaskService;
 import com.plexpt.chatgpt.entity.chat.Message;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
@@ -34,6 +43,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.*;
 
@@ -45,6 +55,16 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
+
+    // 设置当前执行任务的信息
+    private IndustryRoleEntity role ;
+
+    private MessageTaskInfo taskInfo ;
+
+    private long msgUuid;
+
+    @Autowired
+    private StreamMessagePublisher streamMessagePublisher ;
 
     @Autowired
     protected BaseSearchConsumer searchConsumer;
@@ -84,7 +104,17 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         record.setBuildNumber(1);
         record.setStartTime(System.currentTimeMillis());
         record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
-        workflowExecutionService.save(record);
+
+        workflowExecutionService.saveRecord(record);
+
+        log.debug("--->>>> record.getId() = {}" , record.getId());
+
+        // 设置workflowRecordId用于异步流场景使用
+        taskInfo.setWorkflowRecordId(record.getId());
+
+        this.setRole(role);
+        this.setTaskInfo(taskInfo);
+        this.setMsgUuid(IdUtil.getSnowflakeNextId());
 
         if (taskInfo.isFunctionCall()) {  // 执行方法
 
@@ -327,6 +357,140 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         R<String> r = cloudStorageConsumer.uploadCallbackUrl(f, "qiniu-kodo-pub");
         return r.getData();
+    }
+
+    @SneakyThrows
+    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
+                .role("user")
+                .content(prompt)
+                .build();
+
+        MessageManager msgManager = new MessageManager(10);
+        msgManager.add(promptMsg);
+
+        processStreamCallback(role, taskInfo , msgManager);
+    }
+
+    @SneakyThrows
+    public void processStream(IndustryRoleEntity role, MessageManager messages, MessageTaskInfo taskInfo) {
+
+    }
+
+    /**
+     * 流式任务
+     * @param role
+     * @param messages
+     * @param taskInfo
+     */
+    @SneakyThrows
+    public void processStream(IndustryRoleEntity role, List<PromptMessage> messages, MessageTaskInfo taskInfo) {
+
+        MessageManager msgManager = new MessageManager(10);
+
+        for(PromptMessage m : messages) {
+            com.alibaba.dashscope.common.Message msg = com.alibaba.dashscope.common.Message.builder()
+                    .role(m.getRole())
+                    .content(m.getContent())
+                    .build();
+            msgManager.add(msg);
+        }
+
+        processStreamCallback(role, taskInfo, msgManager);
+    }
+
+    private void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
+        Semaphore semaphore = new Semaphore(0);
+        StringBuilder fullContent = new StringBuilder();
+        long workflowId = taskInfo.getWorkflowRecordId() ;
+        long bId = workflowId ; // IdUtil.getSnowflakeNextId() ;
+
+        log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+        msgManager.setWorkflowId(workflowId);
+
+        qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
+            @SneakyThrows
+            @Override
+            public void onEvent(GenerationResult message) {
+
+                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
+                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
+
+                log.info("Received message: {}", JsonUtils.toJson(message));
+
+                if (finishReason != null && finishReason.equals("stop")) {
+                    msg = "[DONE]" ;
+                    semaphore.release();
+                }else{
+                    fullContent.append(msg);
+                }
+
+                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, bId);
+            }
+
+            @Override
+            public void onError(Exception err) {
+                log.error("Exception occurred: {}", err.getMessage());
+                semaphore.release();
+            }
+
+            @Override
+            public void onComplete() {
+                log.info("Completed");
+                semaphore.release();
+                log.info("Full content: \n{}", fullContent);
+
+                log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+
+                // 记录执行内容信息
+                WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
+                WorkflowExecutionEntity record = workflowExecutionService.getById(msgManager.getWorkflowId());
+                log.debug("record:{}", record);
+
+                BeanUtils.copyProperties(record, recordDto);
+                recordDto.setGenContent(fullContent.toString()) ; // "任务处理完成: <span class='mention-business'>#"+msgManager.getWorkflowId()+"</span>");
+
+                // 处理完成之后记录更新
+                record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+                record.setEndTime(System.currentTimeMillis());
+                record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+                record.setGenContent(fullContent.toString());
+
+                workflowExecutionService.update(record);
+
+                // 更新消息并记录消息运行情况
+                ITaskService taskService = SpringUtils.getBean(ITaskService.class);
+                taskService.handleWorkflowMessageWithoutMessage(taskInfo, recordDto);
+
+            }
+        }) ;
+
+        semaphore.acquire();
+    }
+
+    /**
+     * 运行回调通知到界面
+     * 通知内容:msg
+     */
+    public void notifyCallback(String msg) {
+        log.info("notifyCallback:{}", msg);
+        streamMessagePublisher.doStuffAndPublishAnEvent(msg ,
+                getRole() ,
+                getTaskInfo() ,
+                IdUtil.getSnowflakeNextId()) ;
+
+        WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
+
+        recordDto.setGenContent(msg) ;
+        recordDto.setRoleId(role.getId());
+        recordDto.setChannelId(taskInfo.getChannelId());
+        recordDto.setBuildNumber(1);
+        recordDto.setStartTime(System.currentTimeMillis());
+        recordDto.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+
+        // 更新消息并记录消息运行情况
+        ITaskService taskService = SpringUtils.getBean(ITaskService.class);
+        taskService.handleWorkflowMessageWithoutMessage(taskInfo, recordDto);
     }
 
 }
