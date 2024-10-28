@@ -7,9 +7,12 @@ const useUserStore = defineStore(
   {
     state: () => ({
       token: getToken(),
+      nickName: '' ,
       name: '',
       avatar: '',
       roles: [],
+      org: {},
+      dept: [],
       permissions: []
     }),
     actions: {
@@ -65,6 +68,7 @@ const useUserStore = defineStore(
       getInfo() {
         return new Promise((resolve, reject) => {
           getInfo().then(res => {
+            
             const user = res.user
             const avatar = (user.avatar == "" || user.avatar == null) ? defAva : import.meta.env.VITE_APP_BASE_API + user.avatar;
 
@@ -74,9 +78,29 @@ const useUserStore = defineStore(
             } else {
               this.roles = ['ROLE_DEFAULT']
             }
+            
             this.name = user.userName
+            this.nickName = user.nickName
+
             this.avatar = avatar;
+            this.dept = user.dept 
+            this.org = user.org
+
             resolve(res)
+
+            // const user = res.user
+            // const avatar = (user.avatar == "" || user.avatar == null) ? defAva : import.meta.env.VITE_APP_BASE_API + user.avatar;
+
+            // if (res.roles && res.roles.length > 0) { // 验证返回的roles是否是一个非空数组
+            //   this.roles = res.roles
+            //   this.permissions = res.permissions
+            // } else {
+            //   this.roles = ['ROLE_DEFAULT']
+            // }
+            // this.name = user.userName
+            // this.avatar = avatar;
+            // resolve(res)
+
           }).catch(error => {
             reject(error)
           })
@@ -96,17 +120,17 @@ const useUserStore = defineStore(
           })
         })
       },
-        // 单点登陆退出
-        ssoLogOut() {
-          return new Promise((resolve, reject) => {
-            ssoLogout().then(() => {
-              removeToken()
-              resolve()
-            }).catch(error => {
-              reject(error)
-            })
+      // 单点登陆退出
+      ssoLogOut() {
+        return new Promise((resolve, reject) => {
+          ssoLogout().then(() => {
+            removeToken()
+            resolve()
+          }).catch(error => {
+            reject(error)
           })
-        }
+        })
+      }
     }
   })
 
