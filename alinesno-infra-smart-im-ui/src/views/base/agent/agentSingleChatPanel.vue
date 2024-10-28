@@ -8,7 +8,7 @@
         style="padding:0px !important;">
     <div class="smart-container inner-smart-container">
       <el-row>
-        <el-col :span="24">
+        <el-col :span="19">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
               <div class="chat-header-title">
@@ -58,6 +58,7 @@
                             <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
 
                             <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
+                                <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
                                 <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">复制</el-button>
                             </div> 
                           </div>
@@ -111,6 +112,10 @@
             </div>
           </div>
         </el-col>
+
+        <el-col :span="5">
+            <AgentSingleRightPanel />
+        </el-col>
        
       </el-row>
     </div>
@@ -124,6 +129,8 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import AgentSingleRightPanel from './rightPanel.vue'
+
 import { getInfo, chatRole }from '@/api/base/im/roleChat'
 import { getParam } from '@/utils/ruoyi'
 import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
@@ -133,8 +140,10 @@ const { proxy } = getCurrentInstance();
 
 const loading = ref(true)
 const roleId = ref(null);
+const channelId = ref(null);
 const roleInfo = ref({})
 const message = ref('');
+const businessId = ref(null);
 
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
@@ -187,15 +196,20 @@ function readerHtml(chatText) {
 const pushResponseMessageList = (newMessage) => {
   console.log(`--->>> newMessage = ${JSON.stringify(newMessage)}`);
 
-  // 查找是否有相同businessId的消息
-  const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
+  if(newMessage.llmStream === true){ // 是否为流式输出
 
-  if (existingIndex !== -1) {
-    // 如果找到，更新该消息
-    messageList.value[existingIndex].chatText += newMessage.chatText;
-  } else {
-    // 否则，添加新消息
-    messageList.value.push(newMessage);
+    // 查找是否有相同businessId的消息
+    const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
+
+    if (existingIndex !== -1) {
+      // 如果找到，更新该消息
+      messageList.value[existingIndex].chatText += newMessage.chatText;
+    } else {
+      // 否则，添加新消息
+      messageList.value.push(newMessage);
+    }
+  }else{
+      messageList.value.push(newMessage);
   }
 
   // 调用初始化滚动条的函数
@@ -203,12 +217,11 @@ const pushResponseMessageList = (newMessage) => {
 };
 
 /** 连接sse */
-function handleSseConnect(roleId){
+function handleSseConnect(channelId){
   nextTick(() => {
-    if(roleId){
-      // handleCloseAllSse().then(res => {
+    if(channelId){
 
-        let sseSource = openSseConnect(roleId) ;
+        let sseSource = openSseConnect(channelId) ;
         // 接收到数据
         sseSource.onmessage = function (event) {
             if (!event.data.includes('[DONE]')) {
@@ -222,6 +235,12 @@ function handleSseConnect(roleId){
       // })
     }
   })
+}
+
+function handleBusinessIdToMessageBox(item){
+  const businessIdMessage = ' #' + item.businessId + ' ' ;
+  businessId.value = item.businessId;
+  message.value += businessIdMessage ;
 }
 
 /** 获取角色信息 */
@@ -246,8 +265,10 @@ const sendMessage = (type) => {
   }
 
   let formData = {
-    roleId: roleId.value,
-    content: message.value,
+    channelId: channelId.value,
+    message: message.value,
+    businessIds: [ businessId.value ],
+    type: type
   }
   
   chatRole(formData , roleId.value).then(res => {
@@ -274,7 +295,9 @@ onMounted(() => {
   initChatBoxScroll();
 
   roleId.value = getParam('roleId')
-  handleSseConnect(roleId.value)
+  channelId.value = getParam('channelId')
+
+  handleSseConnect(channelId.value)
   handleGetInfo(roleId.value);
 })
 
@@ -282,7 +305,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .inner-smart-container {
-    max-width: 960px !important;
+    max-width: 95%! important;
 
     .robot-chat-windows{
       border:0px !important;
