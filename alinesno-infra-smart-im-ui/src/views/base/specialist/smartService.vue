@@ -3,7 +3,7 @@
   <div class="acp-dashboard aip-chat-dashboard-panel ">
     <div class="smart-container">
       <el-row>
-        <el-col :span="17">
+        <el-col :span="19">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
               <div class="chat-header-title" style="padding-left: 28px;">
@@ -78,7 +78,7 @@
           </div>
         </el-col>
 
-        <el-col :span="7">
+        <el-col :span="5">
           <SmartServiceAgent @mentionUser="mentionUser" />
         </el-col>
        
@@ -207,7 +207,11 @@ function handleSendUserMessage(message , type){
 
 /** 发送消息组服务组件 */
 function handlePushResponseMessageList(item){
+
   chatListRef.value.pushResponseMessageList(item);
+
+  // 调用初始化滚动条的函数
+  // initChatBoxScroll();
 }
 
 /** 上传文档文件 */
