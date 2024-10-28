@@ -134,6 +134,7 @@ const { proxy } = getCurrentInstance();
 
 const loading = ref(true)
 const roleId = ref(null);
+const channelId = ref(null);
 const roleInfo = ref({})
 const message = ref('');
 
@@ -188,15 +189,20 @@ function readerHtml(chatText) {
 const pushResponseMessageList = (newMessage) => {
   console.log(`--->>> newMessage = ${JSON.stringify(newMessage)}`);
 
-  // 查找是否有相同businessId的消息
-  const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
+  if(newMessage.llmStream === true){ // 是否为流式输出
 
-  if (existingIndex !== -1) {
-    // 如果找到，更新该消息
-    messageList.value[existingIndex].chatText += newMessage.chatText;
-  } else {
-    // 否则，添加新消息
-    messageList.value.push(newMessage);
+    // 查找是否有相同businessId的消息
+    const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
+
+    if (existingIndex !== -1) {
+      // 如果找到，更新该消息
+      messageList.value[existingIndex].chatText += newMessage.chatText;
+    } else {
+      // 否则，添加新消息
+      messageList.value.push(newMessage);
+    }
+  }else{
+      messageList.value.push(newMessage);
   }
 
   // 调用初始化滚动条的函数
@@ -204,12 +210,11 @@ const pushResponseMessageList = (newMessage) => {
 };
 
 /** 连接sse */
-function handleSseConnect(roleId){
+function handleSseConnect(channelId){
   nextTick(() => {
-    if(roleId){
-      // handleCloseAllSse().then(res => {
+    if(channelId){
 
-        let sseSource = openSseConnect(roleId) ;
+        let sseSource = openSseConnect(channelId) ;
         // 接收到数据
         sseSource.onmessage = function (event) {
             if (!event.data.includes('[DONE]')) {
@@ -247,8 +252,8 @@ const sendMessage = (type) => {
   }
 
   let formData = {
-    roleId: roleId.value,
-    content: message.value,
+    channelId: channelId.value,
+    message: message.value,
   }
   
   chatRole(formData , roleId.value).then(res => {
@@ -275,7 +280,9 @@ onMounted(() => {
   initChatBoxScroll();
 
   roleId.value = getParam('roleId')
-  handleSseConnect(roleId.value)
+  channelId.value = getParam('channelId')
+
+  handleSseConnect(channelId.value)
   handleGetInfo(roleId.value);
 })
 
