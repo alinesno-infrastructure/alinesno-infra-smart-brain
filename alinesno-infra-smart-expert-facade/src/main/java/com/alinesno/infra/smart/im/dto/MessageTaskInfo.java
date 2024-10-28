@@ -37,6 +37,9 @@ public class MessageTaskInfo implements Serializable {
     // 是否为修改内容
     private boolean modify;
 
+    // 用户业务流程过程中记录的id
+    private long workflowRecordId ; // 聊天记录的id
+
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
         this.businessId = businessId;
