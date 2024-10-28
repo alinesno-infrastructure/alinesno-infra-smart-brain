@@ -23,4 +23,6 @@ public class WorkflowExecutionDto implements Serializable {
     private List<CodeContent> codeContent ; // 生成的代码工程列表
     private boolean isCoding ; // 是否是代码编辑
 
+    private boolean isSync = false; // 是否同步，默认是异步(同步true|异步false)
+
 }
