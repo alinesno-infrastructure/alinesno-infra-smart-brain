@@ -1,14 +1,15 @@
 package com.alinesno.infra.base.im.service.impl;
 
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -76,23 +77,9 @@ public class TaskServiceImpl implements ITaskService {
                 log.info("任务处理中: {}", taskInfo);
 
                 WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-                taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
 
-                log.info("任务处理完成: {}", taskInfo);
-
-                ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo , genContent.getUsageTimeSeconds()) ;
-                queMessage.setChatText(genContent.getGenContent());
-
-                queMessage.setBusinessId(genContent.getId());
-                queMessage.setRoleId(taskInfo.getRoleId());
-                queMessage.setAccountId(taskInfo.getAccountId());
-                queMessage.setLoading(false);
-                queMessage.setStatus(TaskStatusEnums.COMPLETED.getValue());
-
-                sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
-
-                // 保存到消息记录表中
-                messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
+                // 处理消息结果
+                handleWorkflowMessage(taskInfo, genContent);
 
             } catch (Exception e) {
                 log.error("发送消息通知前端失败:", e);
@@ -102,6 +89,48 @@ public class TaskServiceImpl implements ITaskService {
                 log.debug("任务处理完成.");
             }
         }
+    }
+
+    @SneakyThrows
+    @Override
+    public void handleWorkflowMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
+        taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
+
+        log.info("任务处理完成: {}", taskInfo);
+
+        ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo, genContent.getUsageTimeSeconds()) ;
+        queMessage.setChatText(genContent.getGenContent());
+
+        queMessage.setBusinessId(genContent.getId());
+        queMessage.setRoleId(taskInfo.getRoleId());
+        queMessage.setAccountId(taskInfo.getAccountId());
+        queMessage.setLoading(false);
+        queMessage.setStatus(TaskStatusEnums.COMPLETED.getValue());
+
+        // 保存到消息记录表中
+        messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
+
+        // 发送到前端
+        sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
+    }
+
+    @Override
+    public void handleWorkflowMessageWithoutMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
+        taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
+
+        log.info("任务处理完成: {}", taskInfo);
+
+        ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo, genContent.getUsageTimeSeconds()) ;
+        queMessage.setChatText(genContent.getGenContent());
+
+        queMessage.setBusinessId(genContent.getId());
+        queMessage.setRoleId(taskInfo.getRoleId());
+        queMessage.setAccountId(taskInfo.getAccountId());
+        queMessage.setLoading(false);
+        queMessage.setStatus(TaskStatusEnums.COMPLETED.getValue());
+
+        // 保存到消息记录表中
+        messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
     }
 
     @Override
