@@ -30,6 +30,8 @@ public class DemoSingleExpert extends ExpertService {
                              WorkflowExecutionEntity workflowExecution,
                              MessageTaskInfo taskInfo) {
 
+        log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+
         String message = taskInfo.getText() ;
         String promptContent = role.getPromptContent() ;
 
@@ -37,7 +39,12 @@ public class DemoSingleExpert extends ExpertService {
         messageEntityList.forEach(item -> log.debug("item:{}", item));
 
         List<PromptMessage> promptMessages = parseMessage(promptContent , message) ;
-        String gentContent = qianWenLLM.processFile(promptMessages) ;
+//        String gentContent = qianWenLLM.processFile(promptMessages) ;
+
+        log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+        processStream(role , promptMessages , taskInfo) ;
+
+        String gentContent = "任务生成完成." ;
 
         log.debug("result:{}", gentContent);
 
