@@ -18,4 +18,9 @@ public interface IWorkflowExecutionService extends IBaseService<WorkflowExecutio
      */
     int getByChainName(String chainName);
 
+    /**
+     * 保存记录
+     * @param record
+     */
+    void saveRecord(WorkflowExecutionEntity record);
 }
