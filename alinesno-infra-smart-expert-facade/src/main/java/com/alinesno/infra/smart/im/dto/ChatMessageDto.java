@@ -29,4 +29,7 @@ public class ChatMessageDto {
 
     private String className ; // 返回的样式标识
 
+    // fix:用于消息类型的区分(同一businessId的情况下)
+    private boolean llmStream = false ; // 是否为LLM输出流
+
 }
