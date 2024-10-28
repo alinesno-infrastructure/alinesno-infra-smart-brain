@@ -1,5 +1,5 @@
 # 使用 OpenResty 作为基础镜像
-FROM nginx:latest
+FROM registry.openanolis.cn/openanolis/nginx:1.14.1-8.6
 
 # 将构建好的静态文件复制到 OpenResty 的默认静态文件目录
 COPY ./dist /usr/share/nginx/html
