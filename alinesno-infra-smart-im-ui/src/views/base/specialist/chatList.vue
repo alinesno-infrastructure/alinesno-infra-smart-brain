@@ -101,8 +101,25 @@ const currentResponseMessageList = (message) => {
 
 // 推送消息到当前面板
 const pushResponseMessageList = (message) => {
-  console.log('--->>> message = ' + message);
-  messageList.value.push(message) ; 
+  // console.log('--->>> message = ' + message);
+  // messageList.value.push(message) ; 
+
+  console.log(`--->>> message = ${JSON.stringify(message)}`);
+
+  if(message.llmStream === true){ // 是否为流式输出
+    // 查找是否有相同businessId的消息
+    const existingIndex = messageList.value.findIndex(item => item.businessId === message.businessId);
+
+    if (existingIndex !== -1) {
+      // 如果找到，更新该消息
+      messageList.value[existingIndex].chatText += message.chatText;
+    } else {
+      // 否则，添加新消息
+      messageList.value.push(message);
+    }
+  }else{
+    messageList.value.push(message);
+  }
 
   messageList.value.forEach(item => {
     console.log('--->>> item = ' + item);
