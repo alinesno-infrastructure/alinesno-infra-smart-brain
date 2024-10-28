@@ -1,11 +1,16 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
+import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.event.StreamMessageEvent;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.event.EventListener;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import javax.lang.exception.RpcServiceRuntimeException;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -30,6 +36,38 @@ public class SSEChannelController {
 
     @Autowired
     private ITaskService taskService;
+
+    /**
+     * 监控流消息发送到前端
+     * @param event
+     */
+    @EventListener
+    public void handleCustomEvent(StreamMessageEvent event) {
+
+        IndustryRoleEntity role = event.getRole() ;
+        MessageTaskInfo info = event.getTaskInfo() ;
+
+        long channelId = info.getChannelId() ;
+        String msg = event.getMessage() ;
+        long bId = event.getBId() ;
+
+        log.debug("Received llm stream message event , msg = {} , channelId = {} " , event.getMessage() , channelId);
+
+        final SseEmitter emitter = service.getConn(channelId + "");
+        CompletableFuture.runAsync(() -> {
+
+            ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, bId) ;
+            msgDto.setLoading(false);
+            msgDto.setChatText(msg);
+            msgDto.setLlmStream(true);
+            try {
+                emitter.send(msgDto) ;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+    }
 
     /**
      * 建立SSE连接
