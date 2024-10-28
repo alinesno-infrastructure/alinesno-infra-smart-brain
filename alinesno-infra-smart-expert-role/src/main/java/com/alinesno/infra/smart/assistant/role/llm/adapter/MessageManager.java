@@ -1,15 +1,18 @@
 package com.alinesno.infra.smart.assistant.role.llm.adapter;
 
 import com.alibaba.dashscope.common.Message;
+import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 public class MessageManager {
 
     private final List<Message> list = new ArrayList<>();
 
     private final int messageCount ;
+    private long workflowId ;
 
     public MessageManager(int messageCount) {
         this.messageCount = messageCount;
