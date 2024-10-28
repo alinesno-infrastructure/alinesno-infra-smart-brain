@@ -9,6 +9,13 @@ import java.util.regex.Pattern;
 
 public class MessageParser {
 
+//    public static void main(String[] args) {
+//        String message = "#1850823772655767552";
+//
+//        ParsedData parsedData = parseMessage(message);
+//        System.out.println("用户名列表：" + parsedData.getUsernames() + " , 业务代号:" + parsedData.getBusinessIds());
+//    }
+
     /**
      * 解析消息中的用户名和项目代号。
      */
@@ -23,8 +30,8 @@ public class MessageParser {
             usernames.add(atMatcher.group(1));
         }
 
-        // 匹配 # 项目代号
-        Pattern hashPattern = Pattern.compile("#(\\d+\\.\\d+)");
+        // 匹配 # 业务代号
+        Pattern hashPattern = Pattern.compile("#(\\d+\\d+)");
         Matcher hashMatcher = hashPattern.matcher(message);
         while (hashMatcher.find()) {
             projectCodes.add(hashMatcher.group(1));
