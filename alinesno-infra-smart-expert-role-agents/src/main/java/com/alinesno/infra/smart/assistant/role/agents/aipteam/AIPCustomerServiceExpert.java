@@ -28,11 +28,14 @@ public class AIPCustomerServiceExpert extends ExpertService {
                                 MessageTaskInfo taskInfo) {
 
         String message = clearMessage(taskInfo.getText()) ;
-        String gentContent = qianWenLLM.processFile(promptMessages(message, role)) ;
 
-        log.debug("result:{}", gentContent);
+//        String gentContent = qianWenLLM.processFile(promptMessages(message, role)) ;
+//        log.debug("result:{}", gentContent);
 
-        return gentContent ;
+        log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+        processStream(role , promptMessages(message, role) , taskInfo) ;
+
+        return "任务生成完成.";
     }
 
     protected String handleFunctionCall(IndustryRoleEntity role,
