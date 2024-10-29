@@ -216,6 +216,8 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         log.debug("role.getChainId() = {}", role.getChainId());
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
+        taskInfo.setRoleDto(role);
+
         return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
     }
 
