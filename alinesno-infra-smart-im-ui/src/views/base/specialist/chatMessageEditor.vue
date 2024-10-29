@@ -1,6 +1,22 @@
 <template>
     <div>
 
+        <div class="cm-container">
+          <code-mirror 
+            :lang="lang" 
+            :theme="theme" 
+            basic 
+            :style="'height:600px;overflow-y:scroll;margin-top:10px;'" 
+            :extensions="extensions"
+            v-model="data" />
+        </div>
+
+
+        <!--
+        <div>
+          <el-input type="textarea" rows="30" resize="none" v-model="data" />
+        </div>
+
         <div v-if="!isCode">
           <el-input type="textarea" rows="20" resize="none" v-model="data" />
         </div>
@@ -15,8 +31,10 @@
             @change="onJsonChange"
             v-model="data" />
         </div>
+        -->
+        
         <div class="submit-button-group">
-          <el-button type="primary" @click="handleUpdateContent()">
+          <el-button type="primary" size="large" @click="handleUpdateContent()">
             更新 
           </el-button>
         </div>
@@ -25,8 +43,22 @@
 
 <script setup>
 
-import JsonEditorVue from 'json-editor-vue3'
+// import JsonEditorVue from 'json-editor-vue3'
 import { getMessage , updateContent } from '@/api/base/im/workflow'
+
+import CodeMirror from 'vue-codemirror6'
+import { oneDark } from '@codemirror/theme-one-dark'
+import { markdown } from '@codemirror/lang-markdown';
+import { nextTick } from 'vue';
+
+const lang = markdown();
+const extensions = [oneDark];
+// 主题样式设置
+const theme = {
+  "&": {
+    fontSize: "9.5pt",
+  }
+}
 
 const { proxy } = getCurrentInstance();
 const isCode = ref(true)
@@ -38,35 +70,37 @@ const props = defineProps({
   }
 })
 
-const data = ref([])
+const data = ref('')
 
-const validate = async (editor) => {
-  const res = await editor.validate();
-  console.log("blur validate", res);
-};
+// const validate = async (editor) => {
+//   const res = await editor.validate();
+//   console.log("blur validate", res);
+// };
 
-function onJsonChange (value) {
-  console.log('value:', value)
-  data.value = value
-}
+// function onJsonChange (value) {
+//   console.log('value:', value)
+//   data.value = value
+// }
 
 // 获取到业务消息
 const handleGetMessage = () => {
   getMessage(props.businessId).then(res => {
     let respData = res.data ;
 
-    if(respData.coding){
-      data.value = JSON.parse(respData.codeContent[0].content);
-    }else{
-      isCode.value = false ;
-      data.value = respData.genContent ;
-    }
+    // if(respData.coding){
+    //   data.value = JSON.parse(respData.codeContent[0].content);
+    // }else{
+    //   isCode.value = false ;
+    //   data.value = respData.genContent ;
+    // }
+
+    data.value = respData.genContent ;
   })
 }
 
 const handleUpdateContent = () => {
   let formData = {
-    code: isCode.value,
+    code: false ,
     content: data.value,
     businessId: props.businessId
   }
@@ -75,18 +109,16 @@ const handleUpdateContent = () => {
   })
 }
 
-handleGetMessage();
+nextTick(() => {
+  handleGetMessage();
+})
 
 </script>
 
 <style scoped lang="scss">
-.editor {
-  height: 500px;
-  width: 100%;
-}
 .submit-button-group {
-  margin-top: 40px;
-  margin-bottom: 20px;
+  margin-top: 20px;
+  margin-bottom: 0px;
   width: 100%;
   text-align: right;
 }
