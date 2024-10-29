@@ -6,6 +6,7 @@ import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.context.ContextManager;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
+import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
@@ -29,12 +30,19 @@ public class ScriptExpertService extends ExpertService {
 			return "scriptText is null or empty" ;
 		}
 
+		// 上一个任务节点不为空，执行任务并记录
+		List<CodeContent> codeContentLis = null ;
+		if(workflowExecution != null){
+			String gentContent = workflowExecution.getGenContent();
+			codeContentLis = CodeBlockParser.parseCodeBlocks(gentContent);
+		}
+
 		log.debug(scriptText);
 
 		String output = executeGroovyScript(role ,
 				workflowExecution ,
 				taskInfo ,
-				null ,
+				codeContentLis ,
 				scriptText) ;
 		log.debug("handleRole output : {}", output);
 
@@ -113,9 +121,7 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("expertService", this);
 		binding.setVariable("tools", tools);
 
-		if(codeContentList != null && !codeContentList.isEmpty()){
-			binding.setVariable("codeContent", codeContentList.get(0));
-		}
+		binding.setVariable("codeContent", codeContentList == null ? null : codeContentList.get(0));
 
 		binding.setVariable("contextMap", ContextManager.getInstance());
 		binding.setVariable("log", log);
