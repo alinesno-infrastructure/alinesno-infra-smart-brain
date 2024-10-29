@@ -235,73 +235,7 @@ const filterRules = ref([
   }
 ]);
 
-const demeChannel = ref([
-  {
-    "channelName": "BO播客生成计划",
-    "channelDesc": "BO播客生成计划是一款基于语音识别和自然语言处理技术的对话机器人，用户可以通过它快速创建个性化的播客节目，提高节目制作效率和质量。同时，它还提供了丰富的音频特效和语音转文字功能，让用户的播客节目更具吸引力和可读性。现在微信公众号文章链接、抖音分享、小红书分享（VLOG、PLOG）都支持。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/8a954c89f3104df3b404087f050e5108~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=TxPNdBsD%2Bc0Eb0yenxSmC5hgT2I%3D"
-  },
-  {
-    "channelName": "奇幻小冒险",
-    "channelDesc": "在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始……",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/2f36541186224f47863996fd44f81f9a~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=ezd4tmzPBVdE%2FKRGZnRHiGYUmuc%3D"
-  },
-  {
-    "channelName": "文生视频✨提示专家",
-    "channelDesc": "全面支持可灵、清影、海螺、通义、Vidu、筑梦、Sora、即梦等文生视频大模型，一帧一画皆是惊喜！👀 让灵感瞬间成影！",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f65a8eee94384a41a6cd03f0ca06149f~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=U4jDFQbyYIgN%2Fy8tFSzCq29wm0U%3D"
-  },
-  {
-    "channelName": "奇幻小冒险",
-    "channelDesc": "在一个遥远的国度里，隐藏着一个被大自然宠爱的村庄。这里的每一天都充满了新的冒险和温馨的故事。而你的旅程，就从这里开始……",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/2f36541186224f47863996fd44f81f9a~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=ezd4tmzPBVdE%2FKRGZnRHiGYUmuc%3D"
-  },
-  {
-    "channelName": "文生视频✨提示专家",
-    "channelDesc": "全面支持可灵、清影、海螺、通义、Vidu、筑梦、Sora、即梦等文生视频大模型，一帧一画皆是惊喜！👀 让灵感瞬间成影！",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/f65a8eee94384a41a6cd03f0ca06149f~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=U4jDFQbyYIgN%2Fy8tFSzCq29wm0U%3D"
-  },
-  {
-    "channelName": "合成新元素",
-    "channelDesc": "通过对话的方式玩一个类似「涂鸦上帝」的元素合成游戏。初始元素是 💧 水、🔥 火、🌬️ 风、🌍 土，你可以通过不断的自由组合，来随机生成新的物质。试试看谁能把「🥽 Vision Pro」生成出来？",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/8a954c89f3104df3b404087f050e5108~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=TxPNdBsD%2Bc0Eb0yenxSmC5hgT2I%3D"
-  },
-  {
-    "channelName": "认真看一百本书",
-    "channelDesc": "一款专门为阅读爱好者设计的AI读书工具。只需输入书名，AI便能迅速整理出书籍的核心内容与相关背景资料，并以简洁明了的卡片形式展示，使阅读和学习变得更加高效便捷。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/59ba56af5a8d4bbcb51f76247a40c754~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=YvhkYVJ93ndlW%2FJsZmOc1SuYHAE%3D"
-  },
-  {
-    "channelName": "漫画生成：橘猫漫画家",
-    "channelDesc": "一个能够一键帮你制作猫咪漫画的bot，欢迎来到“橘猫漫画家”，您的口袋里的漫画工作室！每一个关于橘猫的想法都能变成生动的漫画。记住，也许我们每个人都是一只橘猫。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/8d2b7705ea1f458e8290f618e02f580d~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=IZkhM%2FvHrr2gpkF%2BPQO5ea9dYuY%3D"
-  },
-  {
-    "channelName": "专业英语翻译",
-    "channelDesc": "能翻译所有英语字，词，文章，论文等。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/e5e9baa528b945e6b2e8a1c3dda5775b~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=DtNyNMVpLHpXMTDr868xaq%2BRfKs%3D"
-  },
-  {
-    "channelName": "合成新元素",
-    "channelDesc": "通过对话的方式玩一个类似「涂鸦上帝」的元素合成游戏。初始元素是 💧 水、🔥 火、🌬️ 风、🌍 土，你可以通过不断的自由组合，来随机生成新的物质。试试看谁能把「🥽 Vision Pro」生成出来？",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/8a954c89f3104df3b404087f050e5108~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=TxPNdBsD%2Bc0Eb0yenxSmC5hgT2I%3D"
-  },
-  {
-    "channelName": "认真看一百本书",
-    "channelDesc": "一款专门为阅读爱好者设计的AI读书工具。只需输入书名，AI便能迅速整理出书籍的核心内容与相关背景资料，并以简洁明了的卡片形式展示，使阅读和学习变得更加高效便捷。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/59ba56af5a8d4bbcb51f76247a40c754~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=YvhkYVJ93ndlW%2FJsZmOc1SuYHAE%3D"
-  },
-  {
-    "channelName": "漫画生成：橘猫漫画家",
-    "channelDesc": "一个能够一键帮你制作猫咪漫画的bot，欢迎来到“橘猫漫画家”，您的口袋里的漫画工作室！每一个关于橘猫的想法都能变成生动的漫画。记住，也许我们每个人都是一只橘猫。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/8d2b7705ea1f458e8290f618e02f580d~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=IZkhM%2FvHrr2gpkF%2BPQO5ea9dYuY%3D"
-  },
-  {
-    "channelName": "万能英语助手",
-    "channelDesc": "擅长：单词记忆和学习、口语对话训练、英语知识讲解、翻译。",
-    "icon": "https://p26-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/4792a3611e0c47d2b62dcf6eeafe16e5~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&x-expires=1731712214&x-signature=0FwgEHo%2BZ3wG8mQta6SvigGeJpg%3D"
-  }]
-)
+const demeChannel = ref([])
 
 const data = reactive({
   form: {},
@@ -336,7 +270,7 @@ function handleAllMyChannel() {
     // recChatChannel.value = items.filter(item => item.channelType === '3');
 
     // 添加DemoChannel频道
-    publicChatChannel.value = publicChatChannel.value.concat(demeChannel.value);
+    // publicChatChannel.value = publicChatChannel.value.concat(demeChannel.value);
 
     loading.value = false;
   })
