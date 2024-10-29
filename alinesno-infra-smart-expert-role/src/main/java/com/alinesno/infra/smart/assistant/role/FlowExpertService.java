@@ -21,6 +21,7 @@ public class FlowExpertService extends ExpertService {
     protected String handleRole(IndustryRoleEntity role,
                                 WorkflowExecutionEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
+
         return null;
     }
 
