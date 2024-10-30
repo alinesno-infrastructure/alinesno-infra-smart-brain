@@ -111,7 +111,7 @@
   .popular {
     display: flex;
     align-content: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     width: calc(100% - 20px);
     padding-bottom: 24px;
     margin-top: 24px;
@@ -446,4 +446,23 @@
     }
 
   }
+}
+
+.feature-team-box {
+
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr minmax(auto, 480px) 1fr;
+    gap: 12px;
+    width: 100%;
+
+    h1 {
+        font-size: 20px;
+        font-weight: 500;
+        font-style: normal;
+        line-height: 32px;
+        color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha));
+        margin: 0px 0px 0px 10px;
+        float: left;
+    }
 }
