@@ -1,6 +1,6 @@
 <template>
     <div>
-        这是一个内嵌的网站 
+        这是一个内嵌的网站
     </div>
 </template>
 
