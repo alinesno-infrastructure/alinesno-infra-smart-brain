@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.service.impl;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.mapper.ChannelMapper;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.response.R;
@@ -101,18 +102,22 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     }
 
     @Override
-    public List<ChannelEntity> allMyChannel() {
+    public List<ChannelEntity> allMyChannel(PermissionQuery query) {
 
         LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>() ;
+        queryWrapper.setEntityClass(ChannelEntity.class) ;
+        query.toWrapper(queryWrapper);
         queryWrapper.eq(ChannelEntity::getHasDelete , HasDeleteEnums.LEGAL.value) ;
 
         return list(queryWrapper);
     }
 
     @Override
-    public List<ChannelEntity> allPublicChannel() {
+    public List<ChannelEntity> allPublicChannel(PermissionQuery query) {
 
         LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>() ;
+        queryWrapper.setEntityClass(ChannelEntity.class) ;
+        query.toWrapper(queryWrapper);
         queryWrapper.eq(ChannelEntity::getHasDelete , HasDeleteEnums.LEGAL.value) ;
 
         return list(queryWrapper) ;
@@ -139,9 +144,9 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     }
 
     @Override
-    public Long getDefaultChannelId() {
+    public Long getDefaultChannelId(long userId) {
 
-        List<ChannelEntity> list = allMyChannel() ;
+        List<ChannelEntity> list = list(new LambdaQueryWrapper<ChannelEntity>().eq(ChannelEntity::getOperatorId, userId)) ;
         long channelId = 0L;
 
         for(ChannelEntity e : list){
