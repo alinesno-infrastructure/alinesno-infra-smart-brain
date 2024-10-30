@@ -2,8 +2,8 @@
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
       <el-menu-item index="1" @click="jumpTo">
-        <i class="fa-solid fa-shop"></i>
-      </el-menu-item> 
+        <i class="fa-solid fa-house-user"></i>
+      </el-menu-item>
 
       <el-tooltip effect="dark" :content="item.desc" v-for="item in menuItems" :key="item.id" placement="right">
         <el-menu-item :index="item.id" @click="openServiceList(item.link)">
@@ -51,8 +51,8 @@ const router = useRouter();
 // 菜单列表
 const menuItems = ref([
   { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '角色列表' },
-  // {id:'5' , icon:'fa-solid fa-user-tag' , link:'/chat' , desc:'聊天信息'},
 
+  // { id: '5' , icon:'fa-solid fa-truck-fast' , link:'/scheduler' , desc:'角色编排'},
   // {id:'4' , icon:'fa-brands fa-skype' , link:'/serviceProduct' , desc:'执行器管理'},
   // {id:'7' , icon:'fa-solid fa-chart-simple' , link:'/executeRecord' , desc:'执行记录'},
   // {id:'8' , icon:'fa-solid fa-file-pdf' , link:'/brain/loaderData/index' , desc:'知识库管理'},
