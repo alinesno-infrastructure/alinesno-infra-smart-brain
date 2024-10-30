@@ -41,5 +41,5 @@ public interface IIndustryRoleCatalogService extends IBaseService<IndustryRoleCa
      * 列出所有的子类型
      * @return
      */
-    List<IndustryRoleCatalogDto> allCatalog();
+    List<IndustryRoleCatalogDto> allCatalog(PermissionQuery query);
 }
