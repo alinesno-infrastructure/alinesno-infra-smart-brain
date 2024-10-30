@@ -82,9 +82,13 @@ public class IndustryRoleCatalogServiceImpl extends IBaseServiceImpl<IndustryRol
     }
 
     @Override
-    public List<IndustryRoleCatalogDto> allCatalog() {
+    public List<IndustryRoleCatalogDto> allCatalog(PermissionQuery query) {
 
-        List<IndustryRoleCatalogEntity> list = list() ;
+        LambdaQueryWrapper<IndustryRoleCatalogEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(IndustryRoleCatalogEntity.class) ;
+        query.toWrapper(queryWrapper);
+
+        List<IndustryRoleCatalogEntity> list = list(queryWrapper) ;
         List<IndustryRoleCatalogDto> listDto = new ArrayList<>() ;
 
         for(IndustryRoleCatalogEntity e : list){
