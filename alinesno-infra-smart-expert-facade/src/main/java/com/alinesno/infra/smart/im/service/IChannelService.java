@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.im.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 
@@ -31,13 +32,13 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * 查询用户所有的渠道
      * @return
      */
-    List<ChannelEntity> allMyChannel();
+    List<ChannelEntity> allMyChannel(PermissionQuery query);
 
     /**
      * 查询出所有公共频道
      * @return
      */
-    List<ChannelEntity> allPublicChannel();
+    List<ChannelEntity> allPublicChannel(PermissionQuery query);
 
     /**
      * 用户加入频道
@@ -50,7 +51,7 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * 获取到默认的渠道
      * @return
      */
-    Long getDefaultChannelId();
+    Long getDefaultChannelId(long query);
 
     /**
      * 获取到推荐频道
