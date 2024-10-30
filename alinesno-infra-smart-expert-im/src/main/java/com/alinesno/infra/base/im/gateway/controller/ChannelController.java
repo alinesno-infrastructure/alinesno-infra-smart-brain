@@ -3,11 +3,14 @@ package com.alinesno.infra.base.im.gateway.controller;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -128,7 +131,8 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @GetMapping("/getDefaultChannelId")
     public AjaxResult getDefaultChannelId(){
 
-        Long channelId = service.getDefaultChannelId() ;
+        long userId = CurrentAccountJwt.getUserId() ;
+        Long channelId = service.getDefaultChannelId(userId) ;
 
         return AjaxResult.success("操作成功." , channelId) ;
     }
@@ -147,13 +151,14 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
      * 查询出我所有的渠道
      * @return
      */
+    @DataPermissionQuery
     @GetMapping("/allMyChannel")
-    public AjaxResult allMyChannel(){
+    public AjaxResult allMyChannel(PermissionQuery query){
 
         long accountId = 1L ;
         service.initPersonChannel(1L);
 
-        List<ChannelEntity> channelEntities = service.allMyChannel() ;
+        List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
         return AjaxResult.success(channelEntities) ;
     }
 
@@ -175,10 +180,11 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
      * 查看所有的公开频道
      * @return
      */
+    @DataPermissionQuery
     @GetMapping("/allPublicChannel")
-    public AjaxResult allPublicChannel(){
+    public AjaxResult allPublicChannel(PermissionQuery query){
 
-        List<ChannelEntity> channelEntities = service.allPublicChannel() ;
+        List<ChannelEntity> channelEntities = service.allPublicChannel(query) ;
         return AjaxResult.success(channelEntities) ;
     }
 
