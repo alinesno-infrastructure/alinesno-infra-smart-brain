@@ -5,24 +5,14 @@
     <div class="search-container-panel">
       <el-row>
         <el-col :span="24">
-          <div class="feature-header-xqbyQk" style="    
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr minmax(auto, 480px) 1fr;
-    gap: 12px;
-    width: 100%;">
+          <div class="feature-header-xqbyQk feature-team-box">
             <div style="gap: 12px;">
-              <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+              <h1
+                style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
                 频道市场</h1>
             </div>
             <div class="search-container-weDuEn">
-              <el-input
-      v-model="input1"
-      style="width: 400px"
-      size="large"
-      placeholder="搜索频道"
-      :suffix-icon="Search"
-    />
+              <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索频道" :suffix-icon="Search" />
             </div>
           </div>
         </el-col>
@@ -33,28 +23,18 @@
       <el-row>
         <el-col :span="15">
 
-          <div
-            style="gap: 0px;margin-left:10px;cursor: pointer;align-items: flex-start;width: 100%;height: 270px;padding: 16px 0;display: inline-flex;flex-direction: column;">
+          <div class="card-container">
             <div>
-              <div style="height: 28px;"><img
+              <div class="card-header">
+                <img
                   src="https://lf-coze-web-cdn.coze.cn/obj/coze-web-cn/mf/marketplace/static/image/brand-daily-rec.48709716.png"
-                  data-src="https://lf-coze-web-cdn.coze.cn/obj/coze-web-cn/mf/marketplace/static/image/brand-daily-rec.48709716.png"
-                  height="28"></div>
-              <h1
-                style="-webkit-line-clamp: 2;max-height: 112px;margin-bottom: 8px;font-size: 40px;font-weight: 700;line-height: 48px;color: #1D1C23;">
-                <span>🪡拆解产品卖点，提炼核心特色，神器在此，转化无忧</span>
-              </h1>
-              <p style="
-    height: 24px;
-    margin-bottom: 28px;
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 24px;
-    color: rgba(29, 28, 35, 0.6);
-"><span>快速让产品的核心价值得到用户认可，将卖点转化顾客的买点，快来体验吧！</span></p>
+                  alt="Brand Logo">
+              </div>
+              <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
+              <p><span>快速让产品的核心价值得到用户认可，将卖点转化顾客的买点，快来体验吧！</span></p>
             </div>
             <el-button type="primary" bg text size="large">
-              <span class="semi-button-content" x-semi-prop="children">立即聊聊</span>
+              <span class="semi-button-content">立即聊聊</span>
             </el-button>
           </div>
 
@@ -62,67 +42,22 @@
         </el-col>
         <el-col :span="9">
 
-          <div class="right-container-_0GQ3U"
-            style="background-image: url(&quot;https://p9-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/765a47720e944173bbbd678aefbcae0a~tplv-13w3uml6bg-crop-center-v1:160:90.image?rk3s=2e2596fd&amp;x-expires=1731720832&amp;x-signature=06aGzxG4xmlYmTcQjLXvchlLric%3D&quot;); background-repeat: no-repeat; background-size: cover;">
-            <img
-              src="https://p3-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/765a47720e944173bbbd678aefbcae0a~tplv-13w3uml6bg-crop-center-v1:960:540.image?rk3s=2e2596fd&amp;x-expires=1731720832&amp;x-signature=3mc%2BXg3y33CglmFfKM1ZekRzLA8%3D"
-              class="bot-banner-bg-_IItqZ" style="
-    width: 100%;
-    height: 100%;
-    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.12);
-">
-            <div class=""
-              style="gap: 16px;position: absolute;bottom: 0;left: 0;width: 100%;padding: 5px;background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);align-items: center;flex-direction: row;display: inline-flex;position: absolute;bottom: 0;left: 0;width: 100%;/* padding: 32px 24px 24px; */background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);">
-              <span class="" style="
-    width: 64px;
-    height: 64px;
-    background: #f0f0f5;
-    border-radius: 8px;
-"><img src="https://p6-flow-product-sign.byteimg.com/tos-cn-i-13w3uml6bg/6f8d3536f35a4e9ab28ffccfbb8b12c9~tplv-13w3uml6bg-resize:128:128.image?rk3s=2e2596fd&amp;x-expires=1731720832&amp;x-signature=YJXYms7Xo1cTrUMOL6TVPo3GSiA%3D"
-                  class="" style="
-    display: block;
-    height: 100%;
-    object-fit: cover;
-    width: 100%;
-"></span>
-              <div class="" x-semi-prop="children"
-                style="gap: 4px;overflow: hidden;flex: 1;align-items: flex-start;width: 100%;display: inline-flex;flex-direction: column;">
-                <p class="" style="
-    width: 100%;
-    font-size: 10px;
-    font-weight: 400;
-    font-style: normal;
-    line-height: 12px;
-    color: #FFF;
-    display: block;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    margin: 0px;
-"><span>商业服务</span></p>
-                <h1 class="" style="
-    width: 100%;
-    font-size: 18px;
-    font-weight: 600;
-    font-style: normal;
-    line-height: 24px;
-    color: #FFF;
-    margin: 0px;
-"><span>产品卖点提炼神器</span></h1>
-                <div class=""
-                  style="gap: 4px;flex-shrink: 0;max-width: 100%;height: 18px;margin: 0px;color: rgba(255, 255, 255, 0.39);display: inline-flex;flex-direction: row;">
-                  <div class="semi-image avatar-oDHtb3"
-                    style="width: 14px;height: 14px;overflow: hidden;border-radius: 12px;"><img
-                      src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image"
-                      data-src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image"
-                      class="semi-image-img" width="14" height="14"></div>
-                  <div class="" x-semi-prop="children"
-                    style="gap: 2px;flex: 1;font-size: 12px;font-weight: 400;line-height: 18px;"><span class=""
-                      style="max-width: 150px;"><span>罗文</span></span></div><span class="" style="
-    flex: 1;
-    font-size: 12px;
-    font-weight: 400;
-    line-height: 18px;
-"><span>@LUOWEN</span></span>
+          <div class="right-container">
+            <img src="http://data.linesno.com/banner/agent_bg.png" class="bot-banner-bg" alt="Banner Background Image">
+
+            <div class="banner-info">
+              <span class="avatar">
+                <img src="http://data.linesno.com/banner/agent_icon.png" alt="Avatar Image">
+              </span>
+              <div class="info-text">
+                <p class="category">商业服务</p>
+                <h1 class="title">产品卖点提炼神器</h1>
+                <div class="author-info">
+                  <div class="semi-image avatar-oDHtb3">
+                    <img src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image" class="semi-image-img" width="14" height="14" alt="Author Avatar">
+                  </div>
+                  <div class="author-name"><span>罗文</span></div>
+                  <div class="at-name"><span>@LUOWEN</span></div>
                 </div>
               </div>
             </div>
@@ -141,7 +76,7 @@
               <div class="cart-head-content">
                 <div class="cart-head-content">
                   <span class="semi-avatar semi-avatar-square">
-                    <img :src="imagePath(item)"  class="">
+                    <img :src="imagePath(item)" class="">
                   </span>
                 </div>
               </div>
@@ -163,7 +98,7 @@
                 </div>
                 <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;">
                   <span>
-                    {{ truncateString(item.channelDesc,65) }}
+                    {{ truncateString(item.channelDesc, 65) }}
                   </span>
                 </p>
                 <div class="semi-space card-tag-list" style="gap: 4px;"></div>
@@ -286,3 +221,138 @@ function handleChannelChat(item) {
 handleAllMyChannel();
 
 </script>
+
+<style lang="scss" scoped>
+.right-container {
+  position: relative; // 确保子元素可以绝对定位在容器内
+
+  .bot-banner-bg {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  .banner-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 5px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    flex-direction: row;
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      background: #f0f0f5;
+      border-radius: 8px;
+
+      img {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 8px;
+      }
+    }
+
+    .info-text {
+      overflow: hidden;
+      flex: 1;
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+
+      .category {
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 12px;
+        color: #FFF;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin: 0;
+      }
+
+      .title {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px;
+        color: #FFF;
+        margin: 0;
+      }
+
+      .author-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        max-width: 100%;
+        height: 18px;
+        color: rgba(255, 255, 255, 0.39);
+
+        .semi-image {
+          width: 14px;
+          height: 14px;
+          overflow: hidden;
+          border-radius: 12px;
+
+          img {
+            width: 14px;
+            height: 14px;
+          }
+        }
+
+        .author-name,
+        .at-name {
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 18px;
+          flex: 1;
+        }
+      }
+    }
+  }
+}
+
+.card-container {
+  margin-left: 10px;
+  cursor: pointer;
+  align-items: flex-start;
+  width: 100%;
+  height: 270px;
+  padding: 16px 0;
+  display: inline-flex;
+  flex-direction: column;
+
+  .card-header {
+    height: 28px;
+
+    img {
+      height: 28px;
+    }
+  }
+
+  h1 {
+    -webkit-line-clamp: 2;
+    max-height: 112px;
+    margin-bottom: 8px;
+    font-size: 40px;
+    font-weight: 700;
+    line-height: 48px;
+    color: #1D1C23;
+  }
+
+  p {
+    height: 24px;
+    margin-bottom: 28px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+    color: rgba(29, 28, 35, 0.6);
+  }
+
+}
+</style>
