@@ -8,7 +8,7 @@
         style="padding:0px !important;">
     <div class="smart-container inner-smart-container">
       <el-row>
-        <el-col :span="19">
+        <el-col :span="19" style="padding: 0 5%;">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
               <div class="chat-header-title">
@@ -305,7 +305,7 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .inner-smart-container {
-    max-width: 95%! important;
+    max-width: 100%! important;
 
     .robot-chat-windows{
       border:0px !important;
