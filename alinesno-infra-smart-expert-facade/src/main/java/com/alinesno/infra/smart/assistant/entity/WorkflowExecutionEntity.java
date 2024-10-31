@@ -8,10 +8,12 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 // 工作流执行记录表实体类
 @EqualsAndHashCode(callSuper = true)
 @Data
+@ToString
 @TableName("workflow_executions") // MyBatis-Plus 注解，指定表名
 public class WorkflowExecutionEntity extends InfraBaseEntity {
 
