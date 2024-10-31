@@ -1,7 +1,7 @@
 <template>
     <el-scrollbar height="100vh">
 
-        <div class="container-main" style="padding-bottom:50px;background-color: #fff;">
+        <div class="container-main" style="padding-bottom:50px;">
             <div class="tpl-app" v-loading="fullscreenLoading">
 
                 <div class="search-container-panel">
