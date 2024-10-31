@@ -36,6 +36,7 @@ import { ref } from 'vue';
   flex-direction: column;
   height: calc(100vh - 40px);
   border-left: 1px solid #e6e5e9;
+  background-color: #fafafa;
 
   .top-stats,
   .bottom-stats {
@@ -52,7 +53,7 @@ import { ref } from 'vue';
   .content-area {
     flex: 1; // 让内容区域扩展以填充剩余空间
     padding: 20px;
-    background-color: #fff;
+    background-color: #fafafa;
     border-radius: 5px;
     text-align: left;
 
