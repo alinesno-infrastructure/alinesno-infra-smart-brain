@@ -97,6 +97,8 @@ public class IndustryRoleCatalogServiceImpl extends IBaseServiceImpl<IndustryRol
             BeanUtils.copyProperties(e , dto);
 
             LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
+            wrapper.setEntityClass(IndustryRoleEntity.class);
+            query.toWrapper(wrapper);
             wrapper.eq(IndustryRoleEntity::getIndustryCatalog , e.getId()) ;
             List<IndustryRoleEntity> sList = roleService.list(wrapper) ;
 
