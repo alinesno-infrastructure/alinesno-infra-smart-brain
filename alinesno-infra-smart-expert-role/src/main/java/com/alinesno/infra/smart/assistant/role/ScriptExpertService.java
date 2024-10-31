@@ -24,6 +24,8 @@ public class ScriptExpertService extends ExpertService {
 								WorkflowExecutionEntity workflowExecution,
 								MessageTaskInfo taskInfo) {
 
+		log.debug("workflowExecution = {}" , workflowExecution);
+
 		String scriptText = role.getExecuteScript() ;
 
 		if(scriptText == null || scriptText.isEmpty()){
