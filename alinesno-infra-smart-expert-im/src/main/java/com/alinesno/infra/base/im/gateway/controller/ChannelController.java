@@ -60,6 +60,8 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
+
+
         TableDataInfo tableDataInfo = this.toPage(model, this.getFeign(), page);
 
         List<ChannelEntity> channelEntities = (List<ChannelEntity>) tableDataInfo.getRows();
