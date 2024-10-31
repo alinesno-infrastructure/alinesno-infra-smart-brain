@@ -1,7 +1,6 @@
 <template>
 
   <div class="app-container tpl-app">
-
     <div class="search-container-panel">
       <el-row>
         <el-col :span="24">
@@ -21,7 +20,7 @@
 
     <div class="banner-container-panel">
       <el-row>
-        <el-col :span="15">
+        <el-col :span="17">
 
           <div class="card-container">
             <div>
@@ -40,7 +39,7 @@
 
 
         </el-col>
-        <el-col :span="9">
+        <el-col :span="7">
 
           <div class="right-container">
             <img src="http://data.linesno.com/banner/agent_bg.png" class="bot-banner-bg" alt="Banner Background Image">
@@ -54,7 +53,9 @@
                 <h1 class="title">产品卖点提炼神器</h1>
                 <div class="author-info">
                   <div class="semi-image avatar-oDHtb3">
-                    <img src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image" class="semi-image-img" width="14" height="14" alt="Author Avatar">
+                    <img
+                      src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image"
+                      class="semi-image-img" width="14" height="14" alt="Author Avatar">
                   </div>
                   <div class="author-name"><span>罗文</span></div>
                   <div class="at-name"><span>@LUOWEN</span></div>
@@ -105,7 +106,7 @@
               </div>
             </div>
             <div class="semi-divider semi-divider-horizontal"></div>
-            <div class="semi-space" style="height: 20px; width: 100%; gap: 8px;">
+            <div class="semi-space" style="width: 100%; gap: 8px;">
               <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children"
                 style="display: inline-flex;">
                 <div class="semi-space card-statics" style="gap: 8px;">
@@ -125,7 +126,7 @@
     </div>
 
     <!-- 频道聊天 -->
-    <el-dialog v-model="dialogVisible" :title="chatTitle" width="80%" :before-close="handleClose">
+    <el-dialog v-model="dialogVisible" :title="chatTitle" width="80%">
       <iframe :src="roleChatUri" class="role-chat-iframe"></iframe>
     </el-dialog>
 
