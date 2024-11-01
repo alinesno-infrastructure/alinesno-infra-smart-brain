@@ -145,7 +145,7 @@ function handleGetProductList() {
 
         // 循环处理 jsonData.data 数组中的每一个元素
         response.data.forEach(item => {
-            if (demoProductList.value.length < 6) {
+            if (demoProductList.value.length < 7) {
                 demoProductList.value.push({
                     name: item.name, // 使用 data 中的 name 字段
                     typeDescribe: "", // 如果没有对应的字段，这里可以留空或自定义
