@@ -1,6 +1,19 @@
 <template>
-  <div class="robot-chat-help-container">
+  <div class="agent-single-right-panel robot-chat-help-container">
 
+    <!-- 上方统计信息 -->
+    <div class="top-stats">
+      <span class="stat-item">👍 13</span>
+      <span class="stat-item">💬 9K 使用</span>
+      <span class="stat-item">🗣️ 60.3K 对话</span>
+    </div>
+
+    <!-- 中间内容区域 -->
+    <div class="content-area">
+      <div class="intro">4 道 AI 测试题，Get 你在未来世界的隐藏身份！ 完成 4 道题目, 即可解锁奖品，iPhone 16 Pro Max、Apple Watch S9、AirPods
+        4、扣子周边等500份奖品你来拿！</div>
+    </div>
+    
     <div class="robot-chat-help-panel">
       <div class="robot-chat-help-title">频道专家Agent列表</div>
       <div class="robot-chat-help-item-list-panel" v-loading="loading">
@@ -14,13 +27,14 @@
                 <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
               </div>
             </li>
-            <li class="item-process" style="background-color: #fff;text-align: center;">
-              <el-button type="primary" text bg icon="ChatRound" @click="dialogVisible = true">添加Agent到频道</el-button>
+            <li class="item-process" style="background-color: #fafafa;text-align: center;">
+              <el-button type="primary" text bg size="large" icon="ChatRound" @click="dialogVisible = true">添加Agent到频道</el-button>
             </li>
           </ul>
         </div>
       </div>
     </div>
+
 
     <el-dialog v-model="dialogVisible" v-if="dialogVisible" title="选择专家服务Agent" width="60%" :before-close="handleClose" append-to-body>
 
