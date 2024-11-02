@@ -3,9 +3,11 @@
 
     <!-- 控制列表 -->
     <el-container style="height: calc(100vh - 56px);">
+      <!-- 
       <el-aside width="330px" style="background: #fff;height:100%; padding:10px;">
         <ChatSessionPanel @onSendParams="handleGetParams" />
-      </el-aside>
+      </el-aside> 
+      -->
       <el-main style="padding:0px;">
         <SmartService @onSendParams="handleGetParams" />
       </el-main>
@@ -19,7 +21,7 @@
 import { useRouter } from "vue-router";
 
 import SmartService from './smartService';
-import ChatSessionPanel from './chatSessionPanel';
+// import ChatSessionPanel from './chatSessionPanel';
 
 import { ref, reactive } from 'vue'
 
