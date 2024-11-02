@@ -6,7 +6,7 @@
         <el-col :span="19">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
-              <div class="chat-header-title" style="padding-left: 28px;">
+              <div class="chat-header-title">
                 <img class="aip-chat-box-title-img" :src="imagePath(channelInfo)" />
                 {{ channelInfo.channelName }} 
               </div>
@@ -78,7 +78,7 @@
           </div>
         </el-col>
 
-        <el-col :span="5">
+        <el-col :span="5"  style="background-color:#fafafa">
           <SmartServiceAgent @mentionUser="mentionUser" />
         </el-col>
        
