@@ -843,10 +843,11 @@ $chartColor: #3b5998;
   // max-width: 1300px;
 
   .robot-chat-help-container {
-    margin-left: 10px;
+    // margin-left: 10px;
+    height: calc(100vh - 56px);
 
     .robot-chat-help-panel {
-      background: #fff;
+      background: #fafafa;
       padding: 10px;
       border-radius: 3px;
       margin-bottom: 10px;
@@ -904,8 +905,9 @@ $chartColor: #3b5998;
   .robot-chat-windows {
     float: left;
     width: 100%;
-    border-left: 1px solid #e6e6e6 ; 
-    border-right: 1px solid #e6e6e6 ; 
+    padding: 0 5%;
+    // border-left: 1px solid #e6e6e6 ; 
+    // border-right: 1px solid #e6e6e6 ; 
   }
 
   .robot-chat-header {
@@ -919,6 +921,7 @@ $chartColor: #3b5998;
     .chat-header-title {
       float: left;
       font-weight: bold;
+      display: flex;
       margin-right: 10px;
     }
 
