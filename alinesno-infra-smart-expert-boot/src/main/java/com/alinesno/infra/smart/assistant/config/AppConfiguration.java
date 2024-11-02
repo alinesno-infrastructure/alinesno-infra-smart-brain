@@ -37,6 +37,7 @@ import org.springframework.util.unit.DataSize;
         "com.alinesno.infra.smart.assistant.mapper" ,
         "com.alinesno.infra.base.im.mapper" ,
         "com.alinesno.infra.smart.brain.mapper" ,
+        "com.alinesno.infra.smart.assistant.template.mapper" ,
         "com.alinesno.infra.smart.inference.mapper"
 })
 @ComponentScan({
