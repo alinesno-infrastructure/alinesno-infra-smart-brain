@@ -42,6 +42,7 @@
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
         <module>alinesno-infra-smart-expert-queue</module>  <!-- 任务队列 -->
         <module>alinesno-infra-smart-expert-plugin</module>  <!-- 插件管理 -->
+        <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
 
         <module>alinesno-infra-smart-expert-initialize</module>  <!-- 初始数据管理 -->
 
