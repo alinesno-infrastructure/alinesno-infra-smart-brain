@@ -1,9 +1,17 @@
 <template>
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
-      <el-menu-item index="1" @click="jumpTo">
-        <i class="fa-solid fa-house-user"></i>
-      </el-menu-item>
+      <el-tooltip effect="dark" content="创建频道" placement="right">
+        <el-menu-item index="9" @click="addChannel()">
+          <i class="fa-solid fa-feather"></i>
+        </el-menu-item>
+      </el-tooltip>
+
+      <el-tooltip effect="dark" content="频道市场" placement="right">
+        <el-menu-item index="1" @click="jumpTo">
+          <i class="fa-solid fa-house-user"></i>
+        </el-menu-item>
+      </el-tooltip>
 
       <el-tooltip effect="dark" :content="item.desc" v-for="item in menuItems" :key="item.id" placement="right">
         <el-menu-item :index="item.id" @click="openServiceList(item.link)">
@@ -40,10 +48,17 @@
       </el-form>
     </el-dialog>
 
+    <!-- 创建频道弹窗 -->
+    <ChannelGroup ref="createChildComp" />
+
   </div>
 </template>
 
 <script setup>
+
+import ChannelGroup from "@/views/base/specialist/channelGroup.vue";
+
+const createChildComp = ref(null);
 
 const dialogVisible = ref(false)
 const router = useRouter();
@@ -67,6 +82,11 @@ function openServiceList(_path) {
 // 打开客户配置
 function jumpToConstomTheme() {
   router.push({ path: "/dashboard/dashboardTheme" });
+}
+
+// 添加频道
+function addChannel(){
+  createChildComp.value.handleOpenChannel(true);
 }
 
 // 打开首页
