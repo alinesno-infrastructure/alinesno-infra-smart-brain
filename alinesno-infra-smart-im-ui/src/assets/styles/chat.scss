@@ -81,14 +81,15 @@
 }
 
 .aip-chat-dashboard-panel {
-  padding: 0px 10px !important;
+  padding: 0px !important;
 
   .aip-chat-box-title-img {
     width: 25px;
     height: 25px;
     border-radius: 5px;
-    position: absolute;
-    left: 10px;
+    margin-right: 10px;
+    // position: absolute;
+    // left: 10px;
   }
 
   .aip-icon-word {
@@ -468,4 +469,53 @@
         margin: 0px 0px 0px 10px;
         float: left;
     }
+}
+
+.agent-single-right-panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 40px);
+  border-left: 1px solid #e6e5e9;
+  background-color: #fafafa;
+
+  .top-stats,
+  .bottom-stats {
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .stat-item {
+    font-size: 14px;
+    color: #333;
+    margin-right: 10px;
+  }
+
+  .content-area {
+    flex: 1; // 让内容区域扩展以填充剩余空间
+    padding: 20px;
+    background-color: #fafafa;
+    border-radius: 5px;
+    text-align: left;
+
+    .intro {
+      font-size: 15px;
+      margin-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    .skill-tip {
+      color: #555;
+    }
+
+    p {
+      font-size: 14px;
+      margin-bottom: 5px;
+      margin-top: 10px;
+    }
+  }
+
+  .bottom-stats {
+    margin-top: auto;
+    margin-bottom: 30px;
+  }
 }
