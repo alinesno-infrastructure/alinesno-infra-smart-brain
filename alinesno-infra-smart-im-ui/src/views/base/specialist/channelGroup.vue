@@ -1,6 +1,6 @@
 <template>
 
-  <el-dialog v-model="centerDialogVisible" title="创建频道" width="30%" align-center>
+  <el-dialog v-model="centerDialogVisible" title="创建频道" width="30%" :append-to-body="true" align-center>
 
     <div class="channel-box-panel" :class="showCreateBox?'show-box':'hidden-box'">
 
