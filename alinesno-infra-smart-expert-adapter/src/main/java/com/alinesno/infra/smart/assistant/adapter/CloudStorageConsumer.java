@@ -20,6 +20,15 @@ public interface CloudStorageConsumer {
 
     /**
      * 上传文件到存储
+     * @param file
+     * @param platform
+     * @return
+     */
+    @Post(url = "/api/base/storage/uploadCallbackUrl")
+    R<String> uploadCallbackUrl(@DataFile("file") File file, @Body("platform") String platform ,  OnProgress onProgress) ;
+
+    /**
+     * 上传文件到存储
      *
      * @param file 待上传的文件，使用multipart/form-data方式提交
      * @param platform 平台信息，用于区分上传文件的来源或用途
