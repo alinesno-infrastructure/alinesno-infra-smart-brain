@@ -27,7 +27,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;
   database:
     type: mysql
   index:
@@ -64,6 +64,7 @@ alinesno:
       - /v1/api/infra/base/im/sse/**
       - /v1/api/infra/base/im/chat/**
       - /api/infra/base/im/channel/**
+      - /api/infra/smart/assistant/template/testTemplate
   infra:
     gateway:
       host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
