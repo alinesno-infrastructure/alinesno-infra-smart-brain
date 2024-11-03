@@ -23,4 +23,11 @@ public interface IWorkflowExecutionService extends IBaseService<WorkflowExecutio
      * @param record
      */
     void saveRecord(WorkflowExecutionEntity record);
+
+//    /**
+//     * @param taskInfo
+//     * @param genContent
+//     * @param messageId
+//     */
+//    void saveWorkflowExecution(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent, long messageId);
 }
