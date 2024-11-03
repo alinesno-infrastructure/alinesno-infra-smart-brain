@@ -123,13 +123,14 @@ import { ElLoading } from 'element-plus'
 import { getAllCatalog } from "@/api/base/im/robot";
 import SnowflakeId from "snowflake-id";
 
+const snowflake = new SnowflakeId();
+
 const router = useRouter();
 const productList = ref([])
 const chatTitle = ref("")
 const dialogVisible = ref(false)
 const roleChatUri = ref("")
 
-const snowflake = new SnowflakeId();
 
 const demoProductList = ref([])
 
