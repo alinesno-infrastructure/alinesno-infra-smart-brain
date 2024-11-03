@@ -31,6 +31,11 @@
 			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-template</artifactId>
+			<version>${revision}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.freemarker</groupId>
@@ -76,29 +81,12 @@
 			</exclusions>
 		</dependency>
 
-		<!-- liteflow_start
+		<!-- echarts数据分析 -->
 		<dependency>
-			<groupId>com.yomahub</groupId>
-			<artifactId>liteflow-spring-boot-starter</artifactId>
-			<version>${liteflow.version}</version>
+			<groupId>org.icepear.echarts</groupId>
+			<artifactId>alinesno-echarts-java</artifactId>
+			<version>2.0.1</version>
 		</dependency>
-		<dependency>
-			<groupId>com.yomahub</groupId>
-			<artifactId>liteflow-rule-sql</artifactId>
-			<version>${liteflow.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.yomahub</groupId>
-			<artifactId>liteflow-script-java</artifactId>
-			<version>${liteflow.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.yomahub</groupId>
-			<artifactId>liteflow-script-groovy</artifactId>
-			<version>${liteflow.version}</version>
-		</dependency>
-		-->
-        <!-- liteflow_end -->
 
 		<!-- spring-retry_start -->
 		<dependency>
