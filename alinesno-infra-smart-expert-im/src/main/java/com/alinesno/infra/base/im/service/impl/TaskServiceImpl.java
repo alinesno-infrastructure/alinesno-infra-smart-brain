@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.service.impl;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
@@ -32,6 +33,9 @@ public class TaskServiceImpl implements ITaskService {
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private IWorkflowExecutionService workflowExecutionService ;
 
     @Autowired
     private ISSEService sseService;
@@ -109,6 +113,9 @@ public class TaskServiceImpl implements ITaskService {
 
         // 保存到消息记录表中
         messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
+
+        // 保存到任务流程中
+        // workflowExecutionService.saveWorkflowExecution(taskInfo , genContent , messageId) ;
 
         // 发送到前端
         sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
