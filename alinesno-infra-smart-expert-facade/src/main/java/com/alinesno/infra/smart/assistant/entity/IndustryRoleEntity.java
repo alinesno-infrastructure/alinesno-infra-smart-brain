@@ -71,6 +71,12 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("会话次数")
     private Long chatCount = 0L ;
 
+    // 推荐角色(用于Hero推荐)
+    @TableField("recommended_role")
+    @ColumnType(value = MySqlTypeConstant.SMALLINT, length = 1)
+    @ColumnComment("是否是推荐")
+    private boolean hasRecommended ;
+
     @TableField
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
     private String knowledgeId ;
