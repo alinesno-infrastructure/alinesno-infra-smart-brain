@@ -38,6 +38,19 @@ public class WorkflowExecutionServiceImpl extends IBaseServiceImpl<WorkflowExecu
         this.save(record);
     }
 
+//    @Override
+//    public void saveWorkflowExecution(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent, long messageId) {
+//        WorkflowExecutionEntity record = new WorkflowExecutionEntity() ;
+//
+//        record.setChannelId(taskInfo.getChannelId());
+//        record.setRoleId(taskInfo.getRoleId());
+//
+//        record.setId(genContent.getId());
+//        record.setGenContent(genContent.getGenContent()) ;
+//
+//        save(record) ;
+//    }
+
 
 }
 
