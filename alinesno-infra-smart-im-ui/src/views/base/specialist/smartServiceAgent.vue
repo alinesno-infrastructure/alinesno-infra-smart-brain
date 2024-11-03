@@ -10,8 +10,9 @@
 
     <!-- 中间内容区域 -->
     <div class="content-area">
-      <div class="intro">4 道 AI 测试题，Get 你在未来世界的隐藏身份！ 完成 4 道题目, 即可解锁奖品，iPhone 16 Pro Max、Apple Watch S9、AirPods
-        4、扣子周边等500份奖品你来拿！</div>
+      <div class="intro">
+        {{ channelInfo.channelDesc }}
+      </div>
     </div>
     
     <div class="robot-chat-help-panel">
@@ -59,10 +60,15 @@ import {
   getChannelAgent
 } from '@/api/base/im/robot'
 import { getParam } from '@/utils/ruoyi'
+import { ref } from 'vue';
 
 // 定义派发事件
 const emit = defineEmits(['mentionUser'])
 
+const channelInfo = ref({
+  channelName: '频道名称',
+  channelDesc: '频道描述'
+})
 const router = useRouter();
 const loading = ref(false)
 const dialogVisible = ref(false)
@@ -90,14 +96,19 @@ function handleClose() {
   dialogVisible.value = false;
 }
 
-/** 显示图片 */
-function imagePath(row){
-  let roleAvatar = '1746435800232665090' ; 
-  if(row.avatar){
-    roleAvatar = row.avatar ; 
-  }
-  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+const setChannelInfo = (value) => {
+  console.log(value)
+  channelInfo.value = value ;
 }
+
+/** 显示图片 */
+// function imagePath(row){
+//   let roleAvatar = '1746435800232665090' ; 
+//   if(row.avatar){
+//     roleAvatar = row.avatar ; 
+//   }
+//   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+// }
 
 /** 提问作者 */
 function handleSelectAgentToChat(item){
@@ -105,6 +116,11 @@ function handleSelectAgentToChat(item){
 }
 
 handleGetChannelAgent() ;
+
+/** 暴露方法 */
+defineExpose({
+  setChannelInfo
+})
 
 /** 监听路由变化 */
 watch(() =>  router.currentRoute.value.path,
