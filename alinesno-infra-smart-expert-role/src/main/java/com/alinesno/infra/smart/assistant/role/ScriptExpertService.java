@@ -115,18 +115,19 @@ public class ScriptExpertService extends ExpertService {
 
 		// 创建 Binding 对象，用于绑定变量到 Groovy 脚本
 		Binding binding = new Binding();
-		binding.setVariable("role", role);
-		binding.setVariable("taskInfo", taskInfo);
-		binding.setVariable("workflow", workflow);
-		binding.setVariable("qianWenLLM", qianWenLLM);
-		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);
-		binding.setVariable("expertService", this);
-		binding.setVariable("tools", tools);
+		binding.setVariable("role", role); // 角色信息
+		binding.setVariable("taskInfo", taskInfo); // 任务信息
+		binding.setVariable("workflow", workflow); // 执行流程节点
+		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
+		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
+		binding.setVariable("templateService", getTemplateService()); // 模板引擎
+		binding.setVariable("expertService", this);  // 操作服务
+		binding.setVariable("tools", tools); // 工具类
 
-		binding.setVariable("codeContent", codeContentList == null ? null : codeContentList.get(0));
+		binding.setVariable("codeContent", codeContentList == null || codeContentList.isEmpty() ? null : codeContentList.get(0));  // 生成 代码
 
 		binding.setVariable("contextMap", ContextManager.getInstance());
-		binding.setVariable("log", log);
+		binding.setVariable("log", log); // 日志输出
 
 		// 创建 GroovyShell 实例
 		GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), binding);
