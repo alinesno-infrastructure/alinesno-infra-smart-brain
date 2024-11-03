@@ -37,6 +37,9 @@ public class SSEChannelController {
     @Autowired
     private ITaskService taskService;
 
+//    @Autowired
+//    private IMessageService messageService ;
+
     /**
      * 监控流消息发送到前端
      * @param event
@@ -60,8 +63,12 @@ public class SSEChannelController {
             msgDto.setLoading(false);
             msgDto.setChatText(msg);
             msgDto.setLlmStream(true);
+
             try {
                 emitter.send(msgDto) ;
+
+                // 保存记录到数据库中
+                // messageService.saveMessage(role , info, msg , msgDto) ;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
