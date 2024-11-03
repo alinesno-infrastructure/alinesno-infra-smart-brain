@@ -6,8 +6,8 @@ import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.assistant.template.mapper.TemplateMapper;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
-import com.alinesno.infra.smart.assistant.template.utils.WordUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.deepoove.poi.XWPFTemplate;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Map;
 
 @Slf4j
@@ -45,12 +47,14 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
             log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
         });
 
-        File sourceFile = new File(tempDir + File.separator + "templates" , templateEntity.getStorageFileId() +"." + templateEntity.getTemplateType()) ;
-        File targetFile = new File(tempDir , templateKey +".docx") ;
+        File sourceFile = new File(tempDir, templateEntity.getStorageFileId() +"." + templateEntity.getTemplateType()) ;
+        File targetFile = new File(tempDir , templateKey  +"." + templateEntity.getTemplateType()) ;
         FileUtils.writeByteArrayToFile(sourceFile , byteBody);
 
+        log.debug("params = {}" , params);
         log.debug("sourceFile = {} , targetFile = {}" , sourceFile.getAbsoluteFile() , targetFile.getAbsoluteFile());
-        WordUtil.createDoc(params, sourceFile.getName() , targetFile.getAbsolutePath()) ;
+
+        generateWord(params, sourceFile.getAbsolutePath() , targetFile.getAbsolutePath()) ;
 
         R<String> r = storageConsumer.uploadCallbackUrl(targetFile , "qiniu-kodo-pub" , progress -> {
             log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
@@ -58,4 +62,27 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
 
         return r.getData() ;
     }
+
+    /**
+     * 生成word
+     * @param dataMap
+     * @param sourcePath
+     * @param outputName
+     */
+    public static void generateWord(Map<String , Object> dataMap , String sourcePath,String outputName){
+        XWPFTemplate template = XWPFTemplate
+                .compile(sourcePath)
+                .render(dataMap);
+        FileOutputStream out;
+        try {
+            out = new FileOutputStream(outputName);
+            template.write(out);
+            out.flush();
+            out.close();
+            template.close();
+        } catch (IOException e) {
+            log.error("模板解析异常" , e);
+        }
+    }
+
 }
