@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.dto.WebMessageDto;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 
@@ -38,10 +39,12 @@ public interface IMessageService extends IBaseService<MessageEntity> {
 
     /**
      * 保存消息实体
+     *
      * @param personDto
      * @param channelId
+     * @return
      */
-    void saveChatMessage(ChatMessageDto personDto, Long channelId);
+    Long saveChatMessage(ChatMessageDto personDto, Long channelId);
 
     /**
      * 用户发送消息给智能体角色
@@ -65,4 +68,12 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @return
      */
     List<PromptMessageDto> queryChannelLastMessage(long channel, long accountId ,  long roleId , int size);
+
+    /**
+     * 保存消息到数据库中
+     * @param role
+     * @param info
+     * @param msg
+     */
+    void saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg);
 }
