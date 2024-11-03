@@ -18,7 +18,7 @@
       </el-row>
     </div>
 
-    <div class="banner-container-panel">
+    <div class="banner-container-panel" v-if="recommendRole">
       <el-row>
         <el-col :span="17">
 
@@ -30,9 +30,9 @@
                   alt="Brand Logo">
               </div>
               <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
-              <p><span>快速让产品的核心价值得到用户认可，将卖点转化顾客的买点，快来体验吧！</span></p>
+              <p><span>{{ truncateString(recommendRole.responsibilities , 20) }}</span></p>
             </div>
-            <el-button type="primary" bg text size="large">
+            <el-button type="primary" bg text size="large" @click="handleRoleChat()">
               <span class="semi-button-content">立即聊聊</span>
             </el-button>
           </div>
@@ -46,17 +46,15 @@
 
             <div class="banner-info">
               <span class="avatar">
-                <img src="http://data.linesno.com/banner/agent_icon.png" alt="Avatar Image">
+                <img :src="imagePathByPath(recommendRole.roleAvatar)"  alt="Avatar Image">
               </span>
               <div class="info-text">
-                <p class="category">商业服务</p>
-                <h1 class="title">产品卖点提炼神器</h1>
+                <p class="category">{{ recommendRole.roleName }}</p>
+                <h1 class="title">{{ recommendRole.roleName }}</h1>
                 <div class="author-info">
-                  <div class="semi-image avatar-oDHtb3">
-                    <img
-                      src="https://p3-passport.byteacctimg.com/img/user-avatar/2f5f197d9767f138e735359e3822661b~300x300.image"
-                      class="semi-image-img" width="14" height="14" alt="Author Avatar">
-                  </div>
+                  <!-- <div class="semi-image avatar-oDHtb3">
+                    <img :src="imagePathByPath(recommendRole.roleAvatar)"  class="semi-image-img" width="14" height="14">
+                  </div> -->
                   <div class="author-name"><span>罗文</span></div>
                   <div class="at-name"><span>@LUOWEN</span></div>
                 </div>
@@ -139,37 +137,42 @@
 import {
   allMyChannel,
 } from '@/api/base/im/channel'
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
+
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
 
 const router = useRouter();
 const loading = ref(false)
 
 const publicChatChannel = ref([]);
-const recChatChannel = ref([]);
+const recommendRole = ref(null);
+// const recChatChannel = ref([]);
 
 const chatTitle = ref("")
 const dialogVisible = ref(false)
 const roleChatUri = ref("")
 
-const filterRules = ref([
-  {
-    "name": "场景", "codeValue": "initializr.admin.project.template.screen", "items": [
-      { "code": "screen_code_1", "name": "旅游预订" },
-      { "code": "screen_code_2", "name": "在线购物" },
-      { "code": "screen_code_3", "name": "社交媒体" },
-      { "code": "screen_code_4", "name": "健身健康" },
-      { "code": "screen_code_5", "name": "在线视频" }
-    ]
-  },
-  {
-    "name": "类型", "codeValue": "initializr.admin.project.template.type", "items": [
-      { "code": "type_code_1", "name": "移动应用" },
-      { "code": "type_code_2", "name": "网页应用" },
-      { "code": "type_code_4", "name": "社交平台" },
-      { "code": "type_code_5", "name": "健身应用" }
-    ]
-  }
-]);
+// const filterRules = ref([
+//   {
+//     "name": "场景", "codeValue": "initializr.admin.project.template.screen", "items": [
+//       { "code": "screen_code_1", "name": "旅游预订" },
+//       { "code": "screen_code_2", "name": "在线购物" },
+//       { "code": "screen_code_3", "name": "社交媒体" },
+//       { "code": "screen_code_4", "name": "健身健康" },
+//       { "code": "screen_code_5", "name": "在线视频" }
+//     ]
+//   },
+//   {
+//     "name": "类型", "codeValue": "initializr.admin.project.template.type", "items": [
+//       { "code": "type_code_1", "name": "移动应用" },
+//       { "code": "type_code_2", "name": "网页应用" },
+//       { "code": "type_code_4", "name": "社交平台" },
+//       { "code": "type_code_5", "name": "健身应用" }
+//     ]
+//   }
+// ]);
 
 const demeChannel = ref([])
 
@@ -196,12 +199,27 @@ function enterChannel(item) {
   })
 }
 
+/** 与单个Role发信息 */
+function handleRoleChat() {
+
+  let id = recommendRole.value.id 
+  router.push({
+      path: '/single/agentChat',
+      query: { 'roleId': id, 'channelId': snowflake.generate() }
+  })
+
+// roleChatUri.value = "/agentChat?roleId=" + item.id;
+// chatTitle.value = item.roleName;
+// dialogVisible.value = true;
+}
+
 /** 查询所所有我在参与的频道 */
 function handleAllMyChannel() {
   loading.value = true;
   allMyChannel().then(response => {
     let items = response.data;
 
+    recommendRole.value = response.recommendRole;
     publicChatChannel.value = items; // .filter(item => item.channelType === '9');
     // recChatChannel.value = items.filter(item => item.channelType === '3');
 
@@ -213,13 +231,15 @@ function handleAllMyChannel() {
 }
 
 /** 与单个频道发信息 */
-function handleChannelChat(item) {
-  roleChatUri.value = "/channelChat?channel=" + item.id;
-  chatTitle.value = item.channelName;
-  dialogVisible.value = true;
-}
+// function handleChannelChat(item) {
+//   roleChatUri.value = "/channelChat?channel=" + item.id;
+//   chatTitle.value = item.channelName;
+//   dialogVisible.value = true;
+// }
 
-handleAllMyChannel();
+nextTick(() => {
+  handleAllMyChannel();
+});
 
 </script>
 
