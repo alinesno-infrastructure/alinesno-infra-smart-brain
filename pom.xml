@@ -34,6 +34,7 @@
         <module>alinesno-infra-smart-expert-domain</module>  <!-- 领域服务 -->
         <module>alinesno-infra-smart-expert-adapter</module> <!-- 适配层 -->
 
+        <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
         <module>alinesno-infra-smart-expert-role-agents</module> <!-- 自定义的企业角色(后期单独出成为一个工程) -->
 
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
@@ -42,7 +43,6 @@
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
         <module>alinesno-infra-smart-expert-queue</module>  <!-- 任务队列 -->
         <module>alinesno-infra-smart-expert-plugin</module>  <!-- 插件管理 -->
-        <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
 
         <module>alinesno-infra-smart-expert-initialize</module>  <!-- 初始数据管理 -->
 
@@ -60,7 +60,40 @@
             <artifactId>commons-text</artifactId>
             <version>${commons-text.version}</version>
         </dependency>
+
     </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- poi-tl_start -->
+            <dependency>
+                <groupId>com.deepoove</groupId>
+                <artifactId>poi-tl</artifactId>
+                <version>1.10.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi</artifactId>
+                <version>4.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>4.1.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>ooxml-schemas</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml-schemas</artifactId>
+                <version>4.1.2</version>
+            </dependency>
+            <!-- poi-tl_end -->
+        </dependencies>
+    </dependencyManagement>
 
 </project>
 
