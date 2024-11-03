@@ -16,7 +16,7 @@
                 {{ roleInfo.roleName}} 
               </div>
               <div class="chat-header-desc">
-                ({{ truncateString(roleInfo.responsibilities,30) }}) 
+                ({{ truncateString(roleInfo.responsibilities,60) }}) 
               </div>
               <div class="chat-header-desc" style="float: right;margin-top: -10px;">
                   <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true" >
@@ -114,7 +114,7 @@
         </el-col>
 
         <el-col :span="5">
-            <AgentSingleRightPanel />
+            <AgentSingleRightPanel ref="agentSingleRightPanelRef" />
         </el-col>
        
       </el-row>
@@ -134,9 +134,11 @@ import AgentSingleRightPanel from './rightPanel.vue'
 import { getInfo, chatRole }from '@/api/base/im/roleChat'
 import { getParam } from '@/utils/ruoyi'
 import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
-import { onMounted } from "vue";
+import { nextTick, onMounted } from "vue";
 
 const { proxy } = getCurrentInstance();
+
+const agentSingleRightPanelRef = ref(null)
 
 const loading = ref(true)
 const roleId = ref(null);
@@ -253,6 +255,11 @@ function handleGetInfo(roleId){
     pushResponseMessageList(msg);
 
     loading.value = false;
+
+    nextTick(() => {
+      agentSingleRightPanelRef.value.setRoleInfo(role);
+    })
+
   })
 }
 
