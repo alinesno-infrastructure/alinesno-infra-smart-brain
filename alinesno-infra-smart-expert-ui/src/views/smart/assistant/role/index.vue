@@ -107,6 +107,8 @@
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
           </el-table-column>
+
+          <!--
           <el-table-column label="配置Prompt" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text @click="configPrompt(scope.row)">
@@ -114,6 +116,8 @@
               </el-button>
             </template>
           </el-table-column>
+          -->
+
           <el-table-column label="知识库" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text @click="configKnowledge(scope.row)">
@@ -135,6 +139,16 @@
             </template>
           </el-table-column>
           -->
+          <el-table-column label="推荐" align="center" width="100" key="hasRecommended" prop="hasRecommended" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+              <template #default="scope">
+                <el-switch
+                    v-model="scope.row.hasRecommended"
+                    :active-value="true"
+                    :inactive-value="false"
+                    @change="handleRecommended(scope.row.id)"
+                />
+              </template>
+          </el-table-column>
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
@@ -167,10 +181,11 @@
       </el-col>
     </el-row>
 
-      <!-- 添加或修改指令配置对话框 -->
+      <!-- 添加或修改指令配置对话框 
       <el-dialog :title="promptTitle" v-model="promptOpen" width="980px" :before-close="handleClosePrompt" destroy-on-close append-to-body>
          <PromptEditor :currentPrompt="currentPrompt" />
       </el-dialog>
+       -->
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
@@ -288,18 +303,20 @@ import {
   updateRole,
   catalogTreeSelect,
   addRole,
-  saveRoleChainInfo,
+  recommended
 } from "@/api/smart/assistant/role";
 
+  // saveRoleChainInfo,
+
 import KnowledgeDataset from '@/views/smart/assistant/role/knowledge/parseDataset'
-import ExecuteScriptPanel from '@/views/smart/assistant/role/executeScriptPanel'
+// import ExecuteScriptPanel from '@/views/smart/assistant/role/executeScriptPanel'
 
 // import {
 //   addRoleChain , 
 //   updateRoleChain,
 // } from "@/api/smart/assistant/chain"
 
-import PromptEditor from "./editor.vue"
+// import PromptEditor from "./editor.vue"
 import { ElMessage } from 'element-plus'
 import {reactive} from "vue";
 
@@ -325,14 +342,14 @@ const knowTitle = ref("")
 const knowRoleAvatar = ref("")
 
 // 执行脚本
-const executeScriptRef = ref(null)
-const executeScriptDialog = ref(false)
-const executeScriptTitle = ref("")
+// const executeScriptRef = ref(null)
+// const executeScriptDialog = ref(false)
+// const executeScriptTitle = ref("")
 
 const chainOpen = ref(false);
 // const chainTitle = ref("");
-const promptTitle = ref("");
-const currentPrompt = ref("");
+// const promptTitle = ref("");
+// const currentPrompt = ref("");
 // const currentPromptContent = ref([]);
 const promptOpen = ref(false);
 
@@ -438,9 +455,17 @@ const beforeAvatarUpload = (rawFile) => {
 };
 
 /** 关闭对话框 */
-function handleClosePrompt(){
-   promptOpen.value = false;
-  getList();
+// function handleClosePrompt(){
+//    promptOpen.value = false;
+//   getList();
+// }
+
+/** 推荐组织Hero角色 */
+function handleRecommended(roleId){
+  recommended(roleId).then(res => {
+    proxy.$modal.msgSuccess("推荐成功");
+    getList();
+  })
 }
 
 // 节点单击事件
@@ -506,21 +531,21 @@ function configExecuteScript(row){
 
 }
 
-/** 配置Prompt */
-function configPrompt(row){
-   promptTitle.value = "配置角色Prompt";
-   promptOpen.value = true ;
-   currentPrompt.value = row ;
+// /** 配置Prompt */
+// function configPrompt(row){
+//    promptTitle.value = "配置角色Prompt";
+//    promptOpen.value = true ;
+//    currentPrompt.value = row ;
 
-  //  if(row.promptContent){
-  //     currentPromptContent.value = JSON.parse(row.promptContent);
-  //  }
-}
+//   //  if(row.promptContent){
+//   //     currentPromptContent.value = JSON.parse(row.promptContent);
+//   //  }
+// }
 
-/** 关闭弹窗 */
-function handleCloseKnowledge(){
-   knowDrawerDialog.value = false
-}
+// /** 关闭弹窗 */
+// function handleCloseKnowledge(){
+//    knowDrawerDialog.value = false
+// }
 
 /** 运行一次专家链路 */
 // function handleRunChain(row){
@@ -593,27 +618,27 @@ function handleUpdate(row) {
   });
 };
 
-/** 提交流程按钮 */
-function submitChainForm() {
-  proxy.$refs["ChainRef"].validate(valid => {
+// /** 提交流程按钮 */
+// function submitChainForm() {
+//   proxy.$refs["ChainRef"].validate(valid => {
 
-    if (valid) {
-      if (chainForm.value.id != undefined) {
-        updateRoleChain(chainForm.value).then(response => {
-          proxy.$modal.msgSuccess("配置成功");
-          chainOpen.value = false;
-          getList();
-        });
-      } else {
-        saveRoleChainInfo(chainForm.value , chainForm.value.roleId).then(response => {
-          proxy.$modal.msgSuccess("配置成功");
-          chainOpen.value = false;
-          getList();
-        });
-      }
-    }
-  });
-};
+//     if (valid) {
+//       if (chainForm.value.id != undefined) {
+//         updateRoleChain(chainForm.value).then(response => {
+//           proxy.$modal.msgSuccess("配置成功");
+//           chainOpen.value = false;
+//           getList();
+//         });
+//       } else {
+//         saveRoleChainInfo(chainForm.value , chainForm.value.roleId).then(response => {
+//           proxy.$modal.msgSuccess("配置成功");
+//           chainOpen.value = false;
+//           getList();
+//         });
+//       }
+//     }
+//   });
+// };
 
 
 /** 提交按钮 */
