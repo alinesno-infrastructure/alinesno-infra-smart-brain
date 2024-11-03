@@ -71,4 +71,5 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * @param recommendChannels
      */
     void batchCreateChannel(List<ChannelEntity> recommendChannels);
+
 }
