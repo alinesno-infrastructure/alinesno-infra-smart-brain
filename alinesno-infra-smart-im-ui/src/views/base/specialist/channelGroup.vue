@@ -2,6 +2,7 @@
 
   <el-dialog v-model="centerDialogVisible" title="创建频道" width="30%" :append-to-body="true" align-center>
 
+    <!--
     <div class="channel-box-panel" :class="showCreateBox?'show-box':'hidden-box'">
 
       <ul style="margin: 0;padding: 0px;list-style: none;">
@@ -43,13 +44,14 @@
         </ul>
       </el-scrollbar>
     </div>
+    -->
 
-    <div :class="showCreateBox?'hidden-box':'show-box'" style="height:481px">
-        <el-page-header @back="goBack" title="返回" style="margin-bottom: 30px;">
+    <div style="height:481px;padding-top:20px;">
+        <!-- <el-page-header title="" style="margin-bottom: 30px;">
           <template #content>
             <span class="text-large font-600 mr-3"> 填写频道信息</span>
           </template>
-        </el-page-header>
+        </el-page-header> -->
         <el-form :model="form" :rules="rules" label-position="top" ref="userRef" label-width="80px">
           <el-row>
             <el-col :span="24" class="editor-after-div">
@@ -125,15 +127,16 @@ import {getToken} from "@/utils/auth";
 
 import {
   createChannel , 
-  getRecommendChannel,
-  getDefaultChannelId
 } from '@/api/base/im/channel'
 
+  // getRecommendChannel,
+  // getDefaultChannelId
+
 import { reactive, ref , onMounted, nextTick } from 'vue'
-import { getParam } from '@/utils/ruoyi'
+// import { getParam } from '@/utils/ruoyi'
 import { ElLoading } from 'element-plus'
 
-const showCreateBox = ref(true) ; 
+// const showCreateBox = ref(false) ; 
 const centerDialogVisible = ref(false)
 const router = useRouter();
 
@@ -151,7 +154,7 @@ const data = reactive({
 
 const { form, rules } = toRefs(data);
 
-const chatChannelTemplate = ref([]);
+// const chatChannelTemplate = ref([]);
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -169,9 +172,9 @@ const upload = reactive({
   url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData" 
 });
 
-const goBack = () => {
-  showCreateBox.value = true ;
-}
+// const goBack = () => {
+//   showCreateBox.value = true ;
+// }
 
 const reset = () => {
   form.value = {
@@ -217,11 +220,11 @@ const beforeAvatarUpload = (rawFile) => {
 // }
 
 /** 获取到推荐频道列表 */
-function handleRecommendChannel(){
-  getRecommendChannel().then(response => {
-    chatChannelTemplate.value = response.data ;
-  })
-}
+// function handleRecommendChannel(){
+//   getRecommendChannel().then(response => {
+//     chatChannelTemplate.value = response.data ;
+//   })
+// }
 
 /** 创建频道 */
 function submitChannelForm(){
@@ -246,31 +249,31 @@ function submitChannelForm(){
 }
 
 /** 初始化 */
-onMounted(() => {
+// onMounted(() => {
 
-  const channelId = getParam("channel");
+//   const channelId = getParam("channel");
 
-  if(channelId == undefined) {
+//   if(channelId == undefined) {
 
-    const loading = ElLoading.service({
-      lock: true,
-      text: 'Loading',
-      background: 'rgba(0, 0, 0, 0.7)',
-    })
+//     const loading = ElLoading.service({
+//       lock: true,
+//       text: 'Loading',
+//       background: 'rgba(0, 0, 0, 0.7)',
+//     })
 
-    getDefaultChannelId().then(response => {
-      loading.close() ;
-      handleSetChannelId(response.data) ;
-    })
-  }
+//     getDefaultChannelId().then(response => {
+//       loading.close() ;
+//       handleSetChannelId(response.data) ;
+//     })
+//   }
 
-})
+// })
 
 function handleOpenChannel(val){
     centerDialogVisible.value = val;
-    nextTick(() => {
-      handleRecommendChannel() ;
-    })
+    // nextTick(() => {
+    //   handleRecommendChannel() ;
+    // })
 }
 
 defineExpose({
