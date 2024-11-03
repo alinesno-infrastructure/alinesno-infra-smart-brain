@@ -14,6 +14,7 @@ import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
@@ -43,6 +44,9 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
 
     @Autowired
     private IChannelService service;
+
+    @Autowired
+    private IIndustryRoleService roleService ;
 
     @Autowired
     private IChannelRoleService channelRoleService ;
@@ -161,7 +165,15 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
         service.initPersonChannel(1L);
 
         List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
-        return AjaxResult.success(channelEntities) ;
+
+        // 查询当前组织推荐角色
+        long orgId = CurrentAccountJwt.get().getOrgId() ;
+        IndustryRoleEntity industryRoleEntity = roleService.getRecommendRole(orgId) ;
+
+        AjaxResult result = AjaxResult.success(channelEntities) ;
+        result.put("recommendRole", industryRoleEntity) ;
+
+        return result ;
     }
 
     /**
