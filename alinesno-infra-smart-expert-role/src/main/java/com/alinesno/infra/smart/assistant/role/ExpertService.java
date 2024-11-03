@@ -24,6 +24,7 @@ import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
+import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -84,6 +85,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     private IWorkflowExecutionService workflowExecutionService;
 
+    @Autowired
+    private ITemplateService templateService ;
+
     /**
      * 执行角色
      *
@@ -129,10 +133,10 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
 
                 result = handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
-            }
 
-            BeanUtils.copyProperties(record, recordDto);
-            recordDto.setGenContent(result);
+                BeanUtils.copyProperties(record, recordDto);
+                recordDto.setGenContent(result);
+            }
 
         } else if (taskInfo.isModify()) {
 
@@ -491,6 +495,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         // 更新消息并记录消息运行情况
         ITaskService taskService = SpringUtils.getBean(ITaskService.class);
         taskService.handleWorkflowMessageWithoutMessage(taskInfo, recordDto);
+
+        messageService.saveMessage(role, taskInfo, msg) ;
     }
 
 }
