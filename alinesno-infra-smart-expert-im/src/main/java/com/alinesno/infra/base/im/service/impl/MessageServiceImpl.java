@@ -24,10 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_FUNCTION;
@@ -85,13 +82,17 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByAsc(MessageEntity::getAddTime)
+                .orderByDesc(MessageEntity::getAddTime)
                 .last("limit 50");  // 查询出最近的50条数据
 
         List<MessageEntity> entityList = list(wrapper);
 
         if (!entityList.isEmpty()) {
-            for (MessageEntity e : entityList) {
+            int size = entityList.size();
+
+            for(int i = size -1 ; i >= 0; i--){
+
+                MessageEntity e = entityList.get(i);
                 ChatMessageDto dto = new ChatMessageDto();
 
                 dto.setChatText(StringUtils.isBlank(e.getFormatContent()) ? e.getContent() : e.getFormatContent());
@@ -117,7 +118,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     }
 
     @Override
-    public void saveChatMessage(ChatMessageDto personDto, Long channelId) {
+    public Long saveChatMessage(ChatMessageDto personDto, Long channelId) {
 
         MessageEntity entity = new MessageEntity();
 
@@ -135,6 +136,8 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setAccountId(personDto.getAccountId());
 
         save(entity);
+
+        return entity.getId() ;
     }
 
     @Override
@@ -228,6 +231,30 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         List<MessageEntity> list = list(queryWrapper);
 
         return list.stream().map(item -> new PromptMessageDto(item.getRoleType(), item.getFormatContent())).collect(Collectors.toList());
+    }
+
+    @Override
+    public void saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg) {
+
+        MessageEntity entity = new MessageEntity();
+
+        entity.setContent(msg) ;
+        entity.setFormatContent(msg);
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setBusinessId(Long.parseLong(info.getBusinessId()));
+        entity.setChannelId(info.getChannelId());
+        entity.setRoleId(role.getId()) ;
+
+        save(entity);
+        // 保存流程消息
+
     }
 
     private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId) {
