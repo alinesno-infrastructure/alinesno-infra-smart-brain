@@ -24,6 +24,15 @@ var managerUrl = {
   listAllRole: prefix + "listAllRole",
   validateRoleScript: prefix + "validateRoleScript",
   updateRoleScript: prefix + "updateRoleScript",
+  recommended: prefix + "recommended",
+}
+
+// 推荐频道角色
+export function recommended(roleId) {
+  return request({
+    url: managerUrl.recommended+'?roleId=' + parseStrEmpty(roleId) ,
+    method: 'get'
+  })
 }
 
 // 验证脚本任务
