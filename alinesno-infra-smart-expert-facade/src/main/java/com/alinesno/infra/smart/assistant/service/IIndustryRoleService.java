@@ -79,4 +79,18 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param e
      */
     void createRole(IndustryRoleEntity e);
+
+    /**
+     * 推荐组织Hero角色
+     * @param roleId
+     * @param orgId
+     */
+    void recommended(long roleId , long orgId);
+
+    /**
+     * 获取推荐角色
+     * @param orgId
+     * @return
+     */
+    IndustryRoleEntity getRecommendRole(long orgId);
 }
