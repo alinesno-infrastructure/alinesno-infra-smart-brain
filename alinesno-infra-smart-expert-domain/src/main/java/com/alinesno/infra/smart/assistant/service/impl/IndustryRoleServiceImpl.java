@@ -19,6 +19,7 @@ import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -228,5 +229,36 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         allEntities.add(e);
 
         batchCreateRole(allEntities);
+    }
+
+    @Override
+    public void recommended(long roleId , long orgId) {
+
+        // 设置当前频道所有其它角色为不推荐状态
+        LambdaUpdateWrapper<IndustryRoleEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(IndustryRoleEntity::getOrgId, orgId);
+        lambdaUpdateWrapper.set(IndustryRoleEntity::isHasRecommended, false) ;
+        update(lambdaUpdateWrapper);
+
+        // 设置当前角色为更新状态
+        IndustryRoleEntity role = getById(roleId);
+        role.setHasRecommended(true);
+        this.update(role);
+    }
+
+    @Override
+    public IndustryRoleEntity getRecommendRole(long orgId) {
+
+        LambdaQueryWrapper<IndustryRoleEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(IndustryRoleEntity::getOrgId, orgId);
+        lambdaQueryWrapper.eq(IndustryRoleEntity::isHasRecommended, true);
+
+        List<IndustryRoleEntity> list = list(lambdaQueryWrapper);
+
+        if(!list.isEmpty()){
+            return list.get(0);
+        }
+
+        return null;
     }
 }
