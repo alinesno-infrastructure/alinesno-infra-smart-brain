@@ -79,7 +79,7 @@
         </el-col>
 
         <el-col :span="5"  style="background-color:#fafafa">
-          <SmartServiceAgent @mentionUser="mentionUser" />
+          <SmartServiceAgent ref="smartServiceAgentRef" @mentionUser="mentionUser" />
         </el-col>
        
       </el-row>
@@ -139,6 +139,8 @@ const uploadChildComp = ref(null)
 const selectedUsers = ref([]);
 const selectedBusinessId = ref([]);
 const channelUsers = ref([]);
+
+const smartServiceAgentRef = ref(null)
 
 const message = ref('');
 const channelInfo = ref({})
@@ -261,6 +263,11 @@ function handleGetChannel(channelId){
     if(channelId){
       getChannel(channelId).then(response => {
         channelInfo.value = response.data ;
+
+        nextTick(() => {
+          smartServiceAgentRef.value.setChannelInfo(channelInfo.value)
+        })
+
       })
     }
 }
@@ -330,5 +337,4 @@ watch(() =>  router.currentRoute.value.path,(toPath) => {
     },{immediate: true,deep: true}
 )
   
-
 </script>
