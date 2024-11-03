@@ -9,6 +9,7 @@ import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
@@ -137,6 +138,17 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     public AjaxResult updateRoleScript(@RequestBody @Validated RoleScriptDto dto){
         log.debug("dto = {}", dto);
         service.updateRoleScript(dto);
+        return ok() ;
+    }
+
+    /**
+     * 推荐当前组织角色
+     * @return
+     */
+    @GetMapping("/recommended")
+    public AjaxResult recommended(long roleId){
+        long orgId = CurrentAccountJwt.get().getOrgId();
+        service.recommended(roleId , orgId);
         return ok() ;
     }
 
