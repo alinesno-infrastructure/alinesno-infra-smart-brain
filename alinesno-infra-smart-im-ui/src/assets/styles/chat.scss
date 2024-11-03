@@ -282,6 +282,12 @@
     border: 0px;
   }
 
+  .role-chat-iframe-inner {
+    width: calc(100vh - 150px);
+    height: 400px;
+    border: 0px;
+  }
+
 .CodeMirror pre.CodeMirror-line,
 .CodeMirror pre.CodeMirror-line-like {
   line-height: 1.3rem !important;
