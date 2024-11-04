@@ -86,7 +86,8 @@
                                         </div>
                                     </div>
 
-                                    <!-- <div class="semi-divider semi-divider-horizontal"></div> -->
+                                    <div class="semi-divider semi-divider-horizontal"></div>
+                                    
                                     <div class="semi-space">
                                         <div class="semi-space semi-space-align-center semi-space-horizontal"
                                             x-semi-prop="children" style="display: inline-flex;">
