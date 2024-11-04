@@ -27,6 +27,8 @@ import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.plexpt.chatgpt.entity.chat.Message;
@@ -63,6 +65,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     private MessageTaskInfo taskInfo ;
 
     private long msgUuid;
+
+    @Autowired
+    private IChannelService channelService ;
 
     @Autowired
     private StreamMessagePublisher streamMessagePublisher ;
@@ -183,6 +188,18 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         workflowExecutionService.update(record);
 
         return recordDto;
+    }
+
+    /**
+     * 通过channelId获取渠道信息
+     * @param channelId
+     * @return
+     */
+    protected ChannelEntity getChannelInfo(long channelId) {
+        if (channelId > 0){
+            return channelService.getById(channelId) ;
+        }
+        return null ;
     }
 
     /**
