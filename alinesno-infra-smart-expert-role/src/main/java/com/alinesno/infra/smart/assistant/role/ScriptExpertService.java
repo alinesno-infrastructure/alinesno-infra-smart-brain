@@ -122,6 +122,7 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
 		binding.setVariable("expertService", this);  // 操作服务
+		binding.setVariable("channelInfo", getChannelInfo(taskInfo.getChannelId()));  // 操作服务
 		binding.setVariable("tools", tools); // 工具类
 
 		binding.setVariable("codeContent", codeContentList == null || codeContentList.isEmpty() ? null : codeContentList.get(0));  // 生成 代码
@@ -135,4 +136,5 @@ public class ScriptExpertService extends ExpertService {
 		// 执行 Groovy 脚本
 		return String.valueOf(shell.evaluate(scriptText)) ;
 	}
+
 }
