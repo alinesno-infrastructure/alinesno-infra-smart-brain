@@ -1,11 +1,7 @@
 <template>
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
-      <el-tooltip effect="dark" content="创建频道" placement="right">
-        <el-menu-item index="9" @click="addChannel()">
-          <i class="fa-solid fa-feather"></i>
-        </el-menu-item>
-      </el-tooltip>
+  
 
       <el-tooltip effect="dark" content="频道市场" placement="right">
         <el-menu-item index="1" @click="jumpTo">
@@ -21,6 +17,11 @@
     </el-menu>
 
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
+      <el-tooltip effect="dark" content="创建频道" placement="right">
+        <el-menu-item index="9" @click="addChannel()">
+          <i class="fa-solid fa-feather"></i>
+      </el-menu-item>
+      </el-tooltip>
       <el-menu-item index="12" @click="dialogVisible = true">
         <i class="fa-solid fa-paper-plane"></i>
       </el-menu-item>
