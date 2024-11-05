@@ -88,11 +88,11 @@
                 <div class="semi-space container-center" style="gap: 6px;">
                   <div class="semi-image avatar-oDHtb3" style="width: 14px; height: 14px;">
                     <img
-                      src="https://p3-passport.byteacctimg.com/img/user-avatar/7a7e80566f20a6944faaaa3a010fbff4~300x300.image"
+                      src="http://data.linesno.com/switch_header.png"
                       class="semi-image-img" width="14" height="14">
                   </div>
                   <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 2px;">
-                    <span class="semi-typography text" style="max-width: 150px;"><span>韦恩W</span></span>
+                    <span class="semi-typography text" style="max-width: 150px;"><span>Easton</span></span>
                   </div>
                 </div>
                 <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;">
@@ -104,7 +104,7 @@
               </div>
             </div>
             <div class="semi-divider semi-divider-horizontal"></div>
-            <div class="semi-space" style="width: 100%; gap: 8px;">
+            <div class="semi-space" style="width: 100%; gap: 8px;display: flex; justify-content: space-between;">
               <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children"
                 style="display: inline-flex;">
                 <div class="semi-space card-statics" style="gap: 8px;">
@@ -114,7 +114,11 @@
                 </div>
               </div>
               <div class="platform-container-YOpW3B">
-                <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;">
+                <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;" v-if="item.knowledgeType">
+
+                  <!-- 包含则显示-->
+                  <img v-if="item.knowledgeType.includes('docx')" src="http://data.linesno.com/dataset_icons/docx.webp" class="knowledge-type-icon" />
+                  <img v-if="item.knowledgeType.includes('pdf')" src="http://data.linesno.com/dataset_icons/pdf.webp" class="knowledge-type-icon" />
                 </div>
               </div>
             </div>
@@ -375,5 +379,11 @@ nextTick(() => {
     color: rgba(29, 28, 35, 0.6);
   }
 
+}
+
+.knowledge-type-icon{
+  width:20px;
+  height:20px;
+  margin-top:10px
 }
 </style>
