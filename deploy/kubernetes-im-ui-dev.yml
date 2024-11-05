@@ -50,6 +50,7 @@ metadata:
   namespace: ${NAMESPACE}
   annotations:
     kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/proxy-body-size: "100M"
 spec:
   rules:
     - host: "${PROJECT_NAME}.${INFRA_DEV_DOMAIN}"
