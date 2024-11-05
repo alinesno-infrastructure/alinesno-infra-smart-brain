@@ -6,6 +6,7 @@ import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
@@ -60,7 +61,7 @@ public class ImChatController extends SuperController {
         Assert.isTrue(message.getUsers() != null && !message.getUsers().isEmpty(), "请选择处理专家.");
 
         log.debug("message = {}" , JSONUtil.toJsonPrettyStr(message));
-        long currentAccountId = 1L ;
+        long currentAccountId = CurrentAccountJwt.getUserId();
 
         List<IndustryRoleEntity> roleList = roleService.listByIds(message.getUsers()) ;
 
@@ -84,8 +85,9 @@ public class ImChatController extends SuperController {
     @GetMapping("/chatMessage")
     public AjaxResult chatMessage(String channelId){
 
-        long accountId = 1L ;
-        messageService.initChannelHelp(channelId , accountId) ;
+        long currentAccountId = CurrentAccountJwt.getUserId();
+
+        messageService.initChannelHelp(channelId , currentAccountId) ;
         List<ChatMessageDto> chatMessageDtos = messageService.listByChannelId(channelId) ;
 
         return AjaxResult.success(chatMessageDtos) ;
