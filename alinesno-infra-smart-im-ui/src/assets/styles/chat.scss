@@ -102,9 +102,8 @@
   overflow: auto;
   color: #172b4d;
   background-color: #fafafa;
-  padding: 10px;
-  margin: 10px;
-  width: 90%;
+  padding: 10px; 
+  width: calc(100% - 20px);
   margin: auto;
 
   .header {
@@ -376,6 +375,7 @@
     -webkit-box-orient: vertical;
     display: -webkit-box;
     overflow: hidden;
+    margin-bottom: 0px;
   }
 
   .info-container {
@@ -525,3 +525,4 @@
     margin-bottom: 30px;
   }
 }
+
