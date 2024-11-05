@@ -12,6 +12,7 @@ public class MessageManager {
     private final List<Message> list = new ArrayList<>();
 
     private final int messageCount ;
+    private long channelId ; // 频道
     private long workflowId ;
 
     public MessageManager(int messageCount) {
