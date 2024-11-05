@@ -3,12 +3,10 @@ package com.alinesno.infra.smart.assistant.config;
 import com.alinesno.infra.common.facade.enable.EnableActable;
 import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
 import com.alinesno.infra.common.web.log.aspect.LogAspect;
-import com.alinesno.infra.smart.assistant.initialize.IAssistantInitService;
 import com.dtflys.forest.springboot.annotation.ForestScan;
 import jakarta.servlet.MultipartConfigElement;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.annotation.MapperScan;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -49,9 +47,6 @@ import org.springframework.util.unit.DataSize;
 })
 public class AppConfiguration implements CommandLineRunner {
 
-    @Autowired
-    private IAssistantInitService assistantInitService ;
-
     @Bean
     public MultipartConfigElement getMultipartConfig() {
         MultipartConfigFactory config = new MultipartConfigFactory() ;
@@ -70,15 +65,6 @@ public class AppConfiguration implements CommandLineRunner {
     public void run(String... args) throws Exception {
 
         log.debug("项目启动初始化");
-
-//        // 初始化示例分类
-//        assistantInitService.expertCatalog();
-//
-//        // 初始化示例专家分类
-//        assistantInitService.expert();
-//
-//        // 初始化示例频道
-//        assistantInitService.initChannel();
 
     }
 
