@@ -5,19 +5,20 @@ import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.service.IMessageService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
@@ -39,8 +40,11 @@ import java.util.List;
 @Service
 public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity, IndustryRoleMapper> implements IIndustryRoleService {
 
-    @Autowired
-    private IWorkflowExecutionService workflowExecutionService;
+//    @Autowired
+//    private IWorkflowExecutionService workflowExecutionService;
+
+//    @Autowired
+//    private IMessageService messageService;
 
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
@@ -101,19 +105,20 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         IndustryRoleEntity role = getById(roleId);
 
         // 获取到节点的执行内容信息
-        WorkflowExecutionEntity workflowExecutionEntity = null;
+        MessageEntity message = null;
 
         String preBusinessId = taskInfo.getPreBusinessId();  // 获取到前一个节点的业务ID
         log.info("preBusinessId:{}", preBusinessId);
 
         if (StringUtils.hasLength(preBusinessId)) {
-            workflowExecutionEntity = workflowExecutionService.getById(preBusinessId);
+            IMessageService messageService = SpringUtils.getBean(IMessageService.class);
+            message = messageService.getById(preBusinessId);
         }
 
         log.debug("role.getChainId() = {}", role.getChainId());
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
-        return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+        return expertService.runRoleAgent(role, message, taskInfo);
     }
 
     @Override
@@ -206,20 +211,20 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         // 获取到节点的执行内容信息
-        WorkflowExecutionEntity workflowExecutionEntity = new WorkflowExecutionEntity();
+        MessageEntity message = new MessageEntity() ;
         String preGenContent = """
                     ```json
                     {"name":"测试脚本"}
                     ```
                 """ ;
-        workflowExecutionEntity.setGenContent(preGenContent);
+        message.setContent(preGenContent);
 
         log.debug("role.getChainId() = {}", role.getChainId());
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
         taskInfo.setRoleDto(role);
 
-        return expertService.runRoleAgent(role, workflowExecutionEntity, taskInfo);
+        return expertService.runRoleAgent(role, message, taskInfo);
     }
 
     @Override
