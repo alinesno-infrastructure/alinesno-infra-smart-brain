@@ -55,6 +55,9 @@ public class KnowledgeController {
     @PostMapping(value = "/importData", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public AjaxResult importData(@RequestPart("file") MultipartFile file, long channelId) throws Exception {
 
+        // localPath文件夹路径是否存在，不存在则创建
+        FileUtils.forceMkdir(new File(localPath)) ;
+
         File tmpFile = new File(localPath , Objects.requireNonNull(file.getOriginalFilename())) ;
         file.transferTo(tmpFile);
 
@@ -64,25 +67,34 @@ public class KnowledgeController {
         String fileName = file.getOriginalFilename();
         ChatMessageDto personDto = AgentUtils.getUploadChatMessageDto(fileName , fileType) ;
 
-        ChannelEntity channelEntity = channelService.getById(channelId) ;
-
         // 上传到知识库角色
+        ChannelEntity channelEntity = channelService.getById(channelId) ;
         String datasetId = channelEntity.getKnowledgeId() ;
 
         R<String> result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
             log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
             log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
             log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");  // 已上传百分比
+
             if (progress.isDone()) {   // 是否上传完成
                 log.debug("--------   Upload Completed!   --------");
+
+                // 拼接到知识库类型，先判断之前是否有同一类型的，如果包含则不往上拼接
+                String knowledgeType = channelEntity.getKnowledgeType() ;
+                if(knowledgeType == null || !knowledgeType.contains(fileType)){
+                    knowledgeType = (knowledgeType==null?"":knowledgeType+ "|") + fileType ;
+                    channelEntity.setKnowledgeType(knowledgeType);
+                }
+                channelService.updateById(channelEntity) ;
+
+                // 保存消息实体
+                messageService.saveChatMessage(personDto , channelId) ;
             }
+
         }) ;
         log.debug("upload file result = {}" , result);
 
         FileUtils.forceDelete(tmpFile);
-
-        // 保存消息实体
-        messageService.saveChatMessage(personDto , channelId) ;
 
         return AjaxResult.success(personDto) ;
     }
