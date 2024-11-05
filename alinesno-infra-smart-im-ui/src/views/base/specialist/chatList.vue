@@ -190,12 +190,12 @@ function handleEditGenContent(item){
 }
 
 /** 重新生成内容 */
-const handleRecyleGenContent = (item) => {
-  console.log('handleRecyleGenContent item = ' + item) ;
+// const handleRecyleGenContent = (item) => {
+//   console.log('handleRecyleGenContent item = ' + item) ;
 
-  const businessIdMessage = ' #' + item.businessId + ' ' ;
-  emit('sendMessageToChatBox' , businessIdMessage) ; 
-}
+//   const businessIdMessage = ' #' + item.businessId + ' ' ;
+//   emit('sendMessageToChatBox' , businessIdMessage) ; 
+// }
 
 function showTools(item) {
     messageList.value.forEach((i) => {
