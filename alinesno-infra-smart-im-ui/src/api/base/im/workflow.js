@@ -10,9 +10,9 @@ var managerUrl = {
 }
 
 // 查询应用详细
-export function getMessage(businessId) {
+export function getMessage(messageId) {
   return request({
-    url: managerUrl.detailUrl + '?businessId=' + parseStrEmpty(businessId),
+    url: managerUrl.detailUrl + '?messageId=' + parseStrEmpty(messageId),
     method: 'get'
   })
 }
