@@ -2,9 +2,9 @@ package com.alinesno.infra.smart.assistant.role;
 
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ public class FlowExpertService extends ExpertService {
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
-                                WorkflowExecutionEntity workflowExecution,
+                                MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
         return null;
@@ -27,7 +27,7 @@ public class FlowExpertService extends ExpertService {
 
     @Override
     protected String handleModifyCall(IndustryRoleEntity role,
-                                      WorkflowExecutionEntity workflowExecution,
+                                      MessageEntity workflowExecution,
                                       List<CodeContent> codeContentList,
                                       MessageTaskInfo taskInfo) {
 
@@ -36,7 +36,7 @@ public class FlowExpertService extends ExpertService {
 
     @Override
     protected String handleFunctionCall(IndustryRoleEntity role,
-                                        WorkflowExecutionEntity workflowExecution,
+                                        MessageEntity workflowExecution,
                                         List<CodeContent> codeContentList,
                                         MessageTaskInfo taskInfo) {
 
