@@ -14,7 +14,7 @@
 	<packaging>jar</packaging>
 
 	<properties>
-		<docker.base.images>registry.cn-shenzhen.aliyuncs.com/alinesno-infra-base/openjdk:17.0.2-jdk</docker.base.images>
+		<docker.base.images>registry.cn-shenzhen.aliyuncs.com/alinesno-infra-base/openjdk:17-slim-pandoc</docker.base.images>
 		<docker.user>root</docker.user>
 	</properties>
 
@@ -28,16 +28,6 @@
 		</dependency>
 
         <!-- >>>>>>>>>>>>>>>>>> 引用服务_start >>>>>>>>>>>>>>>>>> -->
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-expert-queue</artifactId>
-			<version>${revision}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-expert-plugin</artifactId>
-			<version>${revision}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-domain</artifactId>
@@ -59,11 +49,7 @@
 			<artifactId>alinesno-infra-smart-expert-role</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-expert-role-agents</artifactId>
-			<version>${revision}</version>
-		</dependency>
+
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
@@ -79,20 +65,12 @@
 			<artifactId>alinesno-infra-smart-expert-template</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<!-- >>>>>>>>>>>>>>>>>> 引用服务_end >>>>>>>>>>>>>>>>>> -->
-
-		<!-- 引用GPT推理工程服务_start -->
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-domain</artifactId>
 			<version>${revision}</version>
 		</dependency>
-        <dependency>
-            <groupId>com.alinesno.infra.smart</groupId>
-            <artifactId>alinesno-infra-smart-expert-initialize</artifactId>
-			<version>${revision}</version>
-        </dependency>
-        <!-- 引用GPT推理工程服务_end -->
+		<!-- >>>>>>>>>>>>>>>>>> 引用服务_end >>>>>>>>>>>>>>>>>> -->
 
 	</dependencies>
 
