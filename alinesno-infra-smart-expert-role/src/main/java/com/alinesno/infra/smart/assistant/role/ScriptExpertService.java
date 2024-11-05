@@ -2,12 +2,12 @@ package com.alinesno.infra.smart.assistant.role;
 
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.WorkflowExecutionEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.context.ContextManager;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
 import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,7 @@ public class ScriptExpertService extends ExpertService {
 
 	@Override
 	protected String handleRole(IndustryRoleEntity role,
-								WorkflowExecutionEntity workflowExecution,
+								MessageEntity workflowExecution,
 								MessageTaskInfo taskInfo) {
 
 		log.debug("workflowExecution = {}" , workflowExecution);
@@ -35,7 +35,7 @@ public class ScriptExpertService extends ExpertService {
 		// 上一个任务节点不为空，执行任务并记录
 		List<CodeContent> codeContentLis = null ;
 		if(workflowExecution != null){
-			String gentContent = workflowExecution.getGenContent();
+			String gentContent = workflowExecution.getContent();
 			codeContentLis = CodeBlockParser.parseCodeBlocks(gentContent);
 		}
 
@@ -53,7 +53,7 @@ public class ScriptExpertService extends ExpertService {
 
 	@Override
 	protected String handleModifyCall(IndustryRoleEntity role,
-									  WorkflowExecutionEntity workflowExecution,
+									  MessageEntity workflowExecution,
 									  List<CodeContent> codeContentList,
 									  MessageTaskInfo taskInfo) {
 
@@ -75,7 +75,7 @@ public class ScriptExpertService extends ExpertService {
 
 	@Override
 	protected String handleFunctionCall(IndustryRoleEntity role,
-										WorkflowExecutionEntity workflowExecution,
+										MessageEntity workflowExecution,
 										List<CodeContent> codeContentList,
 										MessageTaskInfo taskInfo) {
 
@@ -106,7 +106,7 @@ public class ScriptExpertService extends ExpertService {
 	 * @return
 	 */
 	private String executeGroovyScript(IndustryRoleEntity role,
-									   WorkflowExecutionEntity workflow ,
+									   MessageEntity workflow ,
 									   MessageTaskInfo taskInfo,
 									   List<CodeContent> codeContentList,
 									   String scriptText) {
@@ -134,7 +134,11 @@ public class ScriptExpertService extends ExpertService {
 		GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), binding);
 
 		// 执行 Groovy 脚本
-		return String.valueOf(shell.evaluate(scriptText)) ;
+		try{
+			return String.valueOf(shell.evaluate(scriptText)) ;
+		}catch (Exception e){
+			return "角色脚本执行失败:" + e.getMessage() ;
+		}
 	}
 
 }
