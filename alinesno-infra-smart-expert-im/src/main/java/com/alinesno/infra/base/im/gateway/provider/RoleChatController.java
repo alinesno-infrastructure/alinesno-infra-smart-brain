@@ -3,7 +3,6 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
-import com.alinesno.infra.base.im.service.IRoleChatService;
 import com.alinesno.infra.base.im.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
@@ -33,8 +32,8 @@ import java.util.List;
 @RequestMapping(value = "/v1/api/infra/base/im/roleChat/")
 public class RoleChatController extends SuperController {
 
-    @Autowired
-    private IRoleChatService roleChatService;
+//    @Autowired
+//    private IRoleChatService roleChatService;
 
     @Autowired
     private IMessageService messageService ;
