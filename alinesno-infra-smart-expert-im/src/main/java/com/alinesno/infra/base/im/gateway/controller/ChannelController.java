@@ -161,7 +161,6 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @GetMapping("/allMyChannel")
     public AjaxResult allMyChannel(PermissionQuery query){
 
-        long accountId = 1L ;
         service.initPersonChannel(1L);
 
         List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
