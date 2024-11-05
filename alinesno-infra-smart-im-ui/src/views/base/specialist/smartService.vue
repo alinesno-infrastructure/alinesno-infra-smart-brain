@@ -1,6 +1,6 @@
 <!-- 意见审批  -->
 <template>
-  <div class="acp-dashboard aip-chat-dashboard-panel ">
+  <div class="acp-dashboard aip-chat-dashboard-panel">
     <div class="smart-container">
       <el-row>
         <el-col :span="19">
@@ -13,7 +13,13 @@
               <div class="chat-header-desc">
                 ({{ truncateString(channelInfo.channelDesc,30) }}) 
               </div>
-              <div class="chat-header-desc" style="float: right;margin-top: -10px;">
+              <div class="chat-header-desc" style="float: right;margin-top: -10px;display: flex;">
+
+                  <div v-if="channelInfo.knowledgeType" >
+                    <img v-if="channelInfo.knowledgeType.includes('docx')" src="http://data.linesno.com/dataset_icons/docx.webp" style="width: 30px;margin: 5px;" />
+                    <img v-if="channelInfo.knowledgeType.includes('pdf')" src="http://data.linesno.com/dataset_icons/pdf.webp"  style="width: 30px;margin: 5px;" />
+                  </div>
+
                   <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true" >
                     <i class="fa-solid fa-truck-fast icon-btn"></i>
                   </el-button>
@@ -108,8 +114,9 @@
 </template>
 
 <script setup>
-
 import { nextTick, ref } from 'vue'
+import { ElLoading } from 'element-plus'
+
 import ChatList from './chatList'
 
 // --->>> 组件引入 -->>
@@ -124,6 +131,8 @@ import { getChannel } from "@/api/base/im/channel";
 import { getParam } from '@/utils/ruoyi'
 import { formatMessage } from '@/utils/chat'
 import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
+
+const streamLoading = ref(null)
 
 // --->>> 定义变量 -->>
 const chatListRef = ref();
@@ -178,6 +187,8 @@ const sendMessage = (type) => {
     proxy.$modal.msgError("请输入消息内容.");
     return ;
   }
+
+  streamLoading.value = ElLoading.service({lock: true,text: '任务执行中，请勿操作其它界面 ...',background: 'rgba(255, 255, 255, 0.1)',})
 
   const formattedMessage = formatMessage(message.value, channelUsers.value);
 
@@ -289,6 +300,7 @@ function handleSseConnect(channelId){
               handlePushResponseMessageList(data);
             }else{
               console.log('消息接收结束.')  
+              streamLoading.value.close() ;
             }
         }
 
