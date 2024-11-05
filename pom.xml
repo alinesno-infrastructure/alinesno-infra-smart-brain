@@ -26,31 +26,19 @@
         <module>alinesno-infra-smart-brain-facade</module>  <!-- 接口和引用 -->
         <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
 
-        <!-- 反思服务 -->
-        <module>alinesno-infra-smart-expert-inferen</module>  <!-- 接口和引用 -->
-
 		<!-- 助手服务 -->
         <module>alinesno-infra-smart-expert-facade</module>  <!-- 接口和引用 -->
         <module>alinesno-infra-smart-expert-domain</module>  <!-- 领域服务 -->
         <module>alinesno-infra-smart-expert-adapter</module> <!-- 适配层 -->
 
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
-        <module>alinesno-infra-smart-expert-role-agents</module> <!-- 自定义的企业角色(后期单独出成为一个工程) -->
 
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
-        <module>alinesno-infra-smart-expert-queue</module>  <!-- 任务队列 -->
-        <module>alinesno-infra-smart-expert-plugin</module>  <!-- 插件管理 -->
-
-        <module>alinesno-infra-smart-expert-initialize</module>  <!-- 初始数据管理 -->
 
         <module>alinesno-infra-smart-expert-boot</module>  <!-- 启动服务 -->
-
-        <!-- 前端服务
-        <module>alinesno-infra-smart-expert-ui</module>
-        -->
     </modules>
 
     <!-- 公共包依赖 -->
