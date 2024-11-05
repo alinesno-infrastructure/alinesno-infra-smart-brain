@@ -2,13 +2,21 @@
     <div>
 
         <div class="cm-container">
-          <code-mirror 
+          <!-- <code-mirror 
             :lang="lang" 
             :theme="theme" 
-            basic 
-            :style="'height:600px;overflow-y:scroll;margin-top:10px;'" 
+            :style="'height:600px;'" 
             :extensions="extensions"
-            v-model="data" />
+            v-model="data" /> -->
+
+            <code-mirror 
+                basic 
+                :lang="lang" 
+                v-model="data" 
+                :extensions="extensions"
+                style="height: 600px;" 
+                :theme="theme"/>
+
         </div>
 
 
@@ -94,7 +102,7 @@ const handleGetMessage = () => {
     //   data.value = respData.genContent ;
     // }
 
-    data.value = respData.genContent ;
+    data.value = respData.content ;
   })
 }
 
@@ -124,4 +132,14 @@ nextTick(() => {
 }
 </style>
 
+<style >
+/* required! */
+.cm-editor {
+  height: 100%;
+}
+
+.cm-container{
+  width:100%;
+}
+</style>
 
