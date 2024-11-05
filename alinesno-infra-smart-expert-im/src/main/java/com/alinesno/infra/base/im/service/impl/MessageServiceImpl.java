@@ -1,7 +1,6 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
 import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.base.im.utils.TaskUtils;
@@ -24,7 +23,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_FUNCTION;
@@ -102,7 +104,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
                 dto.setRoleType(e.getRoleType());
                 dto.setReaderType(e.getReaderType());
-                dto.setBusinessId(e.getBusinessId());
+                dto.setBusinessId(e.getId());
                 dto.setDateTime(DateUtil.formatDateTime(e.getAddTime()));
 
                 list.add(dto);
@@ -130,7 +132,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setAddTime(new Date());
         entity.setIcon(personDto.getIcon());
 
-        entity.setBusinessId(personDto.getBusinessId());
+//        entity.setBusinessId(personDto.getBusinessId());
         entity.setChannelId(channelId);
         entity.setRoleId(personDto.getRoleId());
         entity.setAccountId(personDto.getAccountId());
@@ -209,7 +211,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
             agentInfo.setAccountId(accountId) ;
             agentInfo.setAddTime(new Date());
-            agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
+//            agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
 
             agentInfo.setChannelId(Long.valueOf(channelId));
 
@@ -234,7 +236,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     }
 
     @Override
-    public void saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg) {
+    public MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg) {
 
         MessageEntity entity = new MessageEntity();
 
@@ -248,14 +250,40 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setAddTime(new Date());
         entity.setIcon(role.getRoleAvatar());
 
-        entity.setBusinessId(Long.parseLong(info.getBusinessId()));
+//        entity.setBusinessId(Long.parseLong(info.getBusinessId()));
         entity.setChannelId(info.getChannelId());
         entity.setRoleId(role.getId()) ;
 
         save(entity);
         // 保存流程消息
 
+        return entity ;
     }
+
+//    @Override
+//    public MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg , long messageId) {
+//
+//        MessageEntity entity = new MessageEntity();
+//
+//        entity.setContent(msg) ;
+//        entity.setFormatContent(msg);
+//        entity.setName(role.getRoleName());
+//
+//        entity.setRoleType("agent");
+//        entity.setReaderType("html");
+//
+//        entity.setAddTime(new Date());
+//        entity.setIcon(role.getRoleAvatar());
+//
+////        entity.setBusinessId(Long.parseLong(info.getBusinessId()));
+//        entity.setChannelId(info.getChannelId());
+//        entity.setRoleId(role.getId()) ;
+//
+//        save(entity);
+//        // 保存流程消息
+//
+//        return entity ;
+//    }
 
     private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId) {
         MessageEntity msg = new MessageEntity();
