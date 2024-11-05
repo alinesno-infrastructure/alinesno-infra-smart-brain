@@ -27,7 +27,7 @@ public class SSEServiceImpl implements ISSEService {
     public SseEmitter getConn(@NotBlank String clientId) {
         final SseEmitter sseEmitter = SSE_CACHE.get(clientId);
 
-        log.debug("获取SSE连接，clientId = {}", clientId);
+        log.debug("获取SSE连接，clientId = {} ,sseEmitter = {}", clientId , sseEmitter);
 
         if (sseEmitter != null) {
             return sseEmitter;
@@ -49,7 +49,7 @@ public class SSEServiceImpl implements ISSEService {
 
     @NotNull
     private static SseEmitter getSseEmitter(String clientId) {
-        final SseEmitter emitter = new SseEmitter(600_000L);
+        final SseEmitter emitter = new SseEmitter(0L);
         // 注册超时回调，超时后触发
         emitter.onTimeout(() -> {
             log.info("连接已超时，正准备关闭，clientId = {}", clientId);
