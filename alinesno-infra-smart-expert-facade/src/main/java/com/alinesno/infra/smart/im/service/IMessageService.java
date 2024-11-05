@@ -75,5 +75,5 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @param info
      * @param msg
      */
-    void saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg);
+    MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg);
 }
