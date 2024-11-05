@@ -33,8 +33,8 @@ public class MessageEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 6, isNull = true, comment = "读取方式")
     private String readerType ; // 读取方式和类型
 
-    @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true, comment = "业务唯一ID")
-    private long businessId ; // 生成的唯一业务ID标识
+//    @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true, comment = "业务唯一ID")
+//    private long businessId ; // 生成的唯一业务ID标识
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true, comment = "样式标识")
     private String className ; // 返回的样式标识
@@ -47,6 +47,9 @@ public class MessageEntity extends InfraBaseEntity {
 
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true, comment = "所属频道ID")
     private Long channelId;
+
+//    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "生成消息内容")
+//    private String genContent ;
 
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "消息内容")
     private String content;
