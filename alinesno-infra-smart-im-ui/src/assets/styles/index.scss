@@ -9,7 +9,7 @@
 @import './chat.scss';
 @import './github-markdown.scss' ;
 @import './highlight.scss' ;
-// @import './templates.scss';
+@import './screen-chat.scss';
 
 body {
   height: 100%;
@@ -17,7 +17,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  font-family: Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Microsoft YaHei, Arial, sans-serif;
+  font-family: Microsoft YaHei, Helvetica Neue, Helvetica, PingFang SC, Hiragino Sans GB, Arial, sans-serif;
 }
 
 label {
