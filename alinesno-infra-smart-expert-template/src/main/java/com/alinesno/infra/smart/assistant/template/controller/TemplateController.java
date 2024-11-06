@@ -13,7 +13,7 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
-import com.alinesno.infra.smart.assistant.template.enums.FileTypeEnums;
+import com.alinesno.infra.smart.assistant.enums.FileTypeEnums;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
