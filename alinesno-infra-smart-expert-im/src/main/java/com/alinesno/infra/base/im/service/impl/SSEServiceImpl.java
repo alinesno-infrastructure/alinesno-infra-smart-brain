@@ -1,14 +1,15 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.lang.Assert;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import jakarta.validation.constraints.NotBlank;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -16,6 +17,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Service
@@ -83,11 +85,40 @@ public class SSEServiceImpl implements ISSEService {
         // emitter.complete();
     }
 
+    /**
+     *  定时任务 用于测试后端推送的数据
+     */
+    @Scheduled(fixedDelay = 3, initialDelay = 1,timeUnit = TimeUnit.SECONDS)
+    public void job(){
+        if (!SSE_CACHE.isEmpty()){
+
+            // 输出客户端口连接情况，包括链接客户端口还有连接情况
+            log.debug("当前客户端总数为：{}", SSE_CACHE.size());
+
+            String msg = "ping" ;
+            for (Map.Entry<String, SseEmitter> entry : SSE_CACHE.entrySet()) {
+                SseEmitter sseEmitter =SSE_CACHE.get(entry.getKey());
+                try {
+                    log.debug("推送心跳数据，clientId:{} , msg:{} " , entry.getKey(), msg);
+                    sseEmitter.send(SseEmitter.event()
+                            .reconnectTime(1000)
+                            .id(entry.getKey())
+                            .data(msg));
+                }catch (Exception e){
+                    log.debug("推送心跳数据异常，clientId:{} , msg:{} " , entry.getKey(), e.getMessage());
+                    SSE_CACHE.remove(entry.getKey());
+                }
+            }
+        }
+
+    }
+
     @Override
     public void closeConn(@NotBlank String clientId) {
         final SseEmitter sseEmitter = SSE_CACHE.get(clientId);
         if (sseEmitter != null) {
             sseEmitter.complete();
+            log.info("客户端：【{}】 断开成功，当前剩余客户端总数为【{}】",clientId,SSE_CACHE.size());
         }
     }
 
