@@ -20,6 +20,7 @@ var managerUrl = {
   getUserChainByChainId: prefix + "getUserChainByChainId",
   saveUserChainInfo: prefix + "saveUserChainInfo",
   runUserChainByUserId: prefix + "runUserChainByUserId",
+  listAll: prefix + "listAll",
   listAllUser: prefix + "listAllUser",
 }
 
@@ -37,6 +38,14 @@ export function addUserChain(data) {
     url: managerUrl.saveUrl ,
     method: 'post',
     data: data
+  })
+}
+
+// 获取到所有角色
+export function listAll() {
+  return request({
+    url: managerUrl.listAll , 
+    method: 'get'
   })
 }
 
