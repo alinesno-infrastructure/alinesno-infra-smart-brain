@@ -127,10 +127,11 @@
       </el-row>
     </div>
 
-    <!-- 频道聊天 -->
+    <!-- 频道聊天 
     <el-dialog v-model="dialogVisible" :title="chatTitle" width="80%">
       <iframe :src="roleChatUri" class="role-chat-iframe"></iframe>
     </el-dialog>
+     -->
 
   </div>
 
