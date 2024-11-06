@@ -32,6 +32,7 @@
         <module>alinesno-infra-smart-expert-adapter</module> <!-- 适配层 -->
 
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
+        <module>alinesno-infra-smart-expert-screen</module>  <!-- 场景管理 -->
 
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
