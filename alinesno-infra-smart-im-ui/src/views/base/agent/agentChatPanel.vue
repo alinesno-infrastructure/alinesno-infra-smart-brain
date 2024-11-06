@@ -124,10 +124,11 @@
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
+import { ElLoading } from 'element-plus'
 
 import { getInfo, chatRole }from '@/api/base/im/roleChat'
 import { getParam } from '@/utils/ruoyi'
-import { openSseConnect , handleCloseAllSse } from "@/api/base/im/chatsse";
+import { openSseConnect , handleCloseSse} from "@/api/base/im/chatsse";
 import { onMounted } from "vue";
 
 const { proxy } = getCurrentInstance();
@@ -141,6 +142,8 @@ const message = ref('');
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
+
+const streamLoading = ref(null)
 
 const mdi = new MarkdownIt({
   html: true,
@@ -213,22 +216,43 @@ const pushResponseMessageList = (newMessage) => {
 function handleSseConnect(channelId){
   nextTick(() => {
     if(channelId){
-
         let sseSource = openSseConnect(channelId) ;
         // 接收到数据
         sseSource.onmessage = function (event) {
-            if (!event.data.includes('[DONE]')) {
-              const data = JSON.parse(event.data);
-              pushResponseMessageList(data);
-            }else{
-              console.log('消息接收结束.')  
-            }
+        if (!event.data.includes('[DONE]')) {
+          let resData = event.data;
+
+          console.log('sseSource.onmessage = ' + resData);
+
+          if (resData != 'ping') {  // 非心跳消息
+            const data = JSON.parse(resData);
+            pushResponseMessageList(data);
+          }
+        } else {
+          console.log('消息接收结束.')
+          if (streamLoading.value) {
+            streamLoading.value.close();
+          }
+        }
+            // if (!event.data.includes('[DONE]')) {
+            //   const data = JSON.parse(event.data);
+            //   pushResponseMessageList(data);
+            // }else{
+            //   console.log('消息接收结束.')  
+            // }
         }
 
       // })
     }
   })
 }
+
+// 销毁信息
+onBeforeUnmount(() => {
+  handleCloseSse(channelId.value).then(res => {
+    console.log('关闭sse连接成功:' + channelId)
+  })
+});
 
 /** 获取角色信息 */
 function handleGetInfo(roleId){
@@ -250,6 +274,13 @@ const sendMessage = (type) => {
     proxy.$modal.msgError("请输入消息内容.");
     return ;
   }
+
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    text: '任务执行中，请勿操作其它界面 ...',
+    background: 'rgba(255, 255, 255, 0.1)',
+  })
+
 
   let formData = {
     channelId: channelId.value,
