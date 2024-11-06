@@ -108,7 +108,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="css">
-.channel-window-container{
+/* .channel-window-container{
   .el-container{
     height: 100vh !important ;
 
@@ -117,7 +117,7 @@ onUnmounted(() => {
     }
   }
 
-}
+} */
 </style>
 
 <style lang="scss">
