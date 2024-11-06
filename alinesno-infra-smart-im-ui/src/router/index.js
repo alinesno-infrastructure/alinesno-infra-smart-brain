@@ -80,6 +80,18 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard', affix: true }
       },
       {
+        path: '/screen',
+        component: () => import('@/views/base/screen/index'),
+        name: '/screen',
+        meta: { title: '场景列表', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/screen/longText',
+        component: () => import('@/views/base/screen/longText'),
+        name: '/screen/longText',
+        meta: { title: '长文本场景', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/single/agentChat',
         component: () => import('@/views/base/agent/agentSingleChatPanel'),
         name: '/single/agentChat',
@@ -87,7 +99,7 @@ export const constantRoutes = [
       },
       {
         path: '/chat',
-        component: () => import('@/views/base/specialist/index'),
+        component: () => import('@/views/base/specialist/smartService'),
         name: '/chat',
         meta: { title: '聊天', icon: 'dashboard', affix: true }
       },
@@ -103,18 +115,18 @@ export const constantRoutes = [
         name: '/agentList',
         meta: { title: '服务列表', icon: 'dashboard', affix: true }
       },
-      {
-        path: '/serviceProduct',
-        component: () => import('@/views/base/specialist/serviceProduct'),
-        name: '/serviceProduct',
-        meta: { title: '服务列表', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/executeRecord',
-        component: () => import('@/views/base/specialist/executeRecord'),
-        name: '/executeRecord',
-        meta: { title: '服务列表', icon: 'dashboard', affix: true }
-      },
+      // {
+      //   path: '/serviceProduct',
+      //   component: () => import('@/views/base/specialist/serviceProduct'),
+      //   name: '/serviceProduct',
+      //   meta: { title: '服务列表', icon: 'dashboard', affix: true }
+      // },
+      // {
+      //   path: '/executeRecord',
+      //   component: () => import('@/views/base/specialist/executeRecord'),
+      //   name: '/executeRecord',
+      //   meta: { title: '服务列表', icon: 'dashboard', affix: true }
+      // },
       {
         path: '/dashboard/suportTechnique',
         component: () => import('@/views/suportTechnique'),
