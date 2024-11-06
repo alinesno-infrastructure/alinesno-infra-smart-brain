@@ -1,7 +1,7 @@
 <template>
     <el-scrollbar height="100vh">
 
-        <div class="container-main" style="padding-bottom:50px;">
+        <div class="container-main" style="padding:10px;padding-bottom:50px;">
             <div class="tpl-app" v-loading="fullscreenLoading">
 
                 <div class="search-container-panel">
@@ -47,7 +47,7 @@
                         <el-row>
                             <el-col :span="6" v-for="(item, i) in type.agents" :key="i" style="padding:8px;">
                                 <div class="semi-card-container" @click="handleRoleChat(item)">
-                                    <div class="semi-space cart-head-continer" style="gap: 16px;">
+                                    <div class="semi-space cart-head-continer" style="gap: 16px;flex-direction: row-reverse;">
                                         <div class="cart-head-content">
                                             <div class="cart-head-content">
                                                 <span class="semi-avatar semi-avatar-square"
