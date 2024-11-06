@@ -1,7 +1,9 @@
 package com.alinesno.infra.base.im.gateway.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -10,13 +12,13 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -71,29 +73,45 @@ public class UserController extends BaseController<IndustryRoleEntity, IIndustry
     }
 
     /**
-     * 添加用户到当前的频道当中
+     * 查询所有角色
      * @return
      */
-    @GetMapping("/addChainAgent")
-    public AjaxResult addChainAgent(Long channelId , Long roleId){
+    @DataPermissionQuery
+    @GetMapping("/listAll")
+    public AjaxResult listAll(PermissionQuery query){
 
-        Assert.notNull(channelId , "频道为空");
-        Assert.notNull(roleId, "角色为空");
+        LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(IndustryRoleEntity.class);
+        query.toWrapper(queryWrapper);
 
-        channelService.jobChannel(roleId, channelId);
-
-        return AjaxResult.success() ;
-    }
-
-    /**
-     * 运行角色流程
-     * @return
-     */
-    @GetMapping("/listAllUser")
-    public AjaxResult listAllUser(String channelId){
-        List<IndustryRoleEntity> roleEntityList = channelRoleService.getChannelAgent(channelId)  ;
+        List<IndustryRoleEntity> roleEntityList = roleService.list(queryWrapper) ;
         return AjaxResult.success(roleEntityList) ;
     }
+
+//    /**
+//     * 添加用户到当前的频道当中
+//     * @return
+//     */
+//    @GetMapping("/addChainAgent")
+//    public AjaxResult addChainAgent(Long channelId , Long roleId){
+//
+//        Assert.notNull(channelId , "频道为空");
+//        Assert.notNull(roleId, "角色为空");
+//
+//        channelService.jobChannel(roleId, channelId);
+//
+//        return AjaxResult.success() ;
+//    }
+
+//    /**
+//     * 运行角色流程
+//     * @return
+//     */
+//    @GetMapping("/listAllUser")
+//    public AjaxResult listAllUser(String channelId){
+//        List<IndustryRoleEntity> roleEntityList = channelRoleService.getChannelAgent(channelId)  ;
+//        return AjaxResult.success(roleEntityList) ;
+//    }
 
     @Override
     public IIndustryRoleService getFeign() {
