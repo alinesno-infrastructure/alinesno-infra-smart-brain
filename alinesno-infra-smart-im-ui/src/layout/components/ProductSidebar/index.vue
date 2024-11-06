@@ -1,13 +1,6 @@
 <template>
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
-  
-
-      <el-tooltip effect="dark" content="频道市场" placement="right">
-        <el-menu-item index="1" @click="jumpTo">
-          <i class="fa-solid fa-house-user"></i>
-        </el-menu-item>
-      </el-tooltip>
 
       <el-tooltip effect="dark" :content="item.desc" v-for="item in menuItems" :key="item.id" placement="right">
         <el-menu-item :index="item.id" @click="openServiceList(item.link)">
@@ -19,7 +12,7 @@
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
       <el-tooltip effect="dark" content="创建频道" placement="right">
         <el-menu-item index="9" @click="addChannel()">
-          <i class="fa-solid fa-feather"></i>
+          <i class="fa-solid fa-circle-plus"></i>
       </el-menu-item>
       </el-tooltip>
       <el-menu-item index="12" @click="dialogVisible = true">
@@ -66,13 +59,9 @@ const router = useRouter();
 
 // 菜单列表
 const menuItems = ref([
+  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '频道市场' },
+  { id: '2', icon: 'fa-solid fa-file-signature', link: '/screen', desc: '场景列表' },
   { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '角色列表' },
-
-  // { id: '5' , icon:'fa-solid fa-truck-fast' , link:'/scheduler' , desc:'角色编排'},
-  // {id:'4' , icon:'fa-brands fa-skype' , link:'/serviceProduct' , desc:'执行器管理'},
-  // {id:'7' , icon:'fa-solid fa-chart-simple' , link:'/executeRecord' , desc:'执行记录'},
-  // {id:'8' , icon:'fa-solid fa-file-pdf' , link:'/brain/loaderData/index' , desc:'知识库管理'},
-
 ]);
 
 // 打开服务市场
