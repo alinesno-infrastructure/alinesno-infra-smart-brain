@@ -1,24 +1,27 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.screen.dto.LongTextDto;
+import com.alinesno.infra.smart.assistant.screen.dto.ScreenDto;
+import com.alinesno.infra.smart.assistant.screen.entity.LongTextEntity;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
-import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
+import com.alinesno.infra.smart.assistant.screen.service.ILongTextService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -31,13 +34,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/smart/assistant/screenLongtext")
-public class LongTextController extends BaseController<ScreenEntity, IScreenService> {
+public class LongTextController extends BaseController<LongTextEntity, ILongTextService> {
 
     @Autowired
-    private IScreenService service;
-
-    @Autowired
-    private CloudStorageConsumer storageConsumer ;
+    private ILongTextService service;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -58,56 +58,26 @@ public class LongTextController extends BaseController<ScreenEntity, IScreenServ
         return this.toPage(model, this.getFeign(), page);
     }
 
-//    /**
-//     * 文件上传
-//     * @return
-//     */
-//    @DataPermissionSave
-//    @SneakyThrows
-//    @PostMapping("/importData")
-//    public AjaxResult importData(@RequestPart("file") MultipartFile file, ScreenEntity templateEntity){
-//
-//        // 新生成的文件名称
-//        String fileSuffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")+1);
-//        String newFileName = IdUtil.getSnowflakeNextId() + "." + fileSuffix;
-//
-//        // 复制文件
-//        File targetFile = new File(localPath , newFileName);
-//        FileUtils.writeByteArrayToFile(targetFile, file.getBytes());
-//
-//        String fileType = FileTypeUtil.getType(targetFile);
-//        FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
-//        assert constants != null;
-//
-//        log.debug("fileType = {} , constants = {}" , fileType , constants);
-//
-//        log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
-//
-//        R<String> r = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
-//            System.out.println("total bytes: " + progress.getTotalBytes());
-//            System.out.println("current bytes: " + progress.getCurrentBytes());
-//            System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-//        }) ;
-//
-//        // 保存模板信息到数据库
-//        templateEntity.setScreenName(file.getOriginalFilename());
-//        templateEntity.setScreenDesc("模板描述");
-//        templateEntity.setScreenKey(IdUtil.nanoId(8));
-//        templateEntity.setCallCount(0);
-//        templateEntity.setScreenParams("{}");
-//        templateEntity.setStorageFileId(r.getData());
-//        templateEntity.setScreenType(constants.getValue());
-//
-//        service.save(templateEntity);
-//
-//        log.debug("ajaxResult= {}" , r);
-//        return AjaxResult.success("上传成功." , r.getData()) ;
-//
-//    }
+    /**
+     * 保存或更新屏幕场景
+     * @param longTextDto 屏幕场景的DTO
+     * @return 操作结果
+     */
+    @DataPermissionSave
+    @PostMapping("/saveOrUpdate")
+    public AjaxResult saveOrUpdate(@RequestBody LongTextDto longTextDto) {
+        log.debug("screenDto = {}", ToStringBuilder.reflectionToString(longTextDto));
 
+        LongTextEntity screenEntity = new LongTextEntity();
+        BeanUtils.copyProperties(longTextDto, screenEntity);
+
+        service.saveOrUpdate(screenEntity);
+
+        return ok() ;
+    }
 
     @Override
-    public IScreenService getFeign() {
+    public ILongTextService getFeign() {
         return this.service;
     }
 }
