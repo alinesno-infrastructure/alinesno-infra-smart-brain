@@ -67,7 +67,7 @@
                                             <div class="semi-space container-center" style="gap: 6px;">
                                                 <div class="semi-image avatar-oDHtb3"
                                                     style="width: 14px; height: 14px;">
-                                                    <img src="https://p3-passport.byteacctimg.com/img/user-avatar/7a7e80566f20a6944faaaa3a010fbff4~300x300.image"
+                                                    <img src="http://data.linesno.com/switch_header.png"
                                                         class="semi-image-img" style="border-radius: 50%;">
                                                 </div>
                                                 <div class="semi-space semi-space-align-center semi-space-horizontal"
