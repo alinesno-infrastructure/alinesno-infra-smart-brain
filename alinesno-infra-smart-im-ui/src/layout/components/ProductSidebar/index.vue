@@ -12,12 +12,19 @@
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
       <el-tooltip effect="dark" content="创建频道" placement="right">
         <el-menu-item index="9" @click="addChannel()">
-          <i class="fa-solid fa-circle-plus"></i>
+          <i class="fa-solid fa-marker"></i>
       </el-menu-item>
       </el-tooltip>
-      <el-menu-item index="12" @click="dialogVisible = true">
-        <i class="fa-solid fa-paper-plane"></i>
+      <el-tooltip effect="dark" content="创建场景" placement="right">
+        <el-menu-item index="11" @click="addScreen()">
+          <i class="fa-solid fa-pen-nib"></i>
       </el-menu-item>
+      </el-tooltip>
+      <el-tooltip effect="dark" content="优化建议" placement="right">
+        <el-menu-item index="12" @click="dialogVisible = true">
+          <i class="fa-solid fa-paper-plane"></i>
+        </el-menu-item>
+      </el-tooltip>
     </el-menu>
 
     <!-- 建议和反馈 -->
@@ -45,14 +52,19 @@
     <!-- 创建频道弹窗 -->
     <ChannelGroup ref="createChildComp" />
 
+    <!-- 创建场景弹窗 -->
+    <ScreenGroup ref="createScreenComp" />
+
   </div>
 </template>
 
 <script setup>
 
 import ChannelGroup from "@/views/base/specialist/channelGroup.vue";
+import ScreenGroup from "@/views/base/screen/screenGroup.vue";
 
 const createChildComp = ref(null);
+const createScreenComp = ref(null);
 
 const dialogVisible = ref(false)
 const router = useRouter();
@@ -77,6 +89,11 @@ function jumpToConstomTheme() {
 // 添加频道
 function addChannel(){
   createChildComp.value.handleOpenChannel(true);
+}
+
+// 添加场景
+function addScreen(){
+  createScreenComp.value.handleOpenChannel(true);
 }
 
 // 打开首页
