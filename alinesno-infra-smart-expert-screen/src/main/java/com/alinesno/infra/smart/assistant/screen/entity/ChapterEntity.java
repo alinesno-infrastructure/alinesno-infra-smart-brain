@@ -41,11 +41,11 @@ public class ChapterEntity extends InfraBaseEntity {
     private Boolean isLeaf;
 
     @Column(name = "screen_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联的场景ID")
-    private long screenId ; // 关联的场景ID
+    private Long screenId ; // 关联的场景ID
 
     // 编写人员
     @Column(name = "chapter_editor", type = MySqlTypeConstant.BIGINT, length = 32, comment = "章节编辑人员")
-    private long chapterEditor;
+    private Long chapterEditor;
 
     // 子组件
     @TableField(exist = false)
