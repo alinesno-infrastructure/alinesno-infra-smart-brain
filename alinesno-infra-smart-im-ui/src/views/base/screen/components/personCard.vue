@@ -38,6 +38,15 @@ const person = reactive({
 // 计算属性
 person.emailLink = computed(() => `mailto:${person.email}`);
 person.phoneLink = computed(() => `tel:${person.phone}`);
+
+function setPersonInfo(item){
+  person.value = item ;
+}
+
+defineExpose({
+  setPersonInfo
+})
+
 </script>
 
 <style scoped lang="scss">
