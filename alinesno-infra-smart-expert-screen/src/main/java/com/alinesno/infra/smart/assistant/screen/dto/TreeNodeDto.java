@@ -25,6 +25,16 @@ public class TreeNodeDto {
     private String description;
 
     /**
+     * 节点编辑人员
+     */
+    private Long chapterEditor ;
+
+    /**
+     * 子节点编辑图标
+     */
+    private String chapterEditorAvatar ;
+
+    /**
      * 子节点列表，表示当前节点下的子节点
      */
     private List<TreeNodeDto> children;
