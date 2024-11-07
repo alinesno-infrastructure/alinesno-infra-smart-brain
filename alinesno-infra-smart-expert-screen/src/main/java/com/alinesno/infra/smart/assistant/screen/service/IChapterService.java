@@ -1,7 +1,7 @@
 package com.alinesno.infra.smart.assistant.screen.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.assistant.screen.dto.ChapterDto;
+import com.alinesno.infra.smart.assistant.screen.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.assistant.screen.dto.TreeNodeDto;
 import com.alinesno.infra.smart.assistant.screen.entity.ChapterEntity;
 
@@ -23,7 +23,7 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      * @param level    章节的层级，表示章节在层级结构中的深度
      * @param screenId
      */
-    void saveChaptersWithHierarchy(List<ChapterDto> chapters, Long parentId, int level, long screenId);
+    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long screenId);
 
     /**
      * 获取章节的树形结构
@@ -31,4 +31,11 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      * @return 返回一个表示章节层级结构的树形列表，每个节点包含章节信息
      */
     List<TreeNodeDto> getChapterTree(long screenId);
+
+    /**
+     * 更新章节的编辑者
+     * @param dto
+     */
+    void updateChapterEditor(ChatContentEditDto dto);
+
 }
