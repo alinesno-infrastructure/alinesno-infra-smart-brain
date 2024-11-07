@@ -1,8 +1,13 @@
 package com.alinesno.infra.smart.assistant.screen.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 场景实体类,针对于具体的业务场景配置管理
@@ -14,6 +19,7 @@ public class ScreenDto extends BaseDto {
     /**
      * 场景名称，用于标识特定的场景或页面
      */
+    @NotBlank(message = "场景名称不能为空")
     private String screenName;
 
     /**
@@ -24,6 +30,7 @@ public class ScreenDto extends BaseDto {
     /**
      * 场景描述，对场景功能或内容的简要说明
      */
+    @NotBlank(message = "场景描述不能为空")
     private String screenDesc;
 
     /**
@@ -50,5 +57,21 @@ public class ScreenDto extends BaseDto {
      * 是否推荐，指示场景是否被推荐给用户
      */
     private Boolean isRecommend;
+
+    /**
+     * 章节编辑人员
+     */
+    private List<IndustryRoleDto> chapterEditors = new ArrayList<>();
+
+    /**
+     * 内容编辑人员
+     */
+    private List<IndustryRoleDto> contentEditors = new ArrayList<>();
+
+    /**
+     * 章节树节点信息
+     */
+    private List<TreeNodeDto> chapterTree = new ArrayList<>();
+
 }
 
