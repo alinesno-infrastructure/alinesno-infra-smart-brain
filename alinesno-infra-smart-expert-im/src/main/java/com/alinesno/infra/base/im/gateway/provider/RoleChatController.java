@@ -36,7 +36,7 @@ public class RoleChatController extends SuperController {
 //    private IRoleChatService roleChatService;
 
     @Autowired
-    private IMessageService messageService ;
+    private IMessageService messageService;
 
     @Autowired
     private IIndustryRoleService industryRoleService;
@@ -45,19 +45,20 @@ public class RoleChatController extends SuperController {
     private QianWenLLM qianWenLLM;
 
     @Autowired
-    private ISSEService sseService ;
+    private ISSEService sseService;
 
     /**
      * 获取角色信息
+     *
      * @param roleId
      * @return
      */
     @SneakyThrows
     @GetMapping("/getInfo")
-    public AjaxResult getInfo(long roleId){
+    public AjaxResult getInfo(long roleId) {
 
-        IndustryRoleEntity role = industryRoleService.getById(roleId) ;
-        ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId()) ;
+        IndustryRoleEntity role = industryRoleService.getById(roleId);
+        ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
         // 生成介绍的chat
         Message userMsg = getMessage(role);
@@ -65,16 +66,16 @@ public class RoleChatController extends SuperController {
         MessageManager msgManager = new MessageManager(10);
         msgManager.add(userMsg);
 
-        StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager) ;
+        StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
         message.setChatText(stringBuilder.toString());
         message.setLoading(false);
 
-        AjaxResult result = AjaxResult.success() ;
+        AjaxResult result = AjaxResult.success();
 
-        result.put("role" , role);
-        result.put("message" , message) ;
+        result.put("role", role);
+        result.put("message", message);
 
-        return result ;
+        return result;
     }
 
     private static Message getMessage(IndustryRoleEntity role) {
@@ -95,40 +96,41 @@ public class RoleChatController extends SuperController {
 
     /**
      * 角色对话
+     *
      * @param chatMessage
      * @param roleId
      * @return
      */
     @SneakyThrows
     @PostMapping("/chatRole")
-    public AjaxResult chatRole(@RequestBody ChatSendMessageDto chatMessage , long roleId){
+    public AjaxResult chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
 
-        IndustryRoleEntity role = industryRoleService.getById(roleId) ;
+        IndustryRoleEntity role = industryRoleService.getById(roleId);
 
         long currentAccountId = CurrentAccountJwt.getUserId();
 
-        List<IndustryRoleEntity> roleList = new ArrayList<>() ;
+        List<IndustryRoleEntity> roleList = new ArrayList<>();
         roleList.add(role);
 
-        List<ChatMessageDto> personDto = new ArrayList<>() ;
+        List<ChatMessageDto> personDto = new ArrayList<>();
         roleList.forEach(r -> {
-            ChatMessageDto msg =  AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId()) ;
+            ChatMessageDto msg = AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId());
             msg.setAccountId(currentAccountId);
-            personDto.add(msg) ;
+            personDto.add(msg);
         });
 
         chatMessage.setUsers(Collections.singletonList(roleId));
         chatMessage.setAccountId(currentAccountId);
-        messageService.sendUserMessage(chatMessage , roleList , personDto);
+        messageService.sendUserMessage(chatMessage, roleList, personDto);
 
-       ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId()) ;
+        ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
         msgDto.setChatText(chatMessage.getMessage());
         msgDto.setName(CurrentAccountJwt.get().getName());
         msgDto.setRoleType("person");
         msgDto.setIcon("1808350003370057729");
 
-        return AjaxResult.success(msgDto) ;
+        return AjaxResult.success(msgDto);
     }
 
 }
