@@ -20,6 +20,8 @@ public class MessageTaskInfo implements Serializable {
     private long accountId ;
     // 消息渠道的唯一标识
     private long channelId ;
+    // 场景的唯一标识
+    private long screenId ;
     // 业务的唯一标识
     private String businessId ;
     // 角色的唯一标识
