@@ -36,7 +36,6 @@
                             </el-button>
                         </el-tooltip>
 
-                        <!-- <el-button type="success" @click="getOutlineJson">获取目录 JSON</el-button> -->
                     </span>
                 </div>
             </template>
@@ -61,10 +60,24 @@
                                     </div>
                                 </div>
                                 <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
-                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)"></el-avatar>
-                                    <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
-                                    <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
-                                    <el-button type="text" icon="Delete" bg size="mini" @click.stop="remove(node, data)"></el-button>
+                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
+                                    <el-tooltip class="box-item" effect="dark" content="添加子章节" placement="left">
+                                        <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
+                                    </el-tooltip>
+
+                                    <el-tooltip class="box-item" effect="dark" content="编辑章节标题" placement="left">
+                                        <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
+                                    </el-tooltip>
+
+                                    <el-tooltip class="box-item" effect="dark" content="编辑章节内容" placement="left">
+                                        <el-button type="text" icon="EditPen" bg size="mini" @click.stop="editContent(node, data)"></el-button>
+                                    </el-tooltip>
+
+                                    <el-popconfirm title="确认要删除章节么?" @confirm="remove(node, data)">
+                                        <template #reference>
+                                            <el-button type="text" icon="Delete" bg size="mini"></el-button>
+                                        </template>
+                                    </el-popconfirm>
                                 </span>
                             </div>
                         </template>
@@ -73,11 +86,27 @@
             </el-scrollbar>
         </el-card>
 
+        <!-- 编辑节点 -->
+        <el-dialog title="编辑节点" v-model="dialogVisible" width="500px">
+
+            <el-form label-width="80px" size="large">
+                <el-form-item label="节点名称">
+                    <el-input v-model="editingNodeLabel" placeholder="请输入节点名称" />
+                </el-form-item>
+                <el-form-item label="节点描述">
+                    <el-input type="textarea" :rows="5" resize="none" v-model="editingDescription" placeholder="请输入节点描述" />
+                </el-form-item>
+            </el-form>
+
+            <div class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveEdit()">确 认</el-button>
+            </div>
+        </el-dialog>
+
         <!-- 生成流式内容 -->
         <el-dialog title="由以下工程师生成目录" v-model="chaterDialogVisible" width="40%">
 
-            <div v-if="!isRoleWriter" class="dialog-body-content">
-                <!-- <PersonCard ref="personCardRef" /> -->
                 <el-card class="person-card" shadow="never">
                     <el-row type="flex" justify="center" align="middle">
                     <el-col :span="16" class="info-container">
@@ -103,36 +132,9 @@
 
                 <el-input size="large" v-model="message" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
 
-                <!-- 
-                <div class="upload-knowledge" style="margin-top:20px;">
-                    <el-upload 
-                        v-model:file-list="fileList" 
-                        class="upload-demo"
-                        action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" 
-                        :on-change="handleChange">
-                        <el-button type="primary">上传知识库</el-button>
-                        <template #tip>
-                            <div class="el-upload__tip">
-                               支持 DOC、DOCX、TXT、MD文件，且不超过 50MB。 
-                            </div>
-                        </template>
-                    </el-upload>
-                </div> 
-                -->
-            </div>
-            <div v-if="isRoleWriter">
-                <div style="display: flex;gap: 8px;align-items: center;margin-bottom: 20px;">
-                    <el-avatar :size="40" :src="imagePathByPath(person.roleAvatar)"></el-avatar>
-                    <p>{{ person.roleName }} 正在编写，请稍等</p>
-                </div>
-                <el-input type="textarea" :rows="20" resize="none" class="dialog-chapter-stream-content">
-                </el-input>
-            </div>
-
             <div class="dialog-footer">
                 <el-button @click="chaterDialogVisible = false">取 消</el-button>
-                <el-button v-if="!isRoleWriter" type="primary" @click="genStreamContent()">生成章节</el-button>
-                <el-button v-if="isRoleWriter" type="danger" @click="confimStreamContent()">使用内容</el-button>
+                <el-button type="primary" @click="genStreamContent()">生成章节</el-button>
             </div>
         </el-dialog>
 
@@ -170,9 +172,6 @@
 import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
-// import PersonCard from './components/personCard.vue';
-// import { chatRole } from '@/api/base/im/roleChat'
-
 import { listAll } from '@/api/base/im/user';
 import {
     updateChapterEditor, 
@@ -184,20 +183,21 @@ import {
 const route = useRoute();
 const { proxy } = getCurrentInstance();
 
-const emit = defineEmits(['setCurrentScreenInfo'])
+const emit = defineEmits(['setCurrentScreenInfo' , 'editContent'])
 
-// const personCardRef = ref(null)
 const streamLoading = ref(null)
 
 // 定义人物信息
 const person = ref({
   roleAvatar: '' , 
-  roleName: '张三',
-  responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
+  roleName: '',
+  responsibilities: '',
   email: 'zhangsan@example.com',
 });
 
 const outline = ref([]);
+
+const dialogVisible = ref(false)
 
 const channelAgentConfigTitle = ref("")
 const configAgentDialogVisible = ref(false)
@@ -218,7 +218,8 @@ const currentScreenId = ref(route.query.screenId)
 const agentList = ref([])
 const chaterDialogVisible = ref(false);
 const editingNode = ref(null);
-const editingLabel = ref('');
+const editingNodeLabel = ref('');
+const editingDescription = ref('');
 
 const message = ref("")  // 生成内容的要求
 const isRoleWriter = ref(false)
@@ -257,17 +258,28 @@ const remove = (node, data) => {
 
 const edit = (node, data) => {
     editingNode.value = node;
-    editingLabel.value = data.label;
+    editingDescription.value = data.description;
+    editingNodeLabel.value = node.label;
     dialogVisible.value = true;
+};
+
+/** 编辑内容 */
+const editContent = (node , data) => {
+    emit('editContent' , node , data)
+}
+
+// 保存编辑节点
+const saveEdit = () => {
+    if (editingNode.value) {
+        editingNode.value.data.label = editingNodeLabel.value;
+        editingNode.value.data.description = editingDescription.value;
+        ElMessage.success('编辑成功');
+        dialogVisible.value = false;
+    }
 };
 
 /** 生成内容 */
 const genStreamContent = () => {
-    // if (editingNode.value) {
-    //     editingNode.value.data.label = editingLabel.value;
-    //     ElMessage.success('编辑成功');
-    //     dialogVisible.value = false;
-    // }
 
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
@@ -288,9 +300,6 @@ const genStreamContent = () => {
 
   chatRole(formData).then(res => {
     proxy.$modal.msgSuccess("发送成功");
-    // pushResponseMessageList(res.data);
-
-    // isRoleWriter.value = true ;
     chaterDialogVisible.value = false ;
     message.value = '';
 
@@ -305,23 +314,6 @@ const addChapter = () => {
     const newChapter = { id: Date.now(), label: `第${outline.value.length + 1}章`, description: '节点内容描述信息', children: [] };
     outline.value.push(newChapter);
 };
-
-
-// 监听上传文件
-const fileList = ref([
-  {
-    name: 'food.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-  },
-  {
-    name: 'food2.jpeg',
-    url: 'https://fuss10.elemecdn.com/3/63/4e7f3a15429bfda99bce42a18cdd1jpeg.jpeg?imageMogr2/thumbnail/360x360/format/webp/quality/100',
-  },
-])
-
-const handleChange = (uploadFile, uploadFiles) => {
-  fileList.value = fileList.value.slice(-3)
-}
 
 /** 选择角色生成目录 */
 function selectChaterGenerator(item) {
@@ -380,23 +372,10 @@ function handleCloseAgentConfig(){
 
 /** 获取到场景详情 */
 function handleGetScreen() {
-
-    // streamLoading.value = ElLoading.service({
-    //     lock: true,
-    //     text: '初始化界面中 ...',
-    //     background: 'rgba(255, 255, 255, 0.1)',
-    // })
-
     getScreen(currentScreenId.value).then(res => {
       currentScreenInfo.value = res.data
-
       outline.value = res.data.chapterTree
-
       emit('setCurrentScreenInfo' , res.data)
-
-    //   closeStreamDialog()
-
-    //   proxy.$modal.msgSuccess("获取成功");
     })
 }
 
