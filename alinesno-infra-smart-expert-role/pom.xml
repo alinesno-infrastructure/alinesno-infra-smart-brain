@@ -36,6 +36,11 @@
 			<artifactId>alinesno-infra-smart-expert-template</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-screen</artifactId>
+			<version>${revision}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>org.freemarker</groupId>
@@ -111,7 +116,7 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-redis</artifactId>
         </dependency>
-		<!-- spring-retry_end -->
+        <!-- spring-retry_end -->
 
 	</dependencies>
 
