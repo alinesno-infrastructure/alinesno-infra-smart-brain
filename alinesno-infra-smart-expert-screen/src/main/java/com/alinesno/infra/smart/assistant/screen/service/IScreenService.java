@@ -18,4 +18,12 @@ public interface IScreenService extends IBaseService<ScreenEntity> {
      * @return
      */
     ScreenEntity saveScreen(ScreenDto screenDto);
+
+    /**
+     * 生成markdown内容
+     * @param screenId
+     * @return
+     */
+    String genMarkdownContent(long screenId);
+
 }
