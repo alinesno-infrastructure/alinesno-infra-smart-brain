@@ -21,15 +21,15 @@
     <div class="channel-container-panel" style="margin-top:30px">
       <el-row>
 
-        <el-col :span="6" v-for="(item, index) in screenList" :key="index" style="padding:8px;">
+        <el-col :span="6" v-for="(item, index) in screenLists" :key="index" style="padding:8px;">
             <div class="screen-card-container" @click="enterScreen(item)">
               <article class="screen-card">
                   <div class="screen-image-container">
-                      <img :src="item.background_image_url" class="screen-card-image">
+                      <img :src="imagePathByPath(item.screenBanner)" class="screen-card-image">
                   </div>
                   <div class="screen-card-content">
                       <div class="screen-header">
-                          <span class="screen-title">{{ item.title }}</span>
+                          <span class="screen-title">{{ item.screenName }}</span>
                           <div class="screen-tag">长文本</div>
                       </div>
                       <div class="screen-author-info">
@@ -38,7 +38,7 @@
                           <span class="screen-username">@Easton</span>
                       </div>
                       <div class="screen-description">
-                        {{ item.description }}
+                        {{ item.screenDesc }}
                       </div>
                       <div class="screen-footer">
                           <div class="screen-price">免费</div>
@@ -59,110 +59,35 @@
 </template>
 
 <script setup>
+
+import { 
+    screenList 
+} from '@/api/base/im/screen' ;
+import { onMounted } from 'vue';
+
 const router = useRouter();
 
-const screenList = ref([
-    {
-        "title": "毕业论文撰写与指导",
-        "author": "李文博远",
-        "description": "提供从选题到定稿的全程指导，帮助学生顺利完成毕业论文。",
-        "usage_count": 542,
-        "background_image_url": "http://data.linesno.com/screen_icons/1.png"
-    },
-    {
-        "title": "政府招标标书编制",
-        "author": "陈思明",
-        "description": "针对政府招标项目，提供专业的标书撰写服务，提高中标率。",
-        "usage_count": 328,
-        "background_image_url": "http://data.linesno.com/screen_icons/2.png"
-    },
-    {
-        "title": "企业年度报告设计",
-        "author": "王海燕",
-        "description": "为大中型企业定制年度财务与业务发展报告，展示公司成就。",
-        "usage_count": 412,
-        "background_image_url": "http://data.linesno.com/screen_icons/3.png"
-    },
-    {
-        "title": "创业公司商业计划书",
-        "author": "张伟",
-        "description": "为初创企业提供全面的商业计划书撰写支持，助力融资成功。",
-        "usage_count": 297,
-        "background_image_url": "http://data.linesno.com/screen_icons/4.png"
-    },
-    {
-        "title": "市场研究与分析报告",
-        "author": "赵静",
-        "description": "根据客户需求，进行深入市场分析，提供详尽的调研报告。",
-        "usage_count": 356,
-        "background_image_url": "http://data.linesno.com/screen_icons/5.png"
-    },
-    {
-        "title": "法律文件起草与审核",
-        "author": "刘强",
-        "description": "专业律师团队提供的法律文书编写服务，确保每一份文件的合法性。",
-        "usage_count": 189,
-        "background_image_url": "http://data.linesno.com/screen_icons/6.png"
-    },
-    {
-        "title": "科研项目申请材料",
-        "author": "周敏",
-        "description": "协助科研人员准备项目申请书，提升申请成功率。",
-        "usage_count": 245,
-        "background_image_url": "http://data.linesno.com/screen_icons/7.png"
-    },
-    {
-        "title": "个人简历优化服务",
-        "author": "吴晓东",
-        "description": "提供个性化的简历设计与优化建议，助您脱颖而出。",
-        "usage_count": 165,
-        "background_image_url": "http://data.linesno.com/screen_icons/3.png"
-    },
-    {
-        "title": "营销策略制定",
-        "author": "郑晓琳",
-        "description": "帮助企业制定有效的市场营销策略，扩大品牌影响力。",
-        "usage_count": 302,
-        "background_image_url": "http://data.linesno.com/screen_icons/7.png"
-    },
-    {
-        "title": "产品说明书编写",
-        "author": "黄小明",
-        "description": "为企业产品提供详细、清晰的说明书编写服务。",
-        "usage_count": 221,
-        "background_image_url": "http://data.linesno.com/screen_icons/8.png"
-    },
-    {
-        "title": "合同审查与谈判",
-        "author": "李华",
-        "description": "提供专业的合同审查及谈判支持，保障合作双方权益。",
-        "usage_count": 198,
-        "background_image_url": "http://data.linesno.com/screen_icons/1.png"
-    },
-    {
-        "title": "网站内容创作",
-        "author": "孙莉",
-        "description": "为网站提供高质量的文章写作与编辑服务，增加用户粘性。",
-        "usage_count": 403,
-        "background_image_url": "http://data.linesno.com/screen_icons/3.png"
-    },
-    {
-        "title": "社交媒体管理",
-        "author": "朱丽叶",
-        "description": "提供社交媒体账户的日常管理和内容更新服务。",
-        "usage_count": 387,
-        "background_image_url": "http://data.linesno.com/screen_icons/9.png"
-    },
-]) 
+const screenLists = ref([]) 
 
 /** 进入长文本编辑界面 */
 function enterScreen(item) {
     // 跳转至详情页
     router.push({
         path: '/screen/longText',
-        query: { 'screenId': item.usage_count}
+        query: { 'screenId': item.id}
     })
 }
+
+/** 获取场景列表 */
+function handleScreenList(){
+    screenList().then(res => {
+        screenLists.value = res.data
+    })
+}
+
+onMounted(() => {
+    handleScreenList()
+})
 
 </script>
 
