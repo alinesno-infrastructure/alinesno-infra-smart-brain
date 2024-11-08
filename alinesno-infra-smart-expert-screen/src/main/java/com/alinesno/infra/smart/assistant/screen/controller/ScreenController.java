@@ -1,33 +1,48 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
+import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.screen.dto.ScreenDto;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
 import com.alinesno.infra.smart.assistant.screen.service.IChapterService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
+import com.alinesno.infra.smart.assistant.screen.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -41,6 +56,12 @@ import java.util.List;
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/smart/assistant/screen")
 public class ScreenController extends BaseController<ScreenEntity, IScreenService> {
+
+    @Autowired
+    private BaseSearchConsumer searchController ;
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     @Autowired
     private IScreenService service;
@@ -71,20 +92,61 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
     }
 
     /**
+     * 下载文件并返回文件下载
+     * @param screenId
+     * @return
+     */
+    @GetMapping("/uploadOss")
+    public AjaxResult uploadOss(@RequestParam("screenId") long screenId) {
+
+        String markdownContent = service.genMarkdownContent(screenId) ;
+        String filename = IdUtil.fastSimpleUUID() ;
+
+        log.debug("markdownContent = {}", markdownContent);
+        Assert.notNull(markdownContent, "markdownContent为空") ;
+
+        String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
+        Assert.notNull(filePath, "文件路径为空") ;
+
+        assert filePath != null;
+
+        R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub" , progress -> {
+            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
+        }) ;
+
+        String downloadUrl = r.getData() ;
+
+        return AjaxResult.success("操作成功" , downloadUrl);
+    }
+
+    /**
      * 保存或更新屏幕场景
      *
      * @param screenDto 屏幕场景的DTO
      * @return 操作结果
      */
+    @DataPermissionSave
     @PostMapping("/saveOrUpdate")
     public AjaxResult saveOrUpdate(@RequestBody @Validated ScreenDto screenDto) {
         log.debug("screenDto = {}", ToStringBuilder.reflectionToString(screenDto));
-
-
-
         ScreenEntity screenEntity =service.saveScreen(screenDto);
-
         return AjaxResult.success("操作成功.", screenEntity.getId());
+    }
+
+    /**
+     * 获取场景列表screenList
+     */
+    @DataPermissionQuery
+    @GetMapping("/screenList")
+    public AjaxResult screenList(PermissionQuery query) {
+
+        LambdaQueryWrapper<ScreenEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(ScreenEntity.class) ;
+        query.toWrapper(queryWrapper);
+        queryWrapper.orderByDesc(ScreenEntity::getAddTime);
+
+        List<ScreenEntity> list = service.list(queryWrapper);
+        return AjaxResult.success("操作成功", list);
     }
 
     /**
@@ -195,6 +257,54 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         } catch (RuntimeException e) {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * 导入数据
+     *
+     * @param file 导入文件
+     */
+    @PostMapping(value = "/screenData", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public AjaxResult screenData(@RequestPart("file") MultipartFile file, long screenId) throws Exception {
+
+        // localPath文件夹路径是否存在，不存在则创建
+        FileUtils.forceMkdir(new File(localPath)) ;
+
+        File tmpFile = new File(localPath , Objects.requireNonNull(file.getOriginalFilename())) ;
+        file.transferTo(tmpFile);
+
+        String fileType = FileTypeUtil.getType(tmpFile) ;
+
+        // 获取原始文件名
+        String fileName = file.getOriginalFilename();
+
+        // 上传到知识库角色
+        ScreenEntity screenEntity = service.getById(screenId) ;
+        String datasetId = screenEntity.getKnowledgeId() ;
+
+        R<String> result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
+            log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
+            log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
+            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");  // 已上传百分比
+
+            if (progress.isDone()) {   // 是否上传完成
+                log.debug("--------   Upload Completed!   --------");
+
+                // 拼接到知识库类型，先判断之前是否有同一类型的，如果包含则不往上拼接
+                String knowledgeType = screenEntity.getKnowledgeType() ;
+                if(knowledgeType == null || !knowledgeType.contains(fileType)){
+                    knowledgeType = (knowledgeType==null?"":knowledgeType+ "|") + fileType ;
+                    screenEntity.setKnowledgeType(knowledgeType);
+                }
+                service.updateById(screenEntity) ;
+            }
+
+        }) ;
+        log.debug("upload file result = {}" , result);
+
+        FileUtils.forceDelete(tmpFile);
+
+        return AjaxResult.success("上传成功") ;
     }
 
 
