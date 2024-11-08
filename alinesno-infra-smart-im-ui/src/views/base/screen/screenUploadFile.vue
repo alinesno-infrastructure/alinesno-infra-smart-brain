@@ -10,8 +10,6 @@
         <template #tip>
           <div class="el-upload__tip text-center">
             <span>仅允许导入xls、xlsx格式文件。</span>
-            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;"
-              @click="importTemplate">下载模板</el-link>
           </div>
         </template>
       </el-upload>
@@ -52,17 +50,13 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: { Authorization: "Bearer " + getToken() },
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/knowledge/screenData"
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/screen/screenData"
 });
 
 function handleOpenUpload(val) {
   upload.open = val;
 }
 
-/** 下载模板操作 */
-function importTemplate() {
-  proxy.download("/v1/api/infra/base/im/knowledge/importTemplate", {}, `user_template_${new Date().getTime()}.xlsx`);
-};
 /**文件上传中处理 */
 const handleFileUploadProgress = (event, file, fileList) => {
   upload.isUploading = true;
@@ -73,7 +67,9 @@ const handleFileSuccess = (response, file, fileList) => {
   upload.isUploading = false;
   proxy.$refs["uploadRef"].handleRemove(file);
 
-  emit("handlePushResponseMessageList", response.data);
+  proxy.$modal.msgSuccess("上传成功.");
+
+  // emit("handlePushResponseMessageList", response.data);
 };
 /** 提交上传文件 */
 function submitFileForm() {
