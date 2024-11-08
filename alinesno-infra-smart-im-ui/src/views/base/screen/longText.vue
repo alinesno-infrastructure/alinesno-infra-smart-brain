@@ -1,11 +1,13 @@
 <template>
-    <div class="app-container" style="background-color: #fff;padding-top:10px;" v-loading="loading">
+    <div class="app-container" style="background-color: #fff;padding-top:10px;">
         <el-row>
             <el-col :span="10">
                 <!-- 目录大纲编辑界面 -->
                 <OutlineEditor 
                     ref="OutlineEditorRef"
-                    @setCurrentScreenInfo="setCurrentScreenInfo" />
+                    @setCurrentScreenInfo="setCurrentScreenInfo"
+                    @editContent="editContent"
+                     />
             </el-col>
             <el-col :span="14">
                 <div class="chapter-edit">
@@ -41,17 +43,30 @@
                                             <i class="fa-solid fa-file-word icon-btn"></i>
                                         </el-button>
                                     </el-tooltip>
-                                    <el-button type="primary" @click="onSubmit">保存</el-button>
-                                    <el-button type="danger" @click="onSubmit">下载</el-button>
+                                    <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
+                                        <el-button type="primary" text bg size="large" @click="onSubmitChapter">
+                                            <i class="fa-solid fa-floppy-disk"></i>
+                                        </el-button>
+                                    </el-tooltip>
+
+                                    <el-tooltip class="box-item" effect="dark" content="导出文档" placement="top">
+                                        <el-button type="primary" text bg size="large" @click="expertScreen">
+                                            <i class="fa-solid fa-download"></i>
+                                        </el-button>
+                                    </el-tooltip>
+
+                                    <!-- <el-button type="primary" @click="onSubmitChapter">保存</el-button> -->
+                                    <!-- <el-button type="danger" @click="onDownloadContent">下载</el-button> -->
                                 </div>
                             </div>
                         </template>
-                        <el-form :model="form" label-width="100px" label-position="top">
-                            <el-form-item :label="currentChaterTitle">
-                                <el-input v-model="form.title" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
+                        <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
+                            <el-form-item>
+                                <el-input disabled="disabled" v-model="form.title" placeholder="在执行当中的章节名称"></el-input>
                             </el-form-item>
                             <el-form-item label="章节内容">
-                                <el-input type="textarea" v-model="form.content" :rows="31" resize="none" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
+                                <!-- <el-input type="textarea" v-model="form.content" :rows="31" resize="none" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input> -->
+                                 <ChapterEditor ref="chapterEditorRef" />
                             </el-form-item>
                         </el-form>
                     </el-card>
@@ -66,10 +81,11 @@
             append-to-body
             width="700px"
             >
-            <div style="padding: 10px;margin-bottom: 10px;">
-              角色能力: {{  currentUser.responsibilities }}
+            <div class="user-info">
+                <img v-if="currentUser.roleAvatar" class="avatar" :src="imagePathByPath(currentUser.roleAvatar)" />
+                角色能力: {{ currentUser.responsibilities }}
             </div>
-            <el-scrollbar style="height:calc(100vh - 300px)">
+            <el-scrollbar style="height:calc(100vh - 400px)">
                 <div class="chapter-tree-content">
                     <el-tree :data="outline" 
                         node-key="id" 
@@ -115,18 +131,17 @@
 <script setup>
 
 import { ElLoading } from 'element-plus'
-import MarkdownIt from 'markdown-it';
-import mdKatex from '@traptitech/markdown-it-katex';
-import hljs from 'highlight.js';
 import ChapterEditor from './chapterEditor'
 
 import ScreenUploadFile from './screenUploadFile.vue'
 
-import { getParam } from '@/utils/ruoyi'
-import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { 
     updateChapterContentEditor , 
-    getChapterByRole 
+    getChapterByRole , 
+    getChapterContent , 
+    updateChapterContent,
+    chatRoleSync,
+    uploadOss 
 } from '@/api/base/im/screen'
 
 import { ElMessage } from 'element-plus';
@@ -138,9 +153,9 @@ const { proxy } = getCurrentInstance();
 
 const currentScreenInfo = ref([])
 
+const loading = ref(false)
 const chapterEditTitle = ref("")
 const dialogVisible = ref(false)
-const chapterTree = ref(null);
 const chapterSelectionTree = ref(null);
 const currentUser = ref(null);
 
@@ -153,40 +168,17 @@ const person = ref({
 });
 
 
-const loading = ref(true)
-
+const chapterEditorRef = ref(null)
 const uploadChildComp = ref(null)
-const innerRef = ref(null); // 滚动条的处理_starter
 const OutlineEditorRef = ref(null); // 滚动条的处理_starter
-const scrollbarRef = ref(null);
-const messageList = ref([]);
-
-const currentChaterTitle = ref("章节标题")
-
-const mdi = new MarkdownIt({
-    html: true,
-    linkify: true,
-    highlight(code, language) {
-        const validLang = !!(language && hljs.getLanguage(language));
-        if (validLang) {
-            const lang = language || '';
-            return highlightBlock(hljs.highlight(code, { language: lang }).value, lang);
-        }
-        return highlightBlock(hljs.highlightAuto(code).value, '');
-    },
-});
-
-function highlightBlock(str, lang) {
-    return `<pre class="code-block-wrapper"><code class="hljs code-block-body ${lang}">${str}</code></pre>`;
-}
-
-mdi.use(mdKatex, { blockClass: 'katexmath-block rounded-md p-[10px]', errorColor: ' #cc0000' });
 
 const streamLoading = ref(null)
-const screenId = ref('')
-const chaterText = ref("")
+const screenId = ref(route.query.screenId)
+
+const totalNodes = ref(0);
 
 const form = reactive({
+    id: 0 ,
     title: '',
     content: ''
 });
@@ -194,71 +186,41 @@ const form = reactive({
 // 文章目录结构数据
 const outline = ref([]);
 
-const onSubmit = () => {
+const onSubmitChapter = () => {
     // 这里处理表单提交逻辑
-    ElMessage.success('保存成功！');
     console.log('提交的数据:', form);
+
+    let data = {
+        id: form.id ,
+        title: form.title,
+        content: chapterEditorRef.value.getData() 
+    }
+
+    updateChapterContent(data).then(res => {
+        ElMessage.success('保存'+form.title+'成功！');
+    })
+
 };
+
+/** 导出word文档 */
+function expertScreen(){
+    uploadOss(screenId.value).then(res => {
+        window.open(res.data)
+    })
+}
 
 /** 上传文档文件 */
 function handleUploadFile() {
     uploadChildComp.value.handleOpenUpload(true);
 }
 
-// 推送消息到当前面板
-const pushResponseMessageList = (newMessage) => {
-    console.log(`--->>> newMessage = ${JSON.stringify(newMessage)}`);
-
-    if (newMessage.llmStream === true) { // 是否为流式输出
-
-        // 查找是否有相同businessId的消息
-        const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
-
-        if (existingIndex !== -1) {
-            // 如果找到，更新该消息
-            messageList.value[existingIndex].chatText += newMessage.chatText;
-        } else {
-            // 否则，添加新消息
-            messageList.value.push(newMessage);
-        }
-    } else {
-        messageList.value.push(newMessage);
-    }
-
-    // 调用初始化滚动条的函数
-    initChatBoxScroll();
-};
-
 function configAgent(){
     OutlineEditorRef.value.configAgent('content');
-}
-
-/** 显示工具条 */
-function showTools(item) {
-    messageList.value.forEach((i) => {
-        i.showTools = i === item; // 只有当前项的 showTools 被设置为 true
-    });
 }
 
 function setCurrentScreenInfo(data){
     currentScreenInfo.value = data
     outline.value = data.chapterTree
-}
-
-/** 隐藏工具条 */
-function hideTools(item) {
-    item.showTools = false; // 鼠标移出时隐藏 tools
-}
-
-function initChatBoxScroll() {
-
-    nextTick(() => {
-        const element = innerRef.value;  // 获取滚动元素
-        const scrollHeight = element.scrollHeight;
-
-        scrollbarRef.value.setScrollTop(scrollHeight);
-    })
-
 }
 
 // 打开选择章节对话框
@@ -276,7 +238,8 @@ const openChapterSelectionDialog = (role) => {
     nextTick(() => {
         getChapterByRole(role.id, screenId.value).then(res => {
             if(res.data){
-                let selectKey = res.data.map(item => parseInt(item.id));
+                let selectKey = res.data.map(item => item.id);
+                console.log('selectKey = ' + selectKey);
                 chapterSelectionTree.value.setCheckedKeys(selectKey) ;
             }
         })
@@ -285,18 +248,76 @@ const openChapterSelectionDialog = (role) => {
 
 };
 
-// 循环生成任务使用
-const genChapterContent = () => {
-  const node = findNodeById(outline.value, -1);
-  return node ? node.label : '';
+// 定义一个异步函数来调用 chatRoleSync
+const genChapterContent = async () => {
+  try {
+    totalNodes.value = countNodes(outline.value); 
+    console.log('文档总数量 = ' + totalNodes.value);
+
+    // 将树转换成列表形式
+    const nodeList = [];
+    const flattenTree = (nodes) => {
+      for (let node of nodes) {
+        nodeList.push(node);
+        if (node.children && node.children.length) {
+          flattenTree(node.children);
+        }
+      }
+    };
+    flattenTree(outline.value);
+
+     // 开始生成
+     streamLoading.value = ElLoading.service({
+        lock: true,
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading'
+     });
+    // 遍历输出每个节点的信息
+    for (let i = 0; i < nodeList.length; i++) {
+      const node = nodeList[i];
+      console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
+      let processMsg = ` ${i + 1}: 章节:${node.label}`;
+
+      let text = processMsg + ' 任务生成中，还有【'+(totalNodes.value - i)+'】篇';
+      streamLoading.value.setText(text)
+
+      form.title = node.label;
+
+      let formData = {
+        screenId: screenId.value,
+        chapterTitle: node.label,
+        chapterDescription: node.description,
+        chapterId : node.id ,
+      }
+      const result = await chatRoleSync(formData);
+      chapterEditorRef.value.setData(result.data) ;
+      
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    proxy.$modal.msgError("生成失败");
+    streamLoading.value.close();
+  }
+
+    streamLoading.value.close();
+};
+
+// 计算总节点数
+const countNodes = (nodes) => {
+  let count = 0;
+  for (let node of nodes) {
+    count++;
+    if (node.children && node.children.length) {
+      count += countNodes(node.children);
+    }
+  }
+  return count;
 };
 
 // 递归查找节点
 const findNodeById = (nodes, id) => {
   for (let node of nodes) {
-
-    console.log('nodeName = ' + node.label + ', id = ' + node.id)
-
+    console.log('nodeName = ' + node.label + ', id = ' + node.id) ; 
     if (node.id === id) {
         return node;
     }
@@ -310,25 +331,34 @@ const findNodeById = (nodes, id) => {
   return null;
 };
 
-const onCancel = () => {
-    // 这里处理取消操作
-    ElMessage.info('已取消');
-    form.title = '';
-    form.content = '';
+/** 编辑章节内容 */
+const editContent = (node , data) => {
+    console.log('node = ' + node)
+    console.log('data = ' + data)
+
+    let chapterId = data.id ;
+
+    form.id = data.id ;
+    form.title = node.label;
+
+    getChapterContent(chapterId).then(res => {
+        console.log('res = ' + JSON.stringify(res))
+        // form.content = res.data ;
+        chapterEditorRef.value.setData(res.data);
+        loading.value = false ;
+    })
+
 }
 
 // 分配章节给用户
 const assignChaptersToUser = () => {
   const checkedNodes = chapterSelectionTree.value.getCheckedNodes(false, true);
-
   console.log('newChapterIds= ' + checkedNodes)
 
   const newChapterIds = checkedNodes.map(node => node.id);
-
   console.log('newChapterIds = ' + newChapterIds);
 
   currentUser.value.selectedChapters = [...new Set([...currentUser.value.selectedChapters, ...newChapterIds])];
-
   console.log('currentUser.value.selectedChapters=' + currentUser.value.selectedChapters);
 
   let data = {
@@ -347,60 +377,32 @@ const assignChaptersToUser = () => {
 
 };
 
-/** 读取html文本 */
-function readerHtml(chatText) {
-    return mdi.render(chatText);
-}
-
 // 进入初始化
-onMounted(() => {
-    screenId.value = route.query.screenId;
-    loading.value = false
-
-    OutlineEditorRef.value.closeStreamDialog();
-
-    // handleSseConnect(screenId.value)
-})
-
-/** 连接sse */
-function handleSseConnect(screenId) {
-    nextTick(() => {
-        if (screenId) {
-
-            let sseSource = openSseConnect(screenId);
-            // 接收到数据
-            sseSource.onmessage = function (event) {
-
-                if (!event.data.includes('[DONE]')) {
-                    let resData = event.data;
-
-                    if (resData != 'ping') {  // 非心跳消息
-                        const data = JSON.parse(resData);
-                        // chaterText.value += data.chatText;
-                        pushResponseMessageList(data);
-                    }
-                } else {
-                    console.log('消息接收结束.')
-                    if (streamLoading.value) {
-                        streamLoading.value.close();
-                    }
-                    OutlineEditorRef.value.closeStreamDialog();
-                }
-            }
-        }
-    })
-}
-
-// 销毁信息
-onBeforeUnmount(() => {
-    // handleCloseSse(screenId.value).then(res => {
-    //     console.log('关闭sse连接成功:' + screenId)
-    // })
-});
+// onMounted(() => {
+//     screenId.value = route.query.screenId;
+// })
 
 </script>
 
 <style lang="scss" scoped>
+
+// 定义一些常用的变量
+$spacing: 10px;
+$avatar-size: 30px;
+
+.user-info {
+    padding: $spacing;
+    margin-bottom: $spacing;
+    display: flex;
+    gap: $spacing;
+
+    .avatar {
+        width: $avatar-size;
+        height: $avatar-size;
+        border-radius: 50%;
+    }
+}
+
 .chapter-edit {
     margin: 0px;
 
