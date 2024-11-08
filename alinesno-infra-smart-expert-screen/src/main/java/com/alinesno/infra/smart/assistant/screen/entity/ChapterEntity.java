@@ -47,6 +47,9 @@ public class ChapterEntity extends InfraBaseEntity {
     @Column(name = "chapter_editor", type = MySqlTypeConstant.BIGINT, length = 32, comment = "章节编辑人员")
     private Long chapterEditor;
 
+    @Column(name = "content", type = MySqlTypeConstant.LONGTEXT, comment = "本章节文本内容")
+    private String content ;
+
     // 子组件
     @TableField(exist = false)
     private List<ChapterEntity> subtitles ;
