@@ -22,6 +22,8 @@ import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
+import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
+import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -65,6 +67,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Autowired
     private IChannelService channelService ;
+
+    @Autowired
+    private IScreenService screenService ;
 
     @Autowired
     private StreamMessagePublisher streamMessagePublisher ;
@@ -194,6 +199,19 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         }
         return null ;
     }
+
+    /**
+     * 场景唯一标识
+     * @param channelId
+     * @return
+     */
+    protected ScreenEntity getScreenInfo(long channelId) {
+        if (channelId > 0){
+            return screenService.getById(channelId) ;
+        }
+        return null ;
+    }
+
 
     /**
      * 获取到任务执行详情
