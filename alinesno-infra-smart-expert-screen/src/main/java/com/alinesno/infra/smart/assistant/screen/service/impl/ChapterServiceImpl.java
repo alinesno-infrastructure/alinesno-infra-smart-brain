@@ -8,7 +8,6 @@ import com.alinesno.infra.smart.assistant.screen.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.screen.mapper.ChapterMapper;
 import com.alinesno.infra.smart.assistant.screen.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +26,9 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long screenId) {
 
         // 先删除当前场景下的所有章节
-        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(ChapterEntity::getScreenId, screenId);
-        remove(wrapper);
+//        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
+//        wrapper.eq(ChapterEntity::getScreenId, screenId);
+//        remove(wrapper);
 
         if (chapters == null || chapters.isEmpty()) {
             return;
@@ -111,22 +110,21 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     public void updateChapterEditor(ChatContentEditDto dto) {
 
         // 删除旧的编辑记录，重新添加新的编辑记录
-        LambdaQueryWrapper<ChapterEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ChapterEntity::getScreenId, dto.getScreenId());
-        wrapper.eq(ChapterEntity::getChapterEditor, dto.getRoleId());
-        List<ChapterEntity> oldChapterList = list(wrapper);
-        for (ChapterEntity chapter : oldChapterList) {
-            chapter.setChapterEditor(null);
-        }
-        updateBatchById(oldChapterList);
+        LambdaUpdateWrapper<ChapterEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(ChapterEntity::getScreenId, dto.getScreenId());
+        updateWrapper.eq(ChapterEntity::getChapterEditor, dto.getRoleId());
+        updateWrapper.set(ChapterEntity::getChapterEditor, null) ;
+        update(updateWrapper) ;
 
         // 重新设置编辑者
-        List<ChapterEntity> chapterList = listByIds(dto.getChapters());
-        for (ChapterEntity chapter : chapterList) {
-            chapter.setChapterEditor(dto.getRoleId());
-        }
+        if(dto.getChapters() != null && !dto.getChapters().isEmpty()){
+            List<ChapterEntity> chapterList = listByIds(dto.getChapters());
+            for (ChapterEntity chapter : chapterList) {
+                chapter.setChapterEditor(dto.getRoleId());
+            }
 
-        updateBatchById(chapterList);
+            updateBatchById(chapterList);
+        }
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
