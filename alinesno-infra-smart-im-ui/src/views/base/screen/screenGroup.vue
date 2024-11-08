@@ -99,7 +99,7 @@ const upload = reactive({
 
 const reset = () => {
   form.value = {
-    icon: null , 
+    screenBanner: null , 
     channelId: undefined,
     screenName: undefined,
     screenDesc: undefined,
@@ -118,8 +118,8 @@ function handleSetScreenId(screenId){
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
   // imageUrl.value = URL.createObjectURL(uploadFile.raw);
-  form.value.icon = response.data ;
-  console.log('form.icon = ' + form.icon);
+  form.value.screenBanner = response.data ;
+  console.log('form.icon = ' + form.value.screenBanner);
 };
 
 /** 图片上传之前 */
