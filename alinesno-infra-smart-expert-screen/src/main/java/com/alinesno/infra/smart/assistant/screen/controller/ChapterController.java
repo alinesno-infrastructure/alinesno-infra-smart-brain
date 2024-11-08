@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -9,15 +11,14 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.screen.dto.ChatContentEditDto;
-import com.alinesno.infra.smart.assistant.screen.dto.ChatRoleDto;
-import com.alinesno.infra.smart.assistant.screen.dto.TreeNodeDto;
+import com.alinesno.infra.smart.assistant.screen.dto.*;
 import com.alinesno.infra.smart.assistant.screen.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.screen.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.List;
 
 /**
@@ -96,10 +98,65 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         return ok() ;
     }
 
+    /**
+     * 生成章节内容
+     */
+    @SneakyThrows
+    @PostMapping("/chatRoleSync")
+    public AjaxResult chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto) {
+
+        log.debug("dto = {}", dto);
+
+        long chapterId = dto.getChapterId() ;
+        ChapterEntity chapterEntity = service.getById(chapterId) ;
+        Long roleId = chapterEntity.getChapterEditor() ;
+
+        if(roleId != null){
+            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+            taskInfo.setRoleId(roleId);
+            taskInfo.setChannelId(dto.getScreenId());
+            taskInfo.setText("章节标题:"+dto.getChapterTitle() + ",要求:" + dto.getChapterDescription());
+
+            WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+            log.debug("chatRole = {}" , genContent);
+
+            // 更新章节内容
+            chapterEntity.setContent(genContent.getGenContent());
+            service.update(chapterEntity);
+
+            return AjaxResult.success("生成成功",genContent.getGenContent()) ;
+        }
+
+        return AjaxResult.success("操作成功" , "此章节未指定编辑人员");
+    }
+
+    /**
+     * 通过ID查询章节内容
+     */
+    @GetMapping("/getChapterContent")
+    public AjaxResult getChapterContent(@RequestParam("chapterId") long chapterId) {
+        ChapterEntity chapterEntity = service.getById(chapterId) ;
+        return AjaxResult.success("操作成功" , chapterEntity.getContent()) ;
+    }
+
+    /**
+     * 更新章节内容
+     */
+    @PostMapping("/updateChapterContent")
+    public AjaxResult updateChapterContent(@RequestBody @Validated ChatContentDto dto) {
+
+        ChapterEntity chapterEntity = service.getById(dto.getId()) ;
+        chapterEntity.setContent(dto.getContent());
+        service.update(chapterEntity);
+
+        return AjaxResult.success("操作成功") ;
+    }
 
     /**
      * 与角色交互，获取到内容结果
      */
+    @SneakyThrows
     @PostMapping("/chatRole")
     public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
 
@@ -116,6 +173,15 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
             String codeContent = genContent.getCodeContent().get(0).getContent() ;
             JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+
+            // 验证是否可以正常解析json
+            try{
+                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
+            }catch (Exception e){
+                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
+            }
+
             return AjaxResult.success("操作成功" , dataObject) ;
         }
 
@@ -126,10 +192,12 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
      * 获取章节的树结构
      * @return 章节的树结构
      */
+    @SneakyThrows
     @GetMapping("/getChapterTree")
     public AjaxResult getChapterTree(@RequestParam("screenId") long screenId) {
         List<TreeNodeDto> tree = service.getChapterTree(screenId);
         return AjaxResult.success(tree);
+
     }
 
     /**
