@@ -116,6 +116,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
 
             taskInfo.setRoleId(roleId);
             taskInfo.setChannelId(dto.getScreenId());
+            taskInfo.setScreenId(dto.getScreenId());
             taskInfo.setText("章节标题:"+dto.getChapterTitle() + ",要求:" + dto.getChapterDescription());
 
             WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
@@ -164,6 +165,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
 
         taskInfo.setRoleId(chatRole.getRoleId());
         taskInfo.setChannelId(chatRole.getScreenId());
+        taskInfo.setScreenId(chatRole.getScreenId());
         taskInfo.setText(chatRole.getMessage());
 
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
