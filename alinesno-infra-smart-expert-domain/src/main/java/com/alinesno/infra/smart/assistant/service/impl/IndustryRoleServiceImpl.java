@@ -104,6 +104,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         long roleId = taskInfo.getRoleId();
         IndustryRoleEntity role = getById(roleId);
 
+        // 更新角色会话次数
+        role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
+        update(role) ;
+
+        taskInfo.setRoleDto(role);
+
         // 获取到节点的执行内容信息
         MessageEntity message = null;
 
