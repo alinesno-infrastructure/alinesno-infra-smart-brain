@@ -169,10 +169,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         for (IndustryRoleEntity role : roleList) {
             MessageTaskInfo taskInfo = TaskUtils.genderTaskInfo(message, role);
 
-            // 更新角色会话次数
-            role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
-            industryRoleService.update(role) ;
-
             // 执行任务
             if (Objects.equals(TYPE_FUNCTION, message.getType())) {
                 taskInfo.setFunctionCall(true);
