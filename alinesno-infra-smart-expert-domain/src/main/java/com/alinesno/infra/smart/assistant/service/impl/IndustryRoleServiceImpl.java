@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -40,8 +41,8 @@ import java.util.List;
 @Service
 public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity, IndustryRoleMapper> implements IIndustryRoleService {
 
-//    @Autowired
-//    private IWorkflowExecutionService workflowExecutionService;
+    @Autowired
+    private IWorkflowExecutionService workflowExecutionService;
 
 //    @Autowired
 //    private IMessageService messageService;
@@ -124,7 +125,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         log.debug("role.getChainId() = {}", role.getChainId());
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
-        return expertService.runRoleAgent(role, message, taskInfo);
+        WorkflowExecutionDto dto =  expertService.runRoleAgent(role, message, taskInfo);
+
+        workflowExecutionService.saveRecord(dto);
+
+        return dto ;
     }
 
     @Override
