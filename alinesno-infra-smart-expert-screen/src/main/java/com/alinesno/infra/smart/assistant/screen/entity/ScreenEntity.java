@@ -34,6 +34,9 @@ public class ScreenEntity extends InfraBaseEntity {
     @Column(name = "knowledge_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "场景知识库ID")
     private String knowledgeId;
 
+    @Column(name = "screen_type", type = MySqlTypeConstant.INT, length = 2 , comment = "场景类型")
+    private int screenType ;
+
     @Column(name = "knowledge_type", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "知识库类型")
     private String knowledgeType ;
 
