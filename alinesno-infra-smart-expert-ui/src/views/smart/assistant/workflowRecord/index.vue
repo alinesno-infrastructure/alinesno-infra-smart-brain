@@ -14,7 +14,7 @@
               <div class="role-list-item">
                 <el-scrollbar height="750px">
                   <ul class="item-box" style="list-style: none;padding: 0px;margin: 0px;">
-                      <li class="item-detail" style="float: left;width: 100%;background: #fff;padding: 5px;border-radius: 2px;margin-bottom: 10px;" 
+                      <li class="item-detail" style="float: left;width: 100%;background: #fff;padding: 5px;display: flex; border-radius: 2px;margin-bottom: 10px;" 
                           v-for="(item,index) in roleList" :key="index">
 
                           <div style="float: left;margin-right: 10px;">
@@ -25,7 +25,7 @@
                                 {{ truncateString(item.roleName , 10) }}
                               </div>
                               <div style="font-size: 13px; color: rgb(165, 165, 165); cursor: pointer;">
-                                {{ item.responsibilities }}
+                                {{ truncateString(item.responsibilities , 20) }}
                               </div>
                           </div>
                           <div style="float:right">
