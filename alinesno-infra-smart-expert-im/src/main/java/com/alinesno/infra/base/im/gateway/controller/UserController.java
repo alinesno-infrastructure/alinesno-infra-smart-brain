@@ -19,6 +19,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -88,30 +89,30 @@ public class UserController extends BaseController<IndustryRoleEntity, IIndustry
         return AjaxResult.success(roleEntityList) ;
     }
 
-//    /**
-//     * 添加用户到当前的频道当中
-//     * @return
-//     */
-//    @GetMapping("/addChainAgent")
-//    public AjaxResult addChainAgent(Long channelId , Long roleId){
-//
-//        Assert.notNull(channelId , "频道为空");
-//        Assert.notNull(roleId, "角色为空");
-//
-//        channelService.jobChannel(roleId, channelId);
-//
-//        return AjaxResult.success() ;
-//    }
+    /**
+     * 添加用户到当前的频道当中
+     * @return
+     */
+    @GetMapping("/addChainAgent")
+    public AjaxResult addChainAgent(Long channelId , Long roleId){
 
-//    /**
-//     * 运行角色流程
-//     * @return
-//     */
-//    @GetMapping("/listAllUser")
-//    public AjaxResult listAllUser(String channelId){
-//        List<IndustryRoleEntity> roleEntityList = channelRoleService.getChannelAgent(channelId)  ;
-//        return AjaxResult.success(roleEntityList) ;
-//    }
+        Assert.notNull(channelId , "频道为空");
+        Assert.notNull(roleId, "角色为空");
+
+        channelService.jobChannel(roleId, channelId);
+
+        return AjaxResult.success() ;
+    }
+
+    /**
+     * 运行角色流程
+     * @return
+     */
+    @GetMapping("/listAllUser")
+    public AjaxResult listAllUser(String channelId){
+        List<IndustryRoleEntity> roleEntityList = channelRoleService.getChannelAgent(channelId)  ;
+        return AjaxResult.success(roleEntityList) ;
+    }
 
     @Override
     public IIndustryRoleService getFeign() {
