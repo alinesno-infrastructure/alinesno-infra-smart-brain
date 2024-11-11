@@ -8,7 +8,7 @@
             <el-col :span="24" class="editor-after-div">
               <el-form-item label="封面" prop="screenBanner">
                   <el-upload
-                    :file-list="form.screenBanner"
+                    :file-list="imageUrl"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
@@ -23,6 +23,13 @@
                 </el-form-item>
             </el-col>
           </el-row>
+          <el-col :span="24">
+            <el-form-item label="场景类型" prop="screenType">
+              <el-radio-group v-model="form.screenType">
+                <el-radio v-for="item in screenTypes" :key="item.key" :label="item.key">{{ item.name }}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
           <el-row>
               <el-col :span="24">
                 <el-form-item label="场景名称" prop="screenName">
@@ -68,6 +75,13 @@ import { ElLoading } from 'element-plus'
 const centerDialogVisible = ref(false)
 const router = useRouter();
 
+const imageUrl = ref([])
+
+const screenTypes = ref([
+  { key: 'large_text', name: '大文本' },
+  { key: 'leader_model', name: '管理者' },
+]);
+
 const data = reactive({
   form: {
     channelType: '2'
@@ -75,7 +89,7 @@ const data = reactive({
   rules: {
     screenName: [{ required: true, message: "场景名称不能为空", trigger: "blur" }],
     screenDesc: [{ required: true, message: "场景描述不能为空", trigger: "blur" }],
-    channelType: [{ required: true, message: "场景类型不能为空", trigger: "blur" }],
+    screenType: [{ required: true, message: "场景类型不能为空", trigger: "blur" }],
   }
 });
 
@@ -94,7 +108,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData" 
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData", 
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" 
 });
 
 const reset = () => {
@@ -102,6 +118,7 @@ const reset = () => {
     screenBanner: null , 
     channelId: undefined,
     screenName: undefined,
+    screenType: undefined,
     screenDesc: undefined,
   };
   proxy.resetForm("userRef");
@@ -109,15 +126,24 @@ const reset = () => {
 
 /** 设置ChannelId */
 function handleSetScreenId(screenId){
-  router.push({
-      path: '/screen/longText',
-      query: { 'screenId': screenId}
-  })
+
+  if(form.value.screenType === 'leader_model'){  // 领导模型
+    router.push({
+        path: '/screen/leaderModel',
+        query: { 'screenId': screenId}
+    })
+  }else{  // 默认长文本模型
+    router.push({
+        path: '/screen/longText',
+        query: { 'screenId': screenId}
+    })
+  }
 }
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
   // imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  imageUrl.value = response.data ? response.data.split(',').map(url =>{return { url:upload.display + url }}):[];
   form.value.screenBanner = response.data ;
   console.log('form.icon = ' + form.value.screenBanner);
 };
@@ -145,8 +171,6 @@ function submitScreenForm(){
         centerDialogVisible.value = false ;
         loading.close() ;
 
-        reset() ;
-
         handleSetScreenId(response.data) ;
       });
     }
@@ -155,7 +179,9 @@ function submitScreenForm(){
 
 
 function handleOpenChannel(val){
-    centerDialogVisible.value = val;
+  imageUrl.value = [];
+  reset();
+  centerDialogVisible.value = val;
 }
 
 defineExpose({
