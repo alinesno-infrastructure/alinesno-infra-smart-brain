@@ -11,6 +11,7 @@ var managerUrl = {
   getScreen: prefix +"getScreen",
   screenList: prefix +"screenList",
   uploadOss: prefix +"uploadOss",
+  updateLeaderRole: prefix +"updateLeaderRole",
 
   saveChapter: chapterPrefix +"saveChapters",
   chatRole: chapterPrefix +"chatRole",
@@ -19,6 +20,15 @@ var managerUrl = {
   getChapterByRole: chapterPrefix +"getChapterByRole",
   getChapterContent: chapterPrefix +"getChapterContent",
   updateChapterContent: chapterPrefix +"updateChapterContent",
+}
+
+// 更新leader角色
+export function updateLeaderRole(data) {
+  return request({
+    url: managerUrl.updateLeaderRole,
+    method: 'post',
+    data: data
+  })
 }
 
 // 上传文件到OSS
