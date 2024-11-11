@@ -34,8 +34,8 @@ public class ScreenEntity extends InfraBaseEntity {
     @Column(name = "knowledge_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "场景知识库ID")
     private String knowledgeId;
 
-    @Column(name = "screen_type", type = MySqlTypeConstant.INT, length = 2 , comment = "场景类型")
-    private int screenType ;
+    @Column(name = "screen_type", type = MySqlTypeConstant.VARCHAR, length = 16 , comment = "场景类型")
+    private String screenType ;
 
     @Column(name = "knowledge_type", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "知识库类型")
     private String knowledgeType ;
@@ -46,11 +46,23 @@ public class ScreenEntity extends InfraBaseEntity {
     @Column(name = "is_recommend", type = MySqlTypeConstant.TINYINT, length = 1, comment = "是否为推荐")
     private Boolean isRecommend;
 
-    // 章节编辑人员、内容编辑人员，都以|号进行分割
+    // TODO 待优化，以宽表思路处理
+    // 大文本场景
+    // --->>>>>>>>>>>>>>> 章节编辑人员、内容编辑人员，都以|号进行分割_start ---->>>>>>>>>>>>>
     @Column(name = "chapter_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "章节编辑人员")
     private String chapterEditor;
 
     @Column(name = "content_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "内容编辑人员")
     private String contentEditor;
+    // --->>>>>>>>>>>>>>> 章节编辑人员、内容编辑人员，都以|号进行分割_end ---->>>>>>>>>>>>>
+
+    // 管理者场景
+    // --->>>>>>>>>>>>>>> Leader人员和工作人员都以|号进行分割_start ---->>>>>>>>>>>>>
+    @Column(name = "leader_role", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "管理者")
+    private String leaderRole;
+
+    @Column(name = "worker_role", type = MySqlTypeConstant.VARCHAR, length = 512, comment = "工作人员")
+    private String workerRole ;
+    // --->>>>>>>>>>>>>>> Leader人员和工作人员都以|号进行分割_end ---->>>>>>>>>>>>>
 
 }
