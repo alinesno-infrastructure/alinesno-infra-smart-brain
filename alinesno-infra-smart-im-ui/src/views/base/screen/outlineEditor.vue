@@ -411,8 +411,6 @@ nextTick(() => {
     handleGetScreen()
 })
 
-
-
 </script>
 
 <style lang="scss" scoped>
