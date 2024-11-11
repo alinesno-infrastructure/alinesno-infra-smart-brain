@@ -39,8 +39,7 @@
                     <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
                       style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
-      item.dateTime }}</span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
                         {{ item.name }}
                       </div>
                       <div class="say-message-info" v-else>
@@ -48,8 +47,7 @@
 
                         <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
 
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
-      item.dateTime }} </span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
                       </div>
 
                       <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
@@ -99,6 +97,7 @@
                       <i class="fa-solid fa-feather icon-btn"></i>
                     </el-button>
                   </el-tooltip>
+
                 </el-col>
               </el-row>
 
@@ -230,8 +229,6 @@ function handleSseConnect(channelId) {
 
           if (resData != 'ping') {  // 非心跳消息
             const data = JSON.parse(resData);
-            // console.log('--->>> channelId = ' + channelId + ' , data = ' + JSON.stringify(data));
-            // handlePushResponseMessageList(data);
             pushResponseMessageList(data);
           }
         } else {
@@ -240,13 +237,6 @@ function handleSseConnect(channelId) {
             streamLoading.value.close();
           }
         }
-
-        // if (!event.data.includes('[DONE]')) {
-        //   const data = JSON.parse(event.data);
-        //   pushResponseMessageList(data);
-        // } else {
-        //   console.log('消息接收结束.')
-        // }
       }
     }
   })
