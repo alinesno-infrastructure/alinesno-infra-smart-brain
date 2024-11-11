@@ -213,9 +213,16 @@
                 </el-form-item>
             </el-col>
           </el-row>
+        <el-col :span="24">
+          <el-form-item label="角色类型" prop="roleType">
+            <el-radio-group v-model="form.roleType">
+              <el-radio v-for="item in roleTypes" :key="item.key" :label="item.key">{{ item.name }}</el-radio>
+            </el-radio-group>
+          </el-form-item>
+        </el-col>
           <el-row>
               <el-col :span="24">
-                <el-form-item style="width: 100%;" label="类型" prop="industryCatalog">
+                <el-form-item style="width: 100%;" label="业务分类" prop="industryCatalog">
                     <el-tree-select
                       v-model="form.industryCatalog"
                       :data="deptOptions"
@@ -253,7 +260,7 @@
           </el-col>
         </el-row>
 
-        <el-row>
+        <el-row v-if="form.knowledgeId">
           <el-col :span="24">
             <el-form-item label="知识库" prop="knowledgeId">
               <el-input v-model="form.knowledgeId" disabled="disabled" placeholder="请输入知识库ID" maxlength="512"/>
@@ -387,6 +394,12 @@ const columns = ref([
   {key: 7, label: `创建时间`, visible: true},
   {key: 8, label: `编辑`, visible: true},
 
+]);
+
+const roleTypes = ref([
+  { key: 'single_role', name: '单角色', description: '自己单独完成一个聊天，可流式输出或者同步输出' },
+  { key: 'collaborative_role', name: '协作角色', description: '与其它角色协作才可以完成一个工作，可流式输出或者同步输出' },
+  { key: 'scenario_role', name: '场景角色', description: '与其它角色协作才可以完成一个工作，只能同步输出' }
 ]);
 
 const data = reactive({
