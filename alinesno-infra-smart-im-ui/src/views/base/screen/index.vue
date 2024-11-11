@@ -30,7 +30,10 @@
                   <div class="screen-card-content">
                       <div class="screen-header">
                           <span class="screen-title">{{ item.screenName }}</span>
-                          <div class="screen-tag">长文本</div>
+                          <div class="screen-tag">
+                              <span class="screen-tag-icon"></span>
+                              <span>{{ item.fieldProp }}</span>
+                          </div>
                       </div>
                       <div class="screen-author-info">
                           <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar" class="screen-avatar">
@@ -72,10 +75,17 @@ const screenLists = ref([])
 /** 进入长文本编辑界面 */
 function enterScreen(item) {
     // 跳转至详情页
-    router.push({
-        path: '/screen/longText',
-        query: { 'screenId': item.id}
-    })
+    if(item.screenType === 'leader_model'){  // 领导模型
+        router.push({
+            path: '/screen/leaderModel',
+            query: { 'screenId': item.id }
+        })
+    }else{  // 默认长文本模型
+        router.push({
+            path: '/screen/longText',
+            query: { 'screenId': item.id}
+        })
+    }
 }
 
 /** 获取场景列表 */
