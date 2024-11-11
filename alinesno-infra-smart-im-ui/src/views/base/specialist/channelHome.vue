@@ -113,6 +113,7 @@
                   <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
                 </div>
               </div>
+              
               <div class="platform-container-YOpW3B">
                 <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;" v-if="item.knowledgeType">
 
@@ -121,6 +122,7 @@
                   <img v-if="item.knowledgeType.includes('pdf')" src="http://data.linesno.com/dataset_icons/pdf.webp" class="knowledge-type-icon" />
                 </div>
               </div>
+
             </div>
           </div>
         </el-col>
