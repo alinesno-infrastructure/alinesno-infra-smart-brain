@@ -86,6 +86,12 @@ export const constantRoutes = [
         meta: { title: '场景列表', icon: 'dashboard', affix: true }
       },
       {
+        path: '/screen/leaderModel',
+        component: () => import('@/views/base/screen/leaderModel'),
+        name: '/screen/leaderModel',
+        meta: { title: '管理者模式', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/screen/longText',
         component: () => import('@/views/base/screen/longText'),
         name: '/screen/longText',
