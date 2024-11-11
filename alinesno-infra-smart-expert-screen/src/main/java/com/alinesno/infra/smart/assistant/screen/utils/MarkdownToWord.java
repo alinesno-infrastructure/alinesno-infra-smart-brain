@@ -57,20 +57,9 @@ public class MarkdownToWord {
                 return null;
             }
         } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
+            log.error("Error converting Markdown to Word" , e);
             return null;
         }
     }
-
-//    public static void main(String[] args) {
-//        // 示例使用
-//        String mdContent = "# Hello World\nThis is a test document.";
-//        String docxFilePath = convertMdToDocx(mdContent, "testDoc");
-//        if (docxFilePath != null) {
-//            log.debug("DOCX file created at: " + docxFilePath);
-//        } else {
-//            log.debug("Failed to create DOCX file.");
-//        }
-//    }
 
 }
