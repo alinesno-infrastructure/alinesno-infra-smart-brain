@@ -76,8 +76,7 @@
                                                         style="max-width: 150px;"><span>韦恩W</span></span>
                                                 </div>
                                             </div>
-                                            <p class="semi-typography card-desc"
-                                                style="-webkit-line-clamp: 3;margin-bottom:0px">
+                                            <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;margin-bottom:0px">
                                                 <span>
                                                     {{ truncateString(item.responsibilities, 100) }}
                                                 </span>
@@ -88,18 +87,29 @@
 
                                     <div class="semi-divider semi-divider-horizontal"></div>
                                     
-                                    <div class="semi-space">
-                                        <div class="semi-space semi-space-align-center semi-space-horizontal"
-                                            x-semi-prop="children" style="display: inline-flex;">
+                                    <div class="semi-space" style="width: 100%;gap: 8px;display: flex;justify-content: space-between;align-items: center;">
+                                        <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children" style="display: inline-flex;">
                                             <div class="semi-space card-statics" style="gap: 8px;">
-                                                <span class="semi-typography text-h6"><i
-                                                        class="fa-solid fa-user-ninja"></i> 1.2K</span>
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i>
-                                                    2.1K</span>
-                                                <span class="semi-typography text-h6"><i
-                                                        class="fa-solid fa-pen-nib"></i> 45.3K</span>
+                                                <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
+                                                <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
+                                                <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
                                             </div>
                                         </div>
+
+                                        <div class="platform-container-YOpW3B">
+                                            <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;display: flex;color: #3b5998;" v-if="item.roleType">
+                                                <span v-if="item.roleType == 'single_role'">
+                                                    <i class="fa-solid fa-user-ninja"></i>
+                                                </span>
+                                                <span v-if="item.roleType == 'collaborative_role'">
+                                                    <i class="fa-solid fa-user-tag"></i>
+                                                </span>
+                                                <span v-if="item.roleType == 'scenario_role'">
+                                                    <i class="fa-solid fa-user-secret"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+
                                     </div>
 
                                 </div>
