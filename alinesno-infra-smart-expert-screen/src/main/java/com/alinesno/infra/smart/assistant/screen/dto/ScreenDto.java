@@ -59,6 +59,11 @@ public class ScreenDto extends BaseDto {
     private Boolean isRecommend;
 
     /**
+     * 场景类型，用于定义场景的功能或类型
+     */
+    private String screenType;
+
+    /**
      * 章节编辑人员
      */
     private List<IndustryRoleDto> chapterEditors = new ArrayList<>();
@@ -73,5 +78,14 @@ public class ScreenDto extends BaseDto {
      */
     private List<TreeNodeDto> chapterTree = new ArrayList<>();
 
+    /**
+     * 管理人员
+     */
+    private IndustryRoleDto leader = new IndustryRoleDto();
+
+    /**
+     * 工作人员
+     */
+    private List<IndustryRoleDto> workers = new ArrayList<>();
 }
 
