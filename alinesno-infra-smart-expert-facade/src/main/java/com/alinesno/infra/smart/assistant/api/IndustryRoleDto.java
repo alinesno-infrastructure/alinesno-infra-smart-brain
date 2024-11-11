@@ -23,6 +23,8 @@ public class IndustryRoleDto {
 
     private String chatCount; // 会话次数
 
+    private String roleType; //  角色类型，用于区分不同的角色类别
+
     // 假设存在一个静态方法 fromEntity，用于从 IndustryRoleEntity 转换为 IndustryRoleDto
     public static IndustryRoleDto fromEntity(IndustryRoleEntity entity) {
         // 实现将 IndustryRoleEntity 转换为 IndustryRoleDto 的逻辑
