@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
-import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
@@ -17,8 +16,10 @@ import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.screen.dto.LeaderUpdateDto;
 import com.alinesno.infra.smart.assistant.screen.dto.ScreenDto;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
+import com.alinesno.infra.smart.assistant.screen.enums.ScreenTypeEnums;
 import com.alinesno.infra.smart.assistant.screen.service.IChapterService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.screen.utils.MarkdownToWord;
@@ -34,6 +35,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -108,8 +111,6 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
         Assert.notNull(filePath, "文件路径为空") ;
 
-        assert filePath != null;
-
         R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub" , progress -> {
             log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
         }) ;
@@ -129,6 +130,11 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
     @PostMapping("/saveOrUpdate")
     public AjaxResult saveOrUpdate(@RequestBody @Validated ScreenDto screenDto) {
         log.debug("screenDto = {}", ToStringBuilder.reflectionToString(screenDto));
+
+        // 判断ScreenType是否符合，不符合则报异常
+        Assert.notNull(screenDto.getScreenType(), "screenType不能为空");
+        Assert.notNull(ScreenTypeEnums.getByKey(screenDto.getScreenType())  , "screenType参数不正确");
+
         ScreenEntity screenEntity =service.saveScreen(screenDto);
         return AjaxResult.success("操作成功.", screenEntity.getId());
     }
@@ -146,6 +152,16 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         queryWrapper.orderByDesc(ScreenEntity::getAddTime);
 
         List<ScreenEntity> list = service.list(queryWrapper);
+
+        // 调整类型标识
+        if(!list.isEmpty()){
+            list.forEach(e -> {
+                e.setFieldProp(ScreenTypeEnums.getByKey(e.getScreenType()) == null ?
+                        ScreenTypeEnums.LARGE_TEXT.getName() :
+                        Objects.requireNonNull(ScreenTypeEnums.getByKey(e.getScreenType())).getName()); ;
+            });
+        }
+
         return AjaxResult.success("操作成功", list);
     }
 
@@ -174,7 +190,7 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
 
         if(type.equals("chapter")){
             entity.setChapterEditor(editors);
-        }else if(type.equals("content")){
+        }else {
             entity.setContentEditor(editors);
         }
 
@@ -203,6 +219,37 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
     }
 
     /**
+     * 更新场景Leader角色
+     */
+    @PostMapping("/updateLeaderRole")
+    public AjaxResult updateLeaderRole(@RequestBody @Validated LeaderUpdateDto dto) {
+
+        ScreenEntity entity = service.getById(dto.getScreenId()) ;
+
+        if(dto.getType().equals("leader")){
+
+            Assert.hasLength(dto.getLeaderId(), "leaderId不能为空");
+            entity.setLeaderRole(dto.getLeaderId());
+
+            service.update(entity);
+
+        }else if(dto.getType().equals("worker")){
+            List<String> workerIds = dto.getWorkerIds() ;
+
+            // 如果不为空，则以逗号分隔并保存
+            if (!CollectionUtils.isEmpty(workerIds)) {
+                entity.setWorkerRole(String.join(",", workerIds));
+            }else{
+                entity.setWorkerRole(null); // 清空worker
+            }
+
+            service.update(entity);
+        }
+
+        return ok() ;
+    }
+
+    /**
      * 通过Id获取到场景
      *
      * @return
@@ -221,14 +268,31 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         BeanUtils.copyProperties(entity, dto);
 
 
-        // 查询出当前的章节编辑人员
-        dto.setChapterEditors(getEditors(entity.getChapterEditor()));
+        if(entity.getScreenType().equals(ScreenTypeEnums.LARGE_TEXT.getKey())){
+            // 查询出当前的章节编辑人员
+            dto.setChapterEditors(getEditors(entity.getChapterEditor()));
 
-        // 查询出当前的内容编辑人员
-        dto.setContentEditors(getEditors(entity.getContentEditor()));
+            // 查询出当前的内容编辑人员
+            dto.setContentEditors(getEditors(entity.getContentEditor()));
 
-        // 章节树信息
-        dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
+            // 章节树信息
+            dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
+
+        }else if(entity.getScreenType().equals(ScreenTypeEnums.LEADER_MODEL.getKey())){
+
+            // 管理者角色
+            if(entity.getLeaderRole() != null){
+                IndustryRoleEntity role = roleService.getById(entity.getLeaderRole());
+                IndustryRoleDto dto1 = new IndustryRoleDto();
+                BeanUtils.copyProperties(role, dto1);
+                dto.setLeader(dto1);
+            }
+
+            if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
+                dto.setWorkers(getEditors(entity.getWorkerRole()));
+            }
+        }
+
 
         return AjaxResult.success("操作成功.", dto);
     }
