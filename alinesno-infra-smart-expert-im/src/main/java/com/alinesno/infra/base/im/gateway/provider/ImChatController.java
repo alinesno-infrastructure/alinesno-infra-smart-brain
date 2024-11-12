@@ -2,7 +2,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
