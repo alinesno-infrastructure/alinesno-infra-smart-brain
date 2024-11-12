@@ -1,15 +1,38 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.screen.dto.LeaderPlanDto;
+import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.entity.RoleExecuteEntity;
+import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
+import com.alinesno.infra.smart.assistant.screen.enums.TaskStatus;
 import com.alinesno.infra.smart.assistant.screen.event.TaskAssignedEvent;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
+import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
+import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
+import com.alinesno.infra.smart.assistant.screen.utils.TaskSorter;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.service.ISSEService;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,10 +40,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import javax.lang.exception.RpcServiceRuntimeException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -38,11 +65,20 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
     @Autowired
     private IRoleExecuteService service;
 
+    @Autowired
+    private IIndustryRoleService roleService;
+
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
 
     @Autowired
     private ApplicationEventPublisher publisher;
+
+    @Autowired
+    private IScreenService screenService;
+
+    @Autowired
+    private ISSEService sseService;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -62,24 +98,145 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
 
     /**
      * 生成计划
+     *
      * @return
      */
-    @PostMapping("/plan")
-    public AjaxResult plan() {
+    @SneakyThrows
+    @PostMapping("/leaderPlan")
+    public AjaxResult leaderPlan(@RequestBody @Validated LeaderPlanDto dto) {
+
+        long screenId = dto.getScreenId();
+
+        ScreenEntity screenEntity = screenService.getById(screenId) ;
+        IndustryRoleEntity leaderRole = roleService.getById(screenEntity.getLeaderRole());
 
         // 发送Event通知给Worker
-        // 列出并分配任务
-        String[] tasks = {"Task1", "Task2", "Task3"};
-        for (String task : tasks) {
-            publisher.publishEvent(new TaskAssignedEvent(this, task));
+        ManagerAccountDto currentAccount = CurrentAccountJwt.get() ;
+
+        IndustryRoleEntity currentAccountRole = new IndustryRoleEntity() ;
+        currentAccountRole.setRoleName(currentAccount.getName());
+        currentAccountRole.setRoleAvatar(leaderRole.getRoleAvatar());
+        currentAccountRole.setId(currentAccount.getId());
+
+        ChatMessageDto message = AgentUtils.getChatMessageDto(currentAccountRole, IdUtil.getSnowflakeNextId());
+        message.setChatText(dto.getMessage());
+        message.setRoleType("person");
+        message.setLoading(false);
+        sseService.send(String.valueOf(screenId), message);
+
+        // 发送Event通知给Worker
+        message = AgentUtils.getChatMessageDto(leaderRole, IdUtil.getSnowflakeNextId());
+        message.setChatText("收到任务在计划中.");
+        message.setLoading(false);
+        sseService.send(String.valueOf(screenId), message);
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+        taskInfo.setRoleId(leaderRole.getId());
+        taskInfo.setChannelId(dto.getScreenId());
+        taskInfo.setScreenId(dto.getScreenId());
+        taskInfo.setText(dto.getMessage());
+
+        Map<String, String> params = new HashMap<>();
+
+        List<IndustryRoleEntity> workerRoleList = RoleUtils.getRoleEntity(roleService , screenEntity.getWorkerRole()) ;
+        List<JSONObject> paramsList = workerRoleList.stream().map(item -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("roleId", item.getId());
+            jsonObject.put("roleName", item.getRoleName());
+            jsonObject.put("roleAvatar", item.getRoleAvatar());
+            return jsonObject;
+        }).toList() ;
+
+        params.put("label1", JSONArray.toJSONString(paramsList));
+        taskInfo.setParams(params);
+
+        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+
+        log.debug("chatRole = {}" , genContent);
+        message.setChatText(genContent.getGenContent());
+        sseService.send(String.valueOf(screenId), message);
+
+        // 解析得到代码内容
+        List<RoleTaskDto> tasks = new ArrayList<>();
+
+        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+            // 验证是否可以正常解析json
+            try{
+                tasks = JSON.parseArray(codeContent, RoleTaskDto.class);
+                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(tasks));
+
+                // 更新保存到数据库中
+                service.saveNewTasks(screenId , tasks);
+            }catch (Exception e){
+                log.error("出现异常",e);
+                message.setChatText("生成人员安排格式不正确，请点击重新生成，异常:" + e.getMessage());
+                sseService.send(String.valueOf(screenId), message);
+                throw new RpcServiceRuntimeException("生成人员安排格式不正确，请点击重新生成.") ;
+            }
         }
+
+        executeTask(tasks, message, screenEntity, screenId, leaderRole , genContent.getGenContent());
 
         return AjaxResult.success();
     }
 
+    /**
+     * 执行任务
+     * @param tasks
+     * @param message
+     * @param screenEntity
+     * @param screenId
+     * @param leaderRole
+     * @throws Exception
+     */
+    private void executeTask(List<RoleTaskDto> tasks,
+                             ChatMessageDto message,
+                             ScreenEntity screenEntity,
+                             long screenId,
+                             IndustryRoleEntity leaderRole ,
+                             String genContent) throws Exception {
 
+        List<RoleTaskDto> finalTasks = TaskSorter.sortTasks(tasks);
+        for(RoleTaskDto task : finalTasks){
+            log.debug("task = {}", JSONUtil.toJsonPrettyStr(task));
+        }
 
+        message.setChatText("分配任务中...");
 
+        ThreadUtil.execute(new Runnable() {
+            @SneakyThrows
+            @Override
+            public void run() {
+                for (RoleTaskDto task : finalTasks) {
+
+                    IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
+
+                    if(worker != null){
+                        task.setLeaderRoleId(Long.parseLong(screenEntity.getLeaderRole()));
+
+                        task.setScreenId(screenId);
+                        task.setIsFinished(TaskStatus.NOT_STARTED.getCode());
+
+                        task.setTaskGoal(genContent); // 设置目标
+                        task.setLeaderRole(leaderRole);
+                        task.setWorkerRole(worker);
+
+                        ChatMessageDto workerMessage = AgentUtils.getChatMessageDto(leaderRole, IdUtil.getSnowflakeNextId());
+                        workerMessage.setChatText("分配任务给:" + task.getWorkerRole().getRoleName());
+                        workerMessage.setLoading(false);
+                        sseService.send(String.valueOf(screenId), workerMessage);
+
+                        publisher.publishEvent(new TaskAssignedEvent(this, task));
+                    }else{
+                        log.warn("未找到对应的角色信息:{}" , task.getWorkerRoleId());
+                    }
+
+                }
+            }
+        });
+    }
 
     @Override
     public IRoleExecuteService getFeign() {
