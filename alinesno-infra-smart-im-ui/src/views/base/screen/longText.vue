@@ -377,11 +377,6 @@ const assignChaptersToUser = () => {
 
 };
 
-// 进入初始化
-// onMounted(() => {
-//     screenId.value = route.query.screenId;
-// })
-
 </script>
 
 <style lang="scss" scoped>
