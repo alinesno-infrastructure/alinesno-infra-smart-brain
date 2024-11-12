@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
