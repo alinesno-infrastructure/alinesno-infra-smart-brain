@@ -4,8 +4,10 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 // 接口配置项
 var prefix = '/api/infra/smart/assistant/screen/' ;
 var chapterPrefix = '/api/infra/smart/assistant/screenChapter/' ;
+var leaderPrefix = '/api/infra/smart/assistant/screenLeader/' ;
 
 var managerUrl = {
+  // 场景
   createScreen: prefix + "saveOrUpdate" , 
   updateChapterEditor: prefix + "updateChapterEditor" , 
   getScreen: prefix +"getScreen",
@@ -13,6 +15,7 @@ var managerUrl = {
   uploadOss: prefix +"uploadOss",
   updateLeaderRole: prefix +"updateLeaderRole",
 
+  // 大文本
   saveChapter: chapterPrefix +"saveChapters",
   chatRole: chapterPrefix +"chatRole",
   chatRoleSync: chapterPrefix +"chatRoleSync",
@@ -20,6 +23,18 @@ var managerUrl = {
   getChapterByRole: chapterPrefix +"getChapterByRole",
   getChapterContent: chapterPrefix +"getChapterContent",
   updateChapterContent: chapterPrefix +"updateChapterContent",
+
+  // 管理者
+  leaderPlan: leaderPrefix +"leaderPlan",
+}
+
+// 运行场景计划
+export function leaderPlan(data) {
+  return request({
+    url: managerUrl.leaderPlan , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 更新leader角色
