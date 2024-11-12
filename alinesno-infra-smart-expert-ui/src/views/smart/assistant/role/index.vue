@@ -196,7 +196,7 @@
                   label="头像"
                   :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
                   <el-upload
-                    :file-list="fileList"
+                    :file-list="imageUrl"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
@@ -341,7 +341,7 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-const imageUrl = ref('')
+const imageUrl = ref([])
 
 const knowledgeDatasetRef = ref(null)
 const knowDrawerDialog = ref(false)
@@ -380,7 +380,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" 
 });
 // 列显隐信息
 const columns = ref([
@@ -399,7 +401,8 @@ const columns = ref([
 const roleTypes = ref([
   { key: 'single_role', name: '单角色', description: '自己单独完成一个聊天，可流式输出或者同步输出' },
   { key: 'collaborative_role', name: '协作角色', description: '与其它角色协作才可以完成一个工作，可流式输出或者同步输出' },
-  { key: 'scenario_role', name: '场景角色', description: '与其它角色协作才可以完成一个工作，只能同步输出' }
+  { key: 'scenario_role', name: '场景角色', description: '与其它角色协作才可以完成一个工作，只能同步输出' },
+  { key: 'combined_role', name: '组合角色', description: '结合了协作与场景角色的特点，既可以在协作中发挥作用，也可以适应特定场景，支持流式输出和同步输出' }
 ]);
 
 const data = reactive({
@@ -453,7 +456,8 @@ function getList() {
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
-  imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  imageUrl.value = response.data ? response.data.split(',').map(url =>{return { url:upload.display + url }}):[];
   form.value.roleAvatar = response.data ;
   console.log('form.roleAvatar = ' + form.roleAvatar);
 };
