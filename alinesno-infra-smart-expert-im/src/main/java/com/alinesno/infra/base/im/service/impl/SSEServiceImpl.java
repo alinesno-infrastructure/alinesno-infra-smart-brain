@@ -1,7 +1,7 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.lang.Assert;
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.ISSEService;
@@ -85,6 +85,20 @@ public class SSEServiceImpl implements ISSEService {
         // emitter.complete();
     }
 
+    @Override
+    public void send(@NotBlank String clientId , String message) throws IOException {
+        final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
+
+        Assert.notNull(emitter, "客户端不存在，clientId = " + clientId);
+        Assert.notNull(message, "推送消息为空");
+
+        emitter.send(message) ;
+        emitter.send("[DONE]");
+
+        // 结束推流
+        // emitter.complete();
+    }
+
     /**
      *  定时任务 用于测试后端推送的数据
      */
@@ -93,13 +107,13 @@ public class SSEServiceImpl implements ISSEService {
         if (!SSE_CACHE.isEmpty()){
 
             // 输出客户端口连接情况，包括链接客户端口还有连接情况
-            log.debug("当前客户端总数为：{}", SSE_CACHE.size());
+            log.trace("当前客户端总数为：{}", SSE_CACHE.size());
 
             String msg = "ping" ;
             for (Map.Entry<String, SseEmitter> entry : SSE_CACHE.entrySet()) {
                 SseEmitter sseEmitter =SSE_CACHE.get(entry.getKey());
                 try {
-                    log.debug("推送心跳数据，clientId:{} , msg:{} " , entry.getKey(), msg);
+                    log.trace("推送心跳数据，clientId:{} , msg:{} " , entry.getKey(), msg);
                     sseEmitter.send(SseEmitter.event()
                             .reconnectTime(1000)
                             .id(entry.getKey())
