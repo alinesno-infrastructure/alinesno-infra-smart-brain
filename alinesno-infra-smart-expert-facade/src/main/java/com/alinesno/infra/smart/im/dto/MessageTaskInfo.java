@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.Map;
 
 /**
  * 表示消息任务的信息的数据传输对象
@@ -42,6 +43,9 @@ public class MessageTaskInfo implements Serializable {
     // 用户业务流程过程中记录的id
     private long workflowRecordId ; // 聊天记录的id
 
+   // 消息内额外参数
+    private Map<String , String> params;
+
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
         this.businessId = businessId;
@@ -49,5 +53,14 @@ public class MessageTaskInfo implements Serializable {
         this.text = text;
         this.preBusinessId = preBusinessId;
         this.roleDto = roleDto;
+    }
+
+    /**
+     * 判断是否为场景
+     * @return
+     */
+    public boolean isScreen(){
+        // 判断screenId是否大于0
+       return this.screenId > 0 ;
     }
 }
