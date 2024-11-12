@@ -311,10 +311,8 @@ const imageUrl = ref('')
 // const roleOptions = ref([]);
 
 const screenTypesArr = [
-  { "id": "9", "name": "公开场景" },  // 对外公开场景
-  { "id": "1", "name": "个人公共场景" },  // 个人公共场景
-  { "id": "3", "name": "推荐场景" },
-  { "id": "2", "name": "私有场景" }
+  { "id": "long_text", "name": "大文本" },  // 对外公开场景
+  { "id": "leader_model", "name": "管理者" },  // 个人公共场景
 ];
 
 const agentList = ref([])
