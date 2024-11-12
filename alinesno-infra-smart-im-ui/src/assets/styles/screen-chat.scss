@@ -48,3 +48,179 @@
 .cm-scroller{
     border-radius: 4px !important;
 }
+
+.screen-app-container {
+    padding: 0;
+    width: 100%;
+    height: calc(100vh - 40px);
+
+    .app-row {
+        padding: 10px;
+        margin-top: 0;
+        // border-top: 1px solid #e5e5e5;
+        background-color: #fff;
+
+        &:first-child {
+            margin-top: 0;
+            border-top: none;
+        }
+
+        .el-col {
+            &:first-child {
+                .avatar-title-container {
+                    display: flex;
+                    gap: 8px;
+                    align-items: flex-end;
+
+                    .title {
+                        color: var(--light-color-black-black, #000);
+                        font-size: 14px;
+                        font-weight: 600;
+                        line-height: inherit;
+                        max-width: calc(50vw - 237px);
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .description {
+                        padding: 1px 5px 1px 0;
+                        font-size: 13px;
+                        color: #a5a5a5;
+                    }
+                }
+            }
+
+            &:nth-child(2) {
+                .task-management {
+                    display: flex;
+                    font-size: 16px;
+                    color: #3b5998;
+                    font-weight: 600;
+                    align-items: center;
+                    justify-content: center;
+                    height: 40px;
+                    flex-direction: column;
+                }
+            }
+
+            &:last-child {
+                .save-scene {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    position: absolute;
+                    right: 10px;
+                }
+            }
+        }
+    }
+
+    .left-aside-contain {
+        padding: 10px;
+        margin-top: 0;
+        height: calc(100vh - 125px);
+        padding-left: 10px;
+        border-right: 1px solid #e5e5e5;
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            height: 40px;
+            border-radius: 3px;
+        }
+
+        .textarea-container {
+            padding-right: 0px;
+        }
+    }
+
+    .middle-section {
+        padding: 0px 20px;
+        // background: #fafafa;
+        // border-left: 1px solid #e6e5e9;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: stretch;
+        flex-wrap: nowrap;
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 600;
+            height: 40px;
+            color: #a5a5a5;
+            border-radius: 3px;
+            gap: 8px;
+        }
+
+        .subordinate-roles,
+        .triggers,
+        .introduction {
+            .section-title {
+                font-size: 14px;
+                color: #444;
+                margin-bottom: 10px;
+                font-weight: bold;
+                margin-top: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            ul {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+
+                li {
+                    display: flex;
+                    gap: 5px;
+                    padding: 5px;
+
+                    .role-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 3px;
+
+                        .role-title {
+                            color: var(--light-color-black-black, #000);
+                            font-size: 14px;
+                            font-weight: 600;
+                            line-height: inherit;
+                            max-width: calc(50vw - 237px);
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                            white-space: nowrap;
+                        }
+
+                        .role-description {
+                            padding: 1px 5px 1px 0;
+                            font-size: 13px;
+                            color: #a5a5a5;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    .right-chatbox-contain {
+        padding: 10px;
+        height: calc(100vh - 300px);
+        background: #fff;
+
+        .preview-debug-header {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 24px;
+            margin-right: 24px;
+        }
+    }
+}
