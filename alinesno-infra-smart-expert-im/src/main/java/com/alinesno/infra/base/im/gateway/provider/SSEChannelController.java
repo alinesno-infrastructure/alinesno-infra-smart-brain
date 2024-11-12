@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
