@@ -3,7 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
