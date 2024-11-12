@@ -23,6 +23,7 @@ import com.alinesno.infra.smart.assistant.screen.enums.ScreenTypeEnums;
 import com.alinesno.infra.smart.assistant.screen.service.IChapterService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.screen.utils.MarkdownToWord;
+import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,8 +43,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -270,10 +269,10 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
 
         if(entity.getScreenType().equals(ScreenTypeEnums.LARGE_TEXT.getKey())){
             // 查询出当前的章节编辑人员
-            dto.setChapterEditors(getEditors(entity.getChapterEditor()));
+            dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
 
             // 查询出当前的内容编辑人员
-            dto.setContentEditors(getEditors(entity.getContentEditor()));
+            dto.setContentEditors(RoleUtils.getEditors(roleService, entity.getContentEditor()));
 
             // 章节树信息
             dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
@@ -289,7 +288,7 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
             }
 
             if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
-                dto.setWorkers(getEditors(entity.getWorkerRole()));
+                dto.setWorkers(RoleUtils.getEditors(roleService, entity.getWorkerRole()));
             }
         }
 
@@ -297,31 +296,6 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         return AjaxResult.success("操作成功.", dto);
     }
 
-    // 查询编辑人员的公共方法
-    List<IndustryRoleDto> getEditors(String editorString) {
-        if (editorString == null) {
-            return Collections.emptyList();
-        }
-        try {
-            String[] split = editorString.split(",");
-            List<Long> ids = Arrays.stream(split).map(s -> {
-                try {
-                    return Long.parseLong(s);
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("无效的编辑人员ID: " + s, e);
-                }
-            }).toList();
-            List<IndustryRoleEntity> roles = roleService.listByIds(ids);
-
-            return roles.stream().map(role -> {
-                IndustryRoleDto dto1 = new IndustryRoleDto();
-                BeanUtils.copyProperties(role, dto1);
-                return dto1;
-            }).toList();
-        } catch (RuntimeException e) {
-            return Collections.emptyList();
-        }
-    }
 
     /**
      * 导入数据
