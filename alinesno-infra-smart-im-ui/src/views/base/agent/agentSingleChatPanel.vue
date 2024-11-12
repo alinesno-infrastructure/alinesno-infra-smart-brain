@@ -224,9 +224,6 @@ function handleSseConnect(channelId) {
 
         if (!event.data.includes('[DONE]')) {
           let resData = event.data;
-
-          // console.log('sseSource.onmessage = ' + resData);
-
           if (resData != 'ping') {  // 非心跳消息
             const data = JSON.parse(resData);
             pushResponseMessageList(data);
@@ -237,6 +234,7 @@ function handleSseConnect(channelId) {
             streamLoading.value.close();
           }
         }
+
       }
     }
   })
