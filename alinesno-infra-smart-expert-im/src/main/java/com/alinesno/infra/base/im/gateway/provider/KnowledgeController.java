@@ -1,7 +1,7 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.io.FileTypeUtil;
-import com.alinesno.infra.base.im.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
