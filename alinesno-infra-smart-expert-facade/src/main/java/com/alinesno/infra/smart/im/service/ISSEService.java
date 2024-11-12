@@ -30,6 +30,14 @@ public interface ISSEService {
     void send(@NotBlank String clientId , ChatMessageDto message) throws IOException;
 
     /**
+     * 直接发送文本消息
+     * @param clientId
+     * @param message
+     * @throws IOException
+     */
+    void send(@NotBlank String clientId , String message) throws IOException;
+
+    /**
      * 关闭与指定客户端的SSE连接.
      *
      * @param clientId 客户端ID，不能为空.
