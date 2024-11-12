@@ -1,14 +1,16 @@
 <template>
-    <div class="app-container tpl-app screen-app-container">
+    <div class="screen-app-container">
         <el-row class="app-row">
-            <el-col :span="8">
+            <el-col :span="16">
 
 
                 <div class="avatar-title-container">
-                    <el-avatar shape="circle" :size="40" :src="imagePathByPath(currentLeaderRole.roleAvatar)" />
+                    <el-avatar shape="square" :size="40" :src="imagePathByPath(currentScreenInfo.screenBanner)" />
                     <div style="display: flex;flex-direction: column;">
-                        <span class="title">{{ currentLeaderRole.roleName }}</span>
-                        <span class="description">{{ truncateString(currentLeaderRole.responsibilities , 20) }}</span>
+                        <span class="title">
+                            {{ currentScreenInfo.screenName }}
+                        </span>
+                        <span class="description">{{ truncateString(currentScreenInfo.screenDesc, 20) }}</span>
                     </div>
 
                     <el-tooltip class="box-item" effect="dark" content="配置管理人员" placement="top">
@@ -19,6 +21,8 @@
 
                 </div>
             </el-col>
+
+            <!-- 
             <el-col :span="8">
                 <div class="task-management">
                     <span>
@@ -28,9 +32,17 @@
                         {{ currentScreenInfo.screenDesc }}
                     </span>
                 </div>
-            </el-col>
+            </el-col> 
+            -->
+
             <el-col :span="8">
                 <div class="save-scene">
+
+                    <el-tooltip class="box-item" effect="dark" content="开始工作" placement="top">
+                        <el-button type="primary" text bg size="large" @click="handleLeaderPlan()">
+                            <i class="fa-solid fa-ferry"></i>
+                        </el-button>
+                    </el-tooltip>
 
                     <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top">
                         <el-button type="danger" text bg size="large" @click="handleUploadFile">
@@ -61,7 +73,7 @@
       -->
             <el-col :span="19">
                 <div class="right-chatbox-contain">
-                    <LeaderChat />
+                    <LeaderChat ref="leaderChatRef" />
                 </div>
             </el-col>
 
@@ -145,10 +157,13 @@ import { listAll } from '@/api/base/im/user';
 import {
     updateLeaderRole,
     getScreen,
+    leaderPlan ,
 } from '@/api/base/im/screen'
 
 const route = useRoute();
 const { proxy } = getCurrentInstance();
+
+const leaderChatRef = ref(null)
 
 const agentList = ref([])
 const channelAgentConfigTitle = ref("")
@@ -190,7 +205,7 @@ function configAgent(type) {
 
     getScreen(currentScreenId.value).then(res => {
         if(currentAgentConfigType.value == 'leader'){
-            channelAgentList.value = []; 
+            channelAgentList.value = [res.data.leader.id]; 
         }else if(currentAgentConfigType.value == 'worker'){
             channelAgentList.value = res.data.workers.map(item => item.id)
         }
@@ -221,12 +236,24 @@ const handleChange = (value, direction, movedKeys) => {
     }
 }
 
+/** 运行管理者场景 */
+function handleLeaderPlan(){
+    leaderPlan(currentScreenId.value).then(res => {
+        proxy.$modal.msgSuccess("运行成功");
+        
+        // leaderChatRef.value.runTask() ; 
+    })
+}
+
 /** 获取到场景详情 */
 function handleGetScreen() {
     getScreen(currentScreenId.value).then(res => {
         currentScreenInfo.value = res.data
         currentLeaderRole.value = res.data.leader
         subordinateRoles.value = res.data.workers 
+
+        // 调用子组件方法
+        leaderChatRef.value.handleGetInfo(res.data.leader.id);
     })
 }
 
@@ -268,186 +295,12 @@ nextTick(() => {
     console.log('screenId = ' + route.query.screenId);
     handleListAllRole()
     handleGetScreen()
+
 })
 
 </script>
 
 <style lang="scss" scoped>
-.screen-app-container {
-    padding: 0;
-    width: 100%;
-    height: calc(100vh - 40px);
-
-    .app-row {
-        padding: 10px;
-        margin-top: 0;
-        border-top: 1px solid #e5e5e5;
-        background-color: #fff;
-
-        &:first-child {
-            margin-top: 0;
-            border-top: none;
-        }
-
-        .el-col {
-            &:first-child {
-                .avatar-title-container {
-                    display: flex;
-                    gap: 8px;
-                    align-items: flex-end;
-
-                    .title {
-                        color: var(--light-color-black-black, #000);
-                        font-size: 14px;
-                        font-weight: 600;
-                        line-height: inherit;
-                        max-width: calc(50vw - 237px);
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                        white-space: nowrap;
-                    }
-
-                    .description {
-                        padding: 1px 5px 1px 0;
-                        font-size: 13px;
-                        color: #a5a5a5;
-                    }
-                }
-            }
-
-            &:nth-child(2) {
-                .task-management {
-                    display: flex;
-                    font-size: 16px;
-                    color: #3b5998;
-                    font-weight: 600;
-                    align-items: center;
-                    justify-content: center;
-                    height: 40px;
-                    flex-direction: column;
-                }
-            }
-
-            &:last-child {
-                .save-scene {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    position: absolute;
-                    right: 10px;
-                }
-            }
-        }
-    }
-
-    .left-aside-contain {
-        padding: 10px;
-        margin-top: 0;
-        height: calc(100vh - 125px);
-        padding-left: 10px;
-        border-right: 1px solid #e5e5e5;
-
-        .header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: 600;
-            height: 40px;
-            border-radius: 3px;
-        }
-
-        .textarea-container {
-            padding-right: 0px;
-        }
-    }
-
-    .middle-section {
-        padding: 0px 20px;
-        background: #fafafa;
-        border-left: 1px solid #e6e5e9;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        align-items: stretch;
-        flex-wrap: nowrap;
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: 600;
-            height: 40px;
-            color: #a5a5a5;
-            border-radius: 3px;
-            gap: 8px;
-        }
-
-        .subordinate-roles,
-        .triggers,
-        .introduction {
-            .section-title {
-                font-size: 14px;
-                color: #444;
-                margin-bottom: 10px;
-                font-weight: bold;
-                margin-top: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-
-            ul {
-                list-style: none;
-                padding: 0;
-                margin: 0;
-
-                li {
-                    display: flex;
-                    gap: 5px;
-                    padding: 5px;
-
-                    .role-info {
-                        display: flex;
-                        flex-direction: column;
-                        gap: 3px;
-
-                        .role-title {
-                            color: var(--light-color-black-black, #000);
-                            font-size: 14px;
-                            font-weight: 600;
-                            line-height: inherit;
-                            max-width: calc(50vw - 237px);
-                            overflow: hidden;
-                            text-overflow: ellipsis;
-                            white-space: nowrap;
-                        }
-
-                        .role-description {
-                            padding: 1px 5px 1px 0;
-                            font-size: 13px;
-                            color: #a5a5a5;
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    .right-chatbox-contain {
-        padding: 10px;
-        height: calc(100vh - 300px);
-        background: #fff;
-
-        .preview-debug-header {
-            font-size: 18px;
-            font-weight: 500;
-            line-height: 24px;
-            margin-right: 24px;
-        }
-    }
-}
 </style>
 
 <style>
