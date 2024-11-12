@@ -117,13 +117,19 @@ import { getParam } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { nextTick, onMounted } from "vue";
 
+import {
+    updateLeaderRole,
+    getScreen,
+    leaderPlan ,
+} from '@/api/base/im/screen'
+
 const { proxy } = getCurrentInstance();
 
 const agentSingleRightPanelRef = ref(null)
 
 const loading = ref(false)
 const roleId = ref(null);
-const channelId = ref(null);
+const screenId = ref(null);
 const roleInfo = ref({
     roleName:'事业部经理' , 
     responsibilities:"1. 帮助用户完成任务，2. 帮助用户完成任务"
@@ -156,9 +162,13 @@ function initChatBoxScroll() {
 
   nextTick(() => {
     const element = innerRef.value;  // 获取滚动元素
-    const scrollHeight = element.scrollHeight;
+    if(element){
+      const scrollHeight = element.scrollHeight;
 
-    scrollbarRef.value.setScrollTop(scrollHeight);
+      if(scrollHeight){
+        scrollbarRef.value.setScrollTop(scrollHeight);
+      }
+    }
   })
 
 }
@@ -205,29 +215,24 @@ const pushResponseMessageList = (newMessage) => {
 };
 
 /** 连接sse */
-function handleSseConnect(channelId) {
+function handleSseConnect(screenId) {
   nextTick(() => {
-    if (channelId) {
+    if (screenId) {
 
-      let sseSource = openSseConnect(channelId);
+      let sseSource = openSseConnect(screenId);
       // 接收到数据
       sseSource.onmessage = function (event) {
 
         if (!event.data.includes('[DONE]')) {
           let resData = event.data;
-
-          // console.log('sseSource.onmessage = ' + resData);
-
           if (resData != 'ping') {  // 非心跳消息
             const data = JSON.parse(resData);
             pushResponseMessageList(data);
           }
         } else {
           console.log('消息接收结束.')
-          if (streamLoading.value) {
-            streamLoading.value.close();
-          }
         }
+
       }
     }
   })
@@ -241,6 +246,13 @@ function handleBusinessIdToMessageBox(item) {
 
 /** 获取角色信息 */
 function handleGetInfo(roleId) {
+
+  if(!roleId){
+    return ;
+  }
+
+  loading.value = true ;
+
   getInfo(roleId).then(res => {
     let role = res.role;
     let msg = res.message;
@@ -250,9 +262,9 @@ function handleGetInfo(roleId) {
 
     loading.value = false;
 
-    nextTick(() => {
-      agentSingleRightPanelRef.value.setRoleInfo(role);
-    })
+    // nextTick(() => {
+    //   agentSingleRightPanelRef.value.setRoleInfo(role);
+    // })
 
   })
 }
@@ -268,19 +280,22 @@ const sendMessage = (type) => {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(255, 255, 255, 0.1)',
+    background: 'rgba(255, 255, 255, 0.5)',
+    customClass: 'custom-loading'
   })
 
   let formData = {
-    channelId: channelId.value,
-    message: message.value,
-    businessIds: [businessId.value],
-    type: type
+    screenId: screenId.value,
+    message: message.value
   }
 
-  chatRole(formData, roleId.value).then(res => {
+  leaderPlan(formData, roleId.value).then(res => {
     proxy.$modal.msgSuccess("发送成功");
-    pushResponseMessageList(res.data);
+    // pushResponseMessageList(res.data);
+    streamLoading.value.close();
+  }).catch(e => {
+    console.info("请求异常" + e)
+    streamLoading.value.close();
   })
 
   message.value = '';
@@ -298,23 +313,36 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
-// onMounted(() => {
-//   initChatBoxScroll();
+onMounted(() => {
+  initChatBoxScroll();
 
-//   roleId.value = getParam('roleId')
-//   channelId.value = getParam('channelId')
+  // roleId.value = getParam('roleId')
+  screenId.value = getParam('screenId')
 
-//   handleSseConnect(channelId.value)
-//   handleGetInfo(roleId.value);
-// })
+  handleSseConnect(screenId.value)
+  // handleGetInfo(roleId.value);
+})
 
 
-// // 销毁信息
-// onBeforeUnmount(() => {
-//   handleCloseSse(channelId.value).then(res => {
-//     console.log('关闭sse连接成功:' + channelId)
+// 销毁信息
+onBeforeUnmount(() => {
+  handleCloseSse(screenId.value).then(res => {
+    console.log('关闭sse连接成功:' + screenId)
+  })
+});
+
+// function runTask() {
+//   streamLoading.value = ElLoading.service({
+//     lock: true,
+//     text: '任务执行中，请勿操作其它界面 ...',
+//     background: 'rgba(0, 0, 0, 0.2)',
 //   })
-// });
+// }
+
+defineExpose({
+  handleGetInfo 
+  // runTask
+})
 
 </script>
 
