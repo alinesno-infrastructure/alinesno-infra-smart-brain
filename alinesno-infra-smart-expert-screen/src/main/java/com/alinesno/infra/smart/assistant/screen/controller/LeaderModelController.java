@@ -21,11 +21,10 @@ import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.entity.RoleExecuteEntity;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
 import com.alinesno.infra.smart.assistant.screen.enums.TaskStatus;
-import com.alinesno.infra.smart.assistant.screen.event.TaskAssignedEvent;
+import com.alinesno.infra.smart.assistant.screen.agent.event.TaskAssignedEvent;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
-import com.alinesno.infra.smart.assistant.screen.utils.TaskSorter;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -198,8 +197,7 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
                              IndustryRoleEntity leaderRole ,
                              String genContent) throws Exception {
 
-        List<RoleTaskDto> finalTasks = TaskSorter.sortTasks(tasks);
-        for(RoleTaskDto task : finalTasks){
+        for(RoleTaskDto task : tasks){
             log.debug("task = {}", JSONUtil.toJsonPrettyStr(task));
         }
 
@@ -209,7 +207,7 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
             @SneakyThrows
             @Override
             public void run() {
-                for (RoleTaskDto task : finalTasks) {
+                for (RoleTaskDto task : tasks) {
 
                     IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
 
