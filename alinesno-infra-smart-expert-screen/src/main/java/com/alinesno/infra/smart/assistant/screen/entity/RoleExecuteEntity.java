@@ -28,6 +28,10 @@ public class RoleExecuteEntity extends InfraBaseEntity {
     @Column(name = "worker_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "工作者ID")
     private Long workerRoleId; // 工作者角色ID
 
+    @TableField(value = "approver_role_id")
+    @Column(name = "approver_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "审批者角色ID")
+    private Long approverRoleId; // 审批者角色ID
+
     @TableField
     @Column(name = "task_goal", type = MySqlTypeConstant.LONGTEXT, comment = "任务目标")
     private String taskGoal ; // 任务目标
