@@ -39,7 +39,7 @@ public class ScriptExpertService extends ExpertService {
 			codeContentLis = CodeBlockParser.parseCodeBlocks(gentContent);
 		}
 
-		log.debug(scriptText);
+		log.trace("角色脚本:{}" , scriptText);
 
 		String output = executeGroovyScript(role ,
 				workflowExecution ,
