@@ -21,6 +21,12 @@ public class RoleTaskDto extends BaseDto {
     private String taskDesc ; // 任务描述
     private String preRoleId ; // 需要等待任务完成的职工Id(对应上面的workerRoleId)
 
+    private String answer ; // 答案
+    private String question ; // 提问
+    private String thought ; // 角色的思考
+
+    private boolean callbackMsg = false ; // 是否为反馈信息
+
     private IndustryRoleEntity leaderRole ;
     private IndustryRoleEntity workerRole ;
 
