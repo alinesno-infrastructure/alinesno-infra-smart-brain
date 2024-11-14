@@ -10,11 +10,15 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class ToolExecuteEvent extends ApplicationEvent {
 
-    private final RoleTaskDto task;
+    private final RoleTaskDto workerTask;
+    private final RoleTaskDto leaderTask;
+    private final boolean isLeader ;
 
-    public ToolExecuteEvent(Object source, RoleTaskDto task, boolean isCompleted) {
+    public ToolExecuteEvent(Object source, RoleTaskDto workerTask , RoleTaskDto leaderTask, boolean isLeader) {
         super(source);
-        this.task = task;
+        this.leaderTask = leaderTask;
+        this.workerTask = workerTask;
+        this.isLeader = isLeader ;
     }
 
 }
