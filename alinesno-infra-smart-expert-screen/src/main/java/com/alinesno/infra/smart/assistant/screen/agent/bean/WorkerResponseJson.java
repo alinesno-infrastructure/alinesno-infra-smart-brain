@@ -13,8 +13,8 @@ import java.util.Map;
 @Data
 public class WorkerResponseJson {
 
-    private static final String Ask_Human_Help_Tool = "AskHumanHelpTool" ;
-    private static final String Task_Complete_Tool = "TaskCompleteTool" ;
+    public static final String Ask_Human_Help_Tool = "AskHumanHelpTool" ;
+    public static final String Task_Complete_Tool = "TaskCompleteTool" ;
 
     @JSONField(name = "thought")
     private String thought;
