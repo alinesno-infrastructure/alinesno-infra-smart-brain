@@ -17,7 +17,7 @@ import lombok.EqualsAndHashCode;
 public class RoleExecuteEntity extends InfraBaseEntity {
 
     @TableField
-    @Column(name = "role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "角色ID")
+    @Column(name = "leader_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "角色ID")
     private Long leaderRoleId ; // 领导角色ID
 
     @TableField
@@ -28,9 +28,9 @@ public class RoleExecuteEntity extends InfraBaseEntity {
     @Column(name = "worker_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "工作者ID")
     private Long workerRoleId; // 工作者角色ID
 
-    @TableField(value = "approver_role_id")
-    @Column(name = "approver_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "审批者角色ID")
-    private Long approverRoleId; // 审批者角色ID
+    @TableField
+    @Column(name = "approve_role_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "审批者角色ID")
+    private Long approveRoleId; // 审批者角色ID
 
     @TableField
     @Column(name = "task_goal", type = MySqlTypeConstant.LONGTEXT, comment = "任务目标")
