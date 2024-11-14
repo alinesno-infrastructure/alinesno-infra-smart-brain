@@ -40,6 +40,9 @@ public class MessageTaskInfo implements Serializable {
     // 是否为修改内容
     private boolean modify;
 
+    // 消息类型
+    private String roleType ;
+
     // 用户业务流程过程中记录的id
     private long workflowRecordId ; // 聊天记录的id
 
