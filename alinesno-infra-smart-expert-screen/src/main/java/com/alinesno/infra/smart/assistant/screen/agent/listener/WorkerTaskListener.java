@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.assistant.screen.agent.bean.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.screen.agent.event.TaskApproveEvent;
 import com.alinesno.infra.smart.assistant.screen.agent.event.TaskAssignedEvent;
 import com.alinesno.infra.smart.assistant.screen.agent.event.TaskCompletionEvent;
+import com.alinesno.infra.smart.assistant.screen.agent.function.FunctionCall;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,37 +57,73 @@ public class WorkerTaskListener {
     public void handleTaskAssigned(TaskAssignedEvent event) {
 
         RoleTaskDto task = event.getTask() ;
-        log.debug("Worker received task: " + task);
 
-        sendSSE(task , "我已经收到内容:" + task.getTaskDesc());
+        boolean isCompleted = false ;
 
-        WorkflowExecutionDto dto = runAgent(task);
+        while(!isCompleted){
 
-        if(dto.getCodeContent() != null && !dto.getCodeContent().isEmpty()){
-            CodeContent codeContent = dto.getCodeContent().get(0) ;
-            WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
+            sendSSE(task , "我已经收到内容:" + task.getTaskDesc() + "\r\n当前知识库:" + task.getKnowledgeContent());
+            task.setQuestion("");
+            task.setThought("");
 
-            String answer = reactResponse.getAnswer(); // 答案，如果已经获取到答案，则表示任务已经结束
+            WorkflowExecutionDto dto = runAgent(task);
 
-            String thought = reactResponse.getThought();  // 推理思考
-            String question = reactResponse.getQuestion(); // 问题咨询
+            if(dto.getCodeContent() != null && !dto.getCodeContent().isEmpty()){
+                CodeContent codeContent = dto.getCodeContent().get(0) ;
+                WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
 
-            boolean isCompleted = StringUtils.isNotEmpty(answer) ;
+                String answer = reactResponse.getAnswer(); // 答案，如果已经获取到答案，则表示任务已经结束
 
-            sendSSE(task , thought + question);
+                String thought = reactResponse.getThought();  // 推理思考
+                String question = reactResponse.getQuestion(); // 问题咨询
 
-            // --->>>>>  ReAct参数 ---->>>>>
-            task.setAnswer(answer);
-            task.setThought(thought);
-            task.setQuestion(question);
+                isCompleted = StringUtils.isNotEmpty(answer) ;
 
-            if(isCompleted){
-                publisher.publishEvent(new TaskApproveEvent(this , task));
-            }else{
-                publisher.publishEvent(new TaskCompletionEvent(this, task , false));
+                sendSSE(task , thought + question);
+
+                // --->>>>>  ReAct参数 ---->>>>>
+                task.setAnswer(answer);
+                task.setThought(thought);
+                task.setQuestion(question);
+
+                if(isCompleted){
+                    sendSSE(task , answer);
+                    publisher.publishEvent(new TaskApproveEvent(this , task));
+                }else{
+
+                    // 如果使用工具，则先使用工具查询
+                    List<String> toolNames = reactResponse.getToolNames();
+                    if(toolNames != null && !toolNames.isEmpty()){
+
+                        StringBuilder toolResult = new StringBuilder() ;
+
+                        for (String toolName : toolNames) {
+                            Map<String , Object> toolParams = reactResponse.getToolParams(toolName);
+
+                            if(toolName.equals(WorkerResponseJson.Ask_Human_Help_Tool)){  // 问题咨询
+                                publisher.publishEvent(new TaskCompletionEvent(this, task , task, false));
+                                isCompleted = true ;
+                            }else{
+
+                                sendSSE(task , "使用当前工具搜索:" + toolName);
+                                // 获取到知识
+                                String funRest = FunctionCall.invokeTool(toolName , toolParams);
+                                toolResult.append(toolName)
+                                        .append(":")
+                                        .append(funRest);
+
+                                sendSSE(task , "获取到内容:" + funRest);
+                            }
+                        }
+
+                        task.setKnowledgeContent(task.getKnowledgeContent() + "\r\n" + toolResult);
+                    }
+                }
+
             }
 
         }
+
 
     }
 
@@ -109,7 +147,12 @@ public class WorkerTaskListener {
         }
 
         params.put("question", task.getQuestion());
+        params.put("workerGoal", task.getTaskDesc());
         params.put("thought", task.getThought());
+        params.put("knowledgeContent", task.getKnowledgeContent());
+
+        taskInfo.setRoleType("person");
+
         taskInfo.setParams(params);
 
         return roleService.runRoleAgent(taskInfo);
@@ -124,16 +167,3 @@ public class WorkerTaskListener {
     }
 }
 
-
-//        message = AgentUtils.getChatMessageDto(task.getWorkerRole(), IdUtil.getSnowflakeNextId());
-//        message.setLoading(false);
-//        message.setRoleType("person");
-//        message.setChatText(genContent.getGenContent());
-//        sseService.send(String.valueOf(task.getScreenId()) , message);
-//
-//        // 给出反馈给上线
-//        task.setExecuteResult(genContent.getGenContent());
-//
-//        boolean isCompleted = true ;
-//
-//        publisher.publishEvent(new TaskCompletionEvent(this, task , isCompleted));
