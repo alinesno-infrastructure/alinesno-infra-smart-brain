@@ -5,6 +5,8 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Map;
+
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class RoleTaskDto extends BaseDto {
@@ -21,9 +23,13 @@ public class RoleTaskDto extends BaseDto {
     private String taskDesc ; // 任务描述
     private String preRoleId ; // 需要等待任务完成的职工Id(对应上面的workerRoleId)
 
+    private String knowledgeContent = "" ; // 知识库内容
     private String answer ; // 答案
     private String question ; // 提问
     private String thought ; // 角色的思考
+
+    private String toolName ; // 工具名称
+    private Map<String, Object> toolParams ; // 工具参数
 
     private boolean callbackMsg = false ; // 是否为反馈信息
 
