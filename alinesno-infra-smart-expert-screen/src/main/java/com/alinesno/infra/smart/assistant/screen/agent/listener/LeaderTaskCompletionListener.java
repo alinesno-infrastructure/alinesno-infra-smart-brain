@@ -4,9 +4,11 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.screen.agent.bean.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.screen.agent.event.TaskApproveEvent;
+import com.alinesno.infra.smart.assistant.screen.agent.event.TaskAssignedEvent;
 import com.alinesno.infra.smart.assistant.screen.agent.event.TaskCompletionEvent;
+import com.alinesno.infra.smart.assistant.screen.agent.function.FunctionCall;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,150 +58,85 @@ public class LeaderTaskCompletionListener {
     @EventListener
     public void handleTaskCompletion(TaskCompletionEvent event) {
 
-        RoleTaskDto task = event.getTask() ;
-        log.debug("Worker received task: " + task);
+        RoleTaskDto leaderTask = event.getLeaderTask() ;
+        RoleTaskDto workerTask = event.getWorkerTask() ;
 
-        sendSSE(task , "我已经收到内容:" + task.getTaskDesc());
+        RoleTaskDto workerTaskCopy = workerTask ;
 
-        WorkflowExecutionDto dto = runAgent(task);
+        boolean isCompleted = false ;
 
-        if(dto.getCodeContent() != null && !dto.getCodeContent().isEmpty()) {
-            CodeContent codeContent = dto.getCodeContent().get(0);
-            WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
+        while(!isCompleted){
 
-            String answer = reactResponse.getAnswer(); // 答案，如果已经获取到答案，则表示任务已经结束
+            sendSSE(leaderTask.getLeaderRole() ,
+                    leaderTask.getScreenId() ,
+                    "在处理疑问:" + workerTaskCopy.getQuestion() + "\r\n当前知识库:" + leaderTask.getKnowledgeContent());
 
-            String thought = reactResponse.getThought();  // 推理思考
-            String question = reactResponse.getQuestion(); // 问题咨询
+            WorkflowExecutionDto dto = runAgent(leaderTask , workerTaskCopy.getQuestion());
+            log.debug("runLeader result = {}" , dto);
 
-            boolean isCompleted = StringUtils.isNotEmpty(answer);
+            // 开始搜索知识库
+            if(dto.getCodeContent() != null && !dto.getCodeContent().isEmpty()) {
+                CodeContent codeContent = dto.getCodeContent().get(0);
+                WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
 
-            sendSSE(task, thought + question);
+                String answer = reactResponse.getAnswer(); // 答案，如果已经获取到答案，则表示任务已经结束
 
-            // --->>>>>  ReAct参数 ---->>>>>
-            task.setAnswer(answer);
-            task.setThought(thought);
-            task.setQuestion(question);
+                String thought = reactResponse.getThought();  // 推理思考
+                String question = reactResponse.getQuestion(); // 问题咨询
 
-            if (isCompleted) {
-                publisher.publishEvent(new TaskApproveEvent(this, task));
-            } else {
-                publisher.publishEvent(new TaskCompletionEvent(this, task, false));
+                leaderTask.setThought(thought);
+                leaderTask.setQuestion(question);
+                leaderTask.setAnswer(answer);
+
+                isCompleted = StringUtils.isNotEmpty(answer) ;
+
+                if(isCompleted){
+                    sendSSE(leaderTask.getLeaderRole() ,
+                            leaderTask.getScreenId() ,
+                            "已找到答案:"+answer);
+
+                    // 将答案提交给下属(增加它的知识库)
+                    workerTask.setKnowledgeContent(workerTask.getKnowledgeContent()+"\r\n" + answer);
+
+                    publisher.publishEvent(new TaskAssignedEvent(this , workerTask));
+                }else{
+                    // 如果使用工具，则先使用工具查询
+                    List<String> toolNames = reactResponse.getToolNames();
+                    if(toolNames != null && !toolNames.isEmpty()){
+
+                        StringBuilder toolResult = new StringBuilder() ;
+
+                        for (String toolName : toolNames) {
+                            Map<String , Object> toolParams = reactResponse.getToolParams(toolName);
+
+                            sendSSE(leaderTask.getLeaderRole() ,
+                                    leaderTask.getScreenId() ,
+                                    "使用当前工具搜索:" + toolName);
+
+                            // 获取到知识
+                            String funRest = FunctionCall.invokeTool2(toolName , toolParams);
+                            toolResult.append(toolName)
+                                    .append(":")
+                                    .append(funRest);
+
+                            sendSSE(leaderTask.getLeaderRole() ,
+                                    leaderTask.getScreenId() ,
+                                    "获取到内容:" + funRest);
+                        }
+
+                        leaderTask.setKnowledgeContent(leaderTask.getKnowledgeContent() + "\r\n" + toolResult);
+                    }
+
+                    // 重新调用Leader处理
+                    // publisher.publishEvent(new TaskCompletionEvent(this, workerTask , leaderTask, false));
+                }
+
             }
+
         }
-
-//        // 判断任务是否有目标
-//        String goal = task.getTaskGoal() ;
-//        IndustryRoleEntity leaderRole = task.getLeaderRole();
-//        IndustryRoleEntity workerRole = task.getWorkerRole() ;
-//
-//        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-//        taskInfo.setRoleId(leaderRole.getId());
-//        taskInfo.setChannelId(task.getScreenId());
-//        taskInfo.setScreenId(task.getScreenId());
-//
-//        Map<String, String> params = new HashMap<>();
-//        params.put("goal", goal);
-//        taskInfo.setParams(params);
-//
-//        taskInfo.setText(workerRole.getRoleName() + ":\r\n" + task.getExecuteResult());  // 下属反馈
-//        WorkflowExecutionDto leaderRoleGenContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("leaderRoleGenContent = {}" , leaderRoleGenContent);
-//
-//        boolean isCompleted = leaderRoleGenContent.getGenContent().contains("SUCCESS") ; // 包含SUCCESS表示已经完成
-//
-//        ChatMessageDto message = AgentUtils.getChatMessageDto(task.getLeaderRole(), IdUtil.getSnowflakeNextId());
-//        message.setChatText(leaderRoleGenContent.getGenContent()) ;
-//        message.setLoading(false);
-//        sseService.send(String.valueOf(task.getScreenId()) , message);
-//
-//        if (isCompleted) {
-//
-//            log.debug("Leader confirmed that task: " + event.getTask().getId() + " has been completed.");
-//
-//            // 更新当前的任务状态为完成
-//            roleExecuteService.finishTask(task.getId());
-//
-//            message.setChatText("验证" + task.getWorkerRole().getRoleName() + "执行结果完成，任务完成.");
-//            sseService.send(String.valueOf(task.getScreenId()) , message);
-//
-//            // 判断所有工作是否完成
-//            boolean isAllCompleted = roleExecuteService.isAllTaskCompleted(task.getScreenId());
-//            if(isAllCompleted){
-//                message.setChatText(ALL_TASK_FINISH);
-//                sseService.send(String.valueOf(task.getScreenId()) , message);
-//            }
-//
-//        } else {
-//            log.debug("Leader found that task: " + event.getTask().getId() + " was not completed.");
-//
-//            message.setChatText("验证" + task.getWorkerRole().getRoleName() + "执行结果未完成，将记录异常结果，并重新分配任务.");
-//            sseService.send(String.valueOf(task.getScreenId()) , message);
-//            task.setCallbackMsg(true);
-//
-//            // 如果任务未完成，重新分配任务
-//            task.setTaskDesc(leaderRoleGenContent.getGenContent());
-//            publisher.publishEvent(new TaskAssignedEvent(this, task));
-//        }
-
-//        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-//
-//        taskInfo.setRoleId(leaderRole.getId());
-//        taskInfo.setChannelId(task.getScreenId());
-//        taskInfo.setScreenId(task.getScreenId());
-//
-//        if(isCompleted){
-//            taskInfo.setText(task.getExecuteResult()); // 用户答案
-//        }else{
-//            taskInfo.setText(workerRole.getRoleName() + ":\r\n" + task.getExecuteResult());  // 用户提问
-//        }
-//
-//        Map<String, String> params = new HashMap<>();
-//        params.put("goal", goal);
-//
-//        taskInfo.setParams(params);
-//
-//        WorkflowExecutionDto leaderRoleGenContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("leaderRoleGenContent = {}" , leaderRoleGenContent);
-//
-//        ChatMessageDto message = AgentUtils.getChatMessageDto(task.getLeaderRole(), IdUtil.getSnowflakeNextId());
-//        message.setChatText(leaderRoleGenContent.getGenContent()) ;
-//        message.setLoading(false);
-//        sseService.send(String.valueOf(task.getScreenId()) , message);
-//
-//        task.setTaskDesc(leaderRoleGenContent.getGenContent());
-//
-//        if (isCompleted) {
-//
-//            log.debug("Leader confirmed that task: " + event.getTask().getId() + " has been completed.");
-//
-//            // 更新当前的任务状态为完成
-//            roleExecuteService.finishTask(task.getId());
-//
-//            message.setChatText("验证" + task.getWorkerRole().getRoleName() + "执行结果完成，任务完成.");
-//            sseService.send(String.valueOf(task.getScreenId()) , message);
-//
-//            // 判断所有工作是否完成
-//            boolean isAllCompleted = roleExecuteService.isAllTaskCompleted(task.getScreenId());
-//            if(isAllCompleted){
-//                message.setChatText(ALL_TASK_FINISH);
-//                sseService.send(String.valueOf(task.getScreenId()) , message);
-//            }
-//
-//        } else {
-//            log.debug("Leader found that task: " + event.getTask().getId() + " was not completed.");
-//
-//            message.setChatText("验证" + task.getWorkerRole().getRoleName() + "执行结果未完成，将记录异常结果，并重新分配任务.");
-//            sseService.send(String.valueOf(task.getScreenId()) , message);
-//            task.setCallbackMsg(true);
-//
-//            // 如果任务未完成，重新分配任务
-//            publisher.publishEvent(new TaskAssignedEvent(this, task));
-//        }
-
     }
 
-    private WorkflowExecutionDto runAgent(RoleTaskDto task) {
+    private WorkflowExecutionDto runAgent(RoleTaskDto task, String workerGoal) {
 
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
@@ -211,17 +149,21 @@ public class LeaderTaskCompletionListener {
         Map<String, String> params = new HashMap<>();
         params.put("question", task.getQuestion());
         params.put("thought", task.getThought());
+        params.put("goal", task.getTaskGoal());
+        params.put("workerGoal", workerGoal);
         taskInfo.setParams(params);
+
+        taskInfo.setRoleType("agent");
 
         return roleService.runRoleAgent(taskInfo);
     }
 
-    private void sendSSE(RoleTaskDto task, String msg) throws IOException {
-        ChatMessageDto message = AgentUtils.getChatMessageDto(task.getWorkerRole(), IdUtil.getSnowflakeNextId());
+    private void sendSSE(IndustryRoleEntity role , long screenId, String msg) throws IOException {
+        ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
         message.setChatText(msg);
-        message.setRoleType("person");
         message.setLoading(false);
-        sseService.send(String.valueOf(task.getScreenId()) , message);
+        sseService.send(String.valueOf(screenId) , message);
     }
 
 }
+
