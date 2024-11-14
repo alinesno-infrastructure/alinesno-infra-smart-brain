@@ -10,12 +10,14 @@ import org.springframework.context.ApplicationEvent;
 @Getter
 public class TaskCompletionEvent extends ApplicationEvent {
 
-    private final RoleTaskDto task;
+    private final RoleTaskDto workerTask;
+    private final RoleTaskDto leaderTask;
     private final boolean isCompleted;
 
-    public TaskCompletionEvent(Object source, RoleTaskDto task, boolean isCompleted) {
+    public TaskCompletionEvent(Object source, RoleTaskDto workerTask, RoleTaskDto leaderTask, boolean isCompleted) {
         super(source);
-        this.task = task;
+        this.workerTask = workerTask;
+        this.leaderTask = leaderTask;
         this.isCompleted = isCompleted;
     }
 
