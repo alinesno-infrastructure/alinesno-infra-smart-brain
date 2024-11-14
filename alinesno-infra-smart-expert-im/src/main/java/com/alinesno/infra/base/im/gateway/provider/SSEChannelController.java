@@ -1,5 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -63,6 +64,7 @@ public class SSEChannelController {
             msgDto.setLoading(false);
             msgDto.setChatText(msg);
             msgDto.setLlmStream(true);
+            msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
 
             try {
                 emitter.send(msgDto) ;
