@@ -256,6 +256,12 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         return entity ;
     }
 
+    @Override
+    public MessageEntity selectByTraceBusId(Long traceBusId) {
+        // 根据业务跟踪ID查询消息
+        return getOne(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getTraceBusId, traceBusId));
+    }
+
 //    @Override
 //    public MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg , long messageId) {
 //
