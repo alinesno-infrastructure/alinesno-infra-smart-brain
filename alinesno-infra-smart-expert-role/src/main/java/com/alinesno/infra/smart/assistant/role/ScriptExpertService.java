@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/**
+ * 脚本编辑方式
+ */
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_SCRIPT)
 public class ScriptExpertService extends ExpertService {
