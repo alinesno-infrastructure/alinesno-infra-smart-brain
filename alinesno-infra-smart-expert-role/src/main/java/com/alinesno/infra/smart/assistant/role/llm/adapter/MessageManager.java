@@ -14,6 +14,7 @@ public class MessageManager {
     private final int messageCount ;
     private long channelId ; // 频道
     private long workflowId ;
+    private long traceBusId ; // 业务跟踪的ID
 
     public MessageManager(int messageCount) {
         this.messageCount = messageCount;
