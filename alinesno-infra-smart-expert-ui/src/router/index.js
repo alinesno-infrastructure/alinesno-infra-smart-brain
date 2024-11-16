@@ -84,6 +84,12 @@ export const constantRoutes = [
         meta: { title: '脚本配置', icon: 'dashboard', affix: true }
       },
       {
+        path: '/expert/smart/assistant/role/react',
+        component: () => import('@/views/smart/assistant/role/reactPanel'),
+        name: '/expert/smart/assistant/role/react',
+        meta: { title: '推理配置', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/knowledge/knowledge/index',
         component: () => import('@/views/smart/assistant/role/knowledge/parseDataset'),
         name: '/knowledge/knowledge/index',
