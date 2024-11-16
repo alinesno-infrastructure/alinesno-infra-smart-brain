@@ -255,6 +255,7 @@
               <el-radio-group v-model="form.scriptType">
                 <el-radio :value="script" label="script">脚本</el-radio>
                 <el-radio :value="flow" label="flow">流程</el-radio>
+                <el-radio :value="react" label="react">推理</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -540,9 +541,11 @@ function configExecuteScript(row){
 
   console.log('scriptType = ' + row.scriptType)
 
-  if(row.scriptType && row.scriptType == 'flow'){
+  if(row.scriptType && row.scriptType == 'flow'){  // 流程
     router.push({path:"/smart/assistant/role/createDefinition" , query: {roleId: row.id}});
-  }else {
+  }else if(row.scriptType && row.scriptType == 'react'){  // 推荐
+    router.push({path:"/expert/smart/assistant/role/react" , query: {roleId: row.id}});
+  }else {  // 脚本
     router.push({path:"/expert/smart/assistant/role/script" , query: {roleId: row.id}});
   }
 
@@ -702,7 +705,7 @@ getList();
 
 .editor-after-div {
   .el-upload{
-      widtH:56px;
+      width:56px;
       height: 56px;
       text-align: center;
       line-height: 56px;
