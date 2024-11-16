@@ -13,5 +13,8 @@ public interface AssistantConstants {
     // 流程脚本引擎
     String PREFIX_ASSISTANT_FLOW = "Agent_FlowExpert" ;
 
+    // 流程脚本引擎
+    String PREFIX_ASSISTANT_REACT = "Agent_ReActExpert" ;
+
     String AIP_HELP_AGENT =  "AIP_DEFAULT_HELP_AGENT";
 }
