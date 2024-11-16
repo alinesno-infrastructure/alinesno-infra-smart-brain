@@ -14,14 +14,15 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.screen.agent.WorkerTaskService;
 import com.alinesno.infra.smart.assistant.screen.dto.LeaderPlanDto;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.entity.RoleExecuteEntity;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
 import com.alinesno.infra.smart.assistant.screen.enums.TaskStatus;
-import com.alinesno.infra.smart.assistant.screen.agent.event.TaskAssignedEvent;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
@@ -136,7 +137,7 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
         taskInfo.setScreenId(dto.getScreenId());
         taskInfo.setText(dto.getMessage());
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
 
         List<IndustryRoleEntity> workerRoleList = RoleUtils.getRoleEntity(roleService , screenEntity.getWorkerRole()) ;
         List<JSONObject> paramsList = workerRoleList.stream().map(item -> {
@@ -207,6 +208,11 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
             @SneakyThrows
             @Override
             public void run() {
+
+                WorkerTaskService workerTaskService = SpringUtils.getBean(WorkerTaskService.class) ;
+
+                List<RoleTaskDto> preTaskList = new ArrayList<>() ;  // 保存所有前任务的结果（或者内容)
+
                 for (RoleTaskDto task : tasks) {
 
                     IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
@@ -226,7 +232,10 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
                         workerMessage.setLoading(false);
                         sseService.send(String.valueOf(screenId), workerMessage);
 
-                        publisher.publishEvent(new TaskAssignedEvent(this, task));
+                        workerTaskService.executeTask(task , preTaskList);
+                        preTaskList.add(task) ;
+
+                        log.debug("task = \r\n{}" , task);
                     }else{
                         log.warn("未找到对应的角色信息:{}" , task.getWorkerRoleId());
                     }
