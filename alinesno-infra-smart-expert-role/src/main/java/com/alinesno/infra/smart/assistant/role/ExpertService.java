@@ -108,6 +108,11 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         WorkflowExecutionDto record = new WorkflowExecutionDto();
 
+        // 设置业务跟踪
+        long traceBusId = IdUtil.getSnowflakeNextId();
+        taskInfo.setTraceBusId(traceBusId);
+        record.setTraceBusId(traceBusId);
+
         // 任务开始记录
         record.setRoleId(role.getId());
         record.setChannelId(taskInfo.getChannelId());
@@ -459,7 +464,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         StringBuilder fullContent = new StringBuilder();
         long workflowId = IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
 
-        log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
+        msgManager.setTraceBusId(taskInfo.getTraceBusId());
         msgManager.setWorkflowId(workflowId);
         msgManager.setChannelId(taskInfo.getChannelId());
 
@@ -495,30 +500,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 semaphore.release();
                 log.info("Full content: \n{}", fullContent);
 
-                log.debug("--->>>> record.getId() = {}" , taskInfo.getWorkflowRecordId());
-
-                // 记录执行内容信息
-//                WorkflowExecutionDto recordDto = new WorkflowExecutionDto() ;
-//                MessageEntity record = workflowExecutionService.getById(msgManager.getWorkflowId());
-//                log.debug("record:{}", record);
-//
-//                BeanUtils.copyProperties(record, recordDto);
-//                recordDto.setGenContent(fullContent.toString()) ; // "任务处理完成: <span class='mention-business'>#"+msgManager.getWorkflowId()+"</span>");
-//
-//                // 处理完成之后记录更新
-//                record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
-//                record.setEndTime(System.currentTimeMillis());
-//                record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
-//                record.setGenContent(fullContent.toString());
-//
-//                workflowExecutionService.update(record);
-//
-//                // 更新消息并记录消息运行情况
-//                ITaskService taskService = SpringUtils.getBean(ITaskService.class);
-//                taskService.handleWorkflowMessageWithoutMessage(taskInfo, recordDto);
-
                 MessageEntity entity = new MessageEntity();
 
+                entity.setTraceBusId(taskInfo.getTraceBusId());
                 entity.setId(msgManager.getWorkflowId());
                 entity.setContent(fullContent.toString()) ;
                 entity.setFormatContent(fullContent.toString());
