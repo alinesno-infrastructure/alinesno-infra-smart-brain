@@ -44,10 +44,10 @@ public class MessageTaskInfo implements Serializable {
     private String roleType ;
 
     // 用户业务流程过程中记录的id
-    private long workflowRecordId ; // 聊天记录的id
+    private long traceBusId ; // 业务跟踪的ID
 
    // 消息内额外参数
-    private Map<String , String> params;
+    private Map<String , Object> params;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
