@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.screen.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -32,6 +33,8 @@ public class RoleTaskDto extends BaseDto {
     private Map<String, Object> toolParams ; // 工具参数
 
     private boolean callbackMsg = false ; // 是否为反馈信息
+
+    private MessageEntity outputMessage ; // 输出信息
 
     private IndustryRoleEntity leaderRole ;
     private IndustryRoleEntity workerRole ;
