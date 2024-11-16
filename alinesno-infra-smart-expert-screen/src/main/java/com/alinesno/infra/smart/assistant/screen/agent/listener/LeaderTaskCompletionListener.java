@@ -146,7 +146,7 @@ public class LeaderTaskCompletionListener {
 
         taskInfo.setText(task.getThought() + " " + task.getQuestion()); // 输入任务要求
 
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         params.put("question", task.getQuestion());
         params.put("thought", task.getThought());
         params.put("goal", task.getTaskGoal());
