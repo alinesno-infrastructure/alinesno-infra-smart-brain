@@ -1,19 +1,16 @@
 package com.alinesno.infra.smart.assistant.screen.agent.listener;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSON;
-import com.alinesno.infra.smart.assistant.api.CodeContent;
+import cn.hutool.json.JSONUtil;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.screen.agent.bean.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.screen.agent.event.TaskApproveEvent;
 import com.alinesno.infra.smart.assistant.screen.agent.event.TaskAssignedEvent;
-import com.alinesno.infra.smart.assistant.screen.agent.event.TaskCompletionEvent;
-import com.alinesno.infra.smart.assistant.screen.agent.function.FunctionCall;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.SneakyThrows;
@@ -26,7 +23,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -48,6 +44,9 @@ public class WorkerTaskListener {
     @Autowired
     private IIndustryRoleService roleService;
 
+    @Autowired
+    private IMessageService messageService ;
+
     public WorkerTaskListener(ApplicationEventPublisher publisher) {
         this.publisher = publisher;
     }
@@ -58,73 +57,20 @@ public class WorkerTaskListener {
 
         RoleTaskDto task = event.getTask() ;
 
-        boolean isCompleted = false ;
+        sendSSE(task , "我已经收到内容:" + task.getTaskDesc() + "\r\n当前知识库:" + task.getKnowledgeContent());
+        task.setQuestion("");
+        task.setThought("");
 
-        while(!isCompleted){
+        WorkflowExecutionDto dto = runAgent(task);
 
-            sendSSE(task , "我已经收到内容:" + task.getTaskDesc() + "\r\n当前知识库:" + task.getKnowledgeContent());
-            task.setQuestion("");
-            task.setThought("");
+        log.debug("--->>>> dto = {}", JSONUtil.toJsonPrettyStr(dto));
 
-            WorkflowExecutionDto dto = runAgent(task);
+        MessageEntity message = messageService.selectByTraceBusId(dto.getTraceBusId()) ;
+        log.debug("--->>>> message = {}", JSONUtil.toJsonPrettyStr(message));
 
-            if(dto.getCodeContent() != null && !dto.getCodeContent().isEmpty()){
-                CodeContent codeContent = dto.getCodeContent().get(0) ;
-                WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
+        task.setOutputMessage(message);
 
-                String answer = reactResponse.getAnswer(); // 答案，如果已经获取到答案，则表示任务已经结束
-
-                String thought = reactResponse.getThought();  // 推理思考
-                String question = reactResponse.getQuestion(); // 问题咨询
-
-                isCompleted = StringUtils.isNotEmpty(answer) ;
-
-                sendSSE(task , thought + question);
-
-                // --->>>>>  ReAct参数 ---->>>>>
-                task.setAnswer(answer);
-                task.setThought(thought);
-                task.setQuestion(question);
-
-                if(isCompleted){
-                    sendSSE(task , answer);
-                    publisher.publishEvent(new TaskApproveEvent(this , task));
-                }else{
-
-                    // 如果使用工具，则先使用工具查询
-                    List<String> toolNames = reactResponse.getToolNames();
-                    if(toolNames != null && !toolNames.isEmpty()){
-
-                        StringBuilder toolResult = new StringBuilder() ;
-
-                        for (String toolName : toolNames) {
-                            Map<String , Object> toolParams = reactResponse.getToolParams(toolName);
-
-                            if(toolName.equals(WorkerResponseJson.Ask_Human_Help_Tool)){  // 问题咨询
-                                publisher.publishEvent(new TaskCompletionEvent(this, task , task, false));
-                                isCompleted = true ;
-                            }else{
-
-                                sendSSE(task , "使用当前工具搜索:" + toolName);
-                                // 获取到知识
-                                String funRest = FunctionCall.invokeTool(toolName , toolParams);
-                                toolResult.append(toolName)
-                                        .append(":")
-                                        .append(funRest);
-
-                                sendSSE(task , "获取到内容:" + funRest);
-                            }
-                        }
-
-                        task.setKnowledgeContent(task.getKnowledgeContent() + "\r\n" + toolResult);
-                    }
-                }
-
-            }
-
-        }
-
-
+        roleExecuteService.finishTask(task.getId());
     }
 
     private WorkflowExecutionDto runAgent(RoleTaskDto task) {
@@ -136,7 +82,7 @@ public class WorkerTaskListener {
         taskInfo.setScreenId(task.getScreenId());
 
         taskInfo.setText(task.getThought() + " " + task.getQuestion()); // 输入任务要求
-        Map<String, String> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
 
         // 查询是否包含前一个任务内容
         if(StringUtils.isNotEmpty(task.getPreRoleId())){
