@@ -76,4 +76,11 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @param msg
      */
     MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg);
+
+    /**
+     * 根据业务跟踪ID查询消息
+     * @param traceBusId
+     * @return
+     */
+    MessageEntity selectByTraceBusId(Long traceBusId);
 }
