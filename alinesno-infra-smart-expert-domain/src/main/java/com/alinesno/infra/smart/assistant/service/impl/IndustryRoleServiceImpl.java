@@ -126,7 +126,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
         WorkflowExecutionDto dto = expertService.runRoleAgent(role, message, taskInfo);
-
         workflowExecutionService.saveRecord(dto);
 
         return dto ;
