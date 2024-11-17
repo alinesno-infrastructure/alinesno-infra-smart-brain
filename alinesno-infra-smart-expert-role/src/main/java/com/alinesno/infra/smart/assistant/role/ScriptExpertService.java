@@ -5,7 +5,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.context.ContextManager;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
-import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import groovy.lang.Binding;
