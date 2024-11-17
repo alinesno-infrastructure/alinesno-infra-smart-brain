@@ -15,9 +15,10 @@ import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
+import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.screen.agent.WorkerTaskService;
+import com.alinesno.infra.smart.assistant.screen.service.impl.WorkerTaskService;
 import com.alinesno.infra.smart.assistant.screen.dto.LeaderPlanDto;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.entity.RoleExecuteEntity;
@@ -29,8 +30,11 @@ import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -67,6 +71,9 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
 
     @Autowired
     private IIndustryRoleService roleService;
+
+    @Autowired
+    private IMessageService messageService;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
@@ -153,7 +160,13 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
 
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
 
-        log.debug("chatRole = {}" , genContent);
+        MessageEntity messageCallback = messageService.selectByTraceBusId(genContent.getTraceBusId()) ;
+
+        genContent.setGenContent(messageCallback.getContent());
+        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(genContent.getGenContent());
+        genContent.setCodeContent(codeContentList);
+
+        log.debug("messageCallback = {}" , messageCallback);
         message.setChatText(genContent.getGenContent());
         sseService.send(String.valueOf(screenId), message);
 
