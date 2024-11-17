@@ -19,7 +19,7 @@ import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
-import com.alinesno.infra.smart.assistant.role.utils.CodeBlockParser;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
