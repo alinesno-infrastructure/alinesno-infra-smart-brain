@@ -1,53 +1,32 @@
 package com.alinesno.infra.smart.assistant.role.tools;
 
+import groovy.lang.GroovyClassLoader;
+
+import java.lang.reflect.Field;
+import java.util.Map;
+
 public class ToolExecutor {
 
-//    public static String executeTool(String toolName, Map<String, Object> argsList) throws Exception {
-//        Class<?> toolClass = Class.forName(toolName);
-//        Constructor<?> constructor = findMatchingConstructor(toolClass, argsList);
-//
-//        if (constructor == null) {
-//            throw new IllegalArgumentException("No matching constructor found for the provided arguments.");
-//        }
-//
-//        List<Object> constructorArgs = new ArrayList<>();
-//        for (Parameter parameter : constructor.getParameters()) {
-//            String paramName = parameter.getName();
-//            Object paramValue = argsList.get(paramName);
-//            if (paramValue == null) {
-//                throw new IllegalArgumentException("Missing required parameter: " + paramName);
-//            }
-//            constructorArgs.add(paramValue);
-//        }
-//
-//        Tool tool = (Tool) constructor.newInstance(constructorArgs.toArray());
-//        return tool.execute();
-//    }
-//
-//    private static Constructor<?> findMatchingConstructor(Class<?> toolClass, Map<String, Object> argsList) {
-//        for (Constructor<?> constructor : toolClass.getConstructors()) {
-//            if (isMatchingConstructor(constructor, argsList)) {
-//                return constructor;
-//            }
-//        }
-//        return null;
-//    }
-//
-//    private static boolean isMatchingConstructor(Constructor<?> constructor, Map<String, Object> argsList) {
-//        Parameter[] parameters = constructor.getParameters();
-//        if (parameters.length != argsList.size()) {
-//            return false;
-//        }
-//
-//        for (Parameter parameter : parameters) {
-//            String paramName = parameter.getName();
-//            Object paramValue = argsList.get(paramName);
-//            if (paramValue == null || !parameter.getType().isInstance(paramValue)) {
-//                return false;
-//            }
-//        }
-//
-//        return true;
-//    }
+    public static Object executeGroovyScript(String script, Map<String, Object> params) throws Exception {
+        GroovyClassLoader loader = new GroovyClassLoader();
+        Class<?> groovyClass = loader.parseClass(script);
 
+        if (!Tool.class.isAssignableFrom(groovyClass)) {
+            throw new IllegalArgumentException("The provided Groovy script does not extend the Tool class.");
+        }
+
+        Tool toolInstance = (Tool) groovyClass.getDeclaredConstructor().newInstance();
+        setParams(toolInstance, params);
+        return toolInstance.execute();
+    }
+
+    private static void setParams(Tool tool, Map<String, Object> params) throws IllegalAccessException {
+        Field[] fields = tool.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            if (params.containsKey(field.getName())) {
+                field.setAccessible(true);
+                field.set(tool, params.get(field.getName()));
+            }
+        }
+    }
 }
