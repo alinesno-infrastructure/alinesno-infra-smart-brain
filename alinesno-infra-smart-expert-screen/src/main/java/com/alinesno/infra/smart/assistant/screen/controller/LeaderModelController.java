@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
@@ -14,11 +13,9 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.screen.service.impl.WorkerTaskService;
 import com.alinesno.infra.smart.assistant.screen.dto.LeaderPlanDto;
 import com.alinesno.infra.smart.assistant.screen.dto.RoleTaskDto;
 import com.alinesno.infra.smart.assistant.screen.entity.RoleExecuteEntity;
@@ -26,6 +23,8 @@ import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
 import com.alinesno.infra.smart.assistant.screen.enums.TaskStatus;
 import com.alinesno.infra.smart.assistant.screen.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
+import com.alinesno.infra.smart.assistant.screen.service.IWorkerTaskService;
+import com.alinesno.infra.smart.assistant.screen.utils.RoleTaskUtils;
 import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
@@ -86,6 +85,9 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
 
     @Autowired
     private ISSEService sseService;
+
+    @Autowired
+    private IWorkerTaskService workerTaskService ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -180,6 +182,12 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
                 tasks = JSON.parseArray(codeContent, RoleTaskDto.class);
                 log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(tasks));
 
+                for(RoleTaskDto task : tasks){  // 设置任务目标
+                    task.setTaskGoal(genContent.getGenContent());
+                    task.setLeaderRoleId(leaderRole.getId());
+                    task.setScreenId(screenId);
+                }
+
                 // 更新保存到数据库中
                 service.saveNewTasks(screenId , tasks);
             }catch (Exception e){
@@ -190,73 +198,116 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
             }
         }
 
-        executeTask(tasks, message, screenEntity, screenId, leaderRole , genContent.getGenContent());
+        // 优化处理流程
+        // executeTask(tasks, message, screenEntity, screenId, leaderRole , genContent.getGenContent());
 
-        return AjaxResult.success();
+        return AjaxResult.success("操作成功." , tasks);
     }
 
     /**
      * 执行任务
-     * @param tasks
-     * @param message
-     * @param screenEntity
-     * @param screenId
-     * @param leaderRole
+     * @param task
+     * @param uId  前端传递过程，每次执行任务为唯一值,规避获取到前置任务不正确。
+     * @return
      * @throws Exception
      */
-    private void executeTask(List<RoleTaskDto> tasks,
-                             ChatMessageDto message,
-                             ScreenEntity screenEntity,
-                             long screenId,
-                             IndustryRoleEntity leaderRole ,
-                             String genContent) throws Exception {
+    @PostMapping("/executeScreenTask")
+    public AjaxResult executeScreenTask(@RequestBody RoleTaskDto task, @RequestParam String uId) throws Exception {
 
-        for(RoleTaskDto task : tasks){
-            log.debug("task = {}", JSONUtil.toJsonPrettyStr(task));
+        List<RoleTaskDto> preTaskList = RoleTaskUtils.getPreTaskList(uId) ;
+
+        long screenId = task.getScreenId();
+        long leaderRoleId = task.getLeaderRoleId();
+
+        IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
+        IndustryRoleEntity leaderRole = roleService.getById(leaderRoleId);
+
+        if(worker != null){
+            task.setLeaderRoleId(leaderRoleId);
+
+            task.setScreenId(screenId);
+            task.setIsFinished(TaskStatus.NOT_STARTED.getCode());
+
+            task.setTaskGoal(task.getTaskGoal()); // 设置目标
+            task.setLeaderRole(leaderRole);
+            task.setWorkerRole(worker);
+
+            ChatMessageDto workerMessage = AgentUtils.getChatMessageDto(leaderRole, IdUtil.getSnowflakeNextId());
+            workerMessage.setChatText("分配任务给:" + task.getWorkerRole().getRoleName());
+            workerMessage.setLoading(false);
+            sseService.send(String.valueOf(screenId), workerMessage);
+
+            workerTaskService.executeTask(task , preTaskList);
+            RoleTaskUtils.add(task , uId) ;
+
+            log.debug("task = \r\n{}" , task);
+        }else{
+            log.warn("未找到对应的角色信息:{}" , task.getWorkerRoleId());
         }
 
-        message.setChatText("分配任务中...");
-
-        ThreadUtil.execute(new Runnable() {
-            @SneakyThrows
-            @Override
-            public void run() {
-
-                WorkerTaskService workerTaskService = SpringUtils.getBean(WorkerTaskService.class) ;
-
-                List<RoleTaskDto> preTaskList = new ArrayList<>() ;  // 保存所有前任务的结果（或者内容)
-
-                for (RoleTaskDto task : tasks) {
-
-                    IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
-
-                    if(worker != null){
-                        task.setLeaderRoleId(Long.parseLong(screenEntity.getLeaderRole()));
-
-                        task.setScreenId(screenId);
-                        task.setIsFinished(TaskStatus.NOT_STARTED.getCode());
-
-                        task.setTaskGoal(genContent); // 设置目标
-                        task.setLeaderRole(leaderRole);
-                        task.setWorkerRole(worker);
-
-                        ChatMessageDto workerMessage = AgentUtils.getChatMessageDto(leaderRole, IdUtil.getSnowflakeNextId());
-                        workerMessage.setChatText("分配任务给:" + task.getWorkerRole().getRoleName());
-                        workerMessage.setLoading(false);
-                        sseService.send(String.valueOf(screenId), workerMessage);
-
-                        workerTaskService.executeTask(task , preTaskList);
-                        preTaskList.add(task) ;
-
-                        log.debug("task = \r\n{}" , task);
-                    }else{
-                        log.warn("未找到对应的角色信息:{}" , task.getWorkerRoleId());
-                    }
-
-                }
-            }
-        });
+        return AjaxResult.success("操作成功");
     }
+
+//    /**
+//     * 执行任务
+//     * @param tasks
+//     * @param message
+//     * @param screenEntity
+//     * @param screenId
+//     * @param leaderRole
+//     * @throws Exception
+//     */
+//    private void executeTask(List<RoleTaskDto> tasks,
+//                             ChatMessageDto message,
+//                             ScreenEntity screenEntity,
+//                             long screenId,
+//                             IndustryRoleEntity leaderRole ,
+//                             String genContent) throws Exception {
+//
+//        for(RoleTaskDto task : tasks){
+//            log.debug("task = {}", JSONUtil.toJsonPrettyStr(task));
+//        }
+//
+//        message.setChatText("分配任务中...");
+//
+//        ThreadUtil.execute(new Runnable() {
+//            @SneakyThrows
+//            @Override
+//            public void run() {
+//
+//                List<RoleTaskDto> preTaskList = new ArrayList<>() ;  // 保存所有前任务的结果（或者内容)
+//
+//                for (RoleTaskDto task : tasks) {
+//
+//                    IndustryRoleEntity worker = roleService.getById(task.getWorkerRoleId());
+//
+//                    if(worker != null){
+//                        task.setLeaderRoleId(Long.parseLong(screenEntity.getLeaderRole()));
+//
+//                        task.setScreenId(screenId);
+//                        task.setIsFinished(TaskStatus.NOT_STARTED.getCode());
+//
+//                        task.setTaskGoal(genContent); // 设置目标
+//                        task.setLeaderRole(leaderRole);
+//                        task.setWorkerRole(worker);
+//
+//                        ChatMessageDto workerMessage = AgentUtils.getChatMessageDto(leaderRole, IdUtil.getSnowflakeNextId());
+//                        workerMessage.setChatText("分配任务给:" + task.getWorkerRole().getRoleName());
+//                        workerMessage.setLoading(false);
+//                        sseService.send(String.valueOf(screenId), workerMessage);
+//
+//                        workerTaskService.executeTask(task , preTaskList);
+//                        preTaskList.add(task) ;
+//
+//                        log.debug("task = \r\n{}" , task);
+//                    }else{
+//                        log.warn("未找到对应的角色信息:{}" , task.getWorkerRoleId());
+//                    }
+//
+//                }
+//            }
+//        });
+//    }
 
     @Override
     public IRoleExecuteService getFeign() {
