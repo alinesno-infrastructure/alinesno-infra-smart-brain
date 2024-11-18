@@ -9,9 +9,11 @@ import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
+import io.reactivex.Flowable;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
@@ -19,6 +21,7 @@ import java.util.List;
  * 千问新的API接口封装，用于ReAct特定模式
  */
 @Slf4j
+@Service
 public class QianWenNewApiLLM {
 
     @Value("${alinesno.infra.smart.brain.qianwen.key:}")
@@ -41,15 +44,25 @@ public class QianWenNewApiLLM {
 
     @SneakyThrows
     public GenerationResult chat(List<Message> messages){
-
         log.debug("messages:\r\n{}" , JSONUtil.toJsonPrettyStr(messages));
-
         GenerationParam param = createGenerationParam(messages);
-
         return callGenerationWithMessages(param);
     }
 
     public Message createMessage(Role role, String content) {
         return Message.builder().role(role.getValue()).content(content).build();
+    }
+
+    /**
+     * 流式调用
+     * @param messages
+     * @return
+     */
+    @SneakyThrows
+    public Flowable<GenerationResult> streamCall(List<Message> messages) {
+        log.debug("messages:\r\n{}" , JSONUtil.toJsonPrettyStr(messages));
+        GenerationParam param = createGenerationParam(messages);
+        Generation gen = new Generation();
+        return gen.streamCall(param);
     }
 }
