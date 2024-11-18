@@ -272,6 +272,7 @@ const genChapterContent = async () => {
         background: 'rgba(255, 255, 255, 0.5)',
         customClass: 'custom-loading'
      });
+
     // 遍历输出每个节点的信息
     for (let i = 0; i < nodeList.length; i++) {
       const node = nodeList[i];
