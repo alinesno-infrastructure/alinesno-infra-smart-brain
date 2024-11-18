@@ -237,11 +237,21 @@ const handleChange = (value, direction, movedKeys) => {
 }
 
 /** 运行管理者场景 */
-function handleLeaderPlan(){
+const handleLeaderPlan = () => {
+
+     // 开始生成
+     streamLoading.value = ElLoading.service({
+        lock: true,
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading'
+     });
+
     leaderPlan(currentScreenId.value).then(res => {
         proxy.$modal.msgSuccess("运行成功");
-        
-        // leaderChatRef.value.runTask() ; 
+
+        // 循环执行任务
+        // let taskList = res.data.taskList
+        // handleExecuteScreenTask(taskList)
     })
 }
 
