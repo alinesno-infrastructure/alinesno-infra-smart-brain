@@ -132,7 +132,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setAddTime(new Date());
         entity.setIcon(personDto.getIcon());
 
-//        entity.setBusinessId(personDto.getBusinessId());
         entity.setChannelId(channelId);
         entity.setRoleId(personDto.getRoleId());
         entity.setAccountId(personDto.getAccountId());
