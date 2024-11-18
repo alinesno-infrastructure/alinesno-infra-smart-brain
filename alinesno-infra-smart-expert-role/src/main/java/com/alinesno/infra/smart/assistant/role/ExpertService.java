@@ -183,12 +183,12 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         record.setEndTime(System.currentTimeMillis());
         record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
 
-        // 如果是异步的，则为插入不为更新
-        MessageEntity e = messageService.getById(record.getId());
-        streamMessagePublisher.doStuffAndPublishAnEvent(e != null && TASK_SYNC.equals(e.getFieldProp())?"同步任务完成.":"异步任务完成.",
-                getRole() ,
-                getTaskInfo() ,
-                IdUtil.getSnowflakeNextId()) ;
+//        // 如果是异步的，则为插入不为更新
+//        MessageEntity e = messageService.getById(record.getId());
+//        streamMessagePublisher.doStuffAndPublishAnEvent(e != null && TASK_SYNC.equals(e.getFieldProp())?"同步任务完成.":"异步任务完成.",
+//                getRole() ,
+//                getTaskInfo() ,
+//                IdUtil.getSnowflakeNextId()) ;
 
         return record;
     }
@@ -457,6 +457,40 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         }
 
         processStreamCallback(role, taskInfo, msgManager);
+    }
+
+    /**
+     * 同步任务完成之后回调
+     * @param role 角色
+     * @param taskInfo 任务信息
+     * @param content 回调内容
+     */
+    public void processSyncCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo , String content){
+
+        MessageEntity entity = new MessageEntity();
+
+        entity.setTraceBusId(taskInfo.getTraceBusId());
+
+        entity.setContent(content) ;
+        entity.setFormatContent(content);
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setChannelId(taskInfo.isScreen()?taskInfo.getScreenId():taskInfo.getChannelId());
+        entity.setRoleId(role.getId()) ;
+
+        messageService.save(entity);
+        taskInfo.setBusinessId(entity.getId()+"");
+
+        streamMessagePublisher.doStuffAndPublishAnEvent("同步任务完成.",
+                getRole() ,
+                getTaskInfo(),
+                IdUtil.getSnowflakeNextId()) ;
     }
 
     private void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
