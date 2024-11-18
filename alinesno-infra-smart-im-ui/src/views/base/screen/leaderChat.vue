@@ -112,20 +112,22 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
-import { getInfo, chatRole } from '@/api/base/im/roleChat'
+import { getInfo } from '@/api/base/im/roleChat'
 import { getParam } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { nextTick, onMounted } from "vue";
+import SnowflakeId from "snowflake-id";
+
+import { 
+  chatMessage
+} from '@/api/base/im/robot'
 
 import {
-    updateLeaderRole,
-    getScreen,
+    executeScreenTask ,
     leaderPlan ,
 } from '@/api/base/im/screen'
 
 const { proxy } = getCurrentInstance();
-
-const agentSingleRightPanelRef = ref(null)
 
 const loading = ref(false)
 const roleId = ref(null);
@@ -136,6 +138,7 @@ const roleInfo = ref({
 })
 const message = ref('');
 const businessId = ref(null);
+const snowflake = new SnowflakeId();
 
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
@@ -238,11 +241,11 @@ function handleSseConnect(screenId) {
   })
 }
 
-function handleBusinessIdToMessageBox(item) {
-  const businessIdMessage = ' #' + item.businessId + ' ';
-  businessId.value = item.businessId;
-  message.value += businessIdMessage;
-}
+// function handleBusinessIdToMessageBox(item) {
+//   const businessIdMessage = ' #' + item.businessId + ' ';
+//   businessId.value = item.businessId;
+//   message.value += businessIdMessage;
+// }
 
 /** 获取角色信息 */
 function handleGetInfo(roleId) {
@@ -292,7 +295,12 @@ const sendMessage = (type) => {
   leaderPlan(formData, roleId.value).then(res => {
     proxy.$modal.msgSuccess("发送成功");
     // pushResponseMessageList(res.data);
-    streamLoading.value.close();
+    // streamLoading.value.close();
+
+    // 循环执行任务
+    let taskList = res.data
+    handleExecuteScreenTask(taskList)
+
   }).catch(e => {
     console.info("请求异常" + e)
     streamLoading.value.close();
@@ -300,6 +308,30 @@ const sendMessage = (type) => {
 
   message.value = '';
 };
+
+const handleExecuteScreenTask = async (taskList) => {
+    let uId = snowflake.generate()
+    try{
+        for(let i = 0; i < taskList.length; i++){
+            let item = taskList[i]
+
+            let text = item.roleName + ' 角色开始执行，请耐心等待 ...';
+            streamLoading.value.setText(text)
+            const result = await executeScreenTask(item , uId) ;
+
+            if(result.code == 200){
+                text = '任务执行完成，请等待下一次任务 ...';
+                streamLoading.value.setText(text)
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching data:', error);
+        proxy.$modal.msgError("生成失败");
+        streamLoading.value.close();
+    }
+    streamLoading.value.close();
+}
+
 
 /** 显示工具条 */
 function showTools(item) {
@@ -313,14 +345,24 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
-onMounted(() => {
-  initChatBoxScroll();
+/** 获取频道的最近100条消息 */ 
+function handleScreenMessage(){
 
-  // roleId.value = getParam('roleId')
+  chatMessage(screenId.value).then(res => {
+    let msgList = res.data 
+    if(msgList){
+      messageList.value = msgList ; 
+      initChatBoxScroll();
+    }
+  })
+
+}
+
+onMounted(() => {
   screenId.value = getParam('screenId')
 
   handleSseConnect(screenId.value)
-  // handleGetInfo(roleId.value);
+  handleScreenMessage()
 })
 
 
@@ -341,7 +383,6 @@ onBeforeUnmount(() => {
 
 defineExpose({
   handleGetInfo 
-  // runTask
 })
 
 </script>
