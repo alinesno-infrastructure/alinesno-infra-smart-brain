@@ -26,6 +26,16 @@ var managerUrl = {
 
   // 管理者
   leaderPlan: leaderPrefix +"leaderPlan",
+  executeScreenTask: leaderPrefix +"executeScreenTask",
+}
+
+// 运行任务
+export function executeScreenTask(data,uId) {
+  return request({
+    url: managerUrl.executeScreenTask + "?uId=" + parseStrEmpty(uId) , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 运行场景计划
