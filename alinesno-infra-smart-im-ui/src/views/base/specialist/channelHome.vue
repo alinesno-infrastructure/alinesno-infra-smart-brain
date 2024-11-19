@@ -24,11 +24,6 @@
 
           <div class="card-container">
             <div>
-              <div class="card-header">
-                <img
-                  src="https://lf-coze-web-cdn.coze.cn/obj/coze-web-cn/mf/marketplace/static/image/brand-daily-rec.48709716.png"
-                  alt="Brand Logo">
-              </div>
               <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
               <p><span>{{ truncateString(recommendRole.responsibilities , 20) }}</span></p>
             </div>
@@ -55,8 +50,8 @@
                   <!-- <div class="semi-image avatar-oDHtb3">
                     <img :src="imagePathByPath(recommendRole.roleAvatar)"  class="semi-image-img" width="14" height="14">
                   </div> -->
-                  <div class="author-name"><span>罗文</span></div>
-                  <div class="at-name"><span>@LUOWEN</span></div>
+                  <div class="author-name"><span>罗小东</span></div>
+                  <div class="at-name"><span>@Easton</span></div>
                 </div>
               </div>
             </div>
