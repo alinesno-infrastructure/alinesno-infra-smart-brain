@@ -37,13 +37,13 @@ public class ToolEntity extends InfraBaseEntity {
 
     @ColumnComment("描述信息")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
-    @TableField(value = "description")
+    @TableField(value = "_description")
     private String description;
 
     @ColumnComment("工具类型")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 50)
-    @TableField(value = "plugin_type")
-    private String pluginType;
+    @TableField(value = "tool_type")
+    private String toolType;
 
     // 工具脚本(groovy)
     @ColumnComment("工具脚本")
@@ -74,6 +74,9 @@ public class ToolEntity extends InfraBaseEntity {
     @TableField(value = "success_count")
     private Long successCount;
 
-
+    @ColumnComment("工具信息")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @TableField(value = "tool_info")
+    private String toolInfo ;
 
 }
