@@ -1,22 +1,26 @@
 package com.alinesno.infra.smart.assistant.plugin.controller;
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
+import com.alinesno.infra.smart.assistant.enums.ToolTypeEnums;
+import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import io.jsonwebtoken.lang.Assert;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 应用构建Controller
@@ -30,7 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Api(tags = "Channel")
 @RestController
 @Scope("prototype")
-@RequestMapping("/api/infra/smart/assistant/plugin")
+@RequestMapping("/api/infra/smart/assistant/tool")
 public class ToolController extends BaseController<ToolEntity, IToolService> {
 
     @Autowired
@@ -50,6 +54,46 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    @DataPermissionSave
+    @ResponseBody
+    @PostMapping("/saveTool")
+    public AjaxResult saveTool(@RequestBody ToolEntity entity) throws Exception {
+
+        ToolTypeEnums type =  ToolTypeEnums.fromKey(entity.getToolType()) ;
+        Assert.notNull(type , "工具类型错误");
+
+        service.save(entity);
+        return this.ok();
+    }
+
+    /**
+     * 更新工具脚本
+     * @return
+     */
+    @PostMapping("/updateToolScript")
+    public AjaxResult updateToolScript(@RequestBody @Valid ToolRequestDto dto) {
+        ToolEntity entity = service.getById(dto.getToolId());
+
+        entity.setGroovyScript(dto.getScript());
+        entity.setToolInfo(ToolExecutor.getToolInfo(dto.getScript()));
+
+        service.update(entity);
+
+        return ok();
+    }
+
+    /**
+     * 验证工具脚本
+     * @return
+     */
+    @PostMapping("/validateToolScript")
+    public AjaxResult validateToolScript(@RequestBody @Valid ToolRequestDto dto) {
+
+        String output = service.validateToolScript(dto);
+
+        return AjaxResult.success("操作成功" , output);
     }
 
     @Override
