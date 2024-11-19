@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.role.tools;
 import cn.hutool.core.date.DateUtil;
 import com.alinesno.infra.smart.assistant.annotation.ParamInfo;
 import com.alinesno.infra.smart.assistant.annotation.ToolInfo;
+import com.alinesno.infra.smart.assistant.plugin.tool.Tool;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
