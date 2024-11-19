@@ -1,6 +1,6 @@
 package com.alinesno.infra.smart.assistant.role.prompt;
 
-import com.alinesno.infra.smart.assistant.api.PluginDto;
+import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import lombok.Getter;
@@ -17,7 +17,11 @@ public class Prompt {
      * 构建Agent的Prompt
      * @return
      */
-    public static String buildPrompt(IndustryRoleEntity agent, String roleName, String goal, String backstory){
+    public static String buildPrompt(IndustryRoleEntity agent,
+                                     List<ToolDto> tools,
+                                     String roleName,
+                                     String goal,
+                                     String backstory){
 
 //        return String.format(PromptTemplate.corePrompt,
 //                agent.getRole(),
@@ -35,7 +39,7 @@ public class Prompt {
      * @param tools
      * @return
      */
-    private static List<String> parsePlugins(List<PluginDto> tools) {
+    private static List<String> parsePlugins(List<ToolDto> tools) {
         List<String> toolList = new ArrayList<>() ;
 
 //        // 完成任务时
