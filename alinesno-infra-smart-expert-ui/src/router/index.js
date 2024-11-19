@@ -84,6 +84,12 @@ export const constantRoutes = [
         meta: { title: '脚本配置', icon: 'dashboard', affix: true }
       },
       {
+        path: '/expert/smart/assistant/tool/script',
+        component: () => import('@/views/smart/assistant/plugin/script'),
+        name: '/expert/smart/assistant/tool/script',
+        meta: { title: '工具脚本', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/expert/smart/assistant/role/react',
         component: () => import('@/views/smart/assistant/role/reactPanel'),
         name: '/expert/smart/assistant/role/react',
