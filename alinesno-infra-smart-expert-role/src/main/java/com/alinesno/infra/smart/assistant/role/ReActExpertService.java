@@ -5,13 +5,14 @@ import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
-import com.alinesno.infra.smart.assistant.role.tools.Tool;
-import com.alinesno.infra.smart.assistant.role.tools.ToolExecutor;
+import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
@@ -38,6 +39,9 @@ public class ReActExpertService extends ExpertService {
     private int maxLoop ;
 
     @Autowired
+    private IToolService toolService ;
+
+    @Autowired
     private QianWenNewApiLLM qianWenNewApiLLM ;
 
     @Override
@@ -50,10 +54,10 @@ public class ReActExpertService extends ExpertService {
         String backstory = role.getBackstory() ; // 背景
 
         // 工具类
-        List<Tool> tools = new ArrayList<>() ;
+        List<ToolDto> tools = toolService.getByRole(role.getId()) ;
 
         List<Message> messages = new ArrayList<>();
-        messages.add(qianWenNewApiLLM.createMessage(Role.SYSTEM, Prompt.buildPrompt(role , roleName , goal, backstory)));
+        messages.add(qianWenNewApiLLM.createMessage(Role.SYSTEM, Prompt.buildPrompt(role , tools , roleName , goal, backstory)));
         messages.add(qianWenNewApiLLM.createMessage(Role.USER, Prompt.taskPrompt(goal)));
 
         boolean isCompleted = false ;  // 是否已经完成
