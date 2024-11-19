@@ -191,28 +191,28 @@
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
       <el-form :model="form" :rules="rules" ref="RoleRef" label-width="80px">
           <el-row>
-            <el-col :span="24" class="editor-after-div">
-              <el-form-item
-                  label="头像"
-                  :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
-                  <el-upload
-                    :file-list="imageUrl"
-                    :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
-                    list-type="picture-card"
-                    :auto-upload="true"
-                    :limit="1"
-                    :on-success="handleAvatarSuccess"
-                    :before-upload="beforeAvatarUpload"
-                    :headers="upload.headers"
-                    :disabled="upload.isUploading"
-                    :on-progress="handleFileUploadProgress"
-                  >
-                    <!-- <img v-if="form.roleAvatar" style="width:100%;height:100%" :src="imagePath(form.roleAvatar)" /> -->
-                    <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
-                  </el-upload>
-                </el-form-item>
-            </el-col>
-          </el-row>
+          <el-col :span="24" class="editor-after-div">
+            <el-form-item
+                label="头像"
+                :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
+                <el-upload
+                  :file-list="imageUrl"
+                  :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                  list-type="picture-card"
+                  :auto-upload="true"
+                  :limit="1"
+                  :on-success="handleAvatarSuccess"
+                  :before-upload="beforeAvatarUpload"
+                  :headers="upload.headers"
+                  :disabled="upload.isUploading"
+                  :on-progress="handleFileUploadProgress"
+                >
+                  <!-- <img v-if="form.roleAvatar" style="width:100%;height:100%" :src="imagePath(form.roleAvatar)" /> -->
+                  <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                </el-upload>
+              </el-form-item>
+          </el-col>
+        </el-row>
         <el-col :span="24">
           <el-form-item label="角色类型" prop="roleType">
             <el-radio-group v-model="form.roleType">
