@@ -25,6 +25,35 @@ var managerUrl = {
   validateRoleScript: prefix + "validateRoleScript",
   updateRoleScript: prefix + "updateRoleScript",
   recommended: prefix + "recommended",
+  getRoleWithTool: prefix + "getRoleWithTool",
+  saveRoleWithTool: prefix + "saveRoleWithTool",
+  validateReActRole: prefix + "validateReActRole",
+}
+
+// 验证ReAct角色
+export function validateReActRole(data) {
+  return request({
+    url: managerUrl.validateReActRole ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 保存用户信息和工具信息
+export function saveRoleWithTool(data) {
+  return request({
+    url: managerUrl.saveRoleWithTool ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取到角色和工具
+export function getRoleWithTool(roleId) {
+  return request({
+    url: managerUrl.getRoleWithTool + '?roleId=' + parseStrEmpty(roleId) ,
+    method: 'get'
+  })
 }
 
 // 推荐频道角色
