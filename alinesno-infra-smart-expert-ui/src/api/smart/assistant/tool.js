@@ -18,6 +18,15 @@ var managerUrl = {
   downloadFile: prefix + "downloadFile",
   validateToolScript: prefix + "validateToolScript",
   updateToolScript: prefix + "updateToolScript",
+  getAllTool: prefix + "getAllTool",
+}
+
+// 获取到所有的工具列表
+export function getAllTool() {
+  return request({
+    url: managerUrl.getAllTool ,
+    method: 'get'
+  })
 }
 
 // 验证脚本任务
