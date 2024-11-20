@@ -5,6 +5,7 @@ import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.ResultCallback;
+import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.Constants;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
@@ -34,6 +35,27 @@ public class QianWenLLM {
         GenerationParam param =GenerationParam.builder()
                 .model(Generation.Models.QWEN_TURBO)
                 .messages(msgManager.get())
+                .resultFormat(GenerationParam.ResultFormat.MESSAGE)
+                .topP(0.8)
+                .incrementalOutput(true)
+                .build();
+
+        gen.streamCall(param, callback) ;
+    }
+
+    public Message createMessage(Role role, String content) {
+        return Message.builder().role(role.getValue()).content(content).build();
+    }
+
+    @SneakyThrows
+    public void getGeneration(List<Message> messages , ResultCallback<GenerationResult> callback) {
+
+        Constants.apiKey = qianWenKey ;
+        Generation gen = new Generation();
+
+        GenerationParam param =GenerationParam.builder()
+                .model(Generation.Models.QWEN_TURBO)
+                .messages(messages)
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .topP(0.8)
                 .incrementalOutput(true)
