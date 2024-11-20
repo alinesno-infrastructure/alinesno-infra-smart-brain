@@ -79,4 +79,9 @@ public class ToolEntity extends InfraBaseEntity {
     @TableField(value = "tool_info")
     private String toolInfo ;
 
+    @ColumnComment("工具全名")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
+    @TableField(value = "tool_full_name")
+    private String toolFullName;
+
 }
