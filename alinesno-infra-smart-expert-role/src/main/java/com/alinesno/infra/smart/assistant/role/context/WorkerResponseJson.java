@@ -11,6 +11,9 @@ public class WorkerResponseJson {
     @JSONField(name = "thought")
     private String thought; // 对应JSON中的"thought"字段
 
+    @JSONField(name = "finalAnswer")
+    private String finalAnswer; // 对应JSON中的"thought"字段
+
     @Data // 内部类也使用Lombok的@Data注解
     public static class Tool {
         @JSONField(name = "name")
