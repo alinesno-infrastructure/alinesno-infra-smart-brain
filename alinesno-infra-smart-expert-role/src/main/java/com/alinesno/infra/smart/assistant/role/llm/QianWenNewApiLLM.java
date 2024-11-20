@@ -5,6 +5,7 @@ import com.alibaba.dashscope.aigc.generation.Generation;
 import com.alibaba.dashscope.aigc.generation.GenerationParam;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
+import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.InputRequiredException;
@@ -39,6 +40,7 @@ public class QianWenNewApiLLM {
 
     public GenerationResult callGenerationWithMessages(GenerationParam param) throws ApiException, NoApiKeyException, InputRequiredException {
         Generation gen = new Generation();
+
         return gen.call(param);
     }
 
@@ -58,6 +60,14 @@ public class QianWenNewApiLLM {
      * @param messages
      * @return
      */
+    @SneakyThrows
+    public void streamCall(List<Message> messages , ResultCallback<GenerationResult> callback) {
+        log.debug("messages:\r\n{}" , JSONUtil.toJsonPrettyStr(messages));
+        GenerationParam param = createGenerationParam(messages);
+        Generation gen = new Generation();
+        gen.streamCall(param , callback);
+    }
+
     @SneakyThrows
     public Flowable<GenerationResult> streamCall(List<Message> messages) {
         log.debug("messages:\r\n{}" , JSONUtil.toJsonPrettyStr(messages));
