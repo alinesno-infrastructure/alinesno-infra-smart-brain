@@ -28,4 +28,13 @@ public interface IToolService extends IBaseService<ToolEntity> {
      * @return
      */
     List<ToolDto> getByRole(long roleId);
+
+    /**
+     * 通过工具名，查询工具脚本
+     * @param toolFullName
+     * @param id
+     * @return
+     */
+    ToolEntity getToolScript(String toolFullName, Long id);
+
 }
