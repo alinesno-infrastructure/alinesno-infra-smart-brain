@@ -19,19 +19,18 @@ public class Prompt {
      */
     public static String buildPrompt(IndustryRoleEntity agent,
                                      List<ToolDto> tools,
-                                     String roleName,
-                                     String goal,
-                                     String backstory){
+                                     StringBuilder thought,
+                                     String goal){
 
-//        return String.format(PromptTemplate.corePrompt,
-//                agent.getRole(),
-//                agent.getBackstory() ,
-//                goal ,
-//                agent.getKnowledge(),
-//                parsePluginDtos(agent.getPluginDtos())
-//        );
+        return String.format(PromptTemplate.corePromptForEn,
+                agent.getRoleName(),
+                agent.getBackstory() ,
+                agent.getResponsibilities() ,
+                thought.toString() ,
+                parsePlugins(tools),
+                taskPrompt(goal)
+        );
 
-        return null ;
     }
 
     /**
@@ -42,25 +41,10 @@ public class Prompt {
     private static List<String> parsePlugins(List<ToolDto> tools) {
         List<String> toolList = new ArrayList<>() ;
 
-//        // 完成任务时
-//        PluginDto taskCompletePluginDto = new TaskCompletePluginDto() ;
-//        PluginDto askLeaderHelpPluginDto = new AskLeaderHelpPluginDto() ;
-//
-//        // 用户自定义的工具类
-//        for (PluginDto tool : tools) {
-//            toolList.add(tool.toJson()) ;
-//            toolMap.put(tool.toPluginDtoName() , tool.getFullName()) ;
-//        }
-//
-//        toolList.add(taskCompletePluginDto.toJson())  ;
-//        toolList.add(askLeaderHelpPluginDto.toJson()) ;
-//
-//        toolMap.put(taskCompletePluginDto.toPluginDtoName() , taskCompletePluginDto.getFullName()) ;
-//        toolMap.put(askLeaderHelpPluginDto.toPluginDtoName() , askLeaderHelpPluginDto.getFullName()) ;
-//
-//        for (String toolName : toolMap.keySet()) {
-//            log.debug("工具名称：{} , 工具全名：{}" , toolName , toolMap.get(toolName));
-//        }
+        // 用户自定义的工具类
+        for (ToolDto tool : tools) {
+            toolList.add(tool.getToolInfo()) ;
+        }
 
         return toolList;
     }
