@@ -12,11 +12,15 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
+import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
@@ -53,6 +57,9 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     private IIndustryRoleService service;
 
     @Autowired
+    private IRoleToolService roleToolService ;
+
+    @Autowired
     private IIndustryRoleCatalogService catalogService ;
 
     /**
@@ -84,6 +91,30 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         }
 
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     * 获取用户信息和工具getRoleWithTool
+     */
+    @GetMapping("/getRoleWithTool")
+    public AjaxResult getRoleWithTool(long roleId) {
+
+        IndustryRoleEntity role = service.getById(roleId) ;
+        List<ToolEntity> tools =  roleToolService.findTools(roleId);
+
+        AjaxResult result = AjaxResult.success("操作成功" , role);
+        result.put("tools", tools);
+
+        return result ;
+    }
+
+    /**
+     * 保存用户信息和工具信息 saveRoleWithTool
+     */
+    @PostMapping("/saveRoleWithTool")
+    public AjaxResult saveRoleWithTool(@RequestBody @Validated RoleToolRequestDTO dto) {
+        service.saveRoleWithTool(dto) ;
+        return ok();
     }
 
     /**
@@ -162,6 +193,19 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         WorkflowExecutionDto output = service.validateRoleScript(dto);
         return AjaxResult.success(output) ;
     }
+
+    /**
+     * 验证ReAct角色
+     * @param dto
+     * @return
+     */
+    @PostMapping("/validateReActRole")
+    public AjaxResult validateReActRole(@RequestBody @Validated ReActRoleScriptDto dto){
+        log.debug("dto = {}", dto);
+        WorkflowExecutionDto output = service.validateReActRole(dto);
+        return AjaxResult.success(output) ;
+    }
+
 
     @Override
     public IIndustryRoleService getFeign() {
