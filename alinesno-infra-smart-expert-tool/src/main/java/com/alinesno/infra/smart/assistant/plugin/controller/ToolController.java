@@ -1,26 +1,35 @@
 package com.alinesno.infra.smart.assistant.plugin.controller;
 
+import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.ToolTypeEnums;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.jsonwebtoken.lang.Assert;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 应用构建Controller
@@ -69,6 +78,29 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
     }
 
     /**
+     * 查询到所有的工具，并返回DTO
+     */
+    @DataPermissionQuery
+    @GetMapping("/getAllTool")
+    public AjaxResult getAllTool(PermissionQuery query) {
+
+        LambdaQueryWrapper<ToolEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(ToolEntity.class);
+        query.toWrapper(queryWrapper);
+
+        List<ToolEntity> allTool = service.list(queryWrapper);
+        List<ToolDto> allToolDto = new ArrayList<>() ;
+
+        for (ToolEntity toolEntity : allTool) {
+            ToolDto toolDto = new ToolDto();
+            BeanUtils.copyProperties(toolEntity, toolDto);
+            allToolDto.add(toolDto);
+        }
+
+        return AjaxResult.success("操作成功" ,allToolDto) ;
+    }
+
+    /**
      * 更新工具脚本
      * @return
      */
@@ -77,7 +109,11 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
         ToolEntity entity = service.getById(dto.getToolId());
 
         entity.setGroovyScript(dto.getScript());
-        entity.setToolInfo(ToolExecutor.getToolInfo(dto.getScript()));
+
+        String toolInfo = ToolExecutor.getToolInfo(dto.getScript());
+
+        entity.setToolInfo(toolInfo) ;
+        entity.setToolFullName(JSONObject.parseObject(toolInfo , JSONObject.class).getString("name"));
 
         service.update(entity);
 
