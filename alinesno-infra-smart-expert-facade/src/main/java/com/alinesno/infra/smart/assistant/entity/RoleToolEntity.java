@@ -8,12 +8,14 @@ import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
 import com.gitee.sunchenbin.mybatis.actable.annotation.TableComment;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.Entity;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
+@NoArgsConstructor
 @TableName("role_tool")
 @TableComment("角色工具信息")
 public class RoleToolEntity extends InfraBaseEntity {
@@ -29,4 +31,8 @@ public class RoleToolEntity extends InfraBaseEntity {
     @TableField(value = "plugin_id")
     private Long toolId;
 
+    public RoleToolEntity(Long roleId, Long toolId) {
+        this.roleId = roleId;
+        this.toolId = toolId;
+    }
 }
