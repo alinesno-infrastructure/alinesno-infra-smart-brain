@@ -9,6 +9,7 @@ import com.alinesno.infra.smart.assistant.plugin.mapper.ToolMapper;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -70,14 +71,30 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
     @Override
     public List<ToolDto> getByRole(long roleId) {
 
-        List<RoleToolEntity> roleTools = roleToolService.findTools(roleId) ;
-        List<ToolEntity> tools = listByIds(roleTools.stream().map(RoleToolEntity::getToolId).toList()) ;
+        List<ToolEntity> roleTools = roleToolService.findTools(roleId) ;
 
-        return tools.stream().map(tool -> {
+        return roleTools.stream().map(tool -> {
             ToolDto dto = new ToolDto();
             BeanUtils.copyProperties(tool, dto);
             return dto;
         }).toList();
 
+    }
+
+    @Override
+    public ToolEntity getToolScript(String toolFullName, Long roleId) {
+
+        LambdaQueryWrapper<RoleToolEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(RoleToolEntity::getRoleId, roleId);
+        List<RoleToolEntity> roleTools = roleToolService.list(queryWrapper) ;
+
+        List<ToolEntity> tools = this.listByIds(roleTools.stream().map(RoleToolEntity::getToolId).toList()) ;
+        for (ToolEntity tool : tools) {
+            if(tool.getToolFullName().equals(toolFullName)){
+                return tool ;
+            }
+        }
+
+        return null;
     }
 }
