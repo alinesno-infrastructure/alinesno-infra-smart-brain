@@ -66,7 +66,7 @@ public class AppConfiguration implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
 
-        log.debug("项目启动初始化");
+        log.debug("项目启动完成");
 
     }
 
