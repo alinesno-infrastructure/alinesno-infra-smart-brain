@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
@@ -66,8 +67,12 @@ public class RoleChatController extends SuperController {
         MessageManager msgManager = new MessageManager(10);
         msgManager.add(userMsg);
 
-        StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
-        message.setChatText(stringBuilder.toString());
+        if(StringUtils.isNotBlank(role.getGreeting())){
+            message.setChatText(role.getGreeting());
+        }else{
+            StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
+            message.setChatText(stringBuilder.toString());
+        }
         message.setLoading(false);
 
         AjaxResult result = AjaxResult.success();
