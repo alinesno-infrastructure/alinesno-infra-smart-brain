@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.assistant.service;
 
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
+import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
@@ -93,4 +95,17 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     IndustryRoleEntity getRecommendRole(long orgId);
+
+    /**
+     * 保存角色和工具关联
+     * @param dto
+     */
+    void saveRoleWithTool(RoleToolRequestDTO dto);
+
+    /**
+     * 验证ReAct角色
+     * @param dto
+     * @return
+     */
+    WorkflowExecutionDto validateReActRole(ReActRoleScriptDto dto);
 }
