@@ -7,7 +7,9 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
+import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -15,6 +17,7 @@ import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -44,11 +47,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     @Autowired
     private IWorkflowExecutionService workflowExecutionService;
 
-//    @Autowired
-//    private IMessageService messageService;
-
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
+
+    @Autowired
+    private IRoleToolService roleToolService ;
 
     private static final Gson gson = new Gson();
 
@@ -275,5 +278,46 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         return null;
+    }
+
+    @Override
+    public void saveRoleWithTool(RoleToolRequestDTO dto) {
+        IndustryRoleEntity role = getById(dto.getRoleId()) ;
+        role.setGreeting(dto.getGreeting());
+        role.setBackstory(dto.getBackstory());
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+        update(role) ;
+
+        boolean b = roleToolService.updateRoleTools(dto.getRoleId(), dto.getTools()) ;
+        log.debug("updateRoleTools = {}", b);
+    }
+
+    @Override
+    public WorkflowExecutionDto validateReActRole(ReActRoleScriptDto dto) {
+
+        log.debug("validateReActRole:{}" , dto);
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+        taskInfo.setRoleId(dto.getRoleId());
+        taskInfo.setText(dto.getMessage());
+
+        long roleId = taskInfo.getRoleId();
+        IndustryRoleEntity role = getById(roleId);
+        role.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+
+        // 获取到节点的执行内容信息
+        MessageEntity message = new MessageEntity() ;
+        String preGenContent = """
+                    ```json
+                    {"name":"测试脚本"}
+                    ```
+                """ ;
+        message.setContent(preGenContent);
+
+        log.debug("role.getChainId() = {}", role.getChainId());
+        IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
+        taskInfo.setRoleDto(role);
+
+        return expertService.runRoleAgent(role, message, taskInfo);
     }
 }
