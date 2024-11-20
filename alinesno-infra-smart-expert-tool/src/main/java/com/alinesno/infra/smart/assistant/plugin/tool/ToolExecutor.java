@@ -12,6 +12,8 @@ import java.util.Map;
 public class ToolExecutor {
 
     public static Object executeGroovyScript(String script, Map<String, Object> params) throws Exception {
+       log.trace("执行脚本：{}", script);
+
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
             Class<?> groovyClass = loader.parseClass(script);
 
@@ -31,6 +33,9 @@ public class ToolExecutor {
 
     @SneakyThrows
     public static String getToolInfo(String script) {
+
+        log.trace("执行脚本：{}", script);
+
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
             Class<?> groovyClass = loader.parseClass(script);
 
