@@ -39,6 +39,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @TableField("chain_id") // MyBatis-Plus 字段注解
     private String chainId; // 其他角色相关字段
 
+    @TableField("greeting")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
+    @ColumnComment("开场白")
+    private String greeting ; // 开场白
+
     /**
      * 1. 单角色：自己单独完成一个聊天，可流式输出或者同步输出
      * 2. 协作角色：与其它角色协作才可以完成一个工作，可流式输出或者同步输出
