@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.role;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
@@ -7,6 +8,7 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
@@ -35,7 +37,7 @@ import java.util.concurrent.CompletableFuture;
 @Service(AssistantConstants.PREFIX_ASSISTANT_REACT)
 public class ReActExpertService extends ExpertService {
 
-    @Value("${alinesno.infra.smart.assistant.maxLoop:3}")
+    @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
     @Autowired
@@ -49,16 +51,10 @@ public class ReActExpertService extends ExpertService {
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
-        String roleName = role.getRoleName() ; // 角色名称
         String goal = clearMessage(taskInfo.getText()) ; // 目标
-        String backstory = role.getBackstory() ; // 背景
 
         // 工具类
         List<ToolDto> tools = toolService.getByRole(role.getId()) ;
-
-        List<Message> messages = new ArrayList<>();
-        messages.add(qianWenNewApiLLM.createMessage(Role.SYSTEM, Prompt.buildPrompt(role , tools , roleName , goal, backstory)));
-        messages.add(qianWenNewApiLLM.createMessage(Role.USER, Prompt.taskPrompt(goal)));
 
         boolean isCompleted = false ;  // 是否已经完成
         int loop = 0 ;
@@ -69,18 +65,40 @@ public class ReActExpertService extends ExpertService {
         do {
             loop++;
 
+            streamMessagePublisher.doStuffAndPublishAnEvent("开始第"+loop+"次思考 ....",
+                    role,
+                    taskInfo,
+                    IdUtil.getSnowflakeNextId());
+
+            String prompt = Prompt.buildPrompt(role , tools , thought , goal) ;
+
+            List<Message> messages = new ArrayList<>();
+            messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
+
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
                 StringBuilder outputStr = new StringBuilder();
-
                 Flowable<GenerationResult> result = qianWenNewApiLLM.streamCall(messages);
+                long tmpMsgId = IdUtil.getSnowflakeNextId() ;
+
+                StringBuilder preMsg = new StringBuilder() ;
+
                 result.blockingForEach(message -> {
 
                     String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
                     String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
 
-                    log.debug("Received message: {} , finishReason: {}", msg , finishReason);
-                    outputStr.append(msg);
+                    streamMessagePublisher.doStuffAndPublishAnEvent(msg.substring(preMsg.toString().length()),
+                            role,
+                            taskInfo,
+                            tmpMsgId);
+
+                    preMsg.setLength(0);
+                    preMsg.append(msg) ;
+
+                    if(finishReason != null && finishReason.equals("stop")){
+                        outputStr.append(msg);
+                    }
                 });
 
                 // 生成任务结果
@@ -98,40 +116,56 @@ public class ReActExpertService extends ExpertService {
                 WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
                 log.debug("reactResponse = {}" , reactResponse);
 
-                // 如果说toolNames不为空，并且有对应的工具，则直接调用
-                if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
+                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
+                    answer = reactResponse.getFinalAnswer();
+                    isCompleted = true;
+                }else if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
+                    String observation = "" ;
+                    for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
+                        String toolFullName = tool.getName() ;
 
-                    if (reactResponse.hasTaskCompleteTool()) {  // 完成的智能体
-                        answer = reactResponse.getTaskCompleteToolAnswer();
-                        isCompleted = true;
-                    } else {
-                        String observation = "" ;
-                        for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
-                            String toolFullName = tool.getName() ;
+                        log.debug("正在执行工具名称：{}" , toolFullName);
+                        streamMessagePublisher.doStuffAndPublishAnEvent("正在执行工具:" + toolFullName +"，请稍等..." ,
+                                role,
+                                taskInfo,
+                                IdUtil.getSnowflakeNextId());
 
-                            log.debug("正在执行工具名称：{}" , toolFullName);
+                        ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getId()) ;
 
-                            Map<String, Object> argsList = tool.getArgsList();
+                        Map<String, Object> argsList = tool.getArgsList();
 
-                            try {
-                                Object executeToolOutput = ToolExecutor.executeGroovyScript(toolFullName, argsList);
-                                if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
-                                    thought.append("\n");
-                                    observation += (thought.append(executeToolOutput)) ;
-                                }
-                                log.debug("工具执行结果：{}", observation);
-                                System.out.println();
-                            } catch (Exception e) {
-                                log.error("工具执行失败:{}", e.getMessage());
+                        try {
+                            Object executeToolOutput = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList);
+                            if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
+
+                                String toolAndObservable = String.format("%s\r\n" , executeToolOutput) ;
+                                thought.append(toolAndObservable);
+
+                                streamMessagePublisher.doStuffAndPublishAnEvent("工具执行结果:" + executeToolOutput,
+                                        role,
+                                        taskInfo,
+                                        IdUtil.getSnowflakeNextId());
+
                             }
+                            log.debug("工具执行结果：{}", observation);
+                            System.out.println();
+                        } catch (Exception e) {
+                            log.error("工具执行失败:{}", e.getMessage());
+                            streamMessagePublisher.doStuffAndPublishAnEvent("工具执行失败:" + e.getMessage(),
+                                    role,
+                                    taskInfo,
+                                    IdUtil.getSnowflakeNextId());
                         }
-
-                        messages.add(qianWenNewApiLLM.createMessage(Role.USER, observation));
                     }
+
                 }
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
+                streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
+                        role,
+                        taskInfo,
+                        IdUtil.getSnowflakeNextId());
             }
 
             if(loop >= maxLoop){
@@ -139,7 +173,7 @@ public class ReActExpertService extends ExpertService {
             }
         } while (!isCompleted);
 
-        return answer;
+        return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
     }
 
     @Override
