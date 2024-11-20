@@ -72,7 +72,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     private IScreenService screenService ;
 
     @Autowired
-    private StreamMessagePublisher streamMessagePublisher ;
+    protected StreamMessagePublisher streamMessagePublisher ;
 
     @Autowired
     protected BaseSearchConsumer searchConsumer;
