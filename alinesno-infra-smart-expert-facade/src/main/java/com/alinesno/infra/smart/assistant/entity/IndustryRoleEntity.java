@@ -30,7 +30,7 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     private String roleName; // 角色名称
 
     @TableField("backstory")
-    @ColumnType(value = MySqlTypeConstant.VARCHAR)
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
     @ColumnComment("角色背景")
     private String backstory ; // 角色背景
 
