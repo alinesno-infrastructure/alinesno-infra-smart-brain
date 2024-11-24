@@ -1,6 +1,7 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.io.FileTypeUtil;
+import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * 文档控制层
@@ -31,6 +33,9 @@ import java.util.Objects;
 @RestController
 @RequestMapping(value = "/v1/api/infra/base/im/knowledge")
 public class KnowledgeController {
+
+    @Autowired
+    protected CloudStorageConsumer cloudStorageConsumer;
 
     @Autowired
     private BaseSearchConsumer searchController ;
@@ -65,12 +70,12 @@ public class KnowledgeController {
 
         // 获取原始文件名
         String fileName = file.getOriginalFilename();
-        ChatMessageDto personDto = AgentUtils.getUploadChatMessageDto(fileName , fileType) ;
 
         // 上传到知识库角色
         ChannelEntity channelEntity = channelService.getById(channelId) ;
         String datasetId = channelEntity.getKnowledgeId() ;
 
+        AtomicBoolean isSuccess = new AtomicBoolean(false);
         R<String> result = searchController.datasetUpload(tmpFile.getAbsolutePath() , datasetId , progress -> {
             log.debug("total bytes: " + progress.getTotalBytes());   // 文件大小
             log.debug("current bytes: " + progress.getCurrentBytes());   // 已上传字节数
@@ -86,16 +91,23 @@ public class KnowledgeController {
                     channelEntity.setKnowledgeType(knowledgeType);
                 }
                 channelService.updateById(channelEntity) ;
-
-                // 保存消息实体
-                messageService.saveChatMessage(personDto , channelId) ;
+                isSuccess.set(true);
             }
 
         }) ;
         log.debug("upload file result = {}" , result);
 
-        FileUtils.forceDelete(tmpFile);
+        ChatMessageDto personDto;
+        if(isSuccess.get()){
+            R<String> r = cloudStorageConsumer.uploadCallbackUrl(tmpFile, "qiniu-kodo-pub"); // TODO 文档24小时后链接地址失效
+            personDto = AgentUtils.getUploadChatMessageDto(fileName, r.getData() , fileType , "SUCCESS") ;
+        }else{
+            personDto = AgentUtils.getUploadChatMessageDto(fileName , null , fileType , "FAIL") ;
+        }
 
+        FileUtils.forceDelete(tmpFile);
+        long bId = messageService.saveChatMessage(personDto, channelId) ;
+        personDto.setBusinessId(bId);
         return AjaxResult.success(personDto) ;
     }
 
