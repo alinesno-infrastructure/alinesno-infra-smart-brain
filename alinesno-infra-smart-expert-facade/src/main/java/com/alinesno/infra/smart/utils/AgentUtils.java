@@ -36,7 +36,7 @@ public class AgentUtils {
     }
 
     @NotNull
-    public static ChatMessageDto getUploadChatMessageDto(String fileName, String fileType) {
+    public static ChatMessageDto getUploadChatMessageDto(String fileName, String ossPath , String fileType , String status) {
         ChatMessageDto personDto = new ChatMessageDto() ;
 
         String icon = DocumentTypeEnum.getIconByFileType(fileType);
@@ -46,11 +46,11 @@ public class AgentUtils {
                 "<i class='" + icon + " aip-icon-word'></i>" +
                 escapedFileName +
                 " </div>" +
-                " 已上传文件成功.";
+                " 已上传文件"+(status.equals("SUCCESS")?"成功.":"失败.")+".<a href='"+ossPath+"'>下载</a>";
 
         personDto.setChatText(chatText);
 
-        personDto.setName("Agent小助理");
+        personDto.setName("AIP助理");
         personDto.setRoleType("agent");
         personDto.setReaderType("html");
         personDto.setBusinessId(IdUtil.getSnowflakeNextId());
