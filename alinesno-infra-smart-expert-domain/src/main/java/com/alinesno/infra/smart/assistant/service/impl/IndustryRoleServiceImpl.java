@@ -286,6 +286,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setGreeting(dto.getGreeting());
         role.setBackstory(dto.getBackstory());
         role.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+        role.setAskHumanHelp(dto.isAskHumanHelp());
         update(role) ;
 
         boolean b = roleToolService.updateRoleTools(dto.getRoleId(), dto.getTools()) ;
