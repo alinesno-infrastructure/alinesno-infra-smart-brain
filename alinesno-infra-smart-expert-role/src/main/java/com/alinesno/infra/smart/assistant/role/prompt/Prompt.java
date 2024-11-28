@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.role.prompt;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,7 +28,7 @@ public class Prompt {
                 agent.getBackstory() ,
                 agent.getResponsibilities() ,
                 thought.toString() ,
-                parsePlugins(tools),
+                parsePlugins(tools , agent.isAskHumanHelp()),
                 taskPrompt(goal)
         );
 
@@ -38,12 +39,16 @@ public class Prompt {
      * @param tools
      * @return
      */
-    private static List<String> parsePlugins(List<ToolDto> tools) {
+    private static List<String> parsePlugins(List<ToolDto> tools , boolean askHumanHelp) {
         List<String> toolList = new ArrayList<>() ;
 
         // 用户自定义的工具类
         for (ToolDto tool : tools) {
             toolList.add(tool.getToolInfo()) ;
+        }
+
+        if(askHumanHelp){
+            toolList.add(new AskHumanHelpTool().toJson()) ;
         }
 
         return toolList;
