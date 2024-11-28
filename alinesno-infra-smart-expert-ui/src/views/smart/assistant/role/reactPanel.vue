@@ -28,17 +28,6 @@
                                     <el-input v-model="ruleForm.backstory" :rows="10" resize="none" type="textarea" />
                                 </el-form-item>
                                 <el-form-item label="工具选择" prop="tools">
-                                    <!-- <div style="display: flex;gap: 10px;flex-direction: row;">
-                                        <span v-for="item in toolOptions" :key="item.id">
-                                            <el-checkbox 
-                                                :label="item.id" 
-                                                :value="item.id"
-                                                :key="item.id"
-                                                size="large" border>
-                                                {{ item.name }}
-                                            </el-checkbox>
-                                        </span>
-                                    </div> -->
                                     <el-checkbox-group v-model="ruleForm.tools" size="large">
                                         <el-checkbox 
                                             v-for="item in toolOptions"
@@ -53,6 +42,9 @@
                                 <el-form-item label="开场白" prop="greeting">
                                     <el-input v-model="ruleForm.greeting" size="large"
                                         :placeholder="'你好，我是' + currentRole.roleName + '🎉 '" />
+                                </el-form-item>
+                                <el-form-item label="人类咨询">
+                                    <el-checkbox v-model="ruleForm.askHumanHelp" label="人类咨询" :value="'true'" size="large" border /> 
                                 </el-form-item>
                             </el-form>
                         </div>
