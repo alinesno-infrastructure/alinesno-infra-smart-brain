@@ -14,6 +14,7 @@ import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
+import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -52,6 +53,7 @@ public class ReActExpertService extends ExpertService {
                                 MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
+        boolean askHumanHelp = role.isAskHumanHelp() ;
 
         // 工具类
         List<ToolDto> tools = toolService.getByRole(role.getId()) ;
@@ -74,6 +76,9 @@ public class ReActExpertService extends ExpertService {
 
             List<Message> messages = new ArrayList<>();
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
+            if(askHumanHelp){
+                askHumanHelpRecycle(messages) ;
+            }
 
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
@@ -123,6 +128,20 @@ public class ReActExpertService extends ExpertService {
                     String observation = "" ;
                     for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
                         String toolFullName = tool.getName() ;
+
+                        // 如果是咨询人类的
+                        if(toolFullName.equals(AskHumanHelpTool.class.getSimpleName())){
+                           String question = tool.getArgsList().get("question")+"" ;
+
+                            streamMessagePublisher.doStuffAndPublishAnEvent(question ,
+                                    role,
+                                    taskInfo,
+                                    IdUtil.getSnowflakeNextId());
+
+                            isCompleted = true ;   // 结束对话，等待人类回复
+                            answer = "本轮结束" ;
+                            continue;
+                        }
 
                         log.debug("正在执行工具名称：{}" , toolFullName);
                         streamMessagePublisher.doStuffAndPublishAnEvent("正在执行工具:" + toolFullName +"，请稍等..." ,
@@ -174,6 +193,13 @@ public class ReActExpertService extends ExpertService {
         } while (!isCompleted);
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
+    }
+
+    /**
+     * TODO 处理咨询的历史问题
+     * @param messages
+     */
+    private void askHumanHelpRecycle(List<Message> messages) {
     }
 
     @Override
