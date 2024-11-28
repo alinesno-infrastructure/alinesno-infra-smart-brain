@@ -13,9 +13,10 @@ public interface IProjectService extends IBaseService<ProjectEntity> {
 
     /**
      * 初始化默认应用
+     * @param orgId
      * @param userId
      */
-    void initDefaultApp(long userId);
+    void initDefaultApp(long orgId , long userId);
 
     ProjectEntity getProjectByAccountId(long userId);
 }
