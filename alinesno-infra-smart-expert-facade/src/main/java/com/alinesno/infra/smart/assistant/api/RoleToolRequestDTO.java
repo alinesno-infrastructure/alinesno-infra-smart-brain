@@ -23,6 +23,8 @@ public class RoleToolRequestDTO extends BaseDto {
     @NotBlank(message = "欢迎语不能为空")
     private String greeting;
 
+    private boolean askHumanHelp ; // 是否需要人类帮助
+
     @Size(max = 10 , min=1, message = "工具列表不能为空")
     @NotNull(message = "工具列表不能为空")
     private List<Long> tools;
