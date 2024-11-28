@@ -44,6 +44,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("开场白")
     private String greeting ; // 开场白
 
+    @TableField("ask_human_help")
+    @ColumnType(value = MySqlTypeConstant.BIGINT)
+    @ColumnComment("是否需要人类帮助")
+    private boolean askHumanHelp = false ;
+
     /**
      * 1. 单角色：自己单独完成一个聊天，可流式输出或者同步输出
      * 2. 协作角色：与其它角色协作才可以完成一个工作，可流式输出或者同步输出
