@@ -23,7 +23,7 @@ public class Prompt {
                                      StringBuilder thought,
                                      String goal){
 
-        return String.format(PromptTemplate.corePromptForEn,
+        return String.format(PromptTemplate.corePrompt,
                 agent.getRoleName(),
                 agent.getBackstory() ,
                 agent.getResponsibilities() ,
@@ -57,5 +57,9 @@ public class Prompt {
     public static String taskPrompt(String goal) {
         return AgentConstants.Slices.TASK.formatted(goal) + "\n" +
                AgentConstants.Slices.EXPECTED_OUTPUT;
+    }
+
+    public static String buildHumanHelpPrompt(String prompt, StringBuilder askHumanHelpThought) {
+        return String.format(AgentConstants.Slices.MEMORY, askHumanHelpThought.toString()) + prompt;
     }
 }
