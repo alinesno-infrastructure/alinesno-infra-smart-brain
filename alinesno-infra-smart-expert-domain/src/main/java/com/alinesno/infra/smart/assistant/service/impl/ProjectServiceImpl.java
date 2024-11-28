@@ -24,7 +24,7 @@ public class ProjectServiceImpl extends IBaseServiceImpl<ProjectEntity, ProjectM
     private static final String DEFAULT_PROJECT_FIELD = "default" ;
 
     @Override
-    public void initDefaultApp(long userId) {
+    public void initDefaultApp(long orgId , long userId) {
 
         Sqids sqids=Sqids.builder().build();
         String code = sqids.encode(Arrays.asList(1L,2L,3L)); // "86Rf07"
@@ -37,7 +37,7 @@ public class ProjectServiceImpl extends IBaseServiceImpl<ProjectEntity, ProjectM
         project.setProjectName("默认助手应用");
         project.setProjectDesc("包含所有的助手渠道查看权限，用于开发和验证场景");
         project.setProjectCode(code);
-//        project.setDocumentType(ProviderChannelEnum.getAllNameStr());
+        project.setOrgId(orgId);
 
         save(project) ;
     }
