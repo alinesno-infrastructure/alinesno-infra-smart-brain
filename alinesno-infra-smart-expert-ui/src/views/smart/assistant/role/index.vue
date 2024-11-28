@@ -248,6 +248,13 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="开场白" prop="greeting">
+                <el-input v-model="form.greeting" :placeholder="'你好，我是' + form.roleName + '🎉 '" />
+            </el-form-item>
+          </el-col>
+        </el-row>
 
         <el-row>
           <el-col :span="24">
@@ -422,6 +429,8 @@ const data = reactive({
   },
   rules: {
     roleId: [{required: true, message: "应用编号不能为空", trigger: "blur"}],
+    roleType: [{required: true, message: "应用类型不能为空", trigger: "blur"}],
+    scriptType: [{required: true, message: "脚本类型不能为空", trigger: "blur"}],
     roleName: [{required: true, message: "角色名称不能为空", trigger: "blur"}, {
       min: 2,
       max: 20,
@@ -432,7 +441,7 @@ const data = reactive({
     domain: [{required: true, message: "所属领域不能为空", trigger: "blur"}],
     roleLevel: [{required: true, message: "角色级别不能为空", trigger: "blur"}],
     storagePath: [{required: true, message: "安全存储路径不能为空", trigger: "blur"}],
-    target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
+    industryCatalog: [{required: true, message: "角色类型不能为空", trigger: "blur"}],
   },
   chainForm: {
     roleId: undefined,
