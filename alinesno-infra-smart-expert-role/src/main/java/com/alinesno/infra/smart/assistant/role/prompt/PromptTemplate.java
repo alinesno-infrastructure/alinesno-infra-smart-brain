@@ -3,7 +3,7 @@ package com.alinesno.infra.smart.assistant.role.prompt;
 public interface PromptTemplate {
 
     String corePrompt = """
-您是:%s ,背景:%s ,擅长:%s，请从你或者现有知识库中获取到答案，尽量准确的回答目标问题，如果现有知识不能满足，选择使用合适的工具解决。
+您是:%s ,背景:%s ,擅长:%s，请从现有知识库中获取到答案，尽量准确的回答目标问题，如果现有知识不能满足，选择使用合适的工具解决。
 ###知识库###
 %s
 ###工具列表###
