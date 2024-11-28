@@ -41,6 +41,8 @@ public class ReActExpertService extends ExpertService {
     @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
+//    private static final Map<Long , String> messageBox = new HashMap<>() ;
+
     @Autowired
     private IToolService toolService ;
 
@@ -54,6 +56,7 @@ public class ReActExpertService extends ExpertService {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
         boolean askHumanHelp = role.isAskHumanHelp() ;
+        long currentAccount = taskInfo.getAccountId() ;
 
         // 工具类
         List<ToolDto> tools = toolService.getByRole(role.getId()) ;
@@ -63,6 +66,15 @@ public class ReActExpertService extends ExpertService {
 
         String answer = null; // 回答
         StringBuilder thought = new StringBuilder(); // 思考
+        StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
+
+//        if(askHumanHelp){
+//            if(messageBox.get(currentAccount) != null){
+//                askHumanHelpThought.append(messageBox.get(currentAccount));
+//                askHumanHelpThought.append("\r\n").append(goal);
+//            }
+//            log.debug("askHumanHelp thought = {}" , askHumanHelpThought);
+//        }
 
         do {
             loop++;
@@ -73,12 +85,10 @@ public class ReActExpertService extends ExpertService {
                     IdUtil.getSnowflakeNextId());
 
             String prompt = Prompt.buildPrompt(role , tools , thought , goal) ;
+            prompt = Prompt.buildHumanHelpPrompt(prompt , askHumanHelpThought) ;
 
             List<Message> messages = new ArrayList<>();
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
-            if(askHumanHelp){
-                askHumanHelpRecycle(messages) ;
-            }
 
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
@@ -139,7 +149,6 @@ public class ReActExpertService extends ExpertService {
                                     IdUtil.getSnowflakeNextId());
 
                             isCompleted = true ;   // 结束对话，等待人类回复
-                            answer = "本轮结束" ;
                             continue;
                         }
 
@@ -193,13 +202,6 @@ public class ReActExpertService extends ExpertService {
         } while (!isCompleted);
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
-    }
-
-    /**
-     * TODO 处理咨询的历史问题
-     * @param messages
-     */
-    private void askHumanHelpRecycle(List<Message> messages) {
     }
 
     @Override
