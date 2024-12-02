@@ -11,7 +11,7 @@ import java.util.Map;
 @Slf4j
 public class ToolExecutor {
 
-    public static Object executeGroovyScript(String script, Map<String, Object> params) throws Exception {
+    public static ToolResult executeGroovyScript(String script, Map<String, Object> params) throws Exception {
        log.trace("执行脚本：{}", script);
 
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
@@ -27,7 +27,16 @@ public class ToolExecutor {
             log.debug("工具参数：{}", toolJson);
 
             setParams(toolInstance, params);
-            return toolInstance.execute();
+
+            Object result = toolInstance.execute();
+            boolean isFinished = toolInstance.isFinished();
+
+            ToolResult toolResult = new ToolResult();
+
+            toolResult.setFinished(isFinished);
+            toolResult.setOutput(result);
+
+            return toolResult ;
         }
     }
 
