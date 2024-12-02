@@ -18,6 +18,14 @@ public abstract class Tool {
    public abstract String execute() ;
 
    /**
+    * 工具执行结束后，是否结束本轮对话
+    * @return
+    */
+   public boolean isFinished(){
+      return false ;
+   }
+
+   /**
     * 返回参数的格式
     * @return
     */
