@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
+import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
@@ -163,13 +164,15 @@ public class ReActExpertService extends ExpertService {
                         Map<String, Object> argsList = tool.getArgsList();
 
                         try {
-                            Object executeToolOutput = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList);
+                            ToolResult  toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList);
+                            Object executeToolOutput = toolResult.getOutput() ;
+
                             if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
 
                                 String toolAndObservable = String.format("%s\r\n" , executeToolOutput) ;
                                 thought.append(toolAndObservable);
 
-                                streamMessagePublisher.doStuffAndPublishAnEvent("工具执行结果:" + executeToolOutput,
+                                streamMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
                                         role,
                                         taskInfo,
                                         IdUtil.getSnowflakeNextId());
@@ -177,6 +180,12 @@ public class ReActExpertService extends ExpertService {
                             }
                             log.debug("工具执行结果：{}", observation);
                             System.out.println();
+
+                            if(toolResult.isFinished()){
+                                answer = "表达结束" ;
+                                isCompleted = true ;   // 结束对话
+                            }
+
                         } catch (Exception e) {
                             log.error("工具执行失败:{}", e.getMessage());
                             streamMessagePublisher.doStuffAndPublishAnEvent("工具执行失败:" + e.getMessage(),
