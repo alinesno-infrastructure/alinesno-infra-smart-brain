@@ -366,7 +366,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         IndustryRoleEntity role = getById(roleId) ;
 
         if(role.getOrgId() == orgId){
-            throw new RpcServiceRuntimeException("您不能购买自己所属的组织的角色！");
+            throw new RpcServiceRuntimeException("您不能录用自己所属的组织的角色！");
         }
 
         // 购买角色
