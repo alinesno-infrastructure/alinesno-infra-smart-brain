@@ -72,4 +72,9 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      */
     void batchCreateChannel(List<ChannelEntity> recommendChannels);
 
+    /**
+     * 初始化组织频道
+     * @param orgId
+     */
+    void initOrgChannel(long orgId);
 }
