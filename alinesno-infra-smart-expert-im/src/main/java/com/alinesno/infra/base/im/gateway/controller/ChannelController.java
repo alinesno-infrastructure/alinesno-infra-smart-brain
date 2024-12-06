@@ -166,11 +166,14 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
 
         List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
 
+        // 判断当前组织是否包含角色
+        boolean hasRole = service.hasRole(orgId) ;
+
         // 查询当前组织推荐角色
         IndustryRoleEntity industryRoleEntity = roleService.getRecommendRole(orgId) ;
-
         AjaxResult result = AjaxResult.success(channelEntities) ;
         result.put("recommendRole", industryRoleEntity) ;
+        result.put("hasRole", hasRole) ;
 
         return result ;
     }
