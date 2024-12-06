@@ -42,7 +42,7 @@
                   <i class="fa-solid fa-clone"></i> 
                 </span>
               </p>
-              <p class="color-text-primary f-e-s" v-if="userStore.org">组织: {{ userStore.org.orgName }}（{{ userStore.org.doorplateNumber }}） </p>
+              <p class="color-text-primary f-e-s" v-if="userStore.org">组织: {{ userStore.org.orgName }}（{{ userStore.org.orgId }}） </p>
               <p class="color-text-secondary f-e-s" v-if="userStore.org">角色: {{ userStore.org.roleName }}</p>
             </el-header>
           </el-container>
