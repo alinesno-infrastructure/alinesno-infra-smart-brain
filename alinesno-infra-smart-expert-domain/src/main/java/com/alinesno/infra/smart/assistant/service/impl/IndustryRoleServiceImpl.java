@@ -12,9 +12,11 @@ import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
+import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRoleToolService;
@@ -29,8 +31,10 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +50,9 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private IWorkflowExecutionService workflowExecutionService;
+
+    @Autowired
+    private IndustryRoleCatalogMapper roleCatalogMapper ;
 
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
@@ -321,4 +328,61 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
         return expertService.runRoleAgent(role, message, taskInfo);
     }
+
+    @Override
+    public void employRole(long roleId, long orgId , long userId , long deptId) {
+
+        // 添加角色到默认的团队里面
+        LambdaQueryWrapper<IndustryRoleCatalogEntity> cateLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getOrgId, orgId);
+        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getFieldProp, "default");
+
+        IndustryRoleCatalogEntity defaultCatalog =  null ;
+        long cateCount = roleCatalogMapper.selectCount(cateLambdaQueryWrapper);
+        if (cateCount == 0) {  // 创建默认团队组织
+
+            defaultCatalog = new IndustryRoleCatalogEntity() ;
+            defaultCatalog.setOperatorId(userId);
+            defaultCatalog.setOrgId(orgId);
+            defaultCatalog.setDepartmentId(deptId);
+            defaultCatalog.setFieldProp("default");
+
+            defaultCatalog.setName("默认团队");
+            defaultCatalog.setDescription("默认团队，所有角色都默认添加到该团队里面，您可以通过团队管理进行管理，或者再进行二次分配。");
+
+            roleCatalogMapper.insert(defaultCatalog);
+        }else{
+            defaultCatalog = roleCatalogMapper.selectOne(cateLambdaQueryWrapper);
+        }
+
+        // 判断当前用户是否已经买过这个角色
+        LambdaQueryWrapper<IndustryRoleEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(IndustryRoleEntity::getOrgId, orgId);
+        lambdaQueryWrapper.eq(IndustryRoleEntity::getSaleFromRoleId, roleId);
+
+        long count = count(lambdaQueryWrapper);
+        Assert.isTrue(count == 0 , "您所在组织已经购买过该角色，请勿重复购买！");
+
+        IndustryRoleEntity role = getById(roleId) ;
+
+        if(role.getOrgId() == orgId){
+            throw new RpcServiceRuntimeException("您不能购买自己所属的组织的角色！");
+        }
+
+        // 购买角色
+        role.setOperatorId(userId);
+        role.setOrgId(orgId);
+        role.setDepartmentId(deptId);
+        role.setId(null);
+        role.setHasSale(9); // 不允许转售
+
+        // TODO 插件工具的复制(待完善)
+        // TODO 知识库的复杂(待完善)
+
+        role.setSaleFromRoleId(roleId);
+        role.setIndustryCatalog(defaultCatalog.getId());  // 添加到默认团队中
+
+        save(role);
+    }
+
 }
