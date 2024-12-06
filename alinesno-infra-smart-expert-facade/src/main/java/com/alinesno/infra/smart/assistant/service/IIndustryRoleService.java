@@ -108,4 +108,10 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     WorkflowExecutionDto validateReActRole(ReActRoleScriptDto dto);
+
+    /**
+     * 启用角色和员工
+     * @param roleId
+     */
+    void employRole(long roleId, long orgId , long userId , long deptId);
 }
