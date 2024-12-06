@@ -77,4 +77,11 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * @param orgId
      */
     void initOrgChannel(long orgId);
+
+    /**
+     * 判断当前组织是否包含角色
+     * @param orgId
+     * @return
+     */
+    boolean hasRole(long orgId);
 }
