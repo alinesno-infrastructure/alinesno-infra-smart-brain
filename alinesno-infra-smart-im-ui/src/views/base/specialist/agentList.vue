@@ -9,7 +9,7 @@
                         <el-col :span="24">
                             <div class="feature-header-xqbyQk feature-team-box">
                                 <div style="gap: 12px;">
-                                    <h1>智能体市场</h1>
+                                    <h1>我的团队</h1>
                                 </div>
                                 <div class="search-container-weDuEn">
                                     <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索智能体"
