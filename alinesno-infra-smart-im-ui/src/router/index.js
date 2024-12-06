@@ -121,6 +121,12 @@ export const constantRoutes = [
         name: '/agentList',
         meta: { title: '服务列表', icon: 'dashboard', affix: true }
       },
+      {
+        path: '/agentMarket',
+        component: () => import('@/views/base/market/agents'),
+        name: '/agentMarket',
+        meta: { title: '智能体市场', icon: 'dashboard', affix: true }
+      },
       // {
       //   path: '/serviceProduct',
       //   component: () => import('@/views/base/specialist/serviceProduct'),
