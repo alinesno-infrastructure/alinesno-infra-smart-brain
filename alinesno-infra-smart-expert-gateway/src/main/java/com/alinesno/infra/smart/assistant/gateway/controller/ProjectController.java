@@ -57,7 +57,7 @@ public class ProjectController extends BaseController<ProjectEntity, IProjectSer
 
         long count = service.count(new LambdaQueryWrapper<ProjectEntity>().eq(ProjectEntity::getOrgId, orgId));
 
-        // 初始化默认应用
+        // 初始化默认应m  用
         if (count == 0) {
             service.initDefaultApp(orgId , userId) ;
         }
