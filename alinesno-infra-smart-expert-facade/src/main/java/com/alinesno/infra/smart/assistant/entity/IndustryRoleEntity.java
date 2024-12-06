@@ -102,6 +102,16 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("是否是推荐")
     private boolean hasRecommended ;
 
+    @TableField("has_sale")
+    @ColumnType(value = MySqlTypeConstant.SMALLINT, length = 1)
+    @ColumnComment("是否销售(1销售|0不可销售|9不可转售)")
+    private int hasSale = 0 ;
+
+    @TableField("sale_from_role_id")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("销售来源角色ID")
+    private Long saleFromRoleId = 0L ;
+
     @TableField
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
     private String knowledgeId ;
