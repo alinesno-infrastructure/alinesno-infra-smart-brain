@@ -161,12 +161,12 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @GetMapping("/allMyChannel")
     public AjaxResult allMyChannel(PermissionQuery query){
 
-        service.initPersonChannel(1L);
+        long orgId = CurrentAccountJwt.get().getOrgId() ;
+        service.initOrgChannel(orgId);
 
         List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
 
         // 查询当前组织推荐角色
-        long orgId = CurrentAccountJwt.get().getOrgId() ;
         IndustryRoleEntity industryRoleEntity = roleService.getRecommendRole(orgId) ;
 
         AjaxResult result = AjaxResult.success(channelEntities) ;
