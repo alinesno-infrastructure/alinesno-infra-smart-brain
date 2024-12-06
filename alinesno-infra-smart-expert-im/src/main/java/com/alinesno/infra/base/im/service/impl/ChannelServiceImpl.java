@@ -212,4 +212,26 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         this.saveOrUpdateBatch(recommendChannels);
     }
 
+    @Override
+    public void initOrgChannel(long orgId) {
+        // 如果当前组织的频道为空时，会默认初始化一个频道，用于演示
+        List<ChannelEntity> list = list(new LambdaQueryWrapper<ChannelEntity>().eq(ChannelEntity::getOrgId, orgId));
+
+        if(list.isEmpty()){
+            ChannelEntity channelEntity = new ChannelEntity() ;
+
+            channelEntity.setOrgId(orgId);
+            channelEntity.setChannelType(ChannelType.PUBLIC_CHANNEL.getValue());
+            channelEntity.setChannelName("默认频道");
+            channelEntity.setChannelDesc("默认频道是用户与系统或其他用户进行初次互动的场所，这里可以查看通用信息或开始创建自己的第一个频道。");
+            channelEntity.setChannelKey("default");
+            channelEntity.setKnowledgeType("");
+            channelEntity.setKnowledgeId("");
+            channelEntity.setIcon("1851897451138109441");
+            channelEntity.setChannelId(IdUtil.getSnowflakeNextIdStr());
+
+            save(channelEntity);
+        }
+    }
+
 }
