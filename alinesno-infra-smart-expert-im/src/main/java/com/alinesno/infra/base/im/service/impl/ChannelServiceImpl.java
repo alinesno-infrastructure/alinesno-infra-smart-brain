@@ -8,6 +8,8 @@ import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.constants.ImConstants;
 import com.alinesno.infra.smart.im.entity.AccountChannelEntity;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
@@ -34,6 +36,9 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
     @Autowired
     private IChannelRoleService channelRoleService ;
+
+    @Autowired
+    private IIndustryRoleService roleService ;
 
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
@@ -232,6 +237,12 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
             save(channelEntity);
         }
+    }
+
+    @Override
+    public boolean hasRole(long orgId) {
+        long count = roleService.count(new LambdaQueryWrapper<IndustryRoleEntity>().eq(IndustryRoleEntity::getOrgId, orgId));
+        return count != 0 ;
     }
 
 }
