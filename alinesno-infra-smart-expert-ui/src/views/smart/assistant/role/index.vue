@@ -149,7 +149,7 @@
                 />
               </template>
           </el-table-column>
-          <el-table-column label="可售" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+          <el-table-column label="分享" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
                     v-model="scope.row.hasSale"
