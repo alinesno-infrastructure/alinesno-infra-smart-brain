@@ -8,7 +8,7 @@
             <div style="gap: 12px;">
               <h1
                 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                频道市场</h1>
+                我的频道</h1>
             </div>
             <div class="search-container-weDuEn">
               <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索频道" :suffix-icon="Search" />
