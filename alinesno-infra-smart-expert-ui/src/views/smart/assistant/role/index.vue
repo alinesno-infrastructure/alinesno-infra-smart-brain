@@ -149,13 +149,14 @@
                 />
               </template>
           </el-table-column>
-          <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
+          <el-table-column label="可售" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
-                    v-model="scope.row.hasStatus"
-                    :active-value="0"
-                    :inactive-value="1"
-                    @change="handleChangStatusField('hasStatus' , scope.row.hasStatus, scope.row.id)"
+                    v-model="scope.row.hasSale"
+                    :active-value="1"
+                    :inactive-value="0"
+                    :disabled="scope.row.saleFromRoleId"
+                    @change="handleChangeSaleField('hasSale' , scope.row.hasSale, scope.row.id)"
                 />
               </template>
           </el-table-column>
@@ -318,6 +319,8 @@ import {
   updateRole,
   catalogTreeSelect,
   addRole,
+  changStatusField,
+  changeSaleField,
   recommended
 } from "@/api/smart/assistant/role";
 
@@ -493,6 +496,34 @@ function handleRecommended(roleId){
     proxy.$modal.msgSuccess("推荐成功");
     getList();
   })
+}
+
+/** 修改状态 */
+const handleChangeSaleField= async(field , value , id) => {
+   // 判断tags值 这样就不会进页面时调用了
+     const res = await changeSaleField({
+        field: field,
+        value: value?1:0,
+        id: id
+     }).catch(() => { })
+     if (res && res.code == 200) {
+        // 刷新表格
+        getList()
+     }
+}
+
+/** 修改状态 */
+const handleChangStatusField = async(field , value , id) => {
+   // 判断tags值 这样就不会进页面时调用了
+     const res = await changStatusField({
+        field: field,
+        value: value?1:0,
+        id: id
+     }).catch(() => { })
+     if (res && res.code == 200) {
+        // 刷新表格
+        getList()
+     }
 }
 
 // 节点单击事件
