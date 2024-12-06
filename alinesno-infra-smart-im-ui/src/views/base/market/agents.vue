@@ -7,18 +7,15 @@
 
         <section>
           <h2 class="section-title" style="margin-top: 5px;margin-left: 10px;font-size: 20px;">
-            <i class="type.banner" /> 智能体市场 
+            <i class="type.banner" /> 智能体市场  
+            <span style="font-size: 13px;color: #777;margin-left:10px;">类似于人才市场，团队向人才市场选择合适的人进行录用.</span>
           </h2>
           <div class="section-body" v-loading="loading">
 
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form :model="queryParams" style="padding-left:10px;" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
           <el-form-item label="角色名称" prop="roleName">
             <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item>
-          <el-form-item label="角色描述" prop="responsibilities" label-width="100px">
-            <el-input v-model="queryParams['condition[responsibilities|like]']" placeholder="请输入角色描述" clearable
               style="width: 240px" @keyup.enter="handleQuery" />
           </el-form-item>
 
