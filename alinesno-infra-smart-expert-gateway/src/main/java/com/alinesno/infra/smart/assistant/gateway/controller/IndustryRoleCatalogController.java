@@ -84,9 +84,9 @@ public class IndustryRoleCatalogController extends BaseController<IndustryRoleCa
     @DataPermissionQuery
     @GetMapping("/excludeChild/{id}")
     public AjaxResult excludeChild(@PathVariable(value = "id", required = false) Long deptId , PermissionQuery query) {
-        List<IndustryRoleCatalogEntity> depts = service.selectCatalogList(new IndustryRoleCatalogEntity(), query);
-        depts.removeIf(d -> d.getId().longValue() == deptId || ArrayUtils.contains(StringUtils.split(d.getAncestors(), ","), deptId + ""));
-        return AjaxResult.success("操作成功." , depts);
+        List<IndustryRoleCatalogEntity> depots = service.selectCatalogList(new IndustryRoleCatalogEntity(), query);
+        depots.removeIf(d -> d.getId().longValue() == deptId || ArrayUtils.contains(StringUtils.split(d.getAncestors(), ","), deptId + ""));
+        return AjaxResult.success("操作成功." , depots);
     }
 
     @Override
