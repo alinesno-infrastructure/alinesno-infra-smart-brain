@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import cn.hutool.core.lang.Assert;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -9,6 +10,9 @@ import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
+import com.alinesno.infra.common.web.adapter.dto.FieldDto;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountBean;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
@@ -23,7 +27,10 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -206,6 +213,70 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         return AjaxResult.success(output) ;
     }
 
+    /**
+     * 市场角色列表
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("/marketDatatables")
+    public TableDataInfo marketDatatables(Model model, DatatablesPageBean page) {
+        log.debug("page = {}", ToStringBuilder.reflectionToString(page));
+
+        List<ConditionDto> condition =  page.getConditionList() ;
+
+        ConditionDto dto = new ConditionDto() ;
+
+        dto.setColumn("hasSale"); // 配置可销售角色
+        dto.setValue("1");
+        dto.setType("eq");
+
+        condition.add(dto) ;
+        page.setConditionList(condition);
+
+        return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     * 录用员工
+     * @return
+     */
+    @DataPermissionSave
+    @GetMapping("/employRole")
+    public AjaxResult employRole(@RequestParam String roleId){
+
+        Assert.notNull(roleId, "请选择录用角色");
+
+        ManagerAccountDto dto = CurrentAccountJwt.get() ;
+        service.employRole(Long.parseLong(roleId) ,
+                dto.getOrgId() == null ? 0L : dto.getOrgId() ,
+                dto.getId() == null ? 0L : dto.getId() ,
+                dto.getDepartmentId() == null ? 0L : dto.getDepartmentId()) ;
+
+        return ok() ;
+    }
+
+    /**
+     * 调整销售状态
+     * @param field
+     * @return
+     */
+    @ResponseBody
+    @PostMapping("changeSaleField")
+    public AjaxResult changeSaleField(@RequestBody FieldDto field) {
+        log.debug("field = {}", field);
+
+        // 如果字段值为9,则不允许销售
+        if (field.getValue().equals("9")) {
+            return this.error("不允许设置，角色为不可销售状态");
+        }
+
+        LambdaUpdateWrapper<IndustryRoleEntity> lambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        lambdaUpdateWrapper.eq(IndustryRoleEntity::getId, field.getId());
+        lambdaUpdateWrapper.set(IndustryRoleEntity::getHasSale, field.getValue());
+
+        boolean b = service.update(lambdaUpdateWrapper);
+        return b ? this.ok() : this.error();
+    }
 
     @Override
     public IIndustryRoleService getFeign() {
