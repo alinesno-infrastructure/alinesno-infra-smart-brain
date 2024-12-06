@@ -15,6 +15,7 @@ var managerUrl = {
   removeUrl: prefix + "delete" ,
   exportUrl: prefix + "exportExcel",
   changeField: prefix + "changeField",
+  changeSaleField: prefix + "changeSaleField",
   downloadFile: prefix + "downloadFile",
   getRoleChainByChainId: prefix + "getRoleChainByChainId",
   saveRoleChainInfo: prefix + "saveRoleChainInfo",
@@ -187,6 +188,26 @@ export function resetRolePwd(RoleId, password) {
     data: data
   })
 }
+
+
+// 修改字段
+export function changStatusField(data){
+  return request({
+    url: managerUrl.changeField ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 是否可出售
+export function changeSaleField(data){
+  return request({
+    url: managerUrl.changeSaleField,
+    method: 'post',
+    data: data
+  })
+}
+
 
 // 应用状态修改
 export function changeRoleStatus(RoleId, status) {
