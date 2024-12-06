@@ -71,9 +71,10 @@ const router = useRouter();
 
 // 菜单列表
 const menuItems = ref([
-  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '频道市场' },
-  { id: '2', icon: 'fa-solid fa-file-signature', link: '/screen', desc: '场景列表' },
-  { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '角色列表' },
+  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的频道' },
+  { id: '2', icon: 'fa-solid fa-file-signature', link: '/screen', desc: '我的场景' },
+  { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '我的团队' },
+  { id: '4', icon: 'fa-solid fa-ship', link: '/agentMarket', desc: '智能体市场' },
 ]);
 
 // 打开服务市场
