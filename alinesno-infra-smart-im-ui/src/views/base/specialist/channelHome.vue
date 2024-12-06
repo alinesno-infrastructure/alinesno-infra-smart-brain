@@ -124,17 +124,13 @@
       </el-row>
     </div>
 
-    <!-- 频道聊天 
-    <el-dialog v-model="dialogVisible" :title="chatTitle" width="80%">
-      <iframe :src="roleChatUri" class="role-chat-iframe"></iframe>
-    </el-dialog>
-     -->
-
   </div>
 
 </template>
 
 <script setup>
+
+import { ElMessageBox } from 'element-plus'
 
 import {
   allMyChannel,
@@ -150,33 +146,6 @@ const loading = ref(false)
 
 const publicChatChannel = ref([]);
 const recommendRole = ref(null);
-// const recChatChannel = ref([]);
-
-const chatTitle = ref("")
-const dialogVisible = ref(false)
-const roleChatUri = ref("")
-
-// const filterRules = ref([
-//   {
-//     "name": "场景", "codeValue": "initializr.admin.project.template.screen", "items": [
-//       { "code": "screen_code_1", "name": "旅游预订" },
-//       { "code": "screen_code_2", "name": "在线购物" },
-//       { "code": "screen_code_3", "name": "社交媒体" },
-//       { "code": "screen_code_4", "name": "健身健康" },
-//       { "code": "screen_code_5", "name": "在线视频" }
-//     ]
-//   },
-//   {
-//     "name": "类型", "codeValue": "initializr.admin.project.template.type", "items": [
-//       { "code": "type_code_1", "name": "移动应用" },
-//       { "code": "type_code_2", "name": "网页应用" },
-//       { "code": "type_code_4", "name": "社交平台" },
-//       { "code": "type_code_5", "name": "健身应用" }
-//     ]
-//   }
-// ]);
-
-const demeChannel = ref([])
 
 const data = reactive({
   form: {},
@@ -209,35 +178,71 @@ function handleRoleChat() {
       path: '/single/agentChat',
       query: { 'roleId': id, 'channelId': snowflake.generate() }
   })
-
-// roleChatUri.value = "/agentChat?roleId=" + item.id;
-// chatTitle.value = item.roleName;
-// dialogVisible.value = true;
 }
 
 /** 查询所所有我在参与的频道 */
+// function handleAllMyChannel() {
+//   loading.value = true;
+//   allMyChannel().then(response => {
+//     let items = response.data;
+
+//     recommendRole.value = response.recommendRole;
+//     publicChatChannel.value = items; 
+
+//     loading.value = false;
+
+//     let hasRole = response.hasRole;  // 判断组织是否包含角色
+//     if (!hasRole) {
+//       // 显示推荐角色
+//         ElMessageBox.confirm('你所有当前组织未包含智能体，是否需要到智能体市场选择体验', '系统提示', { confirmButtonText: '进入智能体市场', cancelButtonText: '后期建立', type: 'warning' })
+//         .then(() => {
+//           router.push({ path: '/agentMarket'})
+//         });
+//     }
+
+//   })
+// }
+
 function handleAllMyChannel() {
   loading.value = true;
   allMyChannel().then(response => {
     let items = response.data;
 
     recommendRole.value = response.recommendRole;
-    publicChatChannel.value = items; // .filter(item => item.channelType === '9');
-    // recChatChannel.value = items.filter(item => item.channelType === '3');
-
-    // 添加DemoChannel频道
-    // publicChatChannel.value = publicChatChannel.value.concat(demeChannel.value);
-
+    publicChatChannel.value = items; 
     loading.value = false;
-  })
-}
 
-/** 与单个频道发信息 */
-// function handleChannelChat(item) {
-//   roleChatUri.value = "/channelChat?channel=" + item.id;
-//   chatTitle.value = item.channelName;
-//   dialogVisible.value = true;
-// }
+    let hasRole = response.hasRole;  // 判断组织是否包含角色
+
+    // 检查用户是否已经做出选择
+    const userHasChosen = localStorage.getItem('userHasChosenRoles');
+
+    if (!hasRole && !userHasChosen) {
+      // 显示推荐角色
+      ElMessageBox.confirm(
+        '你所有当前组织未包含智能体，是否需要到智能体市场选择体验', 
+        '系统提示', 
+        { 
+          confirmButtonText: '进入智能体市场', 
+          cancelButtonText: '后期建立', 
+          type: 'warning' 
+        }
+      ).then(() => {
+        router.push({ path: '/agentMarket'});
+        // 用户选择了进入智能体市场，保存选择状态
+        localStorage.setItem('userHasChosenRoles', 'true');
+      }).catch(() => {
+        // 用户选择了后期建立，也视为做出了选择
+        localStorage.setItem('userHasChosenRoles', 'true');
+      });
+    }
+
+  }).catch(error => {
+    // 处理错误
+    console.error("获取频道信息失败", error);
+    loading.value = false;
+  });
+}
 
 nextTick(() => {
   handleAllMyChannel();
@@ -359,7 +364,7 @@ nextTick(() => {
   }
 
   h1 {
-    -webkit-line-clamp: 2;
+    line-clamp: 2;
     max-height: 112px;
     margin-bottom: 8px;
     font-size: 40px;
