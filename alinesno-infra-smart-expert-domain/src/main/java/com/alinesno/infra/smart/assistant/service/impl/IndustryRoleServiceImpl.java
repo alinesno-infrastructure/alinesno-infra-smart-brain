@@ -14,12 +14,15 @@ import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.entity.RoleToolEntity;
+import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRoleToolService;
+import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -29,6 +32,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -59,6 +64,9 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private IRoleToolService roleToolService ;
+
+    @Autowired
+    private IToolService toolService ;
 
     private static final Gson gson = new Gson();
 
@@ -329,6 +337,13 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         return expertService.runRoleAgent(role, message, taskInfo);
     }
 
+    /**
+     * 添加角色到指定的团队里面，类似于办理入职手续过程。
+     * @param roleId
+     * @param orgId
+     * @param userId
+     * @param deptId
+     */
     @Override
     public void employRole(long roleId, long orgId , long userId , long deptId) {
 
@@ -376,13 +391,88 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setId(null);
         role.setHasSale(9); // 不允许转售
 
-        // TODO 插件工具的复制(待完善)
-        // TODO 知识库的复杂(待完善)
-
         role.setSaleFromRoleId(roleId);
         role.setIndustryCatalog(defaultCatalog.getId());  // 添加到默认团队中
 
         save(role);
+
+        // 复制工具
+        copyRoleTool(roleId, orgId, userId, deptId, role);
+
+        // TODO 知识库的复制(待完善) 确定是否复制?
+    }
+
+    /**
+     * 复制工具
+     * @param roleId
+     * @param orgId
+     * @param userId
+     * @param deptId
+     * @param role
+     */
+    private void copyRoleTool(long roleId, long orgId, long userId, long deptId, IndustryRoleEntity role) {
+
+        // 插件工具的复制(待完善)，思路先复制工具，再处理工具关系
+        LambdaUpdateWrapper<RoleToolEntity>  toolLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+        toolLambdaUpdateWrapper.eq(RoleToolEntity::getRoleId, roleId);
+
+        if(roleToolService.count(toolLambdaUpdateWrapper) > 0){
+            List<RoleToolEntity> toolEntities = roleToolService.list(toolLambdaUpdateWrapper);
+
+            // 查询出所有涉及到的工具
+            List<Long> toolIds = toolEntities.stream().map(RoleToolEntity::getToolId).toList();
+
+            if(CollectionUtils.isNotEmpty(toolIds)){
+
+                LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                toolLambdaQueryWrapper.in(ToolEntity::getId, toolIds);
+
+                List<ToolEntity> toolEntities1 = toolService.list(toolLambdaQueryWrapper);
+                List<ToolEntity> copyToolEntities = new ArrayList<>() ;
+
+                if(CollectionUtils.isNotEmpty(toolEntities1)){
+                    for (ToolEntity toolEntity : toolEntities1) {
+
+                        ToolEntity toolEntity1  ;
+
+                        // 先通过id查询是否当前组织已经拥有此工具
+                        LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+                        toolLambdaQueryWrapper1.eq(ToolEntity::getOrgId, orgId);
+                        toolLambdaQueryWrapper1.eq(ToolEntity::getFromId, toolEntity.getId());
+
+                        if(toolService.count(toolLambdaQueryWrapper1) > 0){
+                            toolEntity1 = toolService.getOne(toolLambdaQueryWrapper1);
+                        }else{
+                            toolEntity1 = new ToolEntity();
+                            BeanUtils.copyProperties(toolEntity, toolEntity1);
+
+                            toolEntity1.setId(null);
+                            toolEntity1.setOrgId(orgId);
+                            toolEntity1.setOperatorId(userId);
+                            toolEntity1.setDepartmentId(deptId);
+                            toolEntity1.setFromId(toolEntity.getId()); // 来源工具
+
+                            // 保存工具
+                            toolService.save(toolEntity1) ;
+                        }
+
+                        copyToolEntities.add(toolEntity1);
+                    }
+                }
+
+                // 将用户与工具关联一起
+                List<RoleToolEntity> copyRoleTools = new ArrayList<>() ;
+                for(ToolEntity toolEntity : copyToolEntities){
+                    RoleToolEntity roleToolEntity = new RoleToolEntity();
+                    roleToolEntity.setRoleId(role.getId());
+                    roleToolEntity.setToolId(toolEntity.getId());
+
+                    copyRoleTools.add(roleToolEntity);
+                }
+                roleToolService.saveBatch(copyRoleTools);
+            }
+
+        }
     }
 
 }
