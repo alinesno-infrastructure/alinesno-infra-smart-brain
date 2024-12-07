@@ -84,4 +84,9 @@ public class ToolEntity extends InfraBaseEntity {
     @TableField(value = "tool_full_name")
     private String toolFullName;
 
+    @ColumnComment("来源ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "from_id")
+    private Long fromId; // 来源ID
+
 }
