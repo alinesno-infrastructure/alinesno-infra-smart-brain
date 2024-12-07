@@ -118,6 +118,14 @@
 
                     </div>
                 </section>
+                <el-row v-if="productList.length == 0">
+                    <el-col :span="24">
+                        <el-empty 
+                            :image-size="400"
+                            :image="learnLogo"
+                            description="当前未创建团队，可以进入智能体人才市场选择智能体，或者自行创建团队。" />
+                    </el-col>
+                </el-row>
             </div>
 
             <el-dialog v-model="dialogVisible" width="860" :before-close="handleClose">
@@ -133,6 +141,8 @@
 import { ElLoading } from 'element-plus'
 import { getAllCatalog } from "@/api/base/im/robot";
 import SnowflakeId from "snowflake-id";
+
+import learnLogo from '@/assets/icons/data_03.svg';
 
 const snowflake = new SnowflakeId();
 
