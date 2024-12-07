@@ -16,9 +16,13 @@
           </div>
         </el-col>
       </el-row>
-    </div>
 
-    <div class="channel-container-panel" style="margin-top:30px">
+    </div>
+                <div class="header">
+                    <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
+                </div>
+
+    <div class="channel-container-panel" style="margin-top:20px">
       <el-row>
 
         <el-col :span="6" v-for="(item, index) in screenLists" :key="index" style="padding:8px;">
@@ -54,6 +58,14 @@
               </article>
           </div>
         </el-col>
+
+        <el-col :span="24" v-if="screenLists.length == 0">
+            <el-empty 
+                 :image-size="400"
+                :image="learnLogo"
+                description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
+        </el-col>
+
       </el-row>
     </div>
 
@@ -66,7 +78,9 @@
 import { 
     screenList 
 } from '@/api/base/im/screen' ;
+
 import { onMounted } from 'vue';
+import learnLogo from '@/assets/icons/tech_01.svg';
 
 const router = useRouter();
 
@@ -220,7 +234,17 @@ onMounted(() => {
             color: var(--coz-fg-secondary);
             display: -webkit-box;
             -webkit-box-orient: vertical;
+            height: 40px;
             overflow: hidden;
+            display: -webkit-box;
+            display: -moz-box;
+            display: box;
+            -webkit-box-orient: vertical;
+            -moz-box-orient: vertical;
+            box-orient: vertical;
+            -webkit-line-clamp: 2;
+            -moz-line-clamp: 2;
+            line-clamp: 2;
         }
 
         .screen-footer {
