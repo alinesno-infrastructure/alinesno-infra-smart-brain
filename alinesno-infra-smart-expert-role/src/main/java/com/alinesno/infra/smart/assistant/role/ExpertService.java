@@ -16,6 +16,7 @@ import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
@@ -72,7 +73,10 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     private IScreenService screenService ;
 
     @Autowired
-    protected StreamMessagePublisher streamMessagePublisher ;
+    protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
+
+    @Autowired
+    protected StreamStoreMessagePublisher streamStoreMessagePublisher; // 保存入库的消息
 
     @Autowired
     protected BaseSearchConsumer searchConsumer;
@@ -87,7 +91,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     protected QianWenAuditLLM qianWenAuditLLM;
 
     @Autowired
-    private IMessageService messageService;
+    protected IMessageService messageService;
 
 //    @Autowired
 //    private IWorkflowExecutionService workflowExecutionService;
