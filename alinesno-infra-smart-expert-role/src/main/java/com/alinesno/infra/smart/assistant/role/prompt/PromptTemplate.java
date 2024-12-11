@@ -32,7 +32,7 @@ public interface PromptTemplate {
     {
         "thought": "我现在知道了最终的答案",
         "tools": [],
-        "finalAnswer": "<对原始输入的问题输出最终的答案>"
+        "finalAnswer": "<当对原始输入的问题输出最终的答案时，在此字段输出，否则为空>"
     }
     ```
 
