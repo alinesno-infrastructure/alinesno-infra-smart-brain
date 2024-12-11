@@ -17,9 +17,11 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +44,6 @@ public class ReActExpertService extends ExpertService {
     @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
-//    private static final Map<Long , String> messageBox = new HashMap<>() ;
-
     @Autowired
     private IToolService toolService ;
 
@@ -56,10 +56,6 @@ public class ReActExpertService extends ExpertService {
                                 MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
-        boolean askHumanHelp = role.isAskHumanHelp() ;
-        long currentAccount = taskInfo.getAccountId() ;
-
-        // 工具类
         List<ToolDto> tools = toolService.getByRole(role.getId()) ;
 
         boolean isCompleted = false ;  // 是否已经完成
@@ -69,13 +65,6 @@ public class ReActExpertService extends ExpertService {
         StringBuilder thought = new StringBuilder(); // 思考
         StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
 
-//        if(askHumanHelp){
-//            if(messageBox.get(currentAccount) != null){
-//                askHumanHelpThought.append(messageBox.get(currentAccount));
-//                askHumanHelpThought.append("\r\n").append(goal);
-//            }
-//            log.debug("askHumanHelp thought = {}" , askHumanHelpThought);
-//        }
 
         do {
             loop++;
@@ -89,6 +78,7 @@ public class ReActExpertService extends ExpertService {
             prompt = Prompt.buildHumanHelpPrompt(prompt , askHumanHelpThought) ;
 
             List<Message> messages = new ArrayList<>();
+            handleHistoryMessage(messages , taskInfo.getChannelId()) ;
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
 
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
@@ -172,7 +162,7 @@ public class ReActExpertService extends ExpertService {
                                 String toolAndObservable = String.format("%s\r\n" , executeToolOutput) ;
                                 thought.append(toolAndObservable);
 
-                                streamMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
+                                streamStoreMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
                                         role,
                                         taskInfo,
                                         IdUtil.getSnowflakeNextId());
@@ -211,6 +201,50 @@ public class ReActExpertService extends ExpertService {
         } while (!isCompleted);
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
+    }
+
+    /**
+     * 处理本次会话的历史记录
+     * @param messages
+     * @param channelId
+     */
+    private void handleHistoryMessage(List<Message> messages, long channelId) {
+
+        // 假设这是你想要设置的最大字符数
+        int maxLength = 131072; // 或者其他你认为合适的最大值
+
+        log.debug("历史记录：");
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+        StringBuilder allMessagesText = new StringBuilder();
+
+        int tokenLength;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            tokenLength = chatText.length();
+
+            log.debug("-->> {}({}):{} (Token Length: {})", dto.getName(), dto.getRoleType(), chatText, tokenLength);
+
+            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
+            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
+
+                if ("agent".equals(dto.getRoleType())) {
+                    messages.add(qianWenNewApiLLM.createMessage(Role.ASSISTANT, chatText));
+                } else {
+                    messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+                }
+
+                // 更新所有消息文本的总长度
+                allMessagesText.append(chatText);
+            }
+        }
+        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
+
     }
 
     @Override
