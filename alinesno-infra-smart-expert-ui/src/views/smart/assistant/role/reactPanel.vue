@@ -30,6 +30,7 @@
                                 <el-form-item label="工具选择" prop="tools">
                                     <el-checkbox-group v-model="ruleForm.tools" size="large">
                                         <el-checkbox 
+                                            style="margin-bottom:10px"
                                             v-for="item in toolOptions"
                                             :label="item.id" 
                                             :value="item.id"
