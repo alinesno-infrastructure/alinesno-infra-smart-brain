@@ -91,6 +91,13 @@
 			</exclusions>
 		</dependency>
 
+		<!-- 引入豆包 Volc Engine SDK 依赖项 -->
+		<dependency>
+			<groupId>com.volcengine</groupId>
+			<artifactId>volc-sdk-java</artifactId>
+			<version>1.0.196</version>
+		</dependency>
+
 		<!-- echarts数据分析 -->
 		<dependency>
 			<groupId>org.icepear.echarts</groupId>
