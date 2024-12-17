@@ -289,7 +289,7 @@ const genStreamContent = () => {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(255, 255, 255, 0.1)',
+    background: 'rgba(0, 0, 0, 0.7)',
   })
 
   let formData = {
