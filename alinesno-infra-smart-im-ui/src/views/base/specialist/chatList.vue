@@ -32,6 +32,7 @@
           <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
               <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
               <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
+              <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
           </div>
 
         </div>
@@ -61,7 +62,7 @@ const scrollbarRef = ref(null);
 const messageList = ref([]);
 
 // 定义派发事件
-const emit = defineEmits(['sendMessageToChatBox' , 'handleEditorContent'])
+const emit = defineEmits(['sendMessageToChatBox' , 'handleEditorContent' , 'executorMessage'])
 
 // 改变组件的中的方法
 const pushMessageList = (mess) => {
@@ -187,6 +188,10 @@ function handleEditGenContent(item){
   const businessId = item.businessId + '' ;
   console.log('businessId = ' + businessId) ;
   emit('handleEditorContent' , businessId) ; 
+}
+
+function handleExecutorMessage(item){
+  emit('executorMessage' , item) ; 
 }
 
 /** 重新生成内容 */
