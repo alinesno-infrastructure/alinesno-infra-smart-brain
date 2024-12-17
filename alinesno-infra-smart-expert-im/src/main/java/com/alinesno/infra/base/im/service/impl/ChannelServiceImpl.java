@@ -113,6 +113,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         queryWrapper.setEntityClass(ChannelEntity.class) ;
         query.toWrapper(queryWrapper);
         queryWrapper.eq(ChannelEntity::getHasDelete , HasDeleteEnums.LEGAL.value) ;
+        queryWrapper.orderByDesc(ChannelEntity::getAddTime) ;
 
         return list(queryWrapper);
     }
