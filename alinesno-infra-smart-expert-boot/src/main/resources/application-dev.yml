@@ -8,14 +8,14 @@ spring:
     id: 1848341995578118144
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3309/dev_alinesno_infra_smart_assistant_v100?characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true
+    url: jdbc:mysql://localhost:3306/dev_alinesno_infra_smart_assistant_v100?characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true
     username: root
     password:  adminer
   data:
     redis:
       host: 127.0.0.1
       port: 6379
-      # password: aip@local
+      password: aip@local
   mvc:
     async:
       request-timeout: 3600000
