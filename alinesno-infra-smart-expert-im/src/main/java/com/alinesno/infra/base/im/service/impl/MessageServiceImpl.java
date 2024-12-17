@@ -101,6 +101,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
                 dto.setName(e.getName());
                 dto.setIcon(e.getIcon());
+                dto.setRoleId(e.getRoleId() == null ? 0L : e.getRoleId());
 
                 dto.setRoleType(e.getRoleType());
                 dto.setReaderType(e.getReaderType());
