@@ -30,8 +30,11 @@
 
             <div class="robot-chat-body" v-loading="loading">
               <!-- 聊天窗口_start -->
-              <ChatList ref="chatListRef" @sendMessageToChatBox="sendMessageToChatBox"
-                @handleSelectPreBusinessId="handleSelectPreBusinessId" @handleEditorContent="handleEditorContent" />
+              <ChatList ref="chatListRef" 
+                @sendMessageToChatBox="sendMessageToChatBox"
+                @executorMessage="executorMessage"
+                @handleSelectPreBusinessId="handleSelectPreBusinessId" 
+                @handleEditorContent="handleEditorContent" />
               <!-- 聊天窗口_end -->
             </div>
 
@@ -121,7 +124,7 @@ import AgentTaskFlow from './agentTaskFlow'
 import ChatMessageEditor from './chatMessageEditor'
 
 // --->>> 引入方法 -->>
-import { chatAssistantContent, updateAssistantContent, chatMessage, sendUserMessage } from '@/api/base/im/robot'
+import { chatAssistantContent, chatMessage, sendUserMessage } from '@/api/base/im/robot'
 import { getChannel } from "@/api/base/im/channel";
 import { getParam } from '@/utils/ruoyi'
 import { formatMessage } from '@/utils/chat'
@@ -183,12 +186,6 @@ const sendMessage = (type) => {
     return;
   }
 
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(255, 255, 255, 0.1)',
-  })
-
   const formattedMessage = formatMessage(message.value, channelUsers.value);
 
   chatListRef.value.pushMessageList(formattedMessage);
@@ -209,11 +206,44 @@ function handleSendUserMessage(message, type) {
     return item.id;
   })
 
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    text: '任务执行中，请勿操作其它界面 ...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
   sendUserMessage(message, users, selectedBusinessId.value, channelId, type).then(response => {
     console.log("发送消息", response.data);
     response.data.forEach(item => {
       chatListRef.value.pushResponseMessageList(item);
     })
+  }).catch(error => {
+    streamLoading.value.close();
+  })
+}
+
+/** 执行脚本任务 */
+function executorMessage(item){
+
+  let channelId = getParam("channel");
+  let users = [item.roleId];
+  let bId = [item.businessId];
+  let type = 'function';
+  let message = " #"+item.businessId+" @图片设计专家 " ; 
+
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    text: '任务执行中，请勿操作其它界面 ...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
+  sendUserMessage(message, users, bId , channelId, type).then(response => {
+    console.log("发送消息", response.data);
+    response.data.forEach(item => {
+      chatListRef.value.pushResponseMessageList(item);
+    })
+  }).catch(error => {
+    streamLoading.value.close();
   })
 }
 
