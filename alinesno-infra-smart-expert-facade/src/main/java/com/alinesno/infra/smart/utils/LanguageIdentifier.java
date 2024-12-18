@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.utils;
 
-import com.alinesno.infra.smart.utils.FileType;
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.parser.ParserException;
