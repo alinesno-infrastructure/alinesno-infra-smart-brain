@@ -20,7 +20,6 @@ import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
@@ -33,6 +32,7 @@ import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.plexpt.chatgpt.entity.chat.Message;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
