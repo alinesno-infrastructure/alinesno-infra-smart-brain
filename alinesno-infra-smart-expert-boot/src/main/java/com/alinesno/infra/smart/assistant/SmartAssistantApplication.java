@@ -18,6 +18,8 @@ public class SmartAssistantApplication {
 	public static ConfigurableApplicationContext context;
 
 	public static void main(String[] args) {
+
+
 		SpringApplication.run(SmartAssistantApplication.class, args);
 	}
 
