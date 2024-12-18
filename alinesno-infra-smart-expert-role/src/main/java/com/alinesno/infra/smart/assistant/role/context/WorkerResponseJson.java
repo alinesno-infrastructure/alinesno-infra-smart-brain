@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.role.context;
 
 import com.alibaba.fastjson.annotation.JSONField;
 import lombok.Data;
+
 import java.util.List;
 import java.util.Map;
 
