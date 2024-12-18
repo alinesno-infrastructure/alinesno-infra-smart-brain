@@ -1,6 +1,5 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -12,6 +11,7 @@ import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
