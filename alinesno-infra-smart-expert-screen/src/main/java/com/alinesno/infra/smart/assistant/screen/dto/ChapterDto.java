@@ -1,10 +1,6 @@
 package com.alinesno.infra.smart.assistant.screen.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
-import com.alinesno.infra.smart.assistant.screen.entity.ChapterEntity;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
