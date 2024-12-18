@@ -2,7 +2,6 @@ package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
-import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -15,6 +14,7 @@ import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
