@@ -1,8 +1,8 @@
 package com.alinesno.infra.base.im.utils;
 
 import cn.hutool.json.JSONUtil;
-import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 
 public class TaskUtils {
