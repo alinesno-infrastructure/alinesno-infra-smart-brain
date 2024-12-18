@@ -1,7 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import com.alinesno.infra.common.core.utils.StringUtils;
-import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
@@ -9,6 +8,7 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.event.StreamMessageEvent;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
+import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
