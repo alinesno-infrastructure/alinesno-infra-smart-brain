@@ -11,7 +11,7 @@ import java.util.Map;
 @Slf4j
 public class ToolExecutor {
 
-    public static ToolResult executeGroovyScript(String script, Map<String, Object> params) throws Exception {
+    public static ToolResult executeGroovyScript(String script, Map<String, Object> params, Map<String, String> secretKey) throws Exception {
        log.trace("执行脚本：{}", script);
 
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
@@ -22,6 +22,7 @@ public class ToolExecutor {
             }
 
             Tool toolInstance = (Tool) groovyClass.getDeclaredConstructor().newInstance();
+            toolInstance.setSecretKey(secretKey);
 
             String toolJson = toolInstance.toJson();
             log.debug("工具参数：{}", toolJson);
