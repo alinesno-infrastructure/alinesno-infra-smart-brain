@@ -102,21 +102,22 @@
             </template>
           </el-table-column>
           <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+          
+          <!--
           <el-table-column label="所属类型" align="center" width="130" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
             </template>
           </el-table-column>
-
-          <!--
-          <el-table-column label="配置Prompt" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
+          -->
+ 
+          <el-table-column label="推送" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text @click="configPrompt(scope.row)">
-                <i class="fa-solid fa-truck-fast"></i> 配置
+              <el-button type="primary" text @click="pushOrg(scope.row)">
+                <i class="fa-solid fa-truck-fast"></i> 推送
               </el-button>
             </template>
-          </el-table-column>
-          -->
+          </el-table-column> 
 
           <el-table-column label="知识库" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
