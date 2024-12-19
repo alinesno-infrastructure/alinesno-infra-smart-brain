@@ -39,7 +39,7 @@ public class ToolExecutorTest {
         // 如果有参数，添加到params中
         // params.put("dateStr", "2023-01-01");
 
-        Object result = ToolExecutor.executeGroovyScript(groovyScript, params);
+        Object result = ToolExecutor.executeGroovyScript(groovyScript, params, getSecretKey());
         System.out.println(result);
     }
 
