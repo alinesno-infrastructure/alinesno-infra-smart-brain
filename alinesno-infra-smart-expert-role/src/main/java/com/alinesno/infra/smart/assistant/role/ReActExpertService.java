@@ -153,7 +153,7 @@ public class ReActExpertService extends ExpertService {
                         Map<String, Object> argsList = tool.getArgsList();
 
                         try {
-                            ToolResult  toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList);
+                            ToolResult  toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
                             Object executeToolOutput = toolResult.getOutput() ;
 
                             if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
@@ -167,7 +167,7 @@ public class ReActExpertService extends ExpertService {
                                         IdUtil.getSnowflakeNextId());
 
                             }
-                            log.debug("工具执行结果：{}", observation);
+                            log.debug("工具执行结果：{}", executeToolOutput);
                             System.out.println();
 
                             if(toolResult.isFinished()){
