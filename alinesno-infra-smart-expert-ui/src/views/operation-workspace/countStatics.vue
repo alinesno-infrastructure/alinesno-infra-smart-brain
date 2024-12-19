@@ -11,7 +11,7 @@
                 <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
                   <a target="_blank" :href="item.link">
-                    <img :src="imagePath(item.roleAvatar)" style="width:40px;height:40px;float:left; border-radius: 8px" />
+                    <img :src="imagePath(item.roleAvatar)" style="width:40px;height:40px;float:left; border-radius: 50%" />
                     <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);">
                       {{ item.roleName }} 
                       <br/>
@@ -25,7 +25,7 @@
               <li class="count-data bg-red">
                 <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
-                  <a target="_blank" href="item.link">
+                  <router-link to="/dashboard/smart/assistant/roleTemplate/index">
                     <div class="app-icon" style="margin-top: 0px;width: 40px;height:40px;float:left;border-radius: 8px;font-size: 15px;">
                         <i class="fa-solid fa-plus" style="top:5px" />
                       </div>
@@ -36,7 +36,7 @@
                        添加用户自定义角色
                       </span>
                     </div>
-                  </a>
+                  </router-link>
                 </span>
               </li>
             </ul>
