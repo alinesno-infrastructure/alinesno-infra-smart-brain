@@ -4,11 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.annotation.ParamInfo;
 import com.alinesno.infra.smart.assistant.annotation.ToolInfo;
+import lombok.Data;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+@Data
 public abstract class Tool {
 
    /**
@@ -16,6 +19,11 @@ public abstract class Tool {
    * @return
    */
    public abstract String execute() ;
+
+   /**
+    * 密钥配置
+    */
+   public Map<String, String> secretKey ;
 
    /**
     * 工具执行结束后，是否结束本轮对话
