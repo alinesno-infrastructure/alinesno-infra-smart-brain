@@ -125,6 +125,7 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
 		binding.setVariable("expertService", this);  // 操作服务
+		binding.setVariable("secretKey", getSecretKey());  // 操作服务
 		binding.setVariable("channelInfo", getChannelInfo(taskInfo.getChannelId()));  // 操作服务
 		binding.setVariable("screenInfo", getScreenInfo(taskInfo.getScreenId()));  // 操作服务
 		binding.setVariable("tools", tools); // 工具类
