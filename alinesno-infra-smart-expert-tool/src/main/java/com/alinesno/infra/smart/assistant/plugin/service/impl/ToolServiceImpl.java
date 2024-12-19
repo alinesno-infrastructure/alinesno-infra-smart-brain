@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
             Type type = new TypeToken<Map<String, Object>>(){}.getType();
             Map<String, Object> paramMap = gson.fromJson(paramStr, type);
 
-            Object output = ToolExecutor.executeGroovyScript(groovyScript, paramMap);
+            Object output = ToolExecutor.executeGroovyScript(groovyScript, paramMap, new HashMap<>());
             log.debug("工具执行结果：{}", output);
 
             // 更新工具使用次数
