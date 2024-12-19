@@ -24,6 +24,7 @@ import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
 import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
+import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -66,11 +67,16 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     private long msgUuid;
 
+    private Map<String , String> secretKey ; // 组织配置密钥
+
     @Autowired
     private IChannelService channelService ;
 
     @Autowired
     private IScreenService screenService ;
+
+    @Autowired
+    private ISecretService secretService ;
 
     @Autowired
     protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
@@ -129,6 +135,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         this.setRole(role);
         this.setTaskInfo(taskInfo);
         this.setMsgUuid(IdUtil.getSnowflakeNextId());
+        this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
 
         if (taskInfo.isFunctionCall()) {  // 执行方法
 
