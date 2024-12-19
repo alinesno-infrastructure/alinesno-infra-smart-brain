@@ -1,6 +1,6 @@
 <template>
   <div>
-    <router-link tag="div" class="header-logo-bar" to="/index">
+    <div class="header-logo-bar">
       <div class="header-logo" v-if="enableLogo" @click="enterDomain">
         <img :src="saasLogoUrl" alt="" />
       </div>
@@ -10,7 +10,7 @@
       <div v-if="saasUrl" class="dashboard-home" @click="dashboardHome()">
         <i class="fa-solid fa-house"></i> 工作台
       </div>
-    </router-link>
+    </div>
   </div>
 </template>
 
@@ -26,7 +26,7 @@ export default {
 
     let saasTitle = 'AIP智能设施'
     let enableLogo = true;
-    let saasUrl = 'http://alinesno-infra-plat-console-admin.beta.plat.infra.linesno.com' ;
+    let saasUrl = 'http://alinesno-infra-plat-console-ui.beta.plat.infra.linesno.com' ;
     let saasLogoUrl = 'http://data.linesno.com/logo_2.png' ;
     let displayUrl = ''; 
 
