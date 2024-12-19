@@ -10,11 +10,15 @@
         <i class="fa-regular fa-file-word"></i> 手册
       </router-link>
     </div>
+
+    <!--
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/dashboard/smartService">
         <i class="fa-solid fa-swatchbook"></i> 专家 
       </router-link>
     </div>
+    -->
+
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/dashboard/suportTechnique">
         <i class="fa-solid fa-user-tag"></i> 服务
