@@ -17,6 +17,12 @@
       </router-link>
     </div>
 
+    <div class="acp-header-item ">
+      <a class="header-label-text" target="_blank" href="http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com">
+        <i class="fa-solid fa-feather"></i> 管理者
+      </a>
+    </div>
+
     <el-dropdown size="mini">
       <div class="acp-header-item " style="display: flex">
         <a class="header-label-text">
