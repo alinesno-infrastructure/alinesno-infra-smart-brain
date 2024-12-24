@@ -1,0 +1,23 @@
+package com.alinesno.infra.smart.assistant.service.impl;
+
+import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.entity.ApiKeyEntity;
+import com.alinesno.infra.smart.assistant.entity.RolePushOrgEntity;
+import com.alinesno.infra.smart.assistant.mapper.ApiKeyMapper;
+import com.alinesno.infra.smart.assistant.mapper.RolePushOrgMapper;
+import com.alinesno.infra.smart.assistant.service.IApiKeyService;
+import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+/**
+ * 应用构建Service业务层处理
+ * 
+ * @version 1.0.0
+ * @author luoxiaodong
+ */
+@Slf4j
+@Service
+public class RolePushOrgServiceImpl extends IBaseServiceImpl<RolePushOrgEntity, RolePushOrgMapper> implements IRolePushOrgService {
+
+}
