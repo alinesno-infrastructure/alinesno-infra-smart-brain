@@ -102,14 +102,6 @@
             </template>
           </el-table-column>
           <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true" />
-          
-          <!--
-          <el-table-column label="所属类型" align="center" width="130" key="domain" prop="domain" v-if="columns[3].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <i class="fa-solid fa-user-astronaut icon-btn"></i> {{ scope.row.industryCatalog }}
-            </template>
-          </el-table-column>
-          -->
  
           <el-table-column label="推送" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
@@ -133,13 +125,6 @@
               </el-button>
             </template>
           </el-table-column>
-          <!--
-          <el-table-column label="执行流程" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <el-button type="primary" text icon="Promotion" @click="configExecuteFlow(scope.row)">配置</el-button>
-            </template>
-          </el-table-column>
-          -->
           <el-table-column label="推荐" align="center" width="100" key="hasRecommended" prop="hasRecommended" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
                 <el-switch
@@ -183,12 +168,6 @@
       </el-col>
     </el-row>
 
-      <!-- 添加或修改指令配置对话框 
-      <el-dialog :title="promptTitle" v-model="promptOpen" width="980px" :before-close="handleClosePrompt" destroy-on-close append-to-body>
-         <PromptEditor :currentPrompt="currentPrompt" />
-      </el-dialog>
-       -->
-
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
       <el-form :model="form" :rules="rules" ref="RoleRef" label-width="80px">
@@ -209,7 +188,6 @@
                   :disabled="upload.isUploading"
                   :on-progress="handleFileUploadProgress"
                 >
-                  <!-- <img v-if="form.roleAvatar" style="width:100%;height:100%" :src="imagePath(form.roleAvatar)" /> -->
                   <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
                 </el-upload>
               </el-form-item>
@@ -307,6 +285,32 @@
         <KnowledgeDataset ref="knowledgeDatasetRef" />
       </template>
     </el-drawer>
+
+    <el-dialog v-model="pushOrgDialogFormVisible" title="请输入推送组织号" width="500">
+      <el-form :model="form">
+        <el-form-item label="组织ID" label-width="70px">
+          <el-input v-model="pushOrgId" autocomplete="off" placeholder="请输入推送组织号">
+            <template #append>
+              <el-button icon="Search" />
+            </template>
+          </el-input> 
+        </el-form-item>
+      </el-form>
+      <div style="padding:10px 20px;">
+        <div>
+          <p><i class="fa-solid fa-paper-plane"></i> 组织ID: 12312388812319109123</p>
+          <p><i class="fa-brands fa-slack"></i> 组织名称: 罗小东软件组织公司</p>
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="pushOrgDialogFormVisible = false">取消</el-button>
+          <el-button type="primary" @click="pushOrgDialogFormVisible = false">
+           确认推送 
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
     
   </div>
 </template>
@@ -325,17 +329,7 @@ import {
   recommended
 } from "@/api/smart/assistant/role";
 
-  // saveRoleChainInfo,
-
 import KnowledgeDataset from '@/views/smart/assistant/role/knowledge/parseDataset'
-// import ExecuteScriptPanel from '@/views/smart/assistant/role/executeScriptPanel'
-
-// import {
-//   addRoleChain , 
-//   updateRoleChain,
-// } from "@/api/smart/assistant/chain"
-
-// import PromptEditor from "./editor.vue"
 import { ElMessage } from 'element-plus'
 import {reactive} from "vue";
 
@@ -360,24 +354,14 @@ const knowDrawerDialog = ref(false)
 const knowTitle = ref("")
 const knowRoleAvatar = ref("")
 
-// 执行脚本
-// const executeScriptRef = ref(null)
-// const executeScriptDialog = ref(false)
-// const executeScriptTitle = ref("")
+const pushOrgDialogFormVisible = ref(false)
+const pushOrgId = ref("")
 
 const chainOpen = ref(false);
-// const chainTitle = ref("");
-// const promptTitle = ref("");
-// const currentPrompt = ref("");
-// const currentPromptContent = ref([]);
 const promptOpen = ref(false);
 
 const deptName = ref("");
 const deptOptions = ref(undefined);
-
-// const initPassword = ref(undefined);
-// const postOptions = ref([]);
-// const roleOptions = ref([]);
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -470,7 +454,6 @@ function getList() {
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
-  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
   imageUrl.value = response.data ? response.data.split(',').map(url =>{return { url:upload.display + url }}):[];
   form.value.roleAvatar = response.data ;
   console.log('form.roleAvatar = ' + form.roleAvatar);
@@ -485,18 +468,17 @@ const beforeAvatarUpload = (rawFile) => {
   return true;
 };
 
-/** 关闭对话框 */
-// function handleClosePrompt(){
-//    promptOpen.value = false;
-//   getList();
-// }
-
 /** 推荐组织Hero角色 */
 function handleRecommended(roleId){
   recommended(roleId).then(res => {
     proxy.$modal.msgSuccess("推荐成功");
     getList();
   })
+}
+
+/** 推送到指定的组织 */
+function pushOrg(row){
+  pushOrgDialogFormVisible.value = true;
 }
 
 /** 修改状态 */
@@ -513,19 +495,19 @@ const handleChangeSaleField= async(field , value , id) => {
      }
 }
 
-/** 修改状态 */
-const handleChangStatusField = async(field , value , id) => {
-   // 判断tags值 这样就不会进页面时调用了
-     const res = await changStatusField({
-        field: field,
-        value: value?1:0,
-        id: id
-     }).catch(() => { })
-     if (res && res.code == 200) {
-        // 刷新表格
-        getList()
-     }
-}
+// /** 修改状态 */
+// const handleChangStatusField = async(field , value , id) => {
+//    // 判断tags值 这样就不会进页面时调用了
+//      const res = await changStatusField({
+//         field: field,
+//         value: value?1:0,
+//         id: id
+//      }).catch(() => { })
+//      if (res && res.code == 200) {
+//         // 刷新表格
+//         getList()
+//      }
+// }
 
 // 节点单击事件
 function handleNodeClick(data) {
@@ -592,46 +574,6 @@ function configExecuteScript(row){
 
 }
 
-// /** 配置Prompt */
-// function configPrompt(row){
-//    promptTitle.value = "配置角色Prompt";
-//    promptOpen.value = true ;
-//    currentPrompt.value = row ;
-
-//   //  if(row.promptContent){
-//   //     currentPromptContent.value = JSON.parse(row.promptContent);
-//   //  }
-// }
-
-// /** 关闭弹窗 */
-// function handleCloseKnowledge(){
-//    knowDrawerDialog.value = false
-// }
-
-/** 运行一次专家链路 */
-// function handleRunChain(row){
-
-//   loading.value = true;
-//   let text = '测试数据' ; 
-//   runRoleChainByRoleId(row.id , text).then(response => {
-//     proxy.$modal.msgSuccess("运行成功.");
-//     loading.value = false;
-//   })
-// }
-
-// /** 配置用户链路流程 */
-// function handleLangChain(row){
-//   const roleId = row.id || ids.value;
-
-//   getRoleChainByChainId(roleId).then(response => {
-//     chainForm.value = response.data;
-//     chainForm.value.roleId = roleId;
-
-//     chainOpen.value = true;
-//     chainTitle.value = "配置链路";
-//   });
-// }
-
 /** 选择条数  */
 function handleSelectionChange(selection) {
   ids.value = selection.map(item => item.id);
@@ -678,29 +620,6 @@ function handleUpdate(row) {
     title.value = "修改应用";
   });
 };
-
-// /** 提交流程按钮 */
-// function submitChainForm() {
-//   proxy.$refs["ChainRef"].validate(valid => {
-
-//     if (valid) {
-//       if (chainForm.value.id != undefined) {
-//         updateRoleChain(chainForm.value).then(response => {
-//           proxy.$modal.msgSuccess("配置成功");
-//           chainOpen.value = false;
-//           getList();
-//         });
-//       } else {
-//         saveRoleChainInfo(chainForm.value , chainForm.value.roleId).then(response => {
-//           proxy.$modal.msgSuccess("配置成功");
-//           chainOpen.value = false;
-//           getList();
-//         });
-//       }
-//     }
-//   });
-// };
-
 
 /** 提交按钮 */
 function submitForm() {
