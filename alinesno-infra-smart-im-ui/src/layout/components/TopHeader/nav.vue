@@ -19,7 +19,7 @@
 
     <div class="acp-header-item ">
       <a class="header-label-text" target="_blank" href="http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com">
-        <i class="fa-solid fa-feather"></i> 管理者
+        <i class="fa-solid fa-feather"></i> 工作区(Studio)
       </a>
     </div>
 
@@ -34,7 +34,10 @@
           </el-icon>
         </a>
         <a class="header-label-text" target="_blank">
-          <img src="http://data.linesno.com/switch_header.png" class="su70ez-0 CB-gLgKdv" alt="" />
+          <!--
+            <img src="http://data.linesno.com/switch_header.png" class="su70ez-0 CB-gLgKdv" alt="" />
+          -->
+          <img :src="userStore.avatar" class="su70ez-0 CB-gLgKdv" alt="" />
         </a>
       </div>
 
