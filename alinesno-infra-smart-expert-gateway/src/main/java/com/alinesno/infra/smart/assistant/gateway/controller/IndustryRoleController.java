@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.NumberUtil;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -10,19 +11,18 @@ import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
 import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.dto.FieldDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
-import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
-import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
 import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -58,7 +58,13 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     private CloudStorageConsumer cloudStorageConsumer ;
 
     @Autowired
+    private IBaseOrganizationConsumer baseOrgConsumer; ;
+
+    @Autowired
     private IIndustryRoleService service;
+
+    @Autowired
+    private IRolePushOrgService rolePushOrgService ;
 
     @Autowired
     private IRoleToolService roleToolService ;
@@ -95,6 +101,33 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         }
 
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     * 通过组织号查询组织
+     */
+    @GetMapping(value = "/findOrg" )
+    public AjaxResult findOrg(@RequestParam String orgId){
+
+        Assert.notNull(orgId, "组织参数为空");
+        Assert.isTrue(NumberUtil.isNumber(orgId), "组织参数错误");
+
+        return AjaxResult.success(baseOrgConsumer.findOrg(Long.parseLong(orgId)).getData()) ;
+    }
+
+    /**
+     * 推送到指定的组织号confirmPushOrg
+     */
+    @PostMapping("/confirmPushOrg")
+    public AjaxResult confirmPushOrg(@RequestBody @Validated PushOrgDto dto) {
+
+        long accountOrgId = CurrentAccountJwt.get().getOrgId();
+
+        // 推送组织不能为当前组织
+        Assert.isTrue(accountOrgId != dto.getOrgId(), "推送组织不能为当前组织");
+
+        rolePushOrgService.pushOrgRole(dto.getRoleId(), dto.getOrgId());
+        return ok() ;
     }
 
     /**
@@ -216,7 +249,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
      */
     @ResponseBody
     @PostMapping("/marketDatatables")
-    public TableDataInfo marketDatatables(Model model, DatatablesPageBean page) {
+    public MarketTableDataInfo marketDatatables(Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
 
         List<ConditionDto> condition =  page.getConditionList() ;
@@ -230,7 +263,13 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         condition.add(dto) ;
         page.setConditionList(condition);
 
-        return this.toPage(model, this.getFeign(), page);
+        MarketTableDataInfo tableDataInfo = MarketTableDataInfo.form(this.toPage(model, this.getFeign(), page));
+
+        // 查询出推送给组织的角色
+        List<IndustryRoleEntity> pushOrgRoleList = rolePushOrgService.queryPushOrgRole(CurrentAccountJwt.get().getOrgId()) ;
+        tableDataInfo.setPushRows(pushOrgRoleList);
+
+        return tableDataInfo ;
     }
 
     /**
@@ -239,7 +278,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
      */
     @DataPermissionSave
     @GetMapping("/employRole")
-    public AjaxResult employRole(@RequestParam String roleId){
+    public AjaxResult employRole(@RequestParam String roleId , @RequestParam boolean isPush){
 
         Assert.notNull(roleId, "请选择录用角色");
 
@@ -247,7 +286,8 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         service.employRole(Long.parseLong(roleId) ,
                 dto.getOrgId() == null ? 0L : dto.getOrgId() ,
                 dto.getId() == null ? 0L : dto.getId() ,
-                dto.getDepartmentId() == null ? 0L : dto.getDepartmentId()) ;
+                dto.getDepartmentId() == null ? 0L : dto.getDepartmentId() ,
+                isPush) ;
 
         return ok() ;
     }
