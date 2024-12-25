@@ -287,25 +287,39 @@
     </el-drawer>
 
     <el-dialog v-model="pushOrgDialogFormVisible" title="请输入推送组织号" width="500">
+      <div style="padding: 10px 20px;display: flex;align-items: center;margin-bottom:20px; line-height: 1.1rem; gap: 10px;margin-top: -20px;">
+        <div>
+          <img :src="imagePath(pushRoleInfo.roleAvatar)" style="width:70px;height:70px;border-radius:50%;" />
+        </div>
+        <div style="display: flex;flex-direction: column;gap: 5px;">
+          <span style="font-size:16px;font-weight: 500;">
+            <b>角色</b>:{{ pushRoleInfo.roleName }}
+          </span>
+          <span style="font-size: 13px;color: #a5a5a5;">
+            {{ pushRoleInfo.responsibilities}}
+          </span>
+        </div>
+      </div>  
       <el-form :model="form">
         <el-form-item label="组织ID" label-width="70px">
           <el-input v-model="pushOrgId" autocomplete="off" placeholder="请输入推送组织号">
             <template #append>
-              <el-button icon="Search" />
+              <el-button @click="handleFindOrg" icon="Search" />
             </template>
           </el-input> 
         </el-form-item>
       </el-form>
-      <div style="padding:10px 20px;">
+      <div style="padding:10px 20px;" v-if="pushOrgInfo.id">
         <div>
-          <p><i class="fa-solid fa-paper-plane"></i> 组织ID: 12312388812319109123</p>
-          <p><i class="fa-brands fa-slack"></i> 组织名称: 罗小东软件组织公司</p>
+          <p><i class="fa-solid fa-paper-plane"></i> 组织ID: {{ pushOrgInfo.id }}</p>
+          <p><i class="fa-brands fa-slack"></i> 组织名称: {{ pushOrgInfo.orgName }}</p>
+          <p><i class="fa-solid fa-file-word"></i> 备注: {{ pushOrgInfo.remark }}</p>
         </div>
       </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="pushOrgDialogFormVisible = false">取消</el-button>
-          <el-button type="primary" @click="pushOrgDialogFormVisible = false">
+          <el-button type="primary" :disabled="enablePushOrg==false" @click="handleConfirmPushOrg">
            确认推送 
           </el-button>
         </div>
@@ -317,13 +331,17 @@
 
 <script setup name="Role">
 import {getToken} from "@/utils/auth";
+import { ElLoading } from 'element-plus'
+
 import {
   listRole,
   delRole,
+  findOrg,
   getRole,
   updateRole,
   catalogTreeSelect,
   addRole,
+  confirmPushOrg,
   changStatusField,
   changeSaleField,
   recommended
@@ -355,7 +373,15 @@ const knowTitle = ref("")
 const knowRoleAvatar = ref("")
 
 const pushOrgDialogFormVisible = ref(false)
-const pushOrgId = ref("")
+const pushOrgId = ref(null)
+const pushRoleInfo = ref({})
+const enablePushOrg = ref(false)
+const pushOrgInfo = ref({
+  doorplateNumber: "" ,
+  id: "",
+  orgName: "" , 
+  remark: ""
+})
 
 const chainOpen = ref(false);
 const promptOpen = ref(false);
@@ -452,6 +478,23 @@ function getList() {
   });
 };
 
+/** 查询组织信息 */
+function handleFindOrg(){
+  if(!pushOrgId.value){
+    proxy.$modal.msgError("请输入组织号");
+    return ;
+  }
+  findOrg(pushOrgId.value).then(res => {
+    console.log('res = ' + res) ;
+    if(data){
+      pushOrgInfo.value = res.data ;
+      enablePushOrg.value = true ;
+    }else{
+      proxy.$modal.msgError("查询组织信息失败，请确认组织号是否正确.");
+    }
+  });
+}
+
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
   imageUrl.value = response.data ? response.data.split(',').map(url =>{return { url:upload.display + url }}):[];
@@ -479,6 +522,30 @@ function handleRecommended(roleId){
 /** 推送到指定的组织 */
 function pushOrg(row){
   pushOrgDialogFormVisible.value = true;
+  pushRoleInfo.value = row ;
+  pushOrgInfo.value = {id:null}
+}
+
+/** 确认推送到指定的组织 */
+function handleConfirmPushOrg(){
+  const loading = ElLoading.service({
+    lock: true,
+    text: 'Loading',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
+  let data = {
+    roleId: pushRoleInfo.value.id ,
+    orgId: pushOrgId.value,
+  }
+
+  confirmPushOrg(data).then(res => {
+    console.log('res = ' + res) ;
+    loading.close();
+    proxy.$modal.msgSuccess("推送成功");
+  }).catch(() => {
+    loading.close();
+  })
 }
 
 /** 修改状态 */
