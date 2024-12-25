@@ -20,10 +20,7 @@ import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
-import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.assistant.service.IRoleToolService;
-import com.alinesno.infra.smart.assistant.service.IToolService;
-import com.alinesno.infra.smart.assistant.service.IWorkflowExecutionService;
+import com.alinesno.infra.smart.assistant.service.*;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -64,6 +61,9 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private IRoleToolService roleToolService ;
+
+    @Autowired
+    private IRolePushOrgService rolePushOrgService ;
 
     @Autowired
     private IToolService toolService ;
@@ -339,13 +339,20 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     /**
      * 添加角色到指定的团队里面，类似于办理入职手续过程。
+     *
      * @param roleId
      * @param orgId
      * @param userId
      * @param deptId
+     * @param isPush
      */
     @Override
-    public void employRole(long roleId, long orgId , long userId , long deptId) {
+    public void employRole(long roleId, long orgId , long userId , long deptId, boolean isPush) {
+
+        // 如果是推送录用，则删除之前角色关联信息，重新添加
+        if(isPush){
+            clearPushRole(roleId, orgId);
+        }
 
         // 添加角色到默认的团队里面
         LambdaQueryWrapper<IndustryRoleCatalogEntity> cateLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -400,6 +407,30 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         copyRoleTool(roleId, orgId, userId, deptId, role);
 
         // TODO 知识库的复制(待完善) 确定是否复制?
+
+       if(isPush) {  // 如果为组织单独推送，则标识角色为已录用
+           rolePushOrgService.acceptOrgRole(roleId, orgId);
+       }
+
+    }
+
+    /**
+     * 删除所有角色关联信息，包括角色信息，还有工具信息
+     * @param roleId
+     * @param orgId
+     */
+    private void clearPushRole(long roleId, long orgId) {
+
+        LambdaQueryWrapper<IndustryRoleEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(IndustryRoleEntity::getOrgId, orgId);
+        lambdaQueryWrapper.eq(IndustryRoleEntity::getSaleFromRoleId, roleId);
+        remove(lambdaQueryWrapper);
+
+        // 删除工具信息
+        IndustryRoleEntity roleEntity = getOne(lambdaQueryWrapper) ;
+        if(roleEntity != null){
+            roleToolService.remove(new LambdaQueryWrapper<RoleToolEntity>().eq(RoleToolEntity::getRoleId, roleEntity.getId()));
+        }
     }
 
     /**
