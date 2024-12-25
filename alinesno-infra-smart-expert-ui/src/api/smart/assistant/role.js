@@ -29,6 +29,34 @@ var managerUrl = {
   getRoleWithTool: prefix + "getRoleWithTool",
   saveRoleWithTool: prefix + "saveRoleWithTool",
   validateReActRole: prefix + "validateReActRole",
+  findOrg: prefix + "findOrg",
+  confirmPushOrg: prefix + "confirmPushOrg",
+  // listPushOrgRole: prefix + "listPushOrgRole",
+}
+
+// 列出推荐角色
+// export function listPushOrgRole() {
+//   return request({
+//     url: managerUrl.listPushOrgRole,
+//     method: 'get'
+//   })
+// }
+
+// 确认推送组织
+export function confirmPushOrg(data) {
+  return request({
+    url: managerUrl.confirmPushOrg ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 通过id查询组织
+export function findOrg(roleId) {
+  return request({
+    url: managerUrl.findOrg + '?orgId=' + parseStrEmpty(roleId) ,
+    method: 'get'
+  })
 }
 
 // 验证ReAct角色
