@@ -104,6 +104,7 @@ export function updateUserPwd(oldPassword, newPassword) {
 export function uploadAvatar(data) {
   return request({
     url: '/system/user/profile/avatar',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     method: 'post',
     data: data
   })
