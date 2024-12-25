@@ -10,15 +10,11 @@
         <i class="fa-regular fa-file-word"></i> 手册
       </router-link>
     </div>
-
-    <!--
-    <div class="acp-header-item ">
+    <!-- <div class="acp-header-item ">
       <router-link class="header-label-text" to="/dashboard/smartService">
-        <i class="fa-solid fa-swatchbook"></i> 专家 
+        <i class="fa-solid fa-swatchbook"></i> 专家
       </router-link>
-    </div>
-    -->
-
+    </div> -->
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/dashboard/suportTechnique">
         <i class="fa-solid fa-user-tag"></i> 服务
@@ -36,7 +32,8 @@
           </el-icon>
         </a>
         <a class="header-label-text" target="_blank">
-          <img src="http://data.linesno.com/switch_header.png" class="su70ez-0 CB-gLgKdv" alt="" />
+          <!-- <img src="http://data.linesno.com/switch_header.png" class="su70ez-0 CB-gLgKdv" alt="" /> -->
+          <img :src="userStore.avatar" class="su70ez-0 CB-gLgKdv" alt="" />
         </a>
       </div>
 
