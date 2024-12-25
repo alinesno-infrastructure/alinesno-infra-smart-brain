@@ -9,9 +9,9 @@ var managerUrl = {
 }
 
 // 录用角色
-export function employRole(roleId) {
+export function employRole(roleId , isPush) {
   return request({
-    url: managerUrl.employRole + '?roleId=' + roleId ,
+    url: managerUrl.employRole + '?roleId=' + roleId + '&isPush=' + isPush ,
     method: 'get',
   })
 }
