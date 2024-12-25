@@ -1,9 +1,9 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
+import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
-import com.alinesno.infra.smart.assistant.adapter.BaseAuthorityConsumer;
-import com.alinesno.infra.smart.assistant.adapter.dto.OrganizationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrgController {
 
     @Autowired
-    private BaseAuthorityConsumer authorityConsumer;
+    private IBaseOrganizationConsumer baseOrgConsumer ;
 
     /**
      * 保存组织自定义主题
@@ -28,7 +28,7 @@ public class OrgController {
         long orgId = CurrentAccountJwt.get().getOrgId();
 
         dto.setId(orgId);
-        authorityConsumer.updateOrg(dto);
+        baseOrgConsumer.updateOrg(dto);
 
         return AjaxResult.success() ;
     }
@@ -39,7 +39,7 @@ public class OrgController {
     @PostMapping("/createOrg")
     public AjaxResult createOrg(@RequestBody OrganizationDto dto) {
 
-        authorityConsumer.createOrJoinOrg(dto , CurrentAccountJwt.getUserId());
+        baseOrgConsumer.createOrJoinOrg(dto , CurrentAccountJwt.getUserId());
 
         return AjaxResult.success() ;
     }
@@ -53,7 +53,7 @@ public class OrgController {
         long orgId = CurrentAccountJwt.get().getOrgId();
         log.debug("--->>>>> = orgId = {}" , orgId);
 
-        OrganizationDto dto = authorityConsumer.findOrg(orgId).getData() ;
+        OrganizationDto dto = baseOrgConsumer.findOrg(orgId).getData() ;
         return AjaxResult.success(dto);
     }
 
