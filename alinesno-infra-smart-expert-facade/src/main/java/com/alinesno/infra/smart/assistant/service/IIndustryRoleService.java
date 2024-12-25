@@ -111,7 +111,9 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
 
     /**
      * 启用角色和员工
+     *
      * @param roleId
+     * @param isPush 是否为组织单独推送
      */
-    void employRole(long roleId, long orgId , long userId , long deptId);
+    void employRole(long roleId, long orgId , long userId , long deptId, boolean isPush);
 }
