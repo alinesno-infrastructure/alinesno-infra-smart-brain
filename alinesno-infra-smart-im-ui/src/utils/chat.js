@@ -27,6 +27,17 @@ export function imagePath(row){
 
   let icon = row.icon 
 
+  // 判断是否是base64
+  if (typeof icon === 'string' && (/^data:image\/jpeg;base64,/).test(icon)) {
+    // 如果是Base64编码的JPEG图像，直接返回
+    return icon;
+  }
+
+  if (typeof icon === 'string' && (/^\/9j\//).test(icon)) {
+    // 如果是Base64编码的JPEG图像，添加data:image/jpeg;base64, 前缀
+    return `data:image/jpeg;base64,${icon}`;
+  }
+
   // 如果是http前缀则直接返回
   if(icon && icon.indexOf('http') === 0){
     return icon ; 
@@ -41,5 +52,10 @@ export function imagePath(row){
 
 /** 显示图片 */
 export function imagePathByPath(roleAvatar){
+  // 判断是否是base64
+  if (typeof roleAvatar === 'string' && (/^\/9j\//).test(roleAvatar)) {
+    // 如果是Base64编码的JPEG图像，添加data:image/jpeg;base64, 前缀
+    return `data:image/jpeg;base64,${roleAvatar}`;
+  }
   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
 }
