@@ -12,7 +12,11 @@ public class ChatSendMessageDto implements Serializable {
     private List<Long> users; // Agent用户ID列表
     private List<Long> businessIds ;  // 业务ID列表
     private Long channelId;
+
     private Long accountId ; // 操作账号ID
+    private String accountName; // 操作账号名称
+    private String accountIcon ; // 操作账号头像
+
     private String type;
 
 }
