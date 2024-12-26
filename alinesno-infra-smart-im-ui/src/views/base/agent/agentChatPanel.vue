@@ -125,6 +125,7 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 import { ElLoading } from 'element-plus'
+import defAva from '@/assets/images/profile.jpg'
 
 import { getInfo, chatRole }from '@/api/base/im/roleChat'
 import { getParam } from '@/utils/ruoyi'
@@ -294,6 +295,10 @@ const sendMessage = (type) => {
 
   message.value = '';
 };
+
+function handleDefAva(){
+  return defAva ;
+}
 
 /** 显示工具条 */
 function showTools(item) {
