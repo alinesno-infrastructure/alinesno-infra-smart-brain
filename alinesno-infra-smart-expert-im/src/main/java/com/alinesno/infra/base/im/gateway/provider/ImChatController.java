@@ -73,6 +73,9 @@ public class ImChatController extends SuperController {
         });
 
         message.setAccountId(currentAccountId);
+        message.setAccountName(CurrentAccountJwt.get().getName());
+        message.setAccountIcon(CurrentAccountJwt.get().getAvatarPath());
+
         messageService.sendUserMessage(message , roleList , personDto);
 
         return AjaxResult.success("操作成功." , personDto) ;
