@@ -133,7 +133,7 @@ public class RoleChatController extends SuperController {
         msgDto.setChatText(chatMessage.getMessage());
         msgDto.setName(CurrentAccountJwt.get().getName());
         msgDto.setRoleType("person");
-        msgDto.setIcon("1808350003370057729");
+        msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
 
         return AjaxResult.success(msgDto);
     }
