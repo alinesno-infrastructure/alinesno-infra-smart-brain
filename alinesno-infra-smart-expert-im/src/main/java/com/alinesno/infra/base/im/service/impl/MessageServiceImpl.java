@@ -154,7 +154,8 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
                 message.getChannelId(),
                 message.getMessage(),
                 MessageFormatter.getMessage(message.getMessage()),
-                ids
+                ids ,
+                message.getAccountName()
         );
 
         msg.setAccountId(message.getAccountId());
@@ -287,7 +288,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 //        return entity ;
 //    }
 
-    private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId) {
+    private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId , String accountName) {
         MessageEntity msg = new MessageEntity();
 
         msg.setChannelId(channelId);
@@ -296,7 +297,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setAddTime(new Date());
-        msg.setName("软件工程师罗小东");
+        msg.setName(accountName);
         msg.setContent(content);
         msg.setFormatContent(chatText);
 
