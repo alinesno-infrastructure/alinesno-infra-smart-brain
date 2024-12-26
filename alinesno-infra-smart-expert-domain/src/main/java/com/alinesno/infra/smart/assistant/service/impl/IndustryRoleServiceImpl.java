@@ -391,11 +391,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             throw new RpcServiceRuntimeException("您不能录用自己所属的组织的角色！");
         }
 
-        // 购买角色
+        // 录用角色
         role.setOperatorId(userId);
         role.setOrgId(orgId);
         role.setDepartmentId(deptId);
         role.setId(null);
+        role.setHasRecommended(false); // 默认不推荐
         role.setHasSale(9); // 不允许转售
 
         role.setSaleFromRoleId(roleId);
