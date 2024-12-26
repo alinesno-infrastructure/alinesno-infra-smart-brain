@@ -52,12 +52,10 @@
 
                       <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
-                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small"
-                          @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small"
-                          @click="handleEditGenContent(item)">复制</el-button>
+                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
+                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+                        <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">复制</el-button>
+                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
                     </div>
                   </div>
@@ -213,6 +211,38 @@ const pushResponseMessageList = (newMessage) => {
   initChatBoxScroll();
 };
 
+function handleExecutorMessage(item){
+
+  // emit('executorMessage' , item) ; 
+  // let channelId = getParam("channel");
+  // let users = [item.roleId];
+  // let bId = [item.businessId];
+  // let type = 'function';
+  // let message = " #"+item.businessId+" @图片设计专家 " ; 
+
+  // streamLoading.value = ElLoading.service({
+  //   lock: true,
+  //   text: '任务执行中，请勿操作其它界面 ...',
+  //   background: 'rgba(0, 0, 0, 0.7)',
+  // })
+
+  // sendUserMessage(message, users, bId , channelId, type).then(response => {
+  //   console.log("发送消息", response.data);
+  //   response.data.forEach(item => {
+  //     chatListRef.value.pushResponseMessageList(item);
+  //   })
+  // }).catch(error => {
+  //   streamLoading.value.close();
+  // })
+
+  const businessIdMessage = ' #' + item.businessId + ' ';
+  businessId.value = item.businessId;
+  message.value += businessIdMessage;
+
+  sendMessage('function');
+
+}
+
 /** 连接sse */
 function handleSseConnect(channelId) {
   nextTick(() => {
@@ -288,6 +318,8 @@ const sendMessage = (type) => {
   chatRole(formData, roleId.value).then(res => {
     proxy.$modal.msgSuccess("发送成功");
     pushResponseMessageList(res.data);
+  }).catch(error => {
+    streamLoading.value.close();
   })
 
   message.value = '';
