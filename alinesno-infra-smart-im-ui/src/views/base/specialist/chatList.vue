@@ -54,6 +54,9 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import useUserStore from '@/store/modules/user'
+const userStore = useUserStore()
+
 const loading = ref(false)
 
 // 滚动条的处理_starter
@@ -85,8 +88,8 @@ const pushMessageList = (mess) => {
     businessId: '1733452663532019712' ,  
     dateTime: '2023-12-11 16:32:10' ,  
     readerType:'html', 
-    icon:'1830185154541305857' , 
-    name: '软件工程师罗小东', 
+    icon: userStore.avatar , 
+    name: userStore.nickName , 
     date: '12-10 13:58:21', 
     chatText: chatText 
   });
