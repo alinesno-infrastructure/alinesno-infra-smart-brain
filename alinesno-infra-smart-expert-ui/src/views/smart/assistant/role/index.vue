@@ -105,7 +105,7 @@
  
           <el-table-column label="推送" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text @click="pushOrg(scope.row)">
+              <el-button type="primary" :disabled="scope.row.saleFromRoleId" text @click="pushOrg(scope.row)">
                 <i class="fa-solid fa-truck-fast"></i> 推送
               </el-button>
             </template>
