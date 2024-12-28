@@ -17,11 +17,13 @@
               <div class="chat-header-desc">
                 ({{ truncateString(roleInfo.responsibilities, 60) }})
               </div>
+              <!-- 
               <div class="chat-header-desc" style="float: right;margin-top: -10px;">
                 <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true">
                   <i class="fa-solid fa-truck-fast icon-btn"></i>
                 </el-button>
-              </div>
+              </div> 
+              -->
             </div>
 
             <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 220px)">
