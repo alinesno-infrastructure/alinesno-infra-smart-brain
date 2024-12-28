@@ -26,7 +26,10 @@
           <el-col :span="24">
             <el-form-item label="场景类型" prop="screenType">
               <el-radio-group v-model="form.screenType">
-                <el-radio v-for="item in screenTypes" :key="item.key" :label="item.key">{{ item.name }}</el-radio>
+                <el-radio v-for="item in screenTypes" 
+                    :disabled="!item.isAvailable"
+                    :key="item.key" 
+                    :label="item.key">{{ item.name }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -78,8 +81,9 @@ const router = useRouter();
 const imageUrl = ref([])
 
 const screenTypes = ref([
-  { key: 'large_text', name: '大文本' },
-  { key: 'leader_model', name: '管理者' },
+  { key: 'large_text', name: '大文本', isAvailable: true },
+  { key: 'leader_model', name: '管理者', isAvailable: true },
+  { key: 'exam_scene', name: '考试场景', isAvailable: false }
 ]);
 
 const data = reactive({
