@@ -92,6 +92,12 @@ export const constantRoutes = [
         meta: { title: '管理者模式', icon: 'dashboard', affix: true }
       },
       {
+        path: '/screen/leaderPlan',
+        component: () => import('@/views/base/screen/leaderPlan'),
+        name: '/screen/leaderPlan',
+        meta: { title: '管理者计划', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/screen/longText',
         component: () => import('@/views/base/screen/longText'),
         name: '/screen/longText',
