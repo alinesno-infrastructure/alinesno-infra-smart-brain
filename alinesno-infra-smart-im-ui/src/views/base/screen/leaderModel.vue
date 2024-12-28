@@ -3,7 +3,6 @@
         <el-row class="app-row">
             <el-col :span="16">
 
-
                 <div class="avatar-title-container">
                     <el-avatar shape="square" :size="40" :src="imagePathByPath(currentScreenInfo.screenBanner)" />
                     <div style="display: flex;flex-direction: column;">
@@ -21,19 +20,6 @@
 
                 </div>
             </el-col>
-
-            <!-- 
-            <el-col :span="8">
-                <div class="task-management">
-                    <span>
-                        {{ currentScreenInfo.screenName }}
-                    </span>
-                    <span style="font-size:13px;font-weight: lighter;color:#a5a5a5">
-                        {{ currentScreenInfo.screenDesc }}
-                    </span>
-                </div>
-            </el-col> 
-            -->
 
             <el-col :span="8">
                 <div class="save-scene">
@@ -61,16 +47,6 @@
 
         <el-row class="app-row" style="padding:0px;">
 
-            <!--
-      <el-col :span="7">
-        <div class="left-aside-contain">
-          <div class="header">人设与回复逻辑</div>
-          <div class="textarea-container">
-            <el-input type="textarea" style="border:0px !important" :rows="30" resize="none" v-model="promptContent" />
-          </div>
-        </div>
-      </el-col>
-      -->
             <el-col :span="19">
                 <div class="right-chatbox-contain">
                     <LeaderChat ref="leaderChatRef" />
@@ -144,13 +120,32 @@
         <!-- 材料上传界面 -->
         <ScreenUploadFile ref="uploadChildComp" />
 
+        <!-- 显示计划界面 -->
+        <el-drawer v-model="displayPlanBox" 
+                :title="planBoxTitle" 
+                :with-header="false" 
+                size="60%">
+            <template #default>
+                <div>
+                    <LeaderPlan />
+                </div>
+            </template>
+            <template #footer>
+                <div style="flex: auto">
+                    <el-button @click="cancelClick" text bg>关闭</el-button>
+                </div>
+            </template>
+        </el-drawer>
+
     </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import { ElLoading } from 'element-plus'
 
 import LeaderChat from './leaderChat.vue';
+import LeaderPlan from './leaderPlan.vue';
 import ScreenUploadFile from './screenUploadFile.vue'
 
 import { listAll } from '@/api/base/im/user';
@@ -161,10 +156,11 @@ import {
 } from '@/api/base/im/screen'
 
 const route = useRoute();
+const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 const leaderChatRef = ref(null)
-
+const streamLoading = ref(null)
 const agentList = ref([])
 const channelAgentConfigTitle = ref("")
 const configAgentDialogVisible = ref(false)
@@ -172,7 +168,8 @@ const channelAgentList = ref([])
 const currentAgentConfigType = ref('worker')
 
 const uploadChildComp = ref(null)
-
+const displayPlanBox = ref(false)
+const planBoxTitle = ref("团队任务计划")
 const currentScreenInfo = ref({
     id: 0,
     screenName: null,
@@ -239,20 +236,30 @@ const handleChange = (value, direction, movedKeys) => {
 /** 运行管理者场景 */
 const handleLeaderPlan = () => {
 
+    displayPlanBox.value = true;
+
+    // router.push({
+    //     path: '/screen/leaderPlan',
+    //     query: {
+    //         screenId: currentScreenId.value
+    //     }
+    // })
+
      // 开始生成
-     streamLoading.value = ElLoading.service({
-        lock: true,
-        background: 'rgba(255, 255, 255, 0.5)',
-        customClass: 'custom-loading'
-     });
+    //  streamLoading.value = ElLoading.service({
+    //     lock: true,
+    //     background: 'rgba(255, 255, 255, 0.5)',
+    //     customClass: 'custom-loading'
+    //  });
 
-    leaderPlan(currentScreenId.value).then(res => {
-        proxy.$modal.msgSuccess("运行成功");
+    // leaderPlan(currentScreenId.value).then(res => {
+    //     proxy.$modal.msgSuccess("运行成功");
 
-        // 循环执行任务
-        // let taskList = res.data.taskList
-        // handleExecuteScreenTask(taskList)
-    })
+    //     // 循环执行任务
+    //     // let taskList = res.data.taskList
+    //     // handleExecuteScreenTask(taskList)
+    // })
+
 }
 
 /** 获取到场景详情 */
