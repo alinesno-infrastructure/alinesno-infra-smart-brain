@@ -9,6 +9,7 @@ import lombok.Getter;
 public enum ScreenTypeEnums {
 
     LARGE_TEXT("large_text","大文本"),
+    EXAM("exam","培训考试"),
     LEADER_MODEL("leader_model","管理者");
 
     private final String key;
