@@ -90,7 +90,7 @@
                     <span class="semi-typography text" style="max-width: 150px;"><span>Easton</span></span>
                   </div>
                 </div>
-                <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;">
+                <p class="semi-typography card-desc">
                   <span>
                     {{ truncateString(item.channelDesc, 65) }}
                   </span>
