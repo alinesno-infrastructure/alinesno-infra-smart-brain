@@ -42,15 +42,17 @@
                                     </div>
                                 </div>
                                 <div class="screen-author-info">
-                                    <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar" class="screen-avatar">
+                                    <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar"
+                                        class="screen-avatar">
                                     <span class="screen-name">罗小东</span>
                                     <span class="screen-username">@Easton</span>
                                 </div>
                                 <div class="screen-description">
                                     {{ item.screenDesc }}
                                 </div>
+                                <div class="semi-divider semi-divider-horizontal"></div>
                                 <div class="screen-footer">
-                                    <div class="screen-price">免费</div>
+                                    <div class="screen-price">免费{{ item.usage_count }}</div>
                                     <div class="screen-stats">
                                         <span>{{ item.usage_count }}</span>
                                         <span>使用</span>
@@ -91,6 +93,11 @@ function enterScreen(item) {
     if (item.screenType === 'leader_model') {  // 领导模型
         router.push({
             path: '/screen/leaderModel',
+            query: { 'screenId': item.id }
+        })
+    } else if (item.screenType === 'exam') {
+        router.push({
+            path: '/screen/exam',
             query: { 'screenId': item.id }
         })
     } else {  // 默认长文本模型
@@ -140,7 +147,9 @@ onMounted(() => {
     .screen-image-container {
         position: relative;
         width: 100%;
-        height: 140px;
+        height: 100px;
+        // height: 100px;
+        // width: 100px;
         border-radius: 4px;
         overflow: hidden;
 
@@ -153,7 +162,7 @@ onMounted(() => {
     }
 
     .screen-card-content {
-        margin-top: 8px;
+        margin-top: 0px;
         padding: 0 4px;
         flex-grow: 1;
         display: flex;
