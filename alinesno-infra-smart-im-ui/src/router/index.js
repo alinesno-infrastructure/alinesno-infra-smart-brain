@@ -104,6 +104,12 @@ export const constantRoutes = [
         meta: { title: '长文本场景', icon: 'dashboard', affix: true }
       },
       {
+        path: '/screen/exam',
+        component: () => import('@/views/base/screen/exam'),
+        name: '/screen/exam',
+        meta: { title: '考试场景', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/single/agentChat',
         component: () => import('@/views/base/agent/agentSingleChatPanel'),
         name: '/single/agentChat',
