@@ -83,7 +83,7 @@ const imageUrl = ref([])
 const screenTypes = ref([
   { key: 'large_text', name: '大文本', isAvailable: true },
   { key: 'leader_model', name: '管理者', isAvailable: true },
-  { key: 'exam_scene', name: '考试场景', isAvailable: false }
+  { key: 'exam', name: '培训考试', isAvailable: true }
 ]);
 
 const data = reactive({
@@ -136,6 +136,11 @@ function handleSetScreenId(screenId){
         path: '/screen/leaderModel',
         query: { 'screenId': screenId}
     })
+  }else if(form.value.screenType === 'exam'){
+    router.push({
+        path: '/screen/exam',
+        query: { 'screenId': screenId}
+    })
   }else{  // 默认长文本模型
     router.push({
         path: '/screen/longText',
@@ -168,6 +173,7 @@ function submitScreenForm(){
       const loading = ElLoading.service({
         lock: true,
         text: 'Loading',
+        background: 'rgba(0, 0, 0, 0.7)',
       })
       createScreen(form.value).then(response => {
         proxy.$modal.msgSuccess("新增成功");
