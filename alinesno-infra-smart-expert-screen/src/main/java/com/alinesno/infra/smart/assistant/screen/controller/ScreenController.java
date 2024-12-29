@@ -290,6 +290,8 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
             if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
                 dto.setWorkers(RoleUtils.getEditors(roleService, entity.getWorkerRole()));
             }
+        } else if(entity.getScreenType().equals(ScreenTypeEnums.EXAM.getKey())){  // 考试场景
+
         }
 
 
