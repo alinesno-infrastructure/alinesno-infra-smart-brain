@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container" style="background-color: #fff;padding-top:10px;">
+    <div class="app-container" style="background-color: #fff;padding-top:10px;padding-left:0px !important">
         <el-row>
             <el-col :span="10">
                 <!-- 目录大纲编辑界面 -->
