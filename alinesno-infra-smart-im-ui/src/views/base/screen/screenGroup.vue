@@ -83,6 +83,7 @@ const imageUrl = ref([])
 const screenTypes = ref([
   { key: 'large_text', name: '大文本', isAvailable: true },
   { key: 'leader_model', name: '管理者', isAvailable: true },
+  { key: 'video_clip', name: '视频剪辑', isAvailable: true },
   { key: 'exam', name: '培训考试', isAvailable: true }
 ]);
 
@@ -139,6 +140,11 @@ function handleSetScreenId(screenId){
   }else if(form.value.screenType === 'exam'){
     router.push({
         path: '/screen/exam',
+        query: { 'screenId': screenId}
+    })
+  }else if(form.value.screenType === 'video_clip'){
+    router.push({
+        path: '/screen/mediaClip',
         query: { 'screenId': screenId}
     })
   }else{  // 默认长文本模型
