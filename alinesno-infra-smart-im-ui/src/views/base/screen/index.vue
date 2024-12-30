@@ -100,6 +100,11 @@ function enterScreen(item) {
             path: '/screen/exam',
             query: { 'screenId': item.id }
         })
+    } else if (item.screenType === 'video_clip') {
+        router.push({
+            path: '/screen/mediaClip',
+            query: { 'screenId': item.id }
+        })
     } else {  // 默认长文本模型
         router.push({
             path: '/screen/longText',
