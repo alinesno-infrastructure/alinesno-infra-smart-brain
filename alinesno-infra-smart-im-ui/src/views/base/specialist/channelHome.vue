@@ -25,7 +25,7 @@
           <div class="card-container">
             <div>
               <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
-              <p><span>{{ truncateString(recommendRole.responsibilities , 20) }}</span></p>
+              <p><span>{{ truncateString(recommendRole.responsibilities , 50) }}</span></p>
             </div>
             <el-button type="primary" bg text size="large" @click="handleRoleChat()">
               <span class="semi-button-content">立即聊聊</span>
