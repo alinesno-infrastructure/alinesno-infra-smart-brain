@@ -104,6 +104,12 @@ export const constantRoutes = [
         meta: { title: '长文本场景', icon: 'dashboard', affix: true }
       },
       {
+        path: '/screen/mediaClip',
+        component: () => import('@/views/base/screen/media'),
+        name: '/screen/mediaClip',
+        meta: { title: '视频剪辑', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/screen/exam',
         component: () => import('@/views/base/screen/exam'),
         name: '/screen/exam',
