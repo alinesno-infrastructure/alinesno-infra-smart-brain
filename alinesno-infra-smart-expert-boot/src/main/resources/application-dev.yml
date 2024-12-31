@@ -81,6 +81,9 @@ alinesno:
           central: http://data.linesno.com/plugins/
           path: ${user.home}/.smart-assistant/plugins
       brain:
+        aliyun:
+          access-key: xxxxxxxx
+          secret-key: xxxxxxxx
         qianwen:
           key:  sk-xxxxxxxxx
         openapi:
