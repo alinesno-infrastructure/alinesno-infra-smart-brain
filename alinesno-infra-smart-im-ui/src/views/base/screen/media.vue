@@ -6,7 +6,7 @@
                 <MediaOutlineEditor ref="OutlineEditorRef" @setCurrentScreenInfo="setCurrentScreenInfo"
                     @editContent="editContent" />
             </el-col>
-            <el-col :span="14">
+            <el-col :span="14" style="border-left:1px solid #e5e5e5;">
                 <div class="chapter-edit">
                     <el-card class="box-card" shadow="never">
                         <template #header>
@@ -50,58 +50,92 @@
                                         </el-button>
                                     </el-tooltip>
 
+                                    <el-tooltip class="box-item" effect="dark" content="全局配置" placement="top">
+                                        <el-button type="danger" text bg size="large" @click="globalConfig">
+                                            <i class="fa-solid fa-pen-nib"></i>
+                                        </el-button>
+                                    </el-tooltip>
+
                                     <!-- <el-button type="primary" @click="onSubmitChapter">保存</el-button> -->
                                     <!-- <el-button type="danger" @click="onDownloadContent">下载</el-button> -->
                                 </div>
                             </div>
                         </template>
+                        <el-scrollbar style="height:calc(100vh - 180px)">
                         <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
                             <el-form-item label="镜头名称">
                                 <el-input v-model="form.title" placeholder="在执行当中的章节名称" style="width:50%"></el-input>
                             </el-form-item>
-                            <el-form-item label="镜头口播内容">
-                                <el-input type="textarea" :rows="1" resize="none" placeholder="请输入镜像镜像口播内容" />
+                            <el-form-item>
+                                <!-- <el-input type="textarea" :rows="1" resize="none" placeholder="请输入镜像镜像口播内容" /> -->
+                                <el-row :gutter="20" style="width:100%">
+                                    <el-col :span="24">
+                                        <div v-for="(title, index) in form.titles" :key="index"
+                                            style="margin-bottom: 16px;">
+                                            <el-form-item :label="index === 0 ? '视频口播内容' : ''">
+                                                <el-input v-model="form.titles[index]" style="width:calc(100% - 70px)"
+                                                    placeholder="请输入视频口播内容" />
+                                                <el-button type="danger" @click="removeTitle(index)"
+                                                    style="margin-left: 8px;"
+                                                    :disabled="form.titles.length <= 1">删除</el-button>
+                                            </el-form-item>
+                                        </div>
+                                        <div style="margin-bottom:20px;text-align: right;">
+                                            <el-button type="primary" icon="Plus" @click="addTitle">添加标题文案</el-button>
+                                        </div>
+                                    </el-col>
+                                </el-row>
                             </el-form-item>
-                            <el-form-item label="媒体类型" prop="resource">
+                            <!-- <el-form-item label="媒体类型" prop="resource">
                                 <el-radio-group v-model="form.resource">
                                     <el-radio value="Sponsorship">视频</el-radio>
                                     <el-radio value="Venue">图片</el-radio>
                                 </el-radio-group>
-                            </el-form-item>
-                            <el-form-item label="镜像内容">
-                                <el-upload class="upload-demo" drag
-                                    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" multiple>
-                                    <el-icon class="el-icon--upload"><upload-filled /></el-icon>
-                                    <div class="el-upload__text">
-                                        Drop file here or <em>click to upload</em>
-                                    </div>
-                                    <template #tip>
-                                        <div class="el-upload__tip">
-                                            jpg/png files with a size less than 500kb
-                                        </div>
-                                    </template>
-                                </el-upload>
-                            </el-form-item>
+                            </el-form-item> -->
                             <el-form-item label="特效" prop="type">
                                 <el-checkbox-group v-model="form.type">
                                     <el-checkbox value="Online activities" name="type">
-                                        Online activities
+                                        自动旋转
                                     </el-checkbox>
                                     <el-checkbox value="Promotion activities" name="type">
-                                        Promotion activities
+                                        旋转
                                     </el-checkbox>
                                     <el-checkbox value="Offline activities" name="type">
-                                        Offline activities
+                                        缩放
                                     </el-checkbox>
                                     <el-checkbox value="Simple brand exposure" name="type">
-                                        Simple brand exposure
+                                        镜像
                                     </el-checkbox>
                                 </el-checkbox-group>
                             </el-form-item>
                             <el-form-item label="广告文案">
-                                <el-input placeholder="镜像中出现的商家广告信息，比如logo信息之类" resize="none"  style="width:50%" />
+                                <el-input placeholder="镜像中出现的商家广告信息，比如logo信息之类" resize="none" style="width:50%" />
+                            </el-form-item>
+                            <el-form-item label="素材管理">
+                                <div style="width: 100%;text-align: right;">
+                                    <el-button type="primary" @click="addMaterial" icon="Plus" style="position: absolute;right: 20px;top: -30px;">添加素材</el-button>
+                                    <div style="display: flex; width:90%; flex-wrap: wrap;justify-content: flex-start;align-items: center;gap: 10px;margin-top: 10px;">
+                                        <div v-for="(item, index) in videoMaterials" :key="index" style="display: flex;align-items: flex-end;flex-direction: column;align-content: space-between;">
+                                            <img :src="item.cover" class="cover-image" />
+                                            <div style="padding: 0px;">
+                                                <el-button type="primary" text @click="() => removeMaterial(index)">删除</el-button>
+                                            </div>
+                                        </div>
+                                        <div v-if="videoMaterials.length === 0">暂无数据</div>
+                                    </div>
+
+                                </div>
+
+                                <!-- <el-upload action="#" list-type="picture-card" :on-preview="handlePictureCardPreview"
+                                    :on-remove="handleRemove" :auto-upload="false" :limit="1" :on-change="handleChange">
+                                    <i class="el-icon-plus"></i>
+                                </el-upload>
+                                <el-dialog :visible.sync="mediaDialogVisible">
+                                    <img width="100%" :src="dialogImageUrl" alt="" />
+                                </el-dialog> -->
                             </el-form-item>
                         </el-form>
+                        </el-scrollbar>
                     </el-card>
                 </div>
             </el-col>
@@ -129,8 +163,7 @@
                                     </div>
                                 </div>
                                 <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
-                                    <el-avatar v-if="data.chapterEditor" :size="20"
-                                        :src="imagePathByPath(data.chapterEditorAvatar)"></el-avatar>
+                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)"></el-avatar>
                                 </span>
                             </div>
                         </template>
@@ -147,15 +180,19 @@
         <!-- 材料上传界面 -->
         <ScreenUploadFile ref="uploadChildComp" />
 
+        <!-- 全局配置对话框 -->
+        <MediaGlobalConfigPanel ref="globalConfigPanelComp" />
+
     </div>
 </template>
 
 <script setup>
 
 import { ElLoading } from 'element-plus'
-import ChapterEditor from './chapterEditor'
+// import ChapterEditor from './chapterEditor'
 
 import ScreenUploadFile from './screenUploadFile.vue'
+import MediaGlobalConfigPanel from './mediaGlobalConfigPanel.vue'
 
 import {
     updateChapterContentEditor,
@@ -193,6 +230,7 @@ const person = ref({
 const chapterEditorRef = ref(null)
 const uploadChildComp = ref(null)
 const OutlineEditorRef = ref(null); // 滚动条的处理_starter
+const globalConfigPanelComp = ref(null)
 
 const streamLoading = ref(null)
 const screenId = ref(route.query.screenId)
@@ -201,12 +239,65 @@ const totalNodes = ref(0);
 
 const form = reactive({
     id: 0,
+    titles: [''], // 初始化时至少有一个空标题
     title: '',
     content: ''
 });
 
 // 文章目录结构数据
 const outline = ref([]);
+
+// 初始视频素材数据
+const videoMaterials = ref([
+    { cover: 'http://training-static.linesno.com/public/2024-12-29/67706f8de4b03e1aaa099357.png' },
+    { cover: 'http://training-static.linesno.com/public/2024-12-18/676299eee4b03e1aaa09931c.png' }
+]);
+
+// 对话框相关状态
+const dialogImageUrl = ref('');
+const mediaDialogVisible = ref(false);
+
+// 添加新素材的方法
+const addMaterial = () => {
+    // 这里仅做示意，实际上应该从素材库选择或上传新素材
+    videoMaterials.value.push({ cover: 'http://training-static.linesno.com/public/2024-12-18/6761fcc6e4b03e1aaa0992f5.png' });
+};
+
+// 删除指定索引的素材方法
+const removeMaterial = (index) => {
+    videoMaterials.value.splice(index, 1);
+};
+
+// 处理移除文件
+const handleRemove = (file, fileList) => {
+    console.log(file, fileList);
+};
+
+// 预览图片
+const handlePictureCardPreview = (file) => {
+    dialogImageUrl.value = file.url;
+    dialogVisible.value = true;
+};
+
+// 当选择文件时触发
+const handleChange = (file, fileList) => {
+    if (file.raw) {
+        const isJPGorPNG = file.raw.type === 'image/jpeg' || file.raw.type === 'image/png';
+        const isLt2M = file.raw.size / 1024 / 1024 < 2;
+
+        if (!isJPGorPNG) {
+            ElMessage.error('上传封面图片只能是 JPG 或 PNG 格式!');
+        }
+        if (!isLt2M) {
+            ElMessage.error('上传封面图片大小不能超过 2MB!');
+        }
+
+        if (isJPGorPNG && isLt2M) {
+            // 假设这里将新封面的URL赋值给新素材对象
+            addMaterial();
+        }
+    }
+};
 
 const onSubmitChapter = () => {
     // 这里处理表单提交逻辑
@@ -234,6 +325,16 @@ function expertScreen() {
 /** 上传文档文件 */
 function handleUploadFile() {
     uploadChildComp.value.handleOpenUpload(true);
+}
+
+// 添加新的标题输入框
+const addTitle = () => {
+    form.titles.push('')
+}
+
+// 删除指定索引的标题
+const removeTitle = (index) => {
+    form.titles.splice(index, 1)
 }
 
 function configAgent() {
@@ -354,6 +455,11 @@ const findNodeById = (nodes, id) => {
     return null;
 };
 
+/** 全局配置 */
+const globalConfig = () => {
+    globalConfigPanelComp.value.openGlobalConfigPanel();
+};
+
 /** 编辑章节内容 */
 const editContent = (node, data) => {
     console.log('node = ' + node)
@@ -451,7 +557,7 @@ $avatar-size: 30px;
     }
 
     .scroll-panel {
-        height: calc(100vh - 310px);
+        height: calc(100vh - 210px);
         width: 100%;
         border: 1px solid #dcdfe6;
         border-radius: 4px;
@@ -556,5 +662,11 @@ $avatar-size: 30px;
 .dialog-footer {
     text-align: right;
     margin-top: 19px;
+}
+
+.cover-image{
+    width:160px;
+    border-radius: 2px;
+    height:100px;
 }
 </style>
