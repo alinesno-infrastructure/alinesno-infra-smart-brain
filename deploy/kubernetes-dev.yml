@@ -50,6 +50,9 @@ spec:
             -Dalinesno.infra.smart.brain.openapi.host=${CHATGPT_PROXY}
             -Dalinesno.infra.smart.brain.openapi.key=${CHATGPT_SK}
             -Dalinesno.infra.smart.brain.qianwen.key=${QIANWEN_SK}
+            
+            -Dalinesno.infra.smart.brain.aliyun.access-key-id=${ALIYUN_ACCESS_KEY_ID}
+            -Dalinesno.infra.smart.brain.aliyun.access-key-secret=${ALIYUN_ACCESS_KEY_SECRET}
 
             -Dalinesno.infra.gateway.host=${INFRA_GAGTEWAY}
             -Dserver.port=8080
