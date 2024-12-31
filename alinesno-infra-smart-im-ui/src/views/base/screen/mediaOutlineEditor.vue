@@ -51,19 +51,22 @@
                         @node-contextmenu="handleNodeContextMenu">
                         <template #default="{ node, data }">
                             <div class="custom-tree-node" style="height:auto;">
-                                <div style="display: flex;flex-direction: column;">
-                                    <div style="font-size: 16px;font-weight: bold;color:#333">
-                                        {{ node.label }}
+                                <div style="display: flex;padding-top:10px;flex-direction: column;">
+                                    <div style="font-size: 16px;font-weight: bold;color:#333">镜头:{{ node.label }}
                                     </div>
-                                    <div class="description">
-                                        <span style="color: #777;">{{ data.description }}</span>
+                                    <div class="description">设计思考:<span style="color: #777;">{{ data.thought }}</span>
+                                    </div>
+                                    <div class="description" style="padding-top:0px;">镜头描述:<span style="color: #777;">{{ data.description }}</span>
                                     </div>
                                 </div>
                                 <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
+
+                                    <!-- 
                                     <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
                                     <el-tooltip class="box-item" effect="dark" content="添加子章节" placement="left">
                                         <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
-                                    </el-tooltip>
+                                    </el-tooltip> 
+                                    -->
 
                                     <el-tooltip class="box-item" effect="dark" content="编辑章节标题" placement="left">
                                         <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
@@ -195,7 +198,106 @@ const person = ref({
   email: 'zhangsan@example.com',
 });
 
-const outline = ref([]);
+const outline = ref(
+    [
+        {
+            "label": "店外景",
+            "merchantAdvertisement": "真好吃",
+            "thought": "先展示店铺外观，给观众第一印象。",
+            "MediaSpeechTextArray": [
+                "欢迎来到‘真好吃’，这里有着传承多年的老友粉。",
+                "在这家店里，您能品尝到正宗的老友粉。",
+                "走进‘真好吃’，感受传统美食的魅力。"
+            ],
+            "description": "使用手机拍摄店铺正面全景，包括招牌。早晨阳光下，顾客陆续进店。",
+            "duration": "5秒"
+        },
+        {
+            "label": "店内环境",
+            "merchantAdvertisement": "真好吃",
+            "thought": "接着转换到内部环境，展现店铺氛围。",
+            "MediaSpeechTextArray": [
+                "温馨的用餐环境，让每一餐都成为享受。",
+                "舒适的座位，热情的服务，这里是食客们的天堂。",
+                "店内的每一个角落，都充满了故事。"
+            ],
+            "description": "用单反相机拍摄中景，捕捉店内装饰、顾客用餐场景。",
+            "duration": "4秒"
+        },
+        {
+            "label": "厨师准备",
+            "merchantAdvertisement": "真好吃",
+            "thought": "通过厨师准备食材的过程，强调食品的新鲜度。",
+            "MediaSpeechTextArray": [
+                "新鲜的食材是美味的关键。",
+                "每一份老友粉都是用心制作的结果。",
+                "精心挑选的原料，只为带给您最纯正的味道。"
+            ],
+            "description": "特写镜头，记录厨师处理食材的手部动作，使用手机或单反。",
+            "duration": "3秒"
+        },
+        {
+            "label": "烹饪过程",
+            "merchantAdvertisement": "真好吃",
+            "thought": "展示烹饪过程，增加食欲。",
+            "MediaSpeechTextArray": [
+                "看，这便是老友粉的灵魂所在。",
+                "快火翻炒，香味四溢。",
+                "每一道工序，都是对传统的致敬。"
+            ],
+            "description": "用手机慢动作拍摄厨师快速翻炒老友粉的细节。",
+            "duration": "6秒"
+        },
+        {
+            "label": "成品特写",
+            "merchantAdvertisement": "真好吃",
+            "thought": "聚焦于成品，突出卖相。",
+            "MediaSpeechTextArray": [
+                "色泽诱人，香气扑鼻的老友粉。",
+                "一碗碗热腾腾的老友粉，等待着您的品尝。",
+                "这就是真好吃的老友粉，光是看着就让人垂涎欲滴。"
+            ],
+            "description": "使用单反相机拍摄老友粉成品的特写镜头，注意光线角度，使食物看起来更加吸引人。",
+            "duration": "5秒"
+        },
+        {
+            "label": "顾客享用",
+            "merchantAdvertisement": "真好吃",
+            "thought": "通过顾客的表情传达美食的好吃。",
+            "MediaSpeechTextArray": [
+                "看那满意的笑容，就知道有多美味。",
+                "每一口都是对老友粉的赞美。",
+                "顾客的笑容是最好的证明。"
+            ],
+            "description": "用手机捕捉顾客享用老友粉时的满意表情，选择合适的时机进行拍摄。",
+            "duration": "4秒"
+        },
+        {
+            "label": "老友粉特色",
+            "merchantAdvertisement": "真好吃",
+            "thought": "讲解老友粉的特色，加深记忆点。",
+            "MediaSpeechTextArray": [
+                "独特的调料，让味道更加浓郁。",
+                "老友粉的秘诀在于它的汤底。",
+                "细嚼慢咽，感受每一丝细腻。"
+            ],
+            "description": "用无人机航拍厨房一角，然后切换至老友粉配料的特写。",
+            "duration": "7秒"
+        },
+        {
+            "label": "历史回顾",
+            "merchantAdvertisement": "真好吃",
+            "thought": "以回忆的形式介绍老友粉的历史。",
+            "MediaSpeechTextArray": [
+                "数十年的传统，造就了今天的美味。",
+                "从街边小吃到餐桌常客，老友粉的故事还在继续。",
+                "每一代人都有自己的老友粉回忆。"
+            ],
+            "description": "使用电脑录屏结合老照片，讲述老友粉的历史变迁。",
+            "duration": "6秒"
+        }
+    ]
+);
 
 const dialogVisible = ref(false)
 
@@ -374,7 +476,7 @@ function handleCloseAgentConfig(){
 function handleGetScreen() {
     getScreen(currentScreenId.value).then(res => {
       currentScreenInfo.value = res.data
-      outline.value = res.data.chapterTree
+    //   outline.value = res.data.chapterTree
       emit('setCurrentScreenInfo' , res.data)
     })
 }
