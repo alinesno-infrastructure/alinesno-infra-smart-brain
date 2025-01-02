@@ -36,7 +36,7 @@ public class AliyunMediaClipServiceImpl implements IAliyunMediaClipService {
     @SneakyThrows
     public AliyunMediaClipServiceImpl(AliyunProperties aliyunProperties) {
         this.aliyunProperties = aliyunProperties;
-        initClient(aliyunProperties);
+        
     }
 
     @Override
