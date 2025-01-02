@@ -29,7 +29,6 @@ import java.util.UUID;
  * 阿里云OSS文件处理
  */
 @Slf4j
-@RestController
 @RequestMapping("/api/infra/smart/assistant/mediaOss")
 public class MediaOssFileController {
 
