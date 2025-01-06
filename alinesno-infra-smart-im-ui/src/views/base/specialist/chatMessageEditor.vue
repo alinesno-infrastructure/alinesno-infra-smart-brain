@@ -56,15 +56,19 @@ import { getMessage , updateContent } from '@/api/base/im/workflow'
 
 import CodeMirror from 'vue-codemirror6'
 import { oneDark } from '@codemirror/theme-one-dark'
+import { EditorView } from '@codemirror/view';
 import { markdown } from '@codemirror/lang-markdown';
 import { nextTick } from 'vue';
 
 const lang = markdown();
-const extensions = [oneDark];
+const extensions = [
+  oneDark,
+  EditorView.lineWrapping,
+];
 // 主题样式设置
 const theme = {
   "&": {
-    fontSize: "9.5pt",
+    fontSize: "10.5pt",
   }
 }
 
