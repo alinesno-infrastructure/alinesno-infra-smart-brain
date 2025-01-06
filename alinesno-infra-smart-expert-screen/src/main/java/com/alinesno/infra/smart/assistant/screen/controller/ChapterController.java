@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -150,6 +151,27 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         ChapterEntity chapterEntity = service.getById(dto.getId()) ;
         chapterEntity.setContent(dto.getContent());
         service.update(chapterEntity);
+
+        return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 对文章某段的处理，包括扩写、重写、润色。
+     */
+    @PostMapping("/processParagraph")
+    public AjaxResult processParagraph(@RequestBody @Validated ParagraphProcessRequestDTO dto) {
+        log.debug("ParagraphProcessRequestDTO = {}" , dto) ;
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+        taskInfo.setRoleId(dto.getRoleId());
+        taskInfo.setScreenId(dto.getScreenId());
+        taskInfo.setText(dto.getAction() +":"+dto.getRequirement());
+        taskInfo.setModify(true);
+        taskInfo.setParams(Map.of("modifyContent", dto.getModifyContent()));
+
+        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        log.debug("chatRole = {}" , genContent);
 
         return AjaxResult.success("操作成功") ;
     }
