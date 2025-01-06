@@ -897,6 +897,8 @@ $chartColor: #3b5998;
           padding: 10px;
           border-radius: 3px;
           line-height: 40px;
+          display: flex;
+          gap: 10px;
         }
       }
     }
@@ -906,6 +908,7 @@ $chartColor: #3b5998;
     float: left;
     width: 100%;
     padding: 0 5%;
+    margin-top:10px;
     // border-left: 1px solid #e6e6e6 ; 
     // border-right: 1px solid #e6e6e6 ; 
   }
