@@ -19,19 +19,21 @@
       <div class="robot-chat-help-title">频道专家Agent列表</div>
       <div class="robot-chat-help-item-list-panel" v-loading="loading">
         <div class="process-panel">
-          <ul>
-            <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
-              <img style="width:35px;height:35px;border-radius: 50%;position: absolute;" :src="imagePathByPath(item.roleAvatar)" />
-              <div style="margin-left: 50px;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;color: #2c3e50;">
-                {{ item.roleName }}
-                <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button> -->
-                <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
-              </div>
-            </li>
-            <li class="item-process" style="background-color: #fafafa;text-align: center;">
-              <el-button type="primary" text bg size="large" icon="ChatRound" @click="dialogVisible = true">添加Agent到频道</el-button>
-            </li>
-          </ul>
+          <el-scrollbar height="500px">
+            <ul>
+              <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
+                <img style="width:35px;height:35px;border-radius: 50%;" :src="imagePathByPath(item.roleAvatar)" />
+                <div class="item-process-content" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;">
+                  {{ item.roleName }}
+                  <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button> -->
+                  <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
+                </div>
+              </li>
+            </ul>
+          </el-scrollbar>
+          <div style="margin-top:10px;text-align: center;">
+            <el-button type="primary" text bg size="large" icon="ChatRound" @click="dialogVisible = true">添加Agent到频道</el-button>
+          </div>
         </div>
       </div>
     </div>
