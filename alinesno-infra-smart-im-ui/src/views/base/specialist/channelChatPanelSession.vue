@@ -55,13 +55,13 @@
 
 <script setup name="Role">
 
-import {
-  chatMessage
-} from '@/api/base/im/robot'
+// import {
+//   chatMessage
+// } from '@/api/base/im/robot'
 
 import {
   allMyChannel , 
-  delChannel , 
+  // delChannel , 
   removeChannel
 } from '@/api/base/im/channel'
 
@@ -94,9 +94,9 @@ function handleSelectChatChannel(item) {
 }
 
 /** 创建频道 */
-function createChannel() {
-  createChildComp.value.handleOpenChannel(true);
-}
+// function createChannel() {
+//   createChildComp.value.handleOpenChannel(true);
+// }
 
 // 例如，添加新的频道并提供描述信息：
 // addChannel('新频道名称', '这是新频道的描述');
