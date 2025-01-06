@@ -26,7 +26,7 @@
           </el-table-column>
           <el-table-column label="角色名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div style="font-size: 14px;font-weight: 500;color: #3b5998;">
+              <div style="font-size: 14px;font-weight: 500;">
                 {{ scope.row.roleName }}
               </div>
               <div style="font-size: 12px;color: #a5a5a5;">
@@ -69,27 +69,29 @@
 </template>
 
 <script setup name="User">
-import {getToken} from "@/utils/auth";
+
+// import {getToken} from "@/utils/auth";
+
 import {
   listUser,
-  delUser,
-  getUser,
-  updateUser,
-  addUser,
+  // delUser,
+  // getUser,
+  // updateUser,
+  // addUser,
   getUserChainByChainId,
-  saveUserChainInfo,
+  // saveUserChainInfo,
   addChainAgent ,
-  runUserChainByUserId,
+  // runUserChainByUserId,
 } from "@/api/base/im/user";
 
 // import {
 //   addChainAgent 
 // } from '@/api/base/im/robot'
 
-import {
-  addUserChain , 
-  // updateUserChain,
-} from "@/api/base/im/user"
+// import {
+//   addUserChain , 
+//   // updateUserChain,
+// } from "@/api/base/im/user"
 
 import {reactive} from "vue";
 
@@ -110,8 +112,8 @@ const ids = ref([]);
 const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
-const title = ref("");
 const dateRange = ref([]);
+// const title = ref("");
 
 const chainOpen = ref(false);
 const chainTitle = ref("");
@@ -177,13 +179,13 @@ function getList() {
 };
 
 /** 显示图片 */
-function imagePath(row){
-  let roleAvatar = '1746435800232665090' ; 
-  if(row.roleAvatar){
-    roleAvatar = row.roleAvatar ; 
-  }
-  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
-}
+// function imagePath(row){
+//   let roleAvatar = '1746435800232665090' ; 
+//   if(row.roleAvatar){
+//     roleAvatar = row.roleAvatar ; 
+//   }
+//   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
+// }
 
 /** 搜索按钮操作 */
 function handleQuery() {
