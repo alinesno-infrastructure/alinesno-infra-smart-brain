@@ -122,6 +122,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
         long roleId = taskInfo.getRoleId();
         IndustryRoleEntity role = getById(roleId);
+        Assert.notNull(role, "角色不存在");
 
         // 更新角色会话次数
         role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
