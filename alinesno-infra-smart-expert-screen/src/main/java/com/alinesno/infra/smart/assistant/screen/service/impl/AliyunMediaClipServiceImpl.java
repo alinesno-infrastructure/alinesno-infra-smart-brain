@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.screen.service.impl;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.screen.dto.media.MediaBean;
 import com.alinesno.infra.smart.assistant.screen.dto.media.VideoBean;
 import com.alinesno.infra.smart.assistant.screen.properties.AliyunProperties;
@@ -36,7 +37,11 @@ public class AliyunMediaClipServiceImpl implements IAliyunMediaClipService {
     @SneakyThrows
     public AliyunMediaClipServiceImpl(AliyunProperties aliyunProperties) {
         this.aliyunProperties = aliyunProperties;
-        
+        if(StringUtils.isEmpty(aliyunProperties.getAccessKeyId()) || StringUtils.isEmpty(aliyunProperties.getAccessKeySecret())){
+            log.warn("阿里云OSS未配置，请检查配置文件");
+        }else {
+            this.initClient(aliyunProperties);
+        }
     }
 
     @Override
