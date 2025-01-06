@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.screen.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.screen.properties.AliyunProperties;
 import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
@@ -29,15 +30,20 @@ import java.util.UUID;
  * 阿里云OSS文件处理
  */
 @Slf4j
+@RestController
 @RequestMapping("/api/infra/smart/assistant/mediaOss")
 public class MediaOssFileController {
 
-    private final OSS ossClient;
+    private OSS ossClient = null;
     private final AliyunProperties aliyunProperties;
 
     public MediaOssFileController(AliyunProperties aliyunProperties) {
-        this.ossClient = new OSSClientBuilder().build(aliyunProperties.getEndpoint(), aliyunProperties.getAccessKeyId(), aliyunProperties.getAccessKeySecret());
         this.aliyunProperties = aliyunProperties;
+        if(StringUtils.isEmpty(aliyunProperties.getAccessKeyId()) || StringUtils.isEmpty(aliyunProperties.getAccessKeySecret())){
+            log.warn("阿里云OSS未配置，请检查配置文件");
+        }else{
+            this.ossClient = new OSSClientBuilder().build(aliyunProperties.getEndpoint(), aliyunProperties.getAccessKeyId(), aliyunProperties.getAccessKeySecret());
+        }
     }
 
     /**
