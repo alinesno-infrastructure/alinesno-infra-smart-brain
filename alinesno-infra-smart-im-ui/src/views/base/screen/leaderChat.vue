@@ -135,8 +135,8 @@ const loading = ref(false)
 const roleId = ref(null);
 const screenId = ref(null);
 const roleInfo = ref({
-    roleName:'事业部经理' , 
-    responsibilities:"1. 帮助用户完成任务，2. 帮助用户完成任务"
+    roleName:'场景管理员' , 
+    responsibilities:"频道的管理角色的主要职责描述"
 })
 const message = ref('');
 const businessId = ref(null);
