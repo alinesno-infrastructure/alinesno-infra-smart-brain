@@ -81,7 +81,7 @@
           </div>
         </el-col>
 
-        <el-col :span="5" style="background-color:#fafafa">
+        <el-col :span="5" class="chat-agent-right-panel" >
           <SmartServiceAgent ref="smartServiceAgentRef" @mentionUser="mentionUser" />
         </el-col>
 
