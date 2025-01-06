@@ -1,0 +1,306 @@
+@import 'element-plus/theme-chalk/dark/css-vars.css' ;
+
+$dark-bg-color: #1d1e1f;
+$dark-bg-panel: #262727;
+$dark-text-color: #E5EAF3;
+$dark-border-color:  rgba(204, 204, 220, 0.12);
+
+html.dark {
+  /* 自定义深色背景颜色 */
+  --el-bg-color: #1d1e1f ;
+  background: #1d1e1f  ;
+}
+
+#app {
+    background-color: $dark-bg-color ;
+}
+
+.aip-appinfo-header {
+    .title , .title-desc{
+        color: $dark-text-color !important;
+    }
+    .header-icon-banner{
+        color: $dark-text-color !important;
+    }
+}
+
+.panel-title{
+   color: $dark-text-color !important;
+}
+
+.top-headers{
+    background-color: $dark-bg-color ;
+    border-bottom: 1px solid #000 ;
+
+    .header-logo-label{
+        color: $dark-text-color !important;
+    }
+}
+
+.dashboard-home{
+    background-color: $dark-bg-color ;
+    color: $dark-text-color !important;
+}
+
+.siderbar{
+    background-color: $dark-bg-color !important ;
+    border-right: 1px solid #000 !important ;
+    top: 0px ;
+}
+
+.acp-dashboard{
+    background-color: $dark-bg-color !important ;
+
+    .panel-header{
+        background-color: $dark-bg-color !important ;
+        border-bottom: 1px solid $dark-border-color ;
+    }
+
+    .panel-body{
+        background: $dark-bg-color !important ;
+
+        ul.panel-item-text li {
+            background: $dark-bg-panel !important ;
+            border-radius: 2px;
+            border-bottom: 0px solid $dark-border-color !important ;
+        }
+    }
+
+     li.app-items{
+        border-bottom: 0px solid $dark-border-color !important ;
+     }
+
+     .app-item-title{
+        color: $dark-text-color !important;
+     }
+}
+
+.top-headers .header-text .header-label-text{
+    color: $dark-text-color !important;
+}
+
+.info-h{
+    border-top: 0px;
+    border-bottom: 0px;
+    background: $dark-bg-color !important ;
+}
+
+.direct-box li.box-item {
+    border-left: 0px !important ;
+
+    .panel-describe{
+        color: $dark-text-color !important;
+    }
+}
+
+.circle-wave {
+    .circle-wave-inner{
+        background: $dark-bg-color !important;
+        color: $dark-text-color !important;
+    }
+}
+
+.learn-container {
+    background: $dark-bg-color !important;
+    .learn-setions {
+        background: $dark-bg-color !important;
+
+        ul.setion-box-ul li.setion-box-li{
+            background: $dark-bg-panel !important;
+            border: 0px ;
+        }
+    }
+
+    .title-desc{
+        color: $dark-text-color !important;
+    }
+}
+
+.acp-support-container {
+    background: $dark-bg-color !important;
+    ul li .yysyycon{
+        background: $dark-bg-panel !important;
+        h1 , h2 {
+            color: $dark-text-color !important;
+        }
+    }
+}
+
+.acp-dashboard .acp-app-list ul li.app-items .app-item.desc {
+    color: $dark-text-color !important;
+}
+
+.splitpanes.default-theme .splitpanes__splitter{
+    background: $dark-bg-color !important;
+}
+
+.default-theme.splitpanes--vertical>.splitpanes__splitter, .default-theme .splitpanes--vertical>.splitpanes__splitter{
+    border: 1px solid $dark-bg-color !important;
+}
+
+.splitpanes.default-theme .splitpanes__pane{
+    background: $dark-bg-color !important;
+}
+
+.pagination-container {
+    background: $dark-bg-color !important;
+}
+
+.el-table .el-table__header-wrapper th, .el-table .el-table__fixed-header-wrapper th{
+    background: $dark-bg-color !important;
+    color: $dark-text-color !important;
+}
+
+.monitor-item-type-box {
+    font-size: 14px;
+    background: $dark-bg-panel !important;
+    border-radius: 2px;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    &:hover{
+        background: $dark-bg-color !important;
+    }
+}
+
+.el-tree-node{
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+}
+
+.custom-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 8px;
+
+    .desc {
+        color: #999; // 设置描述文字颜色
+        font-size: 12px;
+        margin-left: 10px;
+    }
+}
+
+.acp-support-container .cttll{
+    color: $dark-text-color !important;
+}
+
+.smart-container {
+
+    .robot-chat-body , .robot-chat-header , .robot-chat-footer{
+        background: #262727 !important;
+        border-bottom: 0px !important;
+        border-radius: 3px;
+    }
+}
+
+.robot-chat-ai-say-box .chat-ai-say-body .say-message-body{
+    background: #1d1e1f !important;
+}
+
+.chat-container .input-chat-box{
+    background: #1d1e1f !important;
+    .el-input__wrapper{
+        background: #1d1e1f !important;
+    }
+}
+
+
+.agent-single-right-panel{
+    border-left: 1px solid $dark-border-color;
+    background-color: $dark-bg-color;
+    .content-area{
+        background-color: $dark-bg-color;
+    }
+}
+
+.robot-chat-help-panel{
+    background-color: $dark-bg-color !important;
+}
+
+.robot-chat-help-title{
+    border-bottom: 0px solid $dark-border-color !important;
+}
+
+li.item-process{
+    background: #262727 !important;
+    // .item-process-content {
+    // }
+}
+
+.agent-single-right-panel .stat-item{
+    color: $dark-text-color ;
+}
+
+.tpl-app{
+    color: $dark-text-color;
+}
+
+.tpl-app , .app-main{
+    background-color: $dark-bg-color !important;
+}
+
+.semi-card-container{
+    background: #262727 !important;
+
+    .card-title , .card-desc{
+        color: $dark-text-color !important;
+    }
+}
+
+.card-container {
+    h1 , p{
+        color: $dark-text-color !important;
+    }
+}
+
+.semi-card-container .semi-divider{
+    border-color: $dark-bg-color;
+}
+
+.app-container{
+    background: $dark-bg-color !important;
+}
+
+.screen-card{
+    background: #262727 !important;
+    color: $dark-text-color !important;
+}
+
+.screen-app-container{
+    .app-row , .right-chatbox-contain{
+        background: $dark-bg-color !important;
+    }
+}
+
+.feature-team-box h1{
+    color: $dark-text-color !important;
+}
+
+.popular-item , .section-title{
+    color: $dark-text-color !important;
+}
+
+.chat-agent-right-panel{
+    background: $dark-bg-color !important;
+}
+
+.screen-app-container .app-row .el-col:first-child .avatar-title-container .title , 
+.screen-app-container .middle-section .subordinate-roles ul li .role-info .role-title, .screen-app-container .middle-section .triggers ul li .role-info .role-title, .screen-app-container .middle-section .introduction ul li .role-info .role-title{
+    color: $dark-text-color !important;
+}
+
+#custom-context-menu{
+    background: $dark-bg-color !important;
+    border-color: $dark-border-color !important;
+}
+
+.semi-card-container .semi-avatar-square{
+    border: 1px solid #262727 !important;
+}
