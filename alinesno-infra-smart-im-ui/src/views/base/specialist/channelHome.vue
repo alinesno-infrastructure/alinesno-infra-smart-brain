@@ -6,8 +6,7 @@
         <el-col :span="24">
           <div class="feature-header-xqbyQk feature-team-box">
             <div style="gap: 12px;">
-              <h1
-                style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+              <h1>
                 我的频道</h1>
             </div>
             <div class="search-container-weDuEn">
@@ -258,6 +257,7 @@ nextTick(() => {
     width: 100%;
     height: 100%;
     box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
   }
 
   .banner-info {
