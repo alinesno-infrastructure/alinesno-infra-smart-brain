@@ -1423,3 +1423,58 @@ $chartColor: #3b5998;
     border-left: 0px solid #eee !important;
   }
 }
+
+
+/* 编辑器required! */
+.cm-editor {
+  height: 100%;
+}
+
+.cm-container {
+  width: 100%;
+}
+
+#custom-context-menu {
+  position: fixed;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  width: 500px;
+  min-height: 468px;
+  z-index: 1000;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+
+  &.hidden {
+    display: none;
+  }
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 10px 0 0;
+    margin-top:20px;
+
+    li {
+      padding: 5px 5px;
+      cursor: pointer;
+      float: left;
+
+      &:first-child {
+          padding-left: 0;
+      }
+
+    }
+  }
+
+  .confimation-text-panel {
+    width: 100%;
+
+    p {
+      margin: 5px;
+    }
+  }
+}
