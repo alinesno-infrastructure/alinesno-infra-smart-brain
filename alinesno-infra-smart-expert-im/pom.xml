@@ -77,6 +77,14 @@
         </dependency>
 		<!-- 引用公共数据权限_end -->
 
+		<!-- 引入接口安全配置_start -->
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-security-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 引入接口安全配置_end -->
+
     </dependencies>
 
 </project>
