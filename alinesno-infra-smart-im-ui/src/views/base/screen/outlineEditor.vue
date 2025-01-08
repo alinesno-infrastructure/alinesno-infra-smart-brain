@@ -52,7 +52,7 @@
                         <template #default="{ node, data }">
                             <div class="custom-tree-node" style="height:auto;">
                                 <div style="display: flex;flex-direction: column;">
-                                    <div style="font-size: 16px;font-weight: bold;color:#333">
+                                    <div style="font-size: 16px;font-weight: bold;">
                                         {{ node.label }}
                                     </div>
                                     <div class="description">
@@ -61,6 +61,8 @@
                                 </div>
                                 <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
                                     <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
+                                    
+                                    <!--
                                     <el-tooltip class="box-item" effect="dark" content="添加子章节" placement="left">
                                         <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
                                     </el-tooltip>
@@ -71,7 +73,12 @@
 
                                     <el-tooltip class="box-item" effect="dark" content="编辑章节内容" placement="left">
                                         <el-button type="text" icon="EditPen" bg size="mini" @click.stop="editContent(node, data)"></el-button>
-                                    </el-tooltip>
+                                    </el-tooltip> 
+                                    -->
+
+                                    <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
+                                    <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
+                                    <el-button type="text" icon="EditPen" bg size="mini" @click.stop="editContent(node, data)"></el-button>
 
                                     <el-popconfirm title="确认要删除章节么?" @confirm="remove(node, data)">
                                         <template #reference>
@@ -87,7 +94,7 @@
         </el-card>
 
         <!-- 编辑节点 -->
-        <el-dialog title="编辑节点" v-model="dialogVisible" width="500px">
+        <el-dialog title="编辑节点" v-model="dialogVisible" width="900px">
 
             <el-form label-width="80px" size="large">
                 <el-form-item label="节点名称">
