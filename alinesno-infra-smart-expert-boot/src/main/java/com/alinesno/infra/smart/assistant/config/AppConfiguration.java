@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.config;
 
 import com.alinesno.infra.common.facade.enable.EnableActable;
+import com.alinesno.infra.common.security.api.enable.EnableInfraApiSecurity;
 import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
 import com.alinesno.infra.common.web.log.aspect.LogAspect;
 import com.dtflys.forest.springboot.annotation.ForestScan;
@@ -20,6 +21,7 @@ import org.springframework.util.unit.DataSize;
 /**
  * 统一配置中心
  */
+@EnableInfraApiSecurity
 @Slf4j
 @EnableScheduling
 @EnableRetry
