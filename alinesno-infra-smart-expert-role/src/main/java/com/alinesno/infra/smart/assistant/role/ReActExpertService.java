@@ -25,6 +25,7 @@ import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -36,6 +37,7 @@ import java.util.concurrent.CompletableFuture;
 /**
  * Agent推理模式
  */
+@Scope("prototype")
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_REACT)
 public class ReActExpertService extends ExpertService {
