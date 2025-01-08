@@ -71,6 +71,9 @@ export function joinChannel(channelId){
 export function createChannel(data) {
   return request({
     url: managerUrl.createChannel ,
+    headers: {
+      isEncrypt: true
+    },
     method: 'post',
     data: data
   })
