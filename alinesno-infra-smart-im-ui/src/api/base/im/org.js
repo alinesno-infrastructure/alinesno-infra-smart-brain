@@ -6,6 +6,9 @@ const prefix = '/v1/api/infra/base/im/org'
 export function createOrg(data) {
   return request({
     url: prefix + '/createOrg' ,
+    headers: {
+      isEncrypt: true
+    },
     method: 'post',
     data: data
   })
