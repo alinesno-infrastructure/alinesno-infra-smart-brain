@@ -304,3 +304,21 @@ li.item-process{
 .semi-card-container .semi-avatar-square{
     border: 1px solid #262727 !important;
 }
+
+.org-management{
+    background-color: $dark-bg-color !important;
+
+    .join-form{
+        background-color: #262727 !important;
+        border: 1px solid #1d1e1f !important;
+    }
+}
+
+.list-group-item{
+    border-top: 0px !important;
+    border-bottom: 1px solid $dark-border-color !important;
+}
+
+html .hljs{
+    color: $dark-text-color !important;
+}
