@@ -5,6 +5,7 @@ import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
@@ -35,6 +36,7 @@ import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.plexpt.chatgpt.entity.chat.Message;
+import io.jsonwebtoken.lang.Assert;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
@@ -140,6 +142,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         if (taskInfo.isFunctionCall()) {  // 执行方法
 
             record.setChatType(TYPE_FUNCTION);
+            Assert.isTrue(StringUtils.isNotEmpty(role.getFunctionCallbackScript()) , role.getRoleName()+" 未配置执行能力。");
 
             String result = null;
             if (workflowExecution == null) {
@@ -157,16 +160,22 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         } else if (taskInfo.isModify()) {
 
             record.setChatType(TYPE_MODIFY);
+            Assert.isTrue(StringUtils.isNotEmpty(role.getAuditScript()) , role.getRoleName()+" 未配置审核修改能力。");
 
             String result = null;
-            if (workflowExecution == null) {
-                result = "请选择操作业务.";
-            } else {
-                // 执行任务并记录
-                String gentContent = workflowExecution.getContent();
-                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
 
-                result = handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
+            if(!taskInfo.isModifyPreBusinessId()){
+                result = handleModifyCall(role, workflowExecution, null , taskInfo);
+            }else{
+                if (workflowExecution == null) {
+                    result = "请选择操作业务.";
+                } else {
+                    // 执行任务并记录
+                    String gentContent = workflowExecution.getContent();
+                    List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+
+                    result = handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
+                }
             }
 
             record.setGenContent(result);
