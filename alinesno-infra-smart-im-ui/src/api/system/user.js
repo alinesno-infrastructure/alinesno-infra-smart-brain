@@ -82,6 +82,9 @@ export function getUserProfile() {
 export function updateUserProfile(data) {
   return request({
     url: '/system/user/profile',
+    headers: {
+      isEncrypt: true
+    },
     method: 'put',
     data: data
   })
