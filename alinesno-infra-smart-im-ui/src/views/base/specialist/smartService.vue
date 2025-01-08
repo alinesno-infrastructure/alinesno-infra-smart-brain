@@ -292,9 +292,10 @@ function handleEditorContent(bId) {
   editDialogVisible.value = true;
   businessId.value = bId;
 
-  chatAssistantContent(bId).then(response => {
-    editorLoading.value = false;
-  })
+  // chatAssistantContent(bId).then(response => {
+  //   editorLoading.value = false;
+  // })
+
 }
 
 
