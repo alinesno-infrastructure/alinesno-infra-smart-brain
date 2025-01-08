@@ -166,14 +166,20 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
 
         taskInfo.setRoleId(dto.getRoleId());
         taskInfo.setScreenId(dto.getScreenId());
-        taskInfo.setText(dto.getAction() +":"+dto.getRequirement());
+        taskInfo.setText(dto.getAction() +":"+dto.getRequirement()+ ":"+ dto.getModifyContent());
         taskInfo.setModify(true);
-        taskInfo.setParams(Map.of("modifyContent", dto.getModifyContent()));
+        taskInfo.setModifyPreBusinessId(false); ;
+
+        Map<String , Object> paramMap = new java.util.HashMap<>(Map.of("modifyContent", dto.getModifyContent()));
+        paramMap.put("action" , dto.getAction()) ;
+        paramMap.put("requirement" , dto.getRequirement()) ;
+
+        taskInfo.setParams(paramMap);
 
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
         log.debug("chatRole = {}" , genContent);
 
-        return AjaxResult.success("操作成功") ;
+        return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
     }
 
     /**
