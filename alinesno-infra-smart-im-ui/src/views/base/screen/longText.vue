@@ -158,6 +158,7 @@ const chapterEditTitle = ref("")
 const dialogVisible = ref(false)
 const chapterSelectionTree = ref(null);
 const currentUser = ref(null);
+const editorRoleId = ref(null);
 
 // 定义人物信息
 const person = ref({
@@ -334,10 +335,13 @@ const findNodeById = (nodes, id) => {
 
 /** 编辑章节内容 */
 const editContent = (node , data) => {
-    console.log('node = ' + node)
+    console.log('node = ' + JSON.stringify(node.data))
     console.log('data = ' + data)
 
     let chapterId = data.id ;
+
+    editorRoleId.value = node.data.chapterEditor;
+    console.log('editorRoleId = ' + editorRoleId.value)
 
     form.id = data.id ;
     form.title = node.label;
@@ -345,7 +349,7 @@ const editContent = (node , data) => {
     getChapterContent(chapterId).then(res => {
         console.log('res = ' + JSON.stringify(res))
         // form.content = res.data ;
-        chapterEditorRef.value.setData(res.data);
+        chapterEditorRef.value.setData(res.data , editorRoleId.value);
         loading.value = false ;
     })
 
