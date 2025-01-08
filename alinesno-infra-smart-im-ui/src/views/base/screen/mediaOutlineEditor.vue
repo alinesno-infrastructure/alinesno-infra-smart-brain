@@ -52,7 +52,7 @@
                         <template #default="{ node, data }">
                             <div class="custom-tree-node" style="height:auto;">
                                 <div style="display: flex;padding-top:10px;flex-direction: column;">
-                                    <div style="font-size: 16px;font-weight: bold;color:#333">镜头:{{ node.label }}
+                                    <div style="font-size: 16px;font-weight: bold;">镜头:{{ node.label }}
                                     </div>
                                     <div class="description">设计思考:<span style="color: #777;">{{ data.thought }}</span>
                                     </div>
