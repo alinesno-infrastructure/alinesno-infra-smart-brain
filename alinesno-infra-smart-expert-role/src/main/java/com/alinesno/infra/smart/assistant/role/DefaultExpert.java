@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
  * 默认专家，如果没有其它任何专家的情况下，会默认使用这个
  */
 @Slf4j
+@Scope("prototype")
 @Service(AssistantConstants.PREFIX_ASSISTANT_DEFAULT)
 public class DefaultExpert extends ExpertService {
 
