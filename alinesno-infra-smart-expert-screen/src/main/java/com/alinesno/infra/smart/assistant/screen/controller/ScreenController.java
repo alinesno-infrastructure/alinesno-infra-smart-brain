@@ -16,6 +16,7 @@ import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.screen.dto.ChapterEditorDto;
 import com.alinesno.infra.smart.assistant.screen.dto.LeaderUpdateDto;
 import com.alinesno.infra.smart.assistant.screen.dto.ScreenDto;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
@@ -170,10 +171,11 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
      * @return
      */
     @PostMapping("/updateChapterEditor")
-    public AjaxResult updateChapterEditor(@RequestParam("id") long id,
-                                          @RequestParam("editors") String editors ,
-                                          @RequestParam("type") String type
-                                          ) {
+    public AjaxResult updateChapterEditor(@RequestBody @Validated ChapterEditorDto dto) {
+
+        long id = dto.getId();
+        String editors = dto.getEditorsAsString() ;
+        String type = dto.getType();
 
         log.debug("id = {}, editors = {}, type = {}", id, editors, type);
 
