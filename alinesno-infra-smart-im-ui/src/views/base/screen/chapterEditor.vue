@@ -6,18 +6,31 @@
     </div>
     <!-- 自定义上下文菜单 -->
     <div id="custom-context-menu" class="hidden" @click.stop>
-      <!-- <p>修改文本：【{{ currentSelection.text }}】</p> -->
+      <!-- <div style="position: absolute;top: 10px;right: 10px;" @click="hideContextMenu()">
+        <el-button type="danger" text bg size="small">关闭</el-button>
+      </div> -->
       <p>请输入您的要求：</p>
-      <el-input v-model="userRequirement" placeholder="请输入要求 ..." clearable
-        @keyup.enter="handleMenuClick(currentAction)"></el-input>
+      <el-form style="width:100%" :model="formData" :rules="rules" ref="formRef">
+        <el-form-item prop="userRequirement">
+          <el-input 
+            v-model="formData.userRequirement" 
+            placeholder="请输入要求 ..." 
+            clearable
+            @keyup.enter="submitForm"
+          ></el-input>
+        </el-form-item>
+      </el-form>
+
+      <!-- <el-input v-model="userRequirement" placeholder="请输入要求 ..." clearable @keyup.enter="handleMenuClick(currentAction)"></el-input> -->
+
       <ul>
-        <li @click="currentAction = 'rewrite'; handleMenuClick('rewrite')">
+        <li @click="currentAction = 'rewrite'; submitForm('rewrite')">
           <el-button type="primary" text bg><i class="fa-solid fa-file-pen"></i> 重写</el-button>
         </li>
-        <li @click="currentAction = 'polish'; handleMenuClick('polish')">
+        <li @click="currentAction = 'polish'; submitForm('polish')">
           <el-button type="primary" text bg><i class="fa-solid fa-pen-nib"></i> 润色</el-button>
         </li>
-        <li @click="currentAction = 'expand'; handleMenuClick('expand')">
+        <li @click="currentAction = 'expand'; submitForm('expand')">
           <el-button type="primary" text bg><i class="fa-solid fa-marker"></i> 扩写</el-button>
         </li>
       </ul>
@@ -31,7 +44,7 @@
         </el-scrollbar>
         <br />
         <span slot="footer" class="dialog-footer">
-          <el-button @click="dialogVisible = false" text bg>取 消</el-button>
+          <el-button @click="hideContextMenu()" text bg>取 消</el-button>
           <el-button type="primary" text bg @click="confirmReplacement">确认替换</el-button>
         </span>
       </div>
@@ -61,12 +74,17 @@ import CodeMirror from 'vue-codemirror6';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { markdown } from '@codemirror/lang-markdown';
 
-import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import { getParam } from '@/utils/ruoyi'
+// import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { EditorView } from '@codemirror/view';
 import { ElInput, ElLoading } from 'element-plus';
 
+import { processParagraph } from '@/api/base/im/screen'
+
 const screenId = ref(null);
+const editorRoleId = ref(null) // 编辑角色
 const lang = markdown();
+const { proxy } = getCurrentInstance();
 
 // 主题样式设
 const theme = {
@@ -83,13 +101,30 @@ const props = defineProps({
 })
 
 const data = ref('');
-const userRequirement = ref(''); // 用户输入的要求
+// const userRequirement = ref(''); // 用户输入的要求
 const currentAction = ref('');   // 当前选择的操作
 
+// 定义表单数据模型
+const formData = reactive({
+  userRequirement: ''
+});
+
+// 定义校验规则
+const rules = reactive({
+  userRequirement: [
+    { required: true, message: '请输入要求', trigger: 'blur' },
+    { pattern: /^\S+.*$/, message: '不能全为空白字符', trigger: 'blur' }
+  ]
+});
+
+// 获取表单引用
+const formRef = ref(null);
+
 /** 设置数据内容 */
-const setData = (content) => {
+const setData = (content , chapterEditor) => {
   data.value = content ?? '未生成内容.';
-  console.log('data.value  = ' + data.value);
+  editorRoleId.value = chapterEditor ?? '0';
+  console.log('data.value  = ' + data.value + ' , chapterEditor = ' + editorRoleId.value) ; 
 }
 
 /** 获取数据内容 */
@@ -124,26 +159,61 @@ const showConfirmation = async ({ text, from, to, viewUpdate }, selectedAction, 
 
 // 处理AI请求
 const handleAIRequest = async (text, viewUpdate, action, from, to, requirement) => {
-  try {
-    let result;
-    switch (action) {
-      case 'rewrite':
-        result = await simulateAIProcess(text, "重写", requirement);
-        break;
-      case 'polish':
-        result = await simulateAIProcess(text, "润色", requirement);
-        break;
-      case 'expand':
-        result = await simulateAIProcess(text, "扩写", requirement);
-        break;
-      default:
-        throw new Error("未知操作");
-    }
-    return result;
-  } catch (error) {
-    throw error;
+  const loading = ElLoading.service({
+    lock: true,
+    text: '正在重写中...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  });
+
+  let requestData = {
+    roleId: editorRoleId.value ,
+    screenId: screenId.value ,
+    modifyContent: text , 
+    action: action ,
+    requirement: requirement ,
   }
+
+  let result = '' ;
+
+  await processParagraph(requestData).then(res => {
+    if(res.data){
+      result = res.data;
+      // userRequirement.value = '' ;
+    }
+    loading.close();
+  }).catch(err => {
+    loading.close();
+  })
+
+  return result ;
 };
+
+// AI处理过程
+// const simulateAIProcess = async (text, action, requirement) => {
+//   const loading = ElLoading.service({
+//     lock: true,
+//     text: '正在重写中...',
+//     background: 'rgba(0, 0, 0, 0.7)',
+//   });
+
+//   let requestData = {
+//     roleId: roleId,
+//     screenId: roleId,
+//     modifyContent: text , 
+//     action: action ,
+//     requirement: requirement ,
+//   }
+
+//   let result = null ;
+
+//   await processParagraph(requestData).then(res => {
+//       result = res.data.content;
+//     loading.close();
+//   }).catch(err => {
+//     loading.close();
+//   })
+
+// };
 
 // 替换选择的文本
 const replaceSelectedText = (newText, editorView, from, to) => {
@@ -195,7 +265,7 @@ const showContextMenu = (event) => {
       const menuHeight = 468; // contextMenu.offsetHeight;
 
       let left = event.pageX;
-      let top = event.pageY;
+      let top = event.pageY + 10;
 
       // 如果菜单超出了右侧边界，则左移菜单
       if (left + menuWidth > window.innerWidth) {
@@ -216,7 +286,8 @@ const showContextMenu = (event) => {
       contextMenu.classList.remove('hidden');
 
       // 清空用户要求输入框
-      userRequirement.value = '';
+      formData.userRequirement = '';
+      confirmationText.value = '' ;
     }
   }
 };
@@ -236,54 +307,61 @@ const handleDocumentClick = (event) => {
 };
 
 /** 连接sse */
-function handleSseConnect(screenId) {
-  nextTick(() => {
-    if (screenId) {
+// function handleSseConnect(screenId) {
+//   nextTick(() => {
+//     if (screenId) {
 
-      let sseSource = openSseConnect(screenId);
-      // 接收到数据
-      sseSource.onmessage = function (event) {
+//       let sseSource = openSseConnect(screenId);
+//       // 接收到数据
+//       sseSource.onmessage = function (event) {
 
-        if (!event.data.includes('[DONE]')) {
-          let resData = event.data;
-          if (resData != 'ping') {  // 非心跳消息
-            const data = JSON.parse(resData);
-            pushResponseMessageList(data);
-          }
-        } else {
-          console.log('消息接收结束.')
-        }
+//         if (!event.data.includes('[DONE]')) {
+//           let resData = event.data;
+//           if (resData != 'ping') {  // 非心跳消息
+//             const data = JSON.parse(resData);
+//             pushResponseMessageList(data);
+//           }
+//         } else {
+//           console.log('消息接收结束.')
+//         }
 
-      }
+//       }
+//     }
+//   })
+// }
+
+// 提交表单的方法
+const submitForm = (currentAction) => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      // 如果校验通过，执行提交逻辑
+      handleMenuClick(currentAction);
+    } else {
+      console.log('校验失败');
+      return false;
     }
-  })
-}
+  });
+};
 
 // 处理菜单项点击
 const handleMenuClick = async (action) => {
-
-  // if (!userRequirement.value.trim()) {
-  //   ElMessageBox.alert('请输入您的要求', '提示', {
-  //     confirmButtonText: '确定',
-  //     callback: () => {
-  //       console.log('The user clicked OK');
-  //     }
-  //   });
-  //   return;
-  // }
 
   // 如果有当前选择，则显示确认对话框
   console.log('currentSelection.text:' + currentSelection.text);
   console.log('currentSelection.viewUpdate:' + currentSelection.viewUpdate);
 
   if (currentSelection && currentSelection.text.trim()) {
-    await showConfirmation(currentSelection, action, userRequirement.value);
+    await showConfirmation(currentSelection, action, formData.userRequirement);
   }
 };
 
 // 确认替换文本
 const confirmReplacement = () => {
   const newText = confirmationText.value;
+  if(newText == ''){
+    proxy.$modal.msgWarning("替换内容为空.");
+    return ;
+  }
   replaceSelectedText(newText, currentSelection.editorView, currentSelection.from, currentSelection.to);
   dialogVisible.value = false;
   hideContextMenu();
@@ -294,22 +372,6 @@ const confirmReplacement = () => {
 //   done();
 // };
 
-// 模拟AI处理过程
-const simulateAIProcess = (text, action, requirement) => {
-  const loading = ElLoading.service({
-    lock: true,
-    text: '正在重写中...',
-    background: 'rgba(0, 0, 0, 0.7)',
-  });
-
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(`这是经过${action}后的文本，根据要求：${requirement}`);
-      loading.close(); // 关闭加载提示
-    }, 2000); // 2000毫秒后执行
-  });
-
-};
 
 // onMounted(() => {
 //   // 监听全局点击事件以隐藏上下文菜单
@@ -323,18 +385,17 @@ const simulateAIProcess = (text, action, requirement) => {
 
 onMounted(() => {
   screenId.value = getParam('screenId')
-
-  handleSseConnect(screenId.value)
-  handleScreenMessage()
+  // handleSseConnect(screenId.value)
+  // handleScreenMessage()
 })
 
 
 // 销毁信息
-onBeforeUnmount(() => {
-  handleCloseSse(screenId.value).then(res => {
-    console.log('关闭sse连接成功:' + screenId)
-  })
-});
+// onBeforeUnmount(() => {
+//   handleCloseSse(screenId.value).then(res => {
+//     console.log('关闭sse连接成功:' + screenId)
+//   })
+// });
 
 const extensions = [
   oneDark,
@@ -353,56 +414,5 @@ defineExpose({
   margin-bottom: 0px;
   width: 100%;
   text-align: right;
-}
-</style>
-
-<style>
-/* required! */
-.cm-editor {
-  height: 100%;
-}
-
-.cm-container {
-  width: 100%;
-}
-
-#custom-context-menu {
-  position: fixed;
-  background-color: white;
-  border: 1px solid #ccc;
-  padding: 10px;
-  width: 500px;
-  min-height: 468px;
-  z-index: 1000;
-  display: flex;
-  flex-wrap: wrap;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: center;
-
-  &.hidden {
-    display: none;
-  }
-
-  ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 10px 0 0;
-
-    li {
-      padding: 5px 5px;
-      cursor: pointer;
-      float: left;
-      margin: 0px 10px;
-    }
-  }
-
-  .confimation-text-panel {
-    width: 100%;
-
-    p {
-      margin: 5px;
-    }
-  }
 }
 </style>
