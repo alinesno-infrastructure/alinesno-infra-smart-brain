@@ -23,6 +23,7 @@
     "codemirror-editor-vue3": "^2.4.1",
     "dayjs": "^1.11.13",
     "echarts": "5.4.0",
+    "crypto-js": "4.2.0",
     "element-plus": "^2.8.0",
     "file-saver": "2.0.5",
     "fuse.js": "6.6.2",
