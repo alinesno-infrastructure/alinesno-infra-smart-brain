@@ -44,6 +44,9 @@ export function getTaskNotice(){
 export function sendUserMessage(message, users , businessId, channelId , type) {
   return request({
     url: managerUrl.sendUserMessage , //  + "?channelId=" + parseStrEmpty(channelId) + '&type=' + type , 
+    headers: {
+      isEncrypt: true
+    },
     data: {
       message: message, 
       users: users,
