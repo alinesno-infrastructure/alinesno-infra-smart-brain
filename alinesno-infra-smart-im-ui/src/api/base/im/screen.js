@@ -17,6 +17,7 @@ var managerUrl = {
 
   // 大文本
   saveChapter: chapterPrefix +"saveChapters",
+  processParagraph: chapterPrefix +"processParagraph",
   chatRole: chapterPrefix +"chatRole",
   chatRoleSync: chapterPrefix +"chatRoleSync",
   updateChapterContentEditor: chapterPrefix +"updateChapterContentEditor",
@@ -82,6 +83,18 @@ export function updateChapterContent(data) {
   })
 }
 
+// 内容片断修改
+export function processParagraph(data) {
+  return request({
+    url: managerUrl.processParagraph, 
+    headers: {
+      isEncrypt: true
+    },
+    method: 'post',
+    data: data
+  })
+}
+
 // 查询章节内容
 export function getChapterContent(id) {
   return request({
@@ -133,6 +146,7 @@ export function saveChapter(data , screenId) {
   })
 }
 
+
 // 查询场景详细
 export function getScreen(id) {
   return request({
@@ -142,17 +156,32 @@ export function getScreen(id) {
 }
 
 // 更新章节编辑人员
-export function updateChapterEditor(id , data , type) {
+export function updateChapterEditor(id , editors , type) {
+
+  let data = {
+    id: parseStrEmpty(id),
+    editors: editors,
+    type: type
+  }
+
   return request({
-    url: managerUrl.updateChapterEditor + "?id=" + parseStrEmpty(id) + "&type="+type+"&editors=" + data,
-    method: 'post'
+    url: managerUrl.updateChapterEditor , 
+    headers: {
+      isEncrypt: true 
+    },
+    method: 'post',
+    data: data
   })
+
 }
 
 // 创建场景
 export function createScreen(data) {
   return request({
     url: managerUrl.createScreen,
+    headers: {
+      isEncrypt: true
+    },
     method: 'post',
     data: data
   })
