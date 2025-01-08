@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.utils.CodeBlockParser;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 /**
  * 脚本编辑方式
  */
+@Scope("prototype")
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_SCRIPT)
 public class ScriptExpertService extends ExpertService {
