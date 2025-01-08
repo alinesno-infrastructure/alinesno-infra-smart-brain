@@ -19,26 +19,39 @@ public class MessageTaskInfo implements Serializable {
 
     // 账号ID
     private long accountId ;
+
     // 消息渠道的唯一标识
     private long channelId ;
+
     // 场景的唯一标识
     private long screenId ;
+
     // 业务的唯一标识
     private String businessId ;
+
     // 角色的唯一标识
     private long roleId ;
+
     // 消息的文本内容
     private String text ;
+
     // 前置业务的标识，用于关联消息任务与之前的业务
     private String preBusinessId ;
+
     // 角色的详细信息，使用实体类封装
     private IndustryRoleEntity roleDto ;
+
     // 消息任务的执行时间
     private String usageTime ;
+
     // 是否执行方法
     private boolean functionCall ;
+
     // 是否为修改内容
     private boolean modify;
+
+    // 是否修改整个业务
+    private boolean modifyPreBusinessId = true;
 
     // 消息类型
     private String roleType ;
