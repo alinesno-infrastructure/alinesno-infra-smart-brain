@@ -26,7 +26,18 @@ var managerUrl = {
   getFilterTemplate: prefix + "getFilterTemplate",
   databaseList: prefix + "databaseList",
   syncTemplates: prefix + "syncTemplates",
+  useTemplate: prefix + "useTemplate",
 }
+
+// 使用模板
+export function useTemplate(templateId) {
+  return request({
+    url: managerUrl.useTemplate + "?templateId=" + parseStrEmpty(templateId) ,
+    method: 'get'
+  })
+}
+
+
 
 // 列出项目模板
 export function listBuildProjectTemplate(query) {
