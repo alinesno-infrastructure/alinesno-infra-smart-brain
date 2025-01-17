@@ -40,7 +40,7 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     private String chainId; // 其他角色相关字段
 
     @TableField("greeting")
-    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 512)
     @ColumnComment("开场白")
     private String greeting ; // 开场白
 
