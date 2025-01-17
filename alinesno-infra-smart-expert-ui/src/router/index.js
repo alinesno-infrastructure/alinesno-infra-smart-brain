@@ -108,6 +108,13 @@ export const constantRoutes = [
         component: () => import('@/views/smart/assistant/role/createDefinition'),
         meta: { title: '添加流程任务', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
+      {
+        path: '/smart/assistant/roleTemplate/add',
+        name: '/smart/assistant/roleTemplate/add',
+        hidden: false,
+        component: () => import('@/views/smart/assistant/roleTemplate/add'),
+        meta: { title: '添加角色模板', icon: 'fa-solid fa-code-pull-request', affix: false }
+      },
     ]
   },
   {
