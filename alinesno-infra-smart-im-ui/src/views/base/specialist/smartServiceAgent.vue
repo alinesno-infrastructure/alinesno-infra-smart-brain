@@ -19,7 +19,7 @@
       <div class="robot-chat-help-title">频道专家Agent列表</div>
       <div class="robot-chat-help-item-list-panel" v-loading="loading">
         <div class="process-panel">
-          <el-scrollbar height="500px">
+          <el-scrollbar :height="sc_height">
             <ul>
               <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
                 <img style="width:35px;height:35px;border-radius: 50%;" :src="imagePathByPath(item.roleAvatar)" />
@@ -37,7 +37,6 @@
         </div>
       </div>
     </div>
-
 
     <el-dialog v-model="dialogVisible" v-if="dialogVisible" title="选择专家服务Agent" width="60%" :before-close="handleClose" append-to-body>
 
@@ -71,6 +70,7 @@ const channelInfo = ref({
   channelName: '频道名称',
   channelDesc: '频道描述'
 })
+const sc_height = ref('400px') //默认高度
 const router = useRouter();
 const loading = ref(false)
 const dialogVisible = ref(false)
