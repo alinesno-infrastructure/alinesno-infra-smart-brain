@@ -81,6 +81,7 @@ alinesno:
           central: http://data.linesno.com/plugins/
           path: ${user.home}/.smart-assistant/plugins
       brain:
+        role-template-sync-url: http://data.linesno.com/aip-role/alinesno-infra-smart-brain-role-templates.zip
         aliyun:
           access-key: xxxxxxxx
           secret-key: xxxxxxxx
