@@ -101,7 +101,13 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible">
+            <template #default="scope">
+              <div style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 2;">
+                {{ scope.row.responsibilities }}
+              </div>
+            </template>
+          </el-table-column>
  
           <el-table-column label="推送" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
