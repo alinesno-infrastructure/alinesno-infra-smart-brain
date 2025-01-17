@@ -9,14 +9,19 @@
                   <div style="padding-bottom: 20px;font-weight: 550;">
                       <i class="el-icon-link"></i> 角色模板中心
                       <span style="font-size:13px;color:#a5a5a5">
-                          角色模板中心会自动上传到你的项目git基线
+                          角色模板会给出最新的角色示例和最佳实践
                       </span>
                       <div style="float:right">
-                          <el-button type="primary" bg text icon="Refresh" @click="syncTemplates()" size="mini">同步</el-button>
-                      </div>
+                          <!--
+                          <router-link to="/smart/assistant/roleTemplate/add">
+                                <el-button type="primary" bg text icon="Plus" @click="addTemplates()" size="mini">添加模板</el-button>
+                          </router-link>
+                          -->
+                          <el-button type="primary" :disabled="loading" bg text icon="Refresh" @click="handleSyncTemplates()" size="mini">同步</el-button>
+                      </div> 
                   </div>
                   <div class="vc-div div_l14lqa15">
-                      <div class="vc-div div_l14lqa0k" style="margin-bottom:10px" v-for="(item, index) in filterRules"
+                      <div class="vc-div div_l14lqa0k" v-for="(item, index) in filterRules"
                           :key="index">
                           <div class="vc-div div_l14lqa0h">
                               <div class="vc-div div_l14lqa0e tagMain">
@@ -40,7 +45,7 @@
           </div>
       </div>
 
-      <div class="gen-template-box" v-if="typeList.length == 0">
+      <div class="gen-template-box" v-if="typeList.size == 0">
           <el-col :sm="24">
               <el-empty description="还没有创建模板,可以根据提示链接创建自己的工程模板">
                   <el-link type="primary" icon="el-icon-link">如何创建工程模板?</el-link>
@@ -55,7 +60,8 @@
               <div class="vc-div div_l14lqa1i">
                   <div class="vc-div div_l14lqa1c tpl-item-title">
                       <div class="vc-text text_l14lqa1a" style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;">
-                         <i class="fa-solid fa-signature" style="font-size: 30px; color: rgb(211, 50, 51);"></i> {{ item.roleName }}
+                         <i class="fa-solid fa-signature" style="font-size: 30px; color: rgb(211, 50, 51);"></i>
+                          {{ item.roleName }}
                       </div>
                   </div>
                   <div class="vc-div tpl-item-description">
@@ -64,13 +70,17 @@
                       </div>
                   </div>
                   <div class="vc-div div_l14lqa1f tpl-item-tags">
-                      <el-button type="danger" text>
-                         <i class="el-icon-link"></i> 工龄: <b>42</b>工时 
-                      </el-button>
+                      <div style="font-size: 14px;color: #a9a9a9;padding: 5px 0px;">
+                         <i class="el-icon-link"></i> 使用: <b>142</b>次
+                      </div>
                   </div> 
                   <div class="vc-div tpl-item-footer">
                       <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
-                        <el-button text bg type="primary">使用模板</el-button>
+                        <el-popconfirm width="170" @confirm="handleUseTemplate(item.id)" title="确定使用模板么?">
+                            <template #reference>
+                                <el-button text bg type="primary">使用模板</el-button>
+                            </template>
+                        </el-popconfirm>
                       </div>
                       <div class="vc-text" title="">
                           已启用 {{ item.installCount }}
@@ -81,7 +91,7 @@
 
       </div>
 
-      <div style="margin-bottom: 60px;">
+      <div style="margin-bottom: 0px;">
         <pagination v-show="total > 0" :total="total"
             v-model:page="queryParams.pageNum"
             v-model:limit="queryParams.pageSize"
@@ -92,334 +102,263 @@
 
 </template>
 
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue';
 import {
   listBuildProjectTemplate,
-  getFilterTemplate ,
-  syncTemplates
+  getFilterTemplate,
+  syncTemplates,
+  useTemplate // 确保这个API是存在的，因为原始代码中并没有展示它的用途。
 } from "@/api/smart/assistant/roleTemplate";
+import { ElMessage } from 'element-plus';
 
-export default {
-  name: "Type",
-  // components: {
-  //     projectTemplate
-  // },
-  data() {
-      return {
-          // 选中数据库ID
-          selectDbId: '',
-          // 遮罩层
-          loading: true,
-          // 查询条件
-          loadingFilter: true,
-          // 是否显示应用
-          openProject: false ,
-          // 导出遮罩层
-          exportLoading: false,
-          // 当前选择的模板
-          currentTemplateId: '' ,
-          // 选中数组
-          ids: [],
-          // 非单个禁用
-          single: true,
-          // 非多个禁用
-          multiple: true,
-          // 显示搜索条件
-          showSearch: true,
-          // 总条数
-          total: 0,
-          // 数据库类型表格数据
-          typeList: [],
-          // 弹出层标题
-          title: "",
-          // 是否显示弹出层
-          open: false,
-          // 构建信息表单
-          generatorFormVisible: false,
-          // 重新定时pageSizes
-          pageSizes:[12, 24, 36, 60] ,
-          // 查询参数
-          queryParams: {
-              pageNum: 1,
-              pageSize: 12
-          },
-          // 表单参数
-          ruleForm: {
-              screen: '',
-              industry: '',
-              type: '',
-              roleName: '',
-              tempTeam: '',
-              tempZip: '',
-              responsibilities: ''
-          },
-          // 验证是否通过
-          btnChangeEnable: true,
-          genForm: {
-              packagePath: '',
-              moduleName: '',
-              author: '',
-              createType: 'front'
-          },
-          filterRules: [
-              {
-                  "name": "场景",
-                  "codeValue": "initializr.admin.project.template.screen",
-                  "items": []
-              },
-              {
-                  "name": "行业",
-                  "codeValue": "initializr.admin.project.template.industry",
-                  "items": []
-              }
-          ],
-          // 表单校验
-          rules: {
-              screen: { required: true, message: '请输入场景', trigger: 'blur' },
-              industry: { required: true, message: '请输入行业', trigger: 'blur' },
-              type: { required: true, message: '请选择类型', trigger: 'blur' },
-              roleName: { required: true, message: '请输入模板名称', trigger: 'blur' },
-              tempTeam: { required: true, message: '请输入团队信息', trigger: 'blur' },
-              tempZip: { required: true, message: '请上传模板', trigger: 'blur' },
-              responsibilities: { required: true, message: '请输入模板信息', trigger: 'blur' },
-          }
-      }
-          ;
+const router = useRouter();
+
+// 使用ref定义简单的响应式数据
+// const selectDbId = ref('');
+const loading = ref(true);
+const loadingFilter = ref(true);
+// const openProject = ref(false);
+// const exportLoading = ref(false);
+// const currentTemplateId = ref('');
+// const ids = ref([]);
+// const single = ref(true);
+// const multiple = ref(true);
+// const showSearch = ref(true);
+const total = ref(0);
+const typeList = ref([]);
+// const title = ref("");
+// const open = ref(false);
+// const generatorFormVisible = ref(false);
+// const pageSizes = ref([12, 24, 36, 60]);
+const queryParams = reactive({
+  pageNum: 1,
+  pageSize: 12
+});
+// const ruleForm = reactive({
+//   screen: '',
+//   industry: '',
+//   type: '',
+//   roleName: '',
+//   tempTeam: '',
+//   tempZip: '',
+//   responsibilities: ''
+// });
+
+// const btnChangeEnable = ref(true);
+// const genForm = reactive({
+//   packagePath: '',
+//   moduleName: '',
+//   author: '',
+//   createType: 'front'
+// });
+
+const filterRules = ref([
+  {
+    name: "场景",
+    codeValue: "initializr.admin.project.template.screen",
+    items: []
   },
-  created() {
-      this.getList();
+  {
+    name: "行业",
+    codeValue: "initializr.admin.project.template.industry",
+    items: []
+  }
+]);
 
-      getFilterTemplate().then(res => {
-          this.filterRules = res.data;
-          this.loadingFilter = false;
-      })
-  },
-  methods: {
-      // 安装模板
-      installTemplate(item){
-          if(item.fieldProp === 'dev'){
-              this.$message('还在建设开发中.');
-              return ;
-          }
+// 表单校验规则
+// const rules = reactive({
+//   screen: { required: true, message: '请输入场景', trigger: 'blur' },
+//   industry: { required: true, message: '请输入行业', trigger: 'blur' },
+//   type: { required: true, message: '请选择类型', trigger: 'blur' },
+//   roleName: { required: true, message: '请输入模板名称', trigger: 'blur' },
+//   tempTeam: { required: true, message: '请输入团队信息', trigger: 'blur' },
+//   tempZip: { required: true, message: '请上传模板', trigger: 'blur' },
+//   responsibilities: { required: true, message: '请输入模板信息', trigger: 'blur' }
+// });
 
-          this.openProject = true ;
-          this.currentTemplateId = item.id ;
-      },
-      // 同步仓库
-      syncTemplates(){
-          this.loading = true ;
-          syncTemplates().then(res => {
-              console.log('res = ' + res) ;
-              this.getList() ;
-          })
-      } ,
-      /** 查询数据库类型列表 */
-      getList() {
-          this.loading = true;
-          listBuildProjectTemplate(this.queryParams).then(response => {
-              this.typeList = response.rows;
-              this.total = response.total;
-              this.loading = false;
-          }).catch(err => {
-              this.loading = false;
-          });
-      },
-      // 取消按钮
-      cancel() {
-          this.open = false;
-          this.reset();
-      },
-      // 表单重置
-      reset() {
-          this.ruleForm = {
-              id: null ,
-              screen: null ,
-              industry: null ,
-              type: null ,
-              roleName: null,
-              tempTeam: null,
-              tempZip: null,
-              responsibilities: null
-          };
-          this.resetForm("form");
-      },
-      /** 搜索按钮操作 */
-      handleQuery() {
-          this.queryParams.pageNum = 1;
-          this.getList();
-      },
-      /** 重置按钮操作 */
-      resetQuery() {
-          this.resetForm("queryForm");
-          this.handleQuery();
-      },
-      // 多选框选中数据
-      handleSelectionChange(selection) {
-          this.ids = selection.map(item => item.id)
-          this.single = selection.length !== 1
-          this.multiple = !selection.length
-      },
-      /** 新增按钮操作 */
-      handleAdd() {
-          this.reset();
-          this.open = true;
-          this.title = "添加数据库类型";
-      },
-      // 数据库生成代码
-      handleGenCode(row) {
-          this.generatorFormVisible = true
-          this.selectDbId = row.id
-          this.genForm.author = row.author;
-          this.genForm.createType = row.createType;
-          this.genForm.packagePath = row.packagePath;
-          this.genForm.moduleName = row.moduleName;
-      },
-      /** 修改按钮操作 */
-      handleUpdate(row) {
-          this.reset();
-          const id = row.id || this.ids
-          getCasLoginRecord(id).then(response => {
-              this.btnChangeEnable = false;
-              this.form = response.data;
+// 定义方法
+// const installTemplate = (item) => {
+//   if (item.fieldProp === 'dev') {
+//     ElMessage('还在建设开发中.');
+//     return;
+//   }
 
-              this.open = true;
-              this.title = "修改数据库类型";
-          });
-      },
-      /** 提交数据库代码生成按钮 */
-      submitGenForm() {
-      },
-      // 验证数据库
-      validateDburl() {
-          this.$refs["form"].validate(valid => {
-              if (valid) {
+//   openProject.value = true;
+//   currentTemplateId.value = item.id;
+// };
 
-                  if (!this.form.dbType) {
-                      this.form.dbType = 'MySQL';
-                  }
+const handleSyncTemplates= () => {
+  loading.value = true;
+  syncTemplates().then(() => {
+    getList();
+  }).finally(() => {
+    loading.value = false;
+  });
+};
 
-                  checkDbConfig(this.form).then(resp => {
-                      if (resp.data.accepted) {
-                          this.msgSuccess("数据库连接成功");
-                          this.btnChangeEnable = false;
-                      } else {
-                          this.msgError(resp.msg)
-                      }
-                  })
+const handleUseTemplate = (id) => {
+  loading.value = true;
+  useTemplate(id).then((res) => {
+    getList();
+    ElMessage({
+      message: '使用成功',
+      type: 'success'
+    });
+    router.push({path:"/expert/smart/assistant/role/index"})
+  }).finally(() => {
+    loading.value = false;
+  });
+};
 
-              }
-          });
-      },
-      /** 提交按钮 */
-      submitForm() {
-          this.$refs["ruleForm"].validate(valid => {
-              if (valid) {
-
-              }
-          });
-      },
-      /** 添加平台字段 */
-      addPlatformField(row) {
-
-          this.$message('功能正在完善中.');
-
-          return;
-
-          const dbName = row.dbName;
-          const id = row.id;
-
-          this.$confirm('确认要添加平台字段到"' + dbName + '"库吗？', "提示", {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-          }).then(() => {
-              const loading = this.$loading({
-                  lock: true,
-                  text: '正在同步中,大概1分钟,请稍等...',
-                  spinner: 'el-icon-loading',
-                  background: 'rgba(0, 0, 0, 0.7)'
-              });
-              platformFieldTODb(id).then(response => {
-                  loading.close();
-                  this.$message({
-                      type: 'success',
-                      message: '同步成功!'
-                  });
-              });
-          }).catch(() => {
-              loading.close();
-              this.$message({
-                  type: 'info',
-                  message: '已取消同步'
-              });
-          });
-
-      },
-      /** 同步数据库操作 */
-      handleSynchDb(row) {
-
-          const dbName = row.dbName;
-          const id = row.id;
-
-          this.$confirm('确认要强制同步"' + dbName + '"表结构吗？', "提示", {
-              confirmButtonText: '确定',
-              cancelButtonText: '取消',
-              type: 'warning'
-          }).then(() => {
-              const loading = this.$loading({
-                  lock: true,
-                  text: '正在同步中,大概1分钟,请稍等...',
-                  spinner: 'el-icon-loading',
-                  background: 'rgba(0, 0, 0, 0.7)'
-              });
-              syncDataBase(id).then(response => {
-                  loading.close();
-                  this.$message({
-                      type: 'success',
-                      message: '同步成功!'
-                  });
-              });
-          }).catch(() => {
-              debugger
-              loading.close();
-              this.$message({
-                  type: 'info',
-                  message: '已取消同步'
-              });
-          });
-
-      },
-      /** 删除按钮操作 */
-      handleDelete(row) {
-          const ids = row.id || this.ids;
-          this.$confirm('是否确认删除数据库类型的数据项?', "警告", {
-              confirmButtonText: "确定",
-              cancelButtonText: "取消",
-              type: "warning"
-          }).then(function () {
-              return delCasLoginRecord(ids);
-          }).then(() => {
-              this.getList();
-              this.msgSuccess("删除成功");
-          })
-      },
-      /** 导出按钮操作 */
-      handleExport() {
-          const queryParams = this.queryParams;
-          this.$confirm('是否确认导出所有数据库类型数据项?', "警告", {
-              confirmButtonText: "确定",
-              cancelButtonText: "取消",
-              type: "warning"
-          }).then(() => {
-              this.exportLoading = true;
-              return exportCasLoginRecord(queryParams);
-          }).then(response => {
-              this.download(response.msg);
-              this.exportLoading = false;
-          })
-      }
+const getList = async () => {
+  try {
+    loading.value = true;
+    const response = await listBuildProjectTemplate(queryParams);
+    typeList.value = response.rows;
+    total.value = response.total;
+  } catch (err) {
+    console.error(err);
+  } finally {
+    loading.value = false;
   }
 };
+
+// const cancel = () => {
+//   open.value = false;
+//   reset();
+// };
+
+// const reset = () => {
+//   Object.assign(ruleForm, {
+//     id: null,
+//     screen: null,
+//     industry: null,
+//     type: null,
+//     roleName: null,
+//     tempTeam: null,
+//     tempZip: null,
+//     responsibilities: null
+//   });
+//   // 假设有一个resetForm的方法在全局或组件内，这里调用它
+//   // resetForm("form");
+// };
+
+// const handleQuery = () => {
+//   queryParams.pageNum = 1;
+//   getList();
+// };
+
+// const resetQuery = () => {
+//   // resetForm("queryForm");
+//   handleQuery();
+// };
+
+// const handleSelectionChange = (selection) => {
+//   ids.value = selection.map(item => item.id);
+//   single.value = selection.length !== 1;
+//   multiple.value = !selection.length;
+// };
+
+// const handleAdd = () => {
+//   reset();
+//   open.value = true;
+//   title.value = "添加数据库类型";
+// };
+
+// const handleGenCode = (row) => {
+//   generatorFormVisible.value = true;
+//   selectDbId.value = row.id;
+//   Object.assign(genForm, {
+//     author: row.author,
+//     createType: row.createType,
+//     packagePath: row.packagePath,
+//     moduleName: row.moduleName
+//   });
+// };
+
+// const handleUpdate = async (row) => {
+//   reset();
+//   const id = row.id || ids.value;
+//   // 注意：这里使用的getCasLoginRecord可能是一个错误，因为它与上下文不符。请替换为正确的API调用。
+//   const response = await getCasLoginRecord(id);
+//   btnChangeEnable.value = false;
+//   Object.assign(ruleForm, response.data);
+
+//   open.value = true;
+//   title.value = "修改数据库类型";
+// };
+
+// const submitGenForm = () => {
+//   // 实现提交逻辑
+// };
+
+// const validateDburl = () => {
+//   // $refs["form"]需要被重构为Composition API风格
+//   // 这里假设有一个validate方法可以直接调用
+//   // form.validate(valid => {
+//   //   ...
+//   // });
+// };
+
+// const submitForm = () => {
+//   // $refs["ruleForm"].validate需要被重构为Composition API风格
+//   // 这里假设有一个validate方法可以直接调用
+//   // ruleForm.validate(valid => {
+//   //   ...
+//   // });
+// };
+
+// const addPlatformField = (row) => {
+//   ElMessage('功能正在完善中.');
+
+//   // ... 同步逻辑省略...
+// };
+
+// const handleSynchDb = (row) => {
+//   // ... 同步逻辑省略...
+// };
+
+// const handleDelete = async (row) => {
+//   const idsToDelete = row.id || ids.value;
+//   await ElMessageBox.confirm('是否确认删除数据库类型的数据项?', "警告", {
+//     confirmButtonText: "确定",
+//     cancelButtonText: "取消",
+//     type: "warning"
+//   }).then(async () => {
+//     // delCasLoginRecord应该被替换成实际的删除API
+//     await delCasLoginRecord(idsToDelete);
+//     await getList();
+//     ElMessage.success("删除成功");
+//   }).catch(() => {
+//     ElMessage.info("已取消删除");
+//   });
+// };
+
+// const handleExport = async () => {
+//   await ElMessageBox.confirm('是否确认导出所有数据库类型数据项?', "警告", {
+//     confirmButtonText: "确定",
+//     cancelButtonText: "取消",
+//     type: "warning"
+//   }).then(async () => {
+//     exportLoading.value = true;
+//     const response = await exportCasLoginRecord(queryParams);
+//     download(response.msg); // 假设有download函数可以处理下载逻辑
+//     exportLoading.value = false;
+//   }).catch(() => {
+//     ElMessage.info("已取消导出");
+//   });
+// };
+
+// 生命周期钩子
+onMounted(() => {
+  getList();
+
+  getFilterTemplate().then(res => {
+    filterRules.value = res.data;
+    loadingFilter.value = false;
+  });
+});
 </script>
 
 
