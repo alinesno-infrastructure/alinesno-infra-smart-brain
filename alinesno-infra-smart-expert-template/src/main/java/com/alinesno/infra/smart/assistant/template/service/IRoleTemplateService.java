@@ -20,4 +20,11 @@ public interface IRoleTemplateService extends IBaseService<RoleTemplateEntity> {
      */
     void syncRoleTemplate(Long accountId, String gitUrl) throws IOException;
 
+    /**
+     * 使用模板
+     * @param orgId
+     * @param templateId
+     */
+    String useTemplate(long orgId, String templateId);
+
 }
