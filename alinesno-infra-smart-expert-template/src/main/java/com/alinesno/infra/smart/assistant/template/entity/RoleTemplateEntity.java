@@ -40,12 +40,12 @@ public class RoleTemplateEntity extends InfraBaseEntity {
     private String backstory ; // 角色背景
 
     @ColumnType(value = MySqlTypeConstant.VARCHAR , length = 32)
-    @ColumnComment("关联的ChainID")
-    @TableField("chain_id") // MyBatis-Plus 字段注解
-    private String chainId; // 其他角色相关字段
+    @ColumnComment("roleScriptType")
+    @TableField("role_script_type")
+    private String roleScriptType;
 
     @TableField("greeting")
-    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 512)
     @ColumnComment("开场白")
     private String greeting ; // 开场白
 
@@ -122,6 +122,12 @@ public class RoleTemplateEntity extends InfraBaseEntity {
     private String knowledgeId ;
 
     // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // 感知脚本
+    @TableField("perception_script")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("感知脚本")
+    private String perceptionScript;
+
     // 执行脚本
     @TableField("execute_script")
     @ColumnType(value = MySqlTypeConstant.LONGTEXT)
@@ -139,4 +145,11 @@ public class RoleTemplateEntity extends InfraBaseEntity {
     @ColumnType(value = MySqlTypeConstant.LONGTEXT)
     @ColumnComment("功能回调脚本")
     private String functionCallbackScript ;
+
+    // 角色工具类
+    @TableField("tools")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("角色工具类")
+    private String tools ;
+
 }
