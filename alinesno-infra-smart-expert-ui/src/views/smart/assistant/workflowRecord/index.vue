@@ -20,7 +20,7 @@
                           <div style="float: left;margin-right: 10px;">
                               <img :src="imagePath(item.roleAvatar)"  style="width: 45px; height: 45px; border-radius: 5px;">
                           </div>
-                          <div style="float: left;">
+                          <div style="width:100%;">
                               <div style="line-height: 20px;margin-bottom: 5px;font-size: 15px;">
                                 {{ truncateString(item.roleName , 10) }}
                               </div>
