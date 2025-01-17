@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.template.controller;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.template.entity.RoleTemplateEntity;
 import com.alinesno.infra.smart.assistant.template.service.IRoleTemplateService;
@@ -14,6 +15,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.util.Assert;
@@ -35,8 +37,11 @@ import java.util.List;
 @RequestMapping("/api/infra/smart/assistant/roleTemplate")
 public class RoleTemplateController extends BaseController<RoleTemplateEntity, IRoleTemplateService> {
 
+    @Value("${alinesno.infra.smart.brain.role-template-sync-url:}")
+    private String roleTemplateUrl ;
+
     @Autowired
-    private IRoleTemplateService pluginService;
+    private IRoleTemplateService roleTemplateService;
 
     /**
      * 获取项目模块的DataTables数据
@@ -86,29 +91,30 @@ public class RoleTemplateController extends BaseController<RoleTemplateEntity, I
 
     /**
      * 同步集成模板
-     * @param gitUrl 仓库地址
      * @return
      * @throws Exception
      */
     @GetMapping("/syncTemplates")
-    public AjaxResult syncTemplates(String gitUrl) throws Exception {
+    public AjaxResult syncTemplates() throws Exception {
 
-//        if(StringUtil.isEmpty(gitUrl)) {
-//            String _SYNC_TEMPLATE_GIT_URL = "alinesno.admin.init.template.git.url" ;
-//            ManagerSettingsEntity managerSettings = authorityConfigClient.getConfigByKey(_SYNC_TEMPLATE_GIT_URL) ;
-//
-//            gitUrl = managerSettings.getConfigValue() ;
-//        }
+        Assert.isTrue(StringUtil.isNotBlank(roleTemplateUrl), "请先配置角色模板地址") ;
 
-        gitUrl = "https://gitee.com/alinesno-cloud/alinesno-infra-plugins-templates.git" ;
-        Assert.notNull(gitUrl , "仓库地址为空.");
-
-        log.debug("gitUrl = {}" , gitUrl) ;
-
-        pluginService.syncRoleTemplate(1L , gitUrl) ;
-
+        roleTemplateService.syncRoleTemplate(CurrentAccountJwt.getUserId(), roleTemplateUrl) ;
         return AjaxResult.success() ;
 
+    }
+
+    /**
+     * 使用模块
+     */
+    @GetMapping("/useTemplate")
+    public AjaxResult useTemplate(@RequestParam(required = true) String templateId){
+        log.debug("templateId = {}", templateId) ;
+
+        long orgId = CurrentAccountJwt.get().getOrgId() ;
+        String roleId = roleTemplateService.useTemplate(orgId, templateId) ;
+
+        return AjaxResult.success("部署成功" , roleId) ;
     }
 
     @Data
@@ -129,6 +135,6 @@ public class RoleTemplateController extends BaseController<RoleTemplateEntity, I
 
     @Override
     public IRoleTemplateService getFeign() {
-        return pluginService;
+        return roleTemplateService;
     }
 }
