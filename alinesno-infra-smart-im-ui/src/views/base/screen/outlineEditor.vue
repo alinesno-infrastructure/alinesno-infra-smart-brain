@@ -314,6 +314,8 @@ const genStreamContent = () => {
     Array.prototype.push.apply(outline.value, res.data);
 
     closeStreamDialog();
+  }).catch(err => {
+    closeStreamDialog();
   })
 };
 
