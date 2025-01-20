@@ -272,7 +272,6 @@ const priorityTagType = (priority) => {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #f5f5f5;
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
