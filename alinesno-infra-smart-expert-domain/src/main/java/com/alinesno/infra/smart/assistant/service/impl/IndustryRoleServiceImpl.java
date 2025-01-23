@@ -355,28 +355,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             clearPushRole(roleId, orgId);
         }
 
-        // 添加角色到默认的团队里面
-        LambdaQueryWrapper<IndustryRoleCatalogEntity> cateLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getOrgId, orgId);
-        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getFieldProp, "default");
-
-        IndustryRoleCatalogEntity defaultCatalog =  null ;
-        long cateCount = roleCatalogMapper.selectCount(cateLambdaQueryWrapper);
-        if (cateCount == 0) {  // 创建默认团队组织
-
-            defaultCatalog = new IndustryRoleCatalogEntity() ;
-            defaultCatalog.setOperatorId(userId);
-            defaultCatalog.setOrgId(orgId);
-            defaultCatalog.setDepartmentId(deptId);
-            defaultCatalog.setFieldProp("default");
-
-            defaultCatalog.setName("默认团队");
-            defaultCatalog.setDescription("默认团队，所有角色都默认添加到该团队里面，您可以通过团队管理进行管理，或者再进行二次分配。");
-
-            roleCatalogMapper.insert(defaultCatalog);
-        }else{
-            defaultCatalog = roleCatalogMapper.selectOne(cateLambdaQueryWrapper);
-        }
+        IIndustryRoleCatalogService industryRoleCatalogService = SpringUtils.getBean(IIndustryRoleCatalogService.class);
+        IndustryRoleCatalogEntity entity = new IndustryRoleCatalogEntity() ;
+        entity.setOrgId(orgId);
+        entity.setOperatorId(userId) ;
+        entity.setDepartmentId(deptId);
+        IndustryRoleCatalogEntity defaultCatalog = industryRoleCatalogService.getDefaultCatalog(entity);
 
         // 判断当前用户是否已经买过这个角色
         LambdaQueryWrapper<IndustryRoleEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -415,6 +399,8 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
        }
 
     }
+
+
 
     /**
      * 删除所有角色关联信息，包括角色信息，还有工具信息
