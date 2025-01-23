@@ -37,6 +37,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-tool</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-web-api</artifactId>
 			<version>${revision}</version>
@@ -61,11 +67,6 @@
 			<groupId>org.eclipse.jgit</groupId>
 			<artifactId>org.eclipse.jgit</artifactId>
 			<version>${eclipse.git.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.alibaba</groupId>
-			<artifactId>fastjson</artifactId>
-			<version>2.0.39</version>
 		</dependency>
 		<!-- jgit end -->
 
