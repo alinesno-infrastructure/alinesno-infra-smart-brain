@@ -31,9 +31,13 @@ var managerUrl = {
 
 // 使用模板
 export function useTemplate(templateId) {
+  let data = {
+    id: parseStrEmpty(templateId)
+  }
   return request({
-    url: managerUrl.useTemplate + "?templateId=" + parseStrEmpty(templateId) ,
-    method: 'get'
+    url: managerUrl.useTemplate ,
+    method: 'post',
+    data: data
   })
 }
 
