@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.template.controller;
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -107,12 +108,12 @@ public class RoleTemplateController extends BaseController<RoleTemplateEntity, I
     /**
      * 使用模块
      */
-    @GetMapping("/useTemplate")
-    public AjaxResult useTemplate(@RequestParam(required = true) String templateId){
-        log.debug("templateId = {}", templateId) ;
+    @DataPermissionSave
+    @PostMapping("/useTemplate")
+    public AjaxResult useTemplate(@RequestBody RoleTemplateEntity roleTemplateEntity){
+        log.debug("templateId = {}", roleTemplateEntity.getId()) ;
 
-        long orgId = CurrentAccountJwt.get().getOrgId() ;
-        String roleId = roleTemplateService.useTemplate(orgId, templateId) ;
+        String roleId = roleTemplateService.useTemplate(roleTemplateEntity) ;
 
         return AjaxResult.success("部署成功" , roleId) ;
     }
