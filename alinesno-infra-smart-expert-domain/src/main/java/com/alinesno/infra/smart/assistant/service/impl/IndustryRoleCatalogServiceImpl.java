@@ -176,4 +176,31 @@ public class IndustryRoleCatalogServiceImpl extends IBaseServiceImpl<IndustryRol
     private boolean hasChild(List<IndustryRoleCatalogEntity> list, IndustryRoleCatalogEntity t) {
         return !getChildList(list, t).isEmpty();
     }
+
+    @Override
+    public IndustryRoleCatalogEntity getDefaultCatalog(IndustryRoleCatalogEntity entity) {
+
+        // 添加角色到默认的团队里面
+        LambdaQueryWrapper<IndustryRoleCatalogEntity> cateLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getOrgId, entity.getOrgId());
+        cateLambdaQueryWrapper.eq(IndustryRoleCatalogEntity::getFieldProp, "default");
+
+        IndustryRoleCatalogEntity defaultCatalog =  null ;
+        long cateCount = count(cateLambdaQueryWrapper);
+        if (cateCount == 0) {  // 创建默认团队组织
+            defaultCatalog = new IndustryRoleCatalogEntity() ;
+            defaultCatalog.setOperatorId(entity.getOperatorId());
+            defaultCatalog.setOrgId(entity.getOrgId());
+            defaultCatalog.setDepartmentId(entity.getDepartmentId());
+            defaultCatalog.setFieldProp("default");
+
+            defaultCatalog.setName("默认团队");
+            defaultCatalog.setDescription("默认团队，所有角色都默认添加到该团队里面，您可以通过团队管理进行管理，或者再进行二次分配。");
+
+            save(defaultCatalog);
+        }else{
+            defaultCatalog = getOne(cateLambdaQueryWrapper);
+        }
+        return defaultCatalog;
+    }
 }
