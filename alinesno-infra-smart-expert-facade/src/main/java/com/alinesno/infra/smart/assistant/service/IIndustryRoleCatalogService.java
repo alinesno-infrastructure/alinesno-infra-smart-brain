@@ -42,4 +42,10 @@ public interface IIndustryRoleCatalogService extends IBaseService<IndustryRoleCa
      * @return
      */
     List<IndustryRoleCatalogDto> allCatalog(PermissionQuery query);
+
+    /**
+     * 获取默认的角色团队类型
+     * @return
+     */
+    IndustryRoleCatalogEntity getDefaultCatalog(IndustryRoleCatalogEntity entity);
 }
