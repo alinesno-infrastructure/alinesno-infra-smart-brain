@@ -22,9 +22,7 @@ public interface IRoleTemplateService extends IBaseService<RoleTemplateEntity> {
 
     /**
      * 使用模板
-     * @param orgId
-     * @param templateId
      */
-    String useTemplate(long orgId, String templateId);
+    String useTemplate(RoleTemplateEntity roleTemplateEntity);
 
 }
