@@ -3,7 +3,7 @@
         <el-card class="box-card" shadow="never">
             <template #header>
                 <div class="card-header">
-                    <div style="display: flex;align-items: center;gap: 10px;;">
+                    <div style="display: flex;align-items: center;gap: 5px;">
                         <i class="fa-solid fa-file-pdf"></i> {{ currentScreenInfo.screenName }}
 
                         <el-tooltip v-for="(item,index) in currentScreenInfo.chapterEditors" :key="index"
@@ -149,7 +149,7 @@
         <!-- 选择人员 -->
         <el-dialog v-model="configAgentDialogVisible" :title="channelAgentConfigTitle" width="900">
             <div class="dialog-body-content" style="text-align: center">
-                 <el-transfer 
+                <el-transfer 
                     v-model="channelAgentList" 
                     filterable
                     style="text-align: left; width:100%; display: inline-block"
@@ -160,7 +160,16 @@
                     }"
                     :filter-method="filterAgentMethod"
                     filter-placeholder="搜索角色" 
-                    :data="agentList" />
+                    :data="agentList">
+
+                    <!-- 自定义源列表项 -->
+                    <template #default="{ option }">
+                        <div class="aip-el-transfer-panel__item">
+                            <img :src="imagePathByPath(option.avatar)" /> {{ option.label }}
+                        </div>
+                    </template>
+
+                </el-transfer>
             </div> 
 
             <template #footer>
@@ -341,6 +350,7 @@ function handleListAllRole(){
 
         agentList.value.push({
           key: item.id ,
+          avatar: item.roleAvatar ,
           label: item.roleName , 
           disabled: false ,
       })
