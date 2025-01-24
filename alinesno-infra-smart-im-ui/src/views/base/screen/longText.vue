@@ -14,7 +14,7 @@
                     <el-card class="box-card" shadow="never">
                         <template #header>
                             <div class="card-header">
-                                <div style="display: flex;align-items: center;gap: 10px;;">
+                                <div style="display: flex;align-items: center;gap: 5px;">
                                     章节编辑
                                     <el-tooltip v-for="(item,index) in currentScreenInfo.contentEditors" :key="index"
                                         class="box-item" 
@@ -38,6 +38,13 @@
                                             <i class="fa-solid fa-ferry"></i>
                                         </el-button>
                                     </el-tooltip>
+
+                                    <el-tooltip class="box-item" effect="dark" content="重新生成章节" placement="top">
+                                        <el-button type="primary" text bg size="large" @click="genSingleChapterContent()">
+                                            <i class="fa-brands fa-firefox-browser"></i>
+                                        </el-button>
+                                    </el-tooltip>
+
                                     <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top">
                                         <el-button type="danger" text bg size="large" @click="handleUploadFile">
                                             <i class="fa-solid fa-file-word icon-btn"></i>
@@ -181,6 +188,7 @@ const totalNodes = ref(0);
 const form = reactive({
     id: 0 ,
     title: '',
+    description: '' ,
     content: ''
 });
 
@@ -246,6 +254,40 @@ const openChapterSelectionDialog = (role) => {
         })
 
     });
+
+};
+
+// 重新生成指定的章节内容
+const genSingleChapterContent = async () => {
+
+    if(!form.id){
+        ElMessage.error('请先选择指定章节！');
+        return ;
+    }
+
+    // 开始生成
+    streamLoading.value = ElLoading.service({
+        lock: true,
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading'
+    });
+
+    let text = '正在重新生成【'+ form.title +'】内容，请稍等.';
+    streamLoading.value.setText(text)
+
+    let formData = {
+        screenId: screenId.value,
+        chapterTitle: form.title ,
+        chapterDescription: form.description,
+        chapterId : form.id ,
+    }
+
+    console.log('formData = ' + JSON.stringify(formData));
+
+    const result = await chatRoleSync(formData);
+    chapterEditorRef.value.setData(result.data) ;
+
+    streamLoading.value.close();
 
 };
 
@@ -345,6 +387,7 @@ const editContent = (node , data) => {
 
     form.id = data.id ;
     form.title = node.label;
+    form.description = node.data.description;
 
     getChapterContent(chapterId).then(res => {
         console.log('res = ' + JSON.stringify(res))
