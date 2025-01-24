@@ -13,7 +13,7 @@
                     <el-card class="box-card" shadow="never">
                         <template #header>
                             <div class="card-header">
-                                <div style="display: flex;align-items: center;gap: 10px;;">
+                                <div style="display: flex;align-items: center;gap: 5px;">
                                     出题人员 
                                     <el-tooltip v-for="(item,index) in currentScreenInfo.contentEditors" :key="index"
                                         class="box-item" 
