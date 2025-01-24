@@ -3,7 +3,7 @@
         <el-card class="box-card" shadow="never">
             <template #header>
                 <div class="card-header">
-                    <div style="display: flex;align-items: center;gap: 10px;;">
+                    <div style="display: flex;align-items: center;gap: 5px;">
                         <i class="fa-solid fa-file-pdf"></i> {{ currentScreenInfo.screenName }}
 
                         <el-tooltip v-for="(item,index) in currentScreenInfo.chapterEditors" :key="index"
@@ -90,7 +90,7 @@
         </el-card>
 
         <!-- 编辑节点 -->
-        <el-dialog title="编辑节点" v-model="dialogVisible" width="500px">
+        <el-dialog title="编辑节点" v-model="dialogVisible" width="900px">
 
             <el-form label-width="80px" size="large">
                 <el-form-item label="节点名称">
@@ -145,7 +145,7 @@
         <!-- 选择人员 -->
         <el-dialog v-model="configAgentDialogVisible" :title="channelAgentConfigTitle" width="900">
             <div class="dialog-body-content" style="text-align: center">
-                 <el-transfer 
+                <el-transfer 
                     v-model="channelAgentList" 
                     filterable
                     style="text-align: left; width:100%; display: inline-block"
@@ -156,7 +156,9 @@
                     }"
                     :filter-method="filterAgentMethod"
                     filter-placeholder="搜索角色" 
-                    :data="agentList" />
+                    :data="agentList">
+
+                </el-transfer>
             </div> 
 
             <template #footer>
