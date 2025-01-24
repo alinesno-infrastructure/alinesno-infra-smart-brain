@@ -106,7 +106,16 @@
                     @change="handleChange"
                     :filter-method="filterAgentMethod" 
                     filter-placeholder="搜索角色" 
-                    :data="agentList" />
+                    :data="agentList">
+
+                    <!-- 自定义源列表项 -->
+                    <template #default="{ option }">
+                        <div class="aip-el-transfer-panel__item">
+                            <img :src="imagePathByPath(option.avatar)" /> {{ option.label }}
+                        </div>
+                    </template>
+
+                </el-transfer>
             </div>
 
             <template #footer>
@@ -300,8 +309,9 @@ function handleListAllRole() {
             let item = res.data[i]
 
             agentList.value.push({
-                key: item.id,
-                label: item.roleName,
+                key: item.id ,
+                avatar: item.roleAvatar ,
+                label: item.roleName , 
                 disabled: false,
             })
         }
