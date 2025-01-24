@@ -6,12 +6,12 @@
                 <MediaOutlineEditor ref="OutlineEditorRef" @setCurrentScreenInfo="setCurrentScreenInfo"
                     @editContent="editContent" />
             </el-col>
-            <el-col :span="14" style="border-left:1px solid #e5e5e5;">
+            <el-col :span="14" class="miedia-editor-panel">
                 <div class="chapter-edit">
                     <el-card class="box-card" shadow="never">
                         <template #header>
                             <div class="card-header">
-                                <div style="display: flex;align-items: center;gap: 10px;;">
+                                <div style="display: flex;align-items: center;gap: 5px;">
                                     镜头编辑
                                     <el-tooltip v-for="(item, index) in currentScreenInfo.contentEditors" :key="index"
                                         class="box-item" effect="dark" :content="item.roleName" placement="top">
