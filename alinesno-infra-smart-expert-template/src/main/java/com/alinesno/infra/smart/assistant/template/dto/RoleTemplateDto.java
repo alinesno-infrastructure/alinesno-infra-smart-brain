@@ -1,13 +1,11 @@
 package com.alinesno.infra.smart.assistant.template.dto;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import com.alinesno.infra.smart.assistant.annotation.ToolInfo;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 import lombok.ToString;
 
-import javax.tools.Tool;
 import java.util.List;
 
 @ToString
