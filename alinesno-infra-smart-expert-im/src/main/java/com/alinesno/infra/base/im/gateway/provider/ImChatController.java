@@ -5,6 +5,7 @@ import cn.hutool.json.JSONUtil;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -61,20 +62,21 @@ public class ImChatController extends SuperController {
         Assert.isTrue(message.getUsers() != null && !message.getUsers().isEmpty(), "请选择处理专家.");
 
         log.debug("message = {}" , JSONUtil.toJsonPrettyStr(message));
-        long currentAccountId = CurrentAccountJwt.getUserId();
+        ManagerAccountDto managerAccount = CurrentAccountJwt.get();
 
         List<IndustryRoleEntity> roleList = roleService.listByIds(message.getUsers()) ;
 
         List<ChatMessageDto> personDto = new ArrayList<>() ;
         roleList.forEach(r -> {
             ChatMessageDto msg =  AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId()) ;
-            msg.setAccountId(currentAccountId);
+            msg.setAccountId(managerAccount.getId());
             personDto.add(msg) ;
         });
 
-        message.setAccountId(currentAccountId);
-        message.setAccountName(CurrentAccountJwt.get().getName());
-        message.setAccountIcon(CurrentAccountJwt.get().getAvatarPath());
+        // 设置账户信息
+        message.setAccountId(managerAccount.getId());
+        message.setAccountName(managerAccount.getName());
+        message.setAccountIcon(managerAccount.getAvatarPath());
 
         messageService.sendUserMessage(message , roleList , personDto);
 
