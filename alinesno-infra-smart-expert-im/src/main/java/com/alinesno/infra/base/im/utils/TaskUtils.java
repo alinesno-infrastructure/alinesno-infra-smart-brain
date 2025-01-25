@@ -27,7 +27,11 @@ public class TaskUtils {
         msg.setText(chatText);
         msg.setPreBusinessId(JSONUtil.toJsonStr(parsedData.getBusinessIds())) ;
         msg.setRoleDto(role);
+
+        // 账户信息
         msg.setAccountId(message.getAccountId());
+        msg.setAccountName(message.getAccountName());
+        msg.setAccountIcon(message.getAccountIcon());
 
         return msg ;
 
