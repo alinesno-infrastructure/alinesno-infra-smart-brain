@@ -17,9 +17,6 @@ import java.util.Map;
 @Data
 public class MessageTaskInfo implements Serializable {
 
-    // 账号ID
-    private long accountId ;
-
     // 消息渠道的唯一标识
     private long channelId ;
 
@@ -58,6 +55,11 @@ public class MessageTaskInfo implements Serializable {
 
     // 用户业务流程过程中记录的id
     private long traceBusId ; // 业务跟踪的ID
+
+    // 当前用户信息
+    private Long accountId ; // 操作账号ID
+    private String accountName; // 操作账号名称
+    private String accountIcon ; // 操作账号头像
 
    // 消息内额外参数
     private Map<String , Object> params;
