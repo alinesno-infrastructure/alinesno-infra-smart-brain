@@ -30,6 +30,15 @@ public class MessageManager {
 
     }
 
+    /**
+     * 新增方法：将消息添加到列表的第一个位置，不考虑列表大小的限制。
+     * @param msg 要添加的消息对象。
+     */
+    public void addFirst(Message msg) {
+        // 直接在列表开头添加新元素
+        list.add(0, msg);
+    }
+
     public List<Message> get() {
         return list;
     }
