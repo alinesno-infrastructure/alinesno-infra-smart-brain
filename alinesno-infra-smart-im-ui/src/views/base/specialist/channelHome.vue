@@ -129,7 +129,7 @@
 
 <script setup>
 
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox , ElLoading } from 'element-plus'
 
 import {
   allMyChannel,
@@ -141,7 +141,7 @@ import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
 
 const router = useRouter();
-const loading = ref(false)
+// const loading = ref(false)
 
 const publicChatChannel = ref([]);
 const recommendRole = ref(null);
@@ -203,13 +203,21 @@ function handleRoleChat() {
 // }
 
 function handleAllMyChannel() {
-  loading.value = true;
+  // loading.value = true;
+
+  const loading = ElLoading.service({
+    lock: true,
+    text: 'Loading',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
   allMyChannel().then(response => {
     let items = response.data;
 
     recommendRole.value = response.recommendRole;
     publicChatChannel.value = items; 
-    loading.value = false;
+
+    loading.close()
 
     let hasRole = response.hasRole;  // 判断组织是否包含角色
 
@@ -220,8 +228,7 @@ function handleAllMyChannel() {
       // 显示推荐角色
       ElMessageBox.confirm(
         '你所有当前组织未包含智能体，是否需要到智能体市场选择体验', 
-        '系统提示', 
-        { 
+        '系统提示', { 
           confirmButtonText: '进入智能体市场', 
           cancelButtonText: '后期建立', 
           type: 'warning' 
@@ -239,7 +246,7 @@ function handleAllMyChannel() {
   }).catch(error => {
     // 处理错误
     console.error("获取频道信息失败", error);
-    loading.value = false;
+    loading.close()
   });
 }
 
