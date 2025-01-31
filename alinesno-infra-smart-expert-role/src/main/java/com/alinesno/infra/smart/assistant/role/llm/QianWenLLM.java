@@ -26,6 +26,9 @@ public class QianWenLLM {
     @Value("${alinesno.infra.smart.brain.qianwen.key:}")
     private String qianWenKey;
 
+    @Value("${alinesno.infra.smart.brain.qianwen.add-protocol:true}")
+    private boolean protocol ;
+
     @SneakyThrows
     public void getGeneration(MessageManager msgManager , ResultCallback<GenerationResult> callback) {
 
@@ -52,6 +55,15 @@ public class QianWenLLM {
 
         Constants.apiKey = qianWenKey ;
         Generation gen = new Generation();
+
+        // 添加思考协议
+        if(protocol){
+            Message thinkingProtocolPrompt = Message.builder()
+                    .role(Role.SYSTEM.getValue())
+                    .content(ThinkingProtocol.prompt)
+                    .build();
+            messages.add(0 , thinkingProtocolPrompt);
+        }
 
         GenerationParam param =GenerationParam.builder()
                 .model(Generation.Models.QWEN_TURBO)
@@ -83,6 +95,15 @@ public class QianWenLLM {
 
         Constants.apiKey = qianWenKey ;
         Generation gen = new Generation();
+
+        // 添加思考协议
+        if(protocol){
+            Message thinkingProtocolPrompt = Message.builder()
+                    .role(Role.SYSTEM.getValue())
+                    .content(ThinkingProtocol.prompt)
+                    .build();
+            msgManager.addFirst(thinkingProtocolPrompt);
+        }
 
         GenerationParam param = GenerationParam.builder()
                         .model(Generation.Models.QWEN_TURBO)
