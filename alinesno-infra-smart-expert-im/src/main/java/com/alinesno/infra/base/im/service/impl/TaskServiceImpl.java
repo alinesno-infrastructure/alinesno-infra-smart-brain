@@ -41,9 +41,9 @@ public class TaskServiceImpl implements ITaskService {
 
     private static final int MAX_QUEUE_SIZE = 100;
 
-    private final Queue<MessageTaskInfo> errorTaskQueue = new LinkedList<>();
-    private final Queue<MessageTaskInfo> taskQueue = new LinkedList<>();
-    private final ThreadPoolTaskExecutor executor;
+    private final static Queue<MessageTaskInfo> errorTaskQueue = new LinkedList<>();
+    private final static Queue<MessageTaskInfo> taskQueue = new LinkedList<>();
+    private static ThreadPoolTaskExecutor executor;
 
     public TaskServiceImpl() {
         // 初始化线程池
