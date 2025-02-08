@@ -36,6 +36,7 @@
         <module>alinesno-infra-smart-expert-screen</module>  <!-- 场景管理 -->
 
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
+        <module>alinesno-infra-smart-expert-task</module> <!-- 任务服务 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
