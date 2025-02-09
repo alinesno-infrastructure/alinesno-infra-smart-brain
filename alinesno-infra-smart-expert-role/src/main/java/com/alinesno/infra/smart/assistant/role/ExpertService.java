@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher;
+import com.alinesno.infra.smart.assistant.role.llm.AgentFlexLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
@@ -94,6 +95,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Autowired
     protected QianWenLLM qianWenLLM;
+
+    @Autowired
+    protected AgentFlexLLM agentFlexLLM ;
 
     @Autowired
     protected QianWenAuditLLM qianWenAuditLLM;
