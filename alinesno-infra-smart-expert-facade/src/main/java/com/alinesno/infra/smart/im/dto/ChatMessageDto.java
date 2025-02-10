@@ -19,6 +19,7 @@ public class ChatMessageDto {
     private String name;
     private String dateTime ;
     private Object chatText;
+    private String reasoningText ;  // 推理内容
     private String readerType ; // 读取方式和类型
 
     private boolean isLoading = false ; // 是否还在加载中
