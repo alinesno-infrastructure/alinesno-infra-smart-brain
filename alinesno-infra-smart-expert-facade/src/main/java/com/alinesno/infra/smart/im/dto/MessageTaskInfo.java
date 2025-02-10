@@ -29,6 +29,9 @@ public class MessageTaskInfo implements Serializable {
     // 角色的唯一标识
     private long roleId ;
 
+    // 推理的文本内容
+    private String reasoningText ;
+
     // 消息的文本内容
     private String text ;
 
