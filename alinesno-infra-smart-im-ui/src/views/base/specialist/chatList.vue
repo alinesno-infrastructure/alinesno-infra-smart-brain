@@ -23,11 +23,15 @@
             {{ item.name }}
 
             <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
+            <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading text>推理中</el-button>
 
             <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
           </div>
 
-          <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div>
+          <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
+          <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
+
+          <!-- <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div> -->
 
           <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
               <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
@@ -45,11 +49,11 @@
 
 <script setup>
 
-import { getParam } from '@/utils/ruoyi'
+// import { getParam } from '@/utils/ruoyi'
 
 import { nextTick } from 'vue'
 
-import { computed, ref , onMounted,  defineEmits} from 'vue';
+import { ref , defineEmits} from 'vue';
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
@@ -116,6 +120,8 @@ const pushResponseMessageList = (message) => {
 
     if (existingIndex !== -1) {
       // 如果找到，更新该消息
+      // messageList.value[existingIndex].chatText += message.chatText;
+      messageList.value[existingIndex].reasoningText += message.reasoningText; 
       messageList.value[existingIndex].chatText += message.chatText;
     } else {
       // 否则，添加新消息
@@ -177,6 +183,12 @@ function highlightBlock(str, lang) {
 
 function readerHtml(chatText) {
   return mdi.render(chatText);
+}
+
+function readerReasonningHtml(chatText) {
+  if(chatText){
+    return mdi.render(chatText);
+  }
 }
 
 /** 发送业务代码到消息框中 */
