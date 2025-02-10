@@ -52,7 +52,8 @@ public class SSEChannelController {
         MessageTaskInfo info = event.getTaskInfo() ;
 
         long channelId = info.getChannelId() ;
-        String msg = event.getMessage() ;
+        String msg = event.getMessage() == null ? "" : event.getMessage() ;
+        String reasoningText = (info.getReasoningText() == null || "null".equals(info.getReasoningText())) ? "" : info.getReasoningText() ;
         long bId = event.getBId() ;
 
         log.debug("Received llm stream message event , msg = {} , channelId = {} " , event.getMessage() , channelId);
@@ -64,6 +65,7 @@ public class SSEChannelController {
             msgDto.setLoading(false);
             msgDto.setChatText(msg);
             msgDto.setLlmStream(true);
+            msgDto.setReasoningText(reasoningText);  // 判断是否为推理内容
             msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
 
             try {
