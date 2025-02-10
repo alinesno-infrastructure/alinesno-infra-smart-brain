@@ -116,11 +116,11 @@
 			<version>${agents-flex.version}</version>
 		</dependency>
 		<!--llm start-->
-<!--		<dependency>-->
-<!--			<groupId>com.agentsflex</groupId>-->
-<!--			<artifactId>agents-flex-llm-chatglm</artifactId>-->
-<!--			<version>${agents-flex.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-doubao</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>com.agentsflex</groupId>
 			<artifactId>agents-flex-llm-ollama</artifactId>
