@@ -15,15 +15,6 @@ import java.util.Date;
 @TableName("message")
 public class MessageEntity extends InfraBaseEntity {
 
-//    @Column(type = MySqlTypeConstant.BIGINT, length = 11, isNull = false, comment = "消息ID")
-//    private Long messageId;
-//
-//    @Column(type = MySqlTypeConstant.BIGINT, length = 11, isNull = false, comment = "发送者用户ID")
-//    private Long senderId;
-//
-//    @Column(type = MySqlTypeConstant.VARCHAR, length = 256, isNull = false, comment = "接收者用户ID")
-//    private String receiverId;
-
     @Column(type = MySqlTypeConstant.VARCHAR , comment = "发送人名称")
     private String name;
 
@@ -48,11 +39,11 @@ public class MessageEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true, comment = "所属频道ID")
     private Long channelId;
 
-//    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "生成消息内容")
-//    private String genContent ;
-
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "消息内容")
     private String content;
+
+    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "推理内容")
+    private String reasoningContent;
 
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "格式化消息内容")
     private String formatContent ;
