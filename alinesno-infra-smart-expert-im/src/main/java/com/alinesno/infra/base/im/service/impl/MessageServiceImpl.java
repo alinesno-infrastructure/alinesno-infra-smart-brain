@@ -98,6 +98,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
                 ChatMessageDto dto = new ChatMessageDto();
 
                 dto.setChatText(StringUtils.isBlank(e.getFormatContent()) ? e.getContent() : e.getFormatContent());
+                dto.setReasoningText(e.getReasoningContent());
 
                 dto.setName(e.getName());
                 dto.setIcon(e.getIcon());
