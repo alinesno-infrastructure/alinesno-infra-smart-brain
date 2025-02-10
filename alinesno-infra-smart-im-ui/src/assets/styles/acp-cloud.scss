@@ -14,7 +14,7 @@ $chartColor: #3b5998;
   right: 0px;
   left: 0px;
   z-index: 1000;
-  border-bottom: 1px solid rgb(229, 229, 229) ;
+  border-bottom: 1px solid rgb(229, 229, 229);
   // box-shadow: 0 2px 4px 0 var(--cb-color-shadow,rgba(0,0,0,0.16));
 
   .header-logo-label {
@@ -157,6 +157,7 @@ $chartColor: #3b5998;
 .el-dropdown-menu--medium .el-dropdown-menu__item {
   font-size: 14px;
 }
+
 .info-h {
   height: auto !important;
   padding-bottom: 10px;
@@ -203,7 +204,7 @@ $chartColor: #3b5998;
   }
 
   .acp-height-auto {
-    height: auto !important ;
+    height: auto !important;
   }
 
   .panel-body {
@@ -278,6 +279,7 @@ $chartColor: #3b5998;
       float: left;
       margin-bottom: 10px;
     }
+
     .item-health-count {
       float: left;
       font-size: 1.2rem;
@@ -295,7 +297,7 @@ $chartColor: #3b5998;
     .app-info {
       float: left;
       margin-left: 10px;
-      width: calc(100% - 60px) ;
+      width: calc(100% - 60px);
     }
 
     .app-icon {
@@ -304,8 +306,8 @@ $chartColor: #3b5998;
 
       img {
         border-radius: 3px;
-        width:45px;
-        height:45px;
+        width: 45px;
+        height: 45px;
       }
     }
 
@@ -348,6 +350,7 @@ $chartColor: #3b5998;
       margin-right: 10px;
       margin-top: 5px;
     }
+
     .app-status-text {
       float: left;
 
@@ -859,7 +862,7 @@ $chartColor: #3b5998;
         width: 100%;
         padding: 0 10px;
         font-weight: 600;
-        border-bottom: 1px solid #fafafa ;
+        border-bottom: 1px solid #fafafa;
         font-size: 14px;
         display: flex;
         align-items: center;
@@ -868,7 +871,7 @@ $chartColor: #3b5998;
       .robot-chat-help-item-list-panel {
         margin: 10px 0px;
         float: left;
-        width:100%;
+        width: 100%;
         margin-bottom: 0px;
 
         ul {
@@ -909,7 +912,7 @@ $chartColor: #3b5998;
     float: left;
     width: 100%;
     padding: 0 5%;
-    margin-top:10px;
+    margin-top: 10px;
     // border-left: 1px solid #e6e6e6 ; 
     // border-right: 1px solid #e6e6e6 ; 
   }
@@ -1122,7 +1125,7 @@ $chartColor: #3b5998;
     margin: 10px;
     line-height: 25px;
     font-weight: 500;
-    color: #222 ;
+    color: #222;
   }
 
   .copyright-text {
@@ -1375,14 +1378,16 @@ $chartColor: #3b5998;
 }
 
 .direct-box {
-  ul,li{
+
+  ul,
+  li {
     padding: 0px;
     margin: 0px;
     list-style: none;
   }
 
 
-  li.box-item{
+  li.box-item {
 
     float: left;
     width: 25%;
@@ -1407,16 +1412,16 @@ $chartColor: #3b5998;
     }
 
     .panel-tip {
-        margin-top: 10px;
-        color: #333;
-        font-size: 13px;
-        float: left;
+      margin-top: 10px;
+      color: #333;
+      font-size: 13px;
+      float: left;
     }
 
     .panel-describe {
-        margin-top: 10px;
-        font-size: 14px;
-        color: #333;
+      margin-top: 10px;
+      font-size: 14px;
+      color: #333;
     }
   }
 
@@ -1457,7 +1462,7 @@ $chartColor: #3b5998;
     list-style-type: none;
     padding: 0;
     margin: 10px 0 0;
-    margin-top:20px;
+    margin-top: 20px;
 
     li {
       padding: 5px 5px;
@@ -1465,7 +1470,7 @@ $chartColor: #3b5998;
       float: left;
 
       &:first-child {
-          padding-left: 0;
+        padding-left: 0;
       }
 
     }
@@ -1486,12 +1491,18 @@ $chartColor: #3b5998;
   align-items: center;
 
   img {
-    width:30px;
+    width: 30px;
     border-radius: 50%;
   }
 }
 
-.el-transfer-panel__item{
-  margin-top:8px !important;
+.el-transfer-panel__item {
+  margin-top: 8px !important;
   margin-bottom: 8px !important;
+}
+
+.say-message-body.markdown-body.chat-reasoning {
+    color: #58616e;
+    font-size: 95%;
+    border-left: 2px solid #a5a5a5;
 }
