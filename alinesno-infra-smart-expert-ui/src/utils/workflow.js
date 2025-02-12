@@ -1,0 +1,21 @@
+const WorkflowType = {
+    Base: 'base',
+    Start: 'start',
+    AiChat: 'ai_chat',
+    SearchDataset: 'search_dataset',
+    Question: 'question',
+    Condition: 'condition',
+    Reply: 'reply',
+    FunctionLib: 'function_lib',
+    FunctionLibCustom: 'function',
+    RrerankerNode: 'reranker',
+    Application: 'application',
+    DocumentExtractNode: 'document_extract',
+    ImageUnderstandNode: 'image_understand',
+    FormNode: 'form',
+    TextToSpeechNode: 'text_to_speech',
+    SpeechToTextNode: 'speech_to_text',
+    ImageGenerateNode: 'image_generate'
+};
+
+export { WorkflowType };
