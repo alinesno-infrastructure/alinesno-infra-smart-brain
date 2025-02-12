@@ -13,6 +13,14 @@
 
     </el-menu>
 
+    <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
+      <el-tooltip effect="dark" :content="item.desc" v-for="item in footerMenuItems" :key="item.id" placement="right">
+          <el-menu-item :index="item.id" @click="openServiceList(item.link)">
+            <i :class="item.icon"></i>
+          </el-menu-item>
+      </el-tooltip>
+    </el-menu>
+
   </div>
 </template>
 
@@ -22,14 +30,25 @@ const dialogVisible = ref(false)
 const router = useRouter();
 
 // 菜单列表
+// - 角色模板  /dashboard/smart/assistant/roleTemplate/index
+// - 模板管理  /template/smart/assistant/template/index
+// - 操作日志  /monitor/smart/assistant/apiRecord/index
+
+const footerMenuItems = ref([
+  { id: '13', icon: 'fa-solid fa-computer', link: '/smart/assistant/llmModel/index', desc: '模型管理'},
+  { id: '22', icon: 'fa-brands fa-wordpress',  link: '/monitor/smart/assistant/analyse/index', desc: '接口监控' },
+])
+
 const menuItems = ref([
-  {id:'2' , icon:'fa-solid fa-masks-theater' , link:'/smart/assistant/role/index' , desc:'角色管理'},
-  {id:'9' , icon:'fa-solid fa-file-pdf' , link:'/smart/assistant/roleCatalog/index' , desc:'角色类型'},
-  {id:'3' , icon:'fa-solid fa-feather' , link:'/smart/assistant/chainScript/index' , desc:'节点定义'},
-  {id:'4' , icon:'fa-solid fa-paper-plane' , link:'/smart/assistant/apikey/index' , desc:'密钥管理'},
-  {id:'5' , icon:'fa-solid fa-box' , link:'/smart/assistant/channel/index' , desc:'插件管理'},
-  {id:'7' , icon:'fa-solid fa-pen-nib' , link:'/smart/assistant/workflowRecord/index' , desc:'工作流日志'},
-  {id:'6' , icon:'fa-brands fa-drupal' , link:'/smart/assistant/requestRecord/index' , desc:'调用日志'},
+
+  { id: '2', icon: 'fa-solid fa-masks-theater', link: '/expert/smart/assistant/role/index', desc: '专家管理' },
+  { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '专家分类' },
+  { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道管理' },
+  { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/screen/index', desc: '场景列表' },
+  { id: '8', icon: 'fa-brands fa-drupal' , link: '/knowledge/smart/assistant/knowledge/index', desc: '知识库管理' },
+  { id: '6', icon: 'fa-solid fa-pen-nib', link: '/template/smart/assistant/plugin/index', desc: '插件管理' },
+  { id: '7', icon: 'fa-solid fa-paper-plane', link: '/template/smart/assistant/secret/index', desc: '密钥管理' },
+
 ]);
 
 // 打开服务市场
