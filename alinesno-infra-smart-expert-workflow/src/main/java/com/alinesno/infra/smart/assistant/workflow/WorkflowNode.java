@@ -8,4 +8,5 @@ package com.alinesno.infra.smart.assistant.workflow;
  */
 public interface WorkflowNode {
     // 可以在这里定义所有节点通用的方法
+
 }
