@@ -1,7 +1,8 @@
 import { createWebHistory, createRouter } from 'vue-router'
 /* Layout */
-//import Layout from '@/layout/SaaSLayout'
-import Layout from '@/layout'
+import WorkflowLayout from '@/layout/WorkflowLayout'
+import Layout from '@/layout/SaaSLayout'
+// import Layout from '@/layout'
 
 /**
  * Note: 路由配置项
@@ -102,11 +103,11 @@ export const constantRoutes = [
         meta: { title: '知识库配置', icon: 'dashboard', affix: true }
       },
       {
-        path: '/smart/assistant/role/createDefinition',
-        name: '/smart/assistant/role/createDefinition',
+        path: '/smart/assistant/llmModel/index',
+        name: '/smart/assistant/llmModel/index',
         hidden: false,
-        component: () => import('@/views/smart/assistant/role/createDefinition'),
-        meta: { title: '添加流程任务', icon: 'fa-solid fa-code-pull-request', affix: false }
+        component: () => import('@/views/smart/assistant/llmModel/index'),
+        meta: { title: '模型管理', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
       {
         path: '/smart/assistant/roleTemplate/add',
@@ -115,6 +116,20 @@ export const constantRoutes = [
         component: () => import('@/views/smart/assistant/roleTemplate/add'),
         meta: { title: '添加角色模板', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
+    ]
+  },
+  {
+    path: '/flow',
+    component: WorkflowLayout,
+    hidden: true,
+    redirect: 'noredirect',
+    children: [
+      {
+        path: '/smart/assistant/role/createDefinition',
+        name: '/smart/assistant/role/createDefinition',
+        component: () => import('@/views/smart/assistant/workflow/index'),
+        meta: { title: '添加流程任务', icon: 'fa-solid fa-code-pull-request', affix: false }
+      }
     ]
   },
   {
