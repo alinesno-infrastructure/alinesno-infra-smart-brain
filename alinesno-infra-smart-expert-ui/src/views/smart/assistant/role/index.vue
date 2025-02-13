@@ -126,7 +126,13 @@
           </el-table-column>
           <el-table-column label="脚本" align="center" width="110"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text @click="configExecuteScript(scope.row)">
+              <el-button type="success" v-if="scope.row.scriptType == 'flow'" text bg @click="configExecuteScript(scope.row)">
+                <i class="fa-solid fa-sailboat"></i>流程
+              </el-button>
+              <el-button type="danger" v-if="scope.row.scriptType == 'react'" text bg @click="configExecuteScript(scope.row)">
+                <i class="fas fa-file-signature"></i>推理
+              </el-button>
+              <el-button type="primary" v-if="scope.row.scriptType == 'script'" text bg @click="configExecuteScript(scope.row)">
                 <i class="fa-solid fa-code"></i>脚本
               </el-button>
             </template>
