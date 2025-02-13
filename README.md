@@ -29,4 +29,3 @@ Brain服务提供了一组接口用于生成和处理自然语言内容，基于
 - 前端部分集成了 [chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web)。
 - 头像地址从[userpics](https://userpics.craftwork.design/) , 注:此不可商用
 - 部分设计参考[FastGPT](https://github.com/labring/FastGPT)
-- 编排的设计参考[MaxKb](https://gitee.com/fit2cloud-feizhiyun/MaxKB) 规避GPL-3.0协议，逻辑代码重写
