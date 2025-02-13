@@ -1,0 +1,82 @@
+// 工作流节点容器样式
+.workflow-node-container {
+  height: 100%;
+  width: 100%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px #1f23291f;
+  padding: 16px;
+
+  // 节点标题样式
+  .node-title {
+    display: flex;
+    gap: 8px;
+    font-size: 15px;
+    margin-bottom: 5px;
+    align-items: center;
+
+    // 节点图标样式
+    .node-icon {
+      width: 28px;
+      height: 28px;
+      background: #3b5998;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      border-radius: 50%;
+    }
+
+    // 节点名称样式
+    .node-name {
+      font-weight: bold;
+    }
+  }
+
+  // 节点设置样式
+  .node-settings {
+    display: flex;
+    flex-direction: column;
+
+    // 节点设置标题样式
+    .settings-title {
+      font-size: 13px;
+      border-left: 3px solid rgb(64, 158, 255);
+      margin-bottom: 10px;
+      margin-top: 10px;
+      padding-left: 5px;
+    }
+
+    // 节点设置表单区域样式
+    .settings-form {
+      padding: 5px;
+      background: #f5f5f5;
+      border-radius: 2px;
+    }
+  }
+
+  // 输出参数样式
+  .node-output {
+    display: flex;
+    flex-direction: column;
+
+    // 输出参数标题样式
+    .output-title {
+      font-size: 13px;
+      border-left: 3px solid rgb(64, 158, 255);
+      margin-bottom: 10px;
+      margin-top: 10px;
+      padding-left: 5px;
+    }
+
+    // 输出参数内容样式
+    .output-content {
+      background-color: #f5f6f7;
+      padding: 8px 12px;
+      font-size: 13px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+  }
+}
