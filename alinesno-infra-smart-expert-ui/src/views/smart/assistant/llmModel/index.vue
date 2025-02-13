@@ -1,19 +1,17 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-       <!--应用数据-->
+      <!--应用数据-->
       <el-col :span="24" :xs="24">
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-
-          <el-form-item label="消息名称" prop="name">
-            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入消息名称" clearable
+          <el-form-item label="大模型名称" prop="modelName">
+            <el-input v-model="queryParams['condition[modelName|like]']" placeholder="请输入大模型名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
-          <el-form-item label="消息类型" prop="toolType" label-width="100px">
-            <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入消息类型" clearable
+          <el-form-item label="所属提供商名称" prop="providerId">
+            <el-input v-model="queryParams['condition[providerId|like]']" placeholder="请输入所属提供商名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
-
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -37,7 +35,7 @@
                 icon="Edit"
                 :disabled="single"
                 @click="handleUpdate"
-                v-hasPermi="['system:Message:edit']"
+                v-hasPermi="['system:LlmModel:edit']"
             >修改
             </el-button>
           </el-col>
@@ -48,7 +46,7 @@
                 icon="Delete"
                 :disabled="multiple"
                 @click="handleDelete"
-                v-hasPermi="['system:Message:remove']"
+                v-hasPermi="['system:LlmModel:remove']"
             >删除
             </el-button>
           </el-col>
@@ -56,35 +54,27 @@
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
         </el-row>
 
-        <el-table v-loading="loading" :data="MessageList" @selection-change="handleSelectionChange">
+        <el-table v-loading="loading" :data="LlmModelList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center"/>
-          <el-table-column label="消息名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="频道" align="center" key="channelId" prop="channelId" v-if="columns[5].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="角色" align="center" key="roleId" prop="roleId" v-if="columns[5].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="所属用户" align="center" key="accountId" prop="accountId" v-if="columns[5].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="业务ID" align="center" key="businessId" prop="businessId" v-if="columns[5].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="消息类型" align="center" key="roleType" width="150" prop="roleType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
-          <el-table-column label="状态" align="center" key="hasStatus" width="80" prop="hasStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <el-table-column label="图标" align="center" key="icon" prop="icon" v-if="columns[0].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Link" v-if="scope.row.hasStauts === '1'">正常</el-button>
-              <el-button type="danger" text bg icon="Link" v-if="scope.row.hasStauts === '0'">异常</el-button>
+              <img :src="scope.row.icon" alt="图标" style="width: 45px; height: 45px; border-radius: 50%;">
             </template>
           </el-table-column>
-          <el-table-column label="添加时间" align="center" prop="addTime" v-if="columns[7].visible" width="160">
+          <el-table-column label="大模型名称" align="left" key="modelName" prop="modelName" v-if="columns[1].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="大模型描述" align="center" key="description" prop="description" v-if="columns[2].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="所属提供商名称" align="center" key="providerId" prop="providerId" v-if="columns[3].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="API 密钥" align="center" key="apiKey" prop="apiKey" v-if="columns[4].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="API 地址" align="center" key="apiUrl" prop="apiUrl" v-if="columns[5].visible" :show-overflow-tooltip="true" />
+          <el-table-column label="模型名称" align="center" key="model" prop="model" v-if="columns[6].visible" :show-overflow-tooltip="true"/>
+          <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[7].visible">
             <template #default="scope">
-              <span>{{ parseTime(scope.row.addTime) }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[8].visible">
-            <template #default="scope">
-
-              <el-tooltip content="查看" placement="top" v-if="scope.row.applicationId !== 1">
-                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:Message:edit']"></el-button>
+              <el-tooltip content="查看" placement="top" v-if="scope.row.id !== 1">
+                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:LlmModel:edit']"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.applicationId !== 1">
-                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:Message:remove']"></el-button>
+              <el-tooltip content="删除" placement="top" v-if="scope.row.id !== 1">
+                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:LlmModel:remove']"></el-button>
               </el-tooltip>
-
             </template>
           </el-table-column>
         </el-table>
@@ -100,57 +90,53 @@
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="MessageRef" label-width="80px">
+      <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px">
         <el-row>
           <el-col :span="24">
-            <el-form-item  label="消息名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入消息名称" maxlength="50"/>
+            <el-form-item  label="图标" prop="icon">
+              <el-input v-model="form.icon" placeholder="请输入图标链接" maxlength="255"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="消息类型" prop="toolType">
-              <el-input v-model="form.toolType" placeholder="请输入消息类型" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="机器人Key" prop="robotKey">
-              <el-input v-model="form.robotKey" placeholder="请输入机器人Key" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="关联角色" prop="roleId">
-              <el-input v-model="form.roleId" placeholder="请输入角色Id" maxlength="50"/>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="状态" prop="hasStatus">
-              <el-input v-model="form.hasStatus" placeholder="请输入状态" maxlength="100"/>
+            <el-form-item label="大模型名称" prop="modelName">
+              <el-input v-model="form.modelName" placeholder="请输入大模型名称" maxlength="255"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="使用场景" prop="screen">
-              <el-input v-model="form.screen" placeholder="请输入使用场景" maxlength="100"/>
+            <el-form-item label="大模型描述" prop="description">
+              <el-input v-model="form.description" placeholder="请输入大模型描述" type="textarea" />
             </el-form-item>
           </el-col>
         </el-row>
-
         <el-row>
           <el-col :span="24">
-            <el-form-item label="消息描述" prop="description">
-              <el-input v-model="form.description" placeholder="请输入消息描述" maxlength="200"/>
+            <el-form-item label="所属提供商名称" prop="providerId">
+              <el-input v-model="form.providerId" placeholder="请输入所属提供商名称" maxlength="255"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="API 密钥" prop="apiKey">
+              <el-input v-model="form.apiKey" placeholder="请输入 API 密钥" maxlength="255"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="API 地址" prop="apiUrl">
+              <el-input v-model="form.apiUrl" placeholder="请输入 API 地址" maxlength="255"/>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="模型名称" prop="model">
+              <el-input v-model="form.model" placeholder="请输入模型名称" maxlength="255"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -204,22 +190,22 @@
   </div>
 </template>
 
-<script setup name="Message">
+<script setup name="LlmModel">
 import {getToken} from "@/utils/auth";
 import {
-  listMessage,
-  delMessage,
-  getMessage,
-  updateMessage,
-  addMessage,
-} from "@/api/smart/assistant/message";
-import {reactive} from "vue";
+  listLlmModel,
+  delLlmModel,
+  getLlmModel,
+  updateLlmModel,
+  addLlmModel,
+} from "@/api/smart/assistant/llmModel";
+import {reactive, ref} from "vue";
+// import {useRouter, getCurrentInstance} from "vue-router";
 
 const router = useRouter();
 const {proxy} = getCurrentInstance();
-// const { sys_normal_disable, sys_Message_sex } = proxy.useDict("sys_normal_disable", "sys_Message_sex");
 
-const MessageList = ref([]);
+const LlmModelList = ref([]);
 const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
@@ -247,20 +233,18 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/system/Message/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/system/LlmModel/importData"
 });
 // 列显隐信息
 const columns = ref([
   {key: 0, label: `图标`, visible: true},
-  {key: 1, label: `消息名称`, visible: true},
-  {key: 2, label: `消息类型`, visible: true},
-  {key: 3, label: `使用场景`, visible: true},
-  {key: 4, label: `状态`, visible: true},
-  {key: 5, label: `消息描述`, visible: true},
-  {key: 6, label: `应用目标`, visible: true},
-  {key: 7, label: `创建时间`, visible: true},
-  {key: 8, label: `编辑`, visible: true},
-
+  {key: 1, label: `大模型名称`, visible: true},
+  {key: 2, label: `大模型描述`, visible: true},
+  {key: 3, label: `所属提供商名称`, visible: true},
+  {key: 4, label: `API 密钥`, visible: true},
+  {key: 5, label: `API 地址`, visible: true},
+  {key: 6, label: `模型名称`, visible: true},
+  {key: 7, label: `编辑`, visible: true},
 ]);
 
 const data = reactive({
@@ -268,41 +252,36 @@ const data = reactive({
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    MessageName: undefined,
-    name: undefined,
-    toolType: undefined,
+    modelName: undefined,
+    providerId: undefined,
     status: undefined,
     deptId: undefined
   },
   rules: {
-    applicationId: [{required: true, message: "应用编号不能为空", trigger: "blur"}],
-    name: [{required: true, message: "消息名称不能为空", trigger: "blur"}, {
+    modelName: [{required: true, message: "大模型名称不能为空", trigger: "blur"}, {
       min: 2,
-      max: 20,
-      message: "消息名称长度必须介于 2 和 20 之间",
+      max: 255,
+      message: "大模型名称长度必须介于 2 和 255 之间",
       trigger: "blur"
     }],
-    toolType: [{required: true, message: "消息类型不能为空", trigger: "blur"}],
-    screen: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
-    hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
-    description: [{required: true, message: "消息描述不能为空", trigger: "blur"}],
-    target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
+    providerId: [{required: true, message: "所属提供商名称不能为空", trigger: "blur"}],
+    apiKey: [{required: true, message: "API 密钥不能为空", trigger: "blur"}],
+    apiUrl: [{required: true, message: "API 地址不能为空", trigger: "blur"}],
+    model: [{required: true, message: "模型名称不能为空", trigger: "blur"}],
   }
 });
 
 const {queryParams, form, rules} = toRefs(data);
 
-
 /** 查询应用列表 */
 function getList() {
   loading.value = true;
-  listMessage(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  listLlmModel(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
     loading.value = false;
-    MessageList.value = res.rows;
+    LlmModelList.value = res.rows;
     total.value = res.total;
   });
 };
-
 
 /** 搜索按钮操作 */
 function handleQuery() {
@@ -315,18 +294,18 @@ function handleQuery() {
 function resetQuery() {
   dateRange.value = [];
   proxy.resetForm("queryRef");
-  queryParams.value.name = undefined;
-  queryParams.value.toolType = undefined;
+  queryParams.value.modelName = undefined;
+  queryParams.value.providerId = undefined;
   proxy.$refs.deptTreeRef.setCurrentKey(null);
   handleQuery();
 };
 
 /** 删除按钮操作 */
 function handleDelete(row) {
-  const applicationIds = row.id || ids.value;
+  const ids = row.id || ids.value;
 
-  proxy.$modal.confirm('是否确认删除应用编号为"' + applicationIds + '"的数据项？').then(function () {
-    return delMessage(applicationIds);
+  proxy.$modal.confirm('是否确认删除大模型编号为"' + ids + '"的数据项？').then(function () {
+    return delLlmModel(ids);
   }).then(() => {
     getList();
     proxy.$modal.msgSuccess("删除成功");
@@ -344,15 +323,16 @@ function handleSelectionChange(selection) {
 /** 重置操作表单 */
 function reset() {
   form.value = {
-    applicationId: undefined,
-    name: undefined,
-    toolType: undefined,
-    screen: undefined,
-    hasStatus: undefined,
+    id: undefined,
+    icon: undefined,
+    modelName: undefined,
     description: undefined,
-    target: undefined,
+    providerId: undefined,
+    apiKey: undefined,
+    apiUrl: undefined,
+    model: undefined,
   };
-  proxy.resetForm("MessageRef");
+  proxy.resetForm("LlmModelRef");
 };
 
 /** 取消按钮 */
@@ -365,34 +345,33 @@ function cancel() {
 function handleAdd() {
   reset();
   open.value = true;
-  title.value = "添加应用";
+  title.value = "添加大模型";
 };
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const applicationId = row.id || ids.value;
-  getMessage(applicationId).then(response => {
+  const id = row.id || ids.value;
+  getLlmModel(id).then(response => {
     form.value = response.data;
-    form.value.applicationId = applicationId;
+    form.value.id = id;
     open.value = true;
-    title.value = "修改应用";
-
+    title.value = "修改大模型";
   });
 };
 
 /** 提交按钮 */
 function submitForm() {
-  proxy.$refs["MessageRef"].validate(valid => {
+  proxy.$refs["LlmModelRef"].validate(valid => {
     if (valid) {
-      if (form.value.applicationId != undefined) {
-        updateMessage(form.value).then(response => {
+      if (form.value.id != undefined) {
+        updateLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
         });
       } else {
-        addMessage(form.value).then(response => {
+        addLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
           open.value = false;
           getList();
