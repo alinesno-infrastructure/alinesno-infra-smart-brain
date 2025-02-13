@@ -2,7 +2,7 @@ const WorkflowType = {
     Base: 'base',
     Start: 'start',
     AiChat: 'ai_chat',
-    SearchDataset: 'search_dataset',
+    SearchDataset: 'knowledge_search',
     Question: 'question',
     Condition: 'condition',
     Reply: 'reply',
