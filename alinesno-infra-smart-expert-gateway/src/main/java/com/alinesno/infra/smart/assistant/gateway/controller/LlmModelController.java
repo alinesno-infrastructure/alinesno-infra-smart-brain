@@ -7,6 +7,8 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
+import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,6 +18,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 应用构建Controller
@@ -56,6 +61,22 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
     public AjaxResult save(Model model, @RequestBody LlmModelEntity entity) throws Exception {
         log.debug("entity = {}", ToStringBuilder.reflectionToString(entity));
         return super.save(model, entity);
+    }
+
+    /**
+     * 获取所有大模型提供商信息
+     * @return 包含所有大模型提供商信息的列表
+     */
+    @GetMapping("/getAllModelProvidersInfo")
+    public AjaxResult getAllModelProvidersInfo() {
+        List<Map<String, Object>> list =  LlmModelProviderEnums.getAllModelProvidersInfo();
+        return AjaxResult.success(list);
+    }
+
+    @GetMapping("/getAllModelTypesInfo")
+    public AjaxResult getAllModelTypesInfo() {
+        List<Map<String, Object>> modelTypesInfo = ModelTypeEnums.getAllModelTypesInfo();
+        return AjaxResult.success(modelTypesInfo);
     }
 
     @Override
