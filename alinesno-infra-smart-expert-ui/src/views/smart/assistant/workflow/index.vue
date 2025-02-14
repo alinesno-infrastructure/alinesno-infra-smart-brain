@@ -1,7 +1,14 @@
 <template>
   <div class="workflow-container">
     <div class="page-header-container">
-      <el-page-header @back="goBack" :content="'['+currentRole.roleName+']配置任务编排'"></el-page-header>
+      <el-page-header @back="goBack">
+        <template #content>
+          <div style="display: flex;gap: 10px;">
+            <span class="text-large font-600 mr-3"> {{ '['+currentRole.roleName+'] 配置任务编排' }} </span>
+            <span style="color: #aaaaaa;font-size: 14px;">保存时间：2025-02-14 23:50:44</span>
+          </div>
+        </template>
+      </el-page-header>
 
       <div class="page-header-btn-container">
         <el-button type="primary" text bg @click="addComponent"><i class="fa-solid fa-feather"></i> 添加组件</el-button>
