@@ -15,22 +15,50 @@
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
-          <el-form-item label="图片理解模型">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+          <el-form-item label="关联知识库">
+            <el-input type="input" resize="none" placeholder="请选择知识库" />
           </el-form-item>
-          <el-form-item label="系统角色">
-            <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" />
-          </el-form-item>
-          <el-form-item label="提示词">
-            <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" />
-          </el-form-item>
-          <el-form-item label="返回内容">
-            <el-switch v-model="value1" size="small" />
+          <el-form-item label="检索问题">
+            <el-input type="input" resize="none" placeholder="检索用户问题" />
           </el-form-item>
         </el-form>
+        <div class="settings-title">检索参数</div>
+        <div class="settings-content">
+          <el-row>
+            <el-col :span="12">
+              <span class="settings-label-label">检索模式</span>
+            </el-col>
+            <el-col :span="12">
+              <span class="settings-label-text">向量检索</span>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <span class="settings-label-label">相似度高于</span>
+            </el-col>
+            <el-col :span="12">
+              <span class="settings-label-text">0.600</span>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <span class="settings-label-label">引用分段数TOP</span>
+            </el-col>
+            <el-col :span="12">
+              <span class="settings-label-text">3</span>
+            </el-col>
+          </el-row>
+          <el-row>
+            <el-col :span="12">
+              <span class="settings-label-label">最多引用字符</span>
+            </el-col>
+            <el-col :span="12">
+              <span class="settings-label-text">5000</span>
+            </el-col>
+          </el-row>
+        </div>
       </div>
+
     </div>
     <!-- 输出参数部分 -->
     <div class="node-output">
@@ -38,7 +66,16 @@
       <div class="output-title">输出参数</div>
       <!-- 输出参数内容 -->
       <div class="output-content">
-        回答内容 {answer}
+        检索结果的分段列表 {paragraph_list}
+      </div>
+      <div class="output-content">
+        满足直接回答的分段列表{is_hit_handling_method_list}
+      </div>
+      <div class="output-content">
+        检索结果{data}
+      </div>
+      <div class="output-content">
+        满足直接回答的分段内容 {directly_return}
       </div>
     </div>
   </div>
@@ -88,5 +125,4 @@ const options = [
 ]
 </script>
 
-<style lang="scss" scoped>
-</style>
+<style lang="scss" scoped></style>
