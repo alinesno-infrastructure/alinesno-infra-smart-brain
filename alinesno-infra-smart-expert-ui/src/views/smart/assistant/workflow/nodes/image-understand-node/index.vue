@@ -15,7 +15,7 @@
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
-          <el-form-item label="图片理解模型">
+          <el-form-item label="视觉模型">
             <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
@@ -25,6 +25,9 @@
           </el-form-item>
           <el-form-item label="提示词">
             <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" />
+          </el-form-item>
+          <el-form-item label="选择图片">
+            <el-input resize="none" placeholder="请选择图片" />
           </el-form-item>
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
