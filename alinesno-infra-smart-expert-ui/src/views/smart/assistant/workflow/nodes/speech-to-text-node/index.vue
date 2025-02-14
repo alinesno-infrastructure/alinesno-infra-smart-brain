@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fa-solid fa-masks-theater"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">语音转文字</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -47,6 +49,20 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
 
 // 绑定选择框的值
 const value = ref('')
