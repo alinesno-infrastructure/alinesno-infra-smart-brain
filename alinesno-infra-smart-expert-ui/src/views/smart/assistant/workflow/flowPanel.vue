@@ -90,6 +90,7 @@ const clickNode = (shapeItem) => {
 
     // 获取虚拟矩形的中心位置
     const { virtualRectCenterPositionX, virtualRectCenterPositionY } = lf.value.graphModel.getVirtualRectSize();
+    console.log('virtualRectCenterPositionX = ' + virtualRectCenterPositionX + ', virtualRectCenterPositionY = ' + virtualRectCenterPositionY);
 
     // 添加一个新的节点
     const newNode = lf.value.graphModel.addNode({
