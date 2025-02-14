@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fas fa-file-signature"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">脚本功能</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -15,11 +17,23 @@
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
-          <el-form-item label="选择文档内容">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
+          <el-form-item label="输入参数">
+            <el-select v-model="value" placeholder="请选择输入参数" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
+
+          <el-form-item label="函数内容(Groovy)">
+            <div class="function-CodemirrorEditor mb-8" style="height: 150px;width:100%">
+              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+              <div class="function-CodemirrorEditor__footer">
+                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                </el-button>
+              </div>
+            </div>
+          </el-form-item>
+
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
           </el-form-item>
@@ -32,18 +46,53 @@
       <div class="output-title">输出参数</div>
       <!-- 输出参数内容 -->
       <div class="output-content">
-        文档内容 {answer}
+        结果 {result}
       </div>
     </div>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="'函数内容（Groovy）'"
+      append-to-body
+      fullscreen
+    >
+      <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+      <template #footer>
+        <div class="dialog-footer mt-24">
+          <el-button type="primary" @click="submitDialog"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
+import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
+
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
 
 // 绑定选择框的值
+const auditEditorRef = ref(null)
 const value = ref('')
+const chatDataCode = ref('')
 const value1 = ref('')
+
+const dialogVisible = ref(false)
+const cloneContent = ref('')
 
 // 表单数据对象
 const form = reactive({
@@ -80,7 +129,20 @@ const options = [
     label: 'Option5',
   },
 ]
+
+function openCodemirrorDialog() {
+  cloneContent.value = chatDataCode.value.code
+  dialogVisible.value = true
+}
+
 </script>
 
 <style lang="scss" scoped>
+
+.function-CodemirrorEditor__footer {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}
+
 </style>
