@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fa-solid fa-reply"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">指定回复</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -15,16 +17,8 @@
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
-          <el-form-item label="图片理解模型">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-          </el-form-item>
-          <el-form-item label="系统角色">
-            <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" />
-          </el-form-item>
-          <el-form-item label="提示词">
-            <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" />
+          <el-form-item label="指定回答内容">
+            <el-input type="textarea" :rows="5" resize="none" placeholder="角色设置" />
           </el-form-item>
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
@@ -40,15 +34,27 @@
       <div class="output-content">
         回答内容 {answer}
       </div>
-      <div class="output-content">
-        图片{image}
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+// 定义组件接收的属性
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
 
 // 绑定选择框的值
 const value = ref('')
