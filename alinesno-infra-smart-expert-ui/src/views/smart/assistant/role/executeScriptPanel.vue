@@ -11,10 +11,10 @@
                     :element-loading-spinner="svg"
                 >
 
-                    <div style="margin-top: 20px;margin-bottom: 20px;display: inline-flex;width: 100%;">
-                        <el-input v-model="chatMessage" size="large" style="width: 100%;" placeholder="输入需求描述信息." />
+                    <div style="margin-top: 20px;margin-bottom: 20px;display: flex;width: 100%;gap:10px;">
+                        <el-input v-model="chatMessage" size="large" style="height:40px; width: 100%;" placeholder="输入需求描述信息." />
 
-                        <div class="flow-setting-footer" style="margin: 0px;">
+                        <div class="flow-setting-footer" style="margin: 0px;display: flex;">
                             <el-button type="primary" text bg @click="handleValidateTask()" size="large">
                                 <i class="fa-solid fa-truck-fast"></i>&nbsp;验证任务
                             </el-button>
