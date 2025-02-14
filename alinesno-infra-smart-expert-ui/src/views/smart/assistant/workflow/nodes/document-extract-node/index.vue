@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fa-solid fa-file-lines"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">文档内容提取</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -16,7 +18,7 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="选择文档内容">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
+            <el-select v-model="value" placeholder="请选择文档内容" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -32,7 +34,7 @@
       <div class="output-title">输出参数</div>
       <!-- 输出参数内容 -->
       <div class="output-content">
-        文档内容 {answer}
+        文档内容 {content}
       </div>
     </div>
   </div>
@@ -44,6 +46,20 @@ import { ref, reactive } from 'vue'
 // 绑定选择框的值
 const value = ref('')
 const value1 = ref('')
+
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
 
 // 表单数据对象
 const form = reactive({
