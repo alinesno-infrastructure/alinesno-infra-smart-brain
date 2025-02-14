@@ -129,9 +129,12 @@ class AppNode extends HtmlResize.view {
     if (!this.isMounted) {
       this.isMounted = true;
 
+      console.log('this.model = ' +  this.props.model.isSelected)
+
       this.r = h(this.component, {
         properties: this.props.model.getProperties(),
         text: this.props.model.inputData,
+        isSelected: this.props.model.isSelected,
         onBtnClick: (i) => {
           props.graphModel.eventCenter.emit("custom:onBtnClick", i);
         },
