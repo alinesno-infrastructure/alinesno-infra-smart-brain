@@ -147,11 +147,6 @@ const workflowNodes = [
                     "id": "1009"
                 },
                 {
-                    "index": 1,
-                    "height": 120,
-                    "id": "4908"
-                },
-                {
                     "index": 2,
                     "height": 44 ,
                     "id": "161"
