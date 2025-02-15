@@ -104,6 +104,8 @@ const clickNode = (shapeItem) => {
     newNode.isSelected = true;
     newNode.isHovered = true;
 
+    newNode.helloworld = 'hello world';
+
     // 将新节点置于最上层
     lf.value.toFront(newNode.id);
 };
