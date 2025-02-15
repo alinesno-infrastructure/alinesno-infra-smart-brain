@@ -8,7 +8,7 @@
         <i :class="props.properties.icon"></i>
       </div>
       <div class="node-name">
-        {{ props.properties.stepName }}
+        {{ props.properties.stepName }} 
       </div>
     </div>
     <!-- 节点设置部分 -->
@@ -79,7 +79,8 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive , toRaw } from 'vue'
+import { cloneDeep, set } from 'lodash'
 
 // 定义组件接收的属性
 const props = defineProps({
@@ -153,7 +154,46 @@ const addCondition = (branchIndex) => {
 }
 
 // 添加分支
-const addBranch = () => {
+// const addBranch = () => {
+
+//   const list = cloneDeep(props.properties.branch_condition_list)
+//   console.log('list = ' + list);
+//   console.log('nodeModel = ' + props.nodeModel)
+
+//   branches.value.push({
+//     conditions: [
+//       {
+//         variable: '',
+//         condition: '',
+//         value: ''
+//       }
+//     ]
+//   })
+//   // 更新 branch_condition_list
+//   props.properties.branch_condition_list.push({
+//     id: `condition_${props.properties.branch_condition_list.length}`,
+//     index: 12 ,
+//     height: 130 // 假设新增分支高度
+//   });
+
+//   // 刷新节点锚点
+//   // set(props.nodeModel.properties.branch_condition_list, 'branch', list)
+//   // props.nodeModel.refreshBranch();
+
+//   set(props.nodeModel.properties, 'branch_condition_list', list)
+//   props.nodeModel.refreshBranch()
+
+// }
+
+function addBranch() {
+  // 获取原始的 nodeModel 对象，避免响应式代理问题
+  // const rawNodeModel = toRaw(props.nodeModel);
+
+  if (!props.nodeModel) {
+    console.error('Node model is not available.');
+    return;
+  }
+
   branches.value.push({
     conditions: [
       {
@@ -163,14 +203,57 @@ const addBranch = () => {
       }
     ]
   })
-  // 更新 branch_condition_list
-  props.properties.branch_condition_list.push({
-    id: `condition_${props.properties.branch_condition_list.length}`,
-    height: 100 // 假设新增分支高度
-  });
-  // 刷新节点锚点
-  if (props.nodeModel) {
-    props.nodeModel.refreshBranch();
+
+  const list = cloneDeep(props.nodeModel.properties.branch_condition_list);
+  const obj = {
+    conditions: [
+      {
+        field: [],
+        compare: '',
+        value: ''
+      }
+    ],
+    type: 'ELSE IF ' + (list.length - 1),
+    height: 110,
+    id: '12312312',
+    condition: 'and'
+  };
+
+  list.splice(list.length - 1, 0, obj);
+
+  try {
+    refreshBranchAnchor(list, true, props.nodeModel);
+    set(props.nodeModel.properties, 'branch_condition_list', list);
+  } catch (error) {
+    console.error('Error in addBranch:', error);
+  }
+}
+
+function refreshBranchAnchor(list, is_add, nodeModel) {
+  const branch_condition_list = cloneDeep(
+    nodeModel.properties.branch_condition_list
+      ? nodeModel.properties.branch_condition_list
+      : []
+  );
+
+  const new_branch_condition_list = list
+    .map((item, index) => {
+      const find = branch_condition_list.find((b) => b.id === item.id);
+      if (find) {
+        return { index: index, height: find.height, id: item.id };
+      } else {
+        if (is_add) {
+          return { index: index, height: 12, id: item.id };
+        }
+      }
+    })
+    .filter((item) => item);
+
+  try {
+    set(nodeModel.properties, 'branch_condition_list', new_branch_condition_list);
+    nodeModel.refreshBranch();
+  } catch (error) {
+    console.error('Error in refreshBranchAnchor:', error);
   }
 }
 
