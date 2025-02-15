@@ -129,12 +129,13 @@ class AppNode extends HtmlResize.view {
     if (!this.isMounted) {
       this.isMounted = true;
 
-      console.log('this.model = ' +  this.props.model.isSelected)
+      console.log('this.model = ' +  this.props.model.isSelected + ' , hello world = ' + this.props.model.helloworld)
 
       this.r = h(this.component, {
         properties: this.props.model.getProperties(),
         text: this.props.model.inputData,
         isSelected: this.props.model.isSelected,
+        nodeModel: this.props.model,
         onBtnClick: (i) => {
           props.graphModel.eventCenter.emit("custom:onBtnClick", i);
         },
@@ -288,6 +289,8 @@ class AppNodeModel extends HtmlResize.model {
 
     this.x = this.properties.x ;
     this.y = this.properties.y ;
+
+    console.log('this.properties = ' + JSON.stringify(this.properties))
 
     const isLoop = function (node_id, target_node_id) {
       const up_node_list = this.graphModel.getNodeIncomingNode(node_id);
