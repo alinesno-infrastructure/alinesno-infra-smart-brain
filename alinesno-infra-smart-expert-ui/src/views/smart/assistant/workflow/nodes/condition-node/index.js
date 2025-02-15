@@ -29,7 +29,8 @@ class ConditionModel extends AppNodeModel {
     });
     // 重新计算锚点
     this.anchors = this.getDefaultAnchor();
-    this.graphModel.refreshEdgeAnchor(this);
+    console.log('this.anchors = ' + JSON.stringify(this.anchors));
+    // this.graphModel.refreshEdgeAnchor(this);
   }
 
   getDefaultAnchor() {
@@ -59,15 +60,23 @@ class ConditionModel extends AppNodeModel {
     if (branch_condition_list) {
       for (let index = 0; index < branch_condition_list.length; index++) {
         const element = branch_condition_list[index];
+
+        console.log('element = ' + element);
+
         const h = get_up_index_height(branch_condition_list, index);
-        anchors.push({
+        const item = {
           x: x + width / 2 - 10,
           y: showNode ? y - height / 2 + 75 + h + element.height / 2 : y - 15,
           id: `${id}_${element.id}_right`,
           type: 'right'
-        });
+        };
+
+        console.log('item = ' + item);
+        anchors.push(item);
       }
     }
+
+    console.log('anchors = ' + JSON.stringify(anchors))
 
     return anchors;
   }
