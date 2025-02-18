@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.adapter.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -13,26 +15,22 @@ import lombok.ToString;
 @Data
 public class VectorSearchDto {
 
-    /**
-     * 数据集的唯一标识符
-     * 用于指定要进行向量搜索的数据集
-     */
-    private long datesetId;
+    @NotNull(message = "数据集ID不能为空")
+    private Long datasetId ; // 数据集ID
 
-    /**
-     * 用户输入的搜索文本
-     * 用于在数据集中查找与该文本相关的项
-     */
-    private String searchText;
+    private String collectionName ;
 
-    /**
-     * 搜索结果中返回的顶级匹配项的数量
-     * 用于指定返回结果的数量，表示返回多少个最相关的项
-     */
-    private int topK;
+    @NotBlank(message = "搜索文本不能为空")
+    private String searchText ;
 
-    public VectorSearchDto(long datesetId, String searchText, int topK) {
-        this.datesetId = datesetId;
+    private Integer topK ;
+
+    private String minRelevance = "0.6";  // 最低相关度
+
+    private Integer quoteLimit; // 引用查询字符上限
+
+    public VectorSearchDto(long datasetId, String searchText, int topK) {
+        this.datasetId = datasetId;
         this.searchText = searchText;
         this.topK = topK;
     }
