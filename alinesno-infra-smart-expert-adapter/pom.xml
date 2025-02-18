@@ -13,6 +13,14 @@
 	<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<!-- 版本号 -->
+		<spring.file.storage.version>2.0.0</spring.file.storage.version>
+		<aliyun.sdk.oss.version>3.16.1</aliyun.sdk.oss.version>
+		<qiniu.java.sdk.version>7.12.1</qiniu.java.sdk.version>
+		<minio.version>8.5.2</minio.version>
+	</properties>
+
 	<dependencies>
 
 		<!-- 引入forest_starter_start -->
@@ -28,6 +36,33 @@
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-facade</artifactId>
 			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.dromara.x-file-storage</groupId>
+			<artifactId>x-file-storage-spring</artifactId>
+			<version>${spring.file.storage.version}</version>
+		</dependency>
+
+		<!-- 阿里云存储 -->
+		<dependency>
+			<groupId>com.aliyun.oss</groupId>
+			<artifactId>aliyun-sdk-oss</artifactId>
+			<version>${aliyun.sdk.oss.version}</version>
+		</dependency>
+
+		<!-- 七牛云存储 -->
+		<dependency>
+			<groupId>com.qiniu</groupId>
+			<artifactId>qiniu-java-sdk</artifactId>
+			<version>${qiniu.java.sdk.version}</version>
+		</dependency>
+
+		<!-- minio云存储 -->
+		<dependency>
+			<groupId>io.minio</groupId>
+			<artifactId>minio</artifactId>
+			<version>${minio.version}</version>
 		</dependency>
 
 	</dependencies>
