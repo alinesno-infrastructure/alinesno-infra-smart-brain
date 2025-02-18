@@ -6,7 +6,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
@@ -162,9 +162,14 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         // 创建角色知识库
         for (IndustryRoleEntity role : allEntities) {
             // TODO 待集成批量添加知识库
-            R<String> result = baseSearchConsumer.datasetCreate(role.getResponsibilities() , role.getRoleName());
+            R<Long> result = baseSearchConsumer.datasetCreate(
+                    role.getResponsibilities() ,
+                    role.getRoleName() ,
+                    role.getOrgId() + "" ,
+                    role.getOperatorId() + "");
+
             log.debug("创建知识库结果：" + result);
-            role.setKnowledgeId(result.getData());
+            role.setKnowledgeId(result.getData() + "");
         }
 
         // 先保存用户信息
