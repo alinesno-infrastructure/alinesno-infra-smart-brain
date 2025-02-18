@@ -7,7 +7,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.response.R;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.constants.ImConstants;
@@ -69,8 +69,10 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
             e.setOperatorId(accountId);
 
             // 创建频道知识库
-            R<String> createDataset = baseSearchConsumer.datasetCreate(e.getChannelDesc() , e.getChannelName()) ;
-            e.setKnowledgeId(createDataset.getData());
+            R<Long> createDataset = baseSearchConsumer.datasetCreate(e.getChannelDesc() , e.getChannelName() ,
+                    e.getOrgId() + "" ,
+                    e.getOperatorId() + "") ;
+            e.setKnowledgeId(createDataset.getData()+"");
 
             try {
                 this.saveOrUpdate(e);
@@ -87,8 +89,11 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         entity.setChannelType(entity.getChannelType()) ;
 
         // 创建频道知识库
-        R<String> createDataset = baseSearchConsumer.datasetCreate(entity.getChannelDesc() , entity.getChannelName()) ;
-        entity.setKnowledgeId(createDataset.getData());
+        R<Long> createDataset = baseSearchConsumer.datasetCreate(entity.getChannelDesc() ,
+                entity.getChannelName() ,
+                entity.getOrgId()+"" ,
+                entity.getOperatorId()+"") ;
+        entity.setKnowledgeId(createDataset.getData()+"");
 
         this.save(entity) ;
 
@@ -209,9 +214,9 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         // 创建角色知识库
         for (ChannelEntity channel : recommendChannels) {
             // TODO 待集成批量添加知识库
-            R<String> result = baseSearchConsumer.datasetCreate(channel.getChannelDesc(), channel.getChannelName());
+            R<Long> result = baseSearchConsumer.datasetCreate(channel.getChannelDesc(), channel.getChannelName() , channel.getOrgId() +"" , channel.getOperatorId() +"");
             log.debug("创建知识库结果：" + result);
-            channel.setKnowledgeId(result.getData());
+            channel.setKnowledgeId(result.getData()+"");
         }
 
         // 先保存用户信息
