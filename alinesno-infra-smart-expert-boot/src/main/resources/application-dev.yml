@@ -6,11 +6,19 @@ spring:
   application:
     name: alinesno-infra-smart-expert-boot
     id: 1848341995578118144
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/dev_alinesno_infra_smart_assistant_v100?characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true
-    username: root
-    password:  adminer
+  datasource.dynamic:
+    primary: mysql
+    datasource:
+      mysql:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        url: jdbc:mysql://localhost:3306/dev_alinesno_infra_smart_assistant_v100?characterEncoding=UTF-8&serverTimezone=GMT%2B8&allowMultiQueries=true
+        username: root
+        password: adminer
+      postgresql:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://192.168.101.18:5432/postgres
+        username: postgres
+        password: 123456
   data:
     redis:
       host: 127.0.0.1
@@ -27,7 +35,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;com.alinesno.infra.base.search.entity;
   database:
     type: mysql
   index:
@@ -53,7 +61,6 @@ sa-token:
   sign:
     secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
 
-# wechat token
 alinesno:
   security:
     # 排除路径
@@ -82,11 +89,35 @@ alinesno:
           path: ${user.home}/.smart-assistant/plugins
       brain:
         role-template-sync-url: http://data.linesno.com/aip-role/alinesno-infra-smart-brain-role-templates.zip
-        aliyun:
-          access-key: xxxxxxxx
-          secret-key: xxxxxxxx
         qianwen:
           key:  sk-xxxxxxxxx
-        openapi:
-          host: http://api.qianwen.cn/v1/chat/completions
-          key: sk-xxxxxxxxx
+
+dromara:
+  x-file-storage: #文件存储配置
+    default-platform: qiniu-kodo #默认使用的存储平台
+    thumbnail-suffix: ".min.jpg" #缩略图后缀，例如【.min.jpg】【.png】
+    local-plus:
+    minio:
+      - platform: minio # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: ${alinesno.infra.minio.access-key}
+        secret-key: ${alinesno.infra.minio.secret-key}
+        end-point: ${alinesno.infra.minio.endpoint}
+        bucket-name: ${alinesno.infra.minio.bucket}
+        domain: ${alinesno.infra.minio.domain} # 访问域名，注意“/”结尾，例如：http://minio.abc.com/abc/
+        base-path: base/ # 基础路径
+    qiniu-kodo:
+      - platform: qiniu-kodo # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: ${alinesno.infra.qiniu.access-key}
+        secret-key: ${alinesno.infra.qiniu.secret-key}
+        bucket-name: ${alinesno.infra.qiniu.bucket}
+        domain:  ${alinesno.infra.qiniu.domain} # 访问域名，注意“/”结尾，例如：http://abc.hn-bkt.clouddn.com/
+        base-path: base/ # 基础路径
+      - platform: qiniu-kodo-pub # 存储平台标识
+        enable-storage: true  # 启用存储
+        access-key: ${alinesno.infra.qiniu.access-key}
+        secret-key: ${alinesno.infra.qiniu.secret-key}
+        bucket-name: ${alinesno.infra.qiniu.bucket-pub}
+        domain:  ${alinesno.infra.qiniu.domain-pub} # 访问域名，注意“/”结尾，例如：http://abc.hn-bkt.clouddn.com/
+        base-path: public/ # 基础路径
