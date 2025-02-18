@@ -6,7 +6,7 @@
           <img src="http://portal.infra.linesno.com/logo.png" style="width:35px" alt="">
         </div>
         <div class="banner-text">
-          基设智能助手服务
+          智能体管理服务
         </div>
         <a href="http://portal.infra.linesno.com/" target="_blank" lass="banner-text" style="float: right;font-weight: 500;font-size: 13px;margin-top: 14px;color: rgb(255, 255, 255);">
           <i class="fas fa-link"></i> 官网
