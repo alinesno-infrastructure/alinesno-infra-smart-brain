@@ -6,9 +6,9 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
-import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorDto;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
@@ -64,7 +64,7 @@ public class RoleKnowledgeController extends SuperController {
     public AjaxResult getSearchKnowledge(@RequestBody VectorSearchDto topK){
 
         log.debug("topK:{}" , topK);
-        R<List<DocumentVectorDto>> document = baseSearchConsumer.datasetSearch(topK) ;
+        R<List<DocumentVectorBean>> document = baseSearchConsumer.datasetSearch(topK) ;
         return AjaxResult.success(document.getData()) ;
     }
 
