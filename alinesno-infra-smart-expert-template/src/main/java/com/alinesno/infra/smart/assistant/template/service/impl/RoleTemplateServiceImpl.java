@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
@@ -135,11 +135,7 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
                     // 角色头像处理
                     String avatarPath = subFile.getAbsolutePath() + "/avatar.jpeg";
                     File targetFile = new File(avatarPath) ;
-                    R<String> r = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
-                        log.debug("total bytes: {}" , progress.getTotalBytes());
-                        log.debug("current bytes: {}" , progress.getCurrentBytes());
-                        log.debug("progress: {}" , Math.round(progress.getRate() * 100) + "%");
-                    }) ;
+                    R<String> r = storageConsumer.upload(targetFile) ;
 
                     roleTemplateEntity.setRoleAvatar(r.getData());
 
@@ -165,11 +161,7 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
                         String background = FileUtils.readFileToString(new File(backgroundPath), "UTF-8");
 
                         File toolTargetFile = new File(toolIconPath) ;
-                        R<String> toolR = storageConsumer.upload(toolTargetFile , "qiniu-kodo" , progress -> {
-                            log.debug("total bytes: {}" , progress.getTotalBytes());
-                            log.debug("current bytes: {}" , progress.getCurrentBytes());
-                            log.debug("progress: {}" , Math.round(progress.getRate() * 100) + "%");
-                        }) ;
+                        R<String> toolR = storageConsumer.upload(toolTargetFile) ;
 
                         List<RoleToolInfo> roleTools = roleTemplateDto.getTools();
                         List<RoleToolInfo> newRoleTools = new ArrayList<>() ; // roleTemplateDto.getTools();
