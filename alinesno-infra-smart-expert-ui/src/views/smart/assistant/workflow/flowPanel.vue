@@ -67,6 +67,26 @@ const renderGraphData = (data) => {
     lf.value.batchRegister([...Object.keys(nodes).map((key) => nodes[key].default), AppEdge])
     lf.value.setDefaultEdgeType('app-edge')
 
+    data = {
+      nodes:[{
+        type: 'start',
+        properties: {
+          icon: 'fa-solid fa-paper-plane',
+          color: "#2962FF",
+          stepName: '开始',
+          showNode: true,
+          x: 140,
+          y: 140,
+          height: 380,
+          width: 280
+        },
+        x: 440,
+        y: 340,
+      }]
+    }
+
+    console.log('data = ' + data)
+
     lf.value.render(data ? data : {});
 
     lf.value.graphModel.eventCenter.on('delete_edge', function (id_list) {
@@ -85,29 +105,29 @@ const renderGraphData = (data) => {
 };
 
 const clickNode = (shapeItem) => {
-    // 清除所有选中的元素
-    lf.value.clearSelectElements();
+  // 清除所有选中的元素
+  lf.value.clearSelectElements();
 
-    // 获取虚拟矩形的中心位置
-    const { virtualRectCenterPositionX, virtualRectCenterPositionY } = lf.value.graphModel.getVirtualRectSize();
-    console.log('virtualRectCenterPositionX = ' + virtualRectCenterPositionX + ', virtualRectCenterPositionY = ' + virtualRectCenterPositionY);
+  // 获取虚拟矩形的中心位置
+  const { virtualRectCenterPositionX, virtualRectCenterPositionY } = lf.value.graphModel.getVirtualRectSize();
+  console.log('virtualRectCenterPositionX = ' + virtualRectCenterPositionX + ', virtualRectCenterPositionY = ' + virtualRectCenterPositionY);
 
-    // 添加一个新的节点
-    const newNode = lf.value.graphModel.addNode({
-        type: shapeItem.type,
-        properties: shapeItem.properties,
-        x: virtualRectCenterPositionX,
-        y: virtualRectCenterPositionY - lf.value.graphModel.height / 2
-    });
+  // 添加一个新的节点
+  const newNode = lf.value.graphModel.addNode({
+    type: shapeItem.type,
+    properties: shapeItem.properties,
+    x: virtualRectCenterPositionX,
+    y: virtualRectCenterPositionY - lf.value.graphModel.height / 2
+  });
 
-    // 设置新节点为选中和悬停状态
-    newNode.isSelected = true;
-    newNode.isHovered = true;
+  // 设置新节点为选中和悬停状态
+  newNode.isSelected = true;
+  newNode.isHovered = true;
 
-    newNode.helloworld = 'hello world';
+  newNode.helloworld = 'hello world';
 
-    // 将新节点置于最上层
-    lf.value.toFront(newNode.id);
+  // 将新节点置于最上层
+  lf.value.toFront(newNode.id);
 };
 
 onMounted(() => {
