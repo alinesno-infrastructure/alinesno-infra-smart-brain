@@ -16,7 +16,7 @@ import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.dto.FieldDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
