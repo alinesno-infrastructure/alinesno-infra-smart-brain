@@ -22,7 +22,7 @@
                   </a>
                 </span>
               </li>
-              <li class="count-data bg-red">
+              <li class="count-data bg-red" style="background: #409eff57;border: 1px solid #409eff40;">
                 <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
                   <router-link to="/dashboard/smart/assistant/roleTemplate/index">
@@ -71,16 +71,7 @@ import {
   getNewestRole 
 } from '@/api/smart/assistant/dashboard.js'
 
-const runCountArr = ref([
-    {roleName:'需求文档分析专家' , responsibilities:'正在分析数据工程结构，分析需求文档中', icon:'fa-solid fa-file-shield' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {roleName:'项目功能细化分析专家' , responsibilities:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
-    {roleName:'K8S问题排查专家' , responsibilities:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {roleName:'Ansible自动化工程师' , responsibilities:'生成自动化运营平台，正在集成业务服务', icon:'fas fa-train' , link:"https://192.168.1.161:8000/view/%E8%87%AA%E5%8A%A8%E5%8C%96%E8%BF%90%E7%BB%B4%E4%BB%BB%E5%8A%A1/"} ,
-    {roleName:'产品客户服务专家' , responsibilities:'客户服务专家列表结构，正在跟客户沟通中', icon:'fas fa-server' , link: "https://192.168.1.79/-/ide/project/capinfo-platform-jm/capinfo-platform-operation-manager/edit/jm-gjj/-/"} ,
-    {roleName:'项目功能细化分析专家' , responsibilities:'数据功能细化分析中，异常问题收集', icon:'fas fa-shipping-fast' , link:'https://192.168.1.161:30090/promethues/alerts'} ,
-    {roleName:'K8S问题排查专家' , responsibilities:'排查k8s问题分析，正在发送给业务人员', icon:'fa-solid fa-feather-pointed' , link:'https://192.168.1.170:3000/d/aka/node-exporter-dashboard?orgId=1&kiosk=tv'} ,
-    {roleName:'开发编码规范专家' , responsibilities:'编码结构的失败服务，正在进一步编码中', icon:'fas fa-pencil-ruler'} ,
-]);
+const runCountArr = ref([]);
 
 // 随机图标 
 const icons = ref([
