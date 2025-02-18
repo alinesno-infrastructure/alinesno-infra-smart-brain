@@ -4,7 +4,7 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -67,11 +67,7 @@ public class ImChatAvatarController {
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
         if("img".equals(type)){  // 图片上传类型
-            R<String> r = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
-                System.out.println("total bytes: " + progress.getTotalBytes());
-                System.out.println("current bytes: " + progress.getCurrentBytes());
-                System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-            }) ;
+            R<String> r = storageConsumer.upload(targetFile) ;
 
             log.debug("ajaxResult= {}" , r);
             return AjaxResult.success("上传成功." , r.getData()) ;
