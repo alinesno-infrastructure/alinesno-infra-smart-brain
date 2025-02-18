@@ -2,7 +2,7 @@ package com.alinesno.infra.smart.assistant.screen.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.response.R;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.screen.dto.ScreenDto;
 import com.alinesno.infra.smart.assistant.screen.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
@@ -34,11 +34,13 @@ public class ScreenServiceImpl extends IBaseServiceImpl<ScreenEntity, ScreenMapp
         BeanUtils.copyProperties(screenDto, screenEntity);
 
         // 创建频道知识库
-        R<String> createDataset = baseSearchConsumer.datasetCreate(
+        R<Long> createDataset = baseSearchConsumer.datasetCreate(
                 screenEntity.getScreenDesc() ,
-                screenEntity.getScreenName()) ;
+                screenEntity.getScreenName() ,
+                screenDto.getOrgId() + "" ,
+                screenDto.getOperatorId() + "") ;
 
-        screenEntity.setKnowledgeId(createDataset.getData());
+        screenEntity.setKnowledgeId(createDataset.getData()+"");
         save(screenEntity);
 
         return screenEntity ;
