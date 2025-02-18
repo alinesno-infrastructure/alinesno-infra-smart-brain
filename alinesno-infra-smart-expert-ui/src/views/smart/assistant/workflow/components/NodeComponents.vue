@@ -143,7 +143,7 @@ const workflowNodes = [
             branch_condition_list: [
                 {
                     "index": 0,
-                    "height": 120,
+                    "height": 129,
                     "id": "1009"
                 },
                 {
