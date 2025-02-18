@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.config;
 
+import com.alinesno.infra.base.search.memory.BaseMemoryStore;
+import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.common.facade.enable.EnableActable;
 import com.alinesno.infra.common.security.api.enable.EnableInfraApiSecurity;
 import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
@@ -7,7 +9,9 @@ import com.alinesno.infra.common.web.log.aspect.LogAspect;
 import com.dtflys.forest.springboot.annotation.ForestScan;
 import jakarta.servlet.MultipartConfigElement;
 import lombok.extern.slf4j.Slf4j;
+import org.dromara.x.file.storage.spring.EnableFileStorage;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.web.servlet.MultipartConfigFactory;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -15,16 +19,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.annotation.EnableRetry;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.unit.DataSize;
 
 /**
  * 统一配置中心
  */
-@EnableInfraApiSecurity
 @Slf4j
+@EnableFileStorage
 @EnableScheduling
 @EnableRetry
+@EnableAsync
 @EnableInfraSsoApi
 @EnableActable
 @ServletComponentScan(basePackages = {"com.alinesno.infra.smart.brain"})
@@ -40,16 +46,25 @@ import org.springframework.util.unit.DataSize;
         "com.alinesno.infra.smart.assistant.template.mapper" ,
         "com.alinesno.infra.smart.assistant.screen.mapper" ,
         "com.alinesno.infra.smart.assistant.plugin.mapper" ,
-        "com.alinesno.infra.smart.inference.mapper"
+        "com.alinesno.infra.smart.inference.mapper",
+        "com.alinesno.infra.base.search.mapper"
 })
 @ComponentScan({
         "com.alinesno.infra.smart.assistant",
         "com.alinesno.infra.smart.brain" ,
         "com.alinesno.infra.base.im" ,
+        "com.alinesno.infra.base.search",
         "com.alinesno.infra.common.extend.datasource" ,
         "com.alinesno.infra.smart.inference"
 })
+@EnableInfraApiSecurity
 public class AppConfiguration implements CommandLineRunner {
+
+     @Autowired
+    private IVectorDatasetService vectorDatasetService ;
+
+    @Autowired
+    private BaseMemoryStore baseMemoryStore ;
 
     @Bean
     public MultipartConfigElement getMultipartConfig() {
@@ -67,9 +82,10 @@ public class AppConfiguration implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        baseMemoryStore.createMemoryVectorIndex();
+        log.info("当前向量存储引擎:{}" , vectorDatasetService.getVectorEngine());
 
         log.debug("项目启动完成");
-
     }
 
 }
