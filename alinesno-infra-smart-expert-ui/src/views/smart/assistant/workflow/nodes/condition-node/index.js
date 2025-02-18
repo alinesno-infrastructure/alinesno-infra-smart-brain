@@ -65,8 +65,8 @@ class ConditionModel extends AppNodeModel {
 
         const h = get_up_index_height(branch_condition_list, index);
         const item = {
-          x: x + width / 2 - 10,
-          y: showNode ? y - height / 2 + 75 + h + element.height / 2 : y - 15,
+          x: x + width / 2 - 5,
+          y: showNode ? y - height / 2 + 55 + h + element.height / 2 : y - 15,
           id: `${id}_${element.id}_right`,
           type: 'right'
         };
