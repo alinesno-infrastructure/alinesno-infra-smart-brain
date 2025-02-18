@@ -1,0 +1,70 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+    	<groupId>com.alinesno.infra.smart</groupId>
+    	<artifactId>alinesno-infra-smart-brain-parent</artifactId>
+		<version>${revision}</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>alinesno-infra-smart-expert-memory</artifactId>
+	<packaging>jar</packaging>
+
+	<properties>
+		<pgvector.version>0.1.6</pgvector.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- 引用公共门面服务 -->
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-facade</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- 引用数据服务 -->
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-dataset</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- web 接口地址 -->
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-web-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- 引入千问大模型 API -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>dashscope-sdk-java</artifactId>
+			<version>2.16.7</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<!-- pgvector依赖 -->
+		<dependency>
+			<groupId>com.pgvector</groupId>
+			<artifactId>pgvector</artifactId>
+			<version>${pgvector.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+		</dependency>
+
+	</dependencies>
+
+</project>
