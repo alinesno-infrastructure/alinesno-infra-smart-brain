@@ -11,7 +11,7 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.enums.FileTypeEnums;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
@@ -109,11 +109,7 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
 
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
-        R<String> r = storageConsumer.upload(targetFile , "qiniu-kodo" , progress -> {
-            System.out.println("total bytes: " + progress.getTotalBytes());
-            System.out.println("current bytes: " + progress.getCurrentBytes());
-            System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-        }) ;
+        R<String> r = storageConsumer.upload(targetFile) ;
 
         // 保存模板信息到数据库
         templateEntity.setTemplateName(file.getOriginalFilename());
