@@ -11,7 +11,7 @@ class StartNode extends AppNode {
 
 // 导出默认对象
 export default {
-    type: 'start-node',
+    type: 'start',
     model: AppNodeModel,
     view: StartNode
 };
