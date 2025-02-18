@@ -12,8 +12,8 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.screen.dto.ChapterEditorDto;
@@ -111,9 +111,10 @@ public class ScreenController extends BaseController<ScreenEntity, IScreenServic
         String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
         Assert.notNull(filePath, "文件路径为空") ;
 
-        R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub" , progress -> {
-            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
-        }) ;
+        R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub") ;
+//        , progress -> {
+//            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
+//        }) ;
 
         String downloadUrl = r.getData() ;
 
