@@ -116,6 +116,54 @@ export const constantRoutes = [
         component: () => import('@/views/smart/assistant/roleTemplate/add'),
         meta: { title: '添加角色模板', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
+      {
+        path: '/base/search/vectorData/index',
+        component: () => import('@/views/base/search/vectorData/index'),
+        name: '/base/search/vectorData/index',
+        meta: { title: '数据集管理', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/base/search/vectorData/parseDataset',
+        component: () => import('@/views/base/search/vectorData/parseDataset'),
+        name: '/base/search/vectorData/parseDataset',
+        meta: { title: '解析向量库管理', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/base/search/vectorData/dataUpload' , 
+        component: () => import('@/views/base/search/vectorData/dataUpload'),
+        name: '/base/search/vectorData/dataUpload' , 
+        meta: { title: '数据集上传', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/base/search/memoryData/index',
+        component: () => import('@/views/base/search/memory/displayMemory'),
+        name: '/base/search/memoryData/index',
+        meta: { title: '记忆库管理', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/base/search/catalog/index',
+        component: () => import('@/views/base/search/catalog/index'),
+        name: '/base/search/catalog/index',
+        meta: { title: '目录分类管理', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/role/workflowAgent',
+        component: () => import('@/views/smart/assistant/role/workflowAgent'),
+        name: '/expert/smart/assistant/role/workflowAgent',
+        meta: { title: '工作流角色', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/role/constomScript',
+        component: () => import('@/views/smart/assistant/role/constomScript'),
+        name: '/expert/smart/assistant/role/constomScript',
+        meta: { title: '自定义脚本', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/role/agentInference',
+        component: () => import('@/views/smart/assistant/role/agentInference'),
+        name: '/expert/smart/assistant/role/agentInference',
+        meta: { title: 'Agent推理角色', icon: 'dashboard', affix: true }
+      },
     ]
   },
   {
