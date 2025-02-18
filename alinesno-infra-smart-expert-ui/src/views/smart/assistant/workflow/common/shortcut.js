@@ -101,7 +101,7 @@ export function initDefaultShortcut(lf, graph) {
             elements.edges.forEach((edge) => lf.deleteEdge(edge.id));
             return;
         }
-        const nodes = elements.nodes.filter((node) => ['start-node', 'base-node'].includes(node.type));
+        const nodes = elements.nodes.filter((node) => ['start', 'base'].includes(node.type));
         if (nodes.length > 0) {
             MsgError(`${nodes[0].properties?.stepName}不能删除`);
             return;
