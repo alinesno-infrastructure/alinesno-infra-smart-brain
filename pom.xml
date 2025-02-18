@@ -19,6 +19,11 @@
         <revision>1.1.0-SNAPSHOT</revision>
         <alinesno.infra.version>${revision}</alinesno.infra.version>
         <commons-text.version>1.1</commons-text.version>
+
+        <poi.version>4.1.2</poi.version>
+        <elasticsearch-rest-high-level-client.version>7.17.23</elasticsearch-rest-high-level-client.version>
+        <elasticsearch.version>8.7.0</elasticsearch.version>
+        <httpclient.version>4.5.13</httpclient.version>
     </properties>
 
     <modules>
@@ -35,6 +40,8 @@
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
         <module>alinesno-infra-smart-expert-screen</module>  <!-- 场景管理 -->
 
+        <module>alinesno-infra-smart-expert-dataset</module> <!-- 数据集(知识库)-->
+        <module>alinesno-infra-smart-expert-memory</module> <!-- 记忆库 -->
         <module>alinesno-infra-smart-expert-workflow</module> <!-- 流程编排 -->
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-task</module> <!-- 任务服务 -->
@@ -70,20 +77,69 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
-                <artifactId>poi-ooxml</artifactId>
-                <version>4.1.2</version>
+                <artifactId>ooxml-schemas</artifactId>
+                <version>1.4</version>
+            </dependency>
+            <!-- poi-tl_end -->
+
+            <!-- word_start -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-examples</artifactId>
+                <version>${poi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
-                <artifactId>ooxml-schemas</artifactId>
-                <version>1.4</version>
+                <artifactId>poi-excelant</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-ooxml</artifactId>
+                <version>${poi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.poi</groupId>
                 <artifactId>poi-ooxml-schemas</artifactId>
-                <version>4.1.2</version>
+                <version>${poi.version}</version>
             </dependency>
-            <!-- poi-tl_end -->
+            <dependency>
+                <groupId>org.apache.poi</groupId>
+                <artifactId>poi-scratchpad</artifactId>
+                <version>${poi.version}</version>
+            </dependency>
+            <!-- word_end -->
+
+            <!-- httpclient -->
+            <dependency>
+                <groupId>org.apache.httpcomponents</groupId>
+                <artifactId>httpclient</artifactId>
+                <version>${httpclient.version}</version>
+            </dependency>
+
+            <!-- elasticsearch_java_start -->
+            <dependency>
+                <groupId>co.elastic.clients</groupId>
+                <artifactId>elasticsearch-java</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-high-level-client</artifactId>
+                <version>${elasticsearch-rest-high-level-client.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch.client</groupId>
+                <artifactId>elasticsearch-rest-client</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.elasticsearch</groupId>
+                <artifactId>elasticsearch</artifactId>
+                <version>${elasticsearch.version}</version>
+            </dependency>
+            <!-- elasticsearch_java_end -->
+
         </dependencies>
     </dependencyManagement>
 
