@@ -45,7 +45,10 @@ const menuItems = ref([
   { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '专家分类' },
   { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道管理' },
   { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/screen/index', desc: '场景列表' },
-  { id: '8', icon: 'fa-brands fa-drupal' , link: '/knowledge/smart/assistant/knowledge/index', desc: '知识库管理' },
+
+  { id: '18', icon: 'fa-solid fa-file-pdf', link: '/base/search/vectorData/index', desc: '数据集管理' },
+  { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '目录分类管理' },
+  
   { id: '6', icon: 'fa-solid fa-pen-nib', link: '/template/smart/assistant/plugin/index', desc: '插件管理' },
   { id: '7', icon: 'fa-solid fa-paper-plane', link: '/template/smart/assistant/secret/index', desc: '密钥管理' },
 
