@@ -2,9 +2,9 @@ package com.alinesno.infra.smart.assistant.adpater.impl;
 
 import com.alinesno.infra.smart.adapter.IBaseSearchService;
 import com.alinesno.infra.smart.adapter.dto.MemoryMessageDto;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
-import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorDto;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
@@ -57,12 +57,12 @@ public class BaseSearchServiceImpl implements IBaseSearchService {
     public List<String> getChannelKnowledgeByKnowledgeId(String knowledgeId, String searchText) {
 
         VectorSearchDto vectorSearchDto = new VectorSearchDto() ;
-        vectorSearchDto.setDatesetId(Long.parseLong(knowledgeId)) ;
+        vectorSearchDto.setDatasetId(Long.parseLong(knowledgeId)) ;
         vectorSearchDto.setSearchText(searchText) ;
         vectorSearchDto.setTopK(5) ;
 
-        List<DocumentVectorDto> dataSearchList = baseSearchConsumer.datasetSearch(vectorSearchDto).getData() ;
-        return dataSearchList.stream().map(DocumentVectorDto::getDocument_content).toList() ;
+        List<DocumentVectorBean> dataSearchList = baseSearchConsumer.datasetSearch(vectorSearchDto).getData() ;
+        return dataSearchList.stream().map(DocumentVectorBean::getDocument_content).toList() ;
     }
 
     /**
@@ -76,12 +76,12 @@ public class BaseSearchServiceImpl implements IBaseSearchService {
         IndustryRoleEntity roleEntity =  industryRoleService.getById(roleId) ;
 
         VectorSearchDto vectorSearchDto = new VectorSearchDto() ;
-        vectorSearchDto.setDatesetId(Long.parseLong(roleEntity.getKnowledgeId())) ;
+        vectorSearchDto.setDatasetId(Long.parseLong(roleEntity.getKnowledgeId())) ;
         vectorSearchDto.setSearchText(searchText) ;
         vectorSearchDto.setTopK(5) ;
 
-        List<DocumentVectorDto> dataSearchList = baseSearchConsumer.datasetSearch(vectorSearchDto).getData() ;
-        return dataSearchList.stream().map(DocumentVectorDto::getDocument_content).toList() ;
+        List<DocumentVectorBean> dataSearchList = baseSearchConsumer.datasetSearch(vectorSearchDto).getData() ;
+        return dataSearchList.stream().map(DocumentVectorBean::getDocument_content).toList() ;
     }
 
     /**
