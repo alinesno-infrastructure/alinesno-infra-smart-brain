@@ -171,7 +171,7 @@ function getList() {
   loading.value = true;
 
   console.log("currentDatasetId = " + currentDatasetId.value);
-  queryParams.value.datesetId = currentDatasetId.value
+  queryParams.value.datasetId = currentDatasetId.value
 
   getSearchKnowledge(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
       loading.value = false;
