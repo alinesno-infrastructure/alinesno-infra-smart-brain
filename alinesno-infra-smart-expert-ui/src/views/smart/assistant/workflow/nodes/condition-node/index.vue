@@ -17,7 +17,7 @@
       <div>
         <!-- 节点设置表单区域 -->
         <template v-for="(branch, index) in branches" :key="index">
-          <div class="settings-form condition-panel">
+          <div ref="conditionPanelsRef" class="settings-form condition-panel">
             <div class="settings-title">
               {{ index === 0 ? 'IF' : `ELSE IF ${index}` }}
               <!-- 添加删除分支按钮 -->
@@ -55,7 +55,7 @@
           </div>
         </template>
 
-        <div class="settings-form condition-panel">
+        <div ref="conditionPanelsRef" class="settings-form condition-panel">
           <div class="settings-title">ELSE</div>
         </div>
 
@@ -79,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, reactive , toRaw } from 'vue'
+import { ref, reactive, toRaw, nextTick } from 'vue'
 import { cloneDeep, set } from 'lodash'
 
 // 定义组件接收的属性
@@ -144,6 +144,9 @@ if (!props.properties.branch_condition_list) {
   ];
 }
 
+// 引用所有的 condition-panel 元素
+const conditionPanelsRef = ref([]);
+
 // 添加条件
 const addCondition = (branchIndex) => {
   branches.value[branchIndex].conditions.push({
@@ -152,38 +155,6 @@ const addCondition = (branchIndex) => {
     value: ''
   })
 }
-
-// 添加分支
-// const addBranch = () => {
-
-//   const list = cloneDeep(props.properties.branch_condition_list)
-//   console.log('list = ' + list);
-//   console.log('nodeModel = ' + props.nodeModel)
-
-//   branches.value.push({
-//     conditions: [
-//       {
-//         variable: '',
-//         condition: '',
-//         value: ''
-//       }
-//     ]
-//   })
-//   // 更新 branch_condition_list
-//   props.properties.branch_condition_list.push({
-//     id: `condition_${props.properties.branch_condition_list.length}`,
-//     index: 12 ,
-//     height: 130 // 假设新增分支高度
-//   });
-
-//   // 刷新节点锚点
-//   // set(props.nodeModel.properties.branch_condition_list, 'branch', list)
-//   // props.nodeModel.refreshBranch();
-
-//   set(props.nodeModel.properties, 'branch_condition_list', list)
-//   props.nodeModel.refreshBranch()
-
-// }
 
 function addBranch() {
   // 获取原始的 nodeModel 对象，避免响应式代理问题
@@ -204,29 +175,35 @@ function addBranch() {
     ]
   })
 
-  const list = cloneDeep(props.nodeModel.properties.branch_condition_list);
-  const obj = {
-    conditions: [
-      {
-        field: [],
-        compare: '',
-        value: ''
-      }
-    ],
-    type: 'ELSE IF ' + (list.length - 1),
-    height: 110,
-    id: '12312312',
-    condition: 'and'
-  };
+  nextTick(() => {
+    const list = cloneDeep(props.nodeModel.properties.branch_condition_list);
+    // 获取最后一个 condition-panel 的高度
+    const lastPanel = conditionPanelsRef.value[conditionPanelsRef.value.length - 1];
+    const height = lastPanel ? lastPanel.offsetHeight : 120;
 
-  list.splice(list.length - 1, 0, obj);
+    const obj = {
+      conditions: [
+        {
+          field: [],
+          compare: '',
+          value: ''
+        }
+      ],
+      type: 'ELSE IF ' + (list.length - 1),
+      height: height,
+      id: '12312312',
+      condition: 'and'
+    };
 
-  try {
-    refreshBranchAnchor(list, true, props.nodeModel);
-    set(props.nodeModel.properties, 'branch_condition_list', list);
-  } catch (error) {
-    console.error('Error in addBranch:', error);
-  }
+    list.splice(list.length - 1, 0, obj);
+
+    try {
+      refreshBranchAnchor(list, true, props.nodeModel);
+      set(props.nodeModel.properties, 'branch_condition_list', list);
+    } catch (error) {
+      console.error('Error in addBranch:', error);
+    }
+  });
 }
 
 function refreshBranchAnchor(list, is_add, nodeModel) {
