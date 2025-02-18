@@ -2,7 +2,7 @@ package com.alinesno.infra.smart.assistant.template.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.response.R;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.assistant.template.mapper.TemplateMapper;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
@@ -56,10 +56,7 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
 
         generateWord(params, sourceFile.getAbsolutePath() , targetFile.getAbsolutePath()) ;
 
-        R<String> r = storageConsumer.uploadCallbackUrl(targetFile , "qiniu-kodo-pub" , progress -> {
-            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
-        }) ;
-
+        R<String> r = storageConsumer.uploadCallbackUrl(targetFile) ;
         return r.getData() ;
     }
 
