@@ -8,8 +8,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
-import com.alinesno.infra.smart.assistant.adapter.BaseSearchConsumer;
-import com.alinesno.infra.smart.assistant.adapter.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
@@ -409,11 +409,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         File file = qianWenAuditLLM.generateAudit(voice, text);
 
-        R<String> r = cloudStorageConsumer.upload(file, "qiniu-kodo", progress -> {
-            System.out.println("total bytes: " + progress.getTotalBytes());
-            System.out.println("current bytes: " + progress.getCurrentBytes());
-            System.out.println("progress: " + Math.round(progress.getRate() * 100) + "%");
-        });
+        R<String> r = cloudStorageConsumer.upload(file) ;
 
         return r.getData();
     }
