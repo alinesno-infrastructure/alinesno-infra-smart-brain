@@ -11,7 +11,7 @@
 export default {
   data () {
     return {
-      currentApplicationName: '基设智能助手服务'
+      currentApplicationName: '智能体管理服务'
     }
   },
   mounted () {
