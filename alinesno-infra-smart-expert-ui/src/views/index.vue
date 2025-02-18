@@ -35,7 +35,7 @@ import OperationWorkspaceStatus from './operation-workspace/countStatics.vue'
 
 
 const currentEnvClusterObj = ref({
-  appName : '基设智能助手服务'  ,
+  appName : '智能体管理服务'  ,
   clusterName: 'minio/oss/nfs等多存储集成'  ,
   apiServerUrl: 'http://portal.infra.linesno.com',
   desc: '运营人员提供一个强大的助手工具，智能助手将成为您的得力助手，提供智能的运营支持'
