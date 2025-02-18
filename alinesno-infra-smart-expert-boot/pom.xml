@@ -82,6 +82,26 @@
 		</dependency>
 		<!-- >>>>>>>>>>>>>>>>>> 引用服务_end >>>>>>>>>>>>>>>>>> -->
 
+		<!-- 记忆和知识库引入_start -->
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-dataset</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-memory</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 记忆和知识库引入_end -->
+
+		<!-- 动态数据源 -->
+		<dependency>
+			<groupId>com.baomidou</groupId>
+			<artifactId>dynamic-datasource-spring-boot3-starter</artifactId>
+			<version>4.3.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
