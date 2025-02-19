@@ -2,6 +2,16 @@
 
   <div class="app-container">
 
+        <div class="page-header-container">
+            <el-page-header @back="goBack">
+                <template #content>
+                    <div style="display: flex;gap: 10px;align-items: center;">
+                    示例模板
+                    </div>
+                </template>
+            </el-page-header>
+        </div>
+
       <!-- 模板选择 -->
       <div class="template-header">
           <div class="vc-div div_l14lqa17 top-container" v-loading="loadingFilter">
@@ -12,11 +22,6 @@
                           角色模板会给出最新的角色示例和最佳实践
                       </span>
                       <div style="float:right">
-                          <!--
-                          <router-link to="/smart/assistant/roleTemplate/add">
-                                <el-button type="primary" bg text icon="Plus" @click="addTemplates()" size="mini">添加模板</el-button>
-                          </router-link>
-                          -->
                           <el-button type="primary" :disabled="loading" bg text icon="Refresh" @click="handleSyncTemplates()" size="mini">同步</el-button>
                       </div> 
                   </div>
@@ -224,131 +229,10 @@ const getList = async () => {
   }
 };
 
-// const cancel = () => {
-//   open.value = false;
-//   reset();
-// };
-
-// const reset = () => {
-//   Object.assign(ruleForm, {
-//     id: null,
-//     screen: null,
-//     industry: null,
-//     type: null,
-//     roleName: null,
-//     tempTeam: null,
-//     tempZip: null,
-//     responsibilities: null
-//   });
-//   // 假设有一个resetForm的方法在全局或组件内，这里调用它
-//   // resetForm("form");
-// };
-
-// const handleQuery = () => {
-//   queryParams.pageNum = 1;
-//   getList();
-// };
-
-// const resetQuery = () => {
-//   // resetForm("queryForm");
-//   handleQuery();
-// };
-
-// const handleSelectionChange = (selection) => {
-//   ids.value = selection.map(item => item.id);
-//   single.value = selection.length !== 1;
-//   multiple.value = !selection.length;
-// };
-
-// const handleAdd = () => {
-//   reset();
-//   open.value = true;
-//   title.value = "添加数据库类型";
-// };
-
-// const handleGenCode = (row) => {
-//   generatorFormVisible.value = true;
-//   selectDbId.value = row.id;
-//   Object.assign(genForm, {
-//     author: row.author,
-//     createType: row.createType,
-//     packagePath: row.packagePath,
-//     moduleName: row.moduleName
-//   });
-// };
-
-// const handleUpdate = async (row) => {
-//   reset();
-//   const id = row.id || ids.value;
-//   // 注意：这里使用的getCasLoginRecord可能是一个错误，因为它与上下文不符。请替换为正确的API调用。
-//   const response = await getCasLoginRecord(id);
-//   btnChangeEnable.value = false;
-//   Object.assign(ruleForm, response.data);
-
-//   open.value = true;
-//   title.value = "修改数据库类型";
-// };
-
-// const submitGenForm = () => {
-//   // 实现提交逻辑
-// };
-
-// const validateDburl = () => {
-//   // $refs["form"]需要被重构为Composition API风格
-//   // 这里假设有一个validate方法可以直接调用
-//   // form.validate(valid => {
-//   //   ...
-//   // });
-// };
-
-// const submitForm = () => {
-//   // $refs["ruleForm"].validate需要被重构为Composition API风格
-//   // 这里假设有一个validate方法可以直接调用
-//   // ruleForm.validate(valid => {
-//   //   ...
-//   // });
-// };
-
-// const addPlatformField = (row) => {
-//   ElMessage('功能正在完善中.');
-
-//   // ... 同步逻辑省略...
-// };
-
-// const handleSynchDb = (row) => {
-//   // ... 同步逻辑省略...
-// };
-
-// const handleDelete = async (row) => {
-//   const idsToDelete = row.id || ids.value;
-//   await ElMessageBox.confirm('是否确认删除数据库类型的数据项?', "警告", {
-//     confirmButtonText: "确定",
-//     cancelButtonText: "取消",
-//     type: "warning"
-//   }).then(async () => {
-//     // delCasLoginRecord应该被替换成实际的删除API
-//     await delCasLoginRecord(idsToDelete);
-//     await getList();
-//     ElMessage.success("删除成功");
-//   }).catch(() => {
-//     ElMessage.info("已取消删除");
-//   });
-// };
-
-// const handleExport = async () => {
-//   await ElMessageBox.confirm('是否确认导出所有数据库类型数据项?', "警告", {
-//     confirmButtonText: "确定",
-//     cancelButtonText: "取消",
-//     type: "warning"
-//   }).then(async () => {
-//     exportLoading.value = true;
-//     const response = await exportCasLoginRecord(queryParams);
-//     download(response.msg); // 假设有download函数可以处理下载逻辑
-//     exportLoading.value = false;
-//   }).catch(() => {
-//     ElMessage.info("已取消导出");
-//   });
-// };
+/** 返回 */
+function goBack() {
+  router.back();
+}
 
 // 生命周期钩子
 onMounted(() => {
@@ -374,6 +258,10 @@ onMounted(() => {
 .vc-text.text_l14lqa1e.active {
   color: #fff;
   background: #005bd5;
+}
+
+.page-header-container{
+  margin-bottom: 20px;
 }
 
 </style>
