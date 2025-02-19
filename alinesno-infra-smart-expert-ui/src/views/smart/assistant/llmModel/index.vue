@@ -3,79 +3,91 @@
     <el-row :gutter="20">
       <!--应用数据-->
       <el-col :span="24" :xs="24">
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-          <el-form-item label="模型名称" prop="modelName">
-            <el-input v-model="queryParams['condition[modelName|like]']" placeholder="请输入大模型名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item>
-          <el-form-item label="模型类型" prop="providerId">
-            <el-input v-model="queryParams['condition[providerId|like]']" placeholder="请输入所属提供商名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item>
-          <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-          </el-form-item>
-        </el-form>
+        <div style="display: flex;align-items: center;justify-content: space-between;">
 
-        <el-row :gutter="10" class="mb8">
-          <el-col :span="1.5">
-            <el-button type="primary" plain icon="Plus" @click="handleAdd">新增
-            </el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button type="success" plain icon="Edit" :disabled="single" @click="handleUpdate"
-              v-hasPermi="['system:LlmModel:edit']">修改
-            </el-button>
-          </el-col>
-          <el-col :span="1.5">
-            <el-button type="danger" plain icon="Delete" :disabled="multiple" @click="handleDelete"
-              v-hasPermi="['system:LlmModel:remove']">删除
-            </el-button>
-          </el-col>
+          <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+            <el-form-item label="模型名称" prop="modelName">
+              <el-input v-model="queryParams['condition[modelName|like]']" placeholder="请输入大模型名称" clearable
+                style="width: 240px" @keyup.enter="handleQuery" />
+            </el-form-item>
+            <el-form-item label="模型类型" prop="providerId">
+              <el-input v-model="queryParams['condition[providerId|like]']" placeholder="请输入所属提供商名称" clearable
+                style="width: 240px" @keyup.enter="handleQuery" />
+            </el-form-item>
+            <el-form-item>
+              <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
+              <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+            </el-form-item>
+          </el-form>
 
-          <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
-        </el-row>
-
-        <el-table v-loading="loading" :data="LlmModelList" @selection-change="handleSelectionChange">
-          <el-table-column type="selection" width="50" align="center" />
-          <el-table-column label="名称" align="left" key="icon" prop="icon" width="200px" v-if="columns[0].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <img :src="'http://data.linesno.com/icons/llm/'+scope.row.providerCode+'.png'" alt="图标" style="width: 45px; height: 45px; border-radius: 50%;">
-              {{ scope.row.modelName }}
-            </template>
-          </el-table-column>
-          <el-table-column label="模型名称" align="left" key="model" prop="model" v-if="columns[6].visible" :show-overflow-tooltip="true" />
-
-          <el-table-column label="API 地址" align="left" key="apiUrl" prop="apiUrl" v-if="columns[5].visible" :show-overflow-tooltip="true" />
-          <el-table-column label="大模型描述" align="center" key="description" prop="description" v-if="columns[2].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              {{ scope.row.modelPermission == 'org' ? '组织' : '私有' }}
-            </template>
-          </el-table-column>
-
-          <el-table-column label="模型类型" align="center" key="apiKey" prop="apiKey" v-if="columns[4].visible">
-            <template #default="scope">
-              <el-button type="primary" text bg>
-                <i class="fas fa-file-signature"></i> {{ scope.row.modelType }}
+          <el-row :gutter="10" class="mb8">
+            <el-col :span="1.5">
+              <el-button type="primary" plain icon="Plus" @click="handleAdd">
+                新增模型
               </el-button>
-            </template>
-          </el-table-column>
+            </el-col>
 
-          <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width"
-            v-if="columns[7].visible">
-            <template #default="scope">
-              <el-tooltip content="查看" placement="top" v-if="scope.row.id !== 1">
-                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
-                  v-hasPermi="['system:LlmModel:edit']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.id !== 1">
-                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
-                  v-hasPermi="['system:LlmModel:remove']"></el-button>
-              </el-tooltip>
-            </template>
-          </el-table-column>
-        </el-table>
+          </el-row>
+        </div>
+
+
+        <div class="gen-template-box" v-if="LlmModelList.size == 0">
+          <el-col :sm="24">
+            <el-empty description="还没有创建模型,可以根据提示链接创建自己的工程模型">
+              <el-link type="primary" icon="el-icon-link">如何创建工程模板?</el-link>
+            </el-empty>
+          </el-col>
+        </div>
+
+        <!-- 模板内容 -->
+        <div class="vc-div div_l14lqa1k tpl-container" v-loading="loading || loadingFilter">
+
+          <div class="vc-div div_l14lqa1j tpl-item" v-for="(item, index) in LlmModelList" :key="index">
+            <div class="vc-div div_l14lqa1i">
+              <div class="vc-div div_l14lqa1c tpl-item-title">
+                <div class="vc-text text_l14lqa1a"
+                  style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;">
+                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
+                    style="width: 45px; height: 45px; border-radius: 50%;">
+                  {{ item.model }}
+                </div>
+                <div>
+
+                  <el-tooltip content="查看" placement="top" v-if="item.id !== 1">
+                    <el-button link type="primary" icon="Edit" @click="handleUpdate(item)"
+                      v-hasPermi="['system:LlmModel:edit']"></el-button>
+                  </el-tooltip>
+                  <el-tooltip content="删除" placement="top" v-if="item.id !== 1">
+                    <el-button link type="primary" icon="Delete" @click="handleDelete(item)"
+                      v-hasPermi="['system:LlmModel:remove']"></el-button>
+                  </el-tooltip>
+                </div>
+              </div>
+              <div class="vc-div tpl-item-description">
+                <div class="vc-text text_l14lqa1d">
+                  名称: {{ item.modelName }}
+                </div>
+                <div class="vc-text text_l14lqa1d">
+                  地址: {{ item.apiUrl }}
+                </div>
+              </div>
+              <div class="vc-div tpl-item-footer">
+                <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
+                  <el-button text bg type="primary">
+                    {{ item.modelPermission == 'org' ? '组织' : '私有' }}
+                  </el-button>
+                </div>
+                <div class="vc-text" title="">
+                  <el-button type="primary" text bg>
+                    <i class="fas fa-file-signature"></i> {{ item.modelType }}
+                  </el-button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
         <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
           v-model:limit="queryParams.pageSize" @pagination="getList" />
       </el-col>
@@ -135,23 +147,16 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="ApiKey" prop="apiKey">
-              <el-input v-model="form.apiKey" placeholder="请输入 API 密钥" maxlength="255" />
+              <el-input type="password" v-model="form.apiKey" placeholder="请输入 API 密钥" maxlength="255" show-password="true" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
             <el-form-item label="基础模型" prop="model">
-              <el-select 
-                v-model="form.model" 
-                allow-create
-                filterable
-                default-first-option
-                placeholder="请选择基础模型">
+              <el-select v-model="form.model" allow-create filterable default-first-option placeholder="请选择基础模型">
 
-                <el-option v-for="item in baseModelOptions" 
-                  :label="item.modelName" 
-                  :value="item.modelName"
+                <el-option v-for="item in baseModelOptions" :label="item.modelName" :value="item.modelName"
                   :key="item.modelName">
                   {{ item.modelName }}
                 </el-option>
@@ -204,26 +209,27 @@ const providerOptions = ref(undefined)
 const modelTypeOptions = ref(undefined)
 const baseModelOptions = ref(undefined)
 
-const deptName = ref("");
-const deptOptions = ref(undefined);
-const initPassword = ref(undefined);
-const postOptions = ref([]);
-const roleOptions = ref([]);
-/*** 应用导入参数 */
-const upload = reactive({
-  // 是否显示弹出层（应用导入）
-  open: false,
-  // 弹出层标题（应用导入）
-  title: "",
-  // 是否禁用上传
-  isUploading: false,
-  // 是否更新已经存在的应用数据
-  updateSupport: 0,
-  // 设置上传的请求头部
-  headers: { Authorization: "Bearer " + getToken() },
-  // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/system/LlmModel/importData"
-});
+// const deptName = ref("");
+// const deptOptions = ref(undefined);
+// const initPassword = ref(undefined);
+// const postOptions = ref([]);
+// const roleOptions = ref([]);
+// /*** 应用导入参数 */
+// const upload = reactive({
+//   // 是否显示弹出层（应用导入）
+//   open: false,
+//   // 弹出层标题（应用导入）
+//   title: "",
+//   // 是否禁用上传
+//   isUploading: false,
+//   // 是否更新已经存在的应用数据
+//   updateSupport: 0,
+//   // 设置上传的请求头部
+//   headers: { Authorization: "Bearer " + getToken() },
+//   // 上传的地址
+//   url: import.meta.env.VITE_APP_BASE_API + "/system/LlmModel/importData"
+// });
+
 // 列显隐信息
 const columns = ref([
   { key: 0, label: `图标`, visible: true },
@@ -279,6 +285,25 @@ function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
 };
+
+/** 模型标识 */
+// function getByModelType(modelCode){
+//   let currentType = null 
+
+//   for(var i = 0 ; i < modelTypeOptions.length ; i ++){
+//     if(modelTypeOptions.value[i].code == modelCode){
+//       currentType = modelTypeOptions.value[i]
+//       break 
+//     }
+//   }
+
+//   if(currentType){
+//     return currentType.displayName
+//   }else{
+//     return "未识别模型" 
+//   }
+
+// }
 
 /** 重置按钮操作 */
 function resetQuery() {
@@ -386,7 +411,7 @@ function handleAllModelProvidersInfo() {
 function selectLLMProvider(value) {
   console.log('value = ' + value);
 
-  let selectedItem = null ; 
+  let selectedItem = null;
 
   for (let i = 0; i < providerOptions.value.length; i++) {
     const item = providerOptions.value[i];
@@ -394,16 +419,16 @@ function selectLLMProvider(value) {
       // 这里可以对选中的项进行处理，比如打印信息
       console.log('找到匹配项:', item);
       // 如果想提前结束查找，可添加 break 语句
-      selectedItem = item ; 
+      selectedItem = item;
       break;
     }
 
   }
 
-  if(selectedItem){  // 查找到角色
+  if (selectedItem) {  // 查找到角色
 
     form.value.apiUrl = selectedItem.url;
-    baseModelOptions.value = selectedItem.modelList ;
+    baseModelOptions.value = selectedItem.modelList;
 
     console.log('form.apiUrl = ' + form.apiUrl + 'baseModelOptions = ' + baseModelOptions);
   }
@@ -416,6 +441,7 @@ handleAllModelProvidersInfo();
 </script>
 
 <style lang="scss" scoped>
+
 .role-icon {
   img {
     width: 45px;
@@ -423,4 +449,19 @@ handleAllModelProvidersInfo();
     border-radius: 50%;
   }
 }
+
+.text_l14lqa1d{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  -webkit-line-clamp: 1;
+  font-size: 13px;
+  color: #444;
+  line-height: 20px;
+}
+
+.tpl-item-footer{
+  padding-top:10px;
+}
+
 </style>
