@@ -40,7 +40,7 @@
       <template #dropdown>
         <el-dropdown-menu style="width: 350px">
 
-          <el-container style="margin-bottom: 15px">
+          <el-container style="margin-bottom: 0px">
             <el-header class="bg-color-base info-h" style="">
               <p class="color-text-secondary f-e-s">登陆名: {{ userStore.name }}
                 <span class="copy-user-id">
