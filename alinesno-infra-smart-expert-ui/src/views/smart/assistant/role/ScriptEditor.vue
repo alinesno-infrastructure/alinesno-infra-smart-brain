@@ -1,13 +1,24 @@
 <template>
-    <div class="cm-container">
-      <code-mirror
-        basic
-        :lang="lang"
-        v-model="codeVal"
-        :style="'height:' + editorHeight"
-        :theme="theme"
-        :extensions="extensions" />
+  <div class="cm-container">
+    <code-mirror basic :lang="lang" v-model="codeVal" :style="'height:calc(100vh - 290px)'" :theme="theme"
+      :extensions="extensions" />
+
+    <div class="function-CodemirrorEditor__footer">
+      <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
+        <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+      </el-button>
     </div>
+
+    <el-dialog v-model="dialogVisible" :title="'函数内容（Groovy）'" append-to-body fullscreen>
+      <code-mirror basic :lang="lang" v-model="cloneContent" :style="'height:calc(100vh - 200px)'" :theme="theme" :extensions="extensions" />
+      <template #footer>
+        <div class="dialog-footer mt-24">
+          <el-button type="primary" @click="submitDialog"> 确定 </el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+  </div>
 </template>
 
 <script setup>
@@ -25,10 +36,13 @@ import { markdown } from '@codemirror/lang-markdown';
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
+const dialogVisible = ref(false)
+const cloneContent = ref('')
+
 const props = defineProps({
   lang: {
     type: String,
-    default: 'python' ,
+    default: 'python',
   },
   height: {
     type: String,
@@ -40,13 +54,13 @@ const props = defineProps({
 let codeVal = ref('');
 const editorHeight = ref(props.height);
 
-const lang = props.lang == 'python'? python():
-  props.lang == 'json'?json():
-  props.lang == 'yaml'?yaml():
-  props.lang == 'sql'?sql():
-  props.lang == 'markdown'?markdown():
-  props.lang == 'java'?java():
-  python() ;
+const lang = props.lang == 'python' ? python() :
+  props.lang == 'json' ? json() :
+    props.lang == 'yaml' ? yaml() :
+      props.lang == 'sql' ? sql() :
+        props.lang == 'markdown' ? markdown() :
+          props.lang == 'java' ? java() :
+            python();
 
 // 扩展
 const extensions = [oneDark];
@@ -68,13 +82,13 @@ const calculateFirstSectionHeight = () => {
 /**
  * 获取到codeValue
  */
-function getRawScript(){
-  return codeVal.value ;
+function getRawScript() {
+  return codeVal.value;
 }
 
 /** 设置值  */
-function setRawScript(val){
-  return codeVal.value = val ;
+function setRawScript(val) {
+  return codeVal.value = val;
 }
 
 
@@ -83,21 +97,32 @@ onMounted(() => {
   window.addEventListener('resize', calculateFirstSectionHeight);
 });
 
+/** 打开编辑器 */
+function openCodemirrorDialog() {
+  cloneContent.value = codeVal.value
+  dialogVisible.value = true
+}
 
 defineExpose({
-  getRawScript ,
+  getRawScript,
   setRawScript
 })
 
 </script>
 
-<style >
+<style>
 /* required! */
 .cm-editor {
-  height: 100%;
+  height: calc(100vh - 200px);
 }
 
-.cm-container{
-  width:100%;
+.cm-container {
+  width: 100%;
+}
+
+.function-CodemirrorEditor__footer {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
 }
 </style>
