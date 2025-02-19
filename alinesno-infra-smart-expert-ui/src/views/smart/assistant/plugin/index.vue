@@ -128,9 +128,15 @@
         <el-row>
           <el-col :span="24" class="editor-after-div">
             <el-form-item label="图标" prop="icon">
-              <el-upload :file-list="imageUrl" :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
-                list-type="picture-card" :auto-upload="true" :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload" :headers="upload.headers" :disabled="upload.isUploading"
+              <el-upload 
+                :file-list="imageUrl" 
+                :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                list-type="picture-card" 
+                :auto-upload="true" 
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload" 
+                :headers="upload.headers" 
+                :disabled="upload.isUploading"
                 :on-progress="handleFileUploadProgress">
                 <el-icon class="avatar-uploader-icon">
                   <Plus />
