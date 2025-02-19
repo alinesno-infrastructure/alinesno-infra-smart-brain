@@ -36,6 +36,9 @@
                         <el-tab-pane name="functionCall" label="方法回调">
                             <ScriptEditorPanel ref="functionCallEditorRef" :lang="'java'" />
                         </el-tab-pane>
+                        <el-tab-pane name="agentParams" label="参数配置">
+                            <ParamsConfigPanel ref="paramsConfigRef" />
+                        </el-tab-pane>
                     </el-tabs>
 
                 </el-col>
@@ -66,6 +69,7 @@
 
 import { validateRoleScript, updateRoleScript } from '@/api/smart/assistant/role'
 import ScriptEditorPanel from './ScriptEditor.vue';
+import ParamsConfigPanel from './ParamsConfigPanel.vue';
 import {
   getRole
 } from "@/api/smart/assistant/role";
@@ -83,6 +87,8 @@ const loading = ref(false)
 const executeEditorRef = ref(null)
 const auditEditorRef = ref(null)
 const functionCallEditorRef = ref(null)
+const paramsConfigRef = ref(null)
+
 const scriptType = ref("execute")
 const genContent = ref(null)
 
