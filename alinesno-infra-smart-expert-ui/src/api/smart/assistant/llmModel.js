@@ -16,10 +16,19 @@ var managerUrl = {
     changeField: prefix + "changeField",
     downloadFile: prefix + "downloadFile",
     allModelProvidersInfo: prefix + "getAllModelProvidersInfo", 
-    allModelTypesInfo: prefix + "getAllModelTypesInfo" 
+    allModelTypesInfo: prefix + "getAllModelTypesInfo" ,
+    listLlmMode: prefix + "listLlmMode"
 };
 
-// 查询应用列表
+// 列出所有模型列表
+export function listAllLlmModel() {
+    return request({
+        url: managerUrl.listLlmMode ,
+        method: 'get'
+    })
+}
+
+// 查询模型列表
 export function listLlmModel(query) {
     return request({
         url: managerUrl.datatables,
@@ -28,7 +37,7 @@ export function listLlmModel(query) {
     })
 }
 
-// 查询应用详细
+// 查询模型详细
 export function getLlmModel(LlmModelId) {
     return request({
         url: managerUrl.detailUrl + '/' + parseStrEmpty(LlmModelId),
@@ -36,7 +45,7 @@ export function getLlmModel(LlmModelId) {
     })
 }
 
-// 新增应用
+// 新增模型
 export function addLlmModel(data) {
     return request({
         url: managerUrl.saveUrl,
@@ -45,7 +54,7 @@ export function addLlmModel(data) {
     })
 }
 
-// 修改应用
+// 修改模型
 export function updateLlmModel(data) {
     return request({
         url: managerUrl.updateUrl,
@@ -54,7 +63,7 @@ export function updateLlmModel(data) {
     })
 }
 
-// 删除应用
+// 删除模型
 export function delLlmModel(LlmModelId) {
     return request({
         url: managerUrl.removeUrl + '/' + parseStrEmpty(LlmModelId),
@@ -62,7 +71,7 @@ export function delLlmModel(LlmModelId) {
     })
 }
 
-// 应用密码重置
+// 模型密码重置
 export function resetLlmModelPwd(LlmModelId, password) {
     const data = {
         LlmModelId,
@@ -75,7 +84,7 @@ export function resetLlmModelPwd(LlmModelId, password) {
     })
 }
 
-// 应用状态修改
+// 模型状态修改
 export function changeLlmModelStatus(LlmModelId, status) {
     const data = {
         LlmModelId,
