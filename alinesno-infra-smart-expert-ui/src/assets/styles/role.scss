@@ -122,9 +122,8 @@
 }
 
 .agent-inference-container {
-    padding: 5px !important;
-    padding-top: 10px !important;
-    background: #f4f4f7;
+    padding: 10px !important;
+    background: #fff ;
     overflow: hidden;
 
     .ai-config-header {
@@ -160,7 +159,7 @@
 
 
     .box-card {
-        margin-bottom: 10px;
+        margin-bottom: 5px;
         background: #fff;
     }
 
@@ -175,7 +174,6 @@
 
     .scrollbar-style {
         height: calc(100vh - 122px);
-        // background-color: #fff;
         padding-right: 10px;
     }
 
@@ -183,6 +181,7 @@
         padding-top: 5px;
         padding-bottom: 5px;
         border-bottom: 1px solid #e8ebf0;
+        align-items: center;
 
         :last-child {
             border: 0px;
