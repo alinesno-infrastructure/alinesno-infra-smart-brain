@@ -33,4 +33,30 @@ public enum ModelTypeEnums {
         }
         return result;
     }
+
+    /**
+     * 通过code获取到ModelTypeEnums
+     */
+    public static ModelTypeEnums getByCode(String code) {
+        for (ModelTypeEnums modelType : values()) {
+            if (modelType.getCode().equals(code)) {
+                return modelType;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 通过code获取到displayName
+     * @param modelType
+     * @return
+     */
+    public static String getDisplayNameByCode(String modelType) {
+        for (ModelTypeEnums modelTypeEnum : values()) {
+            if (modelTypeEnum.getCode().equals(modelType)) {
+                return modelTypeEnum.getDisplayName();
+            }
+        }
+        return "未分类";
+    }
 }
