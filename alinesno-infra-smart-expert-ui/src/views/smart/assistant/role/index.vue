@@ -69,12 +69,28 @@
                   </div>
 
                   <div style="position: absolute;top: 0px;z-index: 100;top: 10px;right: 10px;">
-                    <el-tooltip content="更新" placement="top" v-if="item.roleId !== 1">
-                      <el-button link type="primary" icon="Edit" @click="handleUpdate(item)"
-                        v-hasPermi="['system:Role:edit']"></el-button>
+                    <el-tooltip content="发布渠道" placement="top">
+                        <el-button 
+                          link 
+                          type="warning" 
+                          @click="deployChannel(item)"
+                          icon="Position" 
+                          v-hasPermi="['system:Role:edit']"></el-button>
                     </el-tooltip>
-                    <el-tooltip content="删除" placement="top" v-if="item.roleId !== 1">
-                      <el-button link type="primary" icon="Delete" @click="handleDelete(item)"
+                    <el-tooltip content="更新" placement="top">
+                      <el-button 
+                          link 
+                          type="primary" 
+                          icon="EditPen" 
+                          @click="handleUpdate(item)"
+                          v-hasPermi="['system:Role:edit']"></el-button>
+                    </el-tooltip>
+                    <el-tooltip content="删除" placement="top">
+                      <el-button 
+                          link 
+                          type="info" 
+                          icon="Delete" 
+                          @click="handleDelete(item)"
                         v-hasPermi="['system:Role:remove']"></el-button>
                     </el-tooltip>
                   </div>
@@ -412,7 +428,7 @@ function handleFindOrg() {
 const handleAvatarSuccess = (response, uploadFile) => {
   imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
   form.value.roleAvatar = response.data;
-  console.log('form.roleAvatar = ' + form.roleAvatar);
+  // console.log('form.roleAvatar = ' + form.roleAvatar);
 };
 
 /** 图片上传之前 */
@@ -430,6 +446,11 @@ function handleRecommended(roleId) {
     proxy.$modal.msgSuccess("推荐成功");
     getList();
   })
+}
+
+/** 发布渠道 */
+function deployChannel(item){
+  router.push({path: '/expert/smart/assistant/role/deployChannel', query: { roleId: item.id }})
 }
 
 /** 推送到指定的组织 */
