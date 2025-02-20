@@ -85,6 +85,7 @@ const renderGraphData = (data) => {
       }]
     }
 
+    console.log('lf.value:', lf.value)
     console.log('data = ' + data)
 
     lf.value.render(data ? data : {});
@@ -95,11 +96,18 @@ const renderGraphData = (data) => {
       });
     });
 
-    setTimeout(function () {
-      if (lf.value) {
-        lf.value.fitView();
-      }
-    }, 500);
+    // // 保存当前的缩放比例和位置
+    // const currentZoom = lf.value.getZoom()
+    // const currentTranslate = lf.value.getTranslate()
+
+    // console.log('currentZoom = ' + currentZoom + ', currentTranslate = ' + currentTranslate)
+
+    // TODO  重新渲染之后缩放比例不正确的问题
+    // setTimeout(function () {
+    //   if (lf.value) {
+    //     lf.value.fitView();
+    //   }
+    // }, 500);
 
   }
 };
@@ -146,7 +154,7 @@ defineExpose({
 <style lang="scss">
 .workflow-app {
   width: 100%;
-  height: calc(100vh - 60px);
+  height: calc(100vh - 100px);
   position: relative;
   background-color: #fafafa;
   background-image: radial-gradient(#d6d9db 10%, transparent 0);
