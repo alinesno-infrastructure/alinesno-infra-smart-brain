@@ -131,10 +131,10 @@ onMounted(() => {
   handleInOrg()
 })
 
-console.log('avatar = ' + userStore.avatar)
-console.log('name = ' + userStore.name)
-console.log('dept = ' + JSON.stringify(userStore.dept))
-console.log('role = ' + JSON.stringify(userStore.roles))
+// console.log('avatar = ' + userStore.avatar)
+// console.log('name = ' + userStore.name)
+// console.log('dept = ' + JSON.stringify(userStore.dept))
+// console.log('role = ' + JSON.stringify(userStore.roles))
 
 </script>
 
