@@ -7,6 +7,7 @@ target
 bin
 classpath-data.json
 sts-cache
+package-lock.json
 
 yarn.lock
 # Compiled class file
