@@ -1,7 +1,9 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -10,6 +12,7 @@ import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +20,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -53,7 +57,17 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
-        return this.toPage(model, this.getFeign(), page);
+        TableDataInfo list =  this.toPage(model, this.getFeign(), page);
+
+        if(!CollectionUtils.isEmpty(list.getRows())){
+            List<LlmModelEntity> rows = (List<LlmModelEntity>) list.getRows();
+            for(LlmModelEntity entity : rows) {
+                entity.setFieldProp(ModelTypeEnums.getDisplayNameByCode(entity.getModelType())) ;
+            }
+            list.setRows(rows);
+        }
+
+        return list ;
     }
 
     @DataPermissionSave
@@ -77,6 +91,29 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
     public AjaxResult getAllModelTypesInfo() {
         List<Map<String, Object>> modelTypesInfo = ModelTypeEnums.getAllModelTypesInfo();
         return AjaxResult.success(modelTypesInfo);
+    }
+
+    /**
+     * 列出所有配置的大模型
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/listLlmMode")
+    public AjaxResult listLlmMode(PermissionQuery query) {
+
+        LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(LlmModelEntity.class) ;
+        query.toWrapper(queryWrapper);
+
+        List<LlmModelEntity> allLlmMode = service.list(queryWrapper);
+
+        if(!CollectionUtils.isEmpty(allLlmMode)){
+            for(LlmModelEntity entity : allLlmMode) {
+                entity.setFieldProp(ModelTypeEnums.getDisplayNameByCode(entity.getModelType())) ;
+            }
+        }
+
+        return AjaxResult.success(allLlmMode) ;
     }
 
     @Override
