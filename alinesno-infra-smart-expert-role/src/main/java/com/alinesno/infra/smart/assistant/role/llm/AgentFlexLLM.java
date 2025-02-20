@@ -34,9 +34,13 @@ public class AgentFlexLLM {
     @Autowired
     protected IMessageService messageService;
 
-    @SneakyThrows
     public String chatComponent(Llm llm , String prompt) {
-        return llm.chat(prompt);
+        try{
+            return llm.chat(prompt);
+        }catch (Exception e){
+            log.error("LLM chat error" , e);
+            return "LLM chat error: " + e.getMessage();
+        }
     }
 
     /**
