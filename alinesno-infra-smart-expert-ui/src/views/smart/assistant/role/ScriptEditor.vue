@@ -3,7 +3,7 @@
     <code-mirror basic :lang="lang" v-model="codeVal" :style="'height:calc(100vh - 290px)'" :theme="theme"
       :extensions="extensions" />
 
-    <div class="function-CodemirrorEditor__footer">
+    <div class="function-CodemirrorEditor__footer" >
       <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
         <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
       </el-button>
@@ -113,7 +113,7 @@ defineExpose({
 <style>
 /* required! */
 .cm-editor {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 290px);
 }
 
 .cm-container {
