@@ -21,42 +21,52 @@
               </div>
             </div> -->
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 220px)">
+            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 240px)">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
                 <div ref="innerRef">
 
-                  <div class="robot-chat-ai-say-box" v-for="(item, index) in messageList" @mouseover="showTools(item)" @mouseleave="hideTools(item)" :key="index">
+                  <div class="robot-chat-ai-say-box" v-for="(item, index) in messageList" @mouseover="showTools(item)"
+                    @mouseleave="hideTools(item)" :key="index">
 
                     <div class="chat-ai-header" :class="item.roleType == 'person' ? 'say-right-window' : ''">
                       <div class="header-images">
-                        <img :src="imagePath(item)" />
+                        <img :src="imagePath(item.icon)" />
                       </div>
                     </div>
 
                     <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
                       style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
+                          item.dateTime }}</span>
                         {{ item.name }}
                       </div>
                       <div class="say-message-info" v-else>
                         {{ item.name }}
 
                         <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
-                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading text>推理中</el-button>
+                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading
+                          text>推理中</el-button>
 
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
+                          item.dateTime }} </span>
                       </div>
 
-                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
-                      <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
+                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText"
+                        v-html="readerReasonningHtml(item.reasoningText)"></div>
+                      <div class="say-message-body markdown-body" v-if="item.chatText"
+                        v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">复制</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
+                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
+                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
+                        <el-button type="danger" link icon="Promotion" size="small"
+                          @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+                        <el-button type="primary" link icon="EditPen" size="small"
+                          @click="handleEditGenContent(item)">复制</el-button>
+                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
+                          size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
                     </div>
                   </div>
@@ -73,8 +83,14 @@
                 <el-col :span="16">
                   <div class="message-input">
 
-                    <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
-                      :options="mentionOptions" :prefix="['@']" placeholder="请输入你的问题." @select="handleSelect">
+                    <el-input 
+                      class="input-chat-box" 
+                      @keydown.ctrl.enter.prevent="keyDown" 
+                      v-model="message"
+                      :options="mentionOptions" 
+                      :prefix="['@']" 
+                      :placeholder="isSpeaking?'请说话，我在听':'请输入你的问题.'" 
+                      @select="handleSelect">
                       <template #label="{ item }">
                         {{ item.label }}
                       </template>
@@ -84,6 +100,20 @@
                 </el-col>
 
                 <el-col :span="8" style="text-align: right;">
+
+                  <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
+
+                    <span style="margin-right:10px;" v-if="isSpeaking" >
+                      <img :src="speakingIcon" style="width:35px" />
+                      <el-button type="primary" text bg size="large" @click="AudioListener()">
+                        <i class="fa-solid fa-headset icon-btn"></i>
+                      </el-button>
+                    </span>
+
+                    <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="AudioListener()">
+                      <i class="fa-solid fa-microphone-lines icon-btn"></i>
+                    </el-button>
+                  </el-tooltip>
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
@@ -129,9 +159,18 @@ import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
 import { getParam } from '@/utils/ruoyi'
 import { nextTick, onMounted } from "vue";
 
+import speakingIcon from '@/assets/icons/speaking.gif';
+
+// import { v4 as uuidv4 } from 'uuid'
+
+import SnowflakeId from "snowflake-id";
+const snowflake = new SnowflakeId();
+
+const isSpeaking = ref(false)
+
 const { proxy } = getCurrentInstance();
 
-const agentSingleRightPanelRef = ref(null)
+// const agentSingleRightPanelRef = ref(null)
 
 const loading = ref(true)
 const roleId = ref(null);
@@ -184,13 +223,18 @@ function keyDown(e) {
   message.value = '';
 }
 
+/** 是否语音输入 */
+function AudioListener(){
+  isSpeaking.value = !isSpeaking.value
+}
+
 /** 读取html文本 */
 function readerHtml(chatText) {
   return mdi.render(chatText);
 }
 
 function readerReasonningHtml(chatText) {
-  if(chatText){
+  if (chatText) {
     return mdi.render(chatText);
   }
 }
@@ -207,7 +251,7 @@ const pushResponseMessageList = (newMessage) => {
     if (existingIndex !== -1) {
 
       // 如果找到，更新该消息
-      messageList.value[existingIndex].reasoningText += newMessage.reasoningText; 
+      messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
 
     } else {
@@ -222,7 +266,7 @@ const pushResponseMessageList = (newMessage) => {
   initChatBoxScroll();
 };
 
-function handleExecutorMessage(item){
+function handleExecutorMessage(item) {
 
   // emit('executorMessage' , item) ; 
   // let channelId = getParam("channel");
@@ -298,9 +342,9 @@ function handleGetInfo(roleId) {
 
     loading.value = false;
 
-    nextTick(() => {
-      agentSingleRightPanelRef.value.setRoleInfo(role);
-    })
+    // nextTick(() => {
+    //   agentSingleRightPanelRef.value.setRoleInfo(role);
+    // })
 
   })
 }
@@ -348,11 +392,16 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
+function setRoleInfo(roleInfo) {
+  roleInfo.value = roleInfo
+}
+
 onMounted(() => {
   initChatBoxScroll();
 
   roleId.value = getParam('roleId')
-  channelId.value = getParam('channelId')
+  channelId.value = snowflake.generate()
+  // channelId.value = getParam('channelId')
 
   handleSseConnect(channelId.value)
   handleGetInfo(roleId.value);
@@ -360,11 +409,15 @@ onMounted(() => {
 
 
 // 销毁信息
-onBeforeUnmount(() => {
-  handleCloseSse(channelId.value).then(res => {
-    console.log('关闭sse连接成功:' + channelId)
-  })
-});
+// onBeforeUnmount(() => {
+//   handleCloseSse(channelId.value).then(res => {
+//     console.log('关闭sse连接成功:' + channelId)
+//   })
+// });
+
+defineExpose({
+  setRoleInfo
+})
 
 </script>
 
@@ -442,6 +495,7 @@ onBeforeUnmount(() => {
       line-height: 1.4rem;
       border-radius: 3px;
       background: #fafafa;
+
     }
 
   }
