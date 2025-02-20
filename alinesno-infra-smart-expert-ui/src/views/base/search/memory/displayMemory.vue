@@ -20,7 +20,7 @@
             <div class="grid-content">
                <div class="panel-header">
                   <div class="header-title">
-                     <i class="fa-solid fa-brain"></i> 时间记忆热力图
+                     <i class="fa-solid fa-masks-theater"></i> 时间记忆热力图
                   </div>
                   <!--
                   <div class="header-desc">
@@ -50,7 +50,7 @@
                <div class="panel-body acp-height-auto">
                   <div class="panel-header">
                      <div class="header-title">
-                        <i class="fa-solid fa-brain"></i> 记忆词云图
+                        <i class="fa-solid fa-masks-theater"></i> 记忆词云图
                      </div>
                   </div>
                   <div class="box-header">
@@ -70,7 +70,7 @@
                <div class="panel-body acp-height-auto">
                   <div class="panel-header">
                      <div class="header-title">
-                        <i class="fa-solid fa-brain"></i> 事件关联映射图 
+                        <i class="fa-solid fa-masks-theater"></i> 事件关联映射图 
                      </div>
                   </div>
                   <div class="box-header">
