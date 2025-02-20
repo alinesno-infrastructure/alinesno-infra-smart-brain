@@ -14,9 +14,9 @@
 
       <div class="page-header-btn-container">
         <el-button type="primary" text bg @click="addComponent"><i class="fa-solid fa-feather"></i> 添加组件</el-button>
-        <el-button type="success" text bg @click="saveWorkflow"><i class="fa-solid fa-floppy-disk"></i> 保存</el-button>
-        <el-button type="danger" text bg @click="debugRun"><i class="fa-solid fa-ferry"></i> 试运行</el-button>
-        <el-button type="success" text bg @click="deployWorkflow"><i class="fa-brands fa-wordpress"></i> 发布</el-button>
+        <el-button type="primary" text bg @click="saveWorkflow"><i class="fa-solid fa-floppy-disk"></i> 保存</el-button>
+        <el-button type="primary" text bg @click="debugRun()"><i class="fa-solid fa-ferry"></i> 试运行</el-button>
+        <el-button type="primary" text bg @click="deployWorkflow"><i class="fa-brands fa-wordpress"></i> 发布</el-button>
       </div>
     </div>
 
@@ -33,11 +33,24 @@
     <!-- 工作流画板 -->
     <el-row>
       <el-col :span="24" v-loading="loading" element-loading-text="任务正在生成中，请勿刷新 ..." :element-loading-spinner="svg">
-        <div class="workflow-main-panel">
+        <div class="workflow-main-panel" id="workflowMainPanelId">
             <flowPanel ref="workflowRef" />
         </div>
       </el-col>
     </el-row>
+
+    <!-- 试运行窗口 -->
+    <el-drawer v-model="showDebugRunDialog" 
+      :modal="true" 
+      size="40%" 
+      title="预览与调试" 
+      :with-header="true">
+
+      <div style="margin-top: 0px;">
+        <RoleChatPanel ref="roleChatPanelRef" />
+      </div>
+
+    </el-drawer>
 
   </div>
 </template>
@@ -51,10 +64,15 @@ import {
 import flowPanel from '@/views/smart/assistant/workflow/flowPanel'
 import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
 
+import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
+
 const router = useRouter();
 
 const showComponent = ref(false);
 const showDebugRunDialog = ref(false);
+
+const workflowMainPanelRef = ref(null)
+const roleChatPanelRef = ref(null)
 
 const someId = ref('your-id');
 const workflowRef = ref(null);
@@ -77,6 +95,7 @@ function addComponent(){
 
 function debugRun(){
   showDebugRunDialog.value = true ;
+  console.log('debugRun')
 }
 
 /** 获取角色信息 */
@@ -90,11 +109,7 @@ function getRoleInfo() {
 /** 初始化数据 */
 onMounted(() => {
   console.log('onMounted');
-
-  nextTick(() => {
-    getRoleInfo();
-  })
-
+  getRoleInfo();
 })
 
 </script>
