@@ -47,9 +47,8 @@
               <div class="vc-div div_l14lqa1c tpl-item-title">
                 <div class="vc-text text_l14lqa1a"
                   style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;">
-                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
-                    style="width: 45px; height: 45px; border-radius: 50%;">
-                  {{ item.model }}
+                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 45px; height: 45px; border-radius: 50%;">
+                   {{ item.modelName }}
                 </div>
                 <div>
 
@@ -65,7 +64,7 @@
               </div>
               <div class="vc-div tpl-item-description">
                 <div class="vc-text text_l14lqa1d">
-                  名称: {{ item.modelName }}
+                  名称: {{ item.model }}
                 </div>
                 <div class="vc-text text_l14lqa1d">
                   地址: {{ item.apiUrl }}
@@ -77,11 +76,42 @@
                     {{ item.modelPermission == 'org' ? '组织' : '私有' }}
                   </el-button>
                 </div>
+
+                <!--
                 <div class="vc-text" title="">
-                  <el-button type="primary" text bg>
-                    <i class="fas fa-file-signature"></i> {{ item.modelType }}
+                  <el-button type="primary" text bg v-if="item.modelType === 'large_language_model'">
+                    <i class="fas fa-file-signature"></i> {{ item.fieldProp }}
+                  </el-button>
+                  <el-button type="danger" text bg v-if="item.modelType === 'speech_synthesis'">
+                    <i class="fa-solid fa-microphone"></i> {{ item.fieldProp }}
                   </el-button>
                 </div>
+                -->
+
+                <div class="vc-text" title="">
+                    <el-button type="primary" text bg v-if="item.modelType === 'large_language_model'">
+                        <i class="fas fa-file-signature"></i> {{ item.fieldProp }}
+                    </el-button>
+                    <el-button type="danger" text bg v-if="item.modelType ==='speech_synthesis'">
+                        <i class="fa-solid fa-microphone"></i> {{ item.fieldProp }}
+                    </el-button>
+                    <el-button type="success" text bg v-if="item.modelType ==='vector_model'">
+                        <i class="fa-solid fa-arrows-alt-v"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
+                    </el-button>
+                    <el-button type="warning" text bg v-if="item.modelType ==='re_ranking_model'">
+                        <i class="fa-solid fa-sync-alt"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
+                    </el-button>
+                    <el-button type="info" text bg v-if="item.modelType ==='speech_recognition'">
+                        <i class="fa-solid fa-microphone-alt"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
+                    </el-button>
+                    <el-button type="danger" text bg v-if="item.modelType === 'vision_model'">
+                        <i class="fa-solid fa-eye"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
+                    </el-button>
+                    <el-button type="primary" text bg v-if="item.modelType === 'image_generation'">
+                        <i class="fa-solid fa-palette"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
+                    </el-button>
+                </div>
+
               </div>
             </div>
           </div>
