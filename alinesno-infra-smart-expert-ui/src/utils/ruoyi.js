@@ -47,8 +47,20 @@ export function parseTime(time, pattern) {
 }
 
 /** 显示图片 */
-export function imagePath(icon){
-  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + icon ; 
+// export function imagePath(icon){
+//   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + icon ; 
+// }
+
+/** 显示图片 */
+export function imagePath(icon) {
+  // 正则表达式用于检查字符串是否为 Base64 编码
+  const base64Regex = /^[A-Za-z0-9+/]+={0,2}$/;
+  // 判断是否为可能的 Base64 编码
+  if (typeof icon === 'string' && base64Regex.test(icon) && icon.length % 4 === 0) {
+      return 'data:image/jpeg;base64,' + icon;
+  }
+
+  return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + icon;
 }
 
 // 表单重置
