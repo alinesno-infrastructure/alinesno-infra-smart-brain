@@ -164,6 +164,12 @@ export const constantRoutes = [
         name: '/expert/smart/assistant/role/agentInference',
         meta: { title: 'Agent推理角色', icon: 'dashboard', affix: true }
       },
+      {
+        path: '/expert/smart/assistant/role/deployChannel' , 
+        component: () => import('@/views/smart/assistant/role/deployChannel'),
+        name: '/expert/smart/assistant/role/deployChannel' , 
+        meta: { title: '推送渠道', icon: 'dashboard', affix: true }
+      },
     ]
   },
   {
