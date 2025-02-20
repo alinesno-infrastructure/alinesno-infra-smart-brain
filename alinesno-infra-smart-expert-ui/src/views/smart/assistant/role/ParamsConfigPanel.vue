@@ -9,7 +9,7 @@
             <el-row class="nav-row">
                 <el-col :span="6">
                     <div class="ai-config-section-title">
-                        <i class="fa-solid fa-brain"></i> AI模型
+                        <i class="fa-solid fa-masks-theater"></i> AI模型
                     </div>
                 </el-col>
                 <el-col :span="18">
@@ -122,7 +122,7 @@
             <el-row class="nav-row">
                 <el-col :span="12">
                     <div class="ai-config-section-title">
-                        <i class="fa-solid fa-lightbulb"></i> <span>猜你想问</span>
+                        <i class="fa-solid fa-lightbulb"></i> <span>用户问题建议</span>
                     </div>
                 </el-col>
                 <el-col :span="12">
