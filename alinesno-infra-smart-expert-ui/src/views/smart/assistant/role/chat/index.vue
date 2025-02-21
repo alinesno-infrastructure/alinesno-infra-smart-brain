@@ -89,7 +89,7 @@
                       v-model="message"
                       :options="mentionOptions" 
                       :prefix="['@']" 
-                      :placeholder="isSpeaking?'请说话，我在听':'请输入你的问题.'" 
+                      :placeholder="isRecording?'请说话，我在听':'请输入你的问题.'" 
                       @select="handleSelect">
                       <template #label="{ item }">
                         {{ item.label }}
@@ -103,14 +103,14 @@
 
                   <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
 
-                    <span style="margin-right:10px;" v-if="isSpeaking" >
+                    <span style="margin-right:10px;" v-if="isRecording" >
                       <img :src="speakingIcon" style="width:35px" />
-                      <el-button type="primary" text bg size="large" @click="AudioListener()">
+                      <el-button type="primary" text bg size="large" @click="stopRecording()">
                         <i class="fa-solid fa-headset icon-btn"></i>
                       </el-button>
                     </span>
 
-                    <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="AudioListener()">
+                    <el-button v-if="!isRecording" type="primary" text bg size="large" @click="startRecording()">
                       <i class="fa-solid fa-microphone-lines icon-btn"></i>
                     </el-button>
                   </el-tooltip>
@@ -153,7 +153,7 @@ import hljs from 'highlight.js';
 
 // import AgentSingleRightPanel from './rightPanel.vue'
 
-import { getInfo, chatRole } from '@/api/smart/assistant/roleChat'
+import { getInfo, chatRole , recognize } from '@/api/smart/assistant/roleChat'
 import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
 
 import { getParam } from '@/utils/ruoyi'
@@ -167,6 +167,12 @@ import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
 
 const isSpeaking = ref(false)
+// 定义响应式变量
+const isRecording = ref(false);
+const mediaRecorder = ref(null);
+const audioChunks = ref([]);
+const audioUrl = ref('');
+const transcription = ref('');
 
 const { proxy } = getCurrentInstance();
 
@@ -182,6 +188,8 @@ const businessId = ref(null);
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
+
+const isSpeechSynthesisSupported = 'speechSynthesis' in window;
 
 const streamLoading = ref(null)
 
@@ -228,6 +236,73 @@ function AudioListener(){
   isSpeaking.value = !isSpeaking.value
 }
 
+// 开始录音函数
+const startRecording = async () => {
+  try {
+    if (!('MediaRecorder' in window)) {
+      alert('当前浏览器不支持录音功能');
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    mediaRecorder.value = new MediaRecorder(stream);
+
+    mediaRecorder.value.addEventListener('dataavailable', (event) => {
+      if (event.data.size > 0) {
+        audioChunks.value.push(event.data);
+      }
+    });
+
+    mediaRecorder.value.addEventListener('stop', async () => {
+      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+      audioUrl.value = URL.createObjectURL(audioBlob);
+      audioChunks.value = [];
+
+      // 调用后端语音识别接口
+      await sendAudioToBackend(audioBlob);
+    });
+
+    mediaRecorder.value.start();
+    isRecording.value = true;
+  } catch (error) {
+    console.error('录音失败:', error);
+    alert('录音失败，请检查麦克风权限或设备是否正常');
+  }
+};
+
+// 停止录音函数
+const stopRecording = () => {
+  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+    mediaRecorder.value.stop();
+    isRecording.value = false;
+  }
+};
+
+// 发送音频数据到后端
+const sendAudioToBackend = async (audioBlob) => {
+  const formData = new FormData();
+  formData.append('audio', audioBlob);
+
+  try {
+
+    streamLoading.value = ElLoading.service({
+      lock: true,
+      text: '语音识别中...',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+
+    const response = await recognize(formData) ; 
+    message.value = response.data ;
+
+    streamLoading.value.close();
+    sendMessage('send');
+
+  } catch (error) {
+    console.error('语音识别请求失败:', error);
+  }
+};
+
 /** 读取html文本 */
 function readerHtml(chatText) {
   return mdi.render(chatText);
@@ -254,6 +329,8 @@ const pushResponseMessageList = (newMessage) => {
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
 
+      // speakText(newMessage.chatText);
+
     } else {
       // 否则，添加新消息
       messageList.value.push(newMessage);
@@ -264,6 +341,25 @@ const pushResponseMessageList = (newMessage) => {
 
   // 调用初始化滚动条的函数
   initChatBoxScroll();
+};
+
+const speakText = (text) => {
+  if (!isSpeechSynthesisSupported) {
+    alert('当前浏览器不支持语音合成功能');
+    return;
+  }
+
+  const utterance = new SpeechSynthesisUtterance();
+  utterance.text = text;
+
+  const voices = speechSynthesis.getVoices();
+  utterance.voice = voices[0];
+
+  utterance.rate = 1;
+  utterance.volume = 1;
+  utterance.pitch = 1;
+
+  speechSynthesis.speak(utterance);
 };
 
 function handleExecutorMessage(item) {
