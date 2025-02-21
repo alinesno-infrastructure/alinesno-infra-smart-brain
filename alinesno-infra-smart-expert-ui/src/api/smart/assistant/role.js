@@ -3,7 +3,8 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 
 // 接口配置项
-var prefix = '/api/infra/smart/assistant/role/' ;
+var prefix = '/api/infra/smart/assistant/role/' ;  // 角色
+
 var managerUrl = {
   datatables : prefix +"datatables" ,
   createUrl: prefix + 'add' ,
@@ -32,6 +33,7 @@ var managerUrl = {
   findOrg: prefix + "findOrg",
   confirmPushOrg: prefix + "confirmPushOrg",
   // listPushOrgRole: prefix + "listPushOrgRole",
+
 }
 
 // 列出推荐角色
