@@ -41,17 +41,13 @@
       </el-form-item>
 
       <!-- 提交按钮 -->
-      <!-- 
       <el-form-item>
         <div style="width: 100%;text-align: right;margin-top:10px">
-
-          <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
-            <i class="fa-solid fa-headphones-simple"></i> &nbsp;&nbsp; 试听
+          <el-button type="primary" text bg size="large" @click="submitForm()"> 
+            确认
           </el-button>
-
         </div>
-      </el-form-item> 
-      -->
+      </el-form-item>
 
     </el-form>
   </div>
@@ -60,7 +56,7 @@
 <script setup>
 import { ref } from 'vue';
 
-import speakingIcon from '@/assets/icons/speaking.gif';
+// import speakingIcon from '@/assets/icons/speaking.gif';
 
 // 初始化表单数据
 const formData = ref({
@@ -72,7 +68,7 @@ const formData = ref({
 // 定义可用的语音模型数组
 const llmModelOptions = ref([]);
 
-const isSpeaking = ref(false)
+// const isSpeaking = ref(false)
 
 // 表单验证规则
 const rules = ref({
@@ -104,14 +100,14 @@ const setLlmModelOptions = (models) => {
 }
 
 /** 是否在播放 */
-const listenPlayVoiceOption = () => {
-  isSpeaking.value = !isSpeaking.value
-}
+// const listenPlayVoiceOption = () => {
+//   isSpeaking.value = !isSpeaking.value
+// }
 
 // 重置表单的方法
-const resetForm = () => {
-  formRef.resetFields();
-};
+// const resetForm = () => {
+//   formRef.resetFields();
+// };
 
 defineExpose({
   setLlmModelOptions
