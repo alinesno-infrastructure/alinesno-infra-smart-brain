@@ -4,9 +4,25 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 // 接口配置项
 var prefix = '/v1/api/infra/base/im/roleChat/' ;
+var speechPrefix = '/api/infra/smart/assistant/speechRecognition/' ;  // 语音识别
+
 var managerUrl = {
   getInfo: prefix +"getInfo",
-  chatRole: prefix + "chatRole"
+  chatRole: prefix + "chatRole",
+
+  recognize: speechPrefix + "recognize" ,
+}
+
+// 语音识别
+export function recognize(data) {
+  return request({
+    url: managerUrl.recognize ,
+    method: 'post',
+    headers: {
+        'Content-Type': 'multipart/form-data'
+    },
+    data: data
+  })
 }
 
 // 查询应用详细
