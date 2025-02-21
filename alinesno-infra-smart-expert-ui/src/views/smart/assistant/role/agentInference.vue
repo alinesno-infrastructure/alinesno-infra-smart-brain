@@ -8,7 +8,7 @@
                     </div>
                 </template>
             </el-page-header>
-            <el-button type="primary" bg @click="handleInference">保存配置</el-button>
+            <el-button type="primary" bg @click="submitModelConfig()">保存配置</el-button>
         </div>
         <el-row :gutter="20">
             <!--类型数据-->
@@ -48,7 +48,7 @@
                             </el-col>
                             <el-col :span="18">
                                 <div class="select-wrapper">
-                                    <el-select v-model="modelConfig.modelName" placeholder="请选择大模型" size="large"
+                                    <el-select v-model="agentModelConfig.modelName" placeholder="请选择大模型" size="large"
                                         style="width:100%">
                                         <el-option v-for="item in llmModelOptions" :key="item.id"
                                             :label="item.modelName" :value="item.id">
@@ -70,12 +70,18 @@
                         <el-row class="nav-row">
                             <el-col :span="24">
                                 <div class="ai-config-section-title">
-                                    <i class="fa-solid fa-pen-to-square"></i> 提示词
+                                    <i class="fa-solid fa-file-signature"></i> 提示词
                                 </div>
                             </el-col>
                             <el-col :span="24">
                                 <div class="input-wrapper">
-                                    <el-input v-model="modelConfig.promptContent" type="textarea" resize="none" :rows="4"
+                                    <el-input 
+                                        maxlength="5000" 
+                                        show-word-limit
+                                        v-model="agentModelConfig.promptContent" 
+                                        type="textarea" 
+                                        resize="none" 
+                                        :rows="4"
                                         placeholder="模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可通过输入 / 插入选择变量如果关联了知识库，你还可以通过适当的描述，来引导模型何时去调用知识库搜索。例如：你是电影《星际穿越》的助手，当用户询问与《星际穿越》相关的内容时，请搜索知识库并结合搜索结果进行回答。"></el-input>
                                         <div class="function-CodemirrorEditor__footer">
                                             <el-button text @click="openPromptDialog" style="background-color: transparent !important;" class="magnify">
@@ -89,42 +95,14 @@
                             <el-col :span="12">
                                 <div class="ai-config-section-title">
                                     <i class="fa-solid fa-database"></i> <span>关联知识库</span>
-
-                                    <el-popover placement="top-start" title="已选择知识库" :width="600" trigger="hover"
-                                        content="this is content, this is content, this is content">
-                                        <template #reference>
-                                            <el-tag style="cursor: pointer;" effect="dark">6</el-tag>
-                                        </template>
-
-                                        <div style="padding:10px 0px">
-                                            <el-table :data="selectionDatasetData">
-                                                <el-table-column type="index" label="序号" width="50" align="center" />
-                                                <el-table-column property="name" label="工具名称">
-                                                    <template #default="scope">
-                                                        <div style="display: flex; gap:10px;align-items:center">
-                                                            <i :class="scope.row.icon"></i> {{ scope.row.name }}
-                                                        </div>
-                                                    </template>
-                                                </el-table-column>
-                                                <el-table-column width="100" property="address" label="操作">
-                                                    <template #default="scope">
-                                                        <el-button type="danger" bg text @click="handleDeleteSelectionDataset(scope.$index, scope.row)">
-                                                            删除
-                                                        </el-button>
-                                                </template>
-                                                </el-table-column>
-                                            </el-table>
-                                        </div>
-
-                                    </el-popover>
-
+                                    <el-tag style="cursor: pointer;" effect="dark">{{ selectionDatasetData.length }}</el-tag>
                                 </div>
                             </el-col>
                             <el-col :span="12">
                                 <div class="button-group">
                                     <el-button type="primary" text bg @click="openKnowledgeBaseSelection">+
                                         选择</el-button>
-                                    <el-button type="primary" text bg>参数</el-button>
+                                    <el-button type="primary" text bg @click="handleOpenDatasetConfigPanel" >参数</el-button>
                                 </div>
                             </el-col>
                         </el-row>
@@ -132,35 +110,7 @@
                             <el-col :span="12">
                                 <div class="ai-config-section-title">
                                     <i class="fa-solid fa-wrench"></i> <span>工具调用</span>
-                                    <el-popover placement="top-start" title="已选择工具" :width="600" trigger="hover"
-                                        content="this is content, this is content, this is content">
-                                        <template #reference>
-                                            <el-tag style="cursor: pointer;" effect="dark">6</el-tag>
-                                        </template>
-
-                                        <div style="padding:10px 0px">
-                                            <el-table :data="selectionToolsData">
-                                                <el-table-column type="index" label="序号" width="50" align="center" />
-                                                <el-table-column property="name" label="工具名称">
-                                                    <template #default="scope">
-                                                        <div style="display: flex;gap:10px;">
-                                                            <img :src="imagePath(scope.row.icon)" style="width:25px;height:25px;border-radius: 5px;" />
-                                                            {{ scope.row.name }}
-                                                        </div>
-                                                    </template>
-                                                </el-table-column>
-                                                <el-table-column width="100" property="address" label="操作">
-                                                    <template #default="scope">
-                                                        <el-button type="danger" bg text @click="handleDeleteSelectionTool(scope.$index, scope.row)">
-                                                            删除
-                                                        </el-button>
-                                                </template>
-                                                </el-table-column>
-                                            </el-table>
-                                        </div>
-
-                                    </el-popover>
-
+                                    <el-tag style="cursor: pointer;" effect="dark">{{ selectionToolsData.length }}</el-tag>
                                 </div>
                             </el-col>
                             <el-col :span="12">
@@ -191,7 +141,13 @@
                             </el-col>
                             <el-col :span="24">
                                 <div class="input-wrapper">
-                                    <el-input type="textarea" resize="none" :rows="2"
+                                    <el-input 
+                                        maxlength="100" 
+                                        v-model="agentModelConfig.greeting"
+                                        show-word-limit
+                                        type="textarea" 
+                                        resize="none" 
+                                        :rows="2"
                                         placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题"></el-input>
                                 </div>
                             </el-col>
@@ -220,7 +176,7 @@
                                     <el-button type="primary" text bg @click="toggleVoiceInput">
                                         {{ voiceInputStatus ? '关闭' : '开启' }}
                                     </el-button>
-                                    <el-button v-if="voiceInputStatus" type="primary" text bg>参数</el-button>
+                                    <el-button v-if="voiceInputStatus" type="primary" text bg @click="toggleVoiceInputStatusPanel">参数</el-button>
                                 </div>
                             </el-col>
                         </el-row>
@@ -235,7 +191,6 @@
                                     <el-button type="primary" text bg @click="toggleGuessWhatYouAsk">
                                         {{ guessWhatYouAskStatus ? '关闭' : '开启' }}
                                     </el-button>
-                                    <!-- <el-button v-if="guessWhatYouAskStatus" type="primary" text bg>参数</el-button> -->
                                 </div>
                             </el-col>
                         </el-row>
@@ -252,76 +207,32 @@
     </div>
 
     <!-- 弹出的AI大模型配置窗口 -->
-    <el-dialog title="AI大模型配置" v-model="modelConfigDialogVisible" width="700px">
-        <el-form :model="modelConfig" label-width="80" :label-Position="'left'" style="padding:20px;">
-            <el-form-item label="AI模型">
-                <!-- <el-select v-model="modelConfig.aiModel" placeholder="Select" size="large" style="width:100%">
-                    <el-option v-for="item in options" :key="item.value" :label="item.label"
-                        :value="item.value" />
-                </el-select> -->
-                <el-select v-model="modelConfig.aiModel" placeholder="请选择大模型" size="large" style="width:100%">
-                    <el-option v-for="item in llmModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
-                        <template #default>
-                            <div>
-                                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
-                                    style="width: 25px; height: 25px; border-radius: 50%;">
-                                {{ item.modelName }}
-                            </div>
-                        </template>
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item label="记忆轮数">
-                <!-- <el-input v-model="modelConfig.memoryRounds" /> -->
-                <el-slider size="large" show-input v-model="modelConfig.memoryRounds" :step="1" />
-            </el-form-item>
-            <el-form-item label="回复上限">
-                <!-- <el-input v-model="modelConfig.replyLimit" /> -->
-                <el-slider size="large" show-input v-model="modelConfig.replyLimit" :step="1" />
-            </el-form-item>
-            <el-form-item label="温度">
-                <!-- <el-input v-model="modelConfig.temperature" /> -->
-                <el-slider size="large" show-input v-model="modelConfig.temperature" :step="1" />
-            </el-form-item>
-            <el-form-item label="Top_p">
-                <!-- <el-input v-model="modelConfig.topP" /> -->
-                <el-slider size="large" show-input v-model="modelConfig.topP" :step="1" />
-            </el-form-item>
-            <el-form-item label="回复格式">
-                <!-- <el-input v-model="modelConfig.replyFormat" size="large" /> -->
-                <el-radio-group size="large" v-model="modelConfig.replayFormat">
-                    <el-radio value="json">JSON</el-radio>
-                    <el-radio value="text">TEXT</el-radio>
-                </el-radio-group>
-            </el-form-item>
-            <el-form-item label="停止序列">
-                <el-input v-model="modelConfig.stopSequences" size="large"
-                    placeholder="多个序列号通过 | 隔开，例如：finalAnswer|stop" />
-            </el-form-item>
-            <el-form-item style="margin-top: 30px;">
-                <div style="display: flex;justify-content: flex-end;width: 100%;">
-                    <el-button text bg size="large" @click="modelConfigDialogVisible = false">关闭</el-button>
-                    <el-button type="primary" @click="onSubmit" size="large" text bg>确认</el-button>
-                </div>
-            </el-form-item>
-        </el-form>
-    </el-dialog>
-
-
-    <el-dialog title="选择知识库" v-model="datasetConfigDialogVisible" width="1024px">
-        <div style="margin-bottom:30px">
-            <DatasetChocePanel />
+    <el-dialog title="AI大模型配置" v-model="modelConfigDialogVisible" width="600px">
+        <div style="margin-bottom:0px">
+            <LllModelConfigPanel @setAgentModelConfig="setAgentModelConfig" ref="llmModelConfigPanelRef" />
         </div>
     </el-dialog>
 
-    <el-dialog title="选择工具" v-model="toolsConfigDialogVisible" width="1024px">
+    <el-dialog title="选择知识库" v-model="datasetConfigDialogVisible" width="1024px" :before-close="handleSelectDatasetConfigClose">
         <div style="margin-bottom:30px">
-            <ToolsChocePanel />
+            <DatasetChoicePanel ref="datasetChoicePanelRef" />
+        </div>
+    </el-dialog>
+
+    <el-dialog title="知识库配置" v-model="datasetParamsConfigDialogVisible" width="600px" :before-close="handleSelectDatasetParamsConfigClose">
+        <div style="margin-bottom:30px">
+            <DatasetParamsChoicePanel ref="datasetParamsChoicePanelRef" />
+        </div>
+    </el-dialog>
+
+    <el-dialog title="选择工具" v-model="toolsConfigDialogVisible" width="1024px" :before-close="handleSelectToolsConfigClose()">
+        <div style="margin-bottom:30px">
+            <ToolsChoicePanel ref="toolsChoicePanelRef" />
         </div>
     </el-dialog>
 
     <el-dialog title="选择语音" v-model="voiceConfigDialogVisible" width="500px">
-        <VoiceChocePanel ref="voiceChocePanelRef" />
+        <VoiceChoicePanel ref="voiceChoicePanelRef" />
     </el-dialog>
 
     <!-- 用户问题建议 -->
@@ -332,6 +243,11 @@
     <!-- 提示词 -->
      <el-dialog title="提示词" v-model="promptDialogVisible" width="800px">
         <promptEditorPanel @syncPromptContent="syncPromptContent" ref="promptEditorPanelRef" />
+     </el-dialog>
+
+    <!-- 语音输入参数 -->
+     <el-dialog title="语音输入" v-model="voiceInputStatusVisible" width="500px">
+        <VoiceInputStatusPanel ref="voiceInputStatusPanelRef" />
      </el-dialog>
 
 </template>
@@ -347,11 +263,14 @@ import {
 } from "@/api/smart/assistant/llmModel"
 
 
-import DatasetChocePanel from '@/views/base/search/vectorData/datasetChoicePanel'
-import ToolsChocePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
-import VoiceChocePanel from '@/views/smart/assistant/llmModel/choiceVoicePanel'
+import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
+import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
+import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
+import VoiceChoicePanel from '@/views/smart/assistant/llmModel/choiceVoicePanel'
+import LllModelConfigPanel from '@/views/smart/assistant/llmModel/lllModelConfigPanel'
 import guessWhatYouAskPanel from '@/views/smart/assistant/llmModel/guessWhatYouAskPanel'
 import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPanel'
+import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -362,35 +281,44 @@ const currentRole = ref({
 });
 const currentRoleId = ref(null)
 
+const modelConfigDialogVisible = ref(false);
 const datasetConfigDialogVisible = ref(false)
+const datasetParamsConfigDialogVisible = ref(false)
 const toolsConfigDialogVisible = ref(false)
 const voiceConfigDialogVisible = ref(false)
 const promptDialogVisible = ref(false)
+const voiceInputStatusVisible = ref(false)
 
+const llmModelConfigPanelRef = ref(null)
+const datasetChoicePanelRef = ref(null)
+const toolsChoicePanelRef = ref(null)
 const roleChatPanelRef = ref(null)
-const voiceChocePanelRef = ref(null)
+const voiceChoicePanelRef = ref(null)
 const guessWhatYouAskRef = ref(null)
 const promptEditorPanelRef = ref(null)
+const voiceInputStatusPanelRef = ref(null)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
 const voiceModelOptions = ref([])  // 语音播放模型
+const voiceRecoModelOptions = ref([])  // 语音播放模型
 
 // AI大模型配置窗口相关
-const modelConfigDialogVisible = ref(false);
-const modelConfig = ref({
+const agentModelConfig = ref({
     modelName: '',
     promptContent: '' ,
-    memoryRounds: '',
-    replyLimit: '',
-    temperature: '',
-    topP: '',
-    stopSequences: ''
+    // memoryRounds: '',
+    // replyLimit: '',
+    // temperature: '',
+    // topP: '',
+    // stopSequences: ''
 });
+
 // 关联知识库选择相关
-const knowledgeBaseIds = ref([]);
+// const knowledgeBaseIds = ref([]);
 // 关闭工具相关
-const closedToolIds = ref([]);
+// const closedToolIds = ref([]);
+
 // 长期记忆开关
 const longTermMemoryEnabled = ref(false);
 // 语音播放开关
@@ -401,23 +329,10 @@ const voiceInputStatus = ref(false);
 const guessWhatYouAskStatus = ref(false);
 
 // 已选择的数据集数据
-const selectionDatasetData = ref([
-    { id: 1, icon: 'fa-solid fa-users', name: '客户数据' },
-    { id: 2, icon: 'fa-solid fa-chart-line', name: '销售数据' },
-    { id: 3, icon: 'fa-solid fa-money-bill-trend-up', name: '财务数据' },
-    { id: 4, icon: 'fa-solid fa-users-gear', name: '人事数据' }
-]);
+const selectionDatasetData = ref([]);
 
 // 已选择的工具数据
-const selectionToolsData = ref([
-    { id: 1, icon: '1882209997121572866', name: '获取客户演示时间' },
-    { id: 2, icon: '1882209997121572866', name: '生成客户报告' },
-    { id: 3, icon: '1882209997121572866', name: '分析客户反馈' },
-    { id: 4, icon: '1882209997121572866', name: '管理客户联系人' },
-    { id: 5, icon: '1882209997121572866', name: '安排客户会议' },
-    { id: 6, icon: '1882209997121572866', name: '发送客户提醒' },
-    { id: 7, icon: '1882209997121572866', name: '评估客户满意度' }
-])
+const selectionToolsData = ref([])
 
 /** 返回 */
 function goBack() {
@@ -443,18 +358,63 @@ nextTick(() => {
 // 打开AI大模型配置窗口
 function openModelConfigDialog() {
     modelConfigDialogVisible.value = true;
+
+    nextTick(() => {
+        llmModelConfigPanelRef.value.setLlmModelOptions(llmModelOptions.value);
+    });
 }
+
+/** 设置AI大模型配置 */
+function setAgentModelConfig(modelConfig){
+    console.log('agentModelConfig modelConfig = ' + modelConfig);
+    modelConfigDialogVisible.value = false;
+    agentModelConfig.value.modelConfig = modelConfig;
+}
+
 // 打开关联知识库选择窗口
 function openKnowledgeBaseSelection() {
     console.log('打开关联知识库选择窗口')
     // 这里可以添加打开选择窗口的逻辑，选择后更新knowledgeBaseIds
     datasetConfigDialogVisible.value = true;
 }
+
+// 打开数据集配置窗口
+function handleOpenDatasetConfigPanel(){
+    datasetParamsConfigDialogVisible.value = true;
+}
+
+// 关闭数据集配置窗口
+function handleSelectDatasetConfigClose(){
+    if(datasetConfigDialogVisible.value){
+        datasetConfigDialogVisible.value = false;
+        selectionDatasetData.value = datasetChoicePanelRef.value.getSelectItemList();
+        agentModelConfig.value.knowledgeBaseIds = selectionDatasetData.value;
+    }
+}
+
+// 关闭数据集配置窗口
+function handleSelectDatasetParamsConfigClose(){
+    if(datasetParamsConfigDialogVisible.value){
+        datasetParamsConfigDialogVisible.value = false;
+        // selectionDatasetParamsData.value = datasetParamsChoicePanelRef.value.getSelectItemList();
+    }
+}
+
 // 打开工具选择窗口
 function openToolSelection() {
     // 这里可以添加打开选择窗口的逻辑，选择后更新closedToolIds
     toolsConfigDialogVisible.value = true;
 }
+
+// 关闭工具选择窗口之前，获取到工具
+function handleSelectToolsConfigClose(){
+    if(toolsChoicePanelRef.value){
+        selectionToolsData.value = toolsChoicePanelRef.value.getSelectItemList() ; 
+        console.log('selectionToolsData.value = ' + JSON.stringify(selectionToolsData.value)) ;
+        agentModelConfig.value.selectionToolsData = selectionToolsData.value;
+    }
+}
+
 // 切换长期记忆状态
 function toggleLongTermMemory() {
     longTermMemoryEnabled.value = !longTermMemoryEnabled.value;
@@ -465,8 +425,8 @@ function toggleVoicePlayback() {
     voiceConfigDialogVisible.value = true;
 
     nextTick(() => {
-        console.log(voiceChocePanelRef.value)
-        voiceChocePanelRef.value.setVoiceModelOptions(voiceModelOptions.value);
+        console.log(voiceChoicePanelRef.value)
+        voiceChoicePanelRef.value.setVoiceModelOptions(voiceModelOptions.value);
     });
 
 }
@@ -479,23 +439,29 @@ function toggleGuessWhatYouAsk() {
     guessWhatYouAskStatus.value = !guessWhatYouAskStatus.value;
 
     nextTick(() => {
-        console.log(voiceChocePanelRef.value)
+        console.log(voiceChoicePanelRef.value)
         guessWhatYouAskRef.value.setLlmModelOptions(llmModelOptions.value);
     });
 }
+
+// 关联知识库选择窗口相关
+// function handleSelectionDatasetData(data) {
+//     console.log('关联知识库选择窗口相关', data)
+//     selectionDatasetData.value = data;
+// }
+
+// 配置语音输入参数 
+function toggleVoiceInputStatusPanel(){
+    voiceInputStatusVisible.value = !voiceInputStatusVisible.value;
+    voiceInputStatusVisible.value && nextTick(() => {
+        console.log(voiceChoicePanelRef.value)
+        voiceInputStatusPanelRef.value.setVoiceModelOptions(voiceRecoModelOptions.value);
+    });
+}
+
 // 保存配置
 function handleInference() {
-    // 这里将配置信息提交到后台，包含knowledgeBaseIds, closedToolIds, modelConfig等
-    console.log('提交配置：', {
-        knowledgeBaseIds: knowledgeBaseIds.value,
-        closedToolIds: closedToolIds.value,
-        modelConfig: modelConfig.value,
-        longTermMemoryEnabled: longTermMemoryEnabled.value,
-        voicePlaybackEnabled: voicePlaybackEnabled.value,
-        voiceInputStatus: voiceInputStatus.value,
-        guessWhatYouAskStatus: guessWhatYouAskStatus.value
-    });
-
+    // 这里将配置信息提交到后台
     modelConfigDialogVisible.value = true;
 }
 
@@ -510,6 +476,7 @@ function handleListAllLlmModel() {
 
         llmModelOptions.value = res.data.filter(item => item.modelType === 'large_language_model');
         voiceModelOptions.value = res.data.filter(item => item.modelType === 'speech_synthesis');
+        voiceRecoModelOptions.value = res.data.filter(item => item.modelType === 'speech_recognition');
 
         console.log('voiceModelOptions = ' + JSON.stringify(voiceModelOptions.value))
 
@@ -519,16 +486,21 @@ function handleListAllLlmModel() {
 /** 打开提示词 */
 function openPromptDialog(){
     promptDialogVisible.value = true ;
-    console.log('打开提示词:' + modelConfig.value.promptContent)
+    console.log('打开提示词:' + agentModelConfig.value.promptContent)
     nextTick(() => {
-        promptEditorPanelRef.value.setPromptContent(modelConfig.value.promptContent);
+        promptEditorPanelRef.value.setPromptContent(agentModelConfig.value.promptContent);
     });
 }
 
 /** 同步提示词 */
 function syncPromptContent(content){
-    modelConfig.value.promptContent = content ;
+    agentModelConfig.value.promptContent = content ;
     promptDialogVisible.value = false ;
+}
+
+/** 保存模型配置 */
+function submitModelConfig(){
+    console.log('保存模型配置'+ JSON.stringify(agentModelConfig.value))
 }
 
 // defineEmits(['sysncPromptContent'])
