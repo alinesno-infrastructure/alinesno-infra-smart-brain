@@ -2,12 +2,12 @@
   <div class="row" style="padding: 20px">
     <el-form :model="formData" :rules="rules" ref="formRef" label-width="90px" :label-position="'left'">
 
-      <el-form-item label="是否启用" prop="isEnable">
+      <!-- <el-form-item label="是否启用" prop="isEnable">
         <el-radio-group size="large" v-model="formData.isEnable">
           <el-radio value="true">启用</el-radio>
           <el-radio value="false">不启用</el-radio>
         </el-radio-group>
-      </el-form-item>
+      </el-form-item> -->
 
       <!-- 语音模型选择项 -->
       <el-form-item label="语音模型" prop="voiceModel">
@@ -27,7 +27,7 @@
 
       <el-form-item label="语速配置" prop="speechRate">
          <div style="width:100%">
-          <el-slider size="large" show-input  v-model="formData.speechRate" :step="1" />
+          <el-slider size="large" :min="1" :max="10" show-input  v-model="formData.speechRate" :step="1" />
          </div>
       </el-form-item>
 
@@ -45,6 +45,8 @@
             <i class="fa-solid fa-headphones-simple"></i> &nbsp;&nbsp; 试听
           </el-button>
 
+          <el-button type="primary" @click="handleSubmit" size="large" text bg>确认</el-button>
+
         </div>
       </el-form-item>
 
@@ -54,8 +56,11 @@
 
 <script setup>
 import { ref } from 'vue';
+import { ElMessage } from 'element-plus';
 
 import speakingIcon from '@/assets/icons/speaking.gif';
+
+const emit = defineEmits(['handleVoiceConfigParams'])
 
 // 初始化表单数据
 const formData = ref({
@@ -70,16 +75,15 @@ const isSpeaking = ref(false)
 
 // 表单验证规则
 const rules = ref({
-  isEnable: [
-    { required: true, message: '请确认是否选择模型', trigger: 'bulr' }
-  ],
+  // isEnable: [
+  //   { required: true, message: '请确认是否选择模型', trigger: 'bulr' }
+  // ],
   voiceModel: [
     { required: true, message: '请选择语音模型', trigger: 'change' }
   ],
   speechRate: [
     { required: true, message: '请输入语速', trigger: 'blur' },
-    { type: 'number', message: '语速必须为数字', trigger: 'blur' },
-    { min: 1, max: 100, message: '语速范围在 1 - 10 之间', trigger: 'blur' }
+    { type: 'number', message: '语速必须为数字', trigger: 'blur' }
   ]
 });
 
@@ -87,16 +91,25 @@ const rules = ref({
 const formRef = ref(null);
 
 // 提交表单的方法
-const submitForm = async () => {
-  const isValid = await formRef.validate();
-  if (isValid) {
-    console.log('提交的表单数据：', formData.value);
-    // 这里可以添加实际的提交逻辑，比如发送请求到后端等
-  }
+const handleSubmit = async () => {
+
+    formRef.value.validate((valid) => {
+        if (valid) {
+          console.log('提交的表单数据：', formData.value);
+          emit('handleVoiceConfigParams', formData.value);
+          ElMessage.success('提交成功');
+        } else {
+          ElMessage.error('表单验证失败，请检查输入');
+        }
+    });
 };
 
 const setVoiceModelOptions = (models) => {
   voiceModelOptions.value = models;
+}
+
+const setVoiceModelParams = (params) => {
+  formData.value = params;
 }
 
 /** 是否在播放 */
@@ -105,12 +118,13 @@ const listenPlayVoiceOption = () => {
 }
 
 // 重置表单的方法
-const resetForm = () => {
-  formRef.resetFields();
-};
+// const resetForm = () => {
+//   formRef.resetFields();
+// };
 
 defineExpose({
-  setVoiceModelOptions
+  setVoiceModelOptions,
+  setVoiceModelParams
 })
 
 </script>
