@@ -2,10 +2,10 @@
   <div class="row" style="padding: 20px">
     <el-form :model="formData" :rules="rules" ref="formRef" label-width="120px" :label-position="'left'">
 
-      <el-form-item label="是否启用" prop="isEnable">
-        <el-radio-group size="large" v-model="formData.isEnable">
-          <el-radio value="true">启用</el-radio>
-          <el-radio value="false">不启用</el-radio>
+      <el-form-item label="是否启用" prop="enable">
+        <el-radio-group size="large" v-model="formData.enable">
+          <el-radio :value="true">启用</el-radio>
+          <el-radio :value="false">不启用</el-radio>
         </el-radio-group>
       </el-form-item>
 
@@ -24,20 +24,28 @@
 
       </el-form-item>
 
-      <!-- 
-      <el-form-item label="语速配置" prop="speechRate">
+      <el-form-item label="识别内容" prop="speechRate">
          <div style="width:100%">
-          <el-slider size="large" show-input  v-model="formData.speechRate" :step="1" />
+          <div style="width: 100%;font-size:14px;color:#a5a5a5;">
+            这里显示识别内容
+          </div>
          </div>
       </el-form-item> 
-      -->
 
       <!-- 提交按钮 -->
       <el-form-item>
         <div style="width: 100%;text-align: right;margin-top:10px">
-          <el-button type="primary" text bg size="large" @click="submitForm()"> 
-            确认
+
+          <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
+
+          <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
+            <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
           </el-button>
+          <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
+            <i class="fa-solid fa-microphone-lines"></i> 试讲 
+          </el-button>
+
+          <el-button type="primary" @click="handleSubmit" size="large" text bg>确认</el-button>
         </div>
       </el-form-item>
 
@@ -46,12 +54,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { nextTick, onMounted, ref } from 'vue';
+import { ElMessage } from 'element-plus'
 
-// import speakingIcon from '@/assets/icons/speaking.gif';
+import speakingIcon from '@/assets/icons/speaking.gif';
+
+const emit = defineEmits(['handleVoiceInputStatusPanelClose'])
 
 // 初始化表单数据
 const formData = ref({
+  enable: true ,
   voiceModel: '',
   speechRate: 1 // 默认语速为 1
 });
@@ -59,38 +71,56 @@ const formData = ref({
 // 定义可用的语音模型数组
 const voiceModelOptions = ref([]);
 
-// const isSpeaking = ref(false)
+const isSpeaking = ref(false)
 
 // 表单验证规则
 const rules = ref({
-  isEnable: [
+  enable: [
     { required: true, message: '请确认是否选择模型', trigger: 'bulr' }
   ],
   voiceModel: [
     { required: true, message: '请选择语音模型', trigger: 'change' }
   ],
-  speechRate: [
-    { required: true, message: '请输入语速', trigger: 'blur' },
-    { type: 'number', message: '语速必须为数字', trigger: 'blur' },
-    { min: 1, max: 100, message: '语速范围在 1 - 10 之间', trigger: 'blur' }
-  ]
+  // speechRate: [
+  //   { required: true, message: '请输入语速', trigger: 'blur' },
+  //   { type: 'number', message: '语速必须为数字', trigger: 'blur' },
+  //   { min: 1, max: 100, message: '语速范围在 1 - 10 之间', trigger: 'blur' }
+  // ]
 });
 
 // 获取表单实例
 const formRef = ref(null);
 
-// 提交表单的方法
-const submitForm = async () => {
-  const isValid = await formRef.validate();
-  if (isValid) {
-    console.log('提交的表单数据：', formData.value);
-    // 这里可以添加实际的提交逻辑，比如发送请求到后端等
-  }
-};
-
 const setVoiceModelOptions = (models) => {
   voiceModelOptions.value = models;
 }
+
+/** 是否在讲话 */
+const listenPlayVoiceOption = () => {
+  isSpeaking.value = !isSpeaking.value
+}
+
+const setConfigParams = (params) => {
+  console.log('params 888>>> = ' + JSON.stringify(params));
+  formData.value = params ;
+}
+
+/** 获取到表单数据 */
+const getFormData = () => {
+  return formData.value
+}
+
+const handleSubmit = () => {
+    formRef.value.validate((valid) => {
+        if (valid) {
+            console.log('handleVoiceInputStatusPanelClose params = ' + JSON.stringify(formData.value));
+            emit("handleVoiceInputStatusPanelClose" , formData.value);
+            ElMessage.success('提交成功');
+        } else {
+            ElMessage.error('表单验证失败，请检查输入');
+        }
+    });
+};
 
 /** 是否在播放 */
 // const submitForm = () => {
@@ -103,8 +133,15 @@ const setVoiceModelOptions = (models) => {
 // };
 
 defineExpose({
-  setVoiceModelOptions
+  setVoiceModelOptions , 
+  getFormData,
+  setConfigParams
 })
+
+nextTick(() => {
+  // 初始化表单数据
+  formData.value.enable = true ;
+});
 
 </script>
 
