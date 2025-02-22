@@ -60,6 +60,12 @@
         </div>
       </el-col>
     </el-row>
+
+    <el-form-item style="margin-right: 10px;">
+          <div style="display: flex;justify-content: flex-end;width: 100%;">
+              <el-button type="primary" @click="handleSubmit" size="large" text bg>确认</el-button>
+          </div>
+      </el-form-item> 
   </div>
 </template>
 
@@ -68,8 +74,12 @@ import {
   listDataset,
   catalogManifestTreeSelect,
 } from "@/api/base/search/vectorDataset";
+
 import { reactive, ref, nextTick } from "vue";
 import { getCurrentInstance, toRefs } from 'vue';
+import { ElMessage } from 'element-plus';
+
+const emit = defineEmits(['handleSelectDatasetConfigClose'])
 
 const { proxy } = getCurrentInstance();
 
@@ -207,6 +217,11 @@ function removeSelectedDataset(index) {
   setTableSelection();
 }
 
+const handleSubmit = () => {
+  emit("handleSelectDatasetConfigClose" , getSelectItemList());
+  ElMessage.success('提交成功');
+};
+
 // 获取 selectItemList 最后的值
 function getSelectItemList() {
   return selectItemList.value;
@@ -219,11 +234,28 @@ function getDeptTree() {
   });
 }
 
+/** 设置选中知识库值 */
+function setSelectItemList(items){
+  console.log('setSelectItemList = ' + items)
+  // selectItemList.value = items;
+  // items 合并 selectItemList
+  items.forEach(item => {
+    if (!selectItemList.value.includes(item)) {
+      console.log('item = ' + item);
+      selectItemList.value.push(item);
+    }
+  });
+  console.log('setSelectItemList = ' + items)
+
+  setTableSelection();
+}
+
 getDeptTree();
 getList();
 
 defineExpose({
-  getSelectItemList
+  getSelectItemList ,
+  setSelectItemList
 });
 
 // 假设的 parseTime 函数
