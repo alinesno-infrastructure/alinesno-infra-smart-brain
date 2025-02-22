@@ -32,8 +32,18 @@ var managerUrl = {
   validateReActRole: prefix + "validateReActRole",
   findOrg: prefix + "findOrg",
   confirmPushOrg: prefix + "confirmPushOrg",
+  saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
   // listPushOrgRole: prefix + "listPushOrgRole",
 
+}
+
+// 保存ReAct角色配置
+export function saveRoleWithReActConfig(data) {
+  return request({
+    url: managerUrl.saveRoleWithReActConfig,
+    method: 'post',
+    data: data
+  })
 }
 
 // 列出推荐角色
