@@ -2,8 +2,8 @@
     <div>
         <el-form :model="modelConfig" :rules="rules" label-width="100" :label-Position="'left'" style="padding:20px"
             ref="formRef">
-            <el-form-item label="AI模型" prop="aiModel">
-                <el-select v-model="modelConfig.aiModel" placeholder="请选择大模型" size="large" style="width:100%">
+            <el-form-item label="AI模型">
+                <el-select v-model="modelConfig.aiModel" disabled placeholder="请选择大模型" size="large" style="width:100%">
                     <el-option v-for="item in llmModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
                         <template #default>
                             <div>
@@ -30,10 +30,10 @@
             <el-form-item label="回复格式" prop="replayFormat">
                 <el-row style="width:100%">
                     <el-col :span="8">
-                        <el-checkbox v-model="replyFormatEnabled">回复格式设置</el-checkbox>
+                        <el-checkbox v-model="modelConfig.replyFormatEnabled">回复格式设置</el-checkbox>
                     </el-col>
                     <el-col :span="16">
-                        <el-radio-group size="large" v-model="modelConfig.replayFormat" v-if="replyFormatEnabled">
+                        <el-radio-group size="large" v-model="modelConfig.replayFormat" v-if="modelConfig.replyFormatEnabled">
                             <el-radio value="json">JSON</el-radio>
                             <el-radio value="text">TEXT</el-radio>
                         </el-radio-group>
@@ -43,11 +43,11 @@
             <el-form-item label="停止序列" prop="stopSequences">
                 <el-row style="width:100%">
                     <el-col :span="8">
-                        <el-checkbox v-model="stopSequencesEnabled">停止序列设置</el-checkbox>
+                        <el-checkbox v-model="modelConfig.stopSequencesEnabled">停止序列设置</el-checkbox>
                     </el-col>
                     <el-col :span="16">
                         <el-input v-model="modelConfig.stopSequences" size="large"
-                            placeholder="多个序列号通过 | 隔开，例如：finalAnswer|stop" v-if="stopSequencesEnabled" />
+                            placeholder="多个序列号通过 | 隔开，例如：finalAnswer|stop" v-if="modelConfig.stopSequencesEnabled" />
                     </el-col>
                 </el-row>
             </el-form-item>
@@ -74,12 +74,14 @@ const modelConfig = ref({
     temperature: '',
     topP: '',
     replayFormat: '',
-    stopSequences: ''
+    stopSequences: '',
+    replyFormatEnabled: false ,
+    stopSequencesEnabled: false
 });
 
 const llmModelOptions = ref([]);
-const replyFormatEnabled = ref(false);
-const stopSequencesEnabled = ref(false);
+// const replyFormatEnabled = ref(false);
+// const stopSequencesEnabled = ref(false);
 const modelConfigDialogVisible = ref(false);
 const formRef = ref();
 
@@ -101,10 +103,10 @@ const validateCallback = (field) => {
         if (field === 'topP' && value > 1) {
             return callback(new Error('Top_p不能超过1'));
         }
-        if (field === 'replayFormat' && !value && replyFormatEnabled.value) {
+        if (field === 'replayFormat' && !value && modelConfig.replyFormatEnabled.value) {
             return callback(new Error('请选择回复格式'));
         }
-        if (field === 'stopSequences' && !value && stopSequencesEnabled.value) {
+        if (field === 'stopSequences' && !value && modelConfig.stopSequencesEnabled.value) {
             return callback(new Error('请输入停止序列'));
         }
         callback();
@@ -147,8 +149,14 @@ const handleSubmit = () => {
     });
 };
 
+const setAgentModelParams = (modelParams) => {
+    console.log('setAgentModelParams modelParams = ' + JSON.stringify(modelParams));
+    modelConfig.value = modelParams
+}
+
 defineExpose({ 
-    setLlmModelOptions 
+    setLlmModelOptions,
+    setAgentModelParams
 });
 
 </script>
