@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
@@ -11,6 +12,7 @@ import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -405,7 +407,45 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     }
 
+    @Override
+    public void saveRoleWithReActConfig(RoleReActConfigDto dto) {
+        IndustryRoleEntity role = getById(dto.getRoleId());
 
+        role.setModelId(dto.getModelId());
+        role.setPromptContent(dto.getPromptContent());
+        role.setGreeting(dto.getGreeting());
+        role.setVoiceInputStatus(dto.isVoiceInputStatus());
+        role.setGuessWhatYouAskStatus(dto.isGuessWhatYouAskStatus());
+        role.setLongTermMemoryEnabled(dto.isLongTermMemoryEnabled());
+        role.setVoicePlayStatus(dto.isVoicePlayStatus());
+
+        if(dto.getModelConfig() != null){
+            role.setModelConfig(JSONObject.toJSONString(dto.getModelConfig()));
+        }
+
+        if(CollectionUtils.isNotEmpty(dto.getKnowledgeBaseIds())){
+            role.setKnowledgeBaseIds(JSONObject.toJSONString(dto.getKnowledgeBaseIds()));
+        }
+
+        if(CollectionUtils.isNotEmpty(dto.getSelectionToolsData())){
+            role.setSelectionToolsData(JSONObject.toJSONString(dto.getSelectionToolsData()));
+        }
+
+        if(dto.getVoiceInputData() != null){
+            role.setVoiceInputData(JSONObject.toJSONString(dto.getVoiceInputData()));
+        }
+
+        if(dto.getGuessWhatYouAskData() != null){
+            role.setGuessWhatYouAskData(JSONObject.toJSONString(dto.getGuessWhatYouAskData()));
+        }
+
+        // 语音播放设置
+        if(dto.getVoicePlayData() != null){
+            role.setVoicePlayData(JSONObject.toJSONString(dto.getVoicePlayData()));
+        }
+
+        update(role);
+    }
 
     /**
      * 删除所有角色关联信息，包括角色信息，还有工具信息
