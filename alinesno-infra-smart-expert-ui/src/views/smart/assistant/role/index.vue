@@ -453,6 +453,11 @@ function deployChannel(item){
   router.push({path: '/expert/smart/assistant/role/deployChannel', query: { roleId: item.id }})
 }
 
+/** 点击配置 */
+function handleClick(item){
+
+}
+
 /** 推送到指定的组织 */
 function pushOrg(row) {
   pushOrgDialogFormVisible.value = true;
