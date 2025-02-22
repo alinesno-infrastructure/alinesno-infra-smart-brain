@@ -18,6 +18,7 @@ import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
@@ -313,6 +314,20 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
 
         boolean b = service.update(lambdaUpdateWrapper);
         return b ? this.ok() : this.error();
+    }
+
+    /**
+     * 保存用户配置
+     * @return
+     */
+    @PostMapping("/saveRoleWithReActConfig")
+    public AjaxResult saveRoleWithReActConfig(@RequestBody @Validated RoleReActConfigDto dto){
+
+        log.debug("dto = {}", dto);
+
+        service.saveRoleWithReActConfig(dto) ;
+
+        return ok() ;
     }
 
     @Override
