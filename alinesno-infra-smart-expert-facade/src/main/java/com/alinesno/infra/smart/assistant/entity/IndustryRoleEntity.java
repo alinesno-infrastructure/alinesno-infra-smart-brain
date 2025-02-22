@@ -116,6 +116,59 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
     private String knowledgeId ;
 
+    // 知识库ID列表，用于关联相关知识数据
+    @TableField("knowledge_base_ids")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "知识库ID列表")
+    private String knowledgeBaseIds;
+
+    @TableField("selection_tools_data")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "知识库ID列表")
+    private String selectionToolsData;
+
+    // 是否启用长期记忆功能
+    @TableField("long_term_memory_enabled")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "是否启用长期记忆功能")
+    private boolean longTermMemoryEnabled;
+
+    // 是否启用语音输入状态
+    @TableField("voice_input_status")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "是否启用语音输入状态")
+    private boolean voiceInputStatus;
+
+    @TableField("guess_what_you_ask_status")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "用户问题建议")
+    private boolean guessWhatYouAskStatus ;
+
+    // 语音播放
+    @TableField("voice_play_status")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "语音播放")
+    private boolean voicePlayStatus ;
+
+    // 模型
+    @TableField("model_id")
+    @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true , comment = "模型")
+    private Long modelId;
+
+    // 模型配置相关信息
+    @TableField("model_config")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "模型配置相关信息")
+    private String modelConfig;
+
+    // 语音输入相关数据配置
+    @TableField("voice_input_data")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "语音输入相关数据配置")
+    private String voiceInputData;
+
+    // 猜测用户问题相关数据配置
+    @TableField("guess_what_you_ask_data")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "猜测用户问题相关数据配置")
+    private String guessWhatYouAskData;
+
+    // 语音播放相关数据配置
+    @TableField("voice_play_data")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "语音播放相关数据配置")
+    private String voicePlayData;
+
     // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // 执行脚本
     @TableField("execute_script")
