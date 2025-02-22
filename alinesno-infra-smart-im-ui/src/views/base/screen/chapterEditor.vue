@@ -2,7 +2,7 @@
   <div style="width:100%" @click="handleDocumentClick">
     <div class="cm-container">
       <code-mirror ref="editorRef" basic :lang="lang" v-model="data" @change="handleEditorChange"
-        :extensions="extensions" style="height: 680px;" :theme="theme" @contextmenu.prevent="showContextMenu" />
+        :extensions="extensions" style="height: calc( 100vh - 270px);" :theme="theme" @contextmenu.prevent="showContextMenu" />
     </div>
     <!-- 自定义上下文菜单 -->
     <div id="custom-context-menu" class="hidden" @click.stop>
