@@ -6,6 +6,7 @@ import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
 import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -116,5 +117,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param isPush 是否为组织单独推送
      */
     void employRole(long roleId, long orgId , long userId , long deptId, boolean isPush);
+
+    /**
+     * 更新ReAct角色配置信息
+     * @param dto
+     */
+    void saveRoleWithReActConfig(RoleReActConfigDto dto);
 
 }
