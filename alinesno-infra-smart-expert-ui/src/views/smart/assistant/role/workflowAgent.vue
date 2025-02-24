@@ -106,6 +106,12 @@ function getRoleInfo() {
     });
 }
 
+/** 保存工作流配置 */
+const saveWorkflow = () => {
+  const workflowData = workflowRef.value?.getWorkflowGraphData()
+  console.log('workflowData = ' + JSON.stringify(workflowData))
+}
+
 /** 初始化数据 */
 onMounted(() => {
   console.log('onMounted');
