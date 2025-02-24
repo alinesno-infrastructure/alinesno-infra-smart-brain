@@ -77,23 +77,12 @@
                   </el-button>
                 </div>
 
-                <!--
-                <div class="vc-text" title="">
-                  <el-button type="primary" text bg v-if="item.modelType === 'large_language_model'">
-                    <i class="fas fa-file-signature"></i> {{ item.fieldProp }}
-                  </el-button>
-                  <el-button type="danger" text bg v-if="item.modelType === 'speech_synthesis'">
-                    <i class="fa-solid fa-microphone"></i> {{ item.fieldProp }}
-                  </el-button>
-                </div>
-                -->
-
                 <div class="vc-text" title="">
                     <el-button type="primary" text bg v-if="item.modelType === 'large_language_model'">
                         <i class="fas fa-file-signature"></i> {{ item.fieldProp }}
                     </el-button>
                     <el-button type="danger" text bg v-if="item.modelType ==='speech_synthesis'">
-                        <i class="fa-solid fa-microphone"></i> {{ item.fieldProp }}
+                        <i class="fa-solid fa-volume-up"></i> {{ item.fieldProp }}
                     </el-button>
                     <el-button type="success" text bg v-if="item.modelType ==='vector_model'">
                         <i class="fa-solid fa-arrows-alt-v"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
@@ -124,8 +113,9 @@
     </el-row>
 
     <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="110px">
+    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
+
+      <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px" style="padding:20px;">
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型名称" prop="modelName">
@@ -156,10 +146,12 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <el-divider content-position="left">模型配置</el-divider>
+
         <el-row>
           <el-col :span="24">
             <el-form-item label="权限" prop="modelPermission">
-              <!-- <el-input v-model="form.description" placeholder="请输入大模型描述" /> -->
               <el-radio-group v-model="form.modelPermission">
                 <el-radio :value="'person'" :label="'person'">私有</el-radio>
                 <el-radio :value="'org'" :label="'org'">组织</el-radio>
@@ -167,6 +159,7 @@
             </el-form-item>
           </el-col>
         </el-row>
+
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型地址" prop="apiUrl">
@@ -195,11 +188,56 @@
             </el-form-item>
           </el-col>
         </el-row>
+
+        <el-divider content-position="left">测试结果</el-divider>
+
+          <el-skeleton :rows="1" v-if="chatLoading" />
+
+        <div v-if="!chatLoading"  >
+
+          <el-alert title="Success alert" type="success" />
+          <div style="margin-top:10px; line-height: 23px;padding: 10px;background: #f5f5f5;border-radius: 2px;">
+              {{ testLlmModelReponse }}
+          </div> 
+        </div>
+
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+
+          <!-- 语音识别模型 -->
+           <div v-if="form.modelType === 'speech_recognition'" >
+              <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
+
+              <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
+                <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
+              </el-button>
+              <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
+                <i class="fa-solid fa-microphone-lines"></i> 试讲 
+              </el-button>
+           </div>
+
+          <!-- 语音合成模型测试 -->
+          <div v-if="form.modelType === 'speech_synthesis'" >
+            <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
+            <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
+              <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
+            </el-button>
+            <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
+              <i class="fa-solid fa-headphones-simple"></i> &nbsp;&nbsp; 试听
+            </el-button>
+          </div>
+
+          <!-- 大模型测试-->
+          <el-button type="primary" 
+              v-if="form.modelType === 'large_language_model' || form.modelType === 'image_generation' || form.modelType === 'vector_model' || form.modelType === 're_ranking_model' " 
+              @click="handleTestLlmModel" 
+              text 
+              bg 
+              size="large">测试</el-button>
+
+          <el-button type="primary" @click="submitForm" text bg size="large">保存</el-button>
+          <el-button @click="cancel" text bg size="large">取 消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -208,17 +246,22 @@
 </template>
 
 <script setup name="LlmModel">
-import { getToken } from "@/utils/auth";
+// import { getToken } from "@/utils/auth";
+
 import {
   listLlmModel,
   delLlmModel,
   getLlmModel,
   updateLlmModel,
   addLlmModel,
+  testLlmModel,
   getAllModelProvidersInfo,
   getAllModelTypesInfo,
 } from "@/api/smart/assistant/llmModel";
+
 import { reactive, ref } from "vue";
+import speakingIcon from '@/assets/icons/speaking.gif';
+
 // import {useRouter, getCurrentInstance} from "vue-router";
 
 const router = useRouter();
@@ -229,15 +272,23 @@ const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
-const single = ref(true);
-const multiple = ref(true);
+
+// const single = ref(true);
+// const multiple = ref(true);
+
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 
+// 模型测试
+const chatLoading = ref(true);
+const isSpeaking = ref(false)
+
 const providerOptions = ref(undefined)
 const modelTypeOptions = ref(undefined)
 const baseModelOptions = ref(undefined)
+
+const testLlmModelReponse = ref('')
 
 // const deptName = ref("");
 // const deptOptions = ref(undefined);
@@ -261,16 +312,16 @@ const baseModelOptions = ref(undefined)
 // });
 
 // 列显隐信息
-const columns = ref([
-  { key: 0, label: `图标`, visible: true },
-  { key: 1, label: `大模型名称`, visible: true },
-  { key: 2, label: `大模型描述`, visible: true },
-  { key: 3, label: `所属提供商名称`, visible: true },
-  { key: 4, label: `API 密钥`, visible: true },
-  { key: 5, label: `API 地址`, visible: true },
-  { key: 6, label: `模型名称`, visible: true },
-  { key: 7, label: `编辑`, visible: true },
-]);
+// const columns = ref([
+//   { key: 0, label: `图标`, visible: true },
+//   { key: 1, label: `大模型名称`, visible: true },
+//   { key: 2, label: `大模型描述`, visible: true },
+//   { key: 3, label: `所属提供商名称`, visible: true },
+//   { key: 4, label: `API 密钥`, visible: true },
+//   { key: 5, label: `API 地址`, visible: true },
+//   { key: 6, label: `模型名称`, visible: true },
+//   { key: 7, label: `编辑`, visible: true },
+// ]);
 
 const data = reactive({
   form: {},
@@ -359,11 +410,11 @@ function handleDelete(row) {
 };
 
 /** 选择条数  */
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.id);
-  single.value = selection.length != 1;
-  multiple.value = !selection.length;
-};
+// function handleSelectionChange(selection) {
+//   ids.value = selection.map(item => item.id);
+//   single.value = selection.length != 1;
+//   multiple.value = !selection.length;
+// };
 
 /** 重置操作表单 */
 function reset() {
@@ -412,19 +463,32 @@ function submitForm() {
       if (form.value.id != undefined) {
         updateLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
-          open.value = false;
+          // open.value = false;
           getList();
         });
       } else {
         addLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
-          open.value = false;
+          // open.value = false;
           getList();
         });
       }
     }
   });
 };
+
+/** 测试提交 */
+function handleTestLlmModel(){
+  proxy.$refs["LlmModelRef"].validate(valid => {
+    if (valid) {
+      testLlmModel(form.value).then(response => {
+        proxy.$modal.msgSuccess("测试成功");
+        testLlmModelReponse.value = response.data;
+        chatLoading.value = false ;
+      });
+    }
+  });
+}
 
 /** 获取模型供应商 */
 function handleAllModelProvidersInfo() {
@@ -465,6 +529,12 @@ function selectLLMProvider(value) {
 
 }
 
+// >>>>>>>>>>>>>>>>>> 模型测试
+/** 是否在播放 */
+const listenPlayVoiceOption = () => {
+  isSpeaking.value = !isSpeaking.value
+}
+
 getList();
 handleAllModelProvidersInfo();
 
@@ -484,7 +554,6 @@ handleAllModelProvidersInfo();
   display: -webkit-box;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  -webkit-line-clamp: 1;
   font-size: 13px;
   color: #444;
   line-height: 20px;
@@ -492,6 +561,13 @@ handleAllModelProvidersInfo();
 
 .tpl-item-footer{
   padding-top:10px;
+}
+
+.dialog-footer{
+  display: flex;
+  gap: 10px;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 
 </style>
