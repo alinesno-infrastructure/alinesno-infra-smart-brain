@@ -10,12 +10,20 @@
     </div>
 
     <el-dialog v-model="dialogVisible" :title="'函数内容（Groovy）'" append-to-body fullscreen>
-      <code-mirror basic :lang="lang" v-model="cloneContent" :style="'height:calc(100vh - 200px)'" :theme="theme" :extensions="extensions" />
-      <template #footer>
-        <div class="dialog-footer mt-24">
-          <el-button type="primary" @click="submitDialog"> 确定 </el-button>
-        </div>
-      </template>
+        <template #header>
+          <div class="dialog-footer mt-24" style="display: flex;justify-content: space-between;align-items:center">
+            <div>
+              函数内容(Groovy)
+            </div>
+            <div>
+              <el-button type="warning" @click="validateScript" bg text size="large"> 试运行</el-button>
+              <el-button type="primary" @click="submitDialog" bg text size="large"> 确定 </el-button>
+            </div>
+          </div>
+        </template>
+      <div class="full-eidtor">
+        <code-mirror basic :lang="lang" v-model="cloneContent" :style="'height:calc(100vh - 120px)'" :theme="theme" :extensions="extensions" />
+      </div>
     </el-dialog>
 
   </div>
@@ -83,12 +91,16 @@ const calculateFirstSectionHeight = () => {
  * 获取到codeValue
  */
 function getRawScript() {
+  console.log('codeVal.value = '+ codeVal.value);
   return codeVal.value;
 }
 
 /** 设置值  */
 function setRawScript(val) {
-  return codeVal.value = val;
+  console.log('setRawScript = '+ val);
+  if(val){
+    return codeVal.value = val;
+  }
 }
 
 
@@ -113,16 +125,20 @@ defineExpose({
 <style>
 /* required! */
 .cm-editor {
-  height: calc(100vh - 290px);
+  height: 100% ;
 }
+
+/* .full-eidtor.cm-container {
+  height: calc(100vh - 190px);
+} */
 
 .cm-container {
   width: 100%;
 }
 
-.function-CodemirrorEditor__footer {
+.cm-container .function-CodemirrorEditor__footer {
   position: absolute;
-  bottom: 0px;
+  bottom: 5px;
   right: 0px;
 }
 </style>
