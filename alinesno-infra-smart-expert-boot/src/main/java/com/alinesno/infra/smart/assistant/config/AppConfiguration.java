@@ -84,7 +84,6 @@ public class AppConfiguration implements CommandLineRunner {
     public void run(String... args) throws Exception {
         baseMemoryStore.createMemoryVectorIndex();
         log.info("当前向量存储引擎:{}" , vectorDatasetService.getVectorEngine());
-
         log.debug("项目启动完成");
     }
 
