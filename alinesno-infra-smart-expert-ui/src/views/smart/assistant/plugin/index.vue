@@ -1,11 +1,11 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
-      <!-- 插件分类  -->
+      <!-- 工具分类  -->
       <el-col :span="3" :xs="24">
         <div class="plugin-catalog">
           <div class="catalog-title">
-            <i class="fa-solid fa-computer"></i> 插件分类
+            <i class="fa-solid fa-computer"></i> 工具分类
           </div>
           <div class="catalog-content">
             <div 
@@ -27,8 +27,8 @@
             <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入工具名称" clearable style="width: 240px"
               @keyup.enter="handleQuery" />
           </el-form-item>
-          <el-form-item label="插件类型" prop="pluginType" label-width="100px">
-            <el-input v-model="queryParams['condition[pluginType|like]']" placeholder="请输入插件类型" clearable
+          <el-form-item label="工具类型" prop="pluginType" label-width="100px">
+            <el-input v-model="queryParams['condition[pluginType|like]']" placeholder="请输入工具类型" clearable
               style="width: 240px" @keyup.enter="handleQuery" />
           </el-form-item>
           <el-form-item>
@@ -38,6 +38,10 @@
         </el-form>
 
         <el-row :gutter="10" class="mb8">
+          <el-col :span="1.5">
+            <el-button type="warning" plain icon="Plus" @click="handleManagerType">类型管理</el-button>
+          </el-col>
+
           <el-col :span="1.5">
             <el-button type="primary" plain icon="Plus" @click="handleAdd">新增</el-button>
           </el-col>
@@ -77,7 +81,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="插件类型" align="center" key="pluginType" width="150" prop="pluginType"
+          <el-table-column label="工具类型" align="center" key="pluginType" width="150" prop="pluginType"
             v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ getPluginTypeName(scope.row.pluginType) }}
@@ -147,7 +151,7 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="插件类型" prop="pluginType">
+            <el-form-item label="工具类型" prop="pluginType">
               <el-radio-group v-model="form.pluginType">
                 <el-radio v-for="item in pluginCategories" :key="item.label" :label="item.label">{{ item.label }}</el-radio>
               </el-radio-group>
@@ -176,6 +180,12 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 类型管理 -->
+    <el-dialog v-model="managerTypeOpen" :title="工具类型管理" >
+      <ManagerType />
+    </el-dialog>
+
   </div>
 </template>
 
@@ -189,6 +199,9 @@ import {
   updateTool,
   addTool,
 } from "@/api/smart/assistant/tool";
+
+import ManagerType from './type'
+
 import { reactive, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
@@ -208,11 +221,14 @@ const dateRange = ref([]);
 
 const imageUrl = ref([]);
 
+// 类型管理
+const managerTypeOpen = ref(false);
+
 // 列显隐信息
 const columns = ref([
   { key: 0, label: `图标`, visible: true },
   { key: 1, label: `工具名称`, visible: true },
-  { key: 2, label: `插件类型`, visible: true },
+  { key: 2, label: `工具类型`, visible: true },
   { key: 3, label: `使用场景`, visible: true },
   { key: 4, label: `状态`, visible: true },
   { key: 5, label: `工具描述`, visible: true },
@@ -258,7 +274,7 @@ const data = reactive({
       message: "工具名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
-    pluginType: [{ required: true, message: "插件类型不能为空", trigger: "blur" }],
+    pluginType: [{ required: true, message: "工具类型不能为空", trigger: "blur" }],
     screen: [{ required: true, message: "使用场景不能为空", trigger: "blur" }],
     hasStatus: [{ required: true, message: "状态不能为空", trigger: "blur" }],
     description: [{ required: true, message: "工具描述不能为空", trigger: "blur" }],
@@ -268,7 +284,7 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
-// 定义插件分类数组，每个元素包含 code 和 label
+// 定义工具分类数组，每个元素包含 code 和 label
 const pluginCategories = ref([
   { code: 'fa-solid fa-newspaper', label: '新闻阅读' },
   { code: 'fa-solid fa-image', label: '图像' },
@@ -312,12 +328,17 @@ const beforeAvatarUpload = (rawFile) => {
   return true;
 };
 
+/** 类型管理 */
+function handleManagerType(){
+  managerTypeOpen.value = true;
+}
+
 /** 配置执行脚本 */
 function configToolScript(row) {
   router.push({ path: "/expert/smart/assistant/tool/script", query: { toolId: row.id } });
 }
 
-/** 获取插件类型名称 */
+/** 获取工具类型名称 */
 const getPluginTypeName = computed(() => {
   return (key) => {
     const pluginType = pluginCategories.value.find(type => type.label === key);
