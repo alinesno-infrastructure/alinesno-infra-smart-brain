@@ -39,7 +39,7 @@
                     </el-col>
                 </el-row>
                 <div class="save-button-container">
-                    <el-button type="primary" bg text size="large" @click="saveConfig">
+                    <el-button type="primary" bg text size="large" @click="handleSubmit">
                         <i class="fa-solid fa-file-pdf"></i> &nbsp; 保存配置
                     </el-button>
                 </div>
@@ -51,6 +51,9 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRoute } from 'vue-router'
+import { ElMessage } from 'element-plus'
+
+const emit = defineEmits(['handleSelectDatasetParamsConfigClose'])
 
 const route = useRoute();
 const { proxy } = getCurrentInstance();
@@ -99,27 +102,40 @@ const setDataset = (dataset) => {
     }
 }
 
-/** 重置按钮操作 */
-function resetQuery() {
-    proxy.resetForm("configRef"); // 重置检索配置表单
-    form.searchType = 'vector';
-    form.quoteLimit = 1000;
-    form.reorderResults = false;
-    form.minRelevance = 0.5;
-}
+// /** 重置按钮操作 */
+// function resetQuery() {
+//     proxy.resetForm("configRef"); // 重置检索配置表单
+//     form.searchType = 'vector'
+//     form.quoteLimit = 1000;
+//     form.reorderResults = false;
+//     form.minRelevance = 0.5;
+// }
 
 /** 保存配置操作 */
 function saveConfig() {
     console.log('保存的配置:', form);
-    // updateDatasetConfig(form).then(res => {
-    //     proxy.$modal.msgSuccess("修改成功");
-    // }).catch(() => {
-    //     proxy.$modal.msgError("修改失败");
-    // });
 }
 
+const handleSubmit = () => {
+    configRef.value.validate((valid) => {
+        if (valid) {
+            console.log('form = ' + JSON.stringify(form));
+            emit("handleSelectDatasetParamsConfigClose" , form);
+            ElMessage.success('提交成功');
+        } else {
+            ElMessage.error('表单验证失败，请检查输入');
+        }
+    });
+};
+
+// const setDatasetSearchParams = (params) => {
+//     console.log('setAgentModelParams modelParams = ' + JSON.stringify(params));
+//     form = params
+// }
+
 defineExpose({
-    setDataset
+    setDataset ,
+    // setDatasetSearchParams
 });
 </script>
 
