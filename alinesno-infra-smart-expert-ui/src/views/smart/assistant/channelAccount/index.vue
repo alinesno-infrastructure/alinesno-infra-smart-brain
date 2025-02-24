@@ -5,12 +5,12 @@
       <el-col :span="24" :xs="24">
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
-          <el-form-item label="插件名称" prop="name">
-            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入插件名称" clearable
+          <el-form-item label="工具名称" prop="name">
+            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入工具名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
-          <el-form-item label="插件类型" prop="toolType" label-width="100px">
-            <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入插件类型" clearable
+          <el-form-item label="工具类型" prop="toolType" label-width="100px">
+            <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入工具类型" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
 
@@ -58,17 +58,17 @@
 
         <el-table v-loading="loading" :data="AccountChannelList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center"/>
-          <el-table-column label="插件名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="工具名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                <i class="fa-solid fa-screwdriver-wrench" />  {{ scope.row.name }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
-                插件描述: {{ scope.row.description }}
+                工具描述: {{ scope.row.description }}
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="插件描述" align="left" key="description" prop="description" v-if="columns[5].visible" :show-overflow-tooltip="true">
+          <el-table-column label="工具描述" align="left" key="description" prop="description" v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
                 {{ scope.row.description }}
@@ -78,7 +78,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="插件类型" align="center" key="toolType" width="150" prop="toolType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
+          <el-table-column label="工具类型" align="center" key="toolType" width="150" prop="toolType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
           <el-table-column label="状态" align="center" key="hasStatus" width="80" prop="hasStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text bg icon="Link" v-if="scope.row.hasStauts === '1'">正常</el-button>
@@ -119,15 +119,15 @@
       <el-form :model="form" :rules="rules" ref="AccountChannelRef" label-width="80px">
         <el-row>
           <el-col :span="24">
-            <el-form-item  label="插件名称" prop="name">
-              <el-input v-model="form.name" placeholder="请输入插件名称" maxlength="50"/>
+            <el-form-item  label="工具名称" prop="name">
+              <el-input v-model="form.name" placeholder="请输入工具名称" maxlength="50"/>
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="插件类型" prop="toolType">
-              <el-input v-model="form.toolType" placeholder="请输入插件类型" maxlength="50"/>
+            <el-form-item label="工具类型" prop="toolType">
+              <el-input v-model="form.toolType" placeholder="请输入工具类型" maxlength="50"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -165,8 +165,8 @@
 
         <el-row>
           <el-col :span="24">
-            <el-form-item label="插件描述" prop="description">
-              <el-input v-model="form.description" placeholder="请输入插件描述" maxlength="200"/>
+            <el-form-item label="工具描述" prop="description">
+              <el-input v-model="form.description" placeholder="请输入工具描述" maxlength="200"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -268,11 +268,11 @@ const upload = reactive({
 // 列显隐信息
 const columns = ref([
   {key: 0, label: `图标`, visible: true},
-  {key: 1, label: `插件名称`, visible: true},
-  {key: 2, label: `插件类型`, visible: true},
+  {key: 1, label: `工具名称`, visible: true},
+  {key: 2, label: `工具类型`, visible: true},
   {key: 3, label: `使用场景`, visible: true},
   {key: 4, label: `状态`, visible: true},
-  {key: 5, label: `插件描述`, visible: true},
+  {key: 5, label: `工具描述`, visible: true},
   {key: 6, label: `应用目标`, visible: true},
   {key: 7, label: `创建时间`, visible: true},
   {key: 8, label: `编辑`, visible: true},
@@ -292,16 +292,16 @@ const data = reactive({
   },
   rules: {
     applicationId: [{required: true, message: "应用编号不能为空", trigger: "blur"}],
-    name: [{required: true, message: "插件名称不能为空", trigger: "blur"}, {
+    name: [{required: true, message: "工具名称不能为空", trigger: "blur"}, {
       min: 2,
       max: 20,
-      message: "插件名称长度必须介于 2 和 20 之间",
+      message: "工具名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
-    toolType: [{required: true, message: "插件类型不能为空", trigger: "blur"}],
+    toolType: [{required: true, message: "工具类型不能为空", trigger: "blur"}],
     screen: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
     hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
-    description: [{required: true, message: "插件描述不能为空", trigger: "blur"}],
+    description: [{required: true, message: "工具描述不能为空", trigger: "blur"}],
     target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
   }
 });
