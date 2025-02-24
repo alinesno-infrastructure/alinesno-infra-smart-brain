@@ -20,11 +20,9 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
-import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -67,8 +65,8 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @Autowired
     private IRolePushOrgService rolePushOrgService ;
 
-    @Autowired
-    private IRoleToolService roleToolService ;
+//    @Autowired
+//    private IRoleToolService roleToolService ;
 
     @Autowired
     private IIndustryRoleCatalogService catalogService ;
@@ -137,13 +135,15 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @GetMapping("/getRoleWithTool")
     public AjaxResult getRoleWithTool(long roleId) {
 
-        IndustryRoleEntity role = service.getById(roleId) ;
-        List<ToolEntity> tools =  roleToolService.findTools(roleId);
+//        IndustryRoleEntity role = service.getById(roleId) ;
+//        List<ToolEntity> tools =  roleToolService.findTools(roleId);
+//
+//        AjaxResult result = AjaxResult.success("操作成功" , role);
+//        result.put("tools", tools);
+//
+//        return result ;
 
-        AjaxResult result = AjaxResult.success("操作成功" , role);
-        result.put("tools", tools);
-
-        return result ;
+        return null ;
     }
 
     /**
@@ -303,7 +303,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     public AjaxResult changeSaleField(@RequestBody FieldDto field) {
         log.debug("field = {}", field);
 
-        // 如果字段值为9,则不允许销售
+        // 如果字段值为9,则不允许销售 TODO 待提取出公共字段
         if (field.getValue().equals("9")) {
             return this.error("不允许设置，角色为不可销售状态");
         }
@@ -324,10 +324,16 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     public AjaxResult saveRoleWithReActConfig(@RequestBody @Validated RoleReActConfigDto dto){
 
         log.debug("dto = {}", dto);
-
         service.saveRoleWithReActConfig(dto) ;
 
         return ok() ;
+    }
+
+    @Override
+    public AjaxResult detail(@PathVariable String id) {
+        IndustryRoleEntity e = service.findById(id) ;
+        IndustryRoleDto dto = IndustryRoleDto.fromEntity(e) ;
+        return AjaxResult.success(dto) ;
     }
 
     @Override
