@@ -10,8 +10,8 @@
                 </template>
             </el-page-header>
             <div>
-                <el-button type="warning" bg @click="validateRoleScript">验证脚本</el-button>
-                <el-button type="primary" bg @click="submitForm">保存配置</el-button>
+                <el-button type="warning" bg @click="validateRoleScript" text size="large">验证脚本</el-button>
+                <el-button type="primary" bg @click="submitForm" text size="large">保存配置</el-button>
             </div>
         </div>
 
@@ -42,7 +42,7 @@
 
                     <!-- AI配置界面 -->
                     <el-card class="box-card" shadow="never">
-                        <div slot="header" class="clearfix">
+                        <div class="clearfix">
                             <span class="box-card-title">AI配置</span>
                         </div>
 
@@ -84,7 +84,10 @@
 
 <script setup>
 
-import { validateRoleScript, updateRoleScript } from '@/api/smart/assistant/role'
+import { 
+    validateRoleScript, 
+    updateRoleScript,
+} from '@/api/smart/assistant/role'
 
 import ScriptEditorPanel from './ScriptEditor.vue';
 import ParamsConfigPanel from './ParamsConfigPanel.vue';
@@ -139,14 +142,18 @@ function setCurrentRoleId(id) {
 
 /** 验证脚本任务 */
 const handleValidateTask = () => {
-    let type = scriptType.value;
-    const code = getCode()[type];
+    let type = scriptType.value?'execute':scriptType.value;
+    const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
 
     loading.value = true
 
+    const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
+    console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
+
     validateRoleScript({
-        'script': code,
+        'agentConfigParams': agentConfigParams,
+        'script': scriptCode,
         'roleId': roleId,
         'type': type,
         'message': chatMessage.value
@@ -163,14 +170,18 @@ const handleValidateTask = () => {
 
 /** 提交脚本任务 */
 const submitForm = () => {
-    let type = scriptType.value;
-    const code = getCode()[type];
+    let type = scriptType.value?'execute':scriptType.value;
+    const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
 
     loading.value = true
 
+    const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
+    console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
+
     updateRoleScript({
-        'script': code,
+        'agentConfigParams': agentConfigParams,
+        'script': scriptCode,
         'roleId': roleId,
         'type': type,
         'message': 'save'
@@ -182,6 +193,7 @@ const submitForm = () => {
         console.log('err = ' + err);
         loading.value = false
     })
+
 }
 
 /** 返回 */
@@ -196,9 +208,9 @@ function getRoleInfo() {
         currentRole.value = response.data;
 
         // 设置脚本
-        executeEditorRef.value.setRawScript(currentRole.value.executeScript),
-            auditEditorRef.value.setRawScript(currentRole.value.auditScript),
-            functionCallEditorRef.value.setRawScript(currentRole.value.functionCallbackScript)
+        executeEditorRef.value.setRawScript(currentRole.value.executeScript);
+        auditEditorRef.value.setRawScript(currentRole.value.auditScript);
+        functionCallEditorRef.value.setRawScript(currentRole.value.functionCallbackScript);
     });
 }
 
