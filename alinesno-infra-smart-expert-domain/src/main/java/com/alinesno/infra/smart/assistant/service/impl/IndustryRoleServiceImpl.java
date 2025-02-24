@@ -5,7 +5,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
@@ -16,8 +15,6 @@ import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.RoleToolEntity;
-import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
@@ -32,7 +29,6 @@ import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
@@ -61,8 +57,8 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
 
-    @Autowired
-    private IRoleToolService roleToolService ;
+//    @Autowired
+//    private IRoleToolService roleToolService ;
 
     @Autowired
     private IRolePushOrgService rolePushOrgService ;
@@ -162,17 +158,17 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         // 创建角色知识库
-        for (IndustryRoleEntity role : allEntities) {
-            // TODO 待集成批量添加知识库
-            R<Long> result = baseSearchConsumer.datasetCreate(
-                    role.getResponsibilities() ,
-                    role.getRoleName() ,
-                    role.getOrgId() + "" ,
-                    role.getOperatorId() + "");
-
-            log.debug("创建知识库结果：" + result);
-            role.setKnowledgeId(result.getData() + "");
-        }
+//        for (IndustryRoleEntity role : allEntities) {
+//            // TODO 待集成批量添加知识库
+//            R<Long> result = baseSearchConsumer.datasetCreate(
+//                    role.getResponsibilities() ,
+//                    role.getRoleName() ,
+//                    role.getOrgId() + "" ,
+//                    role.getOperatorId() + "");
+//
+//            log.debug("创建知识库结果：" + result);
+//            role.setKnowledgeId(result.getData() + "");
+//        }
 
         // 先保存用户信息
         this.saveOrUpdateBatch(allEntities);
@@ -202,6 +198,8 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     public void updateRoleScript(RoleScriptDto dto) {
 
         IndustryRoleEntity role = getById(dto.getRoleId());
+
+        setRoleConfigParams(dto.getAgentConfigParams() , role);
 
         if(dto.getType().equals(ScriptPurposeEnums.EXECUTE.getValue())){  // 执行脚本
             log.info("执行脚本：{}", dto.getScript());
@@ -312,8 +310,9 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setAskHumanHelp(dto.isAskHumanHelp());
         update(role) ;
 
-        boolean b = roleToolService.updateRoleTools(dto.getRoleId(), dto.getTools()) ;
-        log.debug("updateRoleTools = {}", b);
+        // TODO 待处理更新角色工具
+//        boolean b = roleToolService.updateRoleTools(dto.getRoleId(), dto.getTools()) ;
+//        log.debug("updateRoleTools = {}", b);
     }
 
     @Override
@@ -410,7 +409,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     @Override
     public void saveRoleWithReActConfig(RoleReActConfigDto dto) {
         IndustryRoleEntity role = getById(dto.getRoleId());
+        setRoleConfigParams(dto, role);
 
+        update(role);
+    }
+
+    private static void setRoleConfigParams(RoleReActConfigDto dto, IndustryRoleEntity role) {
         role.setModelId(dto.getModelId());
         role.setPromptContent(dto.getPromptContent());
         role.setGreeting(dto.getGreeting());
@@ -435,6 +439,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             role.setVoiceInputData(JSONObject.toJSONString(dto.getVoiceInputData()));
         }
 
+        // 数据集配置
+        if(dto.getDatasetSearchConfig() != null){
+            role.setDatasetSearchConfig(JSONObject.toJSONString(dto.getDatasetSearchConfig()));
+        }
+
         if(dto.getGuessWhatYouAskData() != null){
             role.setGuessWhatYouAskData(JSONObject.toJSONString(dto.getGuessWhatYouAskData()));
         }
@@ -443,8 +452,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         if(dto.getVoicePlayData() != null){
             role.setVoicePlayData(JSONObject.toJSONString(dto.getVoicePlayData()));
         }
-
-        update(role);
     }
 
     /**
@@ -459,15 +466,15 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         lambdaQueryWrapper.eq(IndustryRoleEntity::getSaleFromRoleId, roleId);
         remove(lambdaQueryWrapper);
 
-        // 删除工具信息
-        IndustryRoleEntity roleEntity = getOne(lambdaQueryWrapper) ;
-        if(roleEntity != null){
-            roleToolService.remove(new LambdaQueryWrapper<RoleToolEntity>().eq(RoleToolEntity::getRoleId, roleEntity.getId()));
-        }
+        // TODO 删除工具信息
+//        IndustryRoleEntity roleEntity = getOne(lambdaQueryWrapper) ;
+//        if(roleEntity != null){
+//            roleToolService.remove(new LambdaQueryWrapper<RoleToolEntity>().eq(RoleToolEntity::getRoleId, roleEntity.getId()));
+//        }
     }
 
     /**
-     * 复制工具
+     * TODO 复制工具
      * @param roleId
      * @param orgId
      * @param userId
@@ -476,67 +483,67 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
      */
     private void copyRoleTool(long roleId, long orgId, long userId, long deptId, IndustryRoleEntity role) {
 
-        // 插件工具的复制(待完善)，思路先复制工具，再处理工具关系
-        LambdaUpdateWrapper<RoleToolEntity>  toolLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
-        toolLambdaUpdateWrapper.eq(RoleToolEntity::getRoleId, roleId);
-
-        if(roleToolService.count(toolLambdaUpdateWrapper) > 0){
-            List<RoleToolEntity> toolEntities = roleToolService.list(toolLambdaUpdateWrapper);
-
-            // 查询出所有涉及到的工具
-            List<Long> toolIds = toolEntities.stream().map(RoleToolEntity::getToolId).toList();
-
-            if(CollectionUtils.isNotEmpty(toolIds)){
-
-                LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper = new LambdaQueryWrapper<>();
-                toolLambdaQueryWrapper.in(ToolEntity::getId, toolIds);
-
-                List<ToolEntity> toolEntities1 = toolService.list(toolLambdaQueryWrapper);
-                List<ToolEntity> copyToolEntities = new ArrayList<>() ;
-
-                if(CollectionUtils.isNotEmpty(toolEntities1)){
-                    for (ToolEntity toolEntity : toolEntities1) {
-
-                        ToolEntity toolEntity1  ;
-
-                        // 先通过id查询是否当前组织已经拥有此工具
-                        LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
-                        toolLambdaQueryWrapper1.eq(ToolEntity::getOrgId, orgId);
-                        toolLambdaQueryWrapper1.eq(ToolEntity::getFromId, toolEntity.getId());
-
-                        if(toolService.count(toolLambdaQueryWrapper1) > 0){
-                            toolEntity1 = toolService.getOne(toolLambdaQueryWrapper1);
-                        }else{
-                            toolEntity1 = new ToolEntity();
-                            BeanUtils.copyProperties(toolEntity, toolEntity1);
-
-                            toolEntity1.setId(null);
-                            toolEntity1.setOrgId(orgId);
-                            toolEntity1.setOperatorId(userId);
-                            toolEntity1.setDepartmentId(deptId);
-                            toolEntity1.setFromId(toolEntity.getId()); // 来源工具
-
-                            // 保存工具
-                            toolService.save(toolEntity1) ;
-                        }
-
-                        copyToolEntities.add(toolEntity1);
-                    }
-                }
-
-                // 将用户与工具关联一起
-                List<RoleToolEntity> copyRoleTools = new ArrayList<>() ;
-                for(ToolEntity toolEntity : copyToolEntities){
-                    RoleToolEntity roleToolEntity = new RoleToolEntity();
-                    roleToolEntity.setRoleId(role.getId());
-                    roleToolEntity.setToolId(toolEntity.getId());
-
-                    copyRoleTools.add(roleToolEntity);
-                }
-                roleToolService.saveBatch(copyRoleTools);
-            }
-
-        }
+//        // 插件工具的复制(待完善)，思路先复制工具，再处理工具关系
+//        LambdaUpdateWrapper<RoleToolEntity>  toolLambdaUpdateWrapper = new LambdaUpdateWrapper<>();
+//        toolLambdaUpdateWrapper.eq(RoleToolEntity::getRoleId, roleId);
+//
+//        if(roleToolService.count(toolLambdaUpdateWrapper) > 0){
+//            List<RoleToolEntity> toolEntities = roleToolService.list(toolLambdaUpdateWrapper);
+//
+//            // 查询出所有涉及到的工具
+//            List<Long> toolIds = toolEntities.stream().map(RoleToolEntity::getToolId).toList();
+//
+//            if(CollectionUtils.isNotEmpty(toolIds)){
+//
+//                LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper = new LambdaQueryWrapper<>();
+//                toolLambdaQueryWrapper.in(ToolEntity::getId, toolIds);
+//
+//                List<ToolEntity> toolEntities1 = toolService.list(toolLambdaQueryWrapper);
+//                List<ToolEntity> copyToolEntities = new ArrayList<>() ;
+//
+//                if(CollectionUtils.isNotEmpty(toolEntities1)){
+//                    for (ToolEntity toolEntity : toolEntities1) {
+//
+//                        ToolEntity toolEntity1  ;
+//
+//                        // 先通过id查询是否当前组织已经拥有此工具
+//                        LambdaQueryWrapper<ToolEntity> toolLambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+//                        toolLambdaQueryWrapper1.eq(ToolEntity::getOrgId, orgId);
+//                        toolLambdaQueryWrapper1.eq(ToolEntity::getFromId, toolEntity.getId());
+//
+//                        if(toolService.count(toolLambdaQueryWrapper1) > 0){
+//                            toolEntity1 = toolService.getOne(toolLambdaQueryWrapper1);
+//                        }else{
+//                            toolEntity1 = new ToolEntity();
+//                            BeanUtils.copyProperties(toolEntity, toolEntity1);
+//
+//                            toolEntity1.setId(null);
+//                            toolEntity1.setOrgId(orgId);
+//                            toolEntity1.setOperatorId(userId);
+//                            toolEntity1.setDepartmentId(deptId);
+//                            toolEntity1.setFromId(toolEntity.getId()); // 来源工具
+//
+//                            // 保存工具
+//                            toolService.save(toolEntity1) ;
+//                        }
+//
+//                        copyToolEntities.add(toolEntity1);
+//                    }
+//                }
+//
+//                // 将用户与工具关联一起
+//                List<RoleToolEntity> copyRoleTools = new ArrayList<>() ;
+//                for(ToolEntity toolEntity : copyToolEntities){
+//                    RoleToolEntity roleToolEntity = new RoleToolEntity();
+//                    roleToolEntity.setRoleId(role.getId());
+//                    roleToolEntity.setToolId(toolEntity.getId());
+//
+//                    copyRoleTools.add(roleToolEntity);
+//                }
+//                roleToolService.saveBatch(copyRoleTools);
+//            }
+//
+//        }
     }
 
 }
