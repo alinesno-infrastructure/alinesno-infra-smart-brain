@@ -138,6 +138,10 @@ const clickNode = (shapeItem) => {
   lf.value.toFront(newNode.id);
 };
 
+const getWorkflowGraphData = () => {
+  return lf.value.getGraphData();
+};
+
 onMounted(() => {
   nextTick(() => {
     renderGraphData();
@@ -147,6 +151,7 @@ onMounted(() => {
 defineExpose({
   onmousedown,
   clickNode,
+  getWorkflowGraphData
 })
 
 </script>
