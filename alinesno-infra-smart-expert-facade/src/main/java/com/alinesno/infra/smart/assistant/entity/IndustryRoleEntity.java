@@ -112,9 +112,9 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("销售来源角色ID")
     private Long saleFromRoleId = 0L ;
 
-    @TableField
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
-    private String knowledgeId ;
+//    @TableField
+//    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
+//    private String knowledgeId ;
 
     // 知识库ID列表，用于关联相关知识数据
     @TableField("knowledge_base_ids")
@@ -168,6 +168,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @TableField("voice_play_data")
     @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "语音播放相关数据配置")
     private String voicePlayData;
+
+    // 数据集搜索配置
+    @TableField("dataset_search_config")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "数据集搜索配置")
+    private String datasetSearchConfig;
 
     // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // 执行脚本
