@@ -76,7 +76,7 @@ public class BaseSearchServiceImpl implements IBaseSearchService {
         IndustryRoleEntity roleEntity =  industryRoleService.getById(roleId) ;
 
         VectorSearchDto vectorSearchDto = new VectorSearchDto() ;
-        vectorSearchDto.setDatasetId(Long.parseLong(roleEntity.getKnowledgeId())) ;
+//        vectorSearchDto.setDatasetId(Long.parseLong(roleEntity.getKnowledgeId())) ;
         vectorSearchDto.setSearchText(searchText) ;
         vectorSearchDto.setTopK(5) ;
 
