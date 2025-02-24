@@ -61,11 +61,10 @@
       </el-col>
     </el-row>
 
-    <el-form-item style="margin-right: 10px;">
-          <div style="display: flex;justify-content: flex-end;width: 100%;">
-              <el-button type="primary" @click="handleSubmit" size="large" text bg>确认</el-button>
-          </div>
-      </el-form-item> 
+    <div style="display: flex;justify-content: flex-end;width: 100%;">
+        <el-button type="primary" @click="handleSubmit" size="large" text bg>确认保存</el-button>
+    </div>
+
   </div>
 </template>
 
@@ -183,6 +182,7 @@ function handleSelectionChange(selection) {
     if (!selectItemList.value.includes(item.id)) {
       selectItemList.value.push(item.id);
       selectedDatasetList.value.push({
+        id: item.id,
         icon: item.icon ? 'fa-solid fa-file-pdf' : item.icon ,
         name: item.name
       });
@@ -198,6 +198,16 @@ function setTableSelection() {
     DatasetList.value.forEach(item => {
       if (selectItemList.value.includes(item.id)) {
         tableRef.value.toggleRowSelection(item, true);
+
+        // 如果没有 则添加到已选择列表中
+        if (!selectedDatasetList.value.some(i => i.id === item.id)) {
+          selectedDatasetList.value.push({
+            id: item.id,
+            icon: item.icon ? 'fa-solid fa-file-pdf' : item.icon ,
+            name: item.name
+          });
+        }
+
       }
     });
   }
@@ -237,15 +247,7 @@ function getDeptTree() {
 /** 设置选中知识库值 */
 function setSelectItemList(items){
   console.log('setSelectItemList = ' + items)
-  // selectItemList.value = items;
-  // items 合并 selectItemList
-  items.forEach(item => {
-    if (!selectItemList.value.includes(item)) {
-      console.log('item = ' + item);
-      selectItemList.value.push(item);
-    }
-  });
-  console.log('setSelectItemList = ' + items)
+  selectItemList.value = items;
 
   setTableSelection();
 }
