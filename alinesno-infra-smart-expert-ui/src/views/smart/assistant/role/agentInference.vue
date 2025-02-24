@@ -110,10 +110,8 @@
                                 </el-col>
                                 <el-col :span="12">
                                     <div class="button-group">
-                                        <el-button type="primary" text bg @click="openKnowledgeBaseSelection">+
-                                            选择</el-button>
-                                        <el-button type="primary" text bg
-                                            @click="handleOpenDatasetConfigPanel">参数</el-button>
+                                        <el-button type="primary" text bg @click="openKnowledgeBaseSelection">+选择</el-button>
+                                        <el-button type="primary" text bg @click="handleOpenDatasetConfigPanel">参数</el-button>
                                     </div>
                                 </el-col>
                             </el-row>
@@ -121,8 +119,7 @@
                                 <el-col :span="12">
                                     <div class="ai-config-section-title">
                                         <i class="fa-solid fa-wrench"></i> <span>工具调用</span>
-                                        <el-tag style="cursor: pointer;" effect="dark">{{ selectionToolsData.length
-                                        }}</el-tag>
+                                        <el-tag style="cursor: pointer;" effect="dark">{{ selectionToolsData.length }}</el-tag>
                                     </div>
                                 </el-col>
                                 <el-col :span="12">
@@ -156,7 +153,8 @@
                                         <el-form-item prop="greeting" class="form-item-wrapper">
                                             <el-input maxlength="100" v-model="agentModelConfigForm.greeting"
                                                 show-word-limit type="textarea" resize="none" :rows="2"
-                                                placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题"></el-input>
+                                                placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题">
+                                            </el-input>
                                         </el-form-item>
                                     </div>
                                 </el-col>
@@ -188,8 +186,7 @@
                                         <el-button type="primary" text bg @click="toggleVoiceInput">
                                             {{ voiceInputStatus ? '关闭' : '开启' }}
                                         </el-button>
-                                        <el-button v-if="voiceInputStatus" type="primary" text bg
-                                            @click="toggleVoiceInputStatusPanel">参数</el-button>
+                                        <el-button v-if="voiceInputStatus" type="primary" text bg @click="toggleVoiceInputStatusPanel">参数</el-button>
                                     </div>
                                 </el-col>
                             </el-row>
@@ -204,8 +201,7 @@
                                         <el-button type="primary" text bg @click="toggleGuessWhatYouAsk">
                                             {{ guessWhatYouAskStatus ? '关闭' : '开启' }}
                                         </el-button>
-                                        <el-button v-if="guessWhatYouAskStatus" type="primary" text bg
-                                            @click="toggleGuessWhatYouAskStatusPanel">参数</el-button>
+                                        <el-button v-if="guessWhatYouAskStatus" type="primary" text bg @click="toggleGuessWhatYouAskStatusPanel">参数</el-button>
                                     </div>
                                 </el-col>
                             </el-row>
@@ -231,16 +227,15 @@
     </el-dialog>
 
     <el-dialog title="选择知识库" v-model="datasetConfigDialogVisible" width="1024px">
-        <!-- :before-close="handleSelectDatasetConfigClose"> -->
         <div style="margin-bottom:30px">
             <DatasetChoicePanel @handleSelectDatasetConfigClose="handleSelectDatasetConfigClose" ref="datasetChoicePanelRef" />
         </div>
     </el-dialog>
 
-    <el-dialog title="知识库配置" v-model="datasetParamsConfigDialogVisible" width="600px"
-        :before-close="handleSelectDatasetParamsConfigClose">
+    <el-dialog title="知识库配置" v-model="datasetParamsConfigDialogVisible" width="600px">
+        <!-- :before-close="handleSelectDatasetParamsConfigClose" -->
         <div style="margin-bottom:30px">
-            <DatasetParamsChoicePanel ref="datasetParamsChoicePanelRef" />
+            <DatasetParamsChoicePanel @handleSelectDatasetParamsConfigClose="handleSelectDatasetParamsConfigClose" ref="datasetParamsChoicePanelRef" />
         </div>
     </el-dialog>
 
@@ -256,18 +251,16 @@
 
     <!-- 用户问题建议 -->
     <el-dialog title="用户问题建议参数" v-model="guessWhatYouAskStatusVisible" width="900px">
-        <!-- :before-close="handleGuessWhatYouAskStatusPanelClose()" -->
         <guessWhatYouAskPanel @handleGuessWhatYouAskStatusPanelClose="handleGuessWhatYouAskStatusPanelClose" ref="guessWhatYouAskRef" />
     </el-dialog>
 
     <!-- 提示词 -->
-    <el-dialog title="提示词" v-model="promptDialogVisible" width="800px">
+    <el-dialog title="提示词" v-model="promptDialogVisible" width="900px">
         <promptEditorPanel @syncPromptContent="syncPromptContent" ref="promptEditorPanelRef" />
     </el-dialog>
 
     <!-- 语音输入参数 -->
     <el-dialog title="语音输入" v-model="voiceInputStatusVisible" width="500px">
-        <!-- :before-close="handleVoiceInputStatusPanelClose()" -->
         <VoiceInputStatusPanel @handleVoiceInputStatusPanelClose="handleVoiceInputStatusPanelClose" ref="voiceInputStatusPanelRef" />
     </el-dialog>
 
@@ -314,6 +307,7 @@ const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
+const datasetParamsChoicePanelRef= ref(null)
 const datasetChoicePanelRef = ref(null)
 const toolsChoicePanelRef = ref(null)
 const roleChatPanelRef = ref(null)
@@ -403,13 +397,13 @@ const displayRoleInfoBack = (currentRole) =>{
     agentModelConfigForm.value.longTermMemoryEnabled = currentRole.longTermMemoryEnabled ;
 
     if(currentRole.value.knowledgeBaseIds){
-        const datasetParsedArray = JSON.parse(currentRole.knowledgeBaseIds);
+        const datasetParsedArray = currentRole.knowledgeBaseIds ; // JSON.parse(currentRole.knowledgeBaseIds);
         selectionDatasetData.value = datasetParsedArray;
         agentModelConfigForm.value.knowledgeBaseIds = datasetParsedArray ;
     }
 
     if(currentRole.value.selectionToolsData){
-        const toolsParsedArray = JSON.parse(currentRole.selectionToolsData);
+        const toolsParsedArray = currentRole.selectionToolsData ; // JSON.parse(currentRole.selectionToolsData);
         selectionToolsData.value = toolsParsedArray;
         agentModelConfigForm.value.selectionToolsData = toolsParsedArray ; 
     }
@@ -418,26 +412,31 @@ const displayRoleInfoBack = (currentRole) =>{
     voiceInputStatus.value = currentRole.voiceInputStatus ;
     agentModelConfigForm.value.voiceInputStatus = currentRole.voiceInputStatus ;
     if(currentRole.voiceInputData){
-        agentModelConfigForm.value.voiceInputData = JSON.parse(currentRole.voiceInputData);
+        agentModelConfigForm.value.voiceInputData = currentRole.voiceInputData ; // JSON.parse(currentRole.voiceInputData);
     }
 
     // 语音播放
     voicePlayStatus.value = currentRole.voicePlayStatus ;
     agentModelConfigForm.value.voicePlayStatus = currentRole.voicePlayStatus ;
     if(currentRole.voicePlayData){
-        agentModelConfigForm.value.voicePlayData = JSON.parse(currentRole.voicePlayData);
+        agentModelConfigForm.value.voicePlayData = currentRole.voicePlayData ; // JSON.parse(currentRole.voicePlayData);
     }
 
     // 用户问题建议
     guessWhatYouAskStatus.value = currentRole.guessWhatYouAskStatus ;
     agentModelConfigForm.value.guessWhatYouAskStatus = currentRole.guessWhatYouAskStatus ;
     if(currentRole.guessWhatYouAskData){
-        agentModelConfigForm.value.guessWhatYouAskData = JSON.parse(currentRole.guessWhatYouAskData);
+        agentModelConfigForm.value.guessWhatYouAskData = currentRole.guessWhatYouAskData ; // JSON.parse(currentRole.guessWhatYouAskData);
     }
 
     // 模型配置
     if(currentRole.modelConfig){
-        agentModelConfigForm.value.modelConfig = JSON.parse(currentRole.modelConfig);
+        agentModelConfigForm.value.modelConfig = currentRole.modelConfig ; // JSON.parse(currentRole.modelConfig);
+    }
+
+    // 搜索配置
+    if(currentRole.datasetSearchConfig){
+        agentModelConfigForm.value.datasetSearchConfig = currentRole.datasetSearchConfig ; // JSON.parse(currentRole.searchConfig);
     }
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
@@ -476,6 +475,10 @@ function openKnowledgeBaseSelection() {
 // 打开数据集配置窗口
 function handleOpenDatasetConfigPanel() {
     datasetParamsConfigDialogVisible.value = true;
+
+    nextTick(() => {
+        datasetParamsChoicePanelRef.value.setDataset(agentModelConfigForm.value.datasetSearchConfig);
+    });
 }
 
 // 关闭数据集配置窗口
@@ -488,10 +491,13 @@ function handleSelectDatasetConfigClose(selectItem) {
 }
 
 // 关闭数据集配置窗口
-function handleSelectDatasetParamsConfigClose() {
+function handleSelectDatasetParamsConfigClose(formData) {
+
+    console.log('handleSelectDatasetParamsConfigClose = ' + JSON.stringify(formData));
+
     if (datasetParamsConfigDialogVisible.value) {
         datasetParamsConfigDialogVisible.value = false;
-        // selectionDatasetParamsData.value = datasetParamsChoicePanelRef.value.getSelectItemList();
+        agentModelConfigForm.value.datasetSearchConfig = formData;
     }
 }
 
@@ -499,13 +505,19 @@ function handleSelectDatasetParamsConfigClose() {
 function openToolSelection() {
     // 这里可以添加打开选择窗口的逻辑，选择后更新closedToolIds
     toolsConfigDialogVisible.value = true;
+
+    // 设置知识库值
+    nextTick(() => {
+        toolsChoicePanelRef.value.setSelectItemList(selectionToolsData.value);
+    });
 }
 
 // 关闭工具选择窗口之前，获取到工具
-function handleSelectToolsConfigClose() {
+function handleSelectToolsConfigClose(selectItem) {
+    toolsConfigDialogVisible.value = false;
+
     if (toolsChoicePanelRef.value) {
-        selectionToolsData.value = toolsChoicePanelRef.value.getSelectItemList();
-        console.log('selectionToolsData.value = ' + JSON.stringify(selectionToolsData.value));
+        selectionToolsData.value = selectItem ; 
         agentModelConfigForm.value.selectionToolsData = selectionToolsData.value;
     }
 }
