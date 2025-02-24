@@ -33,8 +33,17 @@ var managerUrl = {
   findOrg: prefix + "findOrg",
   confirmPushOrg: prefix + "confirmPushOrg",
   saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
-  // listPushOrgRole: prefix + "listPushOrgRole",
+  saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
 
+}
+
+// 保存角色脚本
+export function saveRoleWithScriptConfig(data) {
+  return request({
+    url: managerUrl.saveRoleWithScriptConfig,
+    method: 'post',
+    data: data
+  })
 }
 
 // 保存ReAct角色配置
