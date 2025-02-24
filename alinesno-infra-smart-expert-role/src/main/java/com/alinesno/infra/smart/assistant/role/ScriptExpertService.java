@@ -116,6 +116,8 @@ public class ScriptExpertService extends ExpertService {
 									   List<CodeContent> codeContentList,
 									   String scriptText) {
 
+		// TODO 待处理Groovy脚本安全的问题
+
 		ToolsUtil tools = new ToolsUtil() ;
 
 		// 创建 Binding 对象，用于绑定变量到 Groovy 脚本
