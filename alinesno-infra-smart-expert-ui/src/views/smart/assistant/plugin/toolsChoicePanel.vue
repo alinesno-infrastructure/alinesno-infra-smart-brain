@@ -31,7 +31,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="插件类型" align="center" key="pluginType" width="150" prop="pluginType"
+          <el-table-column label="工具类型" align="center" key="pluginType" width="150" prop="pluginType"
             v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ getPluginTypeName(scope.row.pluginType) }}
@@ -47,7 +47,7 @@
           v-model:limit="queryParams.pageSize" @pagination="getList" />
       </el-col>
 
-      <!-- 已选择插件 -->
+      <!-- 已选择工具 -->
       <el-col :span="9" :xs="24">
         <div class="plugin-catalog">
           <div class="catalog-title">
@@ -61,8 +61,8 @@
               :key="index" 
               class="catalog-item"
               style="display: flex;justify-content: space-between;gap: 10px;box-shadow: rgba(16, 24, 40, 0.1) 0px 1px 8px -2px, rgba(16, 24, 40, 0.06) 0px 2px 4px -2px;border: 1px solid rgb(223, 226, 234);">
-            <span>
-                <img :src="imagePath(item.icon)" style="border-radius: 5px;width:30px;height:30px;" />
+            <span style="display: flex;flex-direction: row;align-items: center;gap: 5px;">
+                <img :src="imagePath(item.icon)" style="border-radius: 50%;width:30px;height:30px;" />
               {{ item.label }}
             </span>
               <el-button type="text" icon="Delete" @click="removeSelectedPlugin(index)"></el-button>
@@ -73,6 +73,11 @@
       </el-col>
 
     </el-row>
+
+    <div style="display: flex;justify-content: flex-end;width: 100%;">
+        <el-button type="primary" @click="handleSubmit" size="large" text bg>确认保存</el-button>
+    </div>
+
   </div>
 </template>
 
@@ -82,7 +87,10 @@ import {
 } from "@/api/smart/assistant/tool";
 import { reactive, ref, computed, nextTick } from "vue";
 // import { useRouter } from "vue-router";
+import { ElMessage } from 'element-plus';
 import { getCurrentInstance, toRefs } from 'vue';
+
+const emit = defineEmits(['handleSelectToolsConfigClose'])
 
 const { proxy } = getCurrentInstance();
 
@@ -97,13 +105,13 @@ const dateRange = ref([]);
 
 const selectItemList = ref([]);  // 已经选择的项
 const tableRef = ref(null); // 表格引用
-const hasChoisePluginList = ref([]); // 已选择插件列表
+const hasChoisePluginList = ref([]); // 已选择工具列表
 
 // 列显隐信息
 const columns = ref([
   { key: 0, label: `图标`, visible: true },
   { key: 1, label: `工具名称`, visible: true },
-  { key: 2, label: `插件类型`, visible: true },
+  { key: 2, label: `工具类型`, visible: true },
   { key: 3, label: `使用场景`, visible: true },
   { key: 4, label: `状态`, visible: true },
   { key: 5, label: `工具描述`, visible: true },
@@ -131,7 +139,7 @@ const data = reactive({
       message: "工具名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
-    pluginType: [{ required: true, message: "插件类型不能为空", trigger: "blur" }],
+    pluginType: [{ required: true, message: "工具类型不能为空", trigger: "blur" }],
     screen: [{ required: true, message: "使用场景不能为空", trigger: "blur" }],
     hasStatus: [{ required: true, message: "状态不能为空", trigger: "blur" }],
     description: [{ required: true, message: "工具描述不能为空", trigger: "blur" }],
@@ -162,10 +170,10 @@ function getList() {
   });
 };
 
-/** 获取插件类型名称 */
+/** 获取工具类型名称 */
 const getPluginTypeName = computed(() => {
   return (key) => {
-    // 这里假设插件类型数据有正确的映射，暂时简化处理
+    // 这里假设工具类型数据有正确的映射，暂时简化处理
     return key || '未知类型';
   };
 });
@@ -199,6 +207,7 @@ function handleSelectionChange(selection) {
     if (!selectItemList.value.includes(item.id)) {
       selectItemList.value.push(item.id);
       hasChoisePluginList.value.push({
+        id: item.id,
         icon : item.icon || 'fa-solid fa-question', // 假设 code 存在，没有则用默认图标
         label: item.name
       });
@@ -216,21 +225,33 @@ function setTableSelection() {
     ToolList.value.forEach(item => {
       if (selectItemList.value.includes(item.id)) {
         tableRef.value.toggleRowSelection(item, true);
+
+        // 如果没有 则添加到已选择列表中
+        if (!hasChoisePluginList.value.some(i => i.id === item.id)) {
+          hasChoisePluginList.value.push({
+            id: item.id,
+            icon: item.icon ,
+            label: item.name
+          });
+        }
+
       }
     });
   }
 }
 
-// 删除已选择的插件
+// 删除已选择的工具
 function removeSelectedPlugin(index) {
   const removedItem = hasChoisePluginList.value.splice(index, 1)[0];
   const removedId = ToolList.value.find(item => item.name === removedItem.label)?.id;
+
   if (removedId) {
     const idIndex = selectItemList.value.indexOf(removedId);
     if (idIndex > -1) {
       selectItemList.value.splice(idIndex, 1);
     }
   }
+
   // 重新设置表格选中状态
   setTableSelection();
 }
@@ -240,10 +261,24 @@ function getSelectItemList() {
   return selectItemList.value;
 }
 
+// 设置 selectItemList
+function setSelectItemList(items){
+  console.log('setSelectItemList = ' + items)
+  selectItemList.value = items;
+
+  setTableSelection();
+}
+
+const handleSubmit = () => {
+  emit("handleSelectToolsConfigClose" , getSelectItemList());
+  ElMessage.success('提交成功');
+};
+
 getList();
 
 defineExpose({
-  getSelectItemList
+  getSelectItemList,
+  setSelectItemList
 });
 
 // 假设的 imagePath 和 parseTime 函数
