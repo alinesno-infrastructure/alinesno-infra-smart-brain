@@ -13,7 +13,7 @@ import java.util.Map;
 public enum LlmModelProviderEnums {
 
     DEEDSEEK(
-            "Deepseep(阿里百炼)",
+            "DeepSeek",
             "深度求索",
             "deepseek",
             "https://dashscope.aliyuncs.com/compatible-mode/v1",
@@ -23,8 +23,8 @@ public enum LlmModelProviderEnums {
             "豆包",
             "字节跳动",
             "doubao",
-            "https://example.bytedance.com",
-            createModelList("doubao-large")
+            "https://ark.cn-beijing.volces.com/api/v3",
+            createModelList("ep-20250210101146-9ds66")
     ),
     CHATGPT(
             "ChatGPT",
