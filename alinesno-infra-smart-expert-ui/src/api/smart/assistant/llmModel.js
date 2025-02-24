@@ -17,8 +17,18 @@ var managerUrl = {
     downloadFile: prefix + "downloadFile",
     allModelProvidersInfo: prefix + "getAllModelProvidersInfo", 
     allModelTypesInfo: prefix + "getAllModelTypesInfo" ,
-    listLlmMode: prefix + "listLlmMode"
+    listLlmMode: prefix + "listLlmMode",
+    testLlmModel: prefix + "testLlmModel"
 };
+
+// 测试模型
+export function testLlmModel(data) {
+    return request({
+        url: managerUrl.testLlmModel,
+        method: 'post',
+        data: data
+    })
+}
 
 // 列出所有模型列表
 export function listAllLlmModel() {
