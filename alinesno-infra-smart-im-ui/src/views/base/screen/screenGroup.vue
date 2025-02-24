@@ -81,11 +81,12 @@ const router = useRouter();
 const imageUrl = ref([])
 
 const screenTypes = ref([
-  { key: 'large_text', name: '大文本', isAvailable: true },
+  { key: 'large_text', name: '文档', isAvailable: true },
   { key: 'leader_model', name: '管理者', isAvailable: true },
-  { key: 'video_clip', name: '视频剪辑', isAvailable: true },
-  { key: 'exam', name: '培训考试', isAvailable: true }
 ]);
+
+//  { key: 'video_clip', name: '视频剪辑', isAvailable: true },
+//  { key: 'exam', name: '培训考试', isAvailable: true }
 
 const data = reactive({
   form: {
