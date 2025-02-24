@@ -13,6 +13,10 @@
 	<artifactId>alinesno-infra-smart-expert-domain</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<agents-flex.version>2.0.0-M2-SNAPSHOT</agents-flex.version>
+	</properties>
+
 	<dependencies>
 
 		<!-- 引用公共门面服务 -->
@@ -33,6 +37,51 @@
 			<artifactId>sqids</artifactId>
 			<version>0.1.0</version>
 		</dependency>
+
+
+		<!-- 多模型适配 -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-spring-boot-starter</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<!--llm start-->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-doubao</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-ollama</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-openai</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-deepseek</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-qwen</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-spark</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>agents-flex-llm-moonshot</artifactId>
+			<version>${agents-flex.version}</version>
+		</dependency>
+		<!--llm end-->
 
 		<!-- 引入三方依赖 -->
         <dependency>
