@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.api;
 
+import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
@@ -17,6 +18,8 @@ public class RoleScriptDto implements Serializable {
 
     @Min(value = 1, message = "角色ID不能为空")
     private long roleId; // 角色ID，用于标识脚本所属的角色
+
+    private RoleReActConfigDto agentConfigParams;
 
     @NotBlank(message = "脚本内容不能为空")
     private String script; // 脚本内容，具体执行、审核或函数调用的脚本
