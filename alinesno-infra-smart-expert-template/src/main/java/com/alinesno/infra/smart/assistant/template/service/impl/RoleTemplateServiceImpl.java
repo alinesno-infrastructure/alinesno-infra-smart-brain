@@ -15,7 +15,6 @@ import com.alinesno.infra.smart.assistant.enums.ToolTypeEnums;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.assistant.template.dto.RoleTemplateDto;
 import com.alinesno.infra.smart.assistant.template.dto.RoleToolInfo;
@@ -43,7 +42,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 项目模块 服务实现类
@@ -61,8 +59,8 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
     @Autowired
     private IToolService toolService;
 
-    @Autowired
-    private IRoleToolService roleToolService;
+//    @Autowired
+//    private IRoleToolService roleToolService;
 
     @Autowired
     private CloudStorageConsumer storageConsumer ;
@@ -263,7 +261,8 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
 
             List<ToolEntity> toolEntityList = getToolRoleTools(roleTools, roleEntity) ; // roleTemplateEntity.getOrgId());
             toolService.saveBatch(toolEntityList);
-            roleToolService.updateRoleTools(roleEntity.getId(), toolEntityList.stream().map(ToolEntity::getId).collect(Collectors.toList()));
+            // TODO 更新角色工具
+//            roleToolService.updateRoleTools(roleEntity.getId(), toolEntityList.stream().map(ToolEntity::getId).collect(Collectors.toList()));
         }
 
         return String.valueOf(roleEntity.getId()) ;
