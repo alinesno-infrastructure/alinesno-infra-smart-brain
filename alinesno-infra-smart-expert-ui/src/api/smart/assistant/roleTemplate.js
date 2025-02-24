@@ -2,7 +2,7 @@ import request from '@/utils/request'
 import { parseStrEmpty } from "@/utils/ruoyi";
 
 /**
- * 插件接口操作
+ * 工具接口操作
  *
  * @author luoxiaodong
  * @since 1.0.0
@@ -77,7 +77,7 @@ return request({
 })
 }
 
-// 查询插件列表
+// 查询工具列表
 export function listPlugin(query) {
   return request({
     url: managerUrl.datatables ,
@@ -86,7 +86,7 @@ export function listPlugin(query) {
   })
 }
 
-// 查询插件详细
+// 查询工具详细
 export function getPlugin(id) {
   return request({
     url: managerUrl.detailUrl + '/' + parseStrEmpty(id),
@@ -94,7 +94,7 @@ export function getPlugin(id) {
   })
 }
 
-// 新增插件
+// 新增工具
 export function addPlugin(data) {
   return request({
     url: managerUrl.saveUrl ,
@@ -103,7 +103,7 @@ export function addPlugin(data) {
   })
 }
 
-// 修改插件
+// 修改工具
 export function updatePlugin(data) {
   return request({
     url: managerUrl.updateUrl ,
@@ -112,7 +112,7 @@ export function updatePlugin(data) {
   })
 }
 
-// 删除插件
+// 删除工具
 export function delPlugin(id) {
   return request({
     url: managerUrl.removeUrl + '/' + parseStrEmpty(id),
