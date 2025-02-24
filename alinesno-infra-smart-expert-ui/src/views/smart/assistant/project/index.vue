@@ -238,7 +238,7 @@ import {
   updateProject,
   addProject,
   changStatusField
-} from "@/api/smart/brain/project";
+} from "@/api/smart/assistant/project";
 
 import TypeList from './channelList.vue'
 
