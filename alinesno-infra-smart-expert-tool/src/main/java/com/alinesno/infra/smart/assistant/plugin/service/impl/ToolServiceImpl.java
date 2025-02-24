@@ -3,18 +3,13 @@ package com.alinesno.infra.smart.assistant.plugin.service.impl;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
-import com.alinesno.infra.smart.assistant.entity.RoleToolEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.mapper.ToolMapper;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.service.IRoleToolService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
@@ -32,8 +27,8 @@ import java.util.Map;
 @Service
 public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> implements IToolService {
 
-    @Autowired
-    private IRoleToolService roleToolService ;
+//    @Autowired
+//    private IRoleToolService roleToolService ;
 
     @Override
     public String validateToolScript(ToolRequestDto dto) {
@@ -72,29 +67,31 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
     @Override
     public List<ToolDto> getByRole(long roleId) {
 
-        List<ToolEntity> roleTools = roleToolService.findTools(roleId) ;
+//        List<ToolEntity> roleTools = roleToolService.findTools(roleId) ;
+//
+//        return roleTools.stream().map(tool -> {
+//            ToolDto dto = new ToolDto();
+//            BeanUtils.copyProperties(tool, dto);
+//            return dto;
+//        }).toList();
 
-        return roleTools.stream().map(tool -> {
-            ToolDto dto = new ToolDto();
-            BeanUtils.copyProperties(tool, dto);
-            return dto;
-        }).toList();
+        return null ;
 
     }
 
     @Override
     public ToolEntity getToolScript(String toolFullName, Long roleId) {
 
-        LambdaQueryWrapper<RoleToolEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(RoleToolEntity::getRoleId, roleId);
-        List<RoleToolEntity> roleTools = roleToolService.list(queryWrapper) ;
-
-        List<ToolEntity> tools = this.listByIds(roleTools.stream().map(RoleToolEntity::getToolId).toList()) ;
-        for (ToolEntity tool : tools) {
-            if(tool.getToolFullName().equals(toolFullName)){
-                return tool ;
-            }
-        }
+//        LambdaQueryWrapper<RoleToolEntity> queryWrapper = new LambdaQueryWrapper<>();
+//        queryWrapper.eq(RoleToolEntity::getRoleId, roleId);
+//        List<RoleToolEntity> roleTools = roleToolService.list(queryWrapper) ;
+//
+//        List<ToolEntity> tools = this.listByIds(roleTools.stream().map(RoleToolEntity::getToolId).toList()) ;
+//        for (ToolEntity tool : tools) {
+//            if(tool.getToolFullName().equals(toolFullName)){
+//                return tool ;
+//            }
+//        }
 
         return null;
     }
