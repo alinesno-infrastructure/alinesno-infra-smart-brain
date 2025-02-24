@@ -8,6 +8,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
@@ -114,6 +115,17 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
         }
 
         return AjaxResult.success(allLlmMode) ;
+    }
+
+    /**
+     * 模型测试
+     * @return
+     */
+    @PostMapping("/testLlmModel")
+    public AjaxResult testLlmModel(@RequestBody TestLlmModelDto dto) {
+        log.debug("dto = {}" , dto);
+        String result = service.testLlmModel(dto) ;
+        return AjaxResult.success("操作成功" , result) ;
     }
 
     @Override
