@@ -171,9 +171,9 @@ function getRoleInfo() {
         currentRole.value = response.data;
 
         // 设置脚本
-        executeEditorRef.value.setRawScript(currentRole.value.executeScript),
-        auditEditorRef.value.setRawScript(currentRole.value.auditScript),
-        functionCallEditorRef.value.setRawScript(currentRole.value.functionCallbackScript)
+        executeEditorRef.value.setRawScript(currentRole.value.executeScript);
+        auditEditorRef.value.setRawScript(currentRole.value.auditScript);
+        functionCallEditorRef.value.setRawScript(currentRole.value.functionCallbackScript);
     });
 }
 
