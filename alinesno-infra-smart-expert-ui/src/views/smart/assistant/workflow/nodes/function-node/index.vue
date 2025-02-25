@@ -56,12 +56,18 @@
       append-to-body
       fullscreen
     >
-      <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
-      <template #footer>
-        <div class="dialog-footer mt-24">
-          <el-button type="primary" @click="submitDialog"> 确定 </el-button>
+      <template #header>
+        <div class="dialog-footer mt-24" style="display: flex;align-items: center; justify-content: space-between; ">
+          <div>
+            函数内容(Groovy)
+          </div>
+          <div>
+            <el-button type="danger" size="large" text bg @click="submitDialog"> 试运行 </el-button>
+            <el-button type="primary" size="large" text bg @click="submitDialog"> 确定保存 </el-button>
+          </div>
         </div>
       </template>
+      <ScriptEditorFullPanel ref="auditEditorRef" :lang="'java'" />
     </el-dialog>
 
   </div>
@@ -70,6 +76,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
+import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/ScriptEditorFull';
 
 const props = defineProps({
   properties: {
