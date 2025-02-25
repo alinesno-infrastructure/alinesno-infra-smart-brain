@@ -92,12 +92,12 @@ defineExpose({
 </script>
 
 <style >
-/* required! */
-.cm-editor {
+
+.cm-container .cm-editor {
   height: 100%;
 }
 
-.cm-container{
+/* .cm-container{
   width:100%;
-}
+} */
 </style>
