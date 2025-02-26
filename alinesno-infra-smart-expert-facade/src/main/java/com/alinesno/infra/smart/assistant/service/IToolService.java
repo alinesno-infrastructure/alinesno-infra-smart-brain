@@ -22,19 +22,26 @@ public interface IToolService extends IBaseService<ToolEntity> {
      */
     String validateToolScript(ToolRequestDto dto);
 
-    /**
-     * 根据角色获取工具
-     * @param roleId
-     * @return
-     */
-    List<ToolDto> getByRole(long roleId);
+//    /**
+//     * 根据角色获取工具
+//     * @param roleId
+//     * @return
+//     */
+//    @Deprecated
+//    List<ToolDto> getByRole(long roleId);
 
     /**
      * 通过工具名，查询工具脚本
      * @param toolFullName
-     * @param id
+     * @param selectionToolsData
      * @return
      */
-    ToolEntity getToolScript(String toolFullName, Long id);
+    ToolEntity getToolScript(String toolFullName, String selectionToolsData);
 
+    /**
+     * 通过工具id，查询工具列表
+     * @param selectionToolsData
+     * @return
+     */
+    List<ToolDto> getByToolIds(String selectionToolsData);
 }
