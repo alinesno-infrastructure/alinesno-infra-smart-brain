@@ -47,24 +47,21 @@
                         {{ item.name }}
 
                         <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
-                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading
-                          text>推理中</el-button>
+                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading text>推理中</el-button>
 
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
                           item.dateTime }} </span>
                       </div>
 
-                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText"
-                        v-html="readerReasonningHtml(item.reasoningText)"></div>
-                      <div class="say-message-body markdown-body" v-if="item.chatText"
-                        v-html="readerHtml(item.chatText)"></div>
+                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
+                      <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
                       <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
                         :class="item.showTools ? 'show-tools' : 'hide-tools'">
                         <el-button type="danger" link icon="Promotion" size="small"
                           @click="handleBusinessIdToMessageBox(item)">选择</el-button>
                         <el-button type="primary" link icon="EditPen" size="small"
-                          @click="handleEditGenContent(item)">复制</el-button>
+                          @click="handleCopyGenContent(item)">复制</el-button>
                         <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
                           size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
@@ -146,7 +143,7 @@
 
 <script setup>
 
-import { ElLoading } from 'element-plus'
+import { ElLoading , ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
@@ -313,6 +310,22 @@ function readerReasonningHtml(chatText) {
     return mdi.render(chatText);
   }
 }
+
+// 定义 handleCopyGenContent 函数
+const handleCopyGenContent = async (item) => {
+  try {
+    // 获取要复制的文本
+    const text = item.chatText;
+    // 使用 navigator.clipboard.writeText 方法将文本复制到剪贴板
+    await navigator.clipboard.writeText(text);
+    // 复制成功后，可以在这里进行一些提示操作，例如弹出提示框
+    ElMessage.success('复制成功！');
+  } catch (error) {
+    // 复制失败时，捕获错误并进行提示
+    console.error('复制失败:', error);
+    ElMessage.error('复制失败，请稍后重试。');
+  }
+};
 
 // 推送消息到当前面板
 const pushResponseMessageList = (newMessage) => {
