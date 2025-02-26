@@ -124,7 +124,7 @@ import AgentTaskFlow from './agentTaskFlow'
 import ChatMessageEditor from './chatMessageEditor'
 
 // --->>> 引入方法 -->>
-import { chatAssistantContent, chatMessage, sendUserMessage } from '@/api/base/im/robot'
+import { chatAssistantContent, chatMessage, sendUserMessage , chanelSayHello } from '@/api/base/im/robot'
 import { getChannel } from "@/api/base/im/channel";
 import { getParam } from '@/utils/ruoyi'
 import { formatMessage } from '@/utils/chat'
@@ -146,6 +146,7 @@ const uploadChildComp = ref(null)
 const selectedUsers = ref([]);
 const selectedBusinessId = ref([]);
 const channelUsers = ref([]);
+const newChannelUsers = ref([]) // 新添加的角色
 
 const smartServiceAgentRef = ref(null)
 
@@ -154,18 +155,56 @@ const channelInfo = ref({})
 const mentionOptions = ref([]);
 
 const mentionUser = (itemArr) => {
+  
   if (itemArr.length == 0) {
     channelUsers.value = [];
     mentionOptions.value = [{}];
     return;
   }
+
+  // 获取到新添加的角色，itemArr与channelUsers进行对比，将新增的角色放到新的数组newChannelUsers里面
+  if(channelUsers.value.length != 0){
+    newChannelUsers.value = itemArr.filter(item => !channelUsers.value.some(user => user.id === item.id));
+    handleChanelSayHello(newChannelUsers.value);
+  }
+
   channelUsers.value = itemArr;
+
   mentionOptions.value = itemArr.map(item => ({
     value: item.roleName,
     label: item.roleName,
     id: item.id
   }));
+
 };
+
+// 新添加的角色进入频道打招呼 
+const handleChanelSayHello = (newChannelUserArr) =>{
+
+  newChannelUserArr.forEach(item => {  // 消息同步到后台保存
+
+    const formattedMessage = item.greeting?item.greeting:`您好，我是${item.roleName}` ; 
+    item.greeting = formattedMessage;
+
+    chanelSayHello(item , channelInfo.value.id).then(res => {
+
+      const msgItem = {
+        roleId: item.id,
+        icon: item.roleAvatar,
+        name: item.roleName,
+        chatText: formattedMessage,
+        loading: false,
+        readerType: 'html',
+        businessId: item.id ,
+        status: 'completed'
+      }
+
+      chatListRef.value.pushResponseMessageList(msgItem);
+    })
+
+  }); 
+
+}
 
 // 选中处理函数
 const handleSelect = (value, prefix) => {
@@ -229,7 +268,7 @@ function executorMessage(item){
   let users = [item.roleId];
   let bId = [item.businessId];
   let type = 'function';
-  let message = " #"+item.businessId+" @图片设计专家 " ; 
+  let message = " #"+item.businessId+" " ; 
 
   streamLoading.value = ElLoading.service({
     lock: true,
@@ -249,7 +288,6 @@ function executorMessage(item){
 
 /** 发送消息组服务组件 */
 function handlePushResponseMessageList(item) {
-
   chatListRef.value.pushResponseMessageList(item);
 
   // 调用初始化滚动条的函数
@@ -291,13 +329,7 @@ function handleChatMessage(channelId) {
 function handleEditorContent(bId) {
   editDialogVisible.value = true;
   businessId.value = bId;
-
-  // chatAssistantContent(bId).then(response => {
-  //   editorLoading.value = false;
-  // })
-
 }
-
 
 /** 查询当前频道 */
 function handleGetChannel(channelId) {
