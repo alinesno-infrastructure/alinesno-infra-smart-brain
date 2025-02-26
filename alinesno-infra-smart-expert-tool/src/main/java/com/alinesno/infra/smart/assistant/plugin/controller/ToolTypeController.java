@@ -1,13 +1,17 @@
 package com.alinesno.infra.smart.assistant.plugin.controller;
 
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.entity.ToolTypeEntity;
 import com.alinesno.infra.smart.assistant.service.IToolTypeService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +52,10 @@ public class ToolTypeController extends BaseController<ToolTypeEntity, IToolType
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
+
+        // 如果用户所在组织工具类型为空，则默认初始化工具
+        service.initToolType(CurrentAccountJwt.get().getOrgId());
+
         return this.toPage(model, this.getFeign(), page);
     }
 
@@ -55,6 +63,19 @@ public class ToolTypeController extends BaseController<ToolTypeEntity, IToolType
     @Override
     public AjaxResult save(Model model, @RequestBody ToolTypeEntity entity) throws Exception {
         return super.save(model, entity);
+    }
+
+    /**
+     * 获取到组织的所有工具分类
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/getAllToolType")
+    public AjaxResult getAllToolType(PermissionQuery query) {
+        LambdaQueryWrapper<ToolTypeEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(ToolTypeEntity.class);
+        query.toWrapper(queryWrapper);
+        return AjaxResult.success(service.list(queryWrapper)) ;
     }
 
     @Override
