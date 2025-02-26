@@ -55,7 +55,8 @@
 
                       <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
                         <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">复制</el-button>
+                        <el-button type="primary" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                        <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
                         <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
                     </div>
@@ -111,12 +112,17 @@
       </el-row>
     </div>
 
+    <!-- 文档编辑界面 -->
+    <el-dialog v-model="editDialogVisible" title="任务内容编辑" width="60%" destroy-on-close append-to-body>
+      <ChatMessageEditor :businessId="currentBusinessId" />
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 
-import { ElLoading } from 'element-plus'
+import { ElLoading , ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
@@ -124,9 +130,11 @@ import hljs from 'highlight.js';
 import AgentSingleRightPanel from './rightPanel.vue'
 
 import { getInfo, chatRole } from '@/api/base/im/roleChat'
-import { getParam } from '@/utils/ruoyi'
+import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { nextTick, onMounted } from "vue";
+
+import ChatMessageEditor from '@/views/base/specialist/chatMessageEditor.vue'
 
 const { proxy } = getCurrentInstance();
 
@@ -138,11 +146,11 @@ const channelId = ref(null);
 const roleInfo = ref({})
 const message = ref('');
 const businessId = ref(null);
-
+const editDialogVisible = ref(false)
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
-
+const currentBusinessId = ref(null)
 const streamLoading = ref(null)
 
 const mdi = new MarkdownIt({
@@ -192,6 +200,12 @@ function readerReasonningHtml(chatText) {
   if(chatText){
     return mdi.render(chatText);
   }
+}
+
+/** 编辑生成内容和更新生成内容 */
+function handleEditGenContent(item){
+  currentBusinessId.value = item.businessId + '' ;
+  editDialogVisible.value = true;
 }
 
 // 推送消息到当前面板
