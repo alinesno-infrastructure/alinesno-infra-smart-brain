@@ -22,7 +22,16 @@ var managerUrl = {
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
     defaultToolType: prefix + "defaultToolType",
-    downloadFile: prefix + "downloadFile"
+    downloadFile: prefix + "downloadFile",
+    getAllToolType: prefix + "getAllToolType",
+}
+
+// 获取到组织工具类型 
+export function getAllToolType() {
+  return request({
+    url: managerUrl.getAllToolType , 
+    method: 'get'
+  })
 }
 
 // 获取默认应用
