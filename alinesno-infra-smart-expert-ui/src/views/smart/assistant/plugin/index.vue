@@ -11,10 +11,10 @@
             <div 
               v-for="(category, index) in pluginCategories" 
               :key="index" 
-              @click="handleCategoryClick(category.label)"
-              class="catalog-item"
+              @click="handleCategoryClick(category.id)"
+              class="catalog-item" :class="{ active: category.id === currentToolType }"
             >
-              <i :class="category.code"></i> {{ category.label }}
+              <i :class="category.icon"></i> {{ category.name }}
             </div>
           </div>
         </div>
@@ -81,10 +81,10 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="工具类型" align="center" key="pluginType" width="150" prop="pluginType"
+          <el-table-column label="工具类型" align="center" key="toolType" width="150" prop="pluginType"
             v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              {{ getPluginTypeName(scope.row.pluginType) }}
+              {{ getPluginTypeName(scope.row.toolType) }}
             </template>
           </el-table-column>
           <el-table-column label="脚本" align="center" width="110" key="target" prop="target" v-if="columns[6].visible"
@@ -151,9 +151,9 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="工具类型" prop="pluginType">
-              <el-radio-group v-model="form.pluginType">
-                <el-radio v-for="item in pluginCategories" :key="item.label" :label="item.label">{{ item.label }}</el-radio>
+            <el-form-item label="工具类型" prop="toolType">
+              <el-radio-group v-model="form.toolType">
+                <el-radio v-for="item in pluginCategories" :key="item.id" :label="item.id">{{ item.name }}</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -200,6 +200,10 @@ import {
   addTool,
 } from "@/api/smart/assistant/tool";
 
+import {
+  getAllToolType,
+} from "@/api/smart/assistant/toolType";
+
 import ManagerType from './type'
 
 import { reactive, ref, computed } from "vue";
@@ -218,7 +222,7 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-
+const currentToolType = ref('')
 const imageUrl = ref([]);
 
 // 类型管理
@@ -300,6 +304,9 @@ const pluginCategories = ref([
 // 处理分类项点击事件
 const handleCategoryClick = (category) => {
   console.log(`点击了分类：${category}`);
+  queryParams.value.toolType = category;
+  currentToolType.value = category;
+  getList();
 };
 
 /** 查询应用列表 */
@@ -330,7 +337,7 @@ const beforeAvatarUpload = (rawFile) => {
 
 /** 类型管理 */
 function handleManagerType(){
-  managerTypeOpen.value = true;
+  router.push({ path: "/template/smart/assistant/plugin/type" });
 }
 
 /** 配置执行脚本 */
@@ -453,7 +460,14 @@ function submitForm() {
   });
 };
 
+function getToolTypeList() {
+  getAllToolType().then(response => {
+    pluginCategories.value = response.data;
+  });
+}
+
 getList();
+getToolTypeList();
 
 </script>
 
@@ -492,6 +506,9 @@ getList();
       &:hover {
         background: #e9eaf3;
       }
+    }
+    .active {
+      background: #e9eaf3;
     }
   }
 }
