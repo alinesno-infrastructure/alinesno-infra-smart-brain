@@ -56,7 +56,7 @@
 <script setup>
 
 // import { validateToolScript, updateToolScript } from '@/api/smart/assistant/role'
-import ScriptEditorPanel from '@/views/smart/assistant/role/ScriptEditor.vue';
+import ScriptEditorPanel from './PluginScriptEditor.vue';
 import {
   getTool , 
   validateToolScript,
