@@ -35,6 +35,7 @@
 
           <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
               <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+              <el-button type="primary" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
               <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
               <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
           </div>
@@ -49,15 +50,15 @@
 
 <script setup>
 
-// import { getParam } from '@/utils/ruoyi'
+import { ElMessage } from 'element-plus';
+import { nextTick , ref , defineEmits} from 'vue';
 
-import { nextTick } from 'vue'
-
-import { ref , defineEmits} from 'vue';
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+
+import { handleCopyGenContent } from '@/utils/ruoyi'
 import useUserStore from '@/store/modules/user'
 const userStore = useUserStore()
 
@@ -205,6 +206,18 @@ function handleEditGenContent(item){
   emit('handleEditorContent' , businessId) ; 
 }
 
+// 定义 handleCopyGenContent 函数
+// const handleCopyGenContent = async (item) => {
+//   try {
+//     const text = item.reasoningText? item.reasoningText + item.chatText : item.chatText ;
+//     await navigator.clipboard.writeText(text);
+//     ElMessage.success('复制成功！');
+//   } catch (error) {
+//     console.error('复制失败:', error);
+//     ElMessage.error('复制失败，请稍后重试。');
+//   }
+// };
+
 function handleExecutorMessage(item){
   emit('executorMessage' , item) ; 
 }
@@ -212,7 +225,6 @@ function handleExecutorMessage(item){
 /** 重新生成内容 */
 // const handleRecyleGenContent = (item) => {
 //   console.log('handleRecyleGenContent item = ' + item) ;
-
 //   const businessIdMessage = ' #' + item.businessId + ' ' ;
 //   emit('sendMessageToChatBox' , businessIdMessage) ; 
 // }
