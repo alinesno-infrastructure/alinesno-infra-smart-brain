@@ -12,11 +12,9 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
-import com.alinesno.infra.smart.assistant.enums.ToolTypeEnums;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.jsonwebtoken.lang.Assert;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -70,8 +68,8 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
     @PostMapping("/saveTool")
     public AjaxResult saveTool(@RequestBody ToolEntity entity) throws Exception {
 
-        ToolTypeEnums type =  ToolTypeEnums.fromKey(entity.getToolType()) ;
-        Assert.notNull(type , "工具类型错误");
+//        ToolTypeEnums type =  ToolTypeEnums.fromKey(entity.getToolType()) ;
+//        Assert.notNull(type , "工具类型错误");
 
         service.save(entity);
         return this.ok();
