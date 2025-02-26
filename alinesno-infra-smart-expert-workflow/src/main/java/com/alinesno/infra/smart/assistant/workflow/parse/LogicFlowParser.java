@@ -48,18 +48,19 @@ public class LogicFlowParser {
         return new ArrayList<>(nodeMap.values());
     }
 
-    public static void main(String[] args) {
-        // 这里应该是你从 JSON 解析得到的 Map 数据
-        Map<String, Object> data = new HashMap<>();
-        // 这里需要填充实际的节点和边数据
-        // 示例数据省略，你可以使用 JSON 解析库将 JSON 字符串转换为 Map
+//    public static void main(String[] args) {
+//        // 这里应该是你从 JSON 解析得到的 Map 数据
+//        Map<String, Object> data = new HashMap<>();
+//        // 这里需要填充实际的节点和边数据
+//        // 示例数据省略，你可以使用 JSON 解析库将 JSON 字符串转换为 Map
+//
+//        List<FlowNodeDto> nodes = parseNodes(data);
+//        for (FlowNodeDto node : nodes) {
+//            System.out.println("Node ID: " + node.id + ", Type: " + node.type);
+//            for (FlowNodeDto nextNode : node.nextNodes) {
+//                System.out.println("  Next Node ID: " + nextNode.id);
+//            }
+//        }
+//    }
 
-        List<FlowNodeDto> nodes = parseNodes(data);
-        for (FlowNodeDto node : nodes) {
-            System.out.println("Node ID: " + node.id + ", Type: " + node.type);
-            for (FlowNodeDto nextNode : node.nextNodes) {
-                System.out.println("  Next Node ID: " + nextNode.id);
-            }
-        }
-    }
 }
