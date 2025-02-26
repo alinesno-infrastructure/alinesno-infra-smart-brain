@@ -11,5 +11,10 @@ import com.alinesno.infra.smart.assistant.entity.ToolTypeEntity;
  */
 public interface IToolTypeService extends IBaseService<ToolTypeEntity> {
 
+    /**
+     * 初始化组织工具类型
+     * @param orgId
+     */
+    void initToolType(Long orgId);
 
 }
