@@ -159,6 +159,12 @@ export const constantRoutes = [
         meta: { title: '自定义脚本', icon: 'dashboard', affix: true }
       },
       {
+        path: '/template/smart/assistant/plugin/type',
+        component: () => import('@/views/smart/assistant/plugin/type'),
+        name: '/template/smart/assistant/plugin/type',
+        meta: { title: '类型管理', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/expert/smart/assistant/role/agentInference',
         component: () => import('@/views/smart/assistant/role/agentInference'),
         name: '/expert/smart/assistant/role/agentInference',
