@@ -57,7 +57,11 @@ public class ReActExpertService extends ExpertService {
                                 MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
-        List<ToolDto> tools = toolService.getByRole(role.getId()) ;
+        List<ToolDto> tools = toolService.getByToolIds(role.getSelectionToolsData()) ;
+
+        if(tools == null || tools.isEmpty()){
+            return "没有可用的工具，请检查工具是否正常。";
+        }
 
         boolean isCompleted = false ;  // 是否已经完成
         int loop = 0 ;
@@ -150,7 +154,7 @@ public class ReActExpertService extends ExpertService {
                                 taskInfo,
                                 IdUtil.getSnowflakeNextId());
 
-                        ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getId()) ;
+                        ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getSelectionToolsData()) ;
 
                         Map<String, Object> argsList = tool.getArgsList();
 
