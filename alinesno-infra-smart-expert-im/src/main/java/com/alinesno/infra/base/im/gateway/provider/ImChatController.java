@@ -3,16 +3,19 @@ package com.alinesno.infra.base.im.gateway.provider;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.utils.AgentUtils;
@@ -22,6 +25,7 @@ import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -49,6 +53,33 @@ public class ImChatController extends SuperController {
      */
     @GetMapping("/chatAssistantContent")
     public AjaxResult chatAssistantContent(long businessId){
+        return AjaxResult.success();
+    }
+
+    /**
+     * 进入群聊的打招呼语言
+     */
+    @DataPermissionSave
+    @PostMapping("/chanelSayHello")
+    public AjaxResult chanelSayHello(@RequestBody IndustryRoleDto role , long channelId){
+
+        MessageEntity entity = new MessageEntity();
+
+        entity.setContent(role.getGreeting()) ;
+        entity.setFormatContent(role.getGreeting());
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setChannelId(channelId) ;
+        entity.setRoleId(role.getId()) ;
+
+        messageService.save(entity);
+
         return AjaxResult.success();
     }
 
