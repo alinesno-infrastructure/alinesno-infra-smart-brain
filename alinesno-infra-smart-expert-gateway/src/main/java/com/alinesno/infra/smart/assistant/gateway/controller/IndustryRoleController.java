@@ -329,6 +329,12 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         return ok() ;
     }
 
+    @DataPermissionSave
+    @Override
+    public AjaxResult update(Model model, @RequestBody IndustryRoleEntity entity) throws Exception {
+        return super.update(model, entity);
+    }
+
     @Override
     public AjaxResult detail(@PathVariable String id) {
         IndustryRoleEntity e = service.findById(id) ;
