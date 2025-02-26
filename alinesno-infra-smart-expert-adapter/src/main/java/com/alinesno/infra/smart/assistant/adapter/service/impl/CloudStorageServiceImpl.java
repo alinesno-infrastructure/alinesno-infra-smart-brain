@@ -87,7 +87,8 @@ public class CloudStorageServiceImpl implements CloudStorageConsumer {
                 .setPath(date)
                 .upload() ;
 
-        return R.ok(fileInfo.getUrl() , "上传成功.");    }
+        return R.ok(fileInfo.getUrl() , "上传成功.");
+    }
 
     @Override
     public R<String> upload(File file) {
