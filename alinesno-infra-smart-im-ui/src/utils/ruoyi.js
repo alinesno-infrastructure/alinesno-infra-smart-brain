@@ -1,4 +1,4 @@
-
+import { ElMessage } from 'element-plus';
 
 /**
  * 通用js方法封装处理
@@ -263,3 +263,52 @@ export const getParam = function(name, defaultValue){
   }
   return(defaultValue == undefined ? null : defaultValue);
 }
+
+// 处理复制文本到剪贴板
+export const handleCopyGenContent = async (item) => {
+  // 输入验证
+  if (!item) {
+    console.error('传入的 item 无效');
+    ElMessage.error('复制失败，请检查传入的数据。');
+    return;
+  }
+
+  try {
+    const text = item.reasoningText? (item.reasoningText + '\r\n') + item.chatText : item.chatText;
+
+    if (navigator.clipboard && window.isSecureContext) {
+      // 使用 navigator.clipboard 进行复制
+      await navigator.clipboard.writeText(text);
+      ElMessage.success('复制成功！');
+    } else {
+      // 创建 textarea 元素进行复制
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      // 使 textarea 不在 viewport 中，同时设置不可见
+      textArea.style.position = 'absolute';
+      textArea.style.left = '-9999px';
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      try {
+        // 执行复制命令
+        const successful = document.execCommand('copy');
+        if (successful) {
+          ElMessage.success('复制成功！');
+        } else {
+          throw new Error('执行复制命令失败');
+        }
+      } catch (copyError) {
+        console.error('复制失败:', copyError);
+        ElMessage.error('复制失败，请稍后重试。');
+      } finally {
+        // 移除 textarea 元素
+        textArea.remove();
+      }
+    }
+  } catch (error) {
+    console.error('复制失败:', error);
+    ElMessage.error('复制失败，请稍后重试。');
+  }
+};
