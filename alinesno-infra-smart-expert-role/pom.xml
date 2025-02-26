@@ -57,6 +57,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-dataset</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.freemarker</groupId>
 			<artifactId>freemarker</artifactId>
 			<version>2.3.31</version>
@@ -189,7 +195,7 @@
 			<version>5.2.0</version>
 		</dependency>
 
-	</dependencies>
+    </dependencies>
 
 	<repositories>
 		<repository>
