@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.assistant.plugin.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
@@ -10,6 +12,7 @@ import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.Type;
@@ -64,34 +67,47 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
 
     }
 
-    @Override
-    public List<ToolDto> getByRole(long roleId) {
-
-//        List<ToolEntity> roleTools = roleToolService.findTools(roleId) ;
+//    @Override
+//    public List<ToolDto> getByRole(long roleId) {
 //
-//        return roleTools.stream().map(tool -> {
-//            ToolDto dto = new ToolDto();
-//            BeanUtils.copyProperties(tool, dto);
-//            return dto;
-//        }).toList();
+////        List<ToolEntity> roleTools = roleToolService.findTools(roleId) ;
+////
+////        return roleTools.stream().map(tool -> {
+////            ToolDto dto = new ToolDto();
+////            BeanUtils.copyProperties(tool, dto);
+////            return dto;
+////        }).toList();
+//
+//        return null ;
+//
+//    }
+
+    @Override
+    public ToolEntity getToolScript(String toolFullName, String selectionToolsData) {
+
+        List<Long> toolIds = JSON.parseArray(selectionToolsData, Long.class) ;
+        List<ToolEntity> tools = this.listByIds(toolIds) ;
+
+        for (ToolEntity tool : tools) {
+            if(tool.getToolFullName().equals(toolFullName)){
+                return tool ;
+            }
+        }
 
         return null ;
-
     }
 
     @Override
-    public ToolEntity getToolScript(String toolFullName, Long roleId) {
+    public List<ToolDto> getByToolIds(String selectionToolsData) {
 
-//        LambdaQueryWrapper<RoleToolEntity> queryWrapper = new LambdaQueryWrapper<>();
-//        queryWrapper.eq(RoleToolEntity::getRoleId, roleId);
-//        List<RoleToolEntity> roleTools = roleToolService.list(queryWrapper) ;
-//
-//        List<ToolEntity> tools = this.listByIds(roleTools.stream().map(RoleToolEntity::getToolId).toList()) ;
-//        for (ToolEntity tool : tools) {
-//            if(tool.getToolFullName().equals(toolFullName)){
-//                return tool ;
-//            }
-//        }
+        if(StringUtils.isNotEmpty(selectionToolsData)){
+            List<Long> toolIds = JSON.parseArray(selectionToolsData, Long.class) ;
+            return this.listByIds(toolIds).stream().map(tool -> {
+                ToolDto dto = new ToolDto();
+                BeanUtils.copyProperties(tool, dto);
+                return dto;
+            }).toList();
+        }
 
         return null;
     }
