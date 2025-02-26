@@ -1,6 +1,18 @@
 <template>
   <div class="app-container">
 
+   <div class="page-header-container" style="margin-bottom: 20px;">
+      <el-page-header @back="goBack">
+        <template #content>
+          <div style="display: flex;gap: 10px;">
+            <span class="text-large font-600 mr-3"> 
+               插件类型
+            </span>
+          </div>
+        </template>
+      </el-page-header>
+   </div>
+
      <el-row :gutter="20">
         <!--应用数据-->
         <el-col :span="24" :xs="24">
@@ -31,22 +43,11 @@
 
            <el-table v-loading="loading" :data="ToolTypeList" @selection-change="handleSelectionChange">
               <el-table-column type="selection" width="50" align="center" />
-              
-              <el-table-column label="图标" align="center" width="70" key="icon" v-if="columns[1].visible">
-                 <template #default="scope">
-                    <span style="font-size:25px;color:#3b5998">
-                       <i class="fa-solid fa-file-word" />
-                    </span>
-                 </template>
-              </el-table-column>
-
 
               <!-- 业务字段-->
               <el-table-column label="类型名称" align="left" key="name" prop="name" v-if="columns[0].visible">
                  <template #default="scope">
-                     <el-button type="danger" bg text @click="handleToolTypeSpace(scope.row.id)"> 
-                        <i class="fa-solid fa-link"></i>&nbsp;{{ scope.row.name }}
-                     </el-button>
+                     <i :class="scope.row.icon"></i>&nbsp;{{ scope.row.name }}
                  </template>
               </el-table-column>
 
@@ -70,12 +71,18 @@
      </el-row>
 
      <!-- 添加或修改应用配置对话框 -->
-     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-        <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
+     <el-dialog :title="title" v-model="open"  width="600px" append-to-body>
+        <el-form :model="form" :rules="rules" :label-position="'top'" ref="databaseRef" label-width="100px">
            <el-row>
               <el-col :span="24">
                  <el-form-item label="类型图标" prop="icon">
-                    <el-input v-model="form.icon" placeholder="请输入类型图标" maxlength="128" />
+                     <!-- <el-input v-model="form.icon" placeholder="请输入类型图标" maxlength="128" /> -->
+                     <el-radio-group v-model="form.icon">
+                        <el-radio v-for="category in pluginCategories" :key="category.icon" :label="category.icon">
+                           <!-- 这里可以根据需要添加图标显示，这里简单用文本显示 -->
+                           <i :class="category.icon"></i> 
+                        </el-radio>
+                     </el-radio-group>
                  </el-form-item>
               </el-col>
               <el-col :span="24">
@@ -118,6 +125,29 @@ const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
+
+const pluginCategories = ref([
+  { icon: 'fa-solid fa-newspaper' },
+  { icon: 'fa-solid fa-image' },
+  { icon: 'fa-solid fa-screwdriver-wrench' },
+  { icon: 'fa-solid fa-house-chimney' },
+  { icon: 'fa-solid fa-magnifying-glass' },
+  { icon: 'fa-solid fa-graduation-cap' },
+  { icon: 'fa-solid fa-users' },
+  { icon: 'fa-solid fa-gamepad' },
+  { icon: 'fa-solid fa-money-bill-trend-up' },
+  { icon: 'fa-solid fa-music' },
+  { icon: 'fa-solid fa-film' },
+  { icon: 'fa-solid fa-book' },
+  { icon: 'fa-solid fa-tv' },
+  { icon: 'fa-solid fa-car' },
+  { icon: 'fa-solid fa-plane' },
+  { icon: 'fa-solid fa-shopping-cart' },
+  { icon: 'fa-solid fa-medkit' },
+  { icon: 'fa-solid fa-pen-nib' },
+  { icon: 'fa-solid fa-camera' },
+  { icon: 'fa-solid fa-bus' }
+]);
 
 // 列显隐信息
 const columns = ref([
@@ -200,6 +230,11 @@ function handleAdd() {
   open.value = true;
   title.value = "添加类型";
 };
+
+/** 返回 */
+function goBack(){
+   router.go(-1) ; 
+}
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
