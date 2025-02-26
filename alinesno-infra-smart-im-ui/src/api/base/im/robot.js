@@ -13,6 +13,16 @@ var managerUrl = {
   getTaskNotice : prefix +"getTaskNotice " ,
   getChannelAgent: prefix +"getChannelAgent" ,
   getAllCatalog: prefix +"getAllCatalog" ,
+  chanelSayHello: prefix +"chanelSayHello" ,
+}
+
+// 用户进入组织Hello消息
+export function chanelSayHello(data , channelId){
+  return request({
+    url: managerUrl.chanelSayHello + "?channelId=" + parseStrEmpty(channelId) ,
+    data: data ,
+    method: 'post'
+  })
 }
 
 // 获取任务实例完成通知
