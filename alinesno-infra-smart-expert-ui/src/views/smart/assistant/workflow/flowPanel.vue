@@ -75,12 +75,12 @@ const renderGraphData = (data) => {
           color: "#2962FF",
           stepName: '开始',
           showNode: true,
-          x: 140,
-          y: 140,
+          x: 240,
+          y: 340,
           height: 380,
           width: 280
         },
-        x: 440,
+        x: 240,
         y: 340,
       }]
     }
