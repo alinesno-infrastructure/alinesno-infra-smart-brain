@@ -25,6 +25,7 @@
     "@traptitech/markdown-it-katex": "^3.6.0",
     "@vueup/vue-quill": "1.1.0",
     "@vueuse/core": "9.5.0",
+    "alinesno-infra-smart-expert-ui": "file:",
     "ant-design-vue": "4.2.3",
     "axios": "0.27.2",
     "codemirror": "6.0.1",
