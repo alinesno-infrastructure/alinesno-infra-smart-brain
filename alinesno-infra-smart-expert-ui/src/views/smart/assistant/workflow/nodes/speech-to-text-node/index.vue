@@ -19,15 +19,21 @@
         <el-form :model="form" label-width="auto" label-position="top">
           <!-- 语音识别模型选择项 -->
           <el-form-item label="语音识别模型">
+            <!--
             <el-select v-model="value" placeholder="请选择语音识别模型" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
+            -->
+            <LLMSelector :nodeModel="props.nodeModel" />
           </el-form-item>
           <!-- 选择语音文件选择项 -->
           <el-form-item label="选择语音文件">
+            <!--
             <el-select v-model="value" placeholder="请选择语音文件" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
+            -->
+            <FlowCascader :nodeModel="props.nodeModel" :properties="props.properties" />
           </el-form-item>
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
@@ -49,6 +55,9 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
 const props = defineProps({
   properties: {
