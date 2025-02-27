@@ -65,6 +65,7 @@ import flowPanel from '@/views/smart/assistant/workflow/flowPanel'
 import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
+import { ElMessage } from "element-plus";
 
 const router = useRouter();
 
@@ -110,6 +111,7 @@ function getRoleInfo() {
 const saveWorkflow = () => {
   const workflowData = workflowRef.value?.getWorkflowGraphData()
   console.log('workflowData = ' + JSON.stringify(workflowData))
+  ElMessage.success('保存成功');
 }
 
 /** 初始化数据 */
