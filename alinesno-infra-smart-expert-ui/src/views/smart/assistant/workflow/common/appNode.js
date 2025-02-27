@@ -6,6 +6,7 @@ import { createApp, h } from 'vue'
 import { WorkflowType } from '@/utils/workflow';
 import { nodeDict } from './data'
 import { isActive, connect, disconnect } from './teleport'
+import { useFlowProcessStore } from '@/store/modules/flowProcess';
 
 // 定义 AppNode 类，继承自 HtmlResize.view
 class AppNode extends HtmlResize.view {
@@ -50,10 +51,34 @@ class AppNode extends HtmlResize.view {
     }
   }
 
+  // 获取节点 upstream 节点列表
+  getUpNodeList(){
+
+    const visited = new Set(); // 用于记录已经访问过的节点，避免循环引用
+    const result = []; // 存储所有上一级节点
+
+    const traverseUpNodes = (nodeId) => {
+        const upNodeList = this.props.graphModel.getNodeIncomingNode(nodeId);
+        for (const upNode of upNodeList) {
+            if (!visited.has(upNode.id)) {
+                visited.add(upNode.id);
+                result.push(upNode);
+                traverseUpNodes(upNode.id); // 递归调用，继续向上查找
+            }
+        }
+    };
+
+    traverseUpNodes(this.props.model.id);
+
+    return result;
+
+  }
+
   getAnchorShape(anchorData) {
     let { x, y, type } = anchorData;
 
-    console.log('anchorData = ' + JSON.stringify(anchorData));
+    // console.log('getAnchorShape upNodeList = ' + this.getUpNodeList());
+    // console.log('anchorData = ' + JSON.stringify(anchorData));
 
     let isConnect = false;
 
@@ -126,6 +151,9 @@ class AppNode extends HtmlResize.view {
   }
 
   setHtml(rootEl) {
+
+    console.log('setHtml getUpNodeList = ' + this.getUpNodeList())
+
     if (!this.isMounted) {
       this.isMounted = true;
 
@@ -136,6 +164,7 @@ class AppNode extends HtmlResize.view {
         text: this.props.model.inputData,
         isSelected: this.props.model.isSelected,
         nodeModel: this.props.model,
+        upNodeList: this.getUpNodeList(),
         onBtnClick: (i) => {
           props.graphModel.eventCenter.emit("custom:onBtnClick", i);
         },
@@ -225,6 +254,10 @@ class AppNodeModel extends HtmlResize.model {
     return style;
   }
 
+  getUpNodeList() {
+    return this.graphModel.getNodeIncomingNode(this.id);
+  }
+
   getControlPointStyle() {
     const style = HtmlResize.model.prototype.getControlPointStyle.call(this);
     style.stroke = 'none';
@@ -290,7 +323,7 @@ class AppNodeModel extends HtmlResize.model {
     this.x = this.properties.x ;
     this.y = this.properties.y ;
 
-    console.log('this.properties = ' + JSON.stringify(this.properties))
+    // console.log('this.properties = ' + JSON.stringify(this.properties))
 
     const isLoop = function (node_id, target_node_id) {
       const up_node_list = this.graphModel.getNodeIncomingNode(node_id);
@@ -334,7 +367,7 @@ class AppNodeModel extends HtmlResize.model {
   getDefaultAnchor() {
     const { id, x, y, width } = this;
 
-    console.log('getDefaultAnchor this = ' + this + ' id = ' + id + ' x = ' + x + ' y = ' + y + ' width = ' + width)
+    // console.log('getDefaultAnchor this = ' + this + ' id = ' + id + ' x = ' + x + ' y = ' + y + ' width = ' + width)
 
     const showNode = typeof this.properties.showNode === 'undefined' ? true : this.properties.showNode;
     const anchors = [];
@@ -361,5 +394,4 @@ class AppNodeModel extends HtmlResize.model {
   }
 }
 
-// 原代码中 AppNode 未定义，这里假设只是导出 AppNodeModel
 export { AppNodeModel, AppNode }
