@@ -72,4 +72,12 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      */
     List<VectorDatasetEntity> latestDatasets(int i, PermissionQuery query);
 
+    /**
+     * 多数据集搜索
+     *
+     * @param dto
+     * @param datasetIdArr
+     * @return
+     */
+    List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr);
 }
