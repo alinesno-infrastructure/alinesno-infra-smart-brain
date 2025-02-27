@@ -100,4 +100,9 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
         return null;
     }
 
+    @Override
+    public List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr) {
+        return null;
+    }
+
 }
