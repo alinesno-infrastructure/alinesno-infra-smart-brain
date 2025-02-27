@@ -70,4 +70,13 @@ public interface IPgVectorService {
      * @return
      */
     List<DocumentVectorBean> queryHybridDocument(VectorSearchDto dto);
+
+    /**
+     * 多数据集查询向量库内容
+     * @param datasetIdArr
+     * @param searchText
+     * @param topK
+     * @return
+     */
+    List<DocumentVectorBean> queryMultiVectorDocument(List<Long> datasetIdArr, String searchText, Integer topK);
 }
