@@ -330,9 +330,12 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     }
 
     @DataPermissionSave
-    @Override
-    public AjaxResult update(Model model, @RequestBody IndustryRoleEntity entity) throws Exception {
-        return super.update(model, entity);
+    @PostMapping("/modifyInfo")
+    public AjaxResult modifyInfo(@RequestBody @Validated RoleInfoDto dto) throws Exception {
+        // 修改基础信息
+        service.modifyInfo(dto) ;
+
+        return ok() ;
     }
 
     @Override
