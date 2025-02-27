@@ -5,12 +5,9 @@ import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
-import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
-import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
-import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
@@ -48,7 +45,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.util.*;
@@ -98,9 +94,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     protected CloudStorageConsumer cloudStorageConsumer;
 
     @Autowired
-    protected IVectorDatasetService vectorDatasetService;
-
-    @Autowired
     protected QianWenLLM qianWenLLM;
 
     @Autowired
@@ -111,9 +104,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Autowired
     protected IMessageService messageService;
-
-//    @Autowired
-//    private IWorkflowExecutionService workflowExecutionService;
 
     @Autowired
     private ITemplateService templateService ;
@@ -617,30 +607,5 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 getTaskInfo() ,
                 message.getId()) ;
     }
-
-    /**
-     * 频道知识库搜索
-     */
-    public String searchChannelKnowledgeBase(String content , String datasetId , int topK){
-
-        VectorSearchDto dto = new VectorSearchDto() ;
-        dto.setDatasetId(Long.parseLong(datasetId)) ;
-        dto.setSearchText(content) ;
-        dto.setTopK(topK) ;
-
-        List<DocumentVectorBean> result = vectorDatasetService.search(dto) ;
-
-        StringBuilder sb = new StringBuilder();
-
-        if(!CollectionUtils.isEmpty(result)){
-            for(DocumentVectorBean bean : result){
-                sb.append(bean.getDocument_content()).append("\n");
-            }
-        }
-
-        return sb.toString() ;
-    }
-
-
 
 }
