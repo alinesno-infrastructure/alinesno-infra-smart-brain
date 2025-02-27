@@ -7,10 +7,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
-import com.alinesno.infra.smart.assistant.api.ReActRoleScriptDto;
-import com.alinesno.infra.smart.assistant.api.RoleScriptDto;
-import com.alinesno.infra.smart.assistant.api.RoleToolRequestDTO;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
@@ -412,6 +409,27 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         setRoleConfigParams(dto, role);
 
         update(role);
+    }
+
+    @Override
+    public void modifyInfo(RoleInfoDto dto) {
+        // 修改角色信息
+        IndustryRoleEntity role = getById(dto.getId());
+
+        role.setRoleAvatar(dto.getRoleAvatar());
+        role.setRoleName(dto.getRoleName());
+        role.setIndustryCatalog(dto.getIndustryCatalog());
+        role.setResponsibilities(dto.getResponsibilities());
+
+        switch (dto.getScriptType()) {
+            case "script" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
+            case "react" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+            case "flow" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+        }
+
+        role.setScriptType(dto.getScriptType());
+
+        update(role) ;
     }
 
     private static void setRoleConfigParams(RoleReActConfigDto dto, IndustryRoleEntity role) {
