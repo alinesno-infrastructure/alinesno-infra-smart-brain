@@ -233,7 +233,6 @@
     </el-dialog>
 
     <el-dialog title="知识库配置" v-model="datasetParamsConfigDialogVisible" width="600px">
-        <!-- :before-close="handleSelectDatasetParamsConfigClose" -->
         <div style="margin-bottom:30px">
             <DatasetParamsChoicePanel @handleSelectDatasetParamsConfigClose="handleSelectDatasetParamsConfigClose" ref="datasetParamsChoicePanelRef" />
         </div>
@@ -658,6 +657,8 @@ function syncPromptContent(content) {
 //         console.log('保存模型配置' + JSON.stringify(agentModelConfigForm.value))
 //     }
 // }
+
+
 
 const submitModelConfig = async () => {
 
