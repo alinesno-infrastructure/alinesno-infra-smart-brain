@@ -10,6 +10,7 @@ var managerUrl = {
   createUrl: prefix + 'add' ,
   saveUrl: prefix + 'createRole' ,
   updateUrl: prefix +"modify" ,
+  modifyInfo: prefix +"modifyInfo" ,
   statusUrl: prefix +"changeStatus" ,
   cleanUrl: prefix + "clean",
   detailUrl: prefix +"detail",
@@ -213,6 +214,14 @@ export function updateRole(data) {
   return request({
     url: managerUrl.updateUrl ,
     method: 'put',
+    data: data
+  })
+}
+
+export function modifyInfo(data) {
+  return request({
+    url: managerUrl.modifyInfo ,
+    method: 'post',
     data: data
   })
 }
