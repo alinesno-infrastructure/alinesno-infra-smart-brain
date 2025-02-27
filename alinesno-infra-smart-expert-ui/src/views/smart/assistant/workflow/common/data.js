@@ -13,14 +13,30 @@ const startNode = {
         config: {
             fields: [
                 {
-                    label: '问题',
-                    value: 'question'
+                    label: '用户消息',
+                    value: 'message'
+                },
+                {
+                    label: '文档',
+                    value: 'document'
                 }
             ],
             globalFields: [
                 {
                     value: 'time',
                     label: '当前时间'
+                },
+                {
+                    value: 'pre_content',
+                    label: '上节点内容'
+                },
+                {
+                    value: 'channelId',
+                    label: '频道号'
+                },
+                {
+                    value: 'history_content',
+                    label: '历史对话'
                 }
             ]
         }
