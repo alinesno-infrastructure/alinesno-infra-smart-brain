@@ -1,6 +1,6 @@
 <template>
   <!-- 工作流节点容器，包含节点标题、设置和输出参数等内容 -->
-  <div class="workflow-node-container">
+  <div class="workflow-node-container" >
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
@@ -18,9 +18,14 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="输入参数">
+            <!-- 
             <el-select v-model="value" placeholder="请选择输入参数" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            </el-select> 
+            -->
+
+            <FlowCascader :nodeModel="props.nodeModel" />
+
           </el-form-item>
 
           <el-form-item label="函数内容(Groovy)">
@@ -46,7 +51,7 @@
       <div class="output-title">输出参数</div>
       <!-- 输出参数内容 -->
       <div class="output-content">
-        结果 {result}
+        结果 {result} <br/> {{ props.upNodeList }}
       </div>
     </div>
 
@@ -74,9 +79,11 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
 import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/ScriptEditorFull';
+
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
 const props = defineProps({
   properties: {
