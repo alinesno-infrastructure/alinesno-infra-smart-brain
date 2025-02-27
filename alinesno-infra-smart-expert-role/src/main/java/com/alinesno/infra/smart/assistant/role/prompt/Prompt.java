@@ -21,12 +21,14 @@ public class Prompt {
     public static String buildPrompt(IndustryRoleEntity agent,
                                      List<ToolDto> tools,
                                      StringBuilder thought,
-                                     String goal){
+                                     String goal ,
+                                     String datasetKnowledgeDocument){
 
         return String.format(PromptTemplate.corePrompt,
                 agent.getRoleName(),
                 agent.getBackstory() ,
                 agent.getResponsibilities() ,
+                datasetKnowledgeDocument,
                 thought.toString() ,
                 parsePlugins(tools , agent.isAskHumanHelp()),
                 taskPrompt(goal)
