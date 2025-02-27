@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from 'vue';
+import { ref, defineProps } from 'vue';
 
 const emit = defineEmits(['update:show']);
 const props = defineProps({
@@ -104,7 +104,7 @@ const workflowNodes = [
             showNode: true,
             x: 440,
             y: 340,
-            height: 570,
+            height: 740,
             width: 280
         }
     },
@@ -167,7 +167,7 @@ const workflowNodes = [
             showNode: true,
             x: 440,
             y: 340,
-            height: 570,
+            height: 400,
             width: 280
         }
     },
@@ -218,7 +218,7 @@ const workflowNodes = [
             showNode: true,
             x: 440,
             y: 340,
-            height: 320,
+            height: 400,
             width: 280
         }
     },
@@ -235,7 +235,7 @@ const workflowNodes = [
             showNode: true,
             x: 440,
             y: 340,
-            height: 320,
+            height: 390,
             width: 280
         }
     },
@@ -252,7 +252,7 @@ const workflowNodes = [
             showNode: true,
             x: 440,
             y: 340,
-            height: 310,
+            height: 510,
             width: 280
         }
     }
