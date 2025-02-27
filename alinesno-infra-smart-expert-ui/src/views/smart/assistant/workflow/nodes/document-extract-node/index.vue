@@ -20,7 +20,7 @@
           <el-form-item label="选择文档内容">
             <el-select v-model="value" placeholder="请选择文档内容" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            </el-select> 
           </el-form-item>
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
