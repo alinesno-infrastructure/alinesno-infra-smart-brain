@@ -212,6 +212,14 @@ const guessWhatYouAskStatus = ref(false);
 
 // 切换语音输入状态
 function toggleVoiceInput() {
+
+    console.log('voiceRecoModelOptions.value.length  = ' + voiceRecoModelOptions.value.length)
+
+    if(voiceRecoModelOptions.value.length == 0){
+        ElMessage.error('请先配置语音识别模型');
+        return ;
+    }
+
     voiceInputStatus.value = !voiceInputStatus.value;
     agentModelConfigForm.value.voiceInputStatus = voiceInputStatus.value;
 }
@@ -220,11 +228,11 @@ function toggleVoiceInput() {
 function toggleVoiceInputStatusPanel() {
     voiceInputStatusVisible.value = !voiceInputStatusVisible.value;
     voiceInputStatusVisible.value && nextTick(() => {
-        // console.log(voiceChoicePanelRef.value)
-        // voiceInputStatusPanelRef.value.setVoiceModelOptions(voiceRecoModelOptions.value);
+        console.log(voiceChoicePanelRef.value)
+        voiceInputStatusPanelRef.value.setVoiceModelOptions(voiceRecoModelOptions.value);
 
         if(agentModelConfigForm.value.voiceInputData){
-            // voiceInputStatusPanelRef.value.setConfigParams(agentModelConfigForm.value.voiceInputData);
+            voiceInputStatusPanelRef.value.setConfigParams(agentModelConfigForm.value.voiceInputData);
         }
     });
 }
@@ -237,6 +245,12 @@ function toggleLongTermMemory() {
 
 // 打开语音播放窗口
 function toggleVoicePlayStatus() {
+
+    if(voiceModelOptions.value.length == 0){
+        ElMessage.error('请先配置语音模型');
+        return;
+    }
+
     voicePlayStatus.value = !voicePlayStatus.value;
     agentModelConfigForm.value.voicePlayStatus = voicePlayStatus.value;
 }
@@ -258,11 +272,11 @@ function toggleVoicePlayback() {
     voiceConfigDialogVisible.value = true;
 
     nextTick(() => {
-        // console.log(voiceChoicePanelRef.value)
-        // voiceChoicePanelRef.value.setVoiceModelOptions(voiceModelOptions.value);
-        // if(agentModelConfigForm.value.voicePlayData){
-        //     voiceChoicePanelRef.value.setVoiceModelParams(agentModelConfigForm.value.voicePlayData)
-        // }
+        console.log(voiceChoicePanelRef.value)
+        voiceChoicePanelRef.value.setVoiceModelOptions(voiceModelOptions.value);
+        if(agentModelConfigForm.value.voicePlayData){
+            voiceChoicePanelRef.value.setVoiceModelParams(agentModelConfigForm.value.voicePlayData)
+        }
     });
 
 }
@@ -391,12 +405,31 @@ const initData = async () => {
     }
 }
 
+// 定义表单验证方法
+const validateForm = () => {
+    return new Promise((resolve) => {
+    // 调用表单的 validate 方法进行验证
+    agentModelConfigFormRef.value.validate((valid, fields) => {
+        if (valid) {
+        // 验证成功，打印日志并解析包含验证成功和表单数据的对象
+        console.log('--> agentModelConfigForm = ' + JSON.stringify(agentModelConfigFormRef.value));
+        resolve({ valid: true, formData: agentModelConfigFormRef.value });
+        } else {
+        // 验证失败，打印日志并解析包含验证失败和 null 表单数据的对象
+        console.log('--> error agentModelConfigForm = ' + JSON.stringify(agentModelConfigFormRef.value));
+        resolve({ valid: false, formData: null });
+        }
+    });
+    });
+};
+
 const getAgentConfigParams = () => {
     return agentModelConfigForm.value ; 
 }
 
 defineExpose({
-    getAgentConfigParams
+    getAgentConfigParams,
+    validateForm
 })
 
 </script>
