@@ -151,6 +151,10 @@ const handleValidateTask = () => {
     const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
     console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
 
+    if(!agentConfigParams){
+        return ;
+    }
+
     validateRoleScript({
         'agentConfigParams': agentConfigParams,
         'script': scriptCode,
@@ -169,7 +173,14 @@ const handleValidateTask = () => {
 }
 
 /** 提交脚本任务 */
-const submitForm = () => {
+const submitForm = async() => {
+
+    const { valid, formData } = await paramsConfigRef.value.validateForm();
+    if (!valid) {
+        console.log('formData = ' + JSON.stringify(formData));
+        return 
+    }
+
     let type = scriptType.value?'execute':scriptType.value;
     const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
