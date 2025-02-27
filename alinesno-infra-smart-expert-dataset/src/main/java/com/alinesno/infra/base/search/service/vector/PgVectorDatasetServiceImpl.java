@@ -112,7 +112,7 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
              list =  pgVectorService.queryVectorDocument(dto.getCollectionName() , dto.getSearchText() , dto.getTopK()) ;
         }
 
-        // 根据分数重新排序,调整在RRF重新排序
+        // TODO 根据分数重新排序,调整在RRF重新排序
         Assert.isTrue(list != null , "搜索结果为空");
         return list.stream().sorted((o1, o2) -> Float.compare(o2.getScore(), o1.getScore())).collect(Collectors.toList());
     }
@@ -216,6 +216,14 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         queryWrapper.last("limit " + top) ;
 
         return list(queryWrapper) ;
+    }
+
+    @Override
+    public List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr) {
+        List<DocumentVectorBean> list =  pgVectorService.queryMultiVectorDocument(datasetIdArr , dto.getSearchText() , dto.getTopK()) ;
+
+        // Assert.isTrue(list != null , "搜索结果为空");
+        return list.stream().sorted((o1, o2) -> Float.compare(o2.getScore(), o1.getScore())).collect(Collectors.toList());
     }
 
     /**
