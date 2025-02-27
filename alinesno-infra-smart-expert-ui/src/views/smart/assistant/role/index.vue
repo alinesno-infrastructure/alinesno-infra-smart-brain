@@ -254,6 +254,7 @@ import {
   delRole,
   findOrg,
   getRole,
+  modifyInfo,
   updateRole,
   catalogTreeSelect,
   addRole,
@@ -618,7 +619,7 @@ function submitForm() {
   proxy.$refs["RoleRef"].validate(valid => {
     if (valid) {
       if (form.value.id != undefined) {
-        updateRole(form.value).then(response => {
+        modifyInfo(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
           getList();
