@@ -42,7 +42,7 @@ public class ImChatAvatarController {
             byteBody = storageConsumer.download(imageId , progress -> {}) ;
         }catch(Exception e){
             log.error("文件下载失败:{}" , e.getMessage());
-            byteBody =  ResourceUtil.readBytes("default_avatar.jpeg") ;
+//            byteBody =  ResourceUtil.readBytes("default_avatar.jpeg") ;
         }
 
         return new ResponseEntity<>(byteBody, new HttpHeaders(), HttpStatus.OK);
