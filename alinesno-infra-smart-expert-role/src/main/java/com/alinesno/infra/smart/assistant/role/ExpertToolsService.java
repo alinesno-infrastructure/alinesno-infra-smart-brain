@@ -2,11 +2,19 @@ package com.alinesno.infra.smart.assistant.role;
 
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
+import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.base.search.service.IVectorDatasetService;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
+import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.alinesno.infra.smart.im.enums.DocumentTypeEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
+
+import java.util.List;
 
 /**
  * 专家相关工具类实现
@@ -14,6 +22,9 @@ import org.jetbrains.annotations.NotNull;
  */
 @Slf4j
 public abstract class ExpertToolsService {
+
+    @Autowired
+    protected IVectorDatasetService vectorDatasetService;
 
     /**
      * 创建一条消息，指定发送者角色和消息内容
@@ -105,5 +116,33 @@ public abstract class ExpertToolsService {
         // 返回格式化的HTML字符串
         return chatText;
     }
+
+    /**
+     * 频道知识库搜索
+     */
+    protected String searchChannelKnowledgeBase(String content , String datasetIds){
+
+        // 关联多个知识库的处理
+        List<Long> datasetIdArr = JSONObject.parseArray(datasetIds , Long.class) ;
+
+        VectorSearchDto dto = new VectorSearchDto() ;
+
+        dto.setSearchText(content) ;
+        dto.setTopK(10) ;
+
+        List<DocumentVectorBean> result = vectorDatasetService.searchMultiDataset(dto ,datasetIdArr) ;
+
+        StringBuilder sb = new StringBuilder();
+
+        if(!CollectionUtils.isEmpty(result)){
+            for(DocumentVectorBean bean : result){
+                sb.append(bean.getDocument_content()).append("\n");
+            }
+        }
+
+        return sb.toString() ;
+    }
+
+
 
 }
