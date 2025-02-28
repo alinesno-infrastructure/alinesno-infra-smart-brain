@@ -83,7 +83,7 @@ const workflowNodes = [
         properties: {
             icon: 'fa-solid fa-palette',
             color: "#F57C00",
-            stepName: '图片理解',
+            stepName: '图片生成',
             showNode: true,
             x: 440,
             y: 340,
