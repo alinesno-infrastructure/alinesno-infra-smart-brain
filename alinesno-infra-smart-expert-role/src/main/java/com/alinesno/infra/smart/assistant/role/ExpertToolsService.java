@@ -120,7 +120,22 @@ public abstract class ExpertToolsService {
     /**
      * 频道知识库搜索
      */
-    protected String searchChannelKnowledgeBase(String content , String datasetIds){
+    protected String searchKnowledgeContent(String content , String datasetIds){
+        List<DocumentVectorBean> result = searchChannelKnowledgeBase(content , datasetIds) ;
+        StringBuilder sb = new StringBuilder();
+        if(!CollectionUtils.isEmpty(result)){
+            for(DocumentVectorBean bean : result){
+                sb.append(bean.getDocument_content()).append("\n");
+            }
+        }
+        return sb.toString() ;
+    }
+
+
+    /**
+     * 频道知识库搜索
+     */
+    protected List<DocumentVectorBean> searchChannelKnowledgeBase(String content , String datasetIds){
 
         // 关联多个知识库的处理
         List<Long> datasetIdArr = JSONObject.parseArray(datasetIds , Long.class) ;
@@ -130,19 +145,8 @@ public abstract class ExpertToolsService {
         dto.setSearchText(content) ;
         dto.setTopK(10) ;
 
-        List<DocumentVectorBean> result = vectorDatasetService.searchMultiDataset(dto ,datasetIdArr) ;
-
-        StringBuilder sb = new StringBuilder();
-
-        if(!CollectionUtils.isEmpty(result)){
-            for(DocumentVectorBean bean : result){
-                sb.append(bean.getDocument_content()).append("\n");
-            }
-        }
-
-        return sb.toString() ;
+        return vectorDatasetService.searchMultiDataset(dto ,datasetIdArr);
     }
-
 
 
 }
