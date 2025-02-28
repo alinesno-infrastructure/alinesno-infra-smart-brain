@@ -1,6 +1,5 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
