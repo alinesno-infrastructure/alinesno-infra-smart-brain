@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 消息实体信息
  */
@@ -32,5 +34,8 @@ public class ChatMessageDto {
 
     // fix:用于消息类型的区分(同一businessId的情况下)
     private boolean llmStream = false ; // 是否为LLM输出流
+
+    // 消息引用
+    private List<MessageReferenceDto> contentReferenceArticle ;
 
 }
