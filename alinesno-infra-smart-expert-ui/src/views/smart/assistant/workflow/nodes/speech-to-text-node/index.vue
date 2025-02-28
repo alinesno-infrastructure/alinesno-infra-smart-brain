@@ -16,27 +16,17 @@
       <div class="settings-title">节点设置</div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
+        <el-form :model="formData" label-width="auto" label-position="top">
           <!-- 语音识别模型选择项 -->
           <el-form-item label="语音识别模型">
-            <!--
-            <el-select v-model="value" placeholder="请选择语音识别模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            -->
-            <LLMSelector :nodeModel="props.nodeModel" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
           </el-form-item>
           <!-- 选择语音文件选择项 -->
           <el-form-item label="选择语音文件">
-            <!--
-            <el-select v-model="value" placeholder="请选择语音文件" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
-            -->
-            <FlowCascader :nodeModel="props.nodeModel" :properties="props.properties" />
+            <FlowCascader :nodeModel="props.nodeModel" :properties="props.properties" v-model="formData.audioList" />
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="value1" size="small" />
+            <el-switch v-model="formData.isPrint" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -54,6 +44,7 @@
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
@@ -73,45 +64,27 @@ const props = defineProps({
   }
 });
 
-// 绑定选择框的值
-const value = ref('')
-const value1 = ref('')
-
 // 表单数据对象
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  llmModelId: '',
+  audioList: [],
+  isPrint: false
 })
 
-// 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
   },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
