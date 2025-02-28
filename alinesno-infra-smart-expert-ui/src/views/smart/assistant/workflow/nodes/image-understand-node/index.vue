@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fa-solid fa-image"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">图片理解</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -16,15 +18,34 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="视觉模型">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
+            <!-- <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            </el-select> -->
+            <LLMSelector :nodeModel="props.nodeModel" />
           </el-form-item>
           <el-form-item label="系统角色">
-            <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" />
+            <!-- <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" /> -->
+
+            <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
+              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+              <div class="function-CodemirrorEditor__footer">
+                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                </el-button>
+              </div>
+            </div>
+
           </el-form-item>
           <el-form-item label="提示词">
-            <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" />
+            <!-- <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" /> -->
+            <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
+              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+              <div class="function-CodemirrorEditor__footer">
+                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
+                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                </el-button>
+              </div>
+            </div>
           </el-form-item>
           <el-form-item label="选择图片">
             <el-input resize="none" placeholder="请选择图片" />
@@ -44,14 +65,58 @@
         回答内容 {answer}
       </div>
     </div>
+
+    <el-dialog
+      v-model="dialogVisible"
+      :title="'函数内容（Groovy）'"
+      append-to-body
+      width="800"
+    >
+      <template #header>
+        <div class="dialog-footer mt-24" style="display: flex;align-items: center; justify-content: space-between; ">
+          <div>
+            函数内容(Groovy)
+          </div>
+          <div>
+            <el-button type="danger" size="large" text bg @click="submitDialog"> 试运行 </el-button>
+            <el-button type="primary" size="large" text bg @click="submitDialog"> 确定保存 </el-button>
+          </div>
+        </div>
+      </template>
+      <ScriptEditorFullPanel ref="auditEditorRef" :lang="'java'" />
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
 
+import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
+import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/NodeScriptEditor';
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
+
 // 绑定选择框的值
-const value = ref('')
+const dialogVisible = ref(false)
+const cloneContent = ref('')
+
+// 绑定选择框的值
+const chatDataCode = ref('')
 const value1 = ref('')
 
 // 表单数据对象
@@ -65,6 +130,11 @@ const form = reactive({
   resource: '',
   desc: '',
 })
+
+function openCodemirrorDialog() {
+  cloneContent.value = chatDataCode.value.code
+  dialogVisible.value = true
+}
 
 // 选择框的选项列表
 const options = [
@@ -92,4 +162,11 @@ const options = [
 </script>
 
 <style lang="scss" scoped>
+
+.function-CodemirrorEditor__footer {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+}
+
 </style>
