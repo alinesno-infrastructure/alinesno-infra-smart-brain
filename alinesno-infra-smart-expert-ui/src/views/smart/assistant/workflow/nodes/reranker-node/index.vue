@@ -4,9 +4,11 @@
     <!-- 节点标题部分，包含图标和名称 -->
     <div class="node-title">
       <div class="node-icon">
-        <i class="fa-solid fa-magnifying-glass-chart"></i>
+        <i :class="props.properties.icon"></i>
       </div>
-      <div class="node-name">多路召回</div>
+      <div class="node-name">
+        {{ props.properties.stepName }}
+      </div>
     </div>
     <!-- 节点设置部分 -->
     <div class="node-settings">
@@ -16,27 +18,29 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="重排内容">
-            <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
+            <!-- <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            </el-select> -->
+            <FlowCascader :nodeModel="props.nodeModel" />
           </el-form-item>
           <el-form-item label="检索问题">
-            <el-input resize="none" placeholder="角色设置" />
+            <!-- <el-input resize="none" placeholder="角色设置" /> -->
+            <FlowCascader :nodeModel="props.nodeModel" />
           </el-form-item>
           <el-form-item label="重排模型">
-            <el-input resize="none" placeholder="角色设置" />
+            <!-- <el-input resize="none" placeholder="角色设置" /> -->
+            <LLMSelector :nodeModel="props.nodeModel" />
           </el-form-item>
         </el-form>
-        <div class="settings-title">检索参数</div>
+        <div class="settings-title" style="display: flex;align-items: center;justify-content: space-between;">
+          <span>
+            检索参数
+          </span>
+          <el-button type="text" size="small" @click="handleSearchSettings">
+            配置
+          </el-button>
+        </div>
         <div class="settings-content">
-          <el-row>
-            <el-col :span="12">
-              <span class="settings-label-label">检索模式</span>
-            </el-col>
-            <el-col :span="12">
-              <span class="settings-label-text">向量检索</span>
-            </el-col>
-          </el-row>
           <el-row>
             <el-col :span="12">
               <span class="settings-label-label">相似度高于</span>
@@ -76,11 +80,43 @@
         重排结果{result}
       </div>
     </div>
+
+    <el-dialog title="重排配置" v-model="datasetParamsConfigDialogVisible" width="600px" append-to-body>
+        <div style="margin-bottom:30px">
+            <rerankerParamsPanel @handleSelectDatasetParamsConfigClose="handleSelectDatasetParamsConfigClose" ref="datasetParamsChoicePanelRef" />
+        </div>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
+
+import rerankerParamsPanel from './rerankerParamsPanel.vue'
+
+const props = defineProps({
+  properties: {
+    type: Object,
+    default: () => ({})
+  },
+  isSelected: {
+    type: Boolean,
+    default: false
+  },
+  nodeModel: {
+    type: Object
+  }
+});
+
+const datasetConfigDialogVisible = ref(false)
+const datasetParamsConfigDialogVisible = ref(false)
+
+const datasetParamsChoicePanelRef= ref(null)
+const datasetChoicePanelRef = ref(null)
 
 // 绑定选择框的值
 const value = ref('')
@@ -121,6 +157,28 @@ const options = [
     label: 'Option5',
   },
 ]
+
+// 关闭数据集配置窗口
+const handleSelectDatasetParamsConfigClose = (formData) => {
+    if (datasetParamsConfigDialogVisible.value) {
+        datasetParamsConfigDialogVisible.value = false;
+        // agentModelConfigForm.value.datasetSearchConfig = formData;
+    }
+}
+
+// 关闭数据集配置窗口
+function handleSelectDatasetConfigClose(selectItem) {
+    if (datasetConfigDialogVisible.value) {
+        datasetConfigDialogVisible.value = false;
+        selectionDatasetData.value = selectItem ; // datasetChoicePanelRef.value.getSelectItemList();
+        // agentModelConfigForm.value.knowledgeBaseIds = selectionDatasetData.value;
+    }
+}
+
+// 搜索配置
+const handleSearchSettings = () => {
+  datasetParamsConfigDialogVisible.value = true ;
+}
 </script>
 
 <style lang="scss" scoped>
