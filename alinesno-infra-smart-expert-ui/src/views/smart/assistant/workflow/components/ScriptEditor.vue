@@ -4,7 +4,7 @@
         basic
         :lang="lang"
         v-model="codeVal"
-        :style="'height:150px'"
+        :style="'height:120px'"
         :theme="theme"
         :extensions="extensions" />
     </div>
