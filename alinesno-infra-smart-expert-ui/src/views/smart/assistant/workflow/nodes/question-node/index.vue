@@ -18,9 +18,10 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="AI模型">
-            <el-select v-model="value" placeholder="请选择AI模型" style="width: 240px">
+            <!-- <el-select v-model="value" placeholder="请选择AI模型" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>
+            </el-select> -->
+            <LLMSelector :nodeModel="props.nodeModel" />
           </el-form-item>
           <el-form-item label="系统角色">
             <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" />
@@ -51,6 +52,8 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 const props = defineProps({
   properties: {
