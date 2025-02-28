@@ -1,6 +1,6 @@
 <template>
   <div class="llm-selector-panel">
-    <el-select class="llm-selector" clearable v-model="selectedModel" placeholder="请选择大模型">
+    <el-select class="llm-selector" clearable v-model="data" placeholder="请选择大模型">
       <el-option
         v-for="model in models"
         :key="model.name"
@@ -47,6 +47,19 @@ const models = [
 
 // 定义选中的模型
 const selectedModel = ref('');
+
+const emit = defineEmits(['update:modelValue'])
+const data = computed({
+  set: (value) => {
+    console.log('data = ' + JSON.stringify(value))
+    selectedModel.value = value
+    emit('update:modelValue', value)
+  },
+  get: () => {
+    return props.modelValue
+  }
+})
+
 </script>
 
 <style scoped lang="scss">
