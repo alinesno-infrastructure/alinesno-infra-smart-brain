@@ -28,9 +28,10 @@
             <template v-for="(condition, conditionIndex) in branch.conditions" :key="conditionIndex">
               <el-row style="margin-bottom:5px;">
                 <el-col :span="10">
-                  <el-select v-model="condition.variable" placeholder="请选择变量" style="margin-right:8px;">
+                  <!-- <el-select v-model="condition.variable" placeholder="请选择变量" style="margin-right:8px;">
                     <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-                  </el-select>
+                  </el-select> -->
+                  <FlowCascader :nodeModel="props.nodeModel" />
                 </el-col>
                 <el-col :span="6">
                   <el-select v-model="condition.condition" placeholder="请选择条件" style="margin-right:8px;">
@@ -81,6 +82,8 @@
 <script setup>
 import { ref, reactive, toRaw, nextTick } from 'vue'
 import { cloneDeep, set } from 'lodash'
+
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
 // 定义组件接收的属性
 const props = defineProps({
