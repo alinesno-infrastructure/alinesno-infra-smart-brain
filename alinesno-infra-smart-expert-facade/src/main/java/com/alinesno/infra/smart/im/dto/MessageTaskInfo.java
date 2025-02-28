@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -63,6 +64,9 @@ public class MessageTaskInfo implements Serializable {
     private Long accountId = 0L ; // 操作账号ID
     private String accountName; // 操作账号名称
     private String accountIcon ; // 操作账号头像
+
+    // 内容引用文章列表
+    private List<MessageReferenceDto> contentReferenceArticle;
 
    // 消息内额外参数
     private Map<String , Object> params;
