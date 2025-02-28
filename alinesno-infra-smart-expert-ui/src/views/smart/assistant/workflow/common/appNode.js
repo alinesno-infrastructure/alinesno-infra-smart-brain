@@ -152,7 +152,7 @@ class AppNode extends HtmlResize.view {
 
   setHtml(rootEl) {
 
-    console.log('setHtml getUpNodeList = ' + this.getUpNodeList())
+    // console.log('setHtml getUpNodeList = ' + this.getUpNodeList())
 
     if (!this.isMounted) {
       this.isMounted = true;
