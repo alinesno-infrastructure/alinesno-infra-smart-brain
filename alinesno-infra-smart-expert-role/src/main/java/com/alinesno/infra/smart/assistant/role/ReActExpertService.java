@@ -5,6 +5,7 @@ import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.fastjson.JSON;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -17,6 +18,7 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
@@ -27,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -63,7 +66,9 @@ public class ReActExpertService extends ExpertService {
             return "没有可用的工具，请检查工具是否正常。";
         }
 
-        String datasetKnowledgeDocument = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
+        List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
+        handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
+        String datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList) ;
 
         boolean isCompleted = false ;  // 是否已经完成
         int loop = 0 ;
@@ -71,7 +76,6 @@ public class ReActExpertService extends ExpertService {
         String answer = null; // 回答
         StringBuilder thought = new StringBuilder(); // 思考
         StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
-
 
         do {
             loop++;
@@ -208,6 +212,46 @@ public class ReActExpertService extends ExpertService {
         } while (!isCompleted);
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
+    }
+
+    /**
+     * 处理并合并文档内容
+     * @param datasetKnowledgeDocumentList
+     * @return
+     */
+    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList) {
+
+        StringBuilder sb = new StringBuilder();
+
+        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList)){
+            for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
+                sb.append(bean.getDocument_content()).append("\n");
+            }
+        }
+
+        return sb.toString() ;
+    }
+
+    /**
+     * 处理知识库引用的问题
+     * @param taskInfo
+     * @param datasetKnowledgeDocument
+     */
+    private void handleReferenceArticle(MessageTaskInfo taskInfo, List<DocumentVectorBean> datasetKnowledgeDocument) {
+        if(datasetKnowledgeDocument != null && !datasetKnowledgeDocument.isEmpty()){
+            List<MessageReferenceDto> contentReferenceArticle = new ArrayList<>();
+
+            for (DocumentVectorBean documentVectorBean : datasetKnowledgeDocument) {
+                MessageReferenceDto messageReferenceDto = new MessageReferenceDto();
+
+                messageReferenceDto.setId(documentVectorBean.getId()+"");
+                messageReferenceDto.setDocumentName(documentVectorBean.getDocument_title());
+                messageReferenceDto.setDocumentUrl(documentVectorBean.getSourceUrl());
+                contentReferenceArticle.add(messageReferenceDto) ;
+            }
+
+            taskInfo.setContentReferenceArticle(contentReferenceArticle);
+        }
     }
 
     /**
