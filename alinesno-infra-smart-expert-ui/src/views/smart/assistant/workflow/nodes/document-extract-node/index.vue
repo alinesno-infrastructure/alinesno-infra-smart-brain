@@ -18,9 +18,10 @@
       <div class="settings-form">
         <el-form :model="form" label-width="auto" label-position="top">
           <el-form-item label="选择文档内容">
-            <el-select v-model="value" placeholder="请选择文档内容" style="width: 240px">
+            <!-- <el-select v-model="value" placeholder="请选择文档内容" style="width: 240px">
               <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select> 
+            </el-select>  -->
+            <FlowCascader :nodeModel="props.nodeModel" />
           </el-form-item>
           <el-form-item label="返回内容">
             <el-switch v-model="value1" size="small" />
@@ -42,6 +43,8 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
 // 绑定选择框的值
 const value = ref('')
