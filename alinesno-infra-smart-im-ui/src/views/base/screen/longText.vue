@@ -71,7 +71,7 @@
                             <el-form-item>
                                 <el-input disabled="disabled" v-model="form.title" placeholder="在执行当中的章节名称"></el-input>
                             </el-form-item>
-                            <el-form-item label="章节内容">
+                            <el-form-item label="章节内容" class="chapter-content" >
                                 <!-- <el-input type="textarea" v-model="form.content" :rows="31" resize="none" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input> -->
                                  <ChapterEditor ref="chapterEditorRef" />
                             </el-form-item>
@@ -518,6 +518,10 @@ $avatar-size: 30px;
 
 .hide-tools {
     visibility: hidden;
+}
+
+.chapter-content {
+    margin-bottom: 0px !important
 }
 
 .robot-chat-ai-say-box {
