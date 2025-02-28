@@ -148,3 +148,9 @@
   font-size: 95%;
   border-left: 2px solid #a5a5a5;
 }
+
+.lf-node-selected{
+  .workflow-node-container{
+    border: 2px solid #3b5998 !important;
+  }
+}
