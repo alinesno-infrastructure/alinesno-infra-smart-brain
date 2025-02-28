@@ -67,6 +67,7 @@ public class SSEChannelController {
             msgDto.setLlmStream(true);
             msgDto.setReasoningText(reasoningText);  // 判断是否为推理内容
             msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
+            msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
 
             try {
                 emitter.send(msgDto) ;
