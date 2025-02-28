@@ -96,19 +96,6 @@ const renderGraphData = (data) => {
       });
     });
 
-    // // 保存当前的缩放比例和位置
-    // const currentZoom = lf.value.getZoom()
-    // const currentTranslate = lf.value.getTranslate()
-
-    // console.log('currentZoom = ' + currentZoom + ', currentTranslate = ' + currentTranslate)
-
-    // TODO  重新渲染之后缩放比例不正确的问题
-    // setTimeout(function () {
-    //   if (lf.value) {
-    //     lf.value.fitView();
-    //   }
-    // }, 500);
-
   }
 };
 
