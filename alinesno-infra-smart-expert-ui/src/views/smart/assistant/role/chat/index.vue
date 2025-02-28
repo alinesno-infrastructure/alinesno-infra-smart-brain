@@ -39,8 +39,7 @@
                     <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
                       style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
-                          item.dateTime }}</span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
                         {{ item.name }}
                       </div>
                       <div class="say-message-info" v-else>
@@ -49,8 +48,8 @@
                         <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
                         <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading text>推理中</el-button>
 
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
-                          item.dateTime }} </span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
+                        
                       </div>
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
@@ -58,12 +57,9 @@
 
                       <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
                         :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small"
-                          @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small"
-                          @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
-                          size="small" @click="handleExecutorMessage(item)">执行</el-button>
+                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+                        <el-button type="primary" link icon="EditPen" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
                     </div>
                   </div>
