@@ -24,7 +24,7 @@ public class FlowExpertService extends ExpertService {
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
-        return null;
+        return "流程运行结束" ;
     }
 
     @Override
