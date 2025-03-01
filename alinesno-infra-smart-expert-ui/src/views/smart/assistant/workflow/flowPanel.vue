@@ -75,8 +75,6 @@ const renderGraphData = (data) => {
           color: "#2962FF",
           stepName: '开始',
           showNode: true,
-          x: 240,
-          y: 340,
           height: 380,
           width: 280
         },
@@ -84,6 +82,189 @@ const renderGraphData = (data) => {
         y: 340,
       }]
     }
+
+    data = {
+    "nodes": [
+        {
+            "id": "22690168-c83c-4c93-85f8-09a681b358bb",
+            "type": "start",
+            "x": 240,
+            "y": 340,
+            "properties": {
+                "icon": "fa-solid fa-paper-plane",
+                "color": "#2962FF",
+                "stepName": "开始",
+                "showNode": true,
+                "height": 380,
+                "width": 280,
+                "config": {
+                    "fields": [
+                        {
+                            "label": "用户消息",
+                            "value": "message"
+                        },
+                        {
+                            "label": "文档",
+                            "value": "document"
+                        }
+                    ],
+                    "globalFields": [
+                        {
+                            "value": "time",
+                            "label": "当前时间"
+                        },
+                        {
+                            "value": "pre_content",
+                            "label": "上节点内容"
+                        },
+                        {
+                            "value": "channelId",
+                            "label": "频道号"
+                        },
+                        {
+                            "value": "history_content",
+                            "label": "历史对话"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "id": "9a8cd2d3-bb16-48cc-ae7c-d6f66b4376d5",
+            "type": "function",
+            "x": 890,
+            "y": 350,
+            "properties": {
+                "icon": "fas fa-file-signature",
+                "color": "#424242",
+                "stepName": "脚本功能",
+                "showNode": true,
+                "height": 540,
+                "width": 280,
+                "config": {
+                    "fields": [
+                        {
+                            "label": "结果",
+                            "value": "result"
+                        }
+                    ]
+                },
+                "node_data": {
+                    "params": [
+
+                    ],
+                    "isPrint": false
+                }
+            }
+        },
+        {
+            "id": "57ef29d4-4409-4d6c-93f1-1f63a417b07a",
+            "type": "reply",
+            "x": 1350,
+            "y": 340,
+            "properties": {
+                "icon": "fa-solid fa-reply",
+                "color": "#FF9800",
+                "stepName": "指定回复",
+                "showNode": true,
+                "height": 400,
+                "width": 280,
+                "config": {
+                    "fields": [
+                        {
+                            "label": "内容",
+                            "value": "answer"
+                        }
+                    ]
+                },
+                "node_data": {
+                    "replayType": "text",
+                    "replayParams": [
+
+                    ],
+                    "replayContet": "",
+                    "isPrint": false
+                }
+            }
+        }
+    ],
+    "edges": [
+        {
+            "id": "fc481501-79ff-48d4-ad2b-305f76db1e5a",
+            "type": "app-edge",
+            "sourceNodeId": "22690168-c83c-4c93-85f8-09a681b358bb",
+            "targetNodeId": "9a8cd2d3-bb16-48cc-ae7c-d6f66b4376d5",
+            "startPoint": {
+                "x": 375,
+                "y": 340
+            },
+            "endPoint": {
+                "x": 745,
+                "y": 350
+            },
+            "properties": {
+
+            },
+            "pointsList": [
+                {
+                    "x": 375,
+                    "y": 340
+                },
+                {
+                    "x": 480,
+                    "y": 340
+                },
+                {
+                    "x": 650,
+                    "y": 350
+                },
+                {
+                    "x": 745,
+                    "y": 350
+                }
+            ],
+            "sourceAnchorId": "22690168-c83c-4c93-85f8-09a681b358bb_right",
+            "targetAnchorId": "9a8cd2d3-bb16-48cc-ae7c-d6f66b4376d5_left"
+        },
+        {
+            "id": "45d83549-cb36-456e-8f3b-fe450d8afadf",
+            "type": "app-edge",
+            "sourceNodeId": "9a8cd2d3-bb16-48cc-ae7c-d6f66b4376d5",
+            "targetNodeId": "57ef29d4-4409-4d6c-93f1-1f63a417b07a",
+            "startPoint": {
+                "x": 1025,
+                "y": 350
+            },
+            "endPoint": {
+                "x": 1205,
+                "y": 340
+            },
+            "properties": {
+
+            },
+            "pointsList": [
+                {
+                    "x": 1025,
+                    "y": 350
+                },
+                {
+                    "x": 1130,
+                    "y": 350
+                },
+                {
+                    "x": 1110,
+                    "y": 340
+                },
+                {
+                    "x": 1205,
+                    "y": 340
+                }
+            ],
+            "sourceAnchorId": "9a8cd2d3-bb16-48cc-ae7c-d6f66b4376d5_right",
+            "targetAnchorId": "57ef29d4-4409-4d6c-93f1-1f63a417b07a_left"
+        }
+    ]
+}
 
     console.log('lf.value:', lf.value)
     console.log('data = ' + data)
@@ -96,10 +277,25 @@ const renderGraphData = (data) => {
       });
     });
 
+    // setTimeout(() => {
+      // lf.value?.fitView({
+        // animation: true , 
+        // padding: 50
+      // })
+      // lf.value.extension.dagre.layout();
+    // }, 500)
+
   }
 };
 
+// TODO 待获取画布中心位置
 const clickNode = (shapeItem) => {
+
+  // const virtualRectSize = lf.value.graphModel.getVirtualRectSize() ; 
+  // console.log('lf.value.graphModel.getVirtualRectSize() = ' + virtualRectSize) ; 
+  // console.log('lf.value.graphModel.width = ' + lf.value.graphModel.width)
+  // console.log('lf.value.graphModel.height = ' + lf.value.graphModel.height)
+
   // 清除所有选中的元素
   lf.value.clearSelectElements();
 
@@ -111,8 +307,8 @@ const clickNode = (shapeItem) => {
   const newNode = lf.value.graphModel.addNode({
     type: shapeItem.type,
     properties: shapeItem.properties,
-    x: virtualRectCenterPositionX,
-    y: virtualRectCenterPositionY - lf.value.graphModel.height / 2
+    x: lf.value.graphModel.width / 2 + virtualRectCenterPositionX/2 - 300 , 
+    y: lf.value.graphModel.height / 2 + virtualRectCenterPositionY/2 - 300,
   });
 
   // 设置新节点为选中和悬停状态
