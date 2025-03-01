@@ -21,15 +21,15 @@
       </div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
-          <el-form-item label="关联知识库">
+        <el-form :model="formData" label-width="auto" label-position="top">
+          <el-form-item>
             <!-- <el-input type="input" resize="none" placeholder="请选择知识库" /> -->
 
-            <div style="font-size: 13px;width: 100%;color: #646a73;font-style: italic;" v-if="selectDataset.length === 0">
+            <div style="font-size: 13px;width: 100%;color: #646a73;" v-if="selectionDatasetData.length === 0">
               关联知识库展示在这里
             </div>
 
-            <div class="select-knowledge-box" v-for="(item , index) in selectDataset" :key="index">
+            <div class="select-knowledge-box" v-for="(item , index) in selectionDatasetData" :key="index">
               <div class="select-knowledge-item">
                 <span>
                   <i :class="item.icon"></i> {{ item.name }} 
@@ -41,7 +41,7 @@
             </div>
           </el-form-item>
           <el-form-item label="检索问题">
-            <FlowCascader :nodeModel="props.nodeModel" />
+            <FlowCascader :nodeModel="props.nodeModel" v-model="formData.questionReference" />
           </el-form-item>
         </el-form>
         <div class="settings-title" style="display: flex;align-items: center;justify-content: space-between;">
@@ -58,7 +58,7 @@
               <span class="settings-label-label">检索模式</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">向量检索</span>
+              <span class="settings-label-text">{{ form.datasetSetting.searchType }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -66,7 +66,7 @@
               <span class="settings-label-label">相似度高于</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">0.600</span>
+              <span class="settings-label-text">{{ form.datasetSetting.minRelevance }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -74,7 +74,7 @@
               <span class="settings-label-label">引用分段数TOP</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">3</span>
+              <span class="settings-label-text">{{ form.datasetSetting.topK }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -82,7 +82,7 @@
               <span class="settings-label-label">最多引用字符</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">5000</span>
+              <span class="settings-label-text">{{ form.datasetSetting.quoteLimit }}</span>
             </el-col>
           </el-row>
         </div>
@@ -124,6 +124,7 @@
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
@@ -151,21 +152,50 @@ const datasetParamsConfigDialogVisible = ref(false)
 const datasetParamsChoicePanelRef= ref(null)
 const datasetChoicePanelRef = ref(null)
 
+const selectionDatasetData = ref([])
+
 const selectDataset = ref([
   {icon:'fa-solid fa-truck' , name: '测试知识库', id: '1'} ,
   {icon:'fa-solid fa-ship' , name: '研发知识库', id: '1'} ,
 ]) // 存储选中的数据集
 
 // 表单数据对象
+// const form = reactive({
+//   name: '',
+//   region: '',
+//   date1: '',
+//   date2: '',
+//   delivery: false,
+//   type: [],
+//   resource: '',
+//   desc: '',
+// })
+
+// 表单数据对象
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  datasetIdList: [],
+  datasetSetting: {
+    topK: 3,
+    isReRank: false,
+    minRelevance: 0.6,
+    quoteLimit: 5000,
+    searchType: 'embedding'
+  },
+  questionReference: []
+})
+
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
+  },
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
 })
 
 // 关闭数据集配置窗口
@@ -173,8 +203,20 @@ const handleSelectDatasetParamsConfigClose = (formData) => {
     if (datasetParamsConfigDialogVisible.value) {
         datasetParamsConfigDialogVisible.value = false;
         // agentModelConfigForm.value.datasetSearchConfig = formData;
+
+        console.log('handleSelectDatasetParamsConfigClose formData = ' + JSON.stringify(formData))
+
+        form.datasetSetting = formData;
     }
 }
+
+// 移除已关联的知识库
+const removeKnowledge = (index) => {
+  // 根据传入的索引，从 selectionDatasetData 中移除对应的知识库
+  selectionDatasetData.value.splice(index, 1);
+
+  formData.value.datasetIdList = selectionDatasetData.value ;
+};
 
 // 打开关联知识库选择窗口
 function openKnowledgeBaseSelection() {
@@ -184,17 +226,22 @@ function openKnowledgeBaseSelection() {
 
     // 设置知识库值
     nextTick(() => {
-        // datasetChoicePanelRef.value.setSelectItemList(selectionDatasetData.value);
+        datasetChoicePanelRef.value.setSelectItemList(selectionDatasetData.value);
     });
 
 }
 
 // 关闭数据集配置窗口
 function handleSelectDatasetConfigClose(selectItem) {
+
+    console.log('关闭数据集配置窗口 = ' + selectItem)
+  
     if (datasetConfigDialogVisible.value) {
         datasetConfigDialogVisible.value = false;
         selectionDatasetData.value = selectItem ; // datasetChoicePanelRef.value.getSelectItemList();
         // agentModelConfigForm.value.knowledgeBaseIds = selectionDatasetData.value;
+
+        formData.value.datasetIdList = selectionDatasetData.value ;
     }
 }
 
@@ -211,7 +258,7 @@ const handleSearchSettings = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px;
+  margin-top: 5px;
   padding: 3px 10px;
   border-radius: 3px;
   background: #fff;
