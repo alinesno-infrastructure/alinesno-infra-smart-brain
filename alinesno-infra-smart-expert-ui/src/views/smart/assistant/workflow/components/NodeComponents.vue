@@ -51,9 +51,7 @@ const workflowNodes = [
             color: "#2962FF",
             stepName: 'AI 对话',
             showNode: true,
-            x: 440,
-            y: 340,
-            height: 682,
+            height: 622,
             width: 280
         }
     },
@@ -68,9 +66,7 @@ const workflowNodes = [
             color: "#388E3C",
             stepName: '图片理解',
             showNode: true,
-            x: 440,
-            y: 340,
-            height: 630,
+            height: 584,
             width: 280
         }
     },
@@ -85,9 +81,7 @@ const workflowNodes = [
             color: "#F57C00",
             stepName: '图片生成',
             showNode: true,
-            x: 440,
-            y: 340,
-            height: 570,
+            height: 584,
             width: 280
         }
     },
@@ -102,8 +96,6 @@ const workflowNodes = [
             color: "#D32F2F",
             stepName: '图片理解',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 740,
             width: 280
         }
@@ -119,8 +111,6 @@ const workflowNodes = [
             color: "#616161",
             stepName: '多路召回',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 570,
             width: 280
         }
@@ -136,8 +126,6 @@ const workflowNodes = [
             color: "#303F9F",
             stepName: '判断器',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 330,
             width: 540,
             branch_condition_list: [
@@ -165,8 +153,6 @@ const workflowNodes = [
             color: "#FF9800",
             stepName: '指定回复',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 400,
             width: 280
         }
@@ -182,8 +168,6 @@ const workflowNodes = [
             color: "#F4511E",
             stepName: '问题优化',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 570,
             width: 280
         }
@@ -199,8 +183,6 @@ const workflowNodes = [
             color: "#8E24AA",
             stepName: '文档内容提取',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 320,
             width: 280
         }
@@ -216,8 +198,6 @@ const workflowNodes = [
             color: "#00ACC1",
             stepName: '语音转文本',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 400,
             width: 280
         }
@@ -233,8 +213,6 @@ const workflowNodes = [
             color: "#FFB300",
             stepName: '文本转语音',
             showNode: true,
-            x: 440,
-            y: 340,
             height: 390,
             width: 280
         }
@@ -250,9 +228,7 @@ const workflowNodes = [
             color: "#424242",
             stepName: '脚本功能',
             showNode: true,
-            x: 440,
-            y: 340,
-            height: 510,
+            height: 540,
             width: 280
         }
     }
