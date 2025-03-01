@@ -320,8 +320,8 @@ class AppNodeModel extends HtmlResize.model {
   setAttributes() {
     this.width = this.get_width();
 
-    this.x = this.properties.x ;
-    this.y = this.properties.y ;
+    // this.x = this.properties.x ;
+    // this.y = this.properties.y ;
 
     // console.log('this.properties = ' + JSON.stringify(this.properties))
 
