@@ -16,30 +16,13 @@
       <div class="settings-title">节点设置</div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
+        <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="视觉模型">
-            <!-- <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select> -->
-            <LLMSelector :nodeModel="props.nodeModel" />
-          </el-form-item>
-          <el-form-item label="系统角色">
-            <!-- <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" /> -->
-
-            <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
-              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
-              <div class="function-CodemirrorEditor__footer">
-                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
-                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                </el-button>
-              </div>
-            </div>
-
+            <LLMSelector :nodeModel="props.nodeModel" v-model="form.llmModelId" />
           </el-form-item>
           <el-form-item label="提示词">
-            <!-- <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" /> -->
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
-              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+              <ScriptEditorPanel ref="auditEditorRef" :lang="'markdown'" />
               <div class="function-CodemirrorEditor__footer">
                 <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
                   <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
@@ -48,10 +31,10 @@
             </div>
           </el-form-item>
           <el-form-item label="选择图片">
-            <el-input resize="none" placeholder="请选择图片" />
+            <FlowCascader :nodeModel="props.nodeModel" v-model="formData.imageList" />
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="value1" size="small" />
+            <el-switch v-model="form.isPrint" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -75,26 +58,27 @@
       <template #header>
         <div class="dialog-footer mt-24" style="display: flex;align-items: center; justify-content: space-between; ">
           <div>
-            函数内容(Groovy)
+            提示词
           </div>
           <div>
-            <el-button type="danger" size="large" text bg @click="submitDialog"> 试运行 </el-button>
-            <el-button type="primary" size="large" text bg @click="submitDialog"> 确定保存 </el-button>
+            <el-button type="primary" size="large" text bg @click="confirmAndSave"> 确定保存 </el-button>
           </div>
         </div>
       </template>
-      <ScriptEditorFullPanel ref="auditEditorRef" :lang="'java'" />
+      <ScriptEditorFullPanel ref="auditFullEditorRef" :lang="'markdown'" />
     </el-dialog>
 
   </div>
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
 import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/NodeScriptEditor';
 
+import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 const props = defineProps({
@@ -112,6 +96,9 @@ const props = defineProps({
 });
 
 // 绑定选择框的值
+const auditEditorRef = ref(null)
+const auditFullEditorRef = ref(null)
+
 const dialogVisible = ref(false)
 const cloneContent = ref('')
 
@@ -120,45 +107,88 @@ const chatDataCode = ref('')
 const value1 = ref('')
 
 // 表单数据对象
-const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
-})
+// const form = reactive({
+//   name: '',
+//   region: '',
+//   date1: '',
+//   date2: '',
+//   delivery: false,
+//   type: [],
+//   resource: '',
+//   desc: '',
+// })
 
-function openCodemirrorDialog() {
-  cloneContent.value = chatDataCode.value.code
-  dialogVisible.value = true
+const form = {
+  llmModelId: '',
+  prompt: '',
+  dialogue_number: 0,
+  isPrint: true,
+  imageList: []
 }
 
-// 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
   },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
+})
+
+// 确认保存
+function confirmAndSave() {
+  console.log('confirmAndSave')
+  chatDataCode.value = auditFullEditorRef.value.getRawScript()
+  auditEditorRef.value.setRawScript(chatDataCode.value)
+  console.log('auditFullEditorRef.value.getRawScript() = ' + auditFullEditorRef.value.getRawScript())
+  dialogVisible.value = false
+
+  formData.value.prompt = chatDataCode.value
+}
+
+// 打开编辑对话框
+function openCodemirrorDialog(type) {
+  chatDataCode.value = auditEditorRef.value.getRawScript()
+  dialogVisible.value = true
+  nextTick(() => {
+    auditFullEditorRef.value.setRawScript(chatDataCode.value)
+  })
+}
+
+// function openCodemirrorDialog() {
+//   cloneContent.value = chatDataCode.value.code
+//   dialogVisible.value = true
+// }
+
+// // 选择框的选项列表
+// const options = [
+//   {
+//     value: 'Option1',
+//     label: 'Option1',
+//   },
+//   {
+//     value: 'Option2',
+//     label: 'Option2',
+//   },
+//   {
+//     value: 'Option3',
+//     label: 'Option3',
+//   },
+//   {
+//     value: 'Option4',
+//     label: 'Option4',
+//   },
+//   {
+//     value: 'Option5',
+//     label: 'Option5',
+//   },
+// ]
+
 </script>
 
 <style lang="scss" scoped>
