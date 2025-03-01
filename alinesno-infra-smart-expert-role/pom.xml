@@ -114,10 +114,15 @@
 		</dependency>
 
 		<!-- echarts数据分析 -->
+<!--		<dependency>-->
+<!--			<groupId>org.icepear.echarts</groupId>-->
+<!--			<artifactId>alinesno-echarts-java</artifactId>-->
+<!--			<version>2.0.1</version>-->
+<!--		</dependency>-->
 		<dependency>
 			<groupId>org.icepear.echarts</groupId>
-			<artifactId>alinesno-echarts-java</artifactId>
-			<version>2.0.1</version>
+			<artifactId>echarts-java</artifactId>
+			<version>1.0.7</version>
 		</dependency>
 
 		<!-- 多模型适配 -->
