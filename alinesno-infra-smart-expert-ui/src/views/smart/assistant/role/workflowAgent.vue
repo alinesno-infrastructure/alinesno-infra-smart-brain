@@ -13,22 +13,24 @@
       </el-page-header>
 
       <div class="page-header-btn-container">
-        <el-button type="primary" text bg @click="addComponent"><i class="fa-solid fa-feather"></i> 添加组件</el-button>
-        <el-button type="primary" text bg @click="saveWorkflow"><i class="fa-solid fa-floppy-disk"></i> 保存</el-button>
-        <el-button type="primary" text bg @click="debugRun()"><i class="fa-solid fa-ferry"></i> 试运行</el-button>
-        <el-button type="primary" text bg @click="deployWorkflow"><i class="fa-brands fa-wordpress"></i> 发布</el-button>
+        <!-- <el-button type="primary" text bg size="large" @click="addComponent"><i class="fa-solid fa-feather"></i> 添加组件</el-button> -->
+        <!-- <el-button type="primary" text bg size="large" @click="saveWorkflow"><i class="fa-solid fa-floppy-disk"></i> 保存</el-button> -->
+        <!-- <el-button type="primary" text bg size="large" @click="debugRun()"><i class="fa-solid fa-ferry"></i> 试运行</el-button> -->
+        <el-button type="primary" size="large" @click="deployWorkflow">
+          <i class="fa-solid fa-paper-plane"></i> &nbsp; 发布
+        </el-button>
       </div>
     </div>
 
     <!-- 添加组件 -->
-    <el-collapse-transition>
+    <!-- <el-collapse-transition>
       <NodeComponents 
         v-model:show="showComponent" 
         :id="someId" 
         @clickNode="addNode"
         @onmousedown="onmousedown"
         :workflowRef="workflowRef" /> 
-    </el-collapse-transition>
+    </el-collapse-transition> -->
 
     <!-- 工作流画板 -->
     <el-row>
@@ -40,7 +42,7 @@
     </el-row>
 
     <!-- 试运行窗口 -->
-    <el-drawer v-model="showDebugRunDialog" 
+    <!-- <el-drawer v-model="showDebugRunDialog" 
       :modal="true" 
       size="40%" 
       title="预览与调试" 
@@ -50,7 +52,7 @@
         <RoleChatPanel ref="roleChatPanelRef" />
       </div>
 
-    </el-drawer>
+    </el-drawer> -->
 
   </div>
 </template>
@@ -61,21 +63,27 @@ import {
   getRole
 } from "@/api/smart/assistant/role";
 
-import flowPanel from '@/views/smart/assistant/workflow/flowPanel'
-import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
+import {
+ processAndSave,
+ getLatestFlow
+} from "@/api/smart/assistant/flow";
 
-import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
-import { ElMessage } from "element-plus";
+import flowPanel from '@/views/smart/assistant/workflow/flowPanel'
+
+// import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
+// import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
+
+import { ElMessage , ElLoading } from "element-plus";
 
 const router = useRouter();
 
 const showComponent = ref(false);
 const showDebugRunDialog = ref(false);
 
-const workflowMainPanelRef = ref(null)
-const roleChatPanelRef = ref(null)
+// const workflowMainPanelRef = ref(null)
+// const roleChatPanelRef = ref(null)
+// const someId = ref('your-id');
 
-const someId = ref('your-id');
 const workflowRef = ref(null);
 
 const currentRole = ref({
@@ -89,15 +97,15 @@ function goBack() {
   router.push({ path: '/expert/smart/assistant/role/index' });
 }
 
-/** 添加组件 */
-function addComponent(){
-  showComponent.value = !showComponent.value ;
-}
+// /** 添加组件 */
+// function addComponent(){
+//   showComponent.value = !showComponent.value ;
+// }
 
-function debugRun(){
-  showDebugRunDialog.value = true ;
-  console.log('debugRun')
-}
+// function debugRun(){
+//   showDebugRunDialog.value = true ;
+//   console.log('debugRun')
+// }
 
 /** 获取角色信息 */
 function getRoleInfo() {
@@ -105,14 +113,33 @@ function getRoleInfo() {
     getRole(currentRoleId.value).then(response => {
         currentRole.value = response.data;
     });
+
+    getLatestFlow(currentRoleId.value).then(response => {
+        if(response.data){
+            workflowRef.value?.setWorkflowGraphData(response.data?.flowGraphJson);
+        }
+    });
 }
 
 /** 保存工作流配置 */
-const saveWorkflow = () => {
-  const workflowData = workflowRef.value?.getWorkflowGraphData()
-  console.log('workflowData = ' + JSON.stringify(workflowData))
-  ElMessage.success('保存成功');
-}
+// const saveWorkflow = () => {
+//   const workflowData = workflowRef.value?.getWorkflowGraphData()
+//   console.log('workflowData = ' + JSON.stringify(workflowData))
+
+//   const loading = ElLoading.service({
+//     lock: true,
+//     text: '保存中',
+//     background: 'rgba(0, 0, 0, 0.7)'
+//   });
+
+//   processAndSave(workflowData , currentRoleId.value).then(response => {
+//     ElMessage.success('保存成功');
+//     loading.close();
+//   }).catch(error => {
+//     loading.close();
+//   })
+
+// }
 
 /** 初始化数据 */
 onMounted(() => {
