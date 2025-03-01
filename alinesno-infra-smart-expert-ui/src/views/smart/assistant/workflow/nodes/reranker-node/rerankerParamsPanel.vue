@@ -3,36 +3,14 @@
         <div class="config-container">
             <el-form :model="form" :label-position="'top'" ref="configRef" :inline="true" style="width:100%" label-width="120px">
                 <el-row>
-                    <!-- <el-col :span="24">
-                        <el-form-item label="检索类型" class="search-form-item">
-                            <el-radio-group v-model="form.searchType">
-                                <el-radio v-for="item in searchTypes" :key="item.code" :label="item.code" size="large" class="search-type-radio">
-                                    <template #default>
-                                        <div class="radio-content">
-                                            <span>
-                                                <i :class="item.icon"></i>
-                                            </span>
-                                            <div class="radio-text">
-                                                <span class="radio-label">{{ item.label }}</span>
-                                                <span class="radio-desc">{{ item.desc }}</span>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </el-radio>
-                            </el-radio-group>
-                        </el-form-item>
-                    </el-col> -->
                     <el-col :span="24">
                         <el-form-item label="引用上限" prop="quoteLimit" class="search-form-item">
                             <el-slider size="large" show-input v-model="form.quoteLimit" :step="1" :max="5000" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="24">
-                        <!-- <el-form-item label="是否结果重排" prop="reorderResults" class="search-form-item">
-                            <el-switch v-model="form.reorderResults" :active-value="1" :inactive-value="0" active-text="是" size="large" inactive-text="否" />
-                        </el-form-item> -->
-                        <el-form-item label="引用分段数" prop="minRelevance" class="search-form-item">
-                            <el-slider size="large" show-input v-model="form.minRelevance" :step="1" :min="1" :max="10" />
+                        <el-form-item label="引用分段数" prop="topK" class="search-form-item">
+                            <el-slider size="large" show-input v-model="form.topK" :step="1" :min="1" :max="10" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="24">
@@ -53,7 +31,7 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
-import { useRoute } from 'vue-router'
+// import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 const emit = defineEmits(['handleSelectDatasetParamsConfigClose'])
@@ -65,35 +43,36 @@ const configRef = ref(null);
 
 const form = reactive({
     // datasetId: route.query.datasetId,
-    searchType: 'vector', // 默认向量检索
+    // searchType: 'vector', // 默认向量检索
+    topK: 3 , 
     quoteLimit: 1000, // 默认引用上限
     reorderResults: false, // 默认不重排
     minRelevance: 0.5 // 默认最低相关度
 });
 
-const searchTypes = ref([
-    {
-        code: 'vector',
-        label: '向量检索',
-        desc: '使用向量进行文本相关性查询',
-        enable: true,
-        icon: 'fa-solid fa-magnifying-glass-chart'
-    },
-    {
-        code: 'fulltext',
-        label: '全文检索',
-        desc: '使用传统的全文检索，基于PostgreSql的全文检索',
-        enable: false,
-        icon: 'fa-solid fa-file-pdf'
-    },
-    {
-        code: 'hybrid',
-        label: '混合检索',
-        desc: '使用向量检索与全文检索的综合结果返回。',
-        enable: false,
-        icon: 'fa-solid fa-code-branch'
-    }
-]);
+// const searchTypes = ref([
+//     {
+//         code: 'vector',
+//         label: '向量检索',
+//         desc: '使用向量进行文本相关性查询',
+//         enable: true,
+//         icon: 'fa-solid fa-magnifying-glass-chart'
+//     },
+//     {
+//         code: 'fulltext',
+//         label: '全文检索',
+//         desc: '使用传统的全文检索，基于PostgreSql的全文检索',
+//         enable: false,
+//         icon: 'fa-solid fa-file-pdf'
+//     },
+//     {
+//         code: 'hybrid',
+//         label: '混合检索',
+//         desc: '使用向量检索与全文检索的综合结果返回。',
+//         enable: false,
+//         icon: 'fa-solid fa-code-branch'
+//     }
+// ]);
 
 const setDataset = (dataset) => {
     if (dataset) {
