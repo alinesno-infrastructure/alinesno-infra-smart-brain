@@ -1,22 +1,37 @@
 <template>
     <div class="node-components border-r-4" v-show="show">
 
-        <div class="node-components-title"><i class="fa-solid fa-masks-theater"></i> 任务节点</div>
-        <el-scrollbar height="400px">
-            <div class="node-components-content">
-                <el-input v-model="searchNodeComponent" :prefix-icon="Search" clearable style="width: 100%"
-                    placeholder="搜索" />
-            </div>
-            <div class="node-components-content" v-for="item in workflowNodes" :key="item.name"
-                @click="clickNode(item)">
-                <div class="node-components-icon">
-                    <i :class="item.properties.icon" />
-                </div>
-                <div class="node-info">
-                    <span>{{ item.label }}</span>
-                    <desc class="description">{{ item.description }}</desc>
-                </div>
-            </div>
+        <div class="node-components-title">
+            <span>
+                <i class="fa-solid fa-masks-theater"></i> 任务节点
+            </span>
+            <!-- 
+            <span style="cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </span> 
+            -->
+        </div>
+        <el-scrollbar height="600px" style="padding:10px;">
+            <el-row>
+                <el-col :span="24">
+                    <div class="node-components-content">
+                        <el-input v-model="searchNodeComponent" :prefix-icon="Search" clearable style="width: 100%"
+                            placeholder="搜索" />
+                    </div>
+                </el-col>
+
+                <el-col :span="12" v-for="item in workflowNodes" :key="item.name" >
+                    <div class="node-components-content" @click="clickNode(item)">
+                        <div class="node-components-icon">
+                            <i :class="item.properties.icon" />
+                        </div>
+                        <div class="node-info">
+                            <span>{{ item.label }}</span>
+                            <desc class="description">{{ item.description }}</desc>
+                        </div>
+                    </div>
+                </el-col>
+            </el-row>
         </el-scrollbar>
     </div>
 </template>
@@ -24,7 +39,7 @@
 <script setup>
 import { ref, defineProps } from 'vue';
 
-const emit = defineEmits(['update:show']);
+const emit = defineEmits(['clickNode']);
 const props = defineProps({
     show: {
         type: Boolean,
@@ -34,7 +49,7 @@ const props = defineProps({
         type: String,
         default: ''
     },
-    workflowRef: Object
+    // workflowRef: Object
 });
 
 const searchNodeComponent = ref('')
@@ -52,7 +67,7 @@ const workflowNodes = [
             stepName: 'AI 对话',
             showNode: true,
             height: 622,
-            width: 280
+            width: 380
         }
     },
     {
@@ -67,7 +82,7 @@ const workflowNodes = [
             stepName: '图片理解',
             showNode: true,
             height: 584,
-            width: 280
+            width: 380
         }
     },
     {
@@ -82,7 +97,7 @@ const workflowNodes = [
             stepName: '图片生成',
             showNode: true,
             height: 584,
-            width: 280
+            width: 380
         }
     },
     {
@@ -94,10 +109,10 @@ const workflowNodes = [
         properties: {
             icon: 'fa-solid fa-book',
             color: "#D32F2F",
-            stepName: '图片理解',
+            stepName: '知识库检索',
             showNode: true,
             height: 740,
-            width: 280
+            width: 380
         }
     },
     {
@@ -112,7 +127,7 @@ const workflowNodes = [
             stepName: '多路召回',
             showNode: true,
             height: 570,
-            width: 280
+            width: 380
         }
     },
     {
@@ -136,7 +151,7 @@ const workflowNodes = [
                 },
                 {
                     "index": 2,
-                    "height": 44 ,
+                    "height": 44,
                     "id": "161"
                 }
             ]
@@ -154,7 +169,7 @@ const workflowNodes = [
             stepName: '指定回复',
             showNode: true,
             height: 400,
-            width: 280
+            width: 380
         }
     },
     {
@@ -169,7 +184,7 @@ const workflowNodes = [
             stepName: '问题优化',
             showNode: true,
             height: 570,
-            width: 280
+            width: 380
         }
     },
     {
@@ -184,7 +199,7 @@ const workflowNodes = [
             stepName: '文档内容提取',
             showNode: true,
             height: 320,
-            width: 280
+            width: 380
         }
     },
     {
@@ -199,7 +214,7 @@ const workflowNodes = [
             stepName: '语音转文本',
             showNode: true,
             height: 400,
-            width: 280
+            width: 380
         }
     },
     {
@@ -214,7 +229,7 @@ const workflowNodes = [
             stepName: '文本转语音',
             showNode: true,
             height: 390,
-            width: 280
+            width: 380
         }
     },
     {
@@ -229,7 +244,7 @@ const workflowNodes = [
             stepName: '脚本功能',
             showNode: true,
             height: 540,
-            width: 280
+            width: 380
         }
     }
 ];
@@ -237,31 +252,40 @@ const workflowNodes = [
 const clickNode = (item) => {
     // const { id, workflowRef } = props;
     // 点击之后，show 设置为 false
-    props.show = false;
-    emit('update:show', false);
+    // props.show = false;
+    console.log('item = ' + item);
+    emit('clickNode', item);
 
-    props.workflowRef?.clickNode(item);
+    // props.workflowRef?.clickNode(item);
+
+    // return item ;
 };
+
+defineExpose({ clickNode });
+
 </script>
 
 <style lang="scss" scoped>
 .node-components {
-    position: absolute;
-    top: 49px;
+    position: fixed;
     right: 120px;
     z-index: 100000;
-    width: 268px;
+    width: 600px;
     background: #ffffff;
-    // border: 1px solid #e5e5e5;
     padding-bottom: 20px;
     border-radius: 5px;
     box-shadow: var(--el-box-shadow-light);
+    bottom: 90px;
+    left: 250px;
 
     .node-components-title {
         font-size: 14px;
         padding: 15px;
         background: #f5f7fa;
         margin-bottom: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .node-components-icon {
@@ -282,6 +306,8 @@ const clickNode = (item) => {
         padding: 8px 10px;
         gap: 10px;
         cursor: pointer;
+        margin-top:5px;
+        margin-bottom: 5px;
         align-items: center;
         justify-content: flex-start;
 
@@ -304,6 +330,9 @@ const clickNode = (item) => {
 
     .description {
         color: #8f959e;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 </style>
