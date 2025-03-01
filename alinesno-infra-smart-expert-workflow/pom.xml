@@ -22,6 +22,19 @@
 			<version>${revision}</version>
 		</dependency>
 
-	</dependencies>
+		<!-- 引入核心包 -->
+        <dependency>
+            <groupId>com.alinesno.infra.common</groupId>
+            <artifactId>alinesno-infra-common-core</artifactId>
+			<version>${revision}</version>
+        </dependency>
+
+		<!-- 引用fastjson -->
+		<dependency>
+			<groupId>com.alibaba</groupId>
+			<artifactId>fastjson</artifactId>
+		</dependency>
+
+    </dependencies>
 
 </project>
