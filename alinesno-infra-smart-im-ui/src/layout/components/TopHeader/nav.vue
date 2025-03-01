@@ -1,5 +1,10 @@
 <template>
   <nav class=" header-text">
+    <!-- <div class="acp-header-item ">
+      <div class="header-label-text" >
+        <el-switch v-model="isDarkTheme" @change="toggleTheme" />
+      </div>
+    </div> -->
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/index">
         <i class="fa-solid fa-screwdriver-wrench"></i> 控制台
@@ -104,6 +109,8 @@ import useUserStore from '@/store/modules/user'
 
 const userStore = useUserStore()
 const router = useRouter();
+
+const isDarkTheme = ref(null)
 
 // const avatar = ref('http://data.linesno.com/switch_header.png') ; 
 // const nickname = ref('超级管理员') ;
