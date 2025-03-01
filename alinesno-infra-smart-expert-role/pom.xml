@@ -123,6 +123,12 @@
 			<groupId>org.icepear.echarts</groupId>
 			<artifactId>echarts-java</artifactId>
 			<version>1.0.7</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>slf4j-simple</artifactId>
+					<groupId>org.slf4j</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- 多模型适配 -->
