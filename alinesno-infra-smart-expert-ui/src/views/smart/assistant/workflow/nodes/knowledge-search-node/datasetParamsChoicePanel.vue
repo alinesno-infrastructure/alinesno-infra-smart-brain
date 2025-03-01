@@ -28,8 +28,13 @@
                         </el-form-item>
                     </el-col>
                     <el-col :span="24">
-                        <el-form-item label="是否结果重排" prop="reorderResults" class="search-form-item">
-                            <el-switch v-model="form.reorderResults" :active-value="1" :inactive-value="0" active-text="是" size="large" inactive-text="否" />
+                        <el-form-item label="最大条数" prop="topK" class="search-form-item">
+                            <el-slider size="large" show-input v-model="form.topK" :step="1" :max="10" />
+                        </el-form-item>
+                    </el-col>
+                    <el-col :span="24">
+                        <el-form-item label="是否结果重排" prop="isReRank" class="search-form-item">
+                            <el-switch v-model="form.isReRank" :active-value="true" :inactive-value="false" active-text="是" size="large" inactive-text="否" />
                         </el-form-item>
                     </el-col>
                     <el-col :span="24">
@@ -63,6 +68,7 @@ const configRef = ref(null);
 const form = reactive({
     // datasetId: route.query.datasetId,
     searchType: 'vector', // 默认向量检索
+    topK: 3, // 默认向量检索
     quoteLimit: 1000, // 默认引用上限
     reorderResults: false, // 默认不重排
     minRelevance: 0.5 // 默认最低相关度
