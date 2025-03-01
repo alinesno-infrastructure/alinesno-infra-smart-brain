@@ -181,8 +181,11 @@ function handleSelectionChange(selection) {
   multiple.value = !selection.length;
 
   selection.forEach(item => {
-    if (!selectItemList.value.includes(item.id)) {
-      selectItemList.value.push(item.id);
+
+    // if (!selectItemList.value.includes(item.id)) {
+    const exists = selectedDatasetList.value.some(selectedItem => selectedItem.id === item.id);
+      // selectItemList.value.push(item.id);
+    if (!exists) {
       selectedDatasetList.value.push({
         id: item.id,
         icon: item.icon ? 'fa-solid fa-file-pdf' : item.icon ,
@@ -215,6 +218,31 @@ function handleSelectionChange(selection) {
 //   }
 // }
 
+// 设置表格的选中状态
+function setTableSelection() {
+  if (tableRef.value) {
+    // 先清空表格的选中状态
+    tableRef.value.clearSelection();
+    DatasetList.value.forEach(item => {
+      // 检查 selectedDatasetList 中是否已经存在具有相同 id 的元素
+      // const exists = selectedDatasetList.value.some(selectedItem => selectedItem.id === item.id);
+      // if (exists) {
+      //   // 如果存在，则选中该行
+      //   tableRef.value.toggleRowSelection(item, true);
+      // } else {
+      //   // 如果不存在，则添加到已选择列表中
+      //   selectedDatasetList.value.push({
+      //     id: item.id,
+      //     icon: item.icon ? 'fa-solid fa-file-pdf' : item.icon,
+      //     name: item.name
+      //   });
+      //   // 同时选中该行
+      //   tableRef.value.toggleRowSelection(item, true);
+      // }
+    });
+  }
+}
+
 // 删除已选择的数据集
 function removeSelectedDataset(index) {
   const removedItem = selectedDatasetList.value.splice(index, 1)[0];
@@ -236,7 +264,8 @@ const handleSubmit = () => {
 
 // 获取 selectItemList 最后的值
 function getSelectItemList() {
-  return selectItemList.value;
+  // return selectItemList.value;
+  return selectedDatasetList.value ; 
 }
 
 /** 查询类型下拉树结构 */
@@ -249,9 +278,9 @@ function getDeptTree() {
 /** 设置选中知识库值 */
 function setSelectItemList(items){
   console.log('setSelectItemList = ' + items)
-  selectItemList.value = items;
+  selectedDatasetList.value = items;
 
-  // setTableSelection();
+  setTableSelection();
 }
 
 getDeptTree();
