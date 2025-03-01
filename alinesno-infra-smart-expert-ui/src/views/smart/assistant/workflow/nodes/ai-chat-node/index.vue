@@ -16,32 +16,13 @@
       <div class="settings-title">节点设置</div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
+        <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="AI模型">
-            <!-- 
-            <el-select v-model="value" placeholder="请选择语音识别模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select> 
-            -->
-            <LLMSelector :nodeModel="props.nodeModel" />
-          </el-form-item>
-          <el-form-item label="系统角色">
-            <!-- <el-input type="textarea" :rows="3" resize="none" placeholder="角色设置" /> -->
-
-            <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
-              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
-              <div class="function-CodemirrorEditor__footer">
-                <el-button text @click="openCodemirrorDialog('system')" style="background-color: transparent !important;" class="magnify">
-                  <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                </el-button>
-              </div>
-            </div>
-
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
           </el-form-item>
           <el-form-item label="提示词">
-            <!-- <el-input type="textarea" :rows="4" resize="none" placeholder="角色设置" /> -->
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
-              <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
+              <ScriptEditorPanel ref="auditEditorRef" :lang="'markdown'" />
               <div class="function-CodemirrorEditor__footer">
                 <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
                   <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
@@ -50,10 +31,10 @@
             </div>
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="value1" size="small" />
+            <el-switch v-model="form.isPrint" size="small" />
           </el-form-item>
           <el-form-item label="输出思考">
-            <el-switch v-model="value1" size="small" />
+            <el-switch v-model="form.isPrintResoning" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -73,7 +54,6 @@
 
     <el-dialog
       v-model="dialogVisible"
-      :title="'函数内容（Groovy）'"
       width="800"
       append-to-body
     >
@@ -83,17 +63,18 @@
             {{ dialogTitle }} 
           </div>
           <div>
-            <el-button type="primary" size="large" text bg @click="submitDialog"> 确认</el-button>
+            <el-button type="primary" size="large" text bg @click="confirmAndSave"> 确认</el-button>
           </div>
         </div>
       </template>
-      <ScriptEditorFullPanel ref="auditEditorRef" :lang="'java'" />
+      <ScriptEditorFullPanel ref="auditFullEditorRef" :lang="'markdown'" />
     </el-dialog>
 
   </div>
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
@@ -119,26 +100,65 @@ const dialogVisible = ref(false)
 const cloneContent = ref('')
 
 // 绑定选择框的值
+const auditEditorRef = ref(null)
+const auditFullEditorRef = ref(null)
+
 const chatDataCode = ref('')
 const value1 = ref('')
-const dialogTitle = ref('')
+const dialogTitle = ref('提示词')
+
+// 表单数据对象
+// const form = reactive({
+//   name: '',
+//   region: '',
+//   date1: '',
+//   date2: '',
+//   delivery: false,
+//   type: [],
+//   resource: '',
+//   desc: '',
+// })
 
 // 表单数据对象
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  llmModelId: '',
+  prompt: '',
+  isPrintResoning: true, 
+  isPrint:true 
 })
 
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
+  },
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
+})
+
+// 确认保存
+function confirmAndSave() {
+  console.log('confirmAndSave')
+  chatDataCode.value = auditFullEditorRef.value.getRawScript()
+  auditEditorRef.value.setRawScript(chatDataCode.value)
+  console.log('auditFullEditorRef.value.getRawScript() = ' + auditFullEditorRef.value.getRawScript())
+  dialogVisible.value = false
+
+  formData.value.prompt = chatDataCode.value
+}
+
+// 打开编辑对话框
 function openCodemirrorDialog(type) {
-  dialogTitle.value = type == 'system' ?'系统角色': '提示词'
-  cloneContent.value = chatDataCode.value.code
+  chatDataCode.value = auditEditorRef.value.getRawScript()
   dialogVisible.value = true
+  nextTick(() => {
+    auditFullEditorRef.value.setRawScript(chatDataCode.value)
+  })
 }
 
 // 选择框的选项列表
