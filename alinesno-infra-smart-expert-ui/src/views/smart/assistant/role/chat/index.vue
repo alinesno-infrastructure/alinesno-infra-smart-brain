@@ -92,7 +92,7 @@
                   </div>
                 </el-col>
 
-                <el-col :span="8" style="text-align: right;">
+                <el-col :span="8" style="text-align:right;display:fiex">
 
                   <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
 
