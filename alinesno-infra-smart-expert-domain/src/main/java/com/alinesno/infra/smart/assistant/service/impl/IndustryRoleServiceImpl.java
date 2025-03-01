@@ -261,6 +261,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     @Override
     public void createRole(IndustryRoleEntity e) {
 
+        switch (e.getScriptType()) {
+            case "script" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
+            case "react" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+            case "flow" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+        }
+
         List<IndustryRoleEntity> allEntities = new ArrayList<>();
         allEntities.add(e);
 
