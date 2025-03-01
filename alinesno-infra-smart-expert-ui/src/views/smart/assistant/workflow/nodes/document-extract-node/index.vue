@@ -16,15 +16,12 @@
       <div class="settings-title">节点设置</div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
+        <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="选择文档内容">
-            <!-- <el-select v-model="value" placeholder="请选择文档内容" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select>  -->
-            <FlowCascader :nodeModel="props.nodeModel" />
+            <FlowCascader :nodeModel="props.nodeModel" v-model="formData.documentList" />
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="value1" size="small" />
+            <el-switch v-model="form.isPrint" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -42,6 +39,7 @@
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
@@ -66,39 +64,24 @@ const props = defineProps({
 
 // 表单数据对象
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  documentList: [],
+  isPrint:true 
 })
 
-// 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
   },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
