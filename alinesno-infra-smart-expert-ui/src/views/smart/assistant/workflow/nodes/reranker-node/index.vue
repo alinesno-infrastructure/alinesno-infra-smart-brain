@@ -16,20 +16,15 @@
       <div class="settings-title">节点设置</div>
       <!-- 节点设置表单区域 -->
       <div class="settings-form">
-        <el-form :model="form" label-width="auto" label-position="top">
+        <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="重排内容">
-            <!-- <el-select v-model="value" placeholder="请选择图片理解模型" style="width: 240px">
-              <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
-            </el-select> -->
-            <FlowCascader :nodeModel="props.nodeModel" />
+            <FlowCascader :nodeModel="props.nodeModel" v-model="formData.rerankerReference" />
           </el-form-item>
           <el-form-item label="检索问题">
-            <!-- <el-input resize="none" placeholder="角色设置" /> -->
-            <FlowCascader :nodeModel="props.nodeModel" />
+            <FlowCascader :nodeModel="props.nodeModel" v-model="formData.questionReference" />
           </el-form-item>
           <el-form-item label="重排模型">
-            <!-- <el-input resize="none" placeholder="角色设置" /> -->
-            <LLMSelector :nodeModel="props.nodeModel" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.rerankerModelId" />
           </el-form-item>
         </el-form>
         <div class="settings-title" style="display: flex;align-items: center;justify-content: space-between;">
@@ -46,7 +41,7 @@
               <span class="settings-label-label">相似度高于</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">0.600</span>
+              <span class="settings-label-text">{{ form.rerankerSetting.minRelevance }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -54,7 +49,7 @@
               <span class="settings-label-label">引用分段数TOP</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">3</span>
+              <span class="settings-label-text">{{ form.rerankerSetting.topK }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -62,7 +57,7 @@
               <span class="settings-label-label">最多引用字符</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">5000</span>
+              <span class="settings-label-text">{{ form.rerankerSetting.quoteLimit }}</span>
             </el-col>
           </el-row>
         </div>
@@ -91,6 +86,7 @@
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
@@ -116,53 +112,69 @@ const datasetConfigDialogVisible = ref(false)
 const datasetParamsConfigDialogVisible = ref(false)
 
 const datasetParamsChoicePanelRef= ref(null)
-const datasetChoicePanelRef = ref(null)
+// const datasetChoicePanelRef = ref(null)
 
 // 绑定选择框的值
-const value = ref('')
-const value1 = ref('')
+// const value = ref('')
+// const value1 = ref('')
 
 // 表单数据对象
 const form = reactive({
-  name: '',
-  region: '',
-  date1: '',
-  date2: '',
-  delivery: false,
-  type: [],
-  resource: '',
-  desc: '',
+  rerankerReference : [],
+  rerankerModelId: '',
+  questionReference : [],
+  rerankerSetting: {
+    topK: 3,
+    minRelevance: 0.3,
+    quoteLimit: 5000
+  }
+})
+
+const formData = computed({
+  get: () => {
+    if (props.nodeModel.properties.node_data) {
+      return props.nodeModel.properties.node_data
+    } else {
+      set(props.nodeModel.properties, 'node_data', form)
+    }
+    return props.nodeModel.properties.node_data
+  },
+  set: (value) => {
+    set(props.nodeModel.properties, 'node_data', value)
+  }
 })
 
 // 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
-  },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
+// const options = [
+//   {
+//     value: 'Option1',
+//     label: 'Option1',
+//   },
+//   {
+//     value: 'Option2',
+//     label: 'Option2',
+//   },
+//   {
+//     value: 'Option3',
+//     label: 'Option3',
+//   },
+//   {
+//     value: 'Option4',
+//     label: 'Option4',
+//   },
+//   {
+//     value: 'Option5',
+//     label: 'Option5',
+//   },
+// ]
 
 // 关闭数据集配置窗口
 const handleSelectDatasetParamsConfigClose = (formData) => {
     if (datasetParamsConfigDialogVisible.value) {
         datasetParamsConfigDialogVisible.value = false;
         // agentModelConfigForm.value.datasetSearchConfig = formData;
+
+        form.rerankerSetting = formData;
     }
 }
 
