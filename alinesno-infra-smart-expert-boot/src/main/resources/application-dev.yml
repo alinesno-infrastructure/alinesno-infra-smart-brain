@@ -35,7 +35,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;com.alinesno.infra.base.search.entity;
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;
   database:
     type: mysql
   index:
