@@ -66,7 +66,7 @@
             <!-- 角色配置按钮 -->
             <el-button type="primary" text @click="roleConfiguration">
                 <el-tooltip class="box-item" effect="dark" content="角色配置" placement="top">
-                    <el-avatar :size="30" src="https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png" />
+                    <el-avatar :size="30" :src="imagePath(currentRole.roleAvatar)" />
                 </el-tooltip>
                 &nbsp;角色配置
             </el-button>
@@ -108,7 +108,7 @@
 
         <!-- 参数配置窗口 -->
         <div class="aip-flow-drawer">
-            <el-drawer v-model="showParamsDialog" :modal="false" size="40%" style="max-width: 600px;" title="角色参数配置"
+            <el-drawer v-model="showParamsDialog" v-if="showParamsDialog" :modal="false" size="40%" style="max-width: 600px;" title="角色参数配置"
                 :with-header="true">
                 <div style="margin-top: 0px;">
                     <ParamsConfigPanel ref="paramsConfigRef" />
@@ -125,11 +125,16 @@ import {
     processAndSave
 } from "@/api/smart/assistant/flow";
 
+import {
+    getRole
+} from "@/api/smart/assistant/role";
+
 import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 import ParamsConfigPanel from '@/views/smart/assistant/workflow/components/ParamsConfigPanel.vue';
 
 import { ElMessage, ElLoading } from "element-plus";
+import { nextTick, ref } from "vue";
 
 const emits = defineEmits(['clickNode'])
 
@@ -141,6 +146,10 @@ const showParamsDialog = ref(false);
 const showDebugRunDialog = ref(false);
 // const emits = defineEmits(['getWorkflowGraphData'])
 
+const currentRole = ref({
+    roleName: ''
+});
+const paramsConfigRef = ref(null);
 const roleChatPanelRef = ref(null)
 const workflowRef = ref(null);
 
@@ -244,6 +253,10 @@ const addNode = (item) => {
 const roleConfiguration = () => {
     console.log('角色配置操作');
     showParamsDialog.value = !showParamsDialog.value;
+
+    // nextTick(() => {
+    //     paramsConfigRef.value.displayRoleInfoBack(currentRole.value);
+    // })
 };
 
 /**
@@ -279,9 +292,23 @@ const trialRun = () => {
     showDebugRunDialog.value = true;
 };
 
+/** 获取角色信息 */
+function getRoleInfo() {
+    currentRoleId.value = router.currentRoute.value.query.roleId;
+
+    getRole(currentRoleId.value).then(response => {
+        currentRole.value = response.data;
+        // roleChatPanelRef.value.setRoleInfo(currentRole.value)
+        // displayRoleInfoBack(currentRole.value);
+    });
+
+}
+
+
 onMounted(() => {
     // console.log('props.lf = ' + JSON.stringify(props.lf))
     currentRoleId.value = router.currentRoute.value.query.roleId;
+    getRoleInfo();
 })
 
 </script>
