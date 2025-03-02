@@ -61,6 +61,15 @@ public class FlowController {
     }
 
     /**
+     * 发布流程
+     */
+    @GetMapping("/published")
+    public AjaxResult published(@RequestParam Long flowId) {
+        flowService.publishFlow(flowId);
+        return AjaxResult.success("流程发布成功");
+    }
+
+    /**
      * 获取指定角色最新版本的已发布流程接口
      * @param roleId 角色ID
      * @return 包含最新版本已发布流程的结果
