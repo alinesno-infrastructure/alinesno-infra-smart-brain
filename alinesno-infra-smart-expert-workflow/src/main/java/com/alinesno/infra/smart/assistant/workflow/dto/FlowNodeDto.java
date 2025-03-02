@@ -9,10 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * FlowNodeDto类用于表示工作流中的一个节点
@@ -25,6 +22,8 @@ public class FlowNodeDto {
 
     // 节点唯一标识符
     private String id;
+    // 数据库存储节点的ID
+    private Long nodeId;  // dto是相对于前端界面而言，所以id为step的ID，这里与数据关联，则使用nodeId表示
     // 节点类型，表示节点的种类，如开始节点、任务节点等
     private String type;
 
@@ -91,7 +90,7 @@ public class FlowNodeDto {
         entity.setId(IdUtil.getSnowflakeNextId());
         entity.setFlowId(null); // 需根据业务逻辑设置
 
-        entity.setNodeId(this.getId());
+        entity.setStepId(this.getId());
         entity.setNodeName(this.getStepName());
         entity.setNodeType(this.getType());
         entity.setX(this.getX());
@@ -134,7 +133,8 @@ public class FlowNodeDto {
      */
     public static FlowNodeDto fromEntity(FlowNodeEntity entity) {
         FlowNodeDto dto = new FlowNodeDto();
-        dto.setId(entity.getNodeId()) ;
+        dto.setId(entity.getStepId()) ;  // 相对于DTO来说，这里的ID是步骤节点的ID，而不是工作流的ID
+        dto.setNodeId(entity.getId());
         dto.setType(entity.getNodeType());
         dto.setStepName(entity.getNodeName());
         dto.setX(entity.getX());
@@ -176,5 +176,29 @@ public class FlowNodeDto {
         }
         sb.append("]}");
         return sb.toString();
+    }
+
+    // 重写 hashCode 方法
+    @Override
+    public int hashCode() {
+        int result = id != null ? id.hashCode() : 0;
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + x;
+        result = 31 * result + y;
+        result = 31 * result + (properties != null ? properties.hashCode() : 0);
+        return result;
+    }
+
+    // 重写 equals 方法，确保与 hashCode 方法的一致性
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        FlowNodeDto that = (FlowNodeDto) o;
+        if (x != that.x) return false;
+        if (y != that.y) return false;
+        if (!Objects.equals(id, that.id)) return false;
+        if (!Objects.equals(type, that.type)) return false;
+        return Objects.equals(properties, that.properties);
     }
 }
