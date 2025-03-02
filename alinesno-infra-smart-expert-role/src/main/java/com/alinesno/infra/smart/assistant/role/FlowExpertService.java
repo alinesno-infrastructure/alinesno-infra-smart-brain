@@ -3,9 +3,11 @@ package com.alinesno.infra.smart.assistant.role;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -19,10 +21,15 @@ import java.util.List;
 @Service(AssistantConstants.PREFIX_ASSISTANT_FLOW)
 public class FlowExpertService extends ExpertService {
 
+    @Autowired
+    private IFlowService flowService ;
+
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
+
+        flowService.runRoleFlow(role.getId());
 
         return "流程运行结束" ;
     }
