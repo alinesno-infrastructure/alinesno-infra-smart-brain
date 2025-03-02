@@ -139,6 +139,16 @@
       border-radius: 4px;
       margin-bottom: 10px;
     }
+
+    .copy-coutput-var{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      .copy-btn {
+        color: #aaa;
+      }
+    }
   }
 }
 
