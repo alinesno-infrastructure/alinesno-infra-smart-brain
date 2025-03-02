@@ -144,7 +144,7 @@ const setWorkflowGraphData = (data) => {
           stepName: '开始',
           showNode: true,
           height: 380,
-          width: 380
+          width: 330
         },
         x: 240,
         y: 340,
