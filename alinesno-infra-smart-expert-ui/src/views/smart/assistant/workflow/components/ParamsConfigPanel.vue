@@ -88,6 +88,13 @@
                         </div>
                     </el-col>
                 </el-row>
+
+                <div class="config-form-footer">
+                    <div class="button-group">
+                        <el-button type="primary" @click="saveAgentModelConfig">保存配置</el-button>
+                    </div>
+                </div>
+
             </el-form>
 
         </el-card>
@@ -119,10 +126,11 @@
 
 <script setup>
 import { nextTick, ref } from 'vue';
-import { ElMessage } from 'element-plus'
+import { ElMessage , ElLoading } from 'element-plus'
 
 import {
-    getRole
+    getRole , 
+    updateFlowConfig
 } from "@/api/smart/assistant/role";
 
 import {
@@ -227,7 +235,9 @@ function toggleVoiceInput() {
 // 配置语音输入参数 
 function toggleVoiceInputStatusPanel() {
     voiceInputStatusVisible.value = !voiceInputStatusVisible.value;
-    voiceInputStatusVisible.value && nextTick(() => {
+
+    // voiceInputStatusVisible.value && 
+    nextTick(() => {
         console.log(voiceChoicePanelRef.value)
         voiceInputStatusPanelRef.value.setVoiceModelOptions(voiceRecoModelOptions.value);
 
@@ -301,6 +311,17 @@ function toggleGuessWhatYouAskStatusPanel() {
     });
 }
 
+function handleVoiceInputStatusPanelClose(voiceInputData) {
+    if (voiceInputStatusPanelRef.value) {
+        console.log('voiceInputData = ' + JSON.stringify(voiceInputData))
+
+        voiceInputStatus.value = voiceInputData.enable; 
+        agentModelConfigForm.value.voiceInputStatus = voiceInputData.enable;
+        agentModelConfigForm.value.voiceInputData = voiceInputData;
+    }
+}
+
+
 // 用户问题建议窗口相关
 function handleGuessWhatYouAskStatusPanelClose(formData) {
     if (guessWhatYouAskRef.value) {
@@ -315,7 +336,6 @@ function handleGuessWhatYouAskStatusPanelClose(formData) {
 
 /** 获取角色信息 */
 function getRoleInfo() {
-    currentRoleId.value = router.currentRoute.value.query.roleId;
 
     getRole(currentRoleId.value).then(response => {
         currentRole.value = response.data;
@@ -329,51 +349,40 @@ function getRoleInfo() {
 const displayRoleInfoBack = (currentRole) =>{
     // 回显当前角色信息
     agentModelConfigForm.value.roleId = currentRole.id ;
-    // agentModelConfigForm.value.modelId = currentRole.modelId;
-    // agentModelConfigForm.value.promptContent = currentRole.promptContent;
     agentModelConfigForm.value.greeting = currentRole.greeting;
 
     // 长期记忆
     longTermMemoryEnabled.value = currentRole.longTermMemoryEnabled ;
     agentModelConfigForm.value.longTermMemoryEnabled = currentRole.longTermMemoryEnabled ;
 
-    // if(currentRole.value.knowledgeBaseIds){
-    //     const datasetParsedArray = JSON.parse(currentRole.knowledgeBaseIds);
-    //     selectionDatasetData.value = datasetParsedArray;
-    //     agentModelConfigForm.value.knowledgeBaseIds = datasetParsedArray ;
-    // }
-
-    // if(currentRole.value.selectionToolsData){
-    //     const toolsParsedArray = JSON.parse(currentRole.selectionToolsData);
-    //     selectionToolsData.value = toolsParsedArray;
-    //     agentModelConfigForm.value.selectionToolsData = toolsParsedArray ; 
-    // }
-
     // 语音输入
     voiceInputStatus.value = currentRole.voiceInputStatus ;
     agentModelConfigForm.value.voiceInputStatus = currentRole.voiceInputStatus ;
     if(currentRole.voiceInputData){
-        agentModelConfigForm.value.voiceInputData = JSON.parse(currentRole.voiceInputData);
+        console.log('currentRole.voiceInputData = ' + currentRole.voiceInputData)
+        agentModelConfigForm.value.voiceInputData = currentRole.voiceInputData;
     }
 
     // 语音播放
     voicePlayStatus.value = currentRole.voicePlayStatus ;
     agentModelConfigForm.value.voicePlayStatus = currentRole.voicePlayStatus ;
     if(currentRole.voicePlayData){
-        agentModelConfigForm.value.voicePlayData = JSON.parse(currentRole.voicePlayData);
+        console.log('currentRole.voicePlayData = ' + currentRole.voicePlayData)
+        agentModelConfigForm.value.voicePlayData = currentRole.voicePlayData;
     }
 
     // 用户问题建议
     guessWhatYouAskStatus.value = currentRole.guessWhatYouAskStatus ;
     agentModelConfigForm.value.guessWhatYouAskStatus = currentRole.guessWhatYouAskStatus ;
     if(currentRole.guessWhatYouAskData){
-        agentModelConfigForm.value.guessWhatYouAskData = JSON.parse(currentRole.guessWhatYouAskData);
+        console.log('currentRole.guessWhatYouAskData = ' + currentRole.guessWhatYouAskData)
+        agentModelConfigForm.value.guessWhatYouAskData = currentRole.guessWhatYouAskData;
     }
 
-    // 模型配置
-    if(currentRole.modelConfig){
-        agentModelConfigForm.value.modelConfig = JSON.parse(currentRole.modelConfig);
-    }
+    // // 模型配置
+    // if(currentRole.modelConfig){
+    //     agentModelConfigForm.value.modelConfig = JSON.parse(currentRole.modelConfig);
+    // }
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
@@ -393,13 +402,14 @@ const handleListAllLlmModel = async () => {
 }
 
 nextTick(() => {
+    currentRoleId.value = router.currentRoute.value.query.roleId;
     initData();
 })
 
 const initData = async () => {
     try {
         await handleListAllLlmModel();
-        // getRoleInfo();
+        getRoleInfo();
     } catch (error) {
         console.error('handleListAllLlmModel 请求出错:', error);
     }
@@ -412,16 +422,35 @@ const validateForm = () => {
     agentModelConfigFormRef.value.validate((valid, fields) => {
         if (valid) {
         // 验证成功，打印日志并解析包含验证成功和表单数据的对象
-        console.log('--> agentModelConfigForm = ' + JSON.stringify(agentModelConfigFormRef.value));
-        resolve({ valid: true, formData: agentModelConfigFormRef.value });
+        console.log('--> agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
+        resolve({ valid: true, formData: agentModelConfigForm.value });
         } else {
         // 验证失败，打印日志并解析包含验证失败和 null 表单数据的对象
-        console.log('--> error agentModelConfigForm = ' + JSON.stringify(agentModelConfigFormRef.value));
+        console.log('--> error agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
         resolve({ valid: false, formData: null });
         }
     });
     });
 };
+
+// 保存角色配置
+const saveAgentModelConfig = async() => {
+    const { valid, formData } = await validateForm();
+    if(valid){
+
+        const loading = ElLoading.service({
+            lock: true,
+            text: 'Loading',
+            background: 'rgba(0, 0, 0, 0.7)',
+        })
+
+        updateFlowConfig(formData , currentRoleId.value).then(res => {
+            console.log('res = ' + res);
+            proxy.$modal.msgSuccess("保存成功");
+            loading.close();
+        })
+    }
+}
 
 const getAgentConfigParams = () => {
     return agentModelConfigForm.value ; 
@@ -429,7 +458,8 @@ const getAgentConfigParams = () => {
 
 defineExpose({
     getAgentConfigParams,
-    validateForm
+    validateForm , 
+    // displayRoleInfoBack
 })
 
 </script>
@@ -545,6 +575,10 @@ defineExpose({
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .config-form-footer{
+        margin-top:20px;
     }
 }
 
