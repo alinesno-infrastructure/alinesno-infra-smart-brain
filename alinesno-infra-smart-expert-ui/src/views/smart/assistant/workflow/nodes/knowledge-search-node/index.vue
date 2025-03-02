@@ -58,7 +58,9 @@
               <span class="settings-label-label">检索模式</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">{{ form.datasetSetting.searchType }}</span>
+              <span class="settings-label-text">
+                {{ getSearchTypeText(form.datasetSetting.searchType) }}
+              </span>
             </el-col>
           </el-row>
           <el-row>
@@ -216,6 +218,21 @@ const removeKnowledge = (index) => {
   selectionDatasetData.value.splice(index, 1);
 
   formData.value.datasetIdList = selectionDatasetData.value ;
+};
+
+// 定义一个方法来根据 searchType 返回对应的文本
+const getSearchTypeText = (searchType) => {
+  console.log('searchType = ' + searchType)
+  switch (searchType) {
+    case 'vector':
+      return '向量检索';
+    case 'fulltext':
+      return '全文检索';
+    case 'hybrid':
+      return '混合检索';
+    default:
+      return '未知检索类型';
+  }
 };
 
 // 打开关联知识库选择窗口
