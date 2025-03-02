@@ -35,7 +35,16 @@ var managerUrl = {
   confirmPushOrg: prefix + "confirmPushOrg",
   saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
   saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
+  updateFlowConfig: prefix + "updateFlowConfig",
+}
 
+// 更新流程角色配置
+export function updateFlowConfig(data , roleId) {
+  return request({
+    url: managerUrl.updateFlowConfig + '?roleId=' + parseStrEmpty(roleId) ,
+    method: 'post',
+    data: data
+  })
 }
 
 // 保存角色脚本
