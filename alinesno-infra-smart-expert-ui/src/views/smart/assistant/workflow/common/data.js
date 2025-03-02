@@ -179,6 +179,25 @@ const replyNode = {
     }
 };
 
+// 接口调用配置 
+const httpApiNode = {
+    type: WorkflowType.HttpApi ,
+    text: '接口调用',
+    label: 'urkk调用',
+    height: 510,
+    properties: {
+        stepName: '调用接口',
+        config: {
+            fields: [
+                {
+                    label: '返回',
+                    value: 'response'
+                }
+            ]
+        }
+    }
+};
+
 // 重排器节点配置
 const rerankerNode = {
     type: WorkflowType.RrerankerNode,
@@ -337,6 +356,7 @@ const menuNodes = [
     rerankerNode,
     conditionNode,
     replyNode,
+    httpApiNode,
     formNode,
     questionNode,
     documentExtractNode,
@@ -428,6 +448,7 @@ const nodeDict = {
     [WorkflowType.Base]: baseNode,
     [WorkflowType.Start]: startNode,
     [WorkflowType.Reply]: replyNode,
+    [WorkflowType.HttpApi]: httpApiNode,
     [WorkflowType.FunctionLib]: functionLibNode,
     [WorkflowType.FunctionLibCustom]: functionNode,
     [WorkflowType.RrerankerNode]: rerankerNode,
@@ -466,6 +487,7 @@ export {
     questionNode,
     conditionNode,
     replyNode,
+    httpApiNode,
     rerankerNode,
     formNode,
     documentExtractNode,
