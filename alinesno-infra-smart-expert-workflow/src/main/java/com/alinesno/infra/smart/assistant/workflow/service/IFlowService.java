@@ -15,6 +15,11 @@ import com.alinesno.infra.smart.assistant.workflow.entity.FlowEntity;
 public interface IFlowService extends IBaseService<FlowEntity> {
 
     /**
+     * 运行角色工作流
+     */
+    void runRoleFlow(Long roleId);
+
+    /**
      * 保存角色工作流信息
      * @param roleId
      * @param flowDto
