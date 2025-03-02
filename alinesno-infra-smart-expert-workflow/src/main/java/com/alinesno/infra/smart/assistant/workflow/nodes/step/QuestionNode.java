@@ -1,9 +1,12 @@
 // QuestionNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
+import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Service;
 
 /**
  * 该类表示问题优化节点，继承自 AbstractFlowNode 类。
@@ -11,6 +14,8 @@ import lombok.EqualsAndHashCode;
  * 在工作流中，当需要提高问题与知识库匹配度时，会使用该节点。
  */
 @Data
+@Scope("prototype")
+@Service(FlowConst.FLOW_STEP_NODE + "question")
 @EqualsAndHashCode(callSuper = true)
 public class QuestionNode extends AbstractFlowNode {
 
