@@ -8,6 +8,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
@@ -53,9 +54,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
-
-//    @Autowired
-//    private IRoleToolService roleToolService ;
 
     @Autowired
     private IRolePushOrgService rolePushOrgService ;
@@ -438,7 +436,35 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         update(role) ;
     }
 
-    private static void setRoleConfigParams(RoleReActConfigDto dto, IndustryRoleEntity role) {
+    @Override
+    public void updateFlowConfig(RoleFlowConfigDto dto, Long roleId) {
+        IndustryRoleEntity role = getById(roleId);
+
+        // 更新角色的配置信息
+        role.setGreeting(dto.getGreeting());
+        role.setVoiceInputStatus(dto.isVoiceInputStatus());
+        role.setGuessWhatYouAskStatus(dto.isGuessWhatYouAskStatus());
+        role.setLongTermMemoryEnabled(dto.isLongTermMemoryEnabled());
+        role.setVoicePlayStatus(dto.isVoicePlayStatus());
+
+        // 语音输入设置
+        if(dto.getVoiceInputData() != null){
+            role.setVoiceInputData(JSONObject.toJSONString(dto.getVoiceInputData()));
+        }
+
+        // 语音播放设置
+        if(dto.getVoicePlayData() != null){
+            role.setVoicePlayData(JSONObject.toJSONString(dto.getVoicePlayData()));
+        }
+
+        // 猜你想问设置
+        if(dto.getGuessWhatYouAskData() != null){
+            role.setGuessWhatYouAskData(JSONObject.toJSONString(dto.getGuessWhatYouAskData()));
+        }
+        update(role);
+    }
+
+    private void setRoleConfigParams(RoleReActConfigDto dto, IndustryRoleEntity role) {
         role.setModelId(dto.getModelId());
         role.setPromptContent(dto.getPromptContent());
         role.setGreeting(dto.getGreeting());
