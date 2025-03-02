@@ -32,12 +32,12 @@ public class FlowNodeEntity extends InfraBaseEntity {
     private Long flowId;
 
     /**
-     * 所属节点ID
+     * 界面工作流步骤节点ID
      */
-    @TableField(value = "node_id")
+    @TableField(value = "step_id")
     @ColumnType(value = MySqlTypeConstant.VARCHAR , length = 64)
-    @ColumnComment("所属工作流的 ID")
-    private String nodeId;
+    @ColumnComment("界面工作流步骤节点ID")
+    private String stepId;
 
     /**
      * 节点名称
