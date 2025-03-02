@@ -54,6 +54,7 @@ public class NodePrinter {
             log.debug("node--{}--level--{}--->>>>>>>>start", count, level);
             log.debug("Processing node stepName = {} , type = {} , id = {}", currentNode.getStepName(), currentNode.getType(), currentNode.getId());
             log.debug("node--{}--level--{}--->>>>>>>>end", count, level);
+
             count++;
 
             for (FlowNodeDto nextNode : currentNode.getNextNodes()) {
