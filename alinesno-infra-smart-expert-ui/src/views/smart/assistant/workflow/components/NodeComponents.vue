@@ -67,7 +67,7 @@ const workflowNodes = [
             stepName: 'AI 对话',
             showNode: true,
             height: 622,
-            width: 380
+            width: 330
         }
     },
     {
@@ -82,7 +82,7 @@ const workflowNodes = [
             stepName: '图片理解',
             showNode: true,
             height: 584,
-            width: 380
+            width: 330
         }
     },
     {
@@ -97,7 +97,7 @@ const workflowNodes = [
             stepName: '图片生成',
             showNode: true,
             height: 584,
-            width: 380
+            width: 330
         }
     },
     {
@@ -112,7 +112,7 @@ const workflowNodes = [
             stepName: '知识库检索',
             showNode: true,
             height: 740,
-            width: 380
+            width: 330
         }
     },
     {
@@ -127,7 +127,7 @@ const workflowNodes = [
             stepName: '多路召回',
             showNode: true,
             height: 570,
-            width: 380
+            width: 330
         }
     },
     {
@@ -169,7 +169,7 @@ const workflowNodes = [
             stepName: '指定回复',
             showNode: true,
             height: 400,
-            width: 380
+            width: 330
         }
     },
     {
@@ -184,7 +184,7 @@ const workflowNodes = [
             stepName: '问题优化',
             showNode: true,
             height: 570,
-            width: 380
+            width: 330
         }
     },
     {
@@ -199,7 +199,7 @@ const workflowNodes = [
             stepName: '文档内容提取',
             showNode: true,
             height: 320,
-            width: 380
+            width: 330
         }
     },
     {
@@ -214,7 +214,7 @@ const workflowNodes = [
             stepName: '语音转文本',
             showNode: true,
             height: 400,
-            width: 380
+            width: 330
         }
     },
     {
@@ -229,7 +229,7 @@ const workflowNodes = [
             stepName: '文本转语音',
             showNode: true,
             height: 390,
-            width: 380
+            width: 330
         }
     },
     {
@@ -244,7 +244,22 @@ const workflowNodes = [
             stepName: '脚本功能',
             showNode: true,
             height: 540,
-            width: 380
+            width: 330
+        }
+    },
+    {
+        id: '1014',
+        name: "HTTP_API",
+        label: "Http调用",
+        description: "开发来实现Http接口的调用。",
+        type: "http_api",
+        properties: {
+            icon: 'fa-solid fa-feather',
+            color: "#424242",
+            stepName: 'Http调用',
+            showNode: true,
+            height: 540,
+            width: 330
         }
     }
 ];
