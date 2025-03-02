@@ -12,32 +12,25 @@
     </div>
     <!-- 节点设置部分 -->
     <div class="node-output">
-      <!-- 输出参数标题 -->
       <div class="output-title">全局变量</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        当前时间 {time}
-      </div>
-      <div class="output-content">
-        上节点内容{pre_content}
-      </div>
-      <div class="output-content">
-        频道号{channeId}
-      </div>
-      <div class="output-content">
-        历史对话{history_content}
+      <div class="output-content copy-coutput-var" v-for="item in props.properties.config.globalFields" :key="item.value">
+        {{ item.label }} {{ '{' + item.value + '}' }}
+
+        <el-button link @click="copyClick(`{{global.${item.value}}}`)" style="padding: 0">
+          <i class="fa-solid fa-clone copy-btn"></i>
+        </el-button>
+
       </div>
     </div>
     <!-- 输出参数部分 -->
     <div class="node-output">
-      <!-- 输出参数标题 -->
       <div class="output-title">输出参数</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        用户消息{message}
-      </div>
-      <div class="output-content">
-        文档{document}
+      <div class="output-content copy-coutput-var" v-for="item in props.properties.config.fields" :key="item.value">
+        {{ item.label }} {{ '{' + item.value + '}' }}
+
+        <el-button link @click="copyClick(`{{global.${item.value}}}`)" style="padding: 0">
+          <i class="fa-solid fa-clone copy-btn"></i>
+        </el-button>
       </div>
     </div>
   </div>
