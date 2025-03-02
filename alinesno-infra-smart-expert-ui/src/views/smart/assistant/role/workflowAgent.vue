@@ -7,7 +7,15 @@
             <span class="mr-3"> 
               <img :src="imagePath(currentRole.roleAvatar)" style="width:25px;height:25px;border-radius:5px;" /> {{ ''+currentRole.roleName+' 配置任务编排' }} 
             </span>
-            <span style="color: #aaaaaa;font-size: 14px;">保存时间：2025-02-14 23:50:44</span>
+            <div style="display: flex;gap:10px;align-items: center;" v-if="currentFlow">
+              <el-tag effect="danger" v-if="currentFlow?.publishStatus == 'unpublished'">
+                未发布
+              </el-tag>
+              <el-tag effect="primary" v-if="currentFlow?.publishStatus == 'published'">
+                已发布
+              </el-tag>
+              <span style="color: #aaaaaa;font-size: 14px;">最后更新 {{ currentFlow?.updateTime }}</span>
+            </div>
           </div>
         </template>
       </el-page-header>
@@ -16,7 +24,7 @@
         <!-- <el-button type="primary" text bg size="large" @click="addComponent"><i class="fa-solid fa-feather"></i> 添加组件</el-button> -->
         <!-- <el-button type="primary" text bg size="large" @click="saveWorkflow"><i class="fa-solid fa-floppy-disk"></i> 保存</el-button> -->
         <!-- <el-button type="primary" text bg size="large" @click="debugRun()"><i class="fa-solid fa-ferry"></i> 试运行</el-button> -->
-        <el-button type="primary" size="large" @click="deployWorkflow">
+        <el-button type="primary" size="large" @click="handlePublishedFlow">
           <i class="fa-solid fa-paper-plane"></i> &nbsp; 发布
         </el-button>
       </div>
@@ -65,7 +73,8 @@ import {
 
 import {
  processAndSave,
- getLatestFlow
+ getLatestFlow , 
+ publishedFlow,
 } from "@/api/smart/assistant/flow";
 
 import flowPanel from '@/views/smart/assistant/workflow/flowPanel'
@@ -85,7 +94,7 @@ const showDebugRunDialog = ref(false);
 // const someId = ref('your-id');
 
 const workflowRef = ref(null);
-
+const currentFlow = ref(null);
 const currentRole = ref({
     roleName: ''
 });
@@ -114,11 +123,30 @@ function getRoleInfo() {
         currentRole.value = response.data;
     });
 
-    getLatestFlow(currentRoleId.value).then(response => {
-        if(response.data){
-            workflowRef.value?.setWorkflowGraphData(response.data?.flowGraphJson);
-        }
-    });
+    // getLatestFlow(currentRoleId.value).then(response => {
+    //     if(response.data){
+    //         workflowRef.value?.setWorkflowGraphData(response.data?.flowGraphJson);
+    //         currentFlow.value = response.data;
+    //     }
+    // });
+    handleGetLastFlow();
+}
+
+const handleGetLastFlow = () => {
+  getLatestFlow(currentRoleId.value).then(response => {
+    if(response.data){
+      workflowRef.value?.setWorkflowGraphData(response.data?.flowGraphJson);
+      currentFlow.value = response.data;
+    }
+  });
+}
+
+/** 发布当前节点 */
+const handlePublishedFlow = () => {
+  publishedFlow(currentFlow.value.id).then(response => {
+    ElMessage.success('发布成功');
+    handleGetLastFlow();
+  })
 }
 
 /** 保存工作流配置 */
