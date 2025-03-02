@@ -33,10 +33,6 @@ public class FlowEntity extends InfraBaseEntity {
     @ColumnComment("工作流图JSON数据")
     private String flowGraphJson; // 工作流图JSON数据
 
-    @TableField(value = "flow_version")
-    @ColumnType(value = MySqlTypeConstant.INT, length = 5)
-    private int flowVersion; // 工作流版本(使用最新的版本号，当其它版本状态为不可用)
-
     @TableField(value = "lock_version")
     @ColumnType(value = MySqlTypeConstant.INT, length = 5)
     @ColumnComment("乐观锁版本号")
