@@ -15,7 +15,16 @@ var managerUrl = {
     publishFlow: prefix + "publish",  // 发布工作流
     getLatestPublishedFlow: prefix + "latestPublished",  // 获取最新版本已发布流程
     getUnpublishedFlow: prefix + "unpublished",  // 获取未发布流程
+    publishedFlow: prefix + "published", // 发布流程 
     getLatestFlow: prefix + "latest"  // 获取最新流程
+}
+
+// 发布流程
+export function publishedFlow(flowId) {
+    return request({
+        url: managerUrl.publishedFlow + "?flowId=" + parseStrEmpty(flowId),
+        method: 'get'
+    })
 }
 
 // 流程保存和解析
