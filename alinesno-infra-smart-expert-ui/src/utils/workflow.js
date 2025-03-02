@@ -6,6 +6,7 @@ const WorkflowType = {
     Question: 'question',
     Condition: 'condition',
     Reply: 'reply',
+    HttpApi: 'http_api',
     FunctionLib: 'function_lib',
     FunctionLibCustom: 'function',
     RrerankerNode: 'reranker',
