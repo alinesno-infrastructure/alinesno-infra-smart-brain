@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
@@ -126,4 +127,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param dto
      */
     void modifyInfo(RoleInfoDto dto);
+
+    /**
+     * 更新角色流程配置信息
+     * @param flowConfigDto
+     * @param roleId
+     */
+    void updateFlowConfig(RoleFlowConfigDto flowConfigDto, Long roleId);
 }
