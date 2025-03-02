@@ -33,6 +33,16 @@ public class FlowExecutionEntity extends InfraBaseEntity {
     @ColumnComment("所属工作流的 ID")
     private Long flowId;
 
+    @TableField(value = "role_id")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("角色ID")
+    private Long roleId;
+
+    @TableField(value = "flow_graph_json")
+    @ColumnType(value = MySqlTypeConstant.TEXT)
+    @ColumnComment("工作流图JSON数据")
+    private String flowGraphJson; // 工作流图JSON数据
+
     /**
      * 执行状态
      */
@@ -44,16 +54,16 @@ public class FlowExecutionEntity extends InfraBaseEntity {
     /**
      * 开始时间
      */
-    @TableField(value = "start_time")
+    @TableField(value = "execute_time")
     @ColumnType(value = MySqlTypeConstant.DATETIME)
-    @ColumnComment("开始时间")
-    private Date startTime;
+    @ColumnComment("开始执行时间")
+    private Date executeTime;
 
     /**
      * 结束时间
      */
-    @TableField(value = "end_time")
+    @TableField(value = "finish_time")
     @ColumnType(value = MySqlTypeConstant.DATETIME)
     @ColumnComment("结束时间")
-    private Date endTime;
+    private Date finishTime;
 }
