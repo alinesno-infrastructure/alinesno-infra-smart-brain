@@ -37,7 +37,7 @@
 </template>
 
 <script setup>
-import { ref, defineProps } from 'vue';
+import { ref } from 'vue';
 
 const emit = defineEmits(['clickNode']);
 const props = defineProps({
@@ -58,13 +58,13 @@ const workflowNodes = [
     {
         id: '1001',
         name: "AI_CHAT",
-        label: "AI 对话",
+        label: "AI对话",
         description: "与 AI 大模型进行对话",
         type: "ai_chat",
         properties: {
             icon: 'fa-solid fa-comments',
             color: "#2962FF",
-            stepName: 'AI 对话',
+            stepName: 'AI对话',
             showNode: true,
             height: 622,
             width: 330
