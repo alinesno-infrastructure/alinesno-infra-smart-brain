@@ -1,16 +1,7 @@
 <template>
   <!-- 工作流节点容器，包含节点标题、设置和输出参数等内容 -->
-  <!-- :class="{ isSelected: props.isSelected?'isSelected':'' }" -->
-  <div class="workflow-node-container">
-    <!-- 节点标题部分，包含图标和名称 -->
-    <div class="node-title">
-      <div class="node-icon">
-        <i :class="props.properties.icon"></i>
-      </div>
-      <div class="node-name">
-        {{ props.properties.stepName }} 
-      </div>
-    </div>
+  <FlowContainer :nodeModel="nodeModel" :properties="properties">
+
     <!-- 节点设置部分 -->
     <div class="node-settings">
       <!-- 节点设置标题 -->
@@ -67,22 +58,15 @@
         </el-button>
       </div>
     </div>
-    <!-- 输出参数部分 -->
-    <div class="node-output">
-      <!-- 输出参数标题 -->
-      <div class="output-title">输出参数</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        分支名称 {branch_name}
-      </div>
-    </div>
-  </div>
+
+  </FlowContainer>
 </template>
 
 <script setup>
 import { ref, reactive, toRaw, nextTick } from 'vue'
 import { cloneDeep, set } from 'lodash'
 
+import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
 // 定义组件接收的属性
