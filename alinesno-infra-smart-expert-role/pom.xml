@@ -50,11 +50,6 @@
 			<artifactId>alinesno-infra-smart-expert-tool</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-expert-workflow</artifactId>
-			<version>${revision}</version>
-		</dependency>
 
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
