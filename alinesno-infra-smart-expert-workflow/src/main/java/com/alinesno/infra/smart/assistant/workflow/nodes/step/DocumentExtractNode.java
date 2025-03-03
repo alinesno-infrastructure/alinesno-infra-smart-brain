@@ -25,4 +25,9 @@ public class DocumentExtractNode extends AbstractFlowNode {
     public DocumentExtractNode() {
         setType("document_extract");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
