@@ -23,4 +23,9 @@ public class HttpApiNode extends AbstractFlowNode {
     public HttpApiNode() {
         setType("http_api");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
