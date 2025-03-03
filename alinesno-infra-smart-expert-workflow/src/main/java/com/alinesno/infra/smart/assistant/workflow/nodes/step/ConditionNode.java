@@ -25,4 +25,9 @@ public class ConditionNode extends AbstractFlowNode {
     public ConditionNode() {
         setType("condition");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
