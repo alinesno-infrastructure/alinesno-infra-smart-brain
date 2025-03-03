@@ -25,4 +25,9 @@ public class ImageUnderstandNode extends AbstractFlowNode {
     public ImageUnderstandNode() {
         setType("image_understand");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
