@@ -1,13 +1,25 @@
 // AbstractWorkflowNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes;
 
+import cn.hutool.core.util.IdUtil;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher;
+import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowNodeExecutionEntity;
-import lombok.Data;
+import com.alinesno.infra.smart.assistant.workflow.nodes.variable.GlobalVariables;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,29 +29,64 @@ import java.util.Map;
  * 使用 Lombok 的 @Data 注解自动生成 getter、setter、toString、equals 和 hashCode 方法。
  */
 @Slf4j
-@Data
+@Setter
 public abstract class AbstractFlowNode implements FlowNode {
 
-    // 节点唯一标识符，用于唯一标识一个节点
-    private String id;
+    @Autowired
+    protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
 
-    // 节点名称，用于唯一标识一个节点
-    private String name;
+    @Autowired
+    protected StreamStoreMessagePublisher streamStoreMessagePublisher; // 保存入库的消息
 
-    // 节点的x坐标，用于定义节点在界面中的水平位置
-    private int x;
+    /**
+     * 流程节点DTO，用于存储流程节点的相关信息
+     */
+    protected FlowNodeDto node;
 
-    // 节点的y坐标，用于定义节点在界面中的垂直位置
-    private int y;
+    /**
+     * 流程执行实体，代表整个流程的执行实例
+     */
+    protected FlowExecutionEntity flowExecution;
 
-    // 节点的高度，用于定义节点在界面中占据的垂直空间大小
-    private int height;
+    /**
+     * 流程节点执行实体，记录流程中每个节点的执行情况
+     */
+    protected FlowNodeExecutionEntity flowNodeExecution;
 
-    // 节点类型，用于区分不同功能或属性的节点
+    /**
+     * 输出参数的集合，用于存储流程节点执行后的输出数据
+     */
+    protected Map<String, Object> output;
+
+    /**
+     * 消息任务信息，包含与消息任务相关的信息和操作
+     */
+    protected MessageTaskInfo taskInfo;
+
+    /**
+     * 行业角色实体，定义在流程中所涉及的行业角色信息
+     */
+    protected IndustryRoleEntity role;
+
+    /**
+     * 工作流执行实体，记录工作流执行过程中的状态和数据变化
+     */
+    protected MessageEntity workflowExecution;
+
+    /**
+     * 流程专家服务，提供流程相关的业务逻辑处理服务
+     */
+    protected FlowExpertService flowExpertService;
+
+    /**
+     * 节点类型
+     */
     private String type ;
 
-    // 节点属性集合，用于存储节点的额外属性信息，如颜色、大小等
-    private Map<String, Object> properties = new HashMap<>();
+    /**
+     * 全局变量
+     */
+    private GlobalVariables globalVariables;
 
     /**
      * 执行节点任务
@@ -49,11 +96,92 @@ public abstract class AbstractFlowNode implements FlowNode {
      * @param flowNodeExecution
      * @param output
      */
-    public void executeNode(FlowNodeDto node, FlowExecutionEntity flowExecution , FlowNodeExecutionEntity flowNodeExecution, Map<String, Object> output) {
-       log.debug("执行节点任务:{} , node:{}" , this.getType() , node.getProperties());
-       output.put(node.getStepName() , node.getType()) ;
+    public void executeNode(FlowNodeDto node,
+                            FlowExecutionEntity flowExecution ,
+                            FlowNodeExecutionEntity flowNodeExecution,
+                            Map<String, Object> output,
+                            MessageTaskInfo taskInfo,
+                            IndustryRoleEntity role,
+                            MessageEntity workflowExecution,
+                            FlowExpertService flowExpertService) {
 
-       // 输出output
-        log.debug("--->>> node.getStepName = {} , 输出output:{}" , node.getStepName() , output);
+        // 设置运行参数变量
+        this.setNode(node);
+        this.setFlowExecution(flowExecution);
+        this.setFlowNodeExecution(flowNodeExecution);
+        this.setOutput(output);
+        this.setTaskInfo(taskInfo);
+        this.setRole(role);
+        this.setWorkflowExecution(workflowExecution);
+        this.setFlowExpertService(flowExpertService);
+
+        log.debug("执行节点任务:{} , node:{}", node.getType(), node.getProperties());
+        eventMessage("开始流程节点:" + node.getType() + ",名称:" + node.getStepName()) ;
+
+        // 如果是开始节点，则配置全局变量
+        if ("start".equals(node.getType())) {
+
+            List<String> messages = new ArrayList<>();
+            handleHistoryMessage(messages , taskInfo.getChannelId());
+
+            String preContent = workflowExecution==null?"" : workflowExecution.getContent() ;
+
+            GlobalVariables globalVariables = new GlobalVariables(preContent , taskInfo.getChannelId() , messages) ;
+            this.setGlobalVariables(globalVariables);
+        }
+
+        handleNode();
     }
+
+    protected void eventMessage(String msg) {
+        streamMessagePublisher.doStuffAndPublishAnEvent(msg ,
+                role,
+                taskInfo,
+                IdUtil.getSnowflakeNextId());
+    }
+
+    /**
+     * 处理本次会话的历史记录
+     * @param messages
+     * @param channelId
+     */
+    private void handleHistoryMessage(List<String> messages, long channelId) {
+
+        // 假设这是你想要设置的最大字符数
+        int maxLength = 131072; // 或者其他你认为合适的最大值
+
+        log.debug("历史记录：");
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = flowExpertService.getMessageService().list(wrapper) ;
+        StringBuilder allMessagesText = new StringBuilder();
+
+        int tokenLength;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            tokenLength = chatText.length();
+
+            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
+            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
+
+                messages.add(chatText) ;
+
+                // 更新所有消息文本的总长度
+                allMessagesText.append(chatText);
+            }
+        }
+
+        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
+
+    }
+
+    /**
+     * 处理节点任务
+     */
+    protected abstract void handleNode() ;
+
 }
