@@ -36,7 +36,7 @@ public class QianWenLLM {
         Generation gen = new Generation();
 
         GenerationParam param =GenerationParam.builder()
-                .model(Generation.Models.QWEN_TURBO)
+                .model(Generation.Models.QWEN_PLUS)
                 .messages(msgManager.get())
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .topP(0.8)
@@ -66,7 +66,7 @@ public class QianWenLLM {
         }
 
         GenerationParam param =GenerationParam.builder()
-                .model(Generation.Models.QWEN_TURBO)
+                .model(Generation.Models.QWEN_PLUS)
                 .messages(messages)
                 .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                 .topP(0.8)
@@ -106,7 +106,7 @@ public class QianWenLLM {
         }
 
         GenerationParam param = GenerationParam.builder()
-                        .model(Generation.Models.QWEN_TURBO)
+                        .model(Generation.Models.QWEN_PLUS)
                         .messages(msgManager.get())
                         .resultFormat(GenerationParam.ResultFormat.MESSAGE)
                         .topP(0.8)
