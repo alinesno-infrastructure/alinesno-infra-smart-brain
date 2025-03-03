@@ -25,4 +25,9 @@ public class ImageGenerateNode extends AbstractFlowNode {
     public ImageGenerateNode() {
         setType("image_generate");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
