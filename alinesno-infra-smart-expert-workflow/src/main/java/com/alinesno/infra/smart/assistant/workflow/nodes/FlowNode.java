@@ -7,6 +7,6 @@ package com.alinesno.infra.smart.assistant.workflow.nodes;
  * 目前该接口可以作为所有工作流节点类的标识，后续可以在此接口中定义所有节点通用的方法。
  */
 public interface FlowNode {
-    // 可以在这里定义所有节点通用的方法
+
 
 }
