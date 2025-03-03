@@ -25,4 +25,9 @@ public class QuestionNode extends AbstractFlowNode {
     public QuestionNode() {
         setType("question");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
