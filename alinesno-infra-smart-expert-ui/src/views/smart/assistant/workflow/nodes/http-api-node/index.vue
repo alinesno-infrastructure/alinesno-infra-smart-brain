@@ -1,15 +1,6 @@
 <template>
   <!-- 工作流节点容器，包含节点标题、设置和输出参数等内容 -->
-  <div class="workflow-node-container">
-    <!-- 节点标题部分，包含图标和名称 -->
-    <div class="node-title">
-      <div class="node-icon">
-        <i :class="props.properties.icon"></i>
-      </div>
-      <div class="node-name">
-        {{ props.properties.stepName }}
-      </div>
-    </div>
+  <FlowContainer :nodeModel="nodeModel" :properties="properties">
 
     <div class="node-settings">
       <!-- 节点设置标题 -->
@@ -60,14 +51,6 @@
                         <i class="fa-solid fa-trash"></i>
                       </span>
                   </div>
-                  <!-- 
-                  <el-button @click="editHeader(scope.$index)" type="text" text size="small">
-                    <i class="fa-solid fa-feather" />
-                  </el-button>
-                  <el-button @click="removeHeader(scope.$index)" type="text" text size="small">
-                    <i class="fa-solid fa-trash"></i>
-                  </el-button> 
-                  -->
                 </template>
               </el-table-column>
             </el-table>
@@ -112,17 +95,6 @@
             <el-switch v-model="formData.isPrint" size="small" />
           </el-form-item>
         </el-form>
-      </div>
-
-    </div>
-
-    <!-- 输出参数部分 -->
-    <div class="node-output">
-      <!-- 输出参数标题 -->
-      <div class="output-title">输出参数</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        结果 {result} <br /> {{ props.upNodeList }}
       </div>
     </div>
 
@@ -208,12 +180,15 @@
         </span>
       </template>
     </el-dialog>
-  </div>
+
+  </FlowContainer>
 </template>
 
 <script setup>
 import { set } from 'lodash'
 import { ref, reactive, onMounted, nextTick, computed } from 'vue'
+
+import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor'
 import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/ScriptEditorFull'
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
