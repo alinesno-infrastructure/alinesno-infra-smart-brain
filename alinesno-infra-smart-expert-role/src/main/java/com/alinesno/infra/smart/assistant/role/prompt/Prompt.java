@@ -7,6 +7,8 @@ import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,15 +27,27 @@ public class Prompt {
                                      String datasetKnowledgeDocument){
 
         return String.format(PromptTemplate.corePrompt,
-                agent.getRoleName(),
-                agent.getBackstory() ,
-                agent.getResponsibilities() ,
+                agent.getPromptContent(),
                 datasetKnowledgeDocument,
                 thought.toString() ,
                 parsePlugins(tools , agent.isAskHumanHelp()),
-                taskPrompt(goal)
+                taskPrompt(goal),
+                getCurrentTime()
+
         );
 
+    }
+
+    /**
+     * 获取到当前时间
+     */
+    public static String getCurrentTime() {
+        // 获取当前日期和时间
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        // 定义日期时间格式
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        // 将当前日期时间按照指定格式进行格式化
+        return currentDateTime.format(formatter);
     }
 
     /**
