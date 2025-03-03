@@ -1,15 +1,7 @@
 <template>
   <!-- 工作流节点容器，包含节点标题、设置和输出参数等内容 -->
-  <div class="workflow-node-container">
-    <!-- 节点标题部分，包含图标和名称 -->
-    <div class="node-title">
-      <div class="node-icon">
-        <i :class="props.properties.icon"></i>
-      </div>
-      <div class="node-name">
-        {{ props.properties.stepName }}
-      </div>
-    </div>
+  <FlowContainer :nodeModel="nodeModel" :properties="properties">
+
     <!-- 节点设置部分 -->
     <div class="node-settings">
       <!-- 节点设置标题 -->
@@ -36,18 +28,6 @@
         </el-form>
       </div>
     </div>
-    <!-- 输出参数部分 -->
-    <div class="node-output">
-      <!-- 输出参数标题 -->
-      <div class="output-title">输出参数</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        回答内容 {answer}
-      </div>
-      <div class="output-content">
-        图片{image}
-      </div>
-    </div>
 
     <el-dialog
       v-model="dialogVisible"
@@ -68,14 +48,14 @@
       <ScriptEditorFullPanel ref="auditFullEditorRef" :lang="'markdown'" />
     </el-dialog>
 
-
-  </div>
+  </FlowContainer>
 </template>
 
 <script setup>
 import { set } from 'lodash'
 import { ref, reactive } from 'vue'
 
+import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor';
 import ScriptEditorFullPanel from '@/views/smart/assistant/workflow/components/NodeScriptEditor';
 
@@ -100,23 +80,9 @@ const auditEditorRef = ref(null)
 const auditFullEditorRef = ref(null)
 
 const dialogVisible = ref(false)
-const cloneContent = ref('')
 
 // 绑定选择框的值
 const chatDataCode = ref('')
-const value1 = ref('')
-
-// 表单数据对象
-// const form = reactive({
-//   name: '',
-//   region: '',
-//   date1: '',
-//   date2: '',
-//   delivery: false,
-//   type: [],
-//   resource: '',
-//   desc: '',
-// })
 
 const form = {
   llmModelId: '',
@@ -159,29 +125,6 @@ function openCodemirrorDialog(type) {
   })
 }
 
-// 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
-  },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
 </script>
 
 <style lang="scss" scoped>
