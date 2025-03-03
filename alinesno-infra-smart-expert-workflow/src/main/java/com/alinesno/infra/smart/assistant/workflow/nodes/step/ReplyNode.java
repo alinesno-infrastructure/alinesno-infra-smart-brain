@@ -25,4 +25,9 @@ public class ReplyNode extends AbstractFlowNode {
     public ReplyNode() {
         setType("reply");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
