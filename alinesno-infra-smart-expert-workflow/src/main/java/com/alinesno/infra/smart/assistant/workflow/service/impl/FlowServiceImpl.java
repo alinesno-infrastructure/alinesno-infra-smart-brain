@@ -3,6 +3,8 @@ package com.alinesno.infra.smart.assistant.workflow.service.impl;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowDto;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.dto.WorkflowRequestDto;
@@ -20,6 +22,8 @@ import com.alinesno.infra.smart.assistant.workflow.service.IFlowExecutionService
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowNodeExecutionService;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowNodeService;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -29,6 +33,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
 
 import java.util.*;
 
@@ -62,12 +67,17 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
      * 4. 按链表顺序遍历节点信息，依次执行节点的逻辑 <br/>
      * 5. 每个流程节点起一个节点实例，节点实例运行中 <br/>
      * 6. 所有节点实例执行完毕后，流程实例结束 <br/>
-     * @param roleId
      */
     @Override
-    public void runRoleFlow(Long roleId) {
+    public String runRoleFlow(MessageTaskInfo taskInfo,
+                              IndustryRoleEntity role,
+                              MessageEntity workflowExecution,
+                              FlowExpertService flowExpertService) {
+
+        long roleId = role.getId() ;
 
         FlowEntity flowEntity = getLatestPublishedFlowByRoleId(roleId);
+        Assert.notNull(flowEntity, "未发布角色流程");
 
         FlowExecutionEntity flowExecutionEntity = new FlowExecutionEntity();
         flowExecutionEntity.setFlowId(flowEntity.getId()) ;
@@ -97,12 +107,21 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
         Map<String , Object> output = new HashMap<>();  // 流程全局参数
 
         log.debug("执行任务.");
-        executeNodesAsTopologicalSort(parseNodes , flowExecutionEntity , output) ;
+        executeNodesAsTopologicalSort(
+                parseNodes ,
+                flowExecutionEntity ,
+                output ,
+                taskInfo ,
+                role ,
+                workflowExecution ,
+                flowExpertService) ;
         log.debug("执行完毕.");
 
         flowExecutionEntity.setExecutionStatus(FlowExecutionStatus.COMPLETED.getCode());
         flowExecutionEntity.setFinishTime(new Date());
         flowExecutionService.update(flowExecutionEntity);
+
+        return "运行结束" ;
     }
 
     /**
@@ -112,7 +131,11 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
                                  FlowExecutionEntity flowExecutionEntity,
                                  Map<String, Object> output ,
                                  int count ,
-                                 int level){
+                                 int level,
+                                 MessageTaskInfo taskInfo,
+                                 IndustryRoleEntity role,
+                                 MessageEntity workflowExecution,
+                                 FlowExpertService flowExpertService){
 
         // 流程节点实例
         FlowNodeExecutionEntity flowNodeExecutionEntity = new FlowNodeExecutionEntity();
@@ -141,7 +164,14 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
 
         // 执行节点_开始
         AbstractFlowNode abstractFlowNode = SpringUtil.getBean(FLOW_STEP_NODE + node.getType());
-        abstractFlowNode.executeNode(node , flowExecutionEntity , flowNodeExecutionEntity , output) ;
+        abstractFlowNode.executeNode(node ,
+                flowExecutionEntity ,
+                flowNodeExecutionEntity ,
+                output ,
+                taskInfo ,
+                role ,
+                workflowExecution ,
+                flowExpertService) ;
         // 执行节点_结束
 
         flowNodeExecutionEntity.setExecutionStatus(FlowExecutionStatus.COMPLETED.getCode());
@@ -157,7 +187,12 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
      * @param flowExecutionEntity
      * @param output
      */
-    public void executeNodesAsTopologicalSort(List<FlowNodeDto> nodes, FlowExecutionEntity flowExecutionEntity, Map<String, Object> output) {
+    public void executeNodesAsTopologicalSort(List<FlowNodeDto> nodes,
+                                              FlowExecutionEntity flowExecutionEntity,
+                                              Map<String, Object> output,MessageTaskInfo taskInfo,
+                                              IndustryRoleEntity role,
+                                              MessageEntity workflowExecution,
+                                              FlowExpertService flowExpertService) {
         if (nodes == null || nodes.isEmpty()) {
             return;
         }
@@ -187,7 +222,15 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
                 log.debug("Processing node stepName = {} , type = {} , id = {}", Objects.requireNonNull(currentNode).getStepName(), currentNode.getType(), currentNode.getId());
                 log.debug("node--{}--level--{}--->>>>>>>>end", count, level);
 
-                executeFlowNode(currentNode, flowExecutionEntity, output, count, level);
+                executeFlowNode(currentNode,
+                        flowExecutionEntity,
+                        output,
+                        count,
+                        level,
+                        taskInfo ,
+                        role ,
+                        workflowExecution ,
+                        flowExpertService) ;
                 count++;
 
                 // 减少后续节点的入度
@@ -200,117 +243,6 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
                 }
             }
             level++;
-        }
-    }
-
-    /**
-     * 从类型为 "start" 的节点开始，按层级顺序执行 FlowNodeDto 节点及其后续节点信息
-     *
-     * @param nodes               包含 FlowNodeDto 节点的列表
-     * @param flowExecutionEntity
-     * @param output
-     */
-    public void executeNodesAsLinkedList(List<FlowNodeDto> nodes, FlowExecutionEntity flowExecutionEntity, Map<String, Object> output) {
-        if (nodes == null || nodes.isEmpty()) {
-            return;
-        }
-
-        // 找到类型为 "start" 的起始节点
-        FlowNodeDto startNode = null;
-        for (FlowNodeDto node : nodes) {
-            if ("start".equals(node.getType())) {
-                startNode = node;
-                break;
-            }
-        }
-
-        int count = 1;
-        int level = 1;
-
-        if (startNode != null) {
-            Queue<FlowNodeDto> queue = new LinkedList<>();
-            queue.offer(startNode);
-            Set<String> visited = new HashSet<>();
-            visited.add(startNode.getId());
-
-            while (!queue.isEmpty()) {
-                int size = queue.size();
-                for (int i = 0; i < size; i++) {
-                    FlowNodeDto currentNode = queue.poll();
-                    log.debug("node--{}--level--{}--->>>>>>>>start", count, level);
-                    log.debug("Processing node stepName = {} , type = {} , id = {}", Objects.requireNonNull(currentNode).getStepName(), currentNode.getType(), currentNode.getId());
-                    log.debug("node--{}--level--{}--->>>>>>>>end", count, level);
-
-                    executeFlowNode(currentNode, flowExecutionEntity, output, count, level);
-                    count++;
-
-                    for (FlowNodeDto nextNode : currentNode.getNextNodes()) {
-                        if (!visited.contains(nextNode.getId())) {
-                            queue.offer(nextNode);
-                            visited.add(nextNode.getId());
-                        }
-                    }
-                }
-                level++;
-            }
-        }
-    }
-
-//    /**
-//     * 从类型为 "start" 的节点开始，按链表形式打印 FlowNodeDto 节点及其后续节点信息，并输出层级
-//     *
-//     * @param nodes               包含 FlowNodeDto 节点的列表
-//     * @param flowExecutionEntity
-//     * @param output
-//     */
-//    public void executeNodesAsLinkedList(List<FlowNodeDto> nodes, FlowExecutionEntity flowExecutionEntity, Map<String, Object> output) {
-//        if (nodes == null || nodes.isEmpty()) {
-//            return;
-//        }
-//
-//        // 找到类型为 "start" 的起始节点
-//        FlowNodeDto startNode = null;
-//        for (FlowNodeDto node : nodes) {
-//            if ("start".equals(node.getType())) {
-//                startNode = node;
-//                break;
-//            }
-//        }
-//
-//        int count = 1 ;
-//        int level = 1 ;
-//
-//        if (startNode != null) {
-//            Set<String> visited = new HashSet<>();
-//            dfsExecuteNodes(startNode, flowExecutionEntity, output , count , level, visited);
-//        }
-//    }
-
-    /**
-     * 使用深度优先搜索执行节点及其后续节点信息，并输出层级
-     *
-     * @param currentNode         当前节点
-     * @param flowExecutionEntity
-     * @param output
-     * @param count               节点执行顺序
-     * @param level               节点层级
-     * @param visited             已访问节点集合
-     */
-    private void dfsExecuteNodes(FlowNodeDto currentNode, FlowExecutionEntity flowExecutionEntity, Map<String, Object> output, int count, int level, Set<String> visited) {
-        if (visited.contains(currentNode.getId())) {
-            log.debug("Node {} already visited, skipping.", currentNode.getId());
-            return;
-        }
-        visited.add(currentNode.getId());
-
-        log.debug("node--{}--level--{}--->>>>>>>>start", count, level);
-        log.debug("Processing node stepName = {} , type = {} , id = {}", currentNode.getStepName(), currentNode.getType(), currentNode.getId());
-        log.debug("node--{}--level--{}--->>>>>>>>end", count, level);
-
-        executeFlowNode(currentNode, flowExecutionEntity, output, count, level);
-
-        for (FlowNodeDto nextNode : currentNode.getNextNodes()) {
-            dfsExecuteNodes(nextNode, flowExecutionEntity, output, count + 1, level + 1, visited);
         }
     }
 
