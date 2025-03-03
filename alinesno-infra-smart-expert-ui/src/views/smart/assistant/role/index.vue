@@ -97,20 +97,16 @@
                 </div>
                 <div class="role-actions">
                   <div class="action-buttons">
-                    <el-button type="success" v-if="item.scriptType === 'flow'" text bg size="small"
-                      @click="configExecuteScript(item)">
+                    <el-button type="success" v-if="item.scriptType === 'flow'" text size="small" @click="configExecuteScript(item)">
                       <i class="fa-solid fa-sailboat"></i>流程
                     </el-button>
-                    <el-button type="danger" v-if="item.scriptType === 'react'" text bg size="small"
-                      @click="configExecuteScript(item)">
+                    <el-button type="danger" v-if="item.scriptType === 'react'" text size="small" @click="configExecuteScript(item)">
                       <i class="fas fa-file-signature"></i>推理
                     </el-button>
-                    <el-button type="primary" v-if="item.scriptType === 'script'" text bg size="small"
-                      @click="configExecuteScript(item)">
-                      <i class="fa-solid fa-code"></i> 配置
+                    <el-button type="primary" v-if="item.scriptType === 'script'" text size="small" @click="configExecuteScript(item)">
+                      <i class="fa-solid fa-code"></i> 脚本 
                     </el-button>
-                    <el-button type="primary" size="small" :disabled="item.saleFromRoleId" text bg
-                      @click="pushOrg(item)">
+                    <el-button type="primary" size="small" :disabled="item.saleFromRoleId" text  @click="pushOrg(item)">
                       <i class="fa-solid fa-truck-fast"></i> 推送
                     </el-button>
                   </div>
