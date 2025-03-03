@@ -33,6 +33,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -78,24 +79,24 @@ public class ReActExpertService extends ExpertService {
         StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
 
         do {
-            loop++;
-
-            streamMessagePublisher.doStuffAndPublishAnEvent("开始第"+loop+"次思考 ....",
+            streamMessagePublisher.doStuffAndPublishAnEvent(loop == 0?"开始思考问题.":"第"+loop+"次思考 ....",
                     role,
                     taskInfo,
                     IdUtil.getSnowflakeNextId());
+
+            loop++;
 
             String prompt = Prompt.buildPrompt(role , tools , thought , goal , datasetKnowledgeDocument) ;
             prompt = Prompt.buildHumanHelpPrompt(prompt , askHumanHelpThought) ;
 
             List<Message> messages = new ArrayList<>();
-            handleHistoryMessage(messages , taskInfo.getChannelId()) ;
+            handleHistoryUserMessage(messages , taskInfo.getChannelId()) ;
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
 
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
                 StringBuilder outputStr = new StringBuilder();
-                Flowable<GenerationResult> result = qianWenNewApiLLM.streamCall(messages);
+                Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
                 long tmpMsgId = IdUtil.getSnowflakeNextId() ;
 
                 StringBuilder preMsg = new StringBuilder() ;
@@ -133,12 +134,16 @@ public class ReActExpertService extends ExpertService {
                 WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
                 log.debug("reactResponse = {}" , reactResponse);
 
-                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
-                    answer = reactResponse.getFinalAnswer();
-                    isCompleted = true;
-                }else if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
+//                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
+//                    answer = reactResponse.getFinalAnswer();
+//                    isCompleted = true;
+//                }else
+                if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
                     String observation = "" ;
                     for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
+
+                        observation = reactResponse.getThought() ;
+
                         String toolFullName = tool.getName() ;
 
                         // 如果是咨询人类的
@@ -155,10 +160,10 @@ public class ReActExpertService extends ExpertService {
                         }
 
                         log.debug("正在执行工具名称：{}" , toolFullName);
-                        streamMessagePublisher.doStuffAndPublishAnEvent("正在执行工具:" + toolFullName +"，请稍等..." ,
-                                role,
-                                taskInfo,
-                                IdUtil.getSnowflakeNextId());
+//                        streamMessagePublisher.doStuffAndPublishAnEvent("正在执行工具:" + toolFullName +"，请稍等..." ,
+//                                role,
+//                                taskInfo,
+//                                IdUtil.getSnowflakeNextId());
 
                         ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getSelectionToolsData()) ;
 
@@ -173,6 +178,7 @@ public class ReActExpertService extends ExpertService {
                                 String toolAndObservable = String.format("%s\r\n" , executeToolOutput) ;
                                 thought.append(toolAndObservable);
 
+                                taskInfo.setReasoningText(observation);
                                 streamStoreMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
                                         role,
                                         taskInfo,
@@ -198,6 +204,11 @@ public class ReActExpertService extends ExpertService {
 
                 }
 
+                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
+                    answer = reactResponse.getFinalAnswer();
+                    isCompleted = true;
+                }
+
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
                 streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
@@ -213,6 +224,7 @@ public class ReActExpertService extends ExpertService {
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
     }
+
 
     /**
      * 处理并合并文档内容
@@ -259,6 +271,31 @@ public class ReActExpertService extends ExpertService {
      * @param messages
      * @param channelId
      */
+    private void handleHistoryUserMessage(List<Message> messages, long channelId) {
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            if ("person".equals(dto.getRoleType())) {
+                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+            }
+        }
+
+        Collections.reverse(messages);
+
+    }
+
+    /**
+     * 处理本次会话的历史记录
+     * @param messages
+     * @param channelId
+     */
+    @Deprecated
     private void handleHistoryMessage(List<Message> messages, long channelId) {
 
         // 假设这是你想要设置的最大字符数
