@@ -35,7 +35,7 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps, defineEmits } from 'vue';
+import { ref, computed, defineEmits } from 'vue';
 
 // 定义 props
 const props = defineProps({
