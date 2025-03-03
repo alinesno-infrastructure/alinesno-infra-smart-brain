@@ -142,7 +142,7 @@ function setCurrentRoleId(id) {
 
 /** 验证脚本任务 */
 const handleValidateTask = () => {
-    let type = scriptType.value?'execute':scriptType.value;
+    let type = scriptType.value?scriptType.value:'execute' ;
     const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
 
@@ -181,7 +181,7 @@ const submitForm = async() => {
         return 
     }
 
-    let type = scriptType.value?'execute':scriptType.value;
+    let type = scriptType.value?scriptType.value:'execute' ;
     const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
 
