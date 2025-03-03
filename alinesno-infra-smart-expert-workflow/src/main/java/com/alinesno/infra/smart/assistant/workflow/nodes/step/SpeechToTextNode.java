@@ -25,4 +25,9 @@ public class SpeechToTextNode extends AbstractFlowNode {
     public SpeechToTextNode() {
         setType("speech_to_text");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
