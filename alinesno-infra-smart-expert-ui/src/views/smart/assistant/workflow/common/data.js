@@ -67,14 +67,14 @@ const baseNode = {
 // 基础节点列表
 const baseNodes = [baseNode, startNode];
 
-// AI 对话节点配置
+// AI对话节点配置
 const aiChatNode = {
     type: WorkflowType.AiChat,
-    text: 'AI 对话节点',
-    label: 'AI 对话节点',
+    text: 'AI对话节点',
+    label: 'AI对话节点',
     height: 340,
     properties: {
-        stepName: 'AI 对话节点',
+        stepName: 'AI对话节点',
         config: {
             fields: [
                 {
