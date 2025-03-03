@@ -25,4 +25,9 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
     public KnowledgeSearchNode() {
         setType("knowledge_search");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
