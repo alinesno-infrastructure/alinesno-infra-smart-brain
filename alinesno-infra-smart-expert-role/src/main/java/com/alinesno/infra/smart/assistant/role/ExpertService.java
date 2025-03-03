@@ -37,7 +37,6 @@ import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.plexpt.chatgpt.entity.chat.Message;
-import io.jsonwebtoken.lang.Assert;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
@@ -143,7 +142,20 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         if (taskInfo.isFunctionCall()) {  // 执行方法
 
             record.setChatType(TYPE_FUNCTION);
-            Assert.isTrue(StringUtils.isNotEmpty(role.getFunctionCallbackScript()) , role.getRoleName()+" 未配置执行能力。");
+
+            if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
+
+                streamMessagePublisher.doStuffAndPublishAnEvent("未配置执行能力." ,
+                        role,
+                        taskInfo,
+                        IdUtil.getSnowflakeNextId());
+                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" ,
+                        role,
+                        taskInfo,
+                        IdUtil.getSnowflakeNextId());
+
+                return record ;
+            }
 
             String result = null;
             if (workflowExecution == null) {
@@ -161,7 +173,22 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         } else if (taskInfo.isModify()) {
 
             record.setChatType(TYPE_MODIFY);
-            Assert.isTrue(StringUtils.isNotEmpty(role.getAuditScript()) , role.getRoleName()+" 未配置审核修改能力。");
+
+            // Assert.isTrue(StringUtils.isNotEmpty(role.getAuditScript()) , role.getRoleName()+" 未配置审核修改能力。");
+
+            if(StringUtils.isEmpty(role.getAuditScript())){
+
+                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." ,
+                        role,
+                        taskInfo,
+                        IdUtil.getSnowflakeNextId());
+                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" ,
+                        role,
+                        taskInfo,
+                        IdUtil.getSnowflakeNextId());
+
+                return record ;
+            }
 
             String result = null;
 
