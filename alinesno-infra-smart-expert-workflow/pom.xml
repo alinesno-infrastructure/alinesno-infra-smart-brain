@@ -17,8 +17,15 @@
 
 		<!-- 引用公共门面服务 -->
 		<dependency>
-			<groupId>com.alinesno.infra.common</groupId>
-			<artifactId>alinesno-infra-common-facade</artifactId>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-facade</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- 角色工具 -->
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-role</artifactId>
 			<version>${revision}</version>
 		</dependency>
 
