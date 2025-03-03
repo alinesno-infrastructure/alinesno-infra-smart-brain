@@ -1,9 +1,13 @@
 package com.alinesno.infra.smart.assistant.workflow.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowDto;
 import com.alinesno.infra.smart.assistant.workflow.dto.WorkflowRequestDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowEntity;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 
 /**
  * 工作流服务接口，负责处理工作流基础信息和元数据信息相关的业务操作。
@@ -13,11 +17,6 @@ import com.alinesno.infra.smart.assistant.workflow.entity.FlowEntity;
  * @version 1.0.0
  */
 public interface IFlowService extends IBaseService<FlowEntity> {
-
-    /**
-     * 运行角色工作流
-     */
-    void runRoleFlow(Long roleId);
 
     /**
      * 保存角色工作流信息
@@ -52,4 +51,15 @@ public interface IFlowService extends IBaseService<FlowEntity> {
      * @return 最新版本的已发布流程实体，如果不存在则返回 null
      */
     FlowDto getLatestFlowByRoleId(Long roleId);
+
+    /**
+     * 运行Agent角色
+     *
+     * @param taskInfo
+     * @param role
+     * @param workflowExecution
+     * @param flowExpertService
+     */
+    String runRoleFlow(MessageTaskInfo taskInfo, IndustryRoleEntity role, MessageEntity workflowExecution, FlowExpertService flowExpertService);
+
 }
