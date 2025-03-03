@@ -25,4 +25,9 @@ public class AiChatNode extends AbstractFlowNode {
     public AiChatNode() {
         setType("ai_chat");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
