@@ -25,4 +25,9 @@ public class RerankerNode extends AbstractFlowNode {
     public RerankerNode() {
         setType("reranker");
     }
+
+    @Override
+    protected void handleNode() {
+
+    }
 }
