@@ -1,13 +1,7 @@
 <template>
   <!-- 工作流节点容器，包含节点标题、设置和输出参数等内容 -->
-  <div class="workflow-node-container">
-    <!-- 节点标题部分，包含图标和名称 -->
-    <div class="node-title">
-      <div class="node-icon">
-        <i class="fa-solid fa-book"></i>
-      </div>
-      <div class="node-name">知识库检索</div>
-    </div>
+  <FlowContainer :nodeModel="nodeModel" :properties="properties">
+
     <!-- 节点设置部分 -->
     <div class="node-settings">
       <!-- 节点设置标题 -->
@@ -23,7 +17,6 @@
       <div class="settings-form">
         <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item>
-            <!-- <el-input type="input" resize="none" placeholder="请选择知识库" /> -->
 
             <div style="font-size: 13px;width: 100%;color: #646a73;" v-if="selectionDatasetData.length === 0">
               关联知识库展示在这里
@@ -91,24 +84,6 @@
       </div>
 
     </div>
-    <!-- 输出参数部分 -->
-    <div class="node-output">
-      <!-- 输出参数标题 -->
-      <div class="output-title">输出参数</div>
-      <!-- 输出参数内容 -->
-      <div class="output-content">
-        检索结果的分段列表 {paragraph_list}
-      </div>
-      <div class="output-content">
-        满足直接回答的分段列表{is_hit_handling_method_list}
-      </div>
-      <div class="output-content">
-        检索结果{data}
-      </div>
-      <div class="output-content">
-        满足直接回答的分段内容 {directly_return}
-      </div>
-    </div>
 
     <el-dialog title="选择知识库" v-model="datasetConfigDialogVisible" width="1024px" append-to-body>
         <div style="margin-bottom:30px">
@@ -122,12 +97,13 @@
         </div>
     </el-dialog>
 
-  </div>
+  </FlowContainer>
 </template>
 
 <script setup>
 import { set } from 'lodash'
 import { ref, reactive } from 'vue'
+import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
 
@@ -155,23 +131,6 @@ const datasetParamsChoicePanelRef= ref(null)
 const datasetChoicePanelRef = ref(null)
 
 const selectionDatasetData = ref([])
-
-const selectDataset = ref([
-  {icon:'fa-solid fa-truck' , name: '测试知识库', id: '1'} ,
-  {icon:'fa-solid fa-ship' , name: '研发知识库', id: '1'} ,
-]) // 存储选中的数据集
-
-// 表单数据对象
-// const form = reactive({
-//   name: '',
-//   region: '',
-//   date1: '',
-//   date2: '',
-//   delivery: false,
-//   type: [],
-//   resource: '',
-//   desc: '',
-// })
 
 // 表单数据对象
 const form = reactive({
