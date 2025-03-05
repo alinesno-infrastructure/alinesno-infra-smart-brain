@@ -9,12 +9,12 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.base.dto.ManagerAccountDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.dto.SayHelloDto;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -61,7 +61,7 @@ public class ImChatController extends SuperController {
      */
     @DataPermissionSave
     @PostMapping("/chanelSayHello")
-    public AjaxResult chanelSayHello(@RequestBody IndustryRoleDto role , long channelId){
+    public AjaxResult chanelSayHello(@RequestBody SayHelloDto role , long channelId){
 
         MessageEntity entity = new MessageEntity();
 
