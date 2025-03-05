@@ -61,9 +61,21 @@ public class MessageTaskInfo implements Serializable {
     private long traceBusId ; // 业务跟踪的ID
 
     // 当前用户信息
-    private Long accountId = 0L ; // 操作账号ID
-    private String accountName; // 操作账号名称
-    private String accountIcon ; // 操作账号头像
+    // 操作账号ID
+    private Long accountId = 0L ;
+
+    // 当前账号用户名
+    private String accountName;
+
+    // 当前账号邮件
+    private String accountEmail ;
+
+    // 操作账号头像
+    private String accountIcon ;
+
+    // 流程运行信息
+    // 当前流程节点ID
+    private FlowStepStatusDto flowStep ;
 
     // 内容引用文章列表
     private List<MessageReferenceDto> contentReferenceArticle;
