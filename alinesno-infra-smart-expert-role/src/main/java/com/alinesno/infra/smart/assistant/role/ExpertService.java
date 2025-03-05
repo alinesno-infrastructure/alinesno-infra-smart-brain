@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.role;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
+import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
@@ -21,6 +22,7 @@ import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher
 import com.alinesno.infra.smart.assistant.role.llm.AgentFlexLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
+import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
@@ -29,6 +31,7 @@ import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -36,6 +39,7 @@ import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.plexpt.chatgpt.entity.chat.Message;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -61,6 +65,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
+
+    @Autowired
+    protected QianWenNewApiLLM qianWenNewApiLLM ;
 
     // 设置当前执行任务的信息
     private IndustryRoleEntity role ;
@@ -475,6 +482,27 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         processStreamCallback(role, taskInfo , msgManager);
     }
 
+    @SneakyThrows
+    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , List<com.alibaba.dashscope.common.Message> messages) {
+
+        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
+                .role("user")
+                .content(prompt)
+                .build();
+
+
+        MessageManager msgManager = new MessageManager(50);
+
+        if(messages != null && !messages.isEmpty()){
+            for(com.alibaba.dashscope.common.Message m : messages) {
+                msgManager.add(m);
+            }
+        }
+        msgManager.add(promptMsg);
+
+        processStreamCallback(role, taskInfo , msgManager);
+    }
+
     /**
      * 流式任务
      * @param role
@@ -635,4 +663,93 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 message.getId()) ;
     }
 
+    /**
+     * 处理本次会话的历史记录
+     * @param messages
+     * @param channelId
+     */
+    protected void handleHistoryUserMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId) {
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            if ("person".equals(dto.getRoleType())) {
+                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+            }
+        }
+
+        Collections.reverse(messages);
+
+    }
+
+    /**
+     * 处理本次会话的历史记录
+     * @param messages
+     * @param channelId
+     */
+    protected void handleHistoryMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId , int maxLength) {
+
+        // 假设这是你想要设置的最大字符数
+        // maxLength = ; // 或者其他你认为合适的最大值
+
+        log.debug("历史记录：");
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+        StringBuilder allMessagesText = new StringBuilder();
+
+        int tokenLength;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            tokenLength = chatText.length();
+
+            log.debug("-->> {}({}):{} (Token Length: {})", dto.getName(), dto.getRoleType(), chatText, tokenLength);
+
+            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
+            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
+
+                if ("agent".equals(dto.getRoleType())) {
+                    messages.add(qianWenNewApiLLM.createMessage(Role.ASSISTANT, chatText));
+                } else {
+                    messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+                }
+
+                // 更新所有消息文本的总长度
+                allMessagesText.append(chatText);
+            }
+        }
+        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
+
+    }
+
+    /**
+     * 流程节点消息
+     * @param stepMessage
+     * @param status
+     */
+    public void eventStepMessage(String stepMessage, String status, String stepId) {
+
+        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+        stepDto.setMessage(stepMessage) ;
+        stepDto.setStepId(stepId) ;
+        stepDto.setStatus(status);
+
+        taskInfo.setFlowStep(stepDto);
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(null,
+                role,
+                taskInfo,
+                taskInfo.getTraceBusId()
+        );
+
+    }
 }
