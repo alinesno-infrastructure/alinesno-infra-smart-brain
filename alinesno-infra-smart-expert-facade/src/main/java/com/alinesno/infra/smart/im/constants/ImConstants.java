@@ -16,4 +16,7 @@ public interface ImConstants {
 
     // 角色类型的标识符
     String TYPE_ROLE = "role";
+
+    // 无输出的标识符
+    String NONE_OUTPUT = "none_output" ;
 }
