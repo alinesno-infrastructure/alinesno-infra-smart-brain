@@ -396,7 +396,7 @@ function handleEmployRole(roleId , isPush) {
   const loading = ElLoading.service({
     lock: true,
     text: '录用手续办理中.....',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
   employRole(roleId , isPush).then(res => {
