@@ -23,7 +23,7 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-      password: aip@local
+      # password: aip@local
   mvc:
     async:
       request-timeout: 3600000
@@ -80,7 +80,7 @@ alinesno:
     enabled: false
   infra:
     gateway:
-      host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
+      host: http://alinesno-infra-base-authority-boot.beta.base.infra.linesno.com
     smart:
       # milvus 向量数据库
       milvus:
