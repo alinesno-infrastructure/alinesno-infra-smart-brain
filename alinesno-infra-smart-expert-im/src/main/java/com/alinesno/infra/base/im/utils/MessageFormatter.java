@@ -7,7 +7,9 @@ import java.util.List;
 
 public class MessageFormatter {
 
-
+    public static String getSafeString(String input) {
+        return input == null || "null".equals(input) ? "" : input ;
+    }
 
     public static List<MsgMessageContent> formatMessage(String message) {
         String[] words = message.split(" ");
