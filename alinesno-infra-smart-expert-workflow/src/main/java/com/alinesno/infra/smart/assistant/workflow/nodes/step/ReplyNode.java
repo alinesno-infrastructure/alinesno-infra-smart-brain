@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +27,9 @@ public class ReplyNode extends AbstractFlowNode {
         setType("reply");
     }
 
+    @SneakyThrows
     @Override
     protected void handleNode() {
-
+        eventMessage("指定回复内容.");
     }
 }
