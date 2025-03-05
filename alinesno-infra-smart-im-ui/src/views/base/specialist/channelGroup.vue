@@ -258,7 +258,7 @@ function submitChannelForm(){
 //     const loading = ElLoading.service({
 //       lock: true,
 //       text: 'Loading',
-//       background: 'rgba(0, 0, 0, 0.7)',
+//       background: 'rgba(0, 0, 0, 0.2)',
 //     })
 
 //     getDefaultChannelId().then(response => {
