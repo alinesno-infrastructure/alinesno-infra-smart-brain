@@ -1,26 +1,35 @@
 // AbstractWorkflowNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes;
 
-import cn.hutool.core.util.IdUtil;
+import com.alibaba.dashscope.aigc.generation.GenerationResult;
+import com.alibaba.dashscope.common.Message;
+import com.alibaba.dashscope.common.Role;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher;
+import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowNodeExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.nodes.variable.GlobalVariables;
+import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.reactivex.Flowable;
 import lombok.Setter;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 这是一个抽象父类，继承自 WorkflowNode 接口。
@@ -37,6 +46,9 @@ public abstract class AbstractFlowNode implements FlowNode {
 
     @Autowired
     protected StreamStoreMessagePublisher streamStoreMessagePublisher; // 保存入库的消息
+
+    @Autowired
+    protected QianWenNewApiLLM qianWenNewApiLLM ;
 
     /**
      * 流程节点DTO，用于存储流程节点的相关信息
@@ -96,6 +108,7 @@ public abstract class AbstractFlowNode implements FlowNode {
      * @param flowNodeExecution
      * @param output
      */
+    @SneakyThrows
     public void executeNode(FlowNodeDto node,
                             FlowExecutionEntity flowExecution ,
                             FlowNodeExecutionEntity flowNodeExecution,
@@ -116,7 +129,7 @@ public abstract class AbstractFlowNode implements FlowNode {
         this.setFlowExpertService(flowExpertService);
 
         log.debug("执行节点任务:{} , node:{}", node.getType(), node.getProperties());
-        eventMessage("开始流程节点:" + node.getType() + ",名称:" + node.getStepName()) ;
+        eventStepMessage(AgentConstants.STEP_START) ;
 
         // 如果是开始节点，则配置全局变量
         if ("start".equals(node.getType())) {
@@ -131,13 +144,49 @@ public abstract class AbstractFlowNode implements FlowNode {
         }
 
         handleNode();
+
+        // 结束流程节点
+        eventStepMessage(AgentConstants.STEP_FINISH) ;
     }
 
+    /**
+     * 流程节点消息
+     * @param status
+     */
+    protected void eventStepMessage(String status) {
+        eventStepMessage("流程:" +node.getStepName(),  status);
+    }
+
+    /**
+     * 流程节点消息
+     * @param message
+     * @param status
+     */
+    protected void eventStepMessage(String message , String status) {
+        eventStepMessage(message ,  status , node.getId());
+    }
+
+    /**
+     * 流程节点消息
+     * @param message
+     * @param status
+     * @param stepId
+     */
+    protected void eventStepMessage(String message , String status , String stepId) {
+        flowExpertService.eventStepMessage(message ,  status , stepId);
+    }
+
+    /**
+     * 运行事件消息
+     * @param msg
+     */
     protected void eventMessage(String msg) {
         streamMessagePublisher.doStuffAndPublishAnEvent(msg ,
                 role,
                 taskInfo,
-                IdUtil.getSnowflakeNextId());
+                taskInfo.getTraceBusId()
+        );
+
     }
 
     /**
@@ -184,4 +233,57 @@ public abstract class AbstractFlowNode implements FlowNode {
      */
     protected abstract void handleNode() ;
 
+    @NotNull
+    protected CompletableFuture<String> getStringCompletableFuture(String prompt) {
+        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+
+            StringBuilder outputStr = new StringBuilder();
+
+            List<Message> messages = new ArrayList<>();
+            // handleHistoryUserMessage(messages , taskInfo.getChannelId()) ;
+            messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
+
+            Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
+
+            long tmpMsgId = taskInfo.getTraceBusId() ; // IdUtil.getSnowflakeNextId() ;
+
+            StringBuilder preMsg = new StringBuilder() ;
+
+            result.blockingForEach(message -> {
+
+                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
+                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
+
+                log.debug(msg);
+
+                String newMsg = msg.substring(preMsg.toString().length()) ;
+
+                FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+                stepDto.setMessage(null) ;
+                stepDto.setStepId(node.getId()) ;
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                stepDto.setFlowChatText(newMsg) ;
+
+                taskInfo.setFlowStep(stepDto);
+
+                streamMessagePublisher.doStuffAndPublishAnEvent(null , //  msg.substring(preMsg.toString().length()),
+                        role,
+                        taskInfo,
+                        tmpMsgId);
+
+                preMsg.setLength(0);
+                preMsg.append(msg) ;
+
+                if(finishReason != null && finishReason.equals("stop")){
+                    outputStr.append(msg);
+                }
+            });
+
+            eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, String.valueOf(tmpMsgId)) ;
+
+            // 生成任务结果
+            return outputStr.toString() ;
+        });
+        return future;
+    }
 }
