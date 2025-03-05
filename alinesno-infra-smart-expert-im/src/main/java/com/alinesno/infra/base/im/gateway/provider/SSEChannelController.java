@@ -1,9 +1,11 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
+import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
+import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.event.StreamMessageEvent;
 import com.alinesno.infra.smart.im.service.ISSEService;
@@ -53,7 +55,10 @@ public class SSEChannelController {
 
         long channelId = info.getChannelId() ;
         String msg = event.getMessage() == null ? "" : event.getMessage() ;
-        String reasoningText = (info.getReasoningText() == null || "null".equals(info.getReasoningText())) ? "" : info.getReasoningText() ;
+
+        String reasoningText = MessageFormatter.getSafeString(info.getReasoningText()) ; // info.getReasoningText() == null || "null".equals(info.getReasoningText())) ? "" : info.getReasoningText() ;
+        FlowStepStatusDto flowStepDto = info.getFlowStep() ; // MessageFormatter.getSafeString(info.getFlowStepMessage()) ; // (info.getFlowStepMessage() == null || "null".equals(info.getFlowStepMessage())) ? "" : info.getFlowStepMessage() ;
+
         long bId = event.getBId() ;
 
         log.debug("Received llm stream message event , msg = {} , channelId = {} " , event.getMessage() , channelId);
@@ -65,9 +70,12 @@ public class SSEChannelController {
             msgDto.setLoading(false);
             msgDto.setChatText(msg);
             msgDto.setLlmStream(true);
-            msgDto.setReasoningText(reasoningText);  // 判断是否为推理内容
+            msgDto.setReasoningText(reasoningText);  // 推理内容
+            msgDto.setFlowStep(flowStepDto);  // 执行流程节点信息
             msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
             msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
+
+
 
             try {
                 emitter.send(msgDto) ;
