@@ -28,6 +28,21 @@
             <span style="margin-left:10px" :class="item.showTools?'show-tools':'hide-tools'"> {{ item.dateTime }} </span>
           </div>
 
+          <!-- 流程输出调试信息_start -->
+            <div class="chat-debugger-box" v-for="(flowStepItem , flowStepIndex) in item.flowStepArr" :key="flowStepIndex" v-if="item.roleType != 'person'">
+              <div class="chat-debugger">
+                <div class="chat-debugger-item">
+                    <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading"><Loading /></el-icon> 
+                    <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading"><Loading /></el-icon> 
+                    <el-icon v-if="flowStepItem?.status === 'finish'"><CircleCheck /></el-icon> 
+                    {{ flowStepItem.message }}
+                </div>
+                <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+              </div>
+            </div>
+          <!-- 流程输出调试信息_end -->
+
           <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
           <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
@@ -109,32 +124,52 @@ const currentResponseMessageList = (message) => {
 }
 
 // 推送消息到当前面板
-const pushResponseMessageList = (message) => {
+const pushResponseMessageList = (newMessage) => {
+
   // console.log('--->>> message = ' + message);
   // messageList.value.push(message) ; 
+  // console.log(`--->>> message = ${JSON.stringify(newMessage)}`);
 
-  console.log(`--->>> message = ${JSON.stringify(message)}`);
-
-  if(message.llmStream === true){ // 是否为流式输出
+  if(newMessage.llmStream === true){ // 是否为流式输出
     // 查找是否有相同businessId的消息
-    const existingIndex = messageList.value.findIndex(item => item.businessId === message.businessId);
+    const existingIndex = messageList.value.findIndex(item => item.businessId === newMessage.businessId);
 
     if (existingIndex !== -1) {
       // 如果找到，更新该消息
       // messageList.value[existingIndex].chatText += message.chatText;
-      messageList.value[existingIndex].reasoningText += message.reasoningText; 
-      messageList.value[existingIndex].chatText += message.chatText;
+      messageList.value[existingIndex].reasoningText += newMessage.reasoningText; 
+      messageList.value[existingIndex].chatText += newMessage.chatText;
+
+      const findMessage = messageList.value[existingIndex] ; 
+
+      if(newMessage.flowStep){
+        const existingStepIdIndex = findMessage.flowStepArr.findIndex(item => item.stepId === newMessage.flowStep.stepId);
+
+        console.log('existingStepIdIndex = ' + existingStepIdIndex);
+
+        if(existingStepIdIndex !== -1){
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status ; 
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText ; 
+          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText) ; 
+        }else{
+          messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep) ; 
+        }
+      }
+
     } else {
       // 否则，添加新消息
-      messageList.value.push(message);
+      if(newMessage.flowStep){
+        newMessage.flowStepArr.push(newMessage.flowStep) ; 
+      }
+      messageList.value.push(newMessage);
     }
   }else{
-    messageList.value.push(message);
+    messageList.value.push(newMessage);
   }
 
   messageList.value.forEach(item => {
     console.log('--->>> item = ' + item);
-    if(item.loading && message.roleId == item.roleId && message.status === 'completed'){
+    if(item.loading && newMessage.roleId == item.roleId && newMessage.status === 'completed'){
       item.loading = false;
     }
   });
@@ -257,7 +292,7 @@ defineExpose({
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 55px);
+  height: calc(100% - 95px);
   overflow: hidden;
 }
 
@@ -312,7 +347,7 @@ defineExpose({
     .say-message-body {
       padding: 10px;
       line-height: 1.4rem;
-      border-radius: 3px;
+      border-radius: 5px;
       background: #fafafa;
     }
 
