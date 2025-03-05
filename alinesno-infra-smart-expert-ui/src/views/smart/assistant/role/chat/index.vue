@@ -7,20 +7,6 @@
         <el-col :span="24">
           <div class="robot-chat-windows">
 
-            <!-- <div class="robot-chat-header">
-              <div class="chat-header-title">
-                {{ roleInfo.roleName }}
-              </div>
-              <div class="chat-header-desc">
-                ({{ truncateString(roleInfo.responsibilities, 60) }})
-              </div>
-              <div class="chat-header-desc" style="float: right;margin-top: -10px;">
-                <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true">
-                  <i class="fa-solid fa-truck-fast icon-btn"></i>
-                </el-button>
-              </div>
-            </div> -->
-
             <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 240px)">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
@@ -42,6 +28,7 @@
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
                         {{ item.name }}
                       </div>
+
                       <div class="say-message-info" v-else>
                         {{ item.name }}
 
@@ -52,11 +39,25 @@
                         
                       </div>
 
+                      <!-- 流程输出调试信息_start -->
+                       <div class="chat-debugger-box" v-for="(flowStepItem , flowStepIndex) in item.flowStepArr" :key="flowStepIndex" v-if="item.roleType != 'person'">
+                          <div class="chat-debugger">
+                            <div class="chat-debugger-item">
+                                <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading"><Loading /></el-icon> 
+                                <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading"><Loading /></el-icon> 
+                                <el-icon v-if="flowStepItem?.status === 'finish'"><CircleCheck /></el-icon> 
+                                {{ flowStepItem.message }}
+                            </div>
+                            <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                            <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                          </div>
+                       </div>
+                      <!-- 流程输出调试信息_end -->
+
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
-                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
+                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
                         <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
                         <el-button type="primary" link icon="EditPen" size="small" @click="handleCopyGenContent(item)">复制</el-button>
                         <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
@@ -110,7 +111,7 @@
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <i class="fa-solid fa-paper-plane icon-btn"></i>
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                     </el-button>
                   </el-tooltip>
 
@@ -158,6 +159,8 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 
 import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
+
+const openDebuggerDialog = ref(true)
 
 const isSpeaking = ref(false)
 // 定义响应式变量
@@ -282,7 +285,7 @@ const sendAudioToBackend = async (audioBlob) => {
     streamLoading.value = ElLoading.service({
       lock: true,
       text: '语音识别中...',
-      background: 'rgba(0, 0, 0, 0.7)',
+      background: 'rgba(0, 0, 0, 0.2)',
     })
 
     const response = await recognize(formData) ; 
@@ -298,7 +301,9 @@ const sendAudioToBackend = async (audioBlob) => {
 
 /** 读取html文本 */
 function readerHtml(chatText) {
-  return mdi.render(chatText);
+  if(chatText){
+    return mdi.render(chatText);
+  }
 }
 
 function readerReasonningHtml(chatText) {
@@ -325,7 +330,6 @@ const handleCopyGenContent = async (item) => {
 
 // 推送消息到当前面板
 const pushResponseMessageList = (newMessage) => {
-  console.log(`--->>> newMessage = ${JSON.stringify(newMessage)}`);
 
   if (newMessage.llmStream === true) { // 是否为流式输出
 
@@ -338,10 +342,27 @@ const pushResponseMessageList = (newMessage) => {
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
 
-      // speakText(newMessage.chatText);
+      const findMessage = messageList.value[existingIndex] ; 
+
+      if(newMessage.flowStep){
+        const existingStepIdIndex = findMessage.flowStepArr.findIndex(item => item.stepId === newMessage.flowStep.stepId);
+
+        console.log('existingStepIdIndex = ' + existingStepIdIndex);
+
+        if(existingStepIdIndex !== -1){
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status ; 
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText ; 
+          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText) ; 
+        }else{
+          messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep) ; 
+        }
+      }
 
     } else {
       // 否则，添加新消息
+      if(newMessage.flowStep){
+        newMessage.flowStepArr.push(newMessage.flowStep) ; 
+      }
       messageList.value.push(newMessage);
     }
   } else {
@@ -465,7 +486,7 @@ const sendMessage = (type) => {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
   let formData = {
@@ -595,12 +616,28 @@ defineExpose({
       color: #999;
     }
 
+    .chat-debugger {
+      margin-bottom: 10px;
+      padding: 5px;
+      border-radius: 6px;
+      background: #fafafa;
+
+      .chat-debugger-item {
+        font-size: 14px;
+        padding: 10px;
+        color: #999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+    }
+
     .say-message-body {
       padding: 10px;
       line-height: 1.4rem;
       border-radius: 3px;
       background: #fafafa;
-
     }
 
   }
