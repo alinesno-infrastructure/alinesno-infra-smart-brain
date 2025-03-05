@@ -1,10 +1,6 @@
 <!-- 意见审批  -->
 <template>
-  <div class="acp-dashboard aip-chat-dashboard-panel" 
-        v-loading="loading" 
-        element-loading-text="Loading..."
-        :element-loading-spinner="svg" 
-        element-loading-svg-view-box="-10, -10, 50, 50" style="padding:0px !important;">
+  <div class="acp-dashboard aip-chat-dashboard-panel" style="padding:0px !important;">
 
     <div class="smart-container inner-smart-container">
       <el-row>
@@ -26,7 +22,7 @@
               -->
             </div>
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 220px)">
+            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 200px)">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -66,8 +62,7 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <el-row :gutter="20">
-                <el-col :span="16">
+                <div class="message-input-box">
                   <div class="message-input">
 
                     <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
@@ -78,13 +73,13 @@
                     </el-input>
 
                   </div>
-                </el-col>
+                </div>
 
-                <el-col :span="8" style="text-align: right;">
+                <div class="message-btn-box">
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <i class="fa-solid fa-paper-plane icon-btn"></i>
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                     </el-button>
                   </el-tooltip>
 
@@ -94,10 +89,14 @@
                     </el-button>
                   </el-tooltip>
 
-                </el-col>
-              </el-row>
+                </div>
 
             </div>
+
+                <div style="position: absolute;bottom: 5px;font-size: 80%;color: #777;">
+                  内容由第三方 AI 生成，无法确保真实准确，仅供参考
+                </div>
+
           </div>
         </el-col>
 
@@ -256,7 +255,12 @@ function handleGetInfo(roleId) {
     return ;
   }
 
-  loading.value = true ;
+  // loading.value = true ;
+  const loading = ElLoading.service({
+    lock: true,
+    text: 'Loading',
+    background: 'rgba(0, 0, 0, 0.2)',
+  })
 
   getInfo(roleId).then(res => {
     let role = res.role;
@@ -265,7 +269,7 @@ function handleGetInfo(roleId) {
     roleInfo.value = role;
     pushResponseMessageList(msg);
 
-    loading.value = false;
+    loading.close();
 
     // nextTick(() => {
     //   agentSingleRightPanelRef.value.setRoleInfo(role);
@@ -407,7 +411,7 @@ defineExpose({
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 55px);
+  height: calc(100% - 95px);
   overflow: hidden;
 }
 
