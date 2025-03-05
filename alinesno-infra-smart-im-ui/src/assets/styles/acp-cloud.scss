@@ -930,6 +930,7 @@ $chartColor: #3b5998;
       font-weight: bold;
       display: flex;
       margin-right: 10px;
+      margin-left: 10px;
     }
 
     .chat-header-desc {
@@ -948,6 +949,24 @@ $chartColor: #3b5998;
 
   .robot-chat-footer {
     background: #fff;
+    position: relative;
+    bottom: 30px;
+    box-shadow: 1px 0px 6px rgb(0 0 0 / 55%);
+    border: 1px solid #1d1e1f;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    .message-input-box{
+      width:100%;
+      margin-right:30px;
+    }
+
+    .message-btn-box{
+      text-align: right;
+      display: flex;
+      align-items: center;
+    }
 
     .chat-completion {
       textarea {
