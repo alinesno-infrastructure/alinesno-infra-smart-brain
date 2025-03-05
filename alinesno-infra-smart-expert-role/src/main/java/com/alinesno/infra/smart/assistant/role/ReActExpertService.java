@@ -13,8 +13,8 @@ import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
+import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.IToolService;
@@ -22,7 +22,6 @@ import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +32,6 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -52,13 +50,13 @@ public class ReActExpertService extends ExpertService {
     @Autowired
     private IToolService toolService ;
 
-    @Autowired
-    private QianWenNewApiLLM qianWenNewApiLLM ;
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
+
+        String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
@@ -79,10 +77,13 @@ public class ReActExpertService extends ExpertService {
         StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
 
         do {
-            streamMessagePublisher.doStuffAndPublishAnEvent(loop == 0?"开始思考问题.":"第"+loop+"次思考 ....",
-                    role,
-                    taskInfo,
-                    IdUtil.getSnowflakeNextId());
+            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId) ;
+//            streamMessagePublisher.doStuffAndPublishAnEvent(loop == 0?"开始思考问题.":"第"+loop+"次思考 ....",
+//                    role,
+//                    taskInfo,
+////                    IdUtil.getSnowflakeNextId()
+//                    taskInfo.getTraceBusId()
+//            );
 
             loop++;
 
@@ -93,11 +94,13 @@ public class ReActExpertService extends ExpertService {
             handleHistoryUserMessage(messages , taskInfo.getChannelId()) ;
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
 
+            eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId) ;
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
                 StringBuilder outputStr = new StringBuilder();
                 Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
-                long tmpMsgId = IdUtil.getSnowflakeNextId() ;
+
+//                long tmpMsgId = IdUtil.getSnowflakeNextId() ;
 
                 StringBuilder preMsg = new StringBuilder() ;
 
@@ -106,10 +109,13 @@ public class ReActExpertService extends ExpertService {
                     String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
                     String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
 
-                    streamMessagePublisher.doStuffAndPublishAnEvent(msg.substring(preMsg.toString().length()),
-                            role,
-                            taskInfo,
-                            tmpMsgId);
+                    log.debug(msg);
+
+//                    msg.substring(preMsg.toString().length() ;
+//                    streamMessagePublisher.doStuffAndPublishAnEvent(msg.substring(preMsg.toString().length()),
+//                            role,
+//                            taskInfo,
+//                            tmpMsgId);
 
                     preMsg.setLength(0);
                     preMsg.append(msg) ;
@@ -118,6 +124,8 @@ public class ReActExpertService extends ExpertService {
                         outputStr.append(msg);
                     }
                 });
+
+                eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, oneChatId) ;
 
                 // 生成任务结果
                 return outputStr.toString() ;
@@ -137,7 +145,8 @@ public class ReActExpertService extends ExpertService {
 //                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
 //                    answer = reactResponse.getFinalAnswer();
 //                    isCompleted = true;
-//                }else
+//                }
+
                 if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
                     String observation = "" ;
                     for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
@@ -182,7 +191,7 @@ public class ReActExpertService extends ExpertService {
                                 streamStoreMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
                                         role,
                                         taskInfo,
-                                        IdUtil.getSnowflakeNextId());
+                                        taskInfo.getTraceBusId()) ;
 
                             }
                             log.debug("工具执行结果：{}", executeToolOutput);
@@ -198,7 +207,7 @@ public class ReActExpertService extends ExpertService {
                             streamMessagePublisher.doStuffAndPublishAnEvent("工具执行失败:" + e.getMessage(),
                                     role,
                                     taskInfo,
-                                    IdUtil.getSnowflakeNextId());
+                                    taskInfo.getTraceBusId()) ;
                         }
                     }
 
@@ -214,7 +223,7 @@ public class ReActExpertService extends ExpertService {
                 streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
                         role,
                         taskInfo,
-                        IdUtil.getSnowflakeNextId());
+                        taskInfo.getTraceBusId()) ;
             }
 
             if(loop >= maxLoop){
@@ -265,75 +274,32 @@ public class ReActExpertService extends ExpertService {
             taskInfo.setContentReferenceArticle(contentReferenceArticle);
         }
     }
+//
+//    /**
+//     * 处理本次会话的历史记录
+//     * @param messages
+//     * @param channelId
+//     */
+//    private void handleHistoryUserMessage(List<Message> messages, long channelId) {
+//
+//        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(MessageEntity::getChannelId, channelId)
+//                .orderByDesc(MessageEntity::getAddTime)
+//                .last("limit 500");;
+//        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+//
+//        for (MessageEntity dto : chatMessageDtoList) {
+//            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+//            if ("person".equals(dto.getRoleType())) {
+//                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+//            }
+//        }
+//
+//        Collections.reverse(messages);
+//
+//    }
 
-    /**
-     * 处理本次会话的历史记录
-     * @param messages
-     * @param channelId
-     */
-    private void handleHistoryUserMessage(List<Message> messages, long channelId) {
 
-        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByDesc(MessageEntity::getAddTime)
-                .last("limit 500");;
-        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
-
-        for (MessageEntity dto : chatMessageDtoList) {
-            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-            if ("person".equals(dto.getRoleType())) {
-                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
-            }
-        }
-
-        Collections.reverse(messages);
-
-    }
-
-    /**
-     * 处理本次会话的历史记录
-     * @param messages
-     * @param channelId
-     */
-    @Deprecated
-    private void handleHistoryMessage(List<Message> messages, long channelId) {
-
-        // 假设这是你想要设置的最大字符数
-        int maxLength = 131072; // 或者其他你认为合适的最大值
-
-        log.debug("历史记录：");
-
-        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByDesc(MessageEntity::getAddTime)
-                .last("limit 500");;
-        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
-        StringBuilder allMessagesText = new StringBuilder();
-
-        int tokenLength;
-
-        for (MessageEntity dto : chatMessageDtoList) {
-            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-            tokenLength = chatText.length();
-
-            log.debug("-->> {}({}):{} (Token Length: {})", dto.getName(), dto.getRoleType(), chatText, tokenLength);
-
-            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
-            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
-
-                if ("agent".equals(dto.getRoleType())) {
-                    messages.add(qianWenNewApiLLM.createMessage(Role.ASSISTANT, chatText));
-                } else {
-                    messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
-                }
-
-                // 更新所有消息文本的总长度
-                allMessagesText.append(chatText);
-            }
-        }
-        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
-
-    }
 
     @Override
     protected String handleModifyCall(IndustryRoleEntity role,
