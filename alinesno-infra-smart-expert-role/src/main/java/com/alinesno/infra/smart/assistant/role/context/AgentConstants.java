@@ -2,6 +2,12 @@ package com.alinesno.infra.smart.assistant.role.context;
 
 public interface AgentConstants {
 
+
+    String STEP_START = "start" ; // 节点开始
+    String STEP_PROCESS = "process" ; // 节点任务进行中
+    String STEP_FINISH = "finish" ;  //  节点结束
+
+
     interface Role {
         String LEADER = "leader";
         String WORKER = "worker";
