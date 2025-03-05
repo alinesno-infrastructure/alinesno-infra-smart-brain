@@ -180,7 +180,7 @@ function submitScreenForm(){
       const loading = ElLoading.service({
         lock: true,
         text: 'Loading',
-        background: 'rgba(0, 0, 0, 0.7)',
+        background: 'rgba(0, 0, 0, 0.2)',
       })
       createScreen(form.value).then(response => {
         proxy.$modal.msgSuccess("新增成功");
