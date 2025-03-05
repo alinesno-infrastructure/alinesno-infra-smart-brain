@@ -97,7 +97,7 @@
 
                     <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top" >
                       <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                        <i class="fa-solid fa-paper-plane icon-btn"></i>
+                        <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                       </el-button>
                     </el-tooltip>
 
@@ -279,7 +279,7 @@ const sendMessage = (type) => {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
 
