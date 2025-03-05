@@ -1,13 +1,15 @@
 .edit-header-avatar {
-    font-size:1.2rem;
+    font-size: 1.2rem;
+
     img {
         width: 30px;
         height: 30px;
         border-radius: 50%;
         cursor: pointer;
     }
-    i{
-        margin-bottom:5px;
+
+    i {
+        margin-bottom: 5px;
         cursor: pointer;
     }
 }
@@ -38,14 +40,14 @@
 
 // 自定义样式
 .custom-loading {
-  .el-loading-text {
-    font-size: 3rem !important;
-    color: #333 !important;
-    font-weight: bold;
-  }
+    .el-loading-text {
+        font-size: 3rem !important;
+        color: #333 !important;
+        font-weight: bold;
+    }
 }
 
-.cm-scroller{
+.cm-scroller {
     border-radius: 4px !important;
 }
 
@@ -222,5 +224,31 @@
             line-height: 24px;
             margin-right: 24px;
         }
+    }
+}
+
+.chat-debugger-box {
+
+    display: flex;
+    flex-direction: column;
+
+    .chat-debugger {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 6px;
+        float: left;
+
+        .chat-debugger-item {
+            font-size: 14px;
+            color: #999;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            // float: left;
+            background: #1d1e1f;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
     }
 }
