@@ -4,7 +4,7 @@
     :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50" style="padding:0px !important;">
     <div class="smart-container inner-smart-container">
       <el-row>
-        <el-col :span="19" style="padding: 0 5%;">
+        <el-col :span="19">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
               <div class="chat-header-title">
@@ -21,7 +21,7 @@
               </div>
             </div>
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 140px)">
+            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 130px)">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -50,6 +50,21 @@
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
                       </div>
 
+                      <!-- 流程输出调试信息_start -->
+                       <div class="chat-debugger-box" v-for="(flowStepItem , flowStepIndex) in item.flowStepArr" :key="flowStepIndex" v-if="item.roleType != 'person'">
+                          <div class="chat-debugger">
+                            <div class="chat-debugger-item">
+                                <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading"><Loading /></el-icon> 
+                                <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading"><Loading /></el-icon> 
+                                <el-icon v-if="flowStepItem?.status === 'finish'"><CircleCheck /></el-icon> 
+                                {{ flowStepItem.message }}
+                            </div>
+                            <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                            <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                          </div>
+                       </div>
+                      <!-- 流程输出调试信息_end -->
+
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
@@ -70,8 +85,7 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <el-row :gutter="20">
-                <el-col :span="16">
+                <div class="message-input-box">
                   <div class="message-input">
 
                     <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
@@ -82,13 +96,13 @@
                     </el-input>
 
                   </div>
-                </el-col>
+                </div>
 
-                <el-col :span="8" style="text-align: right;">
+                <div class="message-btn-box">
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <i class="fa-solid fa-paper-plane icon-btn"></i>
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                     </el-button>
                   </el-tooltip>
 
@@ -98,10 +112,13 @@
                     </el-button>
                   </el-tooltip>
 
-                </el-col>
-              </el-row>
+                </div>
 
             </div>
+                <div style="position: absolute;bottom: 15px;font-size: 80%;color: #777;">
+                  内容由第三方 AI 生成，无法确保真实准确，仅供参考
+                </div>
+
           </div>
         </el-col>
 
@@ -223,8 +240,28 @@ const pushResponseMessageList = (newMessage) => {
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText; 
       messageList.value[existingIndex].chatText += newMessage.chatText;
 
+      const findMessage = messageList.value[existingIndex] ; 
+
+      if(newMessage.flowStep){
+        const existingStepIdIndex = findMessage.flowStepArr.findIndex(item => item.stepId === newMessage.flowStep.stepId);
+
+        console.log('existingStepIdIndex = ' + existingStepIdIndex);
+
+        if(existingStepIdIndex !== -1){
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status ; 
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].message = newMessage.flowStep.message ; 
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText ; 
+          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText) ; 
+        }else{
+          messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep) ; 
+        }
+      }
+
     } else {
       // 否则，添加新消息
+      if(newMessage.flowStep){
+        newMessage.flowStepArr.push(newMessage.flowStep) ; 
+      }
       messageList.value.push(newMessage);
     }
   } else {
@@ -247,7 +284,7 @@ function handleExecutorMessage(item){
   // streamLoading.value = ElLoading.service({
   //   lock: true,
   //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.7)',
+  //   background: 'rgba(0, 0, 0, 0.2)',
   // })
 
   // sendUserMessage(message, users, bId , channelId, type).then(response => {
@@ -329,7 +366,7 @@ const sendMessage = (type) => {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
   let formData = {
@@ -398,7 +435,7 @@ onBeforeUnmount(() => {
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 55px);
+  height: calc(100% - 95px);
   overflow: hidden;
 }
 
@@ -453,7 +490,7 @@ onBeforeUnmount(() => {
     .say-message-body {
       padding: 10px;
       line-height: 1.4rem;
-      border-radius: 3px;
+      border-radius: 5px;
       background: #fafafa;
     }
 
