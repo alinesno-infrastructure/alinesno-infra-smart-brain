@@ -61,11 +61,12 @@ spec:
             -Dalinesno.infra.qiniu.bucket-pub=${QINIU_BUCKET_NAME_PUB}
             -Dalinesno.infra.qiniu.domain-pub=${QINIU_BUCKET_DOMAIN_PUB}
             
-            -Dalinesno.infra.gateway.host=${INFRA_GAGTEWAY}
             -Dserver.port=8080
         ports:
         - name: http
           containerPort: 8080
+
+#            -Dalinesno.infra.gateway.host=${INFRA_GAGTEWAY}
 
 ---
 #创建域名服务
