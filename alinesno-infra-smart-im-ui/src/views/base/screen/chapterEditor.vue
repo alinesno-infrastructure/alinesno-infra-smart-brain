@@ -162,7 +162,7 @@ const handleAIRequest = async (text, viewUpdate, action, from, to, requirement) 
   const loading = ElLoading.service({
     lock: true,
     text: '正在重写中...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   });
 
   let requestData = {
@@ -193,7 +193,7 @@ const handleAIRequest = async (text, viewUpdate, action, from, to, requirement) 
 //   const loading = ElLoading.service({
 //     lock: true,
 //     text: '正在重写中...',
-//     background: 'rgba(0, 0, 0, 0.7)',
+//     background: 'rgba(0, 0, 0, 0.2)',
 //   });
 
 //   let requestData = {
