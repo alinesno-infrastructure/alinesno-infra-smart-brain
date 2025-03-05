@@ -84,7 +84,7 @@
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <i class="fa-solid fa-paper-plane icon-btn"></i>
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                     </el-button>
                   </el-tooltip>
 
