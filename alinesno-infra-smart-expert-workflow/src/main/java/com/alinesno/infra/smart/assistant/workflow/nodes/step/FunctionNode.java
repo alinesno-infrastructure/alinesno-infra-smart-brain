@@ -4,9 +4,12 @@ package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 该类表示脚本功能节点，继承自 AbstractFlowNode 类。
@@ -26,8 +29,18 @@ public class FunctionNode extends AbstractFlowNode {
         setType("function");
     }
 
+    @SneakyThrows
     @Override
     protected void handleNode() {
         log.debug( "node type = {} output = {}" , node.getType() , output) ;
+
+        String prompt = "你是谁." ;
+
+        CompletableFuture<String> future = getStringCompletableFuture(prompt);
+
+        String output = future.get();
+        log.debug("output = {}" , output);
+
     }
+
 }
