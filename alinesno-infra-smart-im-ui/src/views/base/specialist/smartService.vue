@@ -40,11 +40,10 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <el-row :gutter="20">
-                <el-col :span="17">
+                <div class="message-input-box">
                   <div class="message-input">
 
-                    <el-mention class="input-chat-box" v-model="message" :options="mentionOptions" :prefix="['@']"
+                    <el-mention size="large" class="input-chat-box" v-model="message" :options="mentionOptions" :prefix="['@']"
                       placeholder="输入@可指定角色, #可指定输出结果" @select="handleSelect">
                       <template #label="{ item }">
                         {{ item.label }}
@@ -52,13 +51,15 @@
                     </el-mention>
 
                   </div>
-                </el-col>
+                </div>
 
-                <el-col :span="7" style="text-align: right;">
+                <div class="message-btn-box">
+
+
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <i class="fa-solid fa-paper-plane icon-btn"></i>
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
                     </el-button>
                   </el-tooltip>
 
@@ -74,10 +75,14 @@
                     </el-button>
                   </el-tooltip>
 
-                </el-col>
-              </el-row>
+                </div>
 
             </div>
+
+            <div style="position: absolute;bottom: 3px;font-size: 80%;color: #777;">
+              内容由第三方 AI 生成，无法确保真实准确，仅供参考
+            </div>
+
           </div>
         </el-col>
 
@@ -248,7 +253,7 @@ function handleSendUserMessage(message, type) {
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
   sendUserMessage(message, users, selectedBusinessId.value, channelId, type).then(response => {
@@ -273,7 +278,7 @@ function executorMessage(item){
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.2)',
   })
 
   sendUserMessage(message, users, bId , channelId, type).then(response => {
