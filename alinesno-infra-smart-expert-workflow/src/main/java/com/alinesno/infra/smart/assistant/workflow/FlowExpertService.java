@@ -33,7 +33,7 @@ public class FlowExpertService extends ExpertService {
         String result = flowService.runRoleFlow(taskInfo , role , workflowExecution , this);
         log.debug("handleRole result : {}" , result);
 
-        return result ;
+        return "执行结束";
     }
 
     @Override
