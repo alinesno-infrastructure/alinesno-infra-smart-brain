@@ -21,21 +21,22 @@
               参数在这里显示
             </div>
             <template v-for="(param, index) in formData.params" :key="index">
-                <div style="width: 100%" class="form-params-item" @mouseenter="showDeleteBtn = index" @mouseleave="showDeleteBtn = -1">
-                  <div class="params-item-label">
-                    <span>
-                      {{ param.name }} <el-tag>{{ param.type }}</el-tag>
+              <div style="width: 100%" class="form-params-item" @mouseenter="showDeleteBtn = index"
+                @mouseleave="showDeleteBtn = -1">
+                <div class="params-item-label">
+                  <span>
+                    {{ param.name }} <el-tag>{{ param.type }}</el-tag>
+                  </span>
+                  <span v-if="showDeleteBtn === index" style="margin-right: 10px">
+                    <span @click="deleteNode(index)">
+                      <i class="fa-solid fa-trash-can"></i>
                     </span>
-                    <span v-if="showDeleteBtn === index" style="margin-right: 10px">
-                      <span @click="deleteNode(index)">
-                        <i class="fa-solid fa-trash-can"></i>
-                      </span>
-                    </span>
-                  </div>
-                  <div>
-                    <FlowCascader :nodeModel="props.nodeModel" v-model="param.inputData" />
-                  </div>
+                  </span>
                 </div>
+                <div>
+                  <FlowCascader :nodeModel="props.nodeModel" v-model="param.inputData" />
+                </div>
+              </div>
             </template>
           </div>
 
@@ -48,7 +49,7 @@
       <!-- 节点设置标题 -->
       <div class="settings-title" style="display: flex; align-items: center; justify-content: space-between;">
         <span>
-          函数内容(Groovy) 
+          函数内容(Groovy)
         </span>
       </div>
 
@@ -60,7 +61,8 @@
             <div class="function-CodemirrorEditor mb-8" style="height: 120px; width: 100%">
               <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
               <div class="function-CodemirrorEditor__footer">
-                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;" class="magnify">
+                <el-button text @click="openCodemirrorDialog" style="background-color: transparent !important;"
+                  class="magnify">
                   <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
                 </el-button>
               </div>
@@ -90,22 +92,18 @@
     </el-dialog>
 
     <el-dialog v-model="addParamDialogVisible" title="添加参数" append-to-body width="500">
-        <el-form :model="newParam" label-width="80px">
-          <el-form-item label="参数名称">
-            <el-input v-model="newParam.name" />
-          </el-form-item>
+      <el-form :model="newParam" label-width="80px">
+        <el-form-item label="参数名称">
+          <el-input v-model="newParam.name" />
+        </el-form-item>
 
-          <!-- <el-form-item label="参数类型">
-            <el-input v-model="newParam.type" />
-          </el-form-item> -->
+        <el-form-item label="参数类型">
+          <el-select v-model="newParam.type" placeholder="请选择参数类型">
+            <el-option v-for="t in javaTypes" :key="t" :label="t" :value="t"></el-option>
+          </el-select>
+        </el-form-item>
 
-          <el-form-item label="参数类型">
-            <el-select v-model="newParam.type" placeholder="请选择参数类型">
-              <el-option v-for="t in javaTypes" :key="t" :label="t" :value="t"></el-option>
-            </el-select>
-          </el-form-item>
-
-        </el-form>
+      </el-form>
       <template #footer>
         <span>
           <el-button @click="addParamDialogVisible = false">取消</el-button>
@@ -164,6 +162,7 @@ const form = reactive({
 const formData = computed({
   get: () => {
     if (props.nodeModel.properties.node_data) {
+      console.log('rawScript = ' + props.nodeModel.properties.node_data.rawScript)
       return props.nodeModel.properties.node_data
     } else {
       set(props.nodeModel.properties, 'node_data', form)
@@ -218,6 +217,11 @@ function deleteNode(index) {
 function submitDialog() {
   console.log('submitDialog')
 }
+
+onMounted(() => {
+  auditEditorRef.value.setRawScript(formData.value.rawScript)
+})
+
 </script>
 
 <style lang="scss" scoped>
@@ -226,14 +230,14 @@ function submitDialog() {
   .node-settings {
     margin-bottom: 10px;
 
-    .empty-params{
+    .empty-params {
       font-size: 13px;
       border-radius: 3px;
       padding: 12px 10px;
       color: #606266;
     }
 
-    .params-item-label{
+    .params-item-label {
       display: flex;
       justify-content: space-between;
       color: rgb(96, 98, 102);
