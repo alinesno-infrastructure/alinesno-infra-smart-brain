@@ -77,6 +77,9 @@ public class MessageTaskInfo implements Serializable {
     // 当前流程节点ID
     private FlowStepStatusDto flowStep ;
 
+    // 节点生成的内容
+    private String flowStepContent ;
+
     // 内容引用文章列表
     private List<MessageReferenceDto> contentReferenceArticle;
 
