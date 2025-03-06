@@ -26,7 +26,6 @@ public class FlowNodeDto {
     private Long nodeId;  // dto是相对于前端界面而言，所以id为step的ID，这里与数据关联，则使用nodeId表示
     // 节点类型，表示节点的种类，如开始节点、任务节点等
     private String type;
-
     // 节点名称
     private String stepName;
     // 节点在工作流图中的横坐标位置
