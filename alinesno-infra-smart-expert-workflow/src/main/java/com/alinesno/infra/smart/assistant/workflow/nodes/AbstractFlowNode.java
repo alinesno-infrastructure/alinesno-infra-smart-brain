@@ -118,6 +118,8 @@ public abstract class AbstractFlowNode implements FlowNode {
                             MessageEntity workflowExecution,
                             FlowExpertService flowExpertService) {
 
+        flowExpertService.setNode(node);
+
         // 设置运行参数变量
         this.setNode(node);
         this.setFlowExecution(flowExecution);
@@ -144,6 +146,7 @@ public abstract class AbstractFlowNode implements FlowNode {
         }
 
         handleNode();
+        Thread.sleep(500); // TODO fix:处理节点状态的问题
 
         // 结束流程节点
         eventStepMessage(AgentConstants.STEP_FINISH) ;
@@ -233,6 +236,11 @@ public abstract class AbstractFlowNode implements FlowNode {
      */
     protected abstract void handleNode() ;
 
+    /**
+     * 获取字符串的CompletableFuture
+     * @param prompt
+     * @return
+     */
     @NotNull
     protected CompletableFuture<String> getStringCompletableFuture(String prompt) {
         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
@@ -258,18 +266,7 @@ public abstract class AbstractFlowNode implements FlowNode {
 
                 String newMsg = msg.substring(preMsg.toString().length()) ;
 
-                FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
-                stepDto.setMessage(null) ;
-                stepDto.setStepId(node.getId()) ;
-                stepDto.setStatus(AgentConstants.STEP_PROCESS);
-                stepDto.setFlowChatText(newMsg) ;
-
-                taskInfo.setFlowStep(stepDto);
-
-                streamMessagePublisher.doStuffAndPublishAnEvent(null , //  msg.substring(preMsg.toString().length()),
-                        role,
-                        taskInfo,
-                        tmpMsgId);
+                eventNodeMessage(newMsg);
 
                 preMsg.setLength(0);
                 preMsg.append(msg) ;
@@ -285,5 +282,25 @@ public abstract class AbstractFlowNode implements FlowNode {
             return outputStr.toString() ;
         });
         return future;
+    }
+
+    protected void eventNodeMessage(String newMsg) {
+
+        if(newMsg == null || newMsg.isEmpty()){
+            return ;
+        }
+
+        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+        stepDto.setMessage("任务进行中...") ;
+        stepDto.setStepId(node.getId()) ;
+        stepDto.setStatus(AgentConstants.STEP_PROCESS);
+        stepDto.setFlowChatText(newMsg) ;
+
+        taskInfo.setFlowStep(stepDto);
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(null , //  msg.substring(preMsg.toString().length()),
+                role,
+                taskInfo,
+                taskInfo.getTraceBusId());
     }
 }
