@@ -261,6 +261,10 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     @Override
     public MessageEntity selectByTraceBusId(Long traceBusId) {
         // 根据业务跟踪ID查询消息
+        List<MessageEntity> messages = list(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getTraceBusId, traceBusId)) ;
+        if (messages.isEmpty()) {
+            return null ;
+        }
         return getOne(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getTraceBusId, traceBusId));
     }
 
