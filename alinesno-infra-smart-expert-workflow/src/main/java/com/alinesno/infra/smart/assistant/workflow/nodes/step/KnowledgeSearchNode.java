@@ -39,7 +39,8 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
 
         String nodeStepId = IdUtil.getSnowflakeNextIdStr() ;
 
-        eventStepMessage("节点检索知识库" , AgentConstants.STEP_START , nodeStepId) ;
+        eventStepMessage("开始节点检索知识库" , AgentConstants.STEP_START , nodeStepId) ;
+        Thread.sleep(1000);
         eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH, nodeStepId) ;
 
         String prompt = "写一篇爱情故事." ;
