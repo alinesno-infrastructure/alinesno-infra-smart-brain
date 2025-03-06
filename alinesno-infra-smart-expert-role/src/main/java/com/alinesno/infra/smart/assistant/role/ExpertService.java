@@ -253,7 +253,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param channelId
      * @return
      */
-    protected ChannelEntity getChannelInfo(long channelId) {
+    public ChannelEntity getChannelInfo(long channelId) {
         if (channelId > 0){
             return channelService.getById(channelId) ;
         }
@@ -265,7 +265,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param channelId
      * @return
      */
-    protected ScreenEntity getScreenInfo(long channelId) {
+    public ScreenEntity getScreenInfo(long channelId) {
         if (channelId > 0){
             return screenService.getById(channelId) ;
         }
@@ -565,13 +565,13 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 IdUtil.getSnowflakeNextId()) ;
     }
 
-    private void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
+    protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
         Semaphore semaphore = new Semaphore(0);
         StringBuilder fullContent = new StringBuilder();
-        long workflowId = IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
+        long traceBusId = taskInfo.getTraceBusId() ; // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
 
         msgManager.setTraceBusId(taskInfo.getTraceBusId());
-        msgManager.setWorkflowId(workflowId);
+        msgManager.setWorkflowId(traceBusId);
         msgManager.setChannelId(taskInfo.getChannelId());
 
         qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
@@ -591,7 +591,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                     fullContent.append(msg);
                 }
 
-                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, workflowId);
+                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
+
             }
 
             @Override
@@ -625,10 +626,11 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
                 messageService.save(entity);
 
-                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
-                        getRole() ,
-                        getTaskInfo() ,
-                        IdUtil.getSnowflakeNextId()) ;
+//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+//                        getRole() ,
+//                        getTaskInfo() ,
+//                        traceBusId) ;
+
             }
         }) ;
 
