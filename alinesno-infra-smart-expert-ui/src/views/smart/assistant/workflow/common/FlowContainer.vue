@@ -21,7 +21,18 @@
           <span class="node-icon">
             <i :class="props.properties.icon"></i>
           </span>
-          <span class="node-name">
+          <span class="node-name" v-if="showEditorName()">
+            <FlowEditorStepPanel
+              @mousemove.stop
+              @mousedown.stop
+              @keydown.stop
+              @click.stop
+              @change="editName"
+              :data="props.properties.stepName"
+              trigger="dblclick"
+            />
+          </span>
+          <span class="node-name" v-else>
             {{ props.properties.stepName }}
           </span>
         </div>
@@ -58,8 +69,12 @@
 </template>
 
 <script setup>
+import { set } from 'lodash'
 import { computed } from 'vue';
+import { ElMessage } from 'element-plus';
 import { copyClick } from '@/utils/clipboard'
+
+import FlowEditorStepPanel from '@/views/smart/assistant/workflow/common/FlowEditorStepPanel.vue'
 
 const props = defineProps({
   properties: {
@@ -77,6 +92,20 @@ const props = defineProps({
 
 const showCopyBtn = ref(-1);
 
+// 定义 editName 函数
+const editName = (val) => {
+
+  console.log('new stepName = ' + val);
+
+  if (val.trim() && val.trim()!== props.nodeModel.properties.stepName) {
+    if (!props.nodeModel.graphModel.nodes?.some((node) => node.properties.stepName === val.trim())) {
+      set(props.nodeModel.properties, 'stepName', val.trim());
+    } else {
+      ElMessage.error('修改失败，节点名称已存在.')
+    }
+  }
+};
+
 const stepFields = computed(() => {
   if (props.nodeModel.properties.config.fields) {
     const fields = props.nodeModel.properties.config.fields.map((field) => {
@@ -91,6 +120,10 @@ const stepFields = computed(() => {
   }
   return [];
 });
+
+const showEditorName = () => {
+  return props.nodeModel.type !== 'start' ; 
+};
 
 </script>
 
