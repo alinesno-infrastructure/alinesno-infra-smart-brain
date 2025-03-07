@@ -70,11 +70,20 @@ public class TaskServiceImpl implements ITaskService {
                 log.warn("任务列表已满，不能再添加新任务.");
             }
         }
+
+//        ThreadUtil.execAsync(() -> {
+//            processTask(info) ;
+//        });
+
+//        processTask(info) ;
+
     }
 
     @Async
     private void processTask() {
-        MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
+//        private void processTask(MessageTaskInfo taskInfo) {
+         MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
+
         if (taskInfo != null) {
             try {
                 log.info("任务处理中: {}", taskInfo);
