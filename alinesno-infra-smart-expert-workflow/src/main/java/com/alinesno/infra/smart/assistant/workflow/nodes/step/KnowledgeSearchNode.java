@@ -1,7 +1,6 @@
 // KnowledgeSearchNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
-import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
@@ -37,11 +36,9 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
     @Override
     protected void handleNode() {
 
-        String nodeStepId = IdUtil.getSnowflakeNextIdStr() ;
-
-        eventStepMessage("开始节点检索知识库" , AgentConstants.STEP_START , nodeStepId) ;
-        Thread.sleep(1000);
-        eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH, nodeStepId) ;
+        eventStepMessage("开始节点检索知识库" , AgentConstants.STEP_START) ;
+        this.flowExpertService.searchKnowledgeContent("Java测试技术" , getDatasetIds()) ;
+        eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH) ;
 
         String prompt = "写一篇爱情故事." ;
 
@@ -49,5 +46,10 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
 
         String output = future.get();
         log.debug("output = {}" , output);
+    }
+
+    private String getDatasetIds(){
+        log.debug("getDatasetIds = {}" , node.getProperties());
+        return "" ;
     }
 }
