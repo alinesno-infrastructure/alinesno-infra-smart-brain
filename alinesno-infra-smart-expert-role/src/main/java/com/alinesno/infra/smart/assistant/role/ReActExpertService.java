@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -317,6 +318,29 @@ public class ReActExpertService extends ExpertService {
                                         MessageTaskInfo taskInfo) {
 
         return null;
+    }
+
+    /**
+     * 流程节点消息
+     * @param stepMessage
+     * @param status
+     */
+    public void eventStepMessage(String stepMessage, String status, String stepId) {
+
+        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+        stepDto.setMessage(stepMessage) ;
+        stepDto.setStepId(stepId) ;
+        stepDto.setStatus(status);
+        // stepDto.setPrint(node.isPrint());
+
+        getTaskInfo().setFlowStep(stepDto);
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(null,
+                getRole(),
+                getTaskInfo(),
+                getTaskInfo().getTraceBusId()
+        );
+
     }
 
 }
