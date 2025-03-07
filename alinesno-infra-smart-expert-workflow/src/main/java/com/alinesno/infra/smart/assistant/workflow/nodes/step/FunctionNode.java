@@ -2,6 +2,7 @@
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.context.ContextManager;
@@ -107,6 +108,10 @@ public class FunctionNode extends AbstractFlowNode {
                                        MessageTaskInfo taskInfo,
                                        List<CodeContent> codeContentList,
                                        String scriptText) {
+
+        if(StringUtils.isEmpty(scriptText)){
+            return "角色脚本执行失败:脚本为空" ;
+        }
 
         // TODO 待处理Groovy脚本安全的问题
 
