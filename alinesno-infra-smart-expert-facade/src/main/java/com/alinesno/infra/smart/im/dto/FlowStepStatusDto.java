@@ -2,11 +2,11 @@ package com.alinesno.infra.smart.im.dto;
 
 import lombok.Data;
 
- /**
+/**
  * 步骤执行状态信息
  * 该类用于封装步骤的执行状态信息，包括步骤ID、执行状态和消息信息
  */
- @Data
+@Data
 public class FlowStepStatusDto {
 
     /**
@@ -33,10 +33,15 @@ public class FlowStepStatusDto {
      */
     private String flowChatText;
 
-     public String getFlowChatText() {
-         if(flowChatText == null || flowChatText.isEmpty() || "null".equals(flowChatText)) {
-            return "" ;
-         }
-         return flowChatText ;
-     }
- }
+    /**
+     * 是否打印聊天文本
+     */
+    private boolean isPrint;
+
+    public String getFlowChatText() {
+        if (flowChatText == null || flowChatText.isEmpty() || "null".equals(flowChatText)) {
+            return "";
+        }
+        return flowChatText;
+    }
+}
