@@ -1,10 +1,9 @@
 package com.alinesno.infra.smart.assistant.workflow.dto;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowNodeEntity;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +23,8 @@ public class FlowNodeDto {
     private String id;
     // 数据库存储节点的ID
     private Long nodeId;  // dto是相对于前端界面而言，所以id为step的ID，这里与数据关联，则使用nodeId表示
+    // 是否打印
+    private boolean isPrint;
     // 节点类型，表示节点的种类，如开始节点、任务节点等
     private String type;
     // 节点名称
@@ -95,13 +96,15 @@ public class FlowNodeDto {
         entity.setX(this.getX());
         entity.setY(this.getY());
 
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            entity.setProperties(objectMapper.writeValueAsString(this.getProperties()));
-        } catch (JsonProcessingException e) {
-            log.error("Error converting properties to JSON: " + e.getMessage());
-            entity.setProperties(null);
-        }
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            entity.setProperties(objectMapper.writeValueAsString(this.getProperties()));
+//        } catch (JsonProcessingException e) {
+//            log.error("Error converting properties to JSON: " + e.getMessage());
+//            entity.setProperties(null);
+//        }
+
+        entity.setProperties(JSONObject.toJSONString(this.getProperties()));
 
         StringBuilder nextNodeIds = new StringBuilder();
         for (FlowNodeDto nextNode : this.getNextNodes()) {
@@ -132,18 +135,18 @@ public class FlowNodeDto {
      */
     public static FlowNodeDto fromEntity(FlowNodeEntity entity) {
         FlowNodeDto dto = new FlowNodeDto();
-        dto.setId(entity.getStepId()) ;  // 相对于DTO来说，这里的ID是步骤节点的ID，而不是工作流的ID
+        dto.setId(entity.getStepId());  // 相对于DTO来说，这里的ID是步骤节点的ID，而不是工作流的ID
         dto.setNodeId(entity.getId());
         dto.setType(entity.getNodeType());
         dto.setStepName(entity.getNodeName());
         dto.setX(entity.getX());
         dto.setY(entity.getY());
 
-        ObjectMapper objectMapper = new ObjectMapper();
         try {
             if (entity.getProperties() != null) {
-                TypeReference<Map<String, Object>> typeRef = new TypeReference<>() {};
-                dto.setProperties(objectMapper.readValue(entity.getProperties(), typeRef));
+                // 使用 FastJSON 解析 JSON 字符串为 Map
+                Map<String, Object> propertiesMap = JSON.parseObject(entity.getProperties(), Map.class);
+                dto.setProperties(propertiesMap);
             } else {
                 dto.setProperties(new HashMap<>());
             }
@@ -151,6 +154,20 @@ public class FlowNodeDto {
             log.debug("Error converting properties to JSON: " + e.getMessage());
             dto.setProperties(new HashMap<>());
         }
+
+//        ObjectMapper objectMapper = new ObjectMapper();
+//        try {
+//            if (entity.getProperties() != null) {
+//                TypeReference<Map<String, Object>> typeRef = new TypeReference<>() {};
+//                Map<String , Object> propertiesMap = objectMapper.readValue(entity.getProperties(), typeRef) ;
+//                dto.setProperties(propertiesMap);
+//            } else {
+//                dto.setProperties(new HashMap<>());
+//            }
+//        } catch (Exception e) {
+//            log.debug("Error converting properties to JSON: " + e.getMessage());
+//            dto.setProperties(new HashMap<>());
+//        }
 
         return dto;
     }
@@ -200,4 +217,5 @@ public class FlowNodeDto {
         if (!Objects.equals(type, that.type)) return false;
         return Objects.equals(properties, that.properties);
     }
+
 }
