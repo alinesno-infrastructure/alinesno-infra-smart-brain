@@ -4,6 +4,7 @@ package com.alinesno.infra.smart.assistant.workflow.nodes;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
@@ -29,6 +30,7 @@ import org.springframework.util.StringUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -118,6 +120,9 @@ public abstract class AbstractFlowNode implements FlowNode {
                             MessageEntity workflowExecution,
                             FlowExpertService flowExpertService) {
 
+        boolean isPrintContent = isPrintContent(node) ;
+        log.debug("isPrintContent(node) = {}" , isPrintContent);
+        node.setPrint(isPrintContent);
         flowExpertService.setNode(node);
 
         // 设置运行参数变量
@@ -168,6 +173,23 @@ public abstract class AbstractFlowNode implements FlowNode {
     protected void eventStepMessage(String message , String status) {
         eventStepMessage(message ,  status , node.getId());
     }
+
+    public boolean isPrintContent(FlowNodeDto dto) {
+        // 设置isPrint
+        Object nodeData = dto.getProperties().get("node_data") ;
+        if(nodeData != null){
+            JSONObject nodeDataJson = JSONObject.parseObject(nodeData.toString()) ;
+            if (Objects.nonNull(nodeDataJson)) {
+                try {
+                    return nodeDataJson.getBoolean("isPrint");
+                }catch (Exception e){
+                    log.error("判断是否打印输出异常:{}" , e.getMessage());
+                }
+            }
+        }
+        return false ;
+    }
+
 
     /**
      * 流程节点消息
@@ -295,6 +317,7 @@ public abstract class AbstractFlowNode implements FlowNode {
         stepDto.setStepId(node.getId()) ;
         stepDto.setStatus(AgentConstants.STEP_PROCESS);
         stepDto.setFlowChatText(newMsg) ;
+        stepDto.setPrint(node.isPrint());
 
         taskInfo.setFlowStep(stepDto);
 
