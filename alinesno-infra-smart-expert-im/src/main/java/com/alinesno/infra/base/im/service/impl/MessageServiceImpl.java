@@ -128,7 +128,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         entity.setContent(personDto.getChatText() == null? "" : personDto.getChatText()+"");
         entity.setReasoningContent(personDto.getReasoningText() == null? "" : personDto.getReasoningText());
-        entity.setFormatContent(personDto.getChatText().toString());
+        entity.setFormatContent(personDto.getChatText() == null ? "" : personDto.getChatText()+"");
         entity.setName(personDto.getName());
         entity.setRoleType(personDto.getRoleType());
         entity.setReaderType(personDto.getReaderType());
