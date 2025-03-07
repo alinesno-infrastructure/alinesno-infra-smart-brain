@@ -120,7 +120,7 @@ public abstract class ExpertToolsService {
     /**
      * 频道知识库搜索
      */
-    protected String searchKnowledgeContent(String content , String datasetIds){
+    public String searchKnowledgeContent(String content , String datasetIds){
         List<DocumentVectorBean> result = searchChannelKnowledgeBase(content , datasetIds) ;
         StringBuilder sb = new StringBuilder();
         if(!CollectionUtils.isEmpty(result)){
@@ -135,11 +135,10 @@ public abstract class ExpertToolsService {
     /**
      * 频道知识库搜索
      */
-    protected List<DocumentVectorBean> searchChannelKnowledgeBase(String content , String datasetIds){
+    public List<DocumentVectorBean> searchChannelKnowledgeBase(String content , String datasetIds){
 
         // 关联多个知识库的处理
         List<Long> datasetIdArr = JSONObject.parseArray(datasetIds , Long.class) ;
-
         VectorSearchDto dto = new VectorSearchDto() ;
 
         dto.setSearchText(content) ;
