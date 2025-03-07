@@ -152,6 +152,15 @@ const setWorkflowGraphData = (data) => {
     }
   }
 
+  // 对 data 里的 nodes 数组中的每个元素的 properties 对象添加 noRender 属性
+  if (data.nodes && Array.isArray(data.nodes)) {
+      data.nodes.forEach((node) => {
+          if (node.properties) {
+              node.properties.noRender = true;
+          }
+      });
+  }
+
   renderGraphData(data);
 };
 
