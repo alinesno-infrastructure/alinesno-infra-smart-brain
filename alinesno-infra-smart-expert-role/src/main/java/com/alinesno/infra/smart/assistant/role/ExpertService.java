@@ -31,7 +31,6 @@ import com.alinesno.infra.smart.assistant.screen.service.IScreenService;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
-import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -185,14 +184,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             if(StringUtils.isEmpty(role.getAuditScript())){
 
-                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." ,
-                        role,
-                        taskInfo,
-                        IdUtil.getSnowflakeNextId());
-                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" ,
-                        role,
-                        taskInfo,
-                        IdUtil.getSnowflakeNextId());
+                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
+                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
 
                 return record ;
             }
@@ -218,18 +211,21 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             record.setChatType(TYPE_ROLE);
 
-            // 处理业务
-            String gentContent = handleRole(role, workflowExecution, taskInfo);
-
-            // 解析出生成的内容
-            record.setGenContent(gentContent);
 
             try {
+                // 处理业务
+                String gentContent = handleRole(role, workflowExecution, taskInfo);
+                // 解析出生成的内容
+                record.setGenContent(gentContent);
+
                 List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
 
                 record.setCodeContent(codeContentList);
             } catch (Exception e) {
                 log.error("解析代码块异常:{}", e.getMessage());
+
+                streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
+                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
             }
         }
 
@@ -733,25 +729,4 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     }
 
-    /**
-     * 流程节点消息
-     * @param stepMessage
-     * @param status
-     */
-    public void eventStepMessage(String stepMessage, String status, String stepId) {
-
-        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
-        stepDto.setMessage(stepMessage) ;
-        stepDto.setStepId(stepId) ;
-        stepDto.setStatus(status);
-
-        taskInfo.setFlowStep(stepDto);
-
-        streamMessagePublisher.doStuffAndPublishAnEvent(null,
-                role,
-                taskInfo,
-                taskInfo.getTraceBusId()
-        );
-
-    }
 }
