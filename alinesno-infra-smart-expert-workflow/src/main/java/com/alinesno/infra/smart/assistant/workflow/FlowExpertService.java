@@ -100,10 +100,12 @@ public class FlowExpertService extends ExpertService {
 //                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
 
                 FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+
                 stepDto.setMessage("任务进行中...") ;
                 stepDto.setStepId(node.getId()) ;
                 stepDto.setStatus(AgentConstants.STEP_PROCESS);
                 stepDto.setFlowChatText(msg) ;
+                stepDto.setPrint(node.isPrint());
 
                 taskInfo.setFlowStep(stepDto);
 
@@ -157,4 +159,26 @@ public class FlowExpertService extends ExpertService {
         semaphore.acquire();
     }
 
+    /**
+     * 流程节点消息
+     * @param stepMessage
+     * @param status
+     */
+    public void eventStepMessage(String stepMessage, String status, String stepId) {
+
+        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+        stepDto.setMessage(stepMessage) ;
+        stepDto.setStepId(stepId) ;
+        stepDto.setStatus(status);
+        stepDto.setPrint(node.isPrint()); ;
+
+        getTaskInfo().setFlowStep(stepDto);
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(null,
+                getRole(),
+                getTaskInfo(),
+                getTaskInfo().getTraceBusId()
+        );
+
+    }
 }
