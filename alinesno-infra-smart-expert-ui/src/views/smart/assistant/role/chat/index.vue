@@ -33,34 +33,61 @@
                         {{ item.name }}
 
                         <el-button v-if="item.loading" size="default" type="primary" loading text>任务处理中</el-button>
-                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading text>推理中</el-button>
+                        <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading
+                          text>推理中</el-button>
 
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
-                        
+
                       </div>
 
                       <!-- 流程输出调试信息_start -->
-                       <div class="chat-debugger-box" v-for="(flowStepItem , flowStepIndex) in item.flowStepArr" :key="flowStepIndex" v-if="item.roleType != 'person'">
-                          <div class="chat-debugger">
-                            <div class="chat-debugger-item">
-                                <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading"><Loading /></el-icon> 
-                                <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading"><Loading /></el-icon> 
-                                <el-icon v-if="flowStepItem?.status === 'finish'"><CircleCheck /></el-icon> 
-                                {{ flowStepItem.message }}
-                            </div>
-                            <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
-                            <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                      <div class="chat-debugger-box" 
+                        @click="handleShowDebuggerContent(index, flowStepIndex)"
+                        v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" 
+                        :key="flowStepIndex"
+                        v-if="item.roleType != 'person'">
+
+                        <div class="chat-debugger">
+                          <div class="chat-debugger-item">
+                            <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading">
+                              <Loading />
+                            </el-icon>
+                            <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading">
+                              <Loading />
+                            </el-icon>
+                            <el-icon v-if="flowStepItem?.status === 'finish'">
+                              <CircleCheck />
+                            </el-icon>
+                            {{ flowStepItem.message }}
+
+                            <el-collapse-transition>
+                              <el-icon v-if="!flowStepItem.isPrint && flowStepItem?.flowChatText"><ArrowRightBold /></el-icon>
+                              <el-icon v-if="flowStepItem.isPrint"><ArrowDownBold/></el-icon>
+                            </el-collapse-transition>
                           </div>
-                       </div>
+
+                          <el-collapse-transition>
+                            <div class="chat-debugger-content" v-if="flowStepItem.isPrint">
+                              <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                              <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                            </div>
+                          </el-collapse-transition>
+                        </div>
+
+                      </div>
                       <!-- 流程输出调试信息_end -->
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">选择</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
+                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
+                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
+                        <el-button type="danger" link icon="Promotion" size="small"
+                          @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+                        <el-button type="primary" link icon="EditPen" size="small"
+                          @click="handleCopyGenContent(item)">复制</el-button>
+                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
+                          size="small" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
                     </div>
                   </div>
@@ -77,13 +104,8 @@
                 <el-col :span="16">
                   <div class="message-input">
 
-                    <el-input 
-                      class="input-chat-box" 
-                      @keydown.ctrl.enter.prevent="keyDown" 
-                      v-model="message"
-                      :options="mentionOptions" 
-                      :prefix="['@']" 
-                      :placeholder="isRecording?'请说话，我在听':'请输入你的问题.'" 
+                    <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
+                      :options="mentionOptions" :prefix="['@']" :placeholder="isRecording ? '请说话，我在听' : '请输入你的问题.'"
                       @select="handleSelect">
                       <template #label="{ item }">
                         {{ item.label }}
@@ -97,7 +119,7 @@
 
                   <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
 
-                    <span style="margin-right:10px;" v-if="isRecording" >
+                    <span style="margin-right:10px;" v-if="isRecording">
                       <img :src="speakingIcon" style="width:35px" />
                       <el-button type="primary" text bg size="large" @click="stopRecording()">
                         <i class="fa-solid fa-headset icon-btn"></i>
@@ -111,7 +133,7 @@
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
                     </el-button>
                   </el-tooltip>
 
@@ -140,14 +162,14 @@
 
 <script setup>
 
-import { ElLoading , ElMessage } from 'element-plus'
+import { ElLoading, ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 // import AgentSingleRightPanel from './rightPanel.vue'
 
-import { getInfo, chatRole , recognize } from '@/api/smart/assistant/roleChat'
+import { getInfo, chatRole, recognize } from '@/api/smart/assistant/roleChat'
 import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
 
 import { getParam } from '@/utils/ruoyi'
@@ -228,8 +250,16 @@ function keyDown(e) {
 }
 
 /** 是否语音输入 */
-function AudioListener(){
+function AudioListener() {
   isSpeaking.value = !isSpeaking.value
+}
+
+// 是否显示调试内容
+const handleShowDebuggerContent = (messageIndex, stepIndex) => {
+  console.log('handleShowDebuggerContent messageIndex = ' + messageIndex + ' , stepIndex = ' + stepIndex);
+
+  // 对 showContent 的值取反
+  messageList.value[messageIndex].flowStepArr[stepIndex].isPrint = !messageList.value[messageIndex].flowStepArr[stepIndex].isPrint;
 }
 
 // 开始录音函数
@@ -288,8 +318,8 @@ const sendAudioToBackend = async (audioBlob) => {
       background: 'rgba(0, 0, 0, 0.2)',
     })
 
-    const response = await recognize(formData) ; 
-    message.value = response.data ;
+    const response = await recognize(formData);
+    message.value = response.data;
 
     streamLoading.value.close();
     sendMessage('send');
@@ -301,7 +331,7 @@ const sendAudioToBackend = async (audioBlob) => {
 
 /** 读取html文本 */
 function readerHtml(chatText) {
-  if(chatText){
+  if (chatText) {
     return mdi.render(chatText);
   }
 }
@@ -342,26 +372,27 @@ const pushResponseMessageList = (newMessage) => {
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
 
-      const findMessage = messageList.value[existingIndex] ; 
+      const findMessage = messageList.value[existingIndex];
 
-      if(newMessage.flowStep){
+      if (newMessage.flowStep) {
         const existingStepIdIndex = findMessage.flowStepArr.findIndex(item => item.stepId === newMessage.flowStep.stepId);
 
         console.log('existingStepIdIndex = ' + existingStepIdIndex);
 
-        if(existingStepIdIndex !== -1){
-          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status ; 
-          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText ; 
-          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText) ; 
-        }else{
-          messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep) ; 
+        if (existingStepIdIndex !== -1) {
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
+          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
+        } else {
+          messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
         }
       }
 
     } else {
       // 否则，添加新消息
-      if(newMessage.flowStep){
-        newMessage.flowStepArr.push(newMessage.flowStep) ; 
+      if (newMessage.flowStep) {
+        newMessage.flowStepArr.push(newMessage.flowStep);
       }
       messageList.value.push(newMessage);
     }
@@ -616,19 +647,24 @@ defineExpose({
       color: #999;
     }
 
-    .chat-debugger {
-      margin-bottom: 10px;
-      padding: 5px;
-      border-radius: 6px;
-      background: #fafafa;
+    .chat-debugger-box {
+      cursor: pointer;
 
-      .chat-debugger-item {
-        font-size: 14px;
-        padding: 10px;
-        color: #999;
-        display: flex;
-        align-items: center;
-        gap: 10px;
+      .chat-debugger {
+        margin-bottom: 10px;
+        padding: 5px;
+        border-radius: 6px;
+        background: #fafafa;
+
+        .chat-debugger-item {
+          font-size: 14px;
+          padding: 10px;
+          color: #999;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+
       }
 
     }
