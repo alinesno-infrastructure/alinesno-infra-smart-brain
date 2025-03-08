@@ -10,7 +10,7 @@
       <div class="settings-form">
         <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="AI模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" :modelType="'large_language_model'" v-model="formData.llmModelId" />
           </el-form-item>
           <el-form-item label="提示词">
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
@@ -23,10 +23,10 @@
             </div>
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="form.isPrint" size="small" />
+            <el-switch v-model="formData.isPrint" size="small" />
           </el-form-item>
           <el-form-item label="输出思考">
-            <el-switch v-model="form.isPrintResoning" size="small" />
+            <el-switch v-model="formData.isPrintResoning" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -85,20 +85,7 @@ const auditEditorRef = ref(null)
 const auditFullEditorRef = ref(null)
 
 const chatDataCode = ref('')
-const value1 = ref('')
 const dialogTitle = ref('提示词')
-
-// 表单数据对象
-// const form = reactive({
-//   name: '',
-//   region: '',
-//   date1: '',
-//   date2: '',
-//   delivery: false,
-//   type: [],
-//   resource: '',
-//   desc: '',
-// })
 
 // 表单数据对象
 const form = reactive({
@@ -137,34 +124,17 @@ function confirmAndSave() {
 function openCodemirrorDialog(type) {
   chatDataCode.value = auditEditorRef.value.getRawScript()
   dialogVisible.value = true
+
   nextTick(() => {
     auditFullEditorRef.value.setRawScript(chatDataCode.value)
   })
+
 }
 
-// 选择框的选项列表
-const options = [
-  {
-    value: 'Option1',
-    label: 'Option1',
-  },
-  {
-    value: 'Option2',
-    label: 'Option2',
-  },
-  {
-    value: 'Option3',
-    label: 'Option3',
-  },
-  {
-    value: 'Option4',
-    label: 'Option4',
-  },
-  {
-    value: 'Option5',
-    label: 'Option5',
-  },
-]
+onMounted(() => {
+  auditEditorRef.value.setRawScript(formData.value.prompt)
+})
+
 </script>
 
 <style lang="scss" scoped>
