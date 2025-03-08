@@ -34,6 +34,11 @@ public class FlowStepStatusDto {
     private String flowChatText;
 
     /**
+     * 推理消息
+     */
+    private String flowReasoningText;
+
+    /**
      * 是否打印聊天文本
      */
     private boolean isPrint;
