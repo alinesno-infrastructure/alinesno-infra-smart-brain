@@ -1,6 +1,10 @@
 package com.alinesno.infra.smart.assistant.role;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.util.StringUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.common.Role;
@@ -460,13 +464,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @SneakyThrows
     public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
 
-        // 异步任务，则更新任务状态
-//        MessageEntity record = .getById(taskInfo.getWorkflowRecordId());
-//        if (record != null) {
-//            record.setFieldProp(TASK_SYNC);
-//            messageService.update(record);
-//        }
-
         com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
                 .role("user")
                 .content(prompt)
@@ -478,6 +475,13 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         processStreamCallback(role, taskInfo , msgManager);
     }
 
+    /**
+     * 流式任务
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     * @param messages 历史任务
+     */
     @SneakyThrows
     public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , List<com.alibaba.dashscope.common.Message> messages) {
 
@@ -726,6 +730,64 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
             }
         }
         log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
+
+    }
+
+
+    /**
+     * 流式任务
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     */
+    @SneakyThrows
+    public void processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+
+        long workflowId = IdUtil.getSnowflakeNextId() ;
+
+        llm.chatStream(prompt, (context, response) -> {
+            AiMessage message = response.getMessage();
+
+            if(StringUtil.hasText(message.getReasoningContent())){
+                taskInfo.setReasoningText(message.getReasoningContent());
+                streamMessagePublisher.doStuffAndPublishAnEvent(null , role, taskInfo, workflowId);
+            }
+
+            if(StringUtil.hasText(message.getContent())){
+                taskInfo.setReasoningText(null);
+                streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, taskInfo, workflowId);
+            }
+
+            MessageStatus status =  message.getStatus() ;
+            if(status == MessageStatus.END){  // 结束
+
+                MessageEntity entity = new MessageEntity();
+
+                entity.setTraceBusId(taskInfo.getTraceBusId());
+                entity.setId(workflowId) ;
+                entity.setContent(message.getFullContent()) ;
+                entity.setReasoningContent(message.getFullReasoningContent());
+                entity.setFormatContent(message.getFullContent());
+                entity.setName(role.getRoleName());
+
+                entity.setRoleType("agent");
+                entity.setReaderType("html");
+
+                entity.setAddTime(new Date());
+                entity.setIcon(role.getRoleAvatar());
+
+                entity.setChannelId(taskInfo.getChannelId()) ;
+                entity.setRoleId(role.getId()) ;
+
+                messageService.save(entity);
+
+                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+                        role ,
+                        taskInfo ,
+                        IdUtil.getSnowflakeNextId()) ;
+            }
+
+        });
 
     }
 
