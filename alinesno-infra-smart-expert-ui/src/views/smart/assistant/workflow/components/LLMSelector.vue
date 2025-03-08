@@ -19,7 +19,7 @@
         v-for="model in models"
         :key="model.id"
         :label="model.name"
-        :value="model.name"
+        :value="model.id"
       >
         <template #default>
           <img
@@ -35,7 +35,11 @@
 </template>
 
 <script setup>
-import { ref, computed, defineEmits } from 'vue';
+import { ref, computed, defineEmits, nextTick } from 'vue';
+
+import {
+  listAllLlmModel
+} from "@/api/smart/assistant/llmModel";
 
 // 定义 props
 const props = defineProps({
@@ -49,34 +53,22 @@ const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  modelType: {
+    type: String,
+    default: ''
   }
 });
 
 // 定义大模型列表，添加 id 属性
-const models = [
-  {
-    id: 1,
-    name: 'Deepseek-R1',
-    imageUrl: 'http://data.linesno.com/icons/llm/deepseek.png' // 替换为实际的图片链接
-  },
-  {
-    id: 2,
-    name: 'GPT-4',
-    imageUrl: 'http://data.linesno.com/icons/llm/chatgpt.png' // 替换为实际的图片链接
-  },
-  {
-    id: 3,
-    name: '文心一言',
-    imageUrl: 'http://data.linesno.com/icons/llm/qwen.png' // 替换为实际的图片链接
-  }
-];
+const models = ref([]);
 
 // 定义选中的模型
 const selectedModel = ref('');
 
 // 计算选中模型的图标
 const selectedModelIcon = computed(() => {
-  const selected = models.find((model) => model.name === selectedModel.value);
+  const selected = models.value.find((model) => model.id === selectedModel.value);
   return selected ? selected.imageUrl : null;
 });
 
@@ -93,6 +85,25 @@ const data = computed({
   get: () => {
     return props.modelValue;
   }
+});
+
+nextTick(() => {
+  listAllLlmModel(props.modelType).then(response => {
+    console.log('listAllLlmModel = ' + JSON.stringify(response.data));
+    // 转换接口返回的数据结构
+    const newModels = response.data.map(item => ({
+      id: item.id,
+      name: item.modelName,
+      imageUrl: 'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'
+    }));
+    models.value = newModels;
+
+    // 根据传入的 modelValue 更新 selectedModel
+    const initialSelectedModel = models.value.find(model => model.id === props.modelValue);
+    if (initialSelectedModel) {
+      selectedModel.value = initialSelectedModel.id;
+    }
+  });
 });
 </script>
 
