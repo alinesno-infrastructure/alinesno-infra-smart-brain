@@ -41,11 +41,11 @@
                       </div>
 
                       <!-- 流程输出调试信息_start -->
+                        <!-- v-if="item.roleType != 'person'" -->
                       <div class="chat-debugger-box" 
                         @click="handleShowDebuggerContent(index, flowStepIndex)"
                         v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" 
-                        :key="flowStepIndex"
-                        v-if="item.roleType != 'person'">
+                        :key="flowStepIndex">
 
                         <div class="chat-debugger">
                           <div class="chat-debugger-item">
@@ -326,6 +326,7 @@ const sendAudioToBackend = async (audioBlob) => {
 
   } catch (error) {
     console.error('语音识别请求失败:', error);
+    streamLoading.value.close();
   }
 };
 
