@@ -31,9 +31,10 @@ export function testLlmModel(data) {
 }
 
 // 列出所有模型列表
-export function listAllLlmModel() {
+export function listAllLlmModel(modelType) {
+
     return request({
-        url: managerUrl.listLlmMode ,
+        url: managerUrl.listLlmMode+'?modelType=' + parseStrEmpty(modelType) ,
         method: 'get'
     })
 }
