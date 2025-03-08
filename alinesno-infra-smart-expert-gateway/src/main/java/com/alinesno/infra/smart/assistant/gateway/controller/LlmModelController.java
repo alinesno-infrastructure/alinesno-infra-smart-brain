@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -100,11 +101,15 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
      */
     @DataPermissionQuery
     @GetMapping("/listLlmMode")
-    public AjaxResult listLlmMode(PermissionQuery query) {
+    public AjaxResult listLlmMode(PermissionQuery query , String modelType) {
 
         LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.setEntityClass(LlmModelEntity.class) ;
         query.toWrapper(queryWrapper);
+
+        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
+            queryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
+        }
 
         List<LlmModelEntity> allLlmMode = service.list(queryWrapper);
 
