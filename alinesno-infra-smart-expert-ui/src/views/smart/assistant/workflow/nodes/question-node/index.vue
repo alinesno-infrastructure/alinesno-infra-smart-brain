@@ -26,10 +26,10 @@
 
           </el-form-item>
           <el-form-item label="历史聊天记录">
-            <el-input-number v-model="form.historyNumber" :step="1" />
+            <el-input-number v-model="formData.historyNumber" :step="1" />
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="form.isPrint" size="small" />
+            <el-switch v-model="formData.isPrint" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -86,8 +86,8 @@ const auditEditorRef = ref(null)
 const auditFullEditorRef = ref(null)
 
 const chatDataCode = ref('')
-const value1 = ref('')
-const num = ref('1')
+// const value1 = ref('')
+// const num = ref('1')
 
 const dialogVisible = ref(false)
 
@@ -124,7 +124,7 @@ function confirmAndSave() {
   dialogVisible.value = false
 
   // 配置
-  form.prompt = chatDataCode.value
+  formData.value.prompt = chatDataCode.value
 }
 
 function openCodemirrorDialog() {
@@ -140,29 +140,9 @@ function openCodemirrorDialog() {
   })
 }
 
-// 选择框的选项列表
-// const options = [
-//   {
-//     value: 'Option1',
-//     label: 'Option1',
-//   },
-//   {
-//     value: 'Option2',
-//     label: 'Option2',
-//   },
-//   {
-//     value: 'Option3',
-//     label: 'Option3',
-//   },
-//   {
-//     value: 'Option4',
-//     label: 'Option4',
-//   },
-//   {
-//     value: 'Option5',
-//     label: 'Option5',
-//   },
-// ]
+onMounted(() => {
+  auditEditorRef.value.setRawScript(formData.value.prompt)
+})
 
 </script>
 
