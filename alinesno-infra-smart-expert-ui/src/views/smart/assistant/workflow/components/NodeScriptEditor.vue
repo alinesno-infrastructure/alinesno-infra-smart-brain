@@ -54,7 +54,7 @@ const extensions = [oneDark];
 // 主题样式设置
 const theme = {
   "&": {
-    fontSize: "12pt",
+    fontSize: "10pt",
   }
 }
 
