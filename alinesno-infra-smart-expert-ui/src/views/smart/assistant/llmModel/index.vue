@@ -10,7 +10,7 @@
               <el-input v-model="queryParams['condition[modelName|like]']" placeholder="请输入大模型名称" clearable
                 style="width: 240px" @keyup.enter="handleQuery" />
             </el-form-item>
-            <el-form-item label="模型类型" prop="providerId">
+            <el-form-item label="模型类型" prop="modelType">
               <el-input v-model="queryParams['condition[providerId|like]']" placeholder="请输入所属提供商名称" clearable
                 style="width: 240px" @keyup.enter="handleQuery" />
             </el-form-item>
