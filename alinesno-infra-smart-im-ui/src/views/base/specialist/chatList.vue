@@ -29,19 +29,42 @@
           </div>
 
           <!-- 流程输出调试信息_start -->
-            <div class="chat-debugger-box" v-for="(flowStepItem , flowStepIndex) in item.flowStepArr" :key="flowStepIndex" v-if="item.roleType != 'person'">
-              <div class="chat-debugger">
-                <div class="chat-debugger-item">
-                    <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading"><Loading /></el-icon> 
-                    <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading"><Loading /></el-icon> 
-                    <el-icon v-if="flowStepItem?.status === 'finish'"><CircleCheck /></el-icon> 
-                    {{ flowStepItem.message }}
-                </div>
-                <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
-                <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+          <div class="chat-debugger-box" 
+            @click="handleShowDebuggerContent(index, flowStepIndex)"
+            v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" 
+            :key="flowStepIndex"
+            v-if="item.roleType != 'person'">
+
+            <div class="chat-debugger">
+              <div class="chat-debugger-item">
+                <el-icon v-if="flowStepItem?.status === 'start'" class="is-loading">
+                  <Loading />
+                </el-icon>
+                <el-icon v-if="flowStepItem?.status === 'process'" class="is-loading">
+                  <Loading />
+                </el-icon>
+                <el-icon v-if="flowStepItem?.status === 'finish'">
+                  <CircleCheck />
+                </el-icon>
+                {{ flowStepItem.message }}
+
+                <el-collapse-transition>
+                  <el-icon v-if="!flowStepItem.isPrint && flowStepItem?.flowChatText"><ArrowRightBold /></el-icon>
+                  <el-icon v-if="flowStepItem.isPrint"><ArrowDownBold/></el-icon>
+                </el-collapse-transition>
               </div>
+
+              <el-collapse-transition>
+                <div class="chat-debugger-content" v-if="flowStepItem.isPrint">
+                  <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                  <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                </div>
+              </el-collapse-transition>
             </div>
+
+          </div>
           <!-- 流程输出调试信息_end -->
+
 
           <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
           <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
@@ -148,8 +171,9 @@ const pushResponseMessageList = (newMessage) => {
         console.log('existingStepIdIndex = ' + existingStepIdIndex);
 
         if(existingStepIdIndex !== -1){
-          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status ; 
-          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText ; 
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
           console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText) ; 
         }else{
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep) ; 
@@ -219,6 +243,14 @@ function highlightBlock(str, lang) {
 
 function readerHtml(chatText) {
   return mdi.render(chatText);
+}
+
+// 是否显示调试内容
+const handleShowDebuggerContent = (messageIndex, stepIndex) => {
+  console.log('handleShowDebuggerContent messageIndex = ' + messageIndex + ' , stepIndex = ' + stepIndex);
+
+  // 对 showContent 的值取反
+  messageList.value[messageIndex].flowStepArr[stepIndex].isPrint = !messageList.value[messageIndex].flowStepArr[stepIndex].isPrint;
 }
 
 function readerReasonningHtml(chatText) {
