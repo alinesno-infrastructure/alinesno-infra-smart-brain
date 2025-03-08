@@ -1,6 +1,11 @@
 // AbstractWorkflowNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes;
 
+import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.util.StringUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
@@ -10,6 +15,7 @@ import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowExecutionEntity;
@@ -27,11 +33,9 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 这是一个抽象父类，继承自 WorkflowNode 接口。
@@ -51,6 +55,9 @@ public abstract class AbstractFlowNode implements FlowNode {
 
     @Autowired
     protected QianWenNewApiLLM qianWenNewApiLLM ;
+
+    @Autowired
+    protected ILlmModelService llmModelService; ;
 
     /**
      * 流程节点DTO，用于存储流程节点的相关信息
@@ -265,7 +272,7 @@ public abstract class AbstractFlowNode implements FlowNode {
      */
     @NotNull
     protected CompletableFuture<String> getStringCompletableFuture(String prompt) {
-        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+        return CompletableFuture.supplyAsync(() -> {
 
             StringBuilder outputStr = new StringBuilder();
 
@@ -303,7 +310,75 @@ public abstract class AbstractFlowNode implements FlowNode {
             // 生成任务结果
             return outputStr.toString() ;
         });
-        return future;
+    }
+
+    /**
+     * 流式任务
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     */
+    @SneakyThrows
+    protected CompletableFuture<String> processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+
+        return CompletableFuture.supplyAsync(() -> {
+
+            StringBuilder outputStr = new StringBuilder();
+            long workflowId = IdUtil.getSnowflakeNextId() ;
+
+            llm.chatStream(prompt, (context, response) -> {
+                AiMessage message = response.getMessage();
+
+//            // TODO 流程节点输出思考内容
+//            if(StringUtil.hasText(message.getReasoningContent())){
+//                taskInfo.setReasoningText(message.getReasoningContent());
+//                streamMessagePublisher.doStuffAndPublishAnEvent(null , role, taskInfo, workflowId);
+//            }
+
+                if(StringUtil.hasText(message.getContent())){
+                    taskInfo.setReasoningText(null);
+
+//                streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, taskInfo, workflowId);
+
+                    eventNodeMessage(message.getContent() );
+                }
+
+                MessageStatus status =  message.getStatus() ;
+                if(status == MessageStatus.END){  // 结束
+
+                    MessageEntity entity = new MessageEntity();
+
+                    entity.setTraceBusId(taskInfo.getTraceBusId());
+                    entity.setId(workflowId) ;
+                    entity.setContent(message.getFullContent()) ;
+                    entity.setReasoningContent(message.getFullReasoningContent());
+                    entity.setFormatContent(message.getFullContent());
+                    entity.setName(role.getRoleName());
+
+                    entity.setRoleType("agent");
+                    entity.setReaderType("html");
+
+                    entity.setAddTime(new Date());
+                    entity.setIcon(role.getRoleAvatar());
+
+                    entity.setChannelId(taskInfo.getChannelId()) ;
+                    entity.setRoleId(role.getId()) ;
+
+                    flowExpertService.getMessageService().save(entity);
+
+                    outputStr.append(message.getFullContent()) ;
+
+//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+//                        role ,
+//                        taskInfo ,
+//                        IdUtil.getSnowflakeNextId()) ;
+                }
+
+            });
+
+            return outputStr.toString() ;
+        });
+
     }
 
     protected void eventNodeMessage(String newMsg) {
@@ -326,4 +401,55 @@ public abstract class AbstractFlowNode implements FlowNode {
                 taskInfo,
                 taskInfo.getTraceBusId());
     }
+
+
+    protected CompletableFuture<String> getAiChatResultAsync(Llm llm, String prompt) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        AtomicReference<String> outputStr = new AtomicReference<>("");
+
+        // 创建一个 final 局部变量来持有 taskInfo 的引用
+        final MessageTaskInfo localTaskInfo = taskInfo;
+
+        try {
+            llm.chatStream(prompt, (context, response) -> {
+                AiMessage message = response.getMessage();
+                System.out.println(">>>> " + message);
+
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(node.getId());
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                stepDto.setFlowChatText(message.getContent());
+                stepDto.setPrint(node.isPrint());
+
+                synchronized (localTaskInfo) {
+                    localTaskInfo.setFlowStep(stepDto);
+                }
+
+                try {
+                    synchronized (localTaskInfo) {
+                        if (message.getStatus() == MessageStatus.END) {
+                            outputStr.set(message.getFullContent());
+                            stepDto.setStatus(AgentConstants.STEP_FINISH);
+                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
+                            future.complete(outputStr.get());
+                        } else {
+                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
+                        }
+                    }
+                } catch (Exception e) {
+                    // 处理发布事件时的异常
+                    log.error(e.getMessage());
+                    future.completeExceptionally(e);
+                }
+            });
+        } catch (Exception e) {
+            // 处理 chatStream 方法的异常
+            log.error(e.getMessage());
+            future.completeExceptionally(e);
+        }
+
+        return future;
+    }
+
 }
