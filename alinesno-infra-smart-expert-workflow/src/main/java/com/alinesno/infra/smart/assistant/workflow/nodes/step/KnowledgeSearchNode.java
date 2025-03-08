@@ -4,14 +4,13 @@ package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
+import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 该类表示知识库检索节点，继承自 AbstractFlowNode 类。
@@ -37,15 +36,26 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
     protected void handleNode() {
 
         eventStepMessage("开始节点检索知识库" , AgentConstants.STEP_START) ;
-        this.flowExpertService.searchKnowledgeContent("Java测试技术" , getDatasetIds()) ;
+//        List<DocumentVectorBean> content =  this.flowExpertService.searchChannelKnowledgeBase("Java测试技术" , getDatasetIds()) ;
+        String content =  this.flowExpertService.searchKnowledgeContent("Java测试技术" , getDatasetIds()) ;
+
+        FlowStepStatusDto stepDto = new FlowStepStatusDto();
+
+        stepDto.setMessage("任务进行中...");
+        stepDto.setStepId(node.getId());
+        stepDto.setStatus(AgentConstants.STEP_PROCESS);
+        stepDto.setFlowChatText(content);
+        stepDto.setPrint(node.isPrint());
+
+        taskInfo.setFlowStep(stepDto);
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(null,
+                role,
+                taskInfo,
+                taskInfo.getTraceBusId());
+
         eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH) ;
 
-        String prompt = "写一篇爱情故事." ;
-
-        CompletableFuture<String> future = getStringCompletableFuture(prompt);
-
-        String output = future.get();
-        log.debug("output = {}" , output);
     }
 
     private String getDatasetIds(){
