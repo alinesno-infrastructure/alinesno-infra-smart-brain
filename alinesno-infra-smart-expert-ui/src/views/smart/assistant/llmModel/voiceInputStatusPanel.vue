@@ -38,7 +38,7 @@
 
           <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
 
-          <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
+          <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="stopRecording()"> 
             <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
           </el-button>
           <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
@@ -55,7 +55,9 @@
 
 <script setup>
 import { nextTick, onMounted, ref } from 'vue';
-import { ElMessage } from 'element-plus'
+import { ElMessage , ElLoading } from 'element-plus'
+
+import { getInfo, chatRole, recognize } from '@/api/smart/assistant/roleChat'
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 
@@ -70,8 +72,12 @@ const formData = ref({
 
 // 定义可用的语音模型数组
 const voiceModelOptions = ref([]);
-
+const audioChunks = ref([]);
+const mediaRecorder = ref(null);
 const isSpeaking = ref(false)
+const audioUrl = ref('');
+
+const streamLoading = ref(null)
 
 // 表单验证规则
 const rules = ref({
@@ -95,10 +101,83 @@ const setVoiceModelOptions = (models) => {
   voiceModelOptions.value = models;
 }
 
-/** 是否在讲话 */
-const listenPlayVoiceOption = () => {
+// /** 是否在讲话 */
+// const listenPlayVoiceOption = () => {
+//   isSpeaking.value = !isSpeaking.value
+// }
+
+// 开始录音函数
+const listenPlayVoiceOption = async () => {
+
   isSpeaking.value = !isSpeaking.value
-}
+
+  try {
+    if (!('MediaRecorder' in window)) {
+      alert('当前浏览器不支持录音功能');
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    mediaRecorder.value = new MediaRecorder(stream);
+
+    mediaRecorder.value.addEventListener('dataavailable', (event) => {
+      if (event.data.size > 0) {
+        audioChunks.value.push(event.data);
+      }
+    });
+
+    mediaRecorder.value.addEventListener('stop', async () => {
+      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+      audioUrl.value = URL.createObjectURL(audioBlob);
+      audioChunks.value = [];
+
+      // 调用后端语音识别接口
+      await sendAudioToBackend(audioBlob);
+    });
+
+    mediaRecorder.value.start();
+    isSpeaking.value = true;
+  } catch (error) {
+    console.error('录音失败:', error);
+    alert('录音失败，请检查麦克风权限或设备是否正常');
+  }
+};
+
+// 停止录音函数
+const stopRecording = () => {
+  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+    mediaRecorder.value.stop();
+    isSpeaking.value = false;
+  }
+};
+
+// 发送音频数据到后端
+const sendAudioToBackend = async (audioBlob) => {
+  const formData = new FormData();
+  formData.append('audio', audioBlob);
+
+  try {
+
+    streamLoading.value = ElLoading.service({
+      lock: true,
+      text: '语音识别中...',
+      background: 'rgba(0, 0, 0, 0.2)',
+    })
+
+    const response = await recognize(formData);
+    console.log('response = ' + response)
+    // message.value = response.data;
+
+    // streamLoading.value.close();
+    // sendMessage('send');
+
+  } catch (error) {
+    console.error('语音识别请求失败:', error);
+    streamLoading.value.close();
+  }
+};
+
 
 const setConfigParams = (params) => {
   console.log('params 888>>> = ' + JSON.stringify(params));
