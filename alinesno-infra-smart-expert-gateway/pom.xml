@@ -47,6 +47,14 @@
             <version>3.13.1</version>
         </dependency>
 
+		<!-- 音频相关_start -->
+		<dependency>
+			<groupId>ws.schild</groupId>
+			<artifactId>jave-all-deps</artifactId>
+			<version>3.3.1</version>
+		</dependency>
+		<!-- 音频相关_end -->
+
     </dependencies>
 
 </project>
