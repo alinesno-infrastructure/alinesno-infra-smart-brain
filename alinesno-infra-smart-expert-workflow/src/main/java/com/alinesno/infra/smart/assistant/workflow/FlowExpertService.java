@@ -1,6 +1,10 @@
 package com.alinesno.infra.smart.assistant.workflow;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.util.StringUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.JsonUtils;
@@ -35,18 +39,18 @@ import java.util.concurrent.Semaphore;
 public class FlowExpertService extends ExpertService {
 
     @Autowired
-    private IFlowService flowService ;
+    private IFlowService flowService;
 
     @Setter
-    private FlowNodeDto node ;
+    private FlowNodeDto node;
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
-        String result = flowService.runRoleFlow(taskInfo , role , workflowExecution , this);
-        log.debug("handleRole result : {}" , result);
+        String result = flowService.runRoleFlow(taskInfo, role, workflowExecution, this);
+        log.debug("handleRole result : {}", result);
 
         return "执行结束";
     }
@@ -73,7 +77,7 @@ public class FlowExpertService extends ExpertService {
     protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
         Semaphore semaphore = new Semaphore(0);
         StringBuilder fullContent = new StringBuilder();
-        long traceBusId = taskInfo.getTraceBusId() ; // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
+        long traceBusId = taskInfo.getTraceBusId(); // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
 
         msgManager.setTraceBusId(taskInfo.getTraceBusId());
         msgManager.setWorkflowId(traceBusId);
@@ -85,31 +89,31 @@ public class FlowExpertService extends ExpertService {
             public void onEvent(GenerationResult message) {
 
                 String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
-                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
+                String finishReason = message.getOutput().getChoices().get(0).getFinishReason();
 
                 log.info("Received message: {}", JsonUtils.toJson(message));
 
                 if (finishReason != null && finishReason.equals("stop")) {
                     taskInfo.setFlowStepContent(fullContent.toString());
-                    msg = "[DONE]" ;
+                    msg = "[DONE]";
                     semaphore.release();
-                }else{
+                } else {
                     fullContent.append(msg);
                 }
 
 //                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
 
-                FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
 
-                stepDto.setMessage("任务进行中...") ;
-                stepDto.setStepId(node.getId()) ;
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(node.getId());
                 stepDto.setStatus(AgentConstants.STEP_PROCESS);
-                stepDto.setFlowChatText(msg) ;
+                stepDto.setFlowChatText(msg);
                 stepDto.setPrint(node.isPrint());
 
                 taskInfo.setFlowStep(stepDto);
 
-                streamMessagePublisher.doStuffAndPublishAnEvent(null , //  msg.substring(preMsg.toString().length()),
+                streamMessagePublisher.doStuffAndPublishAnEvent(null, //  msg.substring(preMsg.toString().length()),
                         role,
                         taskInfo,
                         taskInfo.getTraceBusId());
@@ -131,8 +135,8 @@ public class FlowExpertService extends ExpertService {
                 MessageEntity entity = new MessageEntity();
 
                 entity.setTraceBusId(taskInfo.getTraceBusId());
-                entity.setId(IdUtil.getSnowflakeNextId()) ; // msgManager.getWorkflowId());
-                entity.setContent(fullContent.toString()) ;
+                entity.setId(IdUtil.getSnowflakeNextId()); // msgManager.getWorkflowId());
+                entity.setContent(fullContent.toString());
                 entity.setFormatContent(fullContent.toString());
                 entity.setName(role.getRoleName());
 
@@ -143,7 +147,7 @@ public class FlowExpertService extends ExpertService {
                 entity.setIcon(role.getRoleAvatar());
 
                 entity.setChannelId(msgManager.getChannelId());
-                entity.setRoleId(role.getId()) ;
+                entity.setRoleId(role.getId());
 
                 messageService.save(entity);
 
@@ -154,23 +158,108 @@ public class FlowExpertService extends ExpertService {
 //                        traceBusId) ;
 
             }
-        }) ;
+        });
 
         semaphore.acquire();
     }
 
+    @Override
+    public void notifyCallback(String msg) {
+        eventStepMessage("流程:" +node.getStepName() + ":" + msg,  AgentConstants.STEP_FINISH , IdUtil.getSnowflakeNextIdStr());
+    }
+
+    /**
+     * 流式任务
+     *
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     */
+    @Override
+    public void processStream(Llm llm, IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+
+        long workflowId =  IdUtil.getSnowflakeNextId();
+        long traceBusId = taskInfo.getTraceBusId() ;// IdUtil.getSnowflakeNextId();
+
+        llm.chatStream(prompt, (context, response) -> {
+            AiMessage message = response.getMessage();
+
+            if (StringUtil.hasText(message.getReasoningContent())) {
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(node.getId());
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                stepDto.setFlowChatText(null);
+                stepDto.setPrint(node.isPrint());
+                stepDto.setFlowReasoningText(message.getReasoningContent());
+
+                taskInfo.setFlowStep(stepDto);
+                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, traceBusId);
+            }
+
+            if (StringUtil.hasText(message.getContent())) {
+                taskInfo.setReasoningText(null);
+
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(node.getId());
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                stepDto.setFlowChatText(message.getContent());
+                stepDto.setPrint(node.isPrint());
+                stepDto.setFlowReasoningText(null);
+
+                taskInfo.setFlowStep(stepDto);
+                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, traceBusId);
+            }
+
+            MessageStatus status = message.getStatus();
+            if (status == MessageStatus.END) {  // 结束
+
+                MessageEntity entity = new MessageEntity();
+
+                entity.setTraceBusId(taskInfo.getTraceBusId());
+                entity.setId(workflowId);
+                entity.setContent(message.getFullContent());
+                entity.setReasoningContent(message.getFullReasoningContent());
+                entity.setFormatContent(message.getFullContent());
+                entity.setName(role.getRoleName());
+
+                entity.setRoleType("agent");
+                entity.setReaderType("html");
+
+                entity.setAddTime(new Date());
+                entity.setIcon(role.getRoleAvatar());
+
+                entity.setChannelId(taskInfo.getChannelId());
+                entity.setRoleId(role.getId());
+
+                messageService.save(entity);
+
+//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+//                        role,
+//                        taskInfo,
+//                        IdUtil.getSnowflakeNextId());
+            }
+
+        });
+
+    }
+
     /**
      * 流程节点消息
+     *
      * @param stepMessage
      * @param status
      */
     public void eventStepMessage(String stepMessage, String status, String stepId) {
 
-        FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
-        stepDto.setMessage(stepMessage) ;
-        stepDto.setStepId(stepId) ;
+        FlowStepStatusDto stepDto = new FlowStepStatusDto();
+        stepDto.setMessage(stepMessage);
+        stepDto.setStepId(stepId);
         stepDto.setStatus(status);
-        stepDto.setPrint(node.isPrint()); ;
+        stepDto.setPrint(node.isPrint());
 
         getTaskInfo().setFlowStep(stepDto);
 
