@@ -10,7 +10,20 @@ var managerUrl = {
   getInfo: prefix +"getInfo",
   chatRole: prefix + "chatRole",
 
+  recognizeForm: speechPrefix + "recognizeForm" ,
   recognize: speechPrefix + "recognize" ,
+}
+
+// 语音识别
+export function recognizeForm(audioFormData) {
+  return request({
+    url: managerUrl.recognizeForm ,
+    method: 'post',
+    headers: {
+        'Content-Type': 'multipart/form-data'
+    },
+    data: audioFormData  
+  })
 }
 
 // 语音识别
@@ -18,9 +31,9 @@ export function recognize(data) {
   return request({
     url: managerUrl.recognize ,
     method: 'post',
-    headers: {
-        'Content-Type': 'multipart/form-data'
-    },
+    // headers: {
+    //     'Content-Type': 'multipart/form-data'
+    // },
     data: data
   })
 }
