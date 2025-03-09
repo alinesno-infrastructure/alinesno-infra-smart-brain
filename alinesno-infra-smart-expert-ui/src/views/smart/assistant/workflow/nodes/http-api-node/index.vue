@@ -186,7 +186,7 @@
 
 <script setup>
 import { set } from 'lodash'
-import { ref, reactive, onMounted, nextTick, computed } from 'vue'
+import { ref, reactive, onMounted, nextTick, computed, watch } from 'vue'
 
 import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 import ScriptEditorPanel from '@/views/smart/assistant/workflow/components/ScriptEditor'
@@ -341,6 +341,16 @@ function openCodemirrorDialog() {
 function submitDialog() {
   console.log('submitDialog')
 }
+
+// 初始化 formData
+onMounted(() => {
+  formData.value;
+});
+
+// 监听 props.nodeModel 变化
+watch(() => props.nodeModel, () => {
+  formData.value;
+}, { deep: true });
 </script>
 
 <style lang="scss" scoped>
