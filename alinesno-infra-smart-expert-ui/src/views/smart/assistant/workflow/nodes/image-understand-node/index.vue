@@ -10,7 +10,7 @@
       <div class="settings-form">
         <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="视觉模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="form.llmModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
           </el-form-item>
           <el-form-item label="提示词">
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
@@ -26,7 +26,7 @@
             <FlowCascader :nodeModel="props.nodeModel" v-model="formData.imageList" />
           </el-form-item>
           <el-form-item label="返回内容">
-            <el-switch v-model="form.isPrint" size="small" />
+            <el-switch v-model="formData.isPrint" size="small" />
           </el-form-item>
         </el-form>
       </div>
@@ -129,6 +129,10 @@ function openCodemirrorDialog(type) {
     auditFullEditorRef.value.setRawScript(chatDataCode.value)
   })
 }
+
+onMounted(() => {
+  auditEditorRef.value.setRawScript(formData.value.prompt)
+})
 
 </script>
 
