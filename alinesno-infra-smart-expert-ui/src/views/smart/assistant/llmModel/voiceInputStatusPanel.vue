@@ -54,10 +54,13 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, ref } from 'vue';
+
+import Recorder from 'js-audio-recorder';
+
+import { nextTick, onMounted, onUnmounted , ref } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus'
 
-import { getInfo, chatRole, recognize } from '@/api/smart/assistant/roleChat'
+import { getInfo, chatRole, recognize , recognizeForm } from '@/api/smart/assistant/roleChat'
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 
@@ -77,6 +80,15 @@ const mediaRecorder = ref(null);
 const isSpeaking = ref(false)
 const audioUrl = ref('');
 
+const recorder = new Recorder({
+  sampleBits: 16, // 采样位数，支持 8 或 16，默认是16
+  sampleRate: 16000, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
+  numChannels: 1 // 声道，支持 1 或 2， 默认是1
+})
+
+const stat = ref({ duration: 0, fileSize: 0, vol: 0 });
+const st = ref({ start: 0, isGo: false });
+
 const streamLoading = ref(null)
 
 // 表单验证规则
@@ -93,6 +105,10 @@ const rules = ref({
   //   { min: 1, max: 100, message: '语速范围在 1 - 10 之间', trigger: 'blur' }
   // ]
 });
+
+recorder.onprogress =  (params) => {
+    stat.value = {duration: params.duration , fileSize: params.fileSize, vol: params.vol }
+}
 
 // 获取表单实例
 const formRef = ref(null);
@@ -111,51 +127,122 @@ const listenPlayVoiceOption = async () => {
 
   isSpeaking.value = !isSpeaking.value
 
-  try {
-    if (!('MediaRecorder' in window)) {
-      alert('当前浏览器不支持录音功能');
-      return;
-    }
-
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-    mediaRecorder.value = new MediaRecorder(stream);
-
-    mediaRecorder.value.addEventListener('dataavailable', (event) => {
-      if (event.data.size > 0) {
-        audioChunks.value.push(event.data);
-      }
+    recorder.start().then(() => {
+        st.value.start = 1;
+        st.value.isGo = true;
+        // ElMessage.info('正在录音中...')
+    }).catch(e => {
+        mlog('录音错误', e);
+        ElMessage.error('录音失败')
+        // emit('cancel');
     });
 
-    mediaRecorder.value.addEventListener('stop', async () => {
-      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
-      audioUrl.value = URL.createObjectURL(audioBlob);
-      audioChunks.value = [];
+  // try {
+  //   if (!('MediaRecorder' in window)) {
+  //     alert('当前浏览器不支持录音功能');
+  //     return;
+  //   }
 
-      // 调用后端语音识别接口
-      await sendAudioToBackend(audioBlob);
-    });
+  //   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    mediaRecorder.value.start();
-    isSpeaking.value = true;
-  } catch (error) {
-    console.error('录音失败:', error);
-    alert('录音失败，请检查麦克风权限或设备是否正常');
-  }
+  //   mediaRecorder.value = new MediaRecorder(stream);
+
+  //   mediaRecorder.value.addEventListener('dataavailable', (event) => {
+  //     if (event.data.size > 0) {
+  //       audioChunks.value.push(event.data);
+  //     }
+  //   });
+
+  //   mediaRecorder.value.addEventListener('stop', async () => {
+  //     const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+  //     audioUrl.value = URL.createObjectURL(audioBlob);
+  //     audioChunks.value = [];
+
+  //     // 调用后端语音识别接口
+  //     await sendAudioToBackend(audioBlob);
+  //   });
+
+  //   mediaRecorder.value.start();
+  //   isSpeaking.value = true;
+  // } catch (error) {
+  //   console.error('录音失败:', error);
+  //   alert('录音失败，请检查麦克风权限或设备是否正常');
+  // }
+
 };
 
 // 停止录音函数
 const stopRecording = () => {
-  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
-    mediaRecorder.value.stop();
-    isSpeaking.value = false;
-  }
-};
+  // if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+  //   mediaRecorder.value.stop();
+  //   isSpeaking.value = false;
+  // }
+
+  isSpeaking.value = false;
+
+  st.value.start=0;
+  recorder.stop();
+  recorder.stopPlay();
+
+  send();
+}
+
+const send = async () => {
+    // stop();
+    // emit('send', { blob: recorder.getWAVBlob(), stat: stat.value });
+
+    console.log('recorder.getWAVBlob() = ' + recorder.getWAVBlob());
+    console.log('stat.value = ' + stat.value);
+
+    const blob = recorder.getWAVBlob();
+    if (!blob) {
+      console.error('获取的音频数据为空');
+      return;
+    }
+
+    // mlog("sendMic", e);
+    // st.value.showMic = false;
+    // let du = "whisper.wav"; // (e.stat && e.stat.duration)?(e.stat.duration.toFixed(2)+'s'):'whisper.wav';
+    // const file = new File([e.blob], du, { type: "audio/wav" });
+    // homeStore.setMyData({
+    //   act: "gpt.whisper",
+    //   actData: { file, prompt: "whisper", duration: e.stat?.duration },
+    // });
+
+    const du = "whisper.wav"; 
+    const file = new File([blob], du, { type: "audio/wav" });
+
+    var newbolb = new Blob([blob], { type: 'audio/wav' })
+    var fileOfBlob = new File([newbolb], new Date().getTime() + '.wav')
+
+    const micData = {
+      act: "gpt.whisper",
+      actData: { file:fileOfBlob , prompt: "whisper", duration:  stat.value?.duration },
+    }
+
+    // await sendAudioToBackend(micData);
+
+    var formData = new FormData()
+    formData.append('act', "gpt.whisper");
+    formData.append('prompt', "whisper");
+    formData.append('duration', stat.value?.duration);
+    formData.append('file', fileOfBlob);
+
+    await sendAudioFileToBackend(formData);
+
+    stat.value = { duration: 0, fileSize: 0, vol: 0 };
+}
+
+// 发送音频文件到后端
+const sendAudioFileToBackend = async (audioFormData) => {
+  const response = await recognizeForm(audioFormData);
+  console.log('response = ' + response)
+}
 
 // 发送音频数据到后端
 const sendAudioToBackend = async (audioBlob) => {
-  const formData = new FormData();
-  formData.append('audio', audioBlob);
+  // const formData = new FormData();
+  // formData.append('audio', audioBlob);
 
   try {
 
@@ -165,7 +252,7 @@ const sendAudioToBackend = async (audioBlob) => {
       background: 'rgba(0, 0, 0, 0.2)',
     })
 
-    const response = await recognize(formData);
+    const response = await recognize(audioBlob);
     console.log('response = ' + response)
     // message.value = response.data;
 
@@ -177,7 +264,6 @@ const sendAudioToBackend = async (audioBlob) => {
     streamLoading.value.close();
   }
 };
-
 
 const setConfigParams = (params) => {
   console.log('params 888>>> = ' + JSON.stringify(params));
@@ -215,6 +301,11 @@ defineExpose({
   setVoiceModelOptions , 
   getFormData,
   setConfigParams
+})
+
+onUnmounted(() => {
+  recorder.stop();
+  recorder.destroy();
 })
 
 nextTick(() => {
