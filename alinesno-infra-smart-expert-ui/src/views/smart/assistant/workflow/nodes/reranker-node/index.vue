@@ -33,7 +33,7 @@
               <span class="settings-label-label">相似度高于</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">{{ form.rerankerSetting.minRelevance }}</span>
+              <span class="settings-label-text">{{ formData.rerankerSetting.minRelevance }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -41,7 +41,7 @@
               <span class="settings-label-label">引用分段数TOP</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">{{ form.rerankerSetting.topK }}</span>
+              <span class="settings-label-text">{{ formData.rerankerSetting.topK }}</span>
             </el-col>
           </el-row>
           <el-row>
@@ -49,7 +49,7 @@
               <span class="settings-label-label">最多引用字符</span>
             </el-col>
             <el-col :span="12">
-              <span class="settings-label-text">{{ form.rerankerSetting.quoteLimit }}</span>
+              <span class="settings-label-text">{{ formData.rerankerSetting.quoteLimit }}</span>
             </el-col>
           </el-row>
         </div>
@@ -121,12 +121,12 @@ const formData = computed({
 })
 
 // 关闭数据集配置窗口
-const handleSelectDatasetParamsConfigClose = (formData) => {
+const handleSelectDatasetParamsConfigClose = (formDataSettings) => {
     if (datasetParamsConfigDialogVisible.value) {
         datasetParamsConfigDialogVisible.value = false;
         // agentModelConfigForm.value.datasetSearchConfig = formData;
 
-        form.rerankerSetting = formData;
+        formData.value.rerankerSetting = formDataSettings;
     }
 }
 
