@@ -1,10 +1,13 @@
 // RerankerNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
+import com.alinesno.infra.smart.assistant.workflow.nodes.variable.step.RerankerNodeData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
  * 其作用是使用重排模型对多个知识库的检索结果进行二次召回，
  * 以提高检索结果的准确性和相关性。在工作流中，当需要对初步检索结果进行优化时，会使用该节点。
  */
+@Slf4j
 @Data
 @Scope("prototype")
 @Service(FlowConst.FLOW_STEP_NODE + "reranker")
@@ -26,8 +30,16 @@ public class RerankerNode extends AbstractFlowNode {
         setType("reranker");
     }
 
+
     @Override
     protected void handleNode() {
+        RerankerNodeData nodeData = getNodeData() ;
+        log.debug("nodeData = {}" , nodeData) ;
+        log.debug("node type = {} output = {}" , node.getType() , output);
+    }
 
+    private RerankerNodeData getNodeData(){
+        String nodeDataJson = String.valueOf(node.getProperties().get("node_data")) ;
+        return JSONObject.parseObject(nodeDataJson , RerankerNodeData.class) ;
     }
 }
