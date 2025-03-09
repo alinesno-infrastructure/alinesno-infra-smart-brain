@@ -2,65 +2,84 @@ package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import io.swagger.annotations.Api;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import ws.schild.jave.Encoder;
-import ws.schild.jave.EncoderException;
-import ws.schild.jave.MultimediaObject;
-import ws.schild.jave.encode.AudioAttributes;
-import ws.schild.jave.encode.EncodingAttributes;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
 
+/**
+ * 语音识别控制器
+ */
 @Slf4j
 @Api(tags = "Speech Recognition")
 @RestController
 @RequestMapping("/api/infra/smart/assistant/speechRecognition")
 public class SpeechRecognitionController {
 
-    @PostMapping(value = "/recognize", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public AjaxResult recognize(@RequestParam("audio") MultipartFile audioFile) {
-        log.debug("语音识别请求已收到");
+    // 新增的接收FormData数据的方法
+    // 新增的接收FormData数据的方法
+    @SneakyThrows
+    @PostMapping(value = "/recognizeFormData", consumes = "multipart/form-data")
+    public AjaxResult recognizeFormData(
+            @RequestPart("act") String act,
+            @RequestPart("prompt") String prompt,
+            @RequestPart("duration") Double duration,
+            @RequestPart("file") MultipartFile file
+    ) {
+        log.debug("语音识别（FormData）请求已收到");
 
-        try {
-            // 临时存储上传的文件
-            File tempFile = File.createTempFile("audio-", null);
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(audioFile.getBytes());
-            }
+        // 获取系统临时目录
+        String tempDir = System.getProperty("java.io.tmpdir");
 
-            // 将音频文件转换为WAV格式并保存
-            File wavFile = new File("output.wav");
-            convertToWav(tempFile, wavFile);
+        // 保存文件
+        if (!file.isEmpty()) {
+            File dest = new File(tempDir + File.separator + file.getOriginalFilename());
 
-            // 删除临时文件
-            Files.deleteIfExists(tempFile.toPath());
+            log.debug("文件保存路径: " + dest.getAbsolutePath());
 
-            return AjaxResult.success("识别成功", "音频文件已转换并保存为WAV格式");
-        } catch (IOException | EncoderException e) {
-            log.error("处理音频文件时出错", e);
-            return AjaxResult.error("处理音频文件时出错: " + e.getMessage());
+            file.transferTo(dest);
         }
+
+        // 打印接收到的信息
+        log.debug("act: " + act);
+        log.debug("prompt: " + prompt);
+        log.debug("duration: " + duration);
+        log.debug("文件名: " + file.getOriginalFilename());
+
+        return AjaxResult.success("语音识别成功");
     }
 
-    private void convertToWav(File inputFile, File outputFile) throws EncoderException {
-        // 使用JAVE库进行音频转换
-        AudioAttributes audio = new AudioAttributes();
-        audio.setCodec("pcm_s16le"); // 设置为未压缩的PCM编码
+//    @SneakyThrows
+//    @PostMapping(value = "/recognize")
+//    public AjaxResult recognize(@RequestBody MicDataDto micData) {
+//        log.debug("语音识别请求已收到");
+//
+//        MicDataDto.ActData actData = micData.getActData();
+//        MultipartFile file = actData.getFile();
+//        String prompt = actData.getPrompt();
+//        Double duration = actData.getDuration();
+//
+//        // 获取系统临时目录
+//        String tempDir = System.getProperty("java.io.tmpdir");
+//
+//        // 保存文件
+//        if (!file.isEmpty()) {
+//            File dest = new File(tempDir + File.separator + file.getOriginalFilename());
+//            file.transferTo(dest);
+//        }
+//
+//        // 这里可以进行其他信息的保存操作，例如保存到数据库等
+//        // 为了示例简单，这里只是打印一下相关信息
+//        log.debug("act: " + micData.getAct());
+//        log.debug("prompt: " + prompt);
+//        log.debug("duration: " + duration);
+//
+//        return AjaxResult.success("语音识别成功");
+//    }
 
-        EncodingAttributes attrs = new EncodingAttributes();
-        attrs.setOutputFormat("wav");
-        attrs.setAudioAttributes(audio);
-
-        Encoder encoder = new Encoder();
-        encoder.encode(new MultimediaObject(inputFile), outputFile, attrs);
-    }
 }
