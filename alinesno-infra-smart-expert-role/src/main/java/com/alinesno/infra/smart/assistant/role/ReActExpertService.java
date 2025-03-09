@@ -51,13 +51,11 @@ public class ReActExpertService extends ExpertService {
     @Autowired
     private IToolService toolService ;
 
-
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
-        String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
@@ -78,14 +76,9 @@ public class ReActExpertService extends ExpertService {
         StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
 
         do {
-            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId) ;
-//            streamMessagePublisher.doStuffAndPublishAnEvent(loop == 0?"开始思考问题.":"第"+loop+"次思考 ....",
-//                    role,
-//                    taskInfo,
-////                    IdUtil.getSnowflakeNextId()
-//                    taskInfo.getTraceBusId()
-//            );
 
+            String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
+            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId) ;
             loop++;
 
             String prompt = Prompt.buildPrompt(role , tools , thought , goal , datasetKnowledgeDocument) ;
@@ -101,8 +94,6 @@ public class ReActExpertService extends ExpertService {
                 StringBuilder outputStr = new StringBuilder();
                 Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
 
-//                long tmpMsgId = IdUtil.getSnowflakeNextId() ;
-
                 StringBuilder preMsg = new StringBuilder() ;
 
                 result.blockingForEach(message -> {
@@ -112,11 +103,18 @@ public class ReActExpertService extends ExpertService {
 
                     log.debug(msg);
 
-//                    msg.substring(preMsg.toString().length() ;
-//                    streamMessagePublisher.doStuffAndPublishAnEvent(msg.substring(preMsg.toString().length()),
-//                            role,
-//                            taskInfo,
-//                            tmpMsgId);
+                    msg.substring(preMsg.toString().length()) ;
+
+                    FlowStepStatusDto stepDto = new FlowStepStatusDto();
+
+                    stepDto.setMessage("任务进行中...");
+                    stepDto.setStepId(oneChatId);
+                    stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                    stepDto.setFlowChatText(msg.substring(preMsg.toString().length()));
+                    stepDto.setPrint(true);
+
+                    taskInfo.setFlowStep(stepDto);
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, getTaskInfo().getTraceBusId());
 
                     preMsg.setLength(0);
                     preMsg.append(msg) ;
@@ -142,11 +140,6 @@ public class ReActExpertService extends ExpertService {
 
                 WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
                 log.debug("reactResponse = {}" , reactResponse);
-
-//                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
-//                    answer = reactResponse.getFinalAnswer();
-//                    isCompleted = true;
-//                }
 
                 if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
                     String observation = "" ;
@@ -196,7 +189,6 @@ public class ReActExpertService extends ExpertService {
 
                             }
                             log.debug("工具执行结果：{}", executeToolOutput);
-                            System.out.println();
 
                             if(toolResult.isFinished()){
                                 answer = "表达结束" ;
@@ -275,32 +267,6 @@ public class ReActExpertService extends ExpertService {
             taskInfo.setContentReferenceArticle(contentReferenceArticle);
         }
     }
-//
-//    /**
-//     * 处理本次会话的历史记录
-//     * @param messages
-//     * @param channelId
-//     */
-//    private void handleHistoryUserMessage(List<Message> messages, long channelId) {
-//
-//        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
-//        wrapper.eq(MessageEntity::getChannelId, channelId)
-//                .orderByDesc(MessageEntity::getAddTime)
-//                .last("limit 500");;
-//        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
-//
-//        for (MessageEntity dto : chatMessageDtoList) {
-//            String chatText = !StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-//            if ("person".equals(dto.getRoleType())) {
-//                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
-//            }
-//        }
-//
-//        Collections.reverse(messages);
-//
-//    }
-
-
 
     @Override
     protected String handleModifyCall(IndustryRoleEntity role,
