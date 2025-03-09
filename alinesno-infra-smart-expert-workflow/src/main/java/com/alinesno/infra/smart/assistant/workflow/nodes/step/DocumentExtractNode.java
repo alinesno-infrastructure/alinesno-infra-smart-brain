@@ -1,10 +1,13 @@
 // DocumentExtractNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
+import com.alinesno.infra.smart.assistant.workflow.nodes.variable.step.DocumentExtractNodeData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
  * 用于从文档中提取所需的内容，如文本、数据等。
  * 在工作流中，当需要对文档进行内容解析和提取时，会使用该节点。
  */
+@Slf4j
 @Data
 @Scope("prototype")
 @Service(FlowConst.FLOW_STEP_NODE + "document_extract")
@@ -28,6 +32,13 @@ public class DocumentExtractNode extends AbstractFlowNode {
 
     @Override
     protected void handleNode() {
+        DocumentExtractNodeData nodeData = getNodeData() ;
+        log.debug("nodeData = {}" , nodeData) ;
+        log.debug("node type = {} output = {}" , node.getType() , output);
+    }
 
+    private DocumentExtractNodeData getNodeData(){
+        String nodeDataJson = String.valueOf(node.getProperties().get("node_data")) ;
+        return JSONObject.parseObject(nodeDataJson , DocumentExtractNodeData.class) ;
     }
 }
