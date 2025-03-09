@@ -108,7 +108,7 @@ const replayType = ref('text')
 const form = reactive({
   replayType: 'text',  // 回复方式 
   replayParams:[],
-  replayContet: '',
+  replayContent: '',
   isPrint: false
 })
 
@@ -137,7 +137,7 @@ function confirmAndSave() {
   dialogVisible.value = false
 
   // 配置
-  formData.value.replayContet = chatDataCode.value
+  formData.value.replayContent = chatDataCode.value
 }
 
 function openCodemirrorDialog() {
@@ -156,15 +156,16 @@ function openCodemirrorDialog() {
 
 // 选择框的选项列表
 const options = [
-  {
-    value: 'link',
-    label: '引用',
-  },
-  {
-    value: 'text',
-    label: '文本',
-  }
+  { value: 'link',label: '引用' },
+  { value: 'text', label: '文本' }
 ]
+
+onMounted(() => {
+  if(formData.value.replayContent){
+    auditEditorRef.value.setRawScript(formData.value.replayContent)
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
