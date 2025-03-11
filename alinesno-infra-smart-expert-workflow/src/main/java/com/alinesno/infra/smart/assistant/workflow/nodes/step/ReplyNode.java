@@ -42,9 +42,14 @@ public class ReplyNode extends AbstractFlowNode {
         log.debug("nodeData = {}" , nodeData) ;
         log.debug("node type = {} output = {}" , node.getType() , output);
 
+        String answer = nodeData.getReplayContent() ;
+
         if(nodeData.getReplayType().equals("text")){  // 直接返回回复的内容
-            eventNodeMessage(nodeData.getReplayContent()) ;
+            answer = replacePlaceholders(answer);
+            eventNodeMessage(answer) ;
         }
+
+        output.put(node.getStepName()+".answer" , answer);
     }
 
     private ReplayNodeData getNodeData(){
