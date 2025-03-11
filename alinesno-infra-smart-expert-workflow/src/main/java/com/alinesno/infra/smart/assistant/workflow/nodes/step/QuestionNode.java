@@ -62,12 +62,12 @@ public class QuestionNode extends AbstractFlowNode {
 //                CompletableFuture<String> future = getAiChatCompletableFuture(llm , nodeData.getPrompt()) ;
 //                String chatResult = future.get() ;
 
-                CompletableFuture<String> future = getAiChatResultAsync(llm, nodeData.getPrompt());
+                CompletableFuture<String> future = getAiChatResultAsync(llm, replacePlaceholders(nodeData.getPrompt()));
                 // 设置超时时间为 120 秒
                 String chatResult = future.get(120, TimeUnit.SECONDS);
                 System.out.println("Chat result: " + chatResult);
 
-                output.put("{{"+node.getStepName()+".answer}}", chatResult) ;
+                output.put(node.getStepName()+".answer" , chatResult);
             }
 
         }
