@@ -77,11 +77,10 @@ public class FunctionNode extends AbstractFlowNode {
             // 生成任务结果
             return nodeOutput;
         });
-        future.get() ;
+        String nodeOutput =  future.get() ;
 
-        output.put(node.getStepName()+".result" ,taskInfo.getFlowStepContent());
-        log.debug("message = {}" , taskInfo.getFlowStepContent());
-        System.out.println(taskInfo.getFlowStepContent());
+        log.debug("message = {}" , nodeOutput);
+        output.put(node.getStepName()+".result" ,nodeOutput);
     }
 
     /**
