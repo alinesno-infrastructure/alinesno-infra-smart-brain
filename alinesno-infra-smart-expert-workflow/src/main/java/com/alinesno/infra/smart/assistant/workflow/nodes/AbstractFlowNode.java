@@ -21,6 +21,7 @@ import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowNodeExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.nodes.variable.GlobalVariables;
+import com.alinesno.infra.smart.assistant.workflow.parse.TextReplacer;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -155,10 +156,19 @@ public abstract class AbstractFlowNode implements FlowNode {
 
             GlobalVariables globalVariables = new GlobalVariables(preContent , taskInfo.getChannelId() , messages) ;
             this.setGlobalVariables(globalVariables);
+
+            String historyContentAsString = String.join(",", globalVariables.getHistoryContent());
+
+            // 设置全局变量
+            output.put("global.time", globalVariables.getTime()) ;
+            output.put("global.pre_content", globalVariables.getPreContent()) ;
+            output.put("global.channelId", globalVariables.getChannelId()) ;
+            output.put("global.history_content", historyContentAsString) ;
         }
 
         handleNode();
         Thread.sleep(500); // TODO fix:处理节点状态的问题
+        log.debug("output = {}" , output);
 
         // 结束流程节点
         eventStepMessage(AgentConstants.STEP_FINISH) ;
@@ -450,6 +460,14 @@ public abstract class AbstractFlowNode implements FlowNode {
         }
 
         return future;
+    }
+
+    /**
+     * 替换占位符
+     * @return
+     */
+    protected String replacePlaceholders(String text){
+       return TextReplacer.replacePlaceholders(text, output);
     }
 
 }
