@@ -35,6 +35,9 @@ public class DocumentExtractNode extends AbstractFlowNode {
         DocumentExtractNodeData nodeData = getNodeData() ;
         log.debug("nodeData = {}" , nodeData) ;
         log.debug("node type = {} output = {}" , node.getType() , output);
+
+        String content = "文档提取内容" ;
+        output.put(node.getStepName()+".content" , content);
     }
 
     private DocumentExtractNodeData getNodeData(){
