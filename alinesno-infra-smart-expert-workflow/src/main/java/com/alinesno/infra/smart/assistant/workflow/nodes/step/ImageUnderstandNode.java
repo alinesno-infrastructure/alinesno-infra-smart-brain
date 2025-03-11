@@ -34,6 +34,10 @@ public class ImageUnderstandNode extends AbstractFlowNode {
     protected void handleNode() {
         ImageUnderstandNodeData nodeData = getNodeData() ;
         log.debug("node type = {} output = {}" , node.getType() , output);
+
+
+        String answer = "图片理解内容" ;
+        output.put(node.getStepName()+".answer" , answer);
     }
 
     private ImageUnderstandNodeData getNodeData(){
