@@ -35,6 +35,9 @@ public class TextToSpeechNode extends AbstractFlowNode {
         TextToSpeechNodeData nodeData = getNodeData() ;
         log.debug("nodeData = {}" , nodeData) ;
         log.debug("node type = {} output = {}" , node.getType() , output);
+
+        String result = "语音地址" ;
+        output.put(node.getStepName()+".result" , result);
     }
 
     private TextToSpeechNodeData getNodeData(){
