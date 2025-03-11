@@ -36,7 +36,6 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
     protected void handleNode() {
 
         eventStepMessage("开始节点检索知识库" , AgentConstants.STEP_START) ;
-//        List<DocumentVectorBean> content =  this.flowExpertService.searchChannelKnowledgeBase("Java测试技术" , getDatasetIds()) ;
         String content =  this.flowExpertService.searchKnowledgeContent("Java测试技术" , getDatasetIds()) ;
 
         FlowStepStatusDto stepDto = new FlowStepStatusDto();
@@ -56,6 +55,10 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
 
         eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH) ;
 
+        output.put(node.getStepName()+".paragraph_list" , content);
+        output.put(node.getStepName()+".is_hit_handling_method_list" , content);
+        output.put(node.getStepName()+".data" , content);
+        output.put(node.getStepName()+".directly_return" , content);
     }
 
     private String getDatasetIds(){
