@@ -34,6 +34,12 @@ public class ImageGenerateNode extends AbstractFlowNode {
     protected void handleNode() {
         ImageGenerateNodeData nodeData = getNodeData() ;
         log.debug("node type = {} output = {}" , node.getType() , output);
+
+        String answer = "图片生成内容" ;
+        String image = "图片生成地址" ;
+
+        output.put(node.getStepName()+".answer" , answer);
+        output.put(node.getStepName()+".image" , image);
     }
 
     private ImageGenerateNodeData getNodeData(){
