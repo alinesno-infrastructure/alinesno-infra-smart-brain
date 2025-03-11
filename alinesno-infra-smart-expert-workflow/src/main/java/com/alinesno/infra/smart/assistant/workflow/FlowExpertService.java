@@ -101,8 +101,6 @@ public class FlowExpertService extends ExpertService {
                     fullContent.append(msg);
                 }
 
-//                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
-
                 FlowStepStatusDto stepDto = new FlowStepStatusDto();
 
                 stepDto.setMessage("任务进行中...");
@@ -150,12 +148,6 @@ public class FlowExpertService extends ExpertService {
                 entity.setRoleId(role.getId());
 
                 messageService.save(entity);
-
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
-//                        getRole() ,
-//                        getTaskInfo() ,
-//                        traceBusId) ;
 
             }
         });
@@ -236,11 +228,6 @@ public class FlowExpertService extends ExpertService {
                 entity.setRoleId(role.getId());
 
                 messageService.save(entity);
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
-//                        role,
-//                        taskInfo,
-//                        IdUtil.getSnowflakeNextId());
             }
 
         });
