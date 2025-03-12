@@ -88,7 +88,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     private IScreenService screenService ;
 
     @Autowired
-    private ISecretService secretService ;
+    protected ISecretService secretService ;
 
     @Autowired
     protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
