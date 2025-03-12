@@ -39,6 +39,7 @@
 
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
         <module>alinesno-infra-smart-expert-screen</module>  <!-- 场景管理 -->
+        <module>alinesno-infra-smart-expert-publish</module>  <!-- 角色分发 -->
 
         <module>alinesno-infra-smart-expert-dataset</module> <!-- 数据集(知识库)-->
         <module>alinesno-infra-smart-expert-memory</module> <!-- 记忆库 -->
