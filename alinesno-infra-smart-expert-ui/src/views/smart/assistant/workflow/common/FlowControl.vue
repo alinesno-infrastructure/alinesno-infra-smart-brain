@@ -323,7 +323,7 @@ onMounted(() => {
 
 .aip-flow-drawer .el-drawer.ltr,
 .aip-flow-drawer .el-drawer.rtl {
-    height: 95%;
+    height: 93%;
     bottom: 10px;
     top: auto;
     right: 10px;
