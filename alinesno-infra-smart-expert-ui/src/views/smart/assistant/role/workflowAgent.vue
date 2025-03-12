@@ -5,8 +5,7 @@
         <template #content>
           <div style="display: flex;gap: 10px;">
             <span class="mr-3">
-              <img :src="imagePath(currentRole.roleAvatar)" style="width:25px;height:25px;border-radius:5px;" /> {{
-        '' + currentRole.roleName + ' 配置任务编排' }}
+              <img :src="imagePath(currentRole.roleAvatar)" style="width:25px;height:25px;border-radius:5px;" /> {{ currentRole.roleName + ' 配置任务编排' }}
             </span>
             <div style="display: flex;gap:10px;align-items: center;" v-if="currentFlow">
               <el-tag effect="danger" v-if="currentFlow?.publishStatus == 'unpublished'">
@@ -23,7 +22,8 @@
 
       <div class="page-header-btn-container">
         <el-button type="primary" size="large" @click="handlePublishedFlow">
-          <i class="fa-solid fa-location-arrow"></i>&nbsp; 发布
+          <i class="fa-solid fa-location-arrow"></i>
+          &nbsp; 发布
         </el-button>
       </div>
     </div>
