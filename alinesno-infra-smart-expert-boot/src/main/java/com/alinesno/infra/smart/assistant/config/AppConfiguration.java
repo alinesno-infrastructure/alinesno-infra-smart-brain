@@ -48,6 +48,7 @@ import org.springframework.util.unit.DataSize;
         "com.alinesno.infra.smart.assistant.plugin.mapper" ,
         "com.alinesno.infra.smart.inference.mapper",
         "com.alinesno.infra.base.search.mapper",
+        "com.alinesno.infra.smart.assistant.publish.mapper",
         "com.alinesno.infra.smart.assistant.workflow.mapper"
 })
 @ComponentScan({
