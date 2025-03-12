@@ -40,6 +40,10 @@ public class ImageGenerateNode extends AbstractFlowNode {
 
         output.put(node.getStepName()+".answer" , answer);
         output.put(node.getStepName()+".image" , image);
+
+        if(node.isPrint()){  // 是否为返回内容，如果是则输出消息
+            eventMessageCallbackMessage(answer);
+        }
     }
 
     private ImageGenerateNodeData getNodeData(){
