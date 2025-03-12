@@ -79,6 +79,7 @@ public class ReActExpertService extends ExpertService {
 
             String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
             eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId) ;
+            taskInfo.setReasoningText(null);
             loop++;
 
             String prompt = Prompt.buildPrompt(role , tools , thought , goal , datasetKnowledgeDocument) ;
