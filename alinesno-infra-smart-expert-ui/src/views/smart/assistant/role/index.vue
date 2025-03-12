@@ -23,11 +23,11 @@
 
             <div>
               <el-form-item label="角色名称" prop="roleName">
-                <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
+                <el-input v-model="queryParams.roleName" placeholder="请输入角色名称" clearable
                   style="width: 240px" @keyup.enter="handleQuery" />
               </el-form-item>
               <el-form-item label="角色描述" prop="responsibilities" label-width="100px">
-                <el-input v-model="queryParams['condition[responsibilities|like]']" placeholder="请输入角色描述" clearable
+                <el-input v-model="queryParams.responsibilities" placeholder="请输入角色描述" clearable
                   style="width: 240px" @keyup.enter="handleQuery" />
               </el-form-item>
 
@@ -135,14 +135,27 @@
         <el-row>
           <el-col :span="24" class="editor-after-div">
             <el-form-item label="头像" :rules="[{ required: true, message: '请上传头像', trigger: 'blur', },]">
-              <el-upload :file-list="imageUrl" :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
-                list-type="picture-card" :auto-upload="true" :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload" :headers="upload.headers" :disabled="upload.isUploading"
+
+              <el-upload 
+                :file-list="imageUrl" 
+                :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                list-type="picture-card" 
+                :auto-upload="true" 
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload" 
+                :headers="upload.headers" 
+                :disabled="upload.isUploading"
                 :on-progress="handleFileUploadProgress">
                 <el-icon class="avatar-uploader-icon">
                   <Plus />
                 </el-icon>
+                <template #tip>
+                  <div class="el-upload__tip" style="text-align: left;">
+                    只能上传一张图片
+                  </div>
+                </template>
               </el-upload>
+
             </el-form-item>
           </el-col>
         </el-row>
@@ -181,7 +194,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="执行类型" prop="scriptType">
-              <el-radio-group v-model="form.scriptType">
+              <el-radio-group v-model="form.scriptType" :disabled="form.id != null">
                 <el-radio v-for="item in executeTypes" :key="item.code" :value="item.code" :label="item.code"
                   size="large" border>{{ item.title }}</el-radio>
               </el-radio-group>
@@ -551,11 +564,11 @@ function configExecuteScript(row) {
 }
 
 /** 选择条数  */
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.id);
-  single.value = selection.length != 1;
-  multiple.value = !selection.length;
-};
+// function handleSelectionChange(selection) {
+//   ids.value = selection.map(item => item.id);
+//   single.value = selection.length != 1;
+//   multiple.value = !selection.length;
+// };
 
 /** 重置操作表单 */
 function reset() {
@@ -572,26 +585,27 @@ function reset() {
 };
 
 /** 角色类型 */
-function handleRoleTypeClick(roleType) {
-  const roleCode = roleType.code
+// function handleRoleTypeClick(roleType) {
+//   const roleCode = roleType.code
 
-  console.log('roleCode = ' + roleCode)
+//   console.log('roleCode = ' + roleCode)
 
-  if (roleCode === 'agent-inference') {
-    router.push({ path: '/expert/smart/assistant/role/agentInference' });
-  } else if (roleCode === 'workflow') {
-    router.push({ path: '/expert/smart/assistant/role/workflowAgent' });
-  } else if (roleCode === 'custom-script') {
-    router.push({ path: '/expert/smart/assistant/role/constomScript' });
-  }
+//   if (roleCode === 'agent-inference') {
+//     router.push({ path: '/expert/smart/assistant/role/agentInference' });
+//   } else if (roleCode === 'workflow') {
+//     router.push({ path: '/expert/smart/assistant/role/workflowAgent' });
+//   } else if (roleCode === 'custom-script') {
+//     router.push({ path: '/expert/smart/assistant/role/constomScript' });
+//   }
 
-}
+// }
 
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加角色";
+  imageUrl.value = []; // 清空数组
 };
 
 function handleAddFromTemplate() {
@@ -607,6 +621,14 @@ function handleUpdate(row) {
     form.value.roleId = roleId;
     open.value = true;
     title.value = "修改角色";
+
+    const item = {
+      url: upload.display + response.data.roleAvatar,
+      uid: roleId // 可以在这里初始化属性
+    }
+    imageUrl.value = []; // 清空数组
+    imageUrl.value.push(item) ; 
+
   });
 };
 
