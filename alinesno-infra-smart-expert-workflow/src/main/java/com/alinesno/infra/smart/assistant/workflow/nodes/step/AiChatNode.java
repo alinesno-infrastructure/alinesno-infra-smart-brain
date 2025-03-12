@@ -72,6 +72,11 @@ public class AiChatNode extends AbstractFlowNode {
 
                 output.put(node.getStepName()+".answer", chatResult) ;
                 output.put(node.getStepName()+".reasoning_content", chatResult) ;
+
+                if(node.isPrint()){
+                    eventMessageCallbackMessage(chatResult);
+                }
+
             }
 
         }
@@ -110,12 +115,12 @@ public class AiChatNode extends AbstractFlowNode {
                     streamMessagePublisher.doStuffAndPublishAnEvent(null,
                             role,
                             taskInfo,
-                            taskInfo.getTraceBusId());
+                            taskInfo.getFlowChatId());
                 }else{
                     streamMessagePublisher.doStuffAndPublishAnEvent(null,
                             role,
                             taskInfo,
-                            taskInfo.getTraceBusId());
+                            taskInfo.getFlowChatId());
                 }
 
             });
