@@ -81,6 +81,11 @@ public class FunctionNode extends AbstractFlowNode {
 
         log.debug("message = {}" , nodeOutput);
         output.put(node.getStepName()+".result" ,nodeOutput);
+
+        if(node.isPrint() && StringUtils.isNotEmpty(nodeOutput)){  // 是否为返回内容，如果是则输出消息
+            eventMessageCallbackMessage(nodeOutput);
+        }
+
     }
 
     /**
