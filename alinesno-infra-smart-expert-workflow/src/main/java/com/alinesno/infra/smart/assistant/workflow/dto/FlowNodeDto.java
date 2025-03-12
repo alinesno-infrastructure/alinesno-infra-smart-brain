@@ -25,6 +25,8 @@ public class FlowNodeDto {
     private Long nodeId;  // dto是相对于前端界面而言，所以id为step的ID，这里与数据关联，则使用nodeId表示
     // 是否打印
     private boolean isPrint;
+    // 是否最后一个节点
+    private boolean isLastNode;
     // 节点类型，表示节点的种类，如开始节点、任务节点等
     private String type;
     // 节点名称
