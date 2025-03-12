@@ -82,8 +82,7 @@
 
                       <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
                         :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small"
-                          @click="handleBusinessIdToMessageBox(item)">选择</el-button>
+                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
                         <el-button type="primary" link icon="EditPen" size="small"
                           @click="handleCopyGenContent(item)">复制</el-button>
                         <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
