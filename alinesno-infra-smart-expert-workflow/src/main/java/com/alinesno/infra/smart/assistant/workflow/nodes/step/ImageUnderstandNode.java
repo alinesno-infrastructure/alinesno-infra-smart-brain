@@ -38,6 +38,10 @@ public class ImageUnderstandNode extends AbstractFlowNode {
 
         String answer = "图片理解内容" ;
         output.put(node.getStepName()+".answer" , answer);
+
+        if(node.isPrint()){  // 是否为返回内容，如果是则输出消息
+            eventMessageCallbackMessage(answer);
+        }
     }
 
     private ImageUnderstandNodeData getNodeData(){
