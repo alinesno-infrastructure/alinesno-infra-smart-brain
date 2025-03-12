@@ -6,13 +6,15 @@
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
           <el-form-item label="场景名称" prop="name">
-            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入场景名称" clearable
+            <el-input v-model="queryParams.screenName" placeholder="请输入场景名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
+          <!-- 
           <el-form-item label="场景类型" prop="toolType" label-width="100px">
             <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入场景类型" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
-          </el-form-item>
+          </el-form-item> 
+          -->
 
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -118,11 +120,11 @@
           </el-table-column>
           <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[8].visible">
             <template #default="scope">
-              <el-tooltip content="修改" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="修改" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                            v-hasPermi="['system:Screen:edit']"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="删除" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                            v-hasPermi="['system:Screen:remove']"></el-button>
               </el-tooltip>
@@ -149,7 +151,7 @@
                   label="头像"
                   :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
                   <el-upload
-                    :file-list="fileList"
+                    :file-list="imageUrl"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
@@ -302,7 +304,7 @@ const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 
-const imageUrl = ref('')
+const imageUrl = ref([])
 
 // const deptName = ref("");
 // const deptOptions = ref(undefined);
@@ -334,7 +336,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
 });
 
 // 列显隐信息
@@ -446,7 +450,7 @@ function handleSelectionChange(selection) {
 /** 重置操作表单 */
 function reset() {
   form.value = {
-    applicationId: undefined,
+    id: undefined,
     name: undefined,
     toolType: undefined,
     screen: undefined,
@@ -473,12 +477,19 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const applicationId = row.id || ids.value;
-  getScreen(applicationId).then(response => {
+  const id = row.id || ids.value;
+  getScreen(id).then(response => {
     form.value = response.data;
-    form.value.applicationId = applicationId;
+    form.value.id = id;
     open.value = true;
     title.value = "修改应用";
+
+    const item = {
+      url: upload.display + response.data.screenBanner ,
+      uid: id // 可以在这里初始化属性
+    }
+    imageUrl.value = []; // 清空数组
+    imageUrl.value.push(item) ; 
 
   });
 };
@@ -487,7 +498,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["ScreenRef"].validate(valid => {
     if (valid) {
-      if (form.value.applicationId != undefined) {
+      if (form.value.id != undefined) {
         updateScreen(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
