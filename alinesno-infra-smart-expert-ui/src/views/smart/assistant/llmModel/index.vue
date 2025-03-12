@@ -177,14 +177,16 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="基础模型" prop="model">
-              <el-select v-model="form.model" allow-create filterable default-first-option placeholder="请选择基础模型">
+              <el-input type="text" v-model="form.model" placeholder="请输入基础模型，比如 deepseek-r1:7b" maxlength="255" />
+
+              <!-- <el-select v-model="form.model" allow-create filterable default-first-option placeholder="请选择基础模型">
 
                 <el-option v-for="item in baseModelOptions" :label="item.modelName" :value="item.modelName"
                   :key="item.modelName">
                   {{ item.modelName }}
                 </el-option>
 
-              </el-select>
+              </el-select> -->
             </el-form-item>
           </el-col>
         </el-row>
