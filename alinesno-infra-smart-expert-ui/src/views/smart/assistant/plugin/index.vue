@@ -110,11 +110,11 @@
           <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width"
             v-if="columns[8].visible">
             <template #default="scope">
-              <el-tooltip content="修改" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="修改" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                   v-hasPermi="['system:Tool:edit']"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="删除" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                   v-hasPermi="['system:Tool:remove']"></el-button>
               </el-tooltip>
@@ -271,7 +271,7 @@ const data = reactive({
     deptId: undefined
   },
   rules: {
-    applicationId: [{ required: true, message: "应用编号不能为空", trigger: "blur" }],
+    id: [{ required: true, message: "应用编号不能为空", trigger: "blur" }],
     name: [{ required: true, message: "工具名称不能为空", trigger: "blur" }, {
       min: 2,
       max: 20,
@@ -403,7 +403,7 @@ function handleSelectionChange(selection) {
 /** 重置操作表单 */
 function reset() {
   form.value = {
-    applicationId: undefined,
+    id: undefined,
     name: undefined,
     pluginType: undefined,
     screen: undefined,
@@ -430,12 +430,19 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const applicationId = row.id || ids.value;
-  getTool(applicationId).then(response => {
+  const id = row.id || ids.value;
+  getTool(id).then(response => {
     form.value = response.data;
-    form.value.applicationId = applicationId;
+    form.value.id = id;
     open.value = true;
     title.value = "修改应用";
+
+    const item = {
+      url: upload.display + response.data.icon ,
+      uid: id // 可以在这里初始化属性
+    }
+    imageUrl.value = []; // 清空数组
+    imageUrl.value.push(item) ; 
   });
 };
 
@@ -443,7 +450,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["ToolRef"].validate(valid => {
     if (valid) {
-      if (form.value.applicationId != undefined) {
+      if (form.value.id != undefined) {
         updateTool(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
