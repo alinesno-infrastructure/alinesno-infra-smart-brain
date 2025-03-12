@@ -60,6 +60,9 @@ public class MessageTaskInfo implements Serializable {
     // 用户业务流程过程中记录的id
     private long traceBusId ; // 业务跟踪的ID
 
+    // 用于业务流程聊天的唯一ID，做为流程聊天的唯一ID，做流程聊天的记录
+    private long flowChatId ; // 流程聊天ID
+
     // 当前用户信息
     // 操作账号ID
     private Long accountId = 0L ;
