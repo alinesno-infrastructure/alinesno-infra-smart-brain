@@ -105,12 +105,14 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
         }
 
         Map<String , Object> output = new HashMap<>();  // 流程全局参数
+        StringBuilder outputContent = new StringBuilder() ; // 流程输出内容
 
         log.debug("执行任务.");
         executeNodesAsTopologicalSort(
                 parseNodes ,
                 flowExecutionEntity ,
                 output ,
+                outputContent ,
                 taskInfo ,
                 role ,
                 workflowExecution ,
@@ -130,6 +132,7 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
     private void executeFlowNode(FlowNodeDto node,
                                  FlowExecutionEntity flowExecutionEntity,
                                  Map<String, Object> output ,
+                                 StringBuilder outputContent ,
                                  int count ,
                                  int level,
                                  MessageTaskInfo taskInfo,
@@ -168,6 +171,7 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
                 flowExecutionEntity ,
                 flowNodeExecutionEntity ,
                 output ,
+                outputContent,
                 taskInfo ,
                 role ,
                 workflowExecution ,
@@ -188,7 +192,9 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
      */
     public void executeNodesAsTopologicalSort(List<FlowNodeDto> nodes,
                                               FlowExecutionEntity flowExecutionEntity,
-                                              Map<String, Object> output,MessageTaskInfo taskInfo,
+                                              Map<String, Object> output,
+                                              StringBuilder outputContent ,
+                                              MessageTaskInfo taskInfo,
                                               IndustryRoleEntity role,
                                               MessageEntity workflowExecution,
                                               FlowExpertService flowExpertService) {
@@ -215,15 +221,20 @@ public class FlowServiceImpl extends IBaseServiceImpl<FlowEntity, FlowMapper> im
 
         while (!queue.isEmpty()) {
             int size = queue.size();
+
             for (int i = 0; i < size; i++) {
                 FlowNodeDto currentNode = queue.poll();
                 log.debug("node--{}--level--{}--->>>>>>>>start", count, level);
                 log.debug("Processing node stepName = {} , type = {} , id = {}", Objects.requireNonNull(currentNode).getStepName(), currentNode.getType(), currentNode.getId());
                 log.debug("node--{}--level--{}--->>>>>>>>end", count, level);
 
+                // 最后一个节点
+                currentNode.setLastNode(count == nodes.size());
+
                 executeFlowNode(currentNode,
                         flowExecutionEntity,
                         output,
+                        outputContent,
                         count,
                         level,
                         taskInfo ,
