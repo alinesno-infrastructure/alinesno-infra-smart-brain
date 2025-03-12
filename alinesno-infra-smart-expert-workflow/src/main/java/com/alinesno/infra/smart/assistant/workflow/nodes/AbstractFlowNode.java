@@ -66,6 +66,11 @@ public abstract class AbstractFlowNode implements FlowNode {
     protected FlowNodeDto node;
 
     /**
+     * 最后输出的内容
+     */
+    private StringBuilder outputContent ;
+
+    /**
      * 流程执行实体，代表整个流程的执行实例
      */
     protected FlowExecutionEntity flowExecution;
@@ -123,6 +128,7 @@ public abstract class AbstractFlowNode implements FlowNode {
                             FlowExecutionEntity flowExecution ,
                             FlowNodeExecutionEntity flowNodeExecution,
                             Map<String, Object> output,
+                            StringBuilder outputContent ,
                             MessageTaskInfo taskInfo,
                             IndustryRoleEntity role,
                             MessageEntity workflowExecution,
@@ -130,11 +136,14 @@ public abstract class AbstractFlowNode implements FlowNode {
 
         boolean isPrintContent = isPrintContent(node) ;
         log.debug("isPrintContent(node) = {}" , isPrintContent);
+
         node.setPrint(isPrintContent);
         flowExpertService.setNode(node);
+        flowExpertService.setOutputContent(outputContent);
 
         // 设置运行参数变量
         this.setNode(node);
+        this.outputContent = outputContent ;
         this.setFlowExecution(flowExecution);
         this.setFlowNodeExecution(flowNodeExecution);
         this.setOutput(output);
@@ -226,8 +235,49 @@ public abstract class AbstractFlowNode implements FlowNode {
         streamMessagePublisher.doStuffAndPublishAnEvent(msg ,
                 role,
                 taskInfo,
-                taskInfo.getTraceBusId()
+                taskInfo.getFlowChatId()
         );
+
+    }
+
+
+    /**
+     * 保存所有消息
+     * @param msg
+     */
+    protected void eventMessageCallbackMessage(String msg) {
+
+        outputContent.append(msg) ;  // 每个节点的内容都添加到outputContent中
+        outputContent.append("\n\n"); // 添加换行
+
+        // 如果是最后一个节点，则将所有内容拼接保存到数据库中
+        if (node.isLastNode()) {
+
+            MessageEntity entity = new MessageEntity();
+
+            entity.setTraceBusId(taskInfo.getTraceBusId());
+            entity.setId(taskInfo.getFlowChatId()) ; // 消息保存的业务Id
+            entity.setContent(outputContent.toString());
+            entity.setFormatContent(outputContent.toString());
+            entity.setName(role.getRoleName());
+
+            entity.setRoleType("agent");
+            entity.setReaderType("html");
+
+            entity.setAddTime(new Date());
+            entity.setIcon(role.getRoleAvatar());
+
+            entity.setChannelId(taskInfo.getChannelId());
+            entity.setRoleId(role.getId());
+
+            flowExpertService.getMessageService().save(entity);
+
+            streamMessagePublisher.doStuffAndPublishAnEvent(outputContent.toString() ,
+                    role,
+                    taskInfo,
+                    taskInfo.getFlowChatId()
+            );
+        }
 
     }
 
@@ -287,12 +337,11 @@ public abstract class AbstractFlowNode implements FlowNode {
             StringBuilder outputStr = new StringBuilder();
 
             List<Message> messages = new ArrayList<>();
-            // handleHistoryUserMessage(messages , taskInfo.getChannelId()) ;
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
 
             Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
 
-            long tmpMsgId = taskInfo.getTraceBusId() ; // IdUtil.getSnowflakeNextId() ;
+            long tmpMsgId = taskInfo.getFlowChatId() ;
 
             StringBuilder preMsg = new StringBuilder() ;
 
@@ -347,9 +396,6 @@ public abstract class AbstractFlowNode implements FlowNode {
 
                 if(StringUtil.hasText(message.getContent())){
                     taskInfo.setReasoningText(null);
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, taskInfo, workflowId);
-
                     eventNodeMessage(message.getContent() );
                 }
 
@@ -375,13 +421,7 @@ public abstract class AbstractFlowNode implements FlowNode {
                     entity.setRoleId(role.getId()) ;
 
                     flowExpertService.getMessageService().save(entity);
-
                     outputStr.append(message.getFullContent()) ;
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
-//                        role ,
-//                        taskInfo ,
-//                        IdUtil.getSnowflakeNextId()) ;
                 }
 
             });
@@ -409,7 +449,7 @@ public abstract class AbstractFlowNode implements FlowNode {
         streamMessagePublisher.doStuffAndPublishAnEvent(null , //  msg.substring(preMsg.toString().length()),
                 role,
                 taskInfo,
-                taskInfo.getTraceBusId());
+                taskInfo.getFlowChatId());
     }
 
 
@@ -441,10 +481,10 @@ public abstract class AbstractFlowNode implements FlowNode {
                         if (message.getStatus() == MessageStatus.END) {
                             outputStr.set(message.getFullContent());
                             stepDto.setStatus(AgentConstants.STEP_FINISH);
-                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
+                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getFlowChatId());
                             future.complete(outputStr.get());
                         } else {
-                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
+                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getFlowChatId());
                         }
                     }
                 } catch (Exception e) {
