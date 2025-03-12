@@ -1,10 +1,13 @@
 <template>
   <nav class=" header-text">
-    <!-- <div class="acp-header-item ">
+    <div class="acp-header-item ">
       <div class="header-label-text" >
-        <el-switch v-model="isDarkTheme" @change="toggleTheme" />
+        <div style="cursor: pointer;display: flex;flex-direction: row;align-items: center;gap: 3px;" @click="toggleTheme">
+            <svg-icon v-if="themeType!== 'dark'" icon-class="dark-theme" style="font-size:16px" /> 
+            <svg-icon v-else icon-class="light-theme" style="font-size:16px" /> 主题 
+        </div>
       </div>
-    </div> -->
+    </div> 
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/index">
         <i class="fa-solid fa-screwdriver-wrench"></i> 控制台
@@ -103,18 +106,16 @@
 </template>
 
 <script setup>
-
 import { ElMessageBox } from 'element-plus'
 import useUserStore from '@/store/modules/user'
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
-const router = useRouter();
+const router = useRouter()
 
-const isDarkTheme = ref(null)
-
-// const avatar = ref('http://data.linesno.com/switch_header.png') ; 
-// const nickname = ref('超级管理员') ;
-// const name = ref('超级管理员') ;
+// 初始化为 localStorage 中存储的主题类型，如果没有则默认为空字符串
+const themeType = ref(localStorage.getItem('themeType') || '')
 
 function logout() {
   ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
@@ -122,35 +123,48 @@ function logout() {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-
     userStore.ssoLogOut().then(() => {
-      location.href = '/index';
+      location.href = '/index'
     })
-
-  }).catch(() => { });
+  }).catch(() => {})
 }
 
 /** 判断用户是否已经存在组织 */
-function handleInOrg(){
-  let org = userStore.org ;   
-  if(!org){ // 如果不存在则跳转到组织配置界面
+function handleInOrg() {
+  let org = userStore.org
+  if (!org) { 
     router.push('/createOrg')
+  }
+}
+
+/** 切换主题 */
+function toggleTheme() {
+  themeType.value = themeType.value === 'dark' ? '' : 'dark'
+  localStorage.setItem('themeType', themeType.value)
+  updateHtmlClass()
+}
+
+/** 更新html class */
+function updateHtmlClass() {
+  if (themeType.value === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
   }
 }
 
 onMounted(() => {
   handleInOrg()
+  updateHtmlClass() // 页面加载时根据存储的主题类型更新 html class
 })
 
 console.log('avatar = ' + userStore.avatar)
 console.log('name = ' + userStore.name)
 console.log('dept = ' + JSON.stringify(userStore.dept))
 console.log('role = ' + JSON.stringify(userStore.roles))
-
 </script>
 
 <style lang="scss" scoped>
-
 .color-text-secondary , .color-text-primary{
   font-size: var(--el-font-size-base);
 
@@ -159,7 +173,4 @@ console.log('role = ' + JSON.stringify(userStore.roles))
     cursor: pointer;
   }
 }
-
 </style>
-
-
