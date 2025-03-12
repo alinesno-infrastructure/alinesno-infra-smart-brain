@@ -10,7 +10,7 @@
                 </template>
             </el-page-header>
             <div>
-                <el-button type="warning" bg @click="validateRoleScript" text size="large">验证脚本</el-button>
+                <!-- <el-button type="warning" bg @click="validateRoleScript" text size="large">验证脚本</el-button> -->
                 <el-button type="primary" bg @click="submitForm" text size="large">保存配置</el-button>
             </div>
         </div>
@@ -141,36 +141,36 @@ function setCurrentRoleId(id) {
 }
 
 /** 验证脚本任务 */
-const handleValidateTask = () => {
-    let type = scriptType.value?scriptType.value:'execute' ;
-    const scriptCode = getCode()[type];
-    const roleId = currentRoleId.value;
+// const handleValidateTask = () => {
+//     let type = scriptType.value?scriptType.value:'execute' ;
+//     const scriptCode = getCode()[type];
+//     const roleId = currentRoleId.value;
 
-    loading.value = true
+//     loading.value = true
 
-    const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
-    console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
+//     const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
+//     console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
 
-    if(!agentConfigParams){
-        return ;
-    }
+//     if(!agentConfigParams){
+//         return ;
+//     }
 
-    validateRoleScript({
-        'agentConfigParams': agentConfigParams,
-        'script': scriptCode,
-        'roleId': roleId,
-        'type': type,
-        'message': chatMessage.value
-    }).then(res => {
-        console.log('res = ' + res);
-        loading.value = false
-        genContent.value = res.data.genContent
-        proxy.$modal.msgSuccess("验证成功");
-    }).catch(err => {
-        console.log('err = ' + err);
-        loading.value = false
-    })
-}
+//     validateRoleScript({
+//         'agentConfigParams': agentConfigParams,
+//         'script': scriptCode,
+//         'roleId': roleId,
+//         'type': type,
+//         'message': chatMessage.value
+//     }).then(res => {
+//         console.log('res = ' + res);
+//         loading.value = false
+//         genContent.value = res.data.genContent
+//         proxy.$modal.msgSuccess("验证成功");
+//     }).catch(err => {
+//         console.log('err = ' + err);
+//         loading.value = false
+//     })
+// }
 
 /** 提交脚本任务 */
 const submitForm = async() => {
@@ -181,7 +181,9 @@ const submitForm = async() => {
         return 
     }
 
-    let type = scriptType.value?scriptType.value:'execute' ;
+    const type = scriptType.value && scriptType.value !== 'params'?scriptType.value:'execute' ;
+    console.log('type = ' + type);
+
     const scriptCode = getCode()[type];
     const roleId = currentRoleId.value;
 
