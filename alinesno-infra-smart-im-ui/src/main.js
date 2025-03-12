@@ -80,6 +80,14 @@ app.component('svg-icon', SvgIcon)
 
 directive(app)
 
+// 根据存储的主题状态设置 html 元素的 class
+const themeType = localStorage.getItem('themeType') || ''
+if (themeType === 'dark') {
+  document.documentElement.classList.add('dark')
+} else {
+  document.documentElement.classList.remove('dark')
+}
+
 // 使用element-plus 并且设置全局的大小
 app.use(ElementPlus, {
   locale: zhCn,
