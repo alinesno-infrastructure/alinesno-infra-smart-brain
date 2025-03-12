@@ -2,7 +2,7 @@
   <div class="exam-container">
     <el-row :gutter="20">
       <!-- 左边：题目列表或题目详情 -->
-      <el-col :span="18" class="question-section-col">
+      <el-col :span="24" class="question-section-col">
         <el-scrollbar height="calc(100vh - 170px)">
 
         <div v-if="isEditMode">
@@ -88,6 +88,7 @@
       </el-col>
 
       <!-- 右边：考试信息及倒计时 -->
+      <!-- 
       <el-col :span="6" class="exam-info-col">
         <div class="exam-info">
           <h3>Java面试考试</h3>
@@ -98,9 +99,10 @@
           </div>
           <p>倒计时：{{ formatTime(timeLeft) }}</p>
           <el-button type="primary" size="large" @click="submitExam" :disabled="isSubmitted || timeLeft <= 0">提交试卷</el-button> <br/>
-          <!-- <el-button type="info" size="large" text bg @click="toggleEditMode">{{ isEditMode ? '进入考试模式' : '进入编辑模式' }}</el-button> -->
         </div>
-      </el-col>
+      </el-col> 
+      -->
+
     </el-row>
   </div>
 </template>
