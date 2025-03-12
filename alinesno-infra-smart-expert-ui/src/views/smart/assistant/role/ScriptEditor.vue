@@ -16,7 +16,7 @@
               函数内容(Groovy)
             </div>
             <div>
-              <el-button type="warning" @click="validateScript" bg text size="large"> 试运行</el-button>
+              <!-- <el-button type="warning" @click="validateScript" bg text size="large"> 试运行</el-button> -->
               <el-button type="primary" @click="submitDialog" bg text size="large"> 确定 </el-button>
             </div>
           </div>
@@ -87,6 +87,11 @@ const calculateFirstSectionHeight = () => {
   console.log(editorHeight.value); //打印高度
 }
 
+const submitDialog = () => {
+  codeVal.value = cloneContent.value
+  dialogVisible.value = false
+}
+
 /**
  * 获取到codeValue
  */
@@ -102,7 +107,6 @@ function setRawScript(val) {
     return codeVal.value = val;
   }
 }
-
 
 onMounted(() => {
   calculateFirstSectionHeight();
