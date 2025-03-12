@@ -51,7 +51,7 @@ public class KnowledgeSearchNode extends AbstractFlowNode {
         streamMessagePublisher.doStuffAndPublishAnEvent(null,
                 role,
                 taskInfo,
-                taskInfo.getTraceBusId());
+                taskInfo.getFlowChatId());
 
         eventStepMessage("节点检索知识库" , AgentConstants.STEP_FINISH) ;
 
