@@ -176,14 +176,14 @@ function handleFlowTaskNotice(){
 /** 获取定时任务服务 */
 let timer = null;
 onMounted(() => {
-   timer = setInterval(() => {
-     handleFlowTaskNotice() ;
-   }, 5*1000);
+  //  timer = setInterval(() => {
+  //    handleFlowTaskNotice() ;
+  //  }, 5*1000);
 })
 
 /** 任务实例销毁 */
 onBeforeUnmount(() => {
-   clearInterval(timer)
+  //  clearInterval(timer)
    timer = null;
 })
 
