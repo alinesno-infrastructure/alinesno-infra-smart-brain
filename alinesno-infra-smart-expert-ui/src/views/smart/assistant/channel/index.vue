@@ -6,13 +6,16 @@
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
           <el-form-item label="频道名称" prop="name">
-            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入频道名称" clearable
+            <el-input v-model="queryParams.channelName" placeholder="请输入频道名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
+          
+          <!-- 
           <el-form-item label="频道类型" prop="toolType" label-width="100px">
-            <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入频道类型" clearable
+            <el-input v-model="queryParams.toolType" placeholder="请输入频道类型" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
-          </el-form-item>
+          </el-form-item> 
+          -->
 
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -114,11 +117,11 @@
           </el-table-column>
           <el-table-column label="操作" align="center" width="100" class-name="small-padding fixed-width" v-if="columns[8].visible">
             <template #default="scope">
-              <el-tooltip content="修改" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="修改" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)"
                            v-hasPermi="['system:Channel:edit']"></el-button>
               </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.applicationId !== 1">
+              <el-tooltip content="删除" placement="top" v-if="scope.row.id !== 1">
                 <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)"
                            v-hasPermi="['system:Channel:remove']"></el-button>
               </el-tooltip>
@@ -145,11 +148,10 @@
                   label="头像"
                   :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
                   <el-upload
-                    :file-list="fileList"
+                    :file-list="imageUrl"
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
-                    :limit="1"
                     :on-success="handleAvatarSuccess"
                     :before-upload="beforeAvatarUpload"
                     :headers="upload.headers"
@@ -332,7 +334,9 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: {Authorization: "Bearer " + getToken()},
   // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData"
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
 });
 
 // 列显隐信息
@@ -398,7 +402,8 @@ function handleQuery() {
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
-  imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
   form.value.icon = response.data ;
 };
 
@@ -444,7 +449,7 @@ function handleSelectionChange(selection) {
 /** 重置操作表单 */
 function reset() {
   form.value = {
-    applicationId: undefined,
+    id: undefined,
     name: undefined,
     toolType: undefined,
     screen: undefined,
@@ -466,17 +471,25 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加应用";
+  imageUrl.value = []; // 清空数组
 };
 
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
-  const applicationId = row.id || ids.value;
-  getChannel(applicationId).then(response => {
+  const id = row.id || ids.value;
+  getChannel(id).then(response => {
     form.value = response.data;
-    form.value.applicationId = applicationId;
+    form.value.id = id;
     open.value = true;
     title.value = "修改应用";
+
+    const item = {
+      url: upload.display + response.data.icon ,
+      uid: id // 可以在这里初始化属性
+    }
+    imageUrl.value = []; // 清空数组
+    imageUrl.value.push(item) ; 
 
   });
 };
@@ -485,7 +498,7 @@ function handleUpdate(row) {
 function submitForm() {
   proxy.$refs["ChannelRef"].validate(valid => {
     if (valid) {
-      if (form.value.applicationId != undefined) {
+      if (form.value.id != undefined) {
         updateChannel(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
