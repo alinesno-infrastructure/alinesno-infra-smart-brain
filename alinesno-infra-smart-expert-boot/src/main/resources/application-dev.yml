@@ -23,7 +23,7 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-      password: aip@local
+      # password: aip@local
   mvc:
     async:
       request-timeout: 3600000
@@ -35,7 +35,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;com.alinesno.infra.smart.assistant.publish.entity;
   database:
     type: mysql
   index:
