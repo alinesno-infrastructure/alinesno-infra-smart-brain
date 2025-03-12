@@ -38,8 +38,12 @@ public class HttpApiNode extends AbstractFlowNode {
         String result = HttpApiRequestor.sendRequest(nodeData) ;
         eventNodeMessage(result) ;
 
-        String response = "语音地址" ;
+        String response = "Http解析结果内容" ;
         output.put(node.getStepName()+".response" , response);
+
+        if(node.isPrint()){
+            eventMessageCallbackMessage(response);
+        }
     }
 
     private HttpApiNodeData getNodeData(){
