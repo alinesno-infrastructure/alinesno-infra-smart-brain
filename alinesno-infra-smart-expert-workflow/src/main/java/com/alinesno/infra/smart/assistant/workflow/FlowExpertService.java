@@ -9,16 +9,20 @@ import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
+import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.ExpertService;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
+import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -26,9 +30,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Semaphore;
+
+import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_ROLE;
 
 /**
  * 流程节点编排引擎，执行多个流程节点并返回结果任务
@@ -44,6 +49,9 @@ public class FlowExpertService extends ExpertService {
     @Setter
     private FlowNodeDto node;
 
+    @Setter
+    private StringBuilder outputContent;
+
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowExecution,
@@ -53,6 +61,59 @@ public class FlowExpertService extends ExpertService {
         log.debug("handleRole result : {}", result);
 
         return "执行结束";
+    }
+
+    @Override
+    public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+
+        WorkflowExecutionDto record = new WorkflowExecutionDto();
+
+        // 设置业务跟踪
+        long traceBusId = IdUtil.getSnowflakeNextId();
+        long flowChatId = IdUtil.getSnowflakeNextId();
+
+        record.setTraceBusId(traceBusId);
+
+        taskInfo.setTraceBusId(traceBusId);
+        taskInfo.setFlowChatId(flowChatId);
+
+        // 任务开始记录
+        record.setRoleId(role.getId());
+        record.setChannelId(taskInfo.getChannelId());
+
+        record.setBuildNumber(1);
+        record.setStartTime(System.currentTimeMillis());
+
+        record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
+
+        this.setRole(role);
+        this.setTaskInfo(taskInfo);
+        this.setMsgUuid(IdUtil.getSnowflakeNextId());
+        this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
+
+        record.setChatType(TYPE_ROLE);
+
+        try {
+            // 处理业务
+            String gentContent = handleRole(role, workflowExecution, taskInfo);
+            log.debug("handleRole result : {}", gentContent);// 解析出生成的内容
+            record.setGenContent(gentContent);
+            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+            record.setCodeContent(codeContentList);
+        } catch (Exception e) {
+            log.error("解析代码块异常:{}", e.getMessage());
+
+            streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
+            streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+        }
+
+        // 处理完成之后记录更新
+        record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+        record.setEndTime(System.currentTimeMillis());
+        record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+
+        return record;
+
     }
 
     @Override
@@ -94,6 +155,8 @@ public class FlowExpertService extends ExpertService {
                 log.info("Received message: {}", JsonUtils.toJson(message));
 
                 if (finishReason != null && finishReason.equals("stop")) {
+
+
                     taskInfo.setFlowStepContent(fullContent.toString());
                     msg = "[DONE]";
                     semaphore.release();
@@ -114,7 +177,7 @@ public class FlowExpertService extends ExpertService {
                 streamMessagePublisher.doStuffAndPublishAnEvent(null, //  msg.substring(preMsg.toString().length()),
                         role,
                         taskInfo,
-                        taskInfo.getTraceBusId());
+                        taskInfo.getFlowChatId());
 
             }
 
@@ -130,24 +193,28 @@ public class FlowExpertService extends ExpertService {
                 semaphore.release();
                 log.info("Full content: \n{}", fullContent);
 
-                MessageEntity entity = new MessageEntity();
+                if(node.isPrint()){
+                    outputContent.append(fullContent) ;   // 将内容输出到最终结果中
+                }
 
-                entity.setTraceBusId(taskInfo.getTraceBusId());
-                entity.setId(IdUtil.getSnowflakeNextId()); // msgManager.getWorkflowId());
-                entity.setContent(fullContent.toString());
-                entity.setFormatContent(fullContent.toString());
-                entity.setName(role.getRoleName());
-
-                entity.setRoleType("agent");
-                entity.setReaderType("html");
-
-                entity.setAddTime(new Date());
-                entity.setIcon(role.getRoleAvatar());
-
-                entity.setChannelId(msgManager.getChannelId());
-                entity.setRoleId(role.getId());
-
-                messageService.save(entity);
+//                MessageEntity entity = new MessageEntity();
+//
+//                entity.setTraceBusId(taskInfo.getTraceBusId());
+//                entity.setId(IdUtil.getSnowflakeNextId()); // msgManager.getWorkflowId());
+//                entity.setContent(fullContent.toString());
+//                entity.setFormatContent(fullContent.toString());
+//                entity.setName(role.getRoleName());
+//
+//                entity.setRoleType("agent");
+//                entity.setReaderType("html");
+//
+//                entity.setAddTime(new Date());
+//                entity.setIcon(role.getRoleAvatar());
+//
+//                entity.setChannelId(msgManager.getChannelId());
+//                entity.setRoleId(role.getId());
+//
+//                messageService.save(entity);
 
             }
         });
@@ -187,7 +254,9 @@ public class FlowExpertService extends ExpertService {
                 stepDto.setFlowReasoningText(message.getReasoningContent());
 
                 taskInfo.setFlowStep(stepDto);
-                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, traceBusId);
+                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, taskInfo.getFlowChatId());
+
+//                eventStepMessage("任务进行中...", AgentConstants.STEP_PROCESS , taskInfo.getFlowChatId()+"") ;
             }
 
             if (StringUtil.hasText(message.getContent())) {
@@ -203,31 +272,38 @@ public class FlowExpertService extends ExpertService {
                 stepDto.setFlowReasoningText(null);
 
                 taskInfo.setFlowStep(stepDto);
-                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, traceBusId);
+                streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, taskInfo.getFlowChatId());
+
+//                eventStepMessage("任务进行中...", AgentConstants.STEP_PROCESS , taskInfo.getFlowChatId()+"") ;
             }
 
             MessageStatus status = message.getStatus();
+
             if (status == MessageStatus.END) {  // 结束
 
-                MessageEntity entity = new MessageEntity();
+                if(node.isPrint()){
+                    outputContent.append(message.getFullContent()) ;   // 将内容输出到最终结果中
+                }
 
-                entity.setTraceBusId(taskInfo.getTraceBusId());
-                entity.setId(workflowId);
-                entity.setContent(message.getFullContent());
-                entity.setReasoningContent(message.getFullReasoningContent());
-                entity.setFormatContent(message.getFullContent());
-                entity.setName(role.getRoleName());
-
-                entity.setRoleType("agent");
-                entity.setReaderType("html");
-
-                entity.setAddTime(new Date());
-                entity.setIcon(role.getRoleAvatar());
-
-                entity.setChannelId(taskInfo.getChannelId());
-                entity.setRoleId(role.getId());
-
-                messageService.save(entity);
+//                MessageEntity entity = new MessageEntity();
+//
+//                entity.setTraceBusId(taskInfo.getTraceBusId());
+//                entity.setId(workflowId);
+//                entity.setContent(message.getFullContent());
+//                entity.setReasoningContent(message.getFullReasoningContent());
+//                entity.setFormatContent(message.getFullContent());
+//                entity.setName(role.getRoleName());
+//
+//                entity.setRoleType("agent");
+//                entity.setReaderType("html");
+//
+//                entity.setAddTime(new Date());
+//                entity.setIcon(role.getRoleAvatar());
+//
+//                entity.setChannelId(taskInfo.getChannelId());
+//                entity.setRoleId(role.getId());
+//
+//                messageService.save(entity);
             }
 
         });
@@ -253,7 +329,7 @@ public class FlowExpertService extends ExpertService {
         streamMessagePublisher.doStuffAndPublishAnEvent(null,
                 getRole(),
                 getTaskInfo(),
-                getTaskInfo().getTraceBusId()
+                getTaskInfo().getFlowChatId()
         );
 
     }
