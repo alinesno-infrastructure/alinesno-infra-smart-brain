@@ -64,10 +64,9 @@
               <!-- 聊天窗口_end -->
             </div>
 
-            <div class="robot-chat-footer chat-container" style="float:left;width:100%">
+            <!-- <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <el-row :gutter="20">
-                <el-col :span="16">
+                <div class="message-input-box">
                   <div class="message-input">
 
                     <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
@@ -77,10 +76,9 @@
                       </template>
                     </el-input>
 
-                  </div>
-                </el-col>
+                </div>
 
-                <el-col :span="8" style="text-align: right;">
+                <div class="message-btn-box">
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
@@ -94,10 +92,48 @@
                     </el-button>
                   </el-tooltip>
 
-                </el-col>
-              </el-row>
+                </div>
+                </div>
+
+            </div> -->
+
+            <div class="robot-chat-footer chat-container" style="float:left;width:100%">
+
+                <div class="message-input-box">
+                  <div class="message-input">
+
+                    <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
+                      :options="mentionOptions" :prefix="['@']" placeholder="请输入你的问题." @select="handleSelect">
+                      <template #label="{ item }">
+                        {{ item.label }}
+                      </template>
+                    </el-input>
+
+                  </div>
+                </div>
+
+                <div class="message-btn-box">
+
+                  <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
+                    <el-button type="danger" text bg size="large" @click="sendMessage('send')">
+                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
+                    </el-button>
+                  </el-tooltip>
+
+                  <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top">
+                    <el-button type="warning" text bg size="large" @click="sendMessage('function')">
+                      <i class="fa-solid fa-feather icon-btn"></i>
+                    </el-button>
+                  </el-tooltip>
+
+                </div>
 
             </div>
+                <div style="position: absolute;bottom: 5px;font-size: 80%;color: #777;">
+                  内容由第三方 AI 生成，无法确保真实准确，仅供参考
+                </div>
+
+            
           </div>
         </el-col>
 
