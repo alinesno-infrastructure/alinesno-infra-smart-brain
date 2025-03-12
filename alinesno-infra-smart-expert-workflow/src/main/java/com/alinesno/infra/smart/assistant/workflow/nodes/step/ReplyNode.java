@@ -50,6 +50,10 @@ public class ReplyNode extends AbstractFlowNode {
         }
 
         output.put(node.getStepName()+".answer" , answer);
+
+        if(node.isPrint()){
+            eventMessageCallbackMessage(answer);
+        }
     }
 
     private ReplayNodeData getNodeData(){
