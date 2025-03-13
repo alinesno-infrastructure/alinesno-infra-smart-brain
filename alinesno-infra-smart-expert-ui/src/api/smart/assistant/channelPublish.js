@@ -16,12 +16,13 @@ var managerUrl = {
   exportUrl: prefix + "exportExcel",
   changeField: prefix + "changeField",
   channels: prefix + "channels",
+  updateChannelConfig: prefix + "updateChannelConfig",
 }
 
 // 获取到所有渠道
-export function getChannels(){
+export function getChannels(roleId){
   return request({
-    url: managerUrl.channels ,
+    url: managerUrl.channels + "?roleId=" + parseStrEmpty(roleId) ,
     method: 'get'
   })
 }
@@ -56,6 +57,15 @@ export function getChannelPublish(id) {
 export function addChannelPublish(data) {
   return request({
     url: managerUrl.saveUrl ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 更新配置
+export function updateChannelConfig(data) {
+  return request({
+    url: managerUrl.updateChannelConfig,
     method: 'post',
     data: data
   })
