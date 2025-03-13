@@ -460,7 +460,7 @@ function handleRecommended(roleId) {
 
 /** 发布渠道 */
 function deployChannel(item){
-  router.push({path: '/expert/smart/assistant/role/deployChannel', query: { roleId: item.id }})
+  router.push({path: '/expert/smart/assistant/role/publishChannel', query: { roleId: item.id }})
 }
 
 /** 点击配置 */
