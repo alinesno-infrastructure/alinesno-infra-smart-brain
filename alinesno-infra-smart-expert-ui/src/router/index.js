@@ -33,11 +33,17 @@ export const constantRoutes = [
     component: () => import('@/views/login'),
     hidden: true
   },
-   {
+  {
      path: '/sso/login',
      component: () => import('@/views/loginSso'),
      hidden: true
-   },
+  },
+  {
+    path: '/chat/publish',
+    component: () => import('@/views/smart/publish/index'),
+    name: '/chat/publish',
+    meta: { title: '分享聊天', icon: 'dashboard', affix: true }
+  },
   {
     path: "/:pathMatch(.*)*",
     component: () => import('@/views/error/404'),
@@ -171,9 +177,9 @@ export const constantRoutes = [
         meta: { title: 'Agent推理角色', icon: 'dashboard', affix: true }
       },
       {
-        path: '/expert/smart/assistant/role/deployChannel' , 
-        component: () => import('@/views/smart/assistant/role/deployChannel'),
-        name: '/expert/smart/assistant/role/deployChannel' , 
+        path: '/expert/smart/assistant/role/publishChannel' , 
+        component: () => import('@/views/smart/assistant/publishChannel/index'),
+        name: '/expert/smart/assistant/role/publishChannel' , 
         meta: { title: '推送渠道', icon: 'dashboard', affix: true }
       },
     ]
