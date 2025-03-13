@@ -60,4 +60,9 @@ public class ChannelPublishEntity extends InfraBaseEntity implements Serializabl
     @ColumnComment("渠道参数键")
     private String configMap ;
 
+    @TableField(value = "api_key")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 64)
+    @ColumnComment("分享ApiKey参数")
+    private String apiKey;
+
 }
