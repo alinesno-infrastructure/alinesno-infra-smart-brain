@@ -23,7 +23,7 @@ spring:
     redis:
       host: 127.0.0.1
       port: 6379
-      # password: aip@local
+      password: aip@local
   mvc:
     async:
       request-timeout: 3600000
@@ -71,6 +71,7 @@ alinesno:
       - /v1/api/infra/base/im/sse/**
       - /v1/api/infra/base/im/chat/**
       - /api/infra/base/im/channel/**
+      - /api/infra/smart/assistant/publishChat/**
       - /api/infra/smart/assistant/template/testTemplate
       - /api/infra/smart/assistant/screenChapter/**
       - /api/infra/smart/assistant/screen/**
