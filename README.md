@@ -116,4 +116,4 @@ AIP Multi-Agent平台是一种综合性的能力，旨在将各种业务流程�
 - 多模型适配部分参考了 [Agents-Flex]() 项目的代码和思路，并做二次开发开发改造
 - 前端部分集成了 [chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web)。
 - 头像地址从[userpics](https://userpics.craftwork.design/) , 注:此不可商用
-- 部分界面和逻辑设计参考[FastGPT](https://github.com/labring/FastGPT)
+- 部分逻辑设计参考[FastGPT](https://github.com/labring/FastGPT)
