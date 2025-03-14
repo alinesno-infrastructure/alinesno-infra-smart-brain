@@ -19,6 +19,7 @@
 		<aliyun.sdk.oss.version>3.16.1</aliyun.sdk.oss.version>
 		<qiniu.java.sdk.version>7.12.1</qiniu.java.sdk.version>
 		<minio.version>8.5.2</minio.version>
+		<model-adapter.version>2.1.0-M2-SNAPSHOT</model-adapter.version>
 	</properties>
 
 	<dependencies>
@@ -64,6 +65,91 @@
 			<artifactId>minio</artifactId>
 			<version>${minio.version}</version>
 		</dependency>
+
+		<!-- 多模型适配 -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-spring-boot-starter</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!--llm start-->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-doubao</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-ollama</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-openai</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-qwq</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-deepseek</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-gitee</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-qwen</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-spark</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-moonshot</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!--llm end-->
+
+		<!-- speech_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-speech-qwen</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-speech-siliconflow</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- speech_end -->
+
+		<!-- images_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-image-doubao</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-image-qwen</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-image-gitee</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- images_end -->
 
 	</dependencies>
 
