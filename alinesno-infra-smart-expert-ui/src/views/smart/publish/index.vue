@@ -38,7 +38,8 @@
                     <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
                       style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
+                          item.dateTime }}</span>
                         {{ item.name }}
                       </div>
 
@@ -49,16 +50,15 @@
                         <el-button v-if="item.reasoningText && !item.chatText" size="default" type="primary" loading
                           text>推理中</el-button>
 
-                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
+                        <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{
+                          item.dateTime }} </span>
 
                       </div>
 
                       <!-- 流程输出调试信息_start -->
-                        <!-- v-if="item.roleType != 'person'" -->
-                      <div class="chat-debugger-box"
-                        @click="handleShowDebuggerContent(index, flowStepIndex)"
-                        v-for="(flowStepItem, flowStepIndex) in item.flowStepArr"
-                        :key="flowStepIndex">
+                      <!-- v-if="item.roleType != 'person'" -->
+                      <div class="chat-debugger-box" @click="handleShowDebuggerContent(index, flowStepIndex)"
+                        v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" :key="flowStepIndex">
 
                         <div class="chat-debugger">
                           <div class="chat-debugger-item">
@@ -74,15 +74,22 @@
                             {{ flowStepItem.message }}
 
                             <el-collapse-transition>
-                              <el-icon v-if="!flowStepItem.isPrint && flowStepItem?.flowChatText"><ArrowRightBold /></el-icon>
-                              <el-icon v-if="flowStepItem.isPrint"><ArrowDownBold/></el-icon>
+                              <el-icon v-if="!flowStepItem.isPrint && flowStepItem?.flowChatText">
+                                <ArrowRightBold />
+                              </el-icon>
+                              <el-icon v-if="flowStepItem.isPrint">
+                                <ArrowDownBold />
+                              </el-icon>
                             </el-collapse-transition>
                           </div>
 
                           <el-collapse-transition>
                             <div class="chat-debugger-content" v-if="flowStepItem.isPrint">
-                              <div class="say-message-body markdown-body chat-reasoning" v-if="flowStepItem.flowReasoningText" v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
-                              <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText" v-html="readerHtml(flowStepItem.flowChatText)"></div>
+                              <div class="say-message-body markdown-body chat-reasoning"
+                                v-if="flowStepItem.flowReasoningText"
+                                v-html="readerReasonningHtml(flowStepItem.flowReasoningText)"></div>
+                              <div class="say-message-body markdown-body" v-if="flowStepItem.flowChatText"
+                                v-html="readerHtml(flowStepItem.flowChatText)"></div>
                             </div>
                           </el-collapse-transition>
                         </div>
@@ -90,12 +97,17 @@
                       </div>
                       <!-- 流程输出调试信息_end -->
 
-                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
-                      <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
+                      <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText"
+                        v-html="readerReasonningHtml(item.reasoningText)"></div>
+                      <div class="say-message-body markdown-body" v-if="item.chatText"
+                        v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="primary" link icon="DocumentCopy" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small">播放</el-button>
+                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
+                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
+                        <el-button type="primary" link icon="DocumentCopy" size="small"
+                          @click="handleCopyGenContent(item)">复制</el-button>
+                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
+                          size="small">播放</el-button>
                       </div>
                     </div>
                   </div>
@@ -123,7 +135,7 @@
                   </div>
                 </el-col>
 
-                <el-col :span="8" style="text-align:right;display:fiex">
+                <el-col :span="8" class="button-box-item">
 
                   <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
 
@@ -548,6 +560,12 @@ defineExpose({
 
 </script>
 
+<style>
+html pre code.hljs {
+  white-space: pre-wrap !important;
+}
+</style>
+
 <style lang="scss" scoped>
 .inner-smart-container {
   max-width: 100% ! important;
@@ -555,7 +573,7 @@ defineExpose({
   .robot-chat-windows {
     border: 0px !important;
     width: 100%;
-    float:none ;
+    float: none;
     max-width: 1200px;
     margin: auto;
   }
@@ -608,7 +626,9 @@ defineExpose({
 
     }
 
+
   }
+
 
   .chat-ai-say-body {
     float: left;
@@ -662,44 +682,53 @@ defineExpose({
 
 }
 
-  .aip-page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    border-bottom: 1px solid #E2E8F0;
-    background: #fafafa;
-    font-size: 14px;
+.aip-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  background: #fafafa;
+  font-size: 14px;
 
-    .logo-section {
+  .logo-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    img {
+      width: 30px;
+      height: 30px;
+      object-fit: cover;
+    }
+  }
+
+  .nav-link {
+    a {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 4px;
+      color: #333;
+      text-decoration: none;
+      transition: color 0.3s ease;
 
-      img {
-        width: 30px;
-        height: 30px;
-        object-fit: cover;
+      &:hover {
+        color: #1a73e8;
       }
-    }
 
-    .nav-link {
-      a {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        color: #333;
-        text-decoration: none;
-        transition: color 0.3s ease;
-
-        &:hover {
-          color: #1a73e8;
-        }
-
-        .fa-solid {
-          font-size: 16px;
-        }
+      .fa-solid {
+        font-size: 16px;
       }
     }
   }
+}
+
+.button-box-item {
+  display: flex !important;
+  padding-left: 0px !important;
+
+  .el-button+.el-button {
+    margin-left: 7px;
+  }
+}
 </style>
