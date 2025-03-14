@@ -45,9 +45,8 @@
           <div class="vc-div div_l14lqa1j tpl-item" v-for="(item, index) in LlmModelList" :key="index">
             <div class="vc-div div_l14lqa1i">
               <div class="vc-div div_l14lqa1c tpl-item-title">
-                <div class="vc-text text_l14lqa1a"
-                  style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;">
-                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 45px; height: 45px; border-radius: 50%;">
+                <div class="vc-text text_l14lqa1a" style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;font-weight: bold">
+                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
                    {{ item.modelName }}
                 </div>
                 <div>
@@ -137,12 +136,13 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型类型" prop="modelType">
-              <el-select v-model="form.modelType" placeholder="请选择模型类型">
-                <el-option v-for="item in modelTypeOptions" :label="item.displayName" :value="item.code"
-                  :key="item.code">
+
+              <el-radio-group v-model="form.modelType">
+                <el-radio v-for="item in modelTypeOptions" :value="item.code" :label="item.displayName" :key="item.code">
                   {{ item.displayName }}
-                </el-option>
-              </el-select>
+                </el-radio>
+              </el-radio-group>
+
             </el-form-item>
           </el-col>
         </el-row>
@@ -178,15 +178,6 @@
           <el-col :span="24">
             <el-form-item label="基础模型" prop="model">
               <el-input type="text" v-model="form.model" placeholder="请输入基础模型，比如 deepseek-r1:7b" maxlength="255" />
-
-              <!-- <el-select v-model="form.model" allow-create filterable default-first-option placeholder="请选择基础模型">
-
-                <el-option v-for="item in baseModelOptions" :label="item.modelName" :value="item.modelName"
-                  :key="item.modelName">
-                  {{ item.modelName }}
-                </el-option>
-
-              </el-select> -->
             </el-form-item>
           </el-col>
         </el-row>
@@ -264,8 +255,6 @@ import {
 import { reactive, ref } from "vue";
 import speakingIcon from '@/assets/icons/speaking.gif';
 
-// import {useRouter, getCurrentInstance} from "vue-router";
-
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
@@ -274,9 +263,6 @@ const open = ref(false);
 const loading = ref(true);
 const showSearch = ref(true);
 const ids = ref([]);
-
-// const single = ref(true);
-// const multiple = ref(true);
 
 const total = ref(0);
 const title = ref("");
@@ -292,38 +278,6 @@ const baseModelOptions = ref(undefined)
 
 const testLlmModelReponse = ref('')
 
-// const deptName = ref("");
-// const deptOptions = ref(undefined);
-// const initPassword = ref(undefined);
-// const postOptions = ref([]);
-// const roleOptions = ref([]);
-// /*** 应用导入参数 */
-// const upload = reactive({
-//   // 是否显示弹出层（应用导入）
-//   open: false,
-//   // 弹出层标题（应用导入）
-//   title: "",
-//   // 是否禁用上传
-//   isUploading: false,
-//   // 是否更新已经存在的应用数据
-//   updateSupport: 0,
-//   // 设置上传的请求头部
-//   headers: { Authorization: "Bearer " + getToken() },
-//   // 上传的地址
-//   url: import.meta.env.VITE_APP_BASE_API + "/system/LlmModel/importData"
-// });
-
-// 列显隐信息
-// const columns = ref([
-//   { key: 0, label: `图标`, visible: true },
-//   { key: 1, label: `大模型名称`, visible: true },
-//   { key: 2, label: `大模型描述`, visible: true },
-//   { key: 3, label: `所属提供商名称`, visible: true },
-//   { key: 4, label: `API 密钥`, visible: true },
-//   { key: 5, label: `API 地址`, visible: true },
-//   { key: 6, label: `模型名称`, visible: true },
-//   { key: 7, label: `编辑`, visible: true },
-// ]);
 
 const data = reactive({
   form: {},
@@ -369,25 +323,6 @@ function handleQuery() {
   getList();
 };
 
-/** 模型标识 */
-// function getByModelType(modelCode){
-//   let currentType = null 
-
-//   for(var i = 0 ; i < modelTypeOptions.length ; i ++){
-//     if(modelTypeOptions.value[i].code == modelCode){
-//       currentType = modelTypeOptions.value[i]
-//       break 
-//     }
-//   }
-
-//   if(currentType){
-//     return currentType.displayName
-//   }else{
-//     return "未识别模型" 
-//   }
-
-// }
-
 /** 重置按钮操作 */
 function resetQuery() {
   dateRange.value = [];
@@ -410,13 +345,6 @@ function handleDelete(row) {
   }).catch(() => {
   });
 };
-
-/** 选择条数  */
-// function handleSelectionChange(selection) {
-//   ids.value = selection.map(item => item.id);
-//   single.value = selection.length != 1;
-//   multiple.value = !selection.length;
-// };
 
 /** 重置操作表单 */
 function reset() {
@@ -559,10 +487,6 @@ handleAllModelProvidersInfo();
   font-size: 13px;
   color: #444;
   line-height: 20px;
-}
-
-.tpl-item-footer{
-  padding-top:10px;
 }
 
 .dialog-footer{
