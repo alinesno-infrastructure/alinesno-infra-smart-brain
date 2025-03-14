@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.api;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -20,4 +21,8 @@ public class TestLlmModelDto {
 
     @NotBlank(message = "模型名称不能为空")
     private String model ;  // 模型名称
+
+    @Min(value = 1 , message = "测试频道ID不能为空")
+    private long testChannelId;
+
 }
