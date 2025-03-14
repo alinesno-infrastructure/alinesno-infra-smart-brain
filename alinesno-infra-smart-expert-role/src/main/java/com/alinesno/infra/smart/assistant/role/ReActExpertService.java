@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.assistant.role;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.LlmConfig;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
@@ -9,14 +12,17 @@ import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
@@ -50,6 +56,12 @@ public class ReActExpertService extends ExpertService {
 
     @Autowired
     private IToolService toolService ;
+
+    @Autowired
+    private ILLmAdapterService llmAdapter ;
+
+    @Autowired
+    private ILlmModelService llmModelService ;
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
@@ -90,10 +102,11 @@ public class ReActExpertService extends ExpertService {
             messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
 
             eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId) ;
+
             CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 
                 StringBuilder outputStr = new StringBuilder();
-                Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
+                Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages , "qwen-plus") ;
 
                 StringBuilder preMsg = new StringBuilder() ;
 
@@ -131,6 +144,9 @@ public class ReActExpertService extends ExpertService {
                 return outputStr.toString() ;
             });
 
+//            Llm llm = getLlm(role) ;
+//            CompletableFuture<String> future = getAiChatResultAsync(llm, replacePlaceholders(nodeData.getPrompt()));
+
             // 等待异步任务完成并获取结果
             try {
                 String output = future.get();
@@ -164,11 +180,6 @@ public class ReActExpertService extends ExpertService {
                         }
 
                         log.debug("正在执行工具名称：{}" , toolFullName);
-//                        streamMessagePublisher.doStuffAndPublishAnEvent("正在执行工具:" + toolFullName +"，请稍等..." ,
-//                                role,
-//                                taskInfo,
-//                                IdUtil.getSnowflakeNextId());
-
                         ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getSelectionToolsData()) ;
 
                         Map<String, Object> argsList = tool.getArgsList();
@@ -226,6 +237,26 @@ public class ReActExpertService extends ExpertService {
         } while (!isCompleted);
 
         return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
+    }
+
+    /**
+     * 获取到指定的模型
+     * @param role
+     * @return
+     */
+    private Llm getLlm(IndustryRoleEntity role) {
+        long modelId = role.getModelId(); ; // 模型ID
+        LlmModelEntity llmModel = llmModelService.getById(modelId) ;
+
+        Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+        LlmConfig config = new LlmConfig() ;
+
+        config.setEndpoint(llmModel.getApiUrl());
+        config.setApiKey(llmModel.getApiKey()) ;
+        config.setModel(llmModel.getModel()) ;
+
+        return llmAdapter.getLlm(llmModel.getModelType(), config);
     }
 
 
@@ -286,6 +317,55 @@ public class ReActExpertService extends ExpertService {
 
         return null;
     }
+
+//    protected CompletableFuture<String> getAiChatResultAsync(Llm llm, String prompt , MessageTaskInfo taskInfo , String oneChatId) {
+//        CompletableFuture<String> future = new CompletableFuture<>();
+//        AtomicReference<String> outputStr = new AtomicReference<>("");
+//
+//        // 创建一个 final 局部变量来持有 taskInfo 的引用
+//        final MessageTaskInfo localTaskInfo = taskInfo;
+//
+//        try {
+//            llm.chatStream(prompt, (context, response) -> {
+//                AiMessage message = response.getMessage();
+//                System.out.println(">>>> " + message);
+//
+//                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+//                stepDto.setMessage("任务进行中...");
+//                stepDto.setStepId(oneChatId);
+//                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+//                stepDto.setFlowChatText(message.getContent());
+//                stepDto.setPrint(true);
+//
+//                synchronized (localTaskInfo) {
+//                    localTaskInfo.setFlowStep(stepDto);
+//                }
+//
+//                try {
+//                    synchronized (localTaskInfo) {
+//                        if (message.getStatus() == MessageStatus.END) {
+//                            outputStr.set(message.getFullContent());
+//                            stepDto.setStatus(AgentConstants.STEP_FINISH);
+//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getFlowChatId());
+//                            future.complete(outputStr.get());
+//                        } else {
+//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getFlowChatId());
+//                        }
+//                    }
+//                } catch (Exception e) {
+//                    // 处理发布事件时的异常
+//                    log.error(e.getMessage());
+//                    future.completeExceptionally(e);
+//                }
+//            });
+//        } catch (Exception e) {
+//            // 处理 chatStream 方法的异常
+//            log.error(e.getMessage());
+//            future.completeExceptionally(e);
+//        }
+//
+//        return future;
+//    }
 
     /**
      * 流程节点消息
