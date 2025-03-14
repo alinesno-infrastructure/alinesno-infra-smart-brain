@@ -37,6 +37,6 @@ public class ChatMessageDto {
 
     // fix:用于消息类型的区分(同一businessId的情况下)
     private boolean llmStream = false ; // 是否为LLM输出流
-    private List<MessageReferenceDto> contentReferenceArticle ; // 消息引用
+    private List<MessageReferenceDto> contentReferenceArticle ; // 消息引用文章
 
 }
