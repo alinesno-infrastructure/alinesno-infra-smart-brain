@@ -2,6 +2,20 @@
     <el-dialog v-model="showStartUsing" :title="props.channel.name ? `${props.channel.name} 使用指南` : '使用指南'"
         :width="800 + 'px'">
         <div class="dialog-content">
+            <div v-if="props.channel.paramKey === 'web_version'">
+                <div class="instruction">
+                    <div class="instruction show-copy-btn">
+                        <span>将以下网页复制到你的浏览器中：</span>
+                        <span>
+                            <el-button type="primary" size="large" text bg icon="CopyDocument" @click="copyClick(getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory )">复制</el-button>
+                            <el-button type="success" size="large" text bg icon="Link" @click="openLink(getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory )">打开</el-button>
+                        </span>
+                    </div>
+                    <div class="code-block">
+                       {{ getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory  }} 
+                    </div>
+                </div>
+            </div>
             <div v-if="props.channel.paramKey === 'web_embedded'">
                 <div style="margin-top:0px;padding:10px;">
                     <el-space wrap>
@@ -52,7 +66,7 @@
                         <span>复制下面代码嵌入到您的网站中：</span>
                         <el-button type="primary" size="large" text bg icon="CopyDocument" @click="copyClick(codeEditorRef.getRawScript())">复制</el-button>
                     </div>
-                    <div class="code-block">
+                    <div>
                         <ScriptEditorPanel ref="codeEditorRef" />
                     </div>
                 </div>
@@ -136,6 +150,10 @@ const getRootPath = (url = window.location.href) => {
     }
 };
 
+const openLink = (link) => {
+    window.open(link);
+}
+
 const handleImageClick = (type) => {
 
     console.log('props = ' + props.shareId)
@@ -167,6 +185,9 @@ const handleImageClick = (type) => {
             '></'+empty+'script>';
 
         codeEditorRef.value.setRawScript(webEmbeddedScriptCodeString);
+    }else if(type === 'web'){
+        let webEmbeddedScriptCodeString = getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.value.showHistory ;
+        codeEditorRef.value.setRawScript(webEmbeddedScriptCodeString);
     }
 };
 
@@ -179,9 +200,14 @@ const switchChange = (val) => {
 // });
 nextTick(() => {
 
-    setTimeout(() => {
-        handleImageClick('iframe') ;
-    }, 1000)
+    // setTimeout(() => {
+    //     handleImageClick('iframe') ;
+    // }, 1000)
+
+    // if(props.channel.paramKey == 'web_versoin'){
+    //     handleImageClick('web') ;
+    // }
+
 });
 </script>
 
@@ -233,7 +259,8 @@ nextTick(() => {
     .code-block {
         white-space: pre-wrap;
         background: #f8f9fa;
-        padding: 0px;
+        padding: 15px;
+        line-height: 23px;
         border-radius: 4px;
         font-size: 14px;
 
