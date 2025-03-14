@@ -40,9 +40,6 @@ public class SSEChannelController {
     @Autowired
     private ITaskService taskService;
 
-//    @Autowired
-//    private IMessageService messageService ;
-
     /**
      * 监控流消息发送到前端
      * @param event
@@ -56,12 +53,10 @@ public class SSEChannelController {
         long channelId = info.getChannelId() ;
         String msg = event.getMessage() == null ? "" : event.getMessage() ;
 
-        String reasoningText = MessageFormatter.getSafeString(info.getReasoningText()) ; // info.getReasoningText() == null || "null".equals(info.getReasoningText())) ? "" : info.getReasoningText() ;
-        FlowStepStatusDto flowStepDto = info.getFlowStep() ; // MessageFormatter.getSafeString(info.getFlowStepMessage()) ; // (info.getFlowStepMessage() == null || "null".equals(info.getFlowStepMessage())) ? "" : info.getFlowStepMessage() ;
+        String reasoningText = MessageFormatter.getSafeString(info.getReasoningText()) ;
+        FlowStepStatusDto flowStepDto = info.getFlowStep() ;
 
         long bId = event.getBId() ;
-
-        log.debug("Received llm stream message event , msg = {} , channelId = {} " , event.getMessage() , channelId);
 
         final SseEmitter emitter = service.getConn(channelId + "");
         CompletableFuture.runAsync(() -> {
@@ -75,13 +70,8 @@ public class SSEChannelController {
             msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
             msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
 
-
-
             try {
                 emitter.send(msgDto) ;
-
-                // 保存记录到数据库中
-                // messageService.saveMessage(role , info, msg , msgDto) ;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
