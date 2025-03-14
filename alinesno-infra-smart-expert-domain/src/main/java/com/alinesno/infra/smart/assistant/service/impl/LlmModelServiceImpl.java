@@ -1,8 +1,13 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.MessageStatus;
 import com.agentsflex.core.store.VectorData;
+import com.agentsflex.core.util.StringUtil;
 import com.agentsflex.llm.deepseek.DeepseekLlm;
 import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.agentsflex.llm.doubao.DoubaoLlm;
@@ -12,14 +17,22 @@ import com.agentsflex.llm.openai.OpenAiLlmConfig;
 import com.agentsflex.llm.qwen.QwenLlm;
 import com.agentsflex.llm.qwen.QwenLlmConfig;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.mapper.LlmModelMapper;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * 应用构建Service业务层处理
@@ -31,101 +44,61 @@ import org.springframework.stereotype.Service;
 @Service
 public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmModelMapper> implements ILlmModelService {
 
+    @Autowired
+    private ILLmAdapterService llmAdapterService ;
+
+    @Autowired
+    protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
+
     @Override
     public String testLlmModel(TestLlmModelDto dto) {
 
         String modelType = dto.getModelType() ;
-        String modelProvider = dto.getProviderCode() ; // .getModelProvider() ;
-        String url = dto.getApiUrl() ; // .getUrl() ;
+        String modelProvider = dto.getProviderCode() ;
+        String url = dto.getApiUrl() ;
         String apiKey = dto.getApiKey() ;
-        String modelName = dto.getModel() ;// .getModelName() ;
+        String modelName = dto.getModel() ;
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo();
+        taskInfo.setChannelId(dto.getTestChannelId());
+        long workflowId = IdUtil.getSnowflakeNextId() ;
+
+        IndustryRoleEntity role = new IndustryRoleEntity();
 
         if(modelType.equals(ModelTypeEnums.LARGE_LANGUAGE_MODEL.getCode())){  // 大语言模型
 
-            if(modelProvider.equals(LlmModelProviderEnums.TONGYI_QIYWEN.getCode())){  // 千问
-                QwenLlmConfig config = new QwenLlmConfig();
+            LlmConfig llmConfig = new LlmConfig();
+            llmConfig.setEndpoint(url);
+            llmConfig.setApiKey(apiKey) ;
+            llmConfig.setModel(modelName);
 
-                config.setEndpoint(url);
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName);
+            Llm llm = llmAdapterService.getLlm(modelProvider , llmConfig);
+            String prompt = "你是谁." ;
 
-                Llm llm = new QwenLlm(config);
-                String response = llm.chat("你是谁") ;
+            llm.chatStream(prompt, (context, response) -> {
+                AiMessage message = response.getMessage();
 
-                log.debug("response: {}" , response);
+                if(StringUtil.hasText(message.getReasoningContent())){
+                    taskInfo.setReasoningText(message.getReasoningContent());
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null , role, taskInfo, workflowId);
+                }
 
-                return response ;
-            }else if(modelProvider.equals(LlmModelProviderEnums.DEEDSEEK.getCode())){  // Deepseek
-                DeepseekLlmConfig config = new DeepseekLlmConfig();
+                if(StringUtil.hasText(message.getContent())){
+                    taskInfo.setReasoningText(null);
+                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, taskInfo, workflowId);
+                }
 
-                config.setEndpoint(url);
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName);
+                MessageStatus status =  message.getStatus() ;
+                if(status == MessageStatus.END){  // 结束
 
-                Llm llm = new DeepseekLlm(config);
-                String response = llm.chat("你是谁") ;
+                    streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+                            role ,
+                            taskInfo ,
+                            IdUtil.getSnowflakeNextId()) ;
+                }
 
-                log.debug("response: {}" , response);
+            });
 
-                return response ;
-            }else if(modelProvider.equals(LlmModelProviderEnums.CHATGPT.getCode())) {  // chatGPT
-                OpenAiLlmConfig config = new OpenAiLlmConfig();
-
-                config.setEndpoint(url);
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName);
-
-                Llm llm = new OpenAiLlm(config);
-                String response = llm.chat("你是谁") ;
-
-                log.debug("response: {}" , response);
-
-                return response ;
-            }else if(modelProvider.equals(LlmModelProviderEnums.DOUBAO.getCode())) {  // Doubao
-                DoubaoLlmConfig config = new DoubaoLlmConfig();
-
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName) ;
-
-                Llm llm = new DoubaoLlm(config);
-                String response = llm.chat("你是谁") ;
-
-                log.debug("response: {}" , response);
-
-                return response ;
-            }
-        }else if(modelType.equals(ModelTypeEnums.VECTOR_MODEL.getCode())) {  // 向量模型
-            if(modelProvider.equals(LlmModelProviderEnums.TONGYI_QIYWEN.getCode())){  // 通义千问
-                QwenLlmConfig config = new QwenLlmConfig();
-
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName) ;
-
-                Llm llm = new QwenLlm(config);
-                VectorData vectorData = llm.embed(Document.of("我是谁"));
-
-                return vectorData.toString() ;
-            }else if(modelProvider.equals(LlmModelProviderEnums.DOUBAO.getCode())){  // 豆包
-                DoubaoLlmConfig config = new DoubaoLlmConfig();
-
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName) ;
-
-                Llm llm = new DoubaoLlm(config);
-                VectorData vectorData = llm.embed(Document.of("我是谁"));
-
-                return vectorData.toString() ;
-            }else if(modelProvider.equals(LlmModelProviderEnums.CHATGPT.getCode())){  // ChatGPT
-                OpenAiLlmConfig config = new OpenAiLlmConfig();
-
-                config.setApiKey(apiKey) ;
-                config.setModel(modelName) ;
-
-                Llm llm = new OpenAiLlm(config);
-                VectorData vectorData = llm.embed(Document.of("我是谁"));
-
-                return vectorData.toString() ;
-            }
         } else if(modelType.equals(ModelTypeEnums.RE_RANKING_MODEL.getCode())){  // 重排模型
 
         }else if(modelType.equals(ModelTypeEnums.SPEECH_RECOGNITION.getCode())){  // 语音识别
