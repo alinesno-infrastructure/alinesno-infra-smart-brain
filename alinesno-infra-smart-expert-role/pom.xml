@@ -13,10 +13,6 @@
 	<artifactId>alinesno-infra-smart-expert-role</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
-		<model-adapter.version>2.1.0-M2-SNAPSHOT</model-adapter.version>
-	</properties>
-
 	<dependencies>
 
 		<!-- 引用公共门面服务 -->
@@ -158,82 +154,6 @@
 			<artifactId>spire.doc.free</artifactId>
 			<version>5.2.0</version>
 		</dependency>
-
-
-		<!-- 多模型适配 -->
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-spring-boot-starter</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<!--llm start-->
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-doubao</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-ollama</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-openai</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-deepseek</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-qwen</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-spark</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-llm-moonshot</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<!--llm end-->
-
-		<!-- speech_start -->
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-speech-qwen</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-speech-siliconflow</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<!-- speech_end -->
-
-		<!-- images_start -->
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-image-doubao</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-image-qwen</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.agentsflex</groupId>
-			<artifactId>alinesno-smart-model-adapter-image-gitee</artifactId>
-			<version>${model-adapter.version}</version>
-		</dependency>
-		<!-- images_end -->
 
     </dependencies>
 
