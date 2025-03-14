@@ -6,7 +6,7 @@ import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.agentsflex.core.util.StringUtil;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IMessageService;
