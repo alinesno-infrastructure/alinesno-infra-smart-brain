@@ -258,6 +258,7 @@ nextTick(() => {
 
     .code-block {
         white-space: pre-wrap;
+        font-weight: normal;
         background: #f8f9fa;
         padding: 15px;
         line-height: 23px;
