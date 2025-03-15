@@ -1,38 +1,26 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import com.agentsflex.core.document.Document;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
-import com.agentsflex.core.store.VectorData;
 import com.agentsflex.core.util.StringUtil;
-import com.agentsflex.llm.deepseek.DeepseekLlm;
-import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
-import com.agentsflex.llm.doubao.DoubaoLlm;
-import com.agentsflex.llm.doubao.DoubaoLlmConfig;
-import com.agentsflex.llm.openai.OpenAiLlm;
-import com.agentsflex.llm.openai.OpenAiLlmConfig;
-import com.agentsflex.llm.qwen.QwenLlm;
-import com.agentsflex.llm.qwen.QwenLlmConfig;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
+import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
-import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.mapper.LlmModelMapper;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
 
 /**
  * 应用构建Service业务层处理
@@ -64,6 +52,9 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         long workflowId = IdUtil.getSnowflakeNextId() ;
 
         IndustryRoleEntity role = new IndustryRoleEntity();
+        role.setRoleAvatar(PublishConst.EMPTY);
+        role.setRoleName(PublishConst.ANONYMOUS_USERNAME);
+        role.setId(PublishConst.ANONYMOUS_USER);
 
         if(modelType.equals(ModelTypeEnums.LARGE_LANGUAGE_MODEL.getCode())){  // 大语言模型
 
@@ -77,6 +68,8 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
             llm.chatStream(prompt, (context, response) -> {
                 AiMessage message = response.getMessage();
+
+                log.debug(">>>> " + JSONObject.toJSONString(message));
 
                 if(StringUtil.hasText(message.getReasoningContent())){
                     taskInfo.setReasoningText(message.getReasoningContent());
