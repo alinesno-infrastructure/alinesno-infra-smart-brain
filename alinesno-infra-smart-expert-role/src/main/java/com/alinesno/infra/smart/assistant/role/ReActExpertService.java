@@ -4,11 +4,13 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
-import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.Role;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.HumanMessage;
+import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -19,7 +21,6 @@ import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
@@ -29,7 +30,6 @@ import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
-import io.reactivex.Flowable;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Agent推理模式
@@ -90,67 +91,30 @@ public class ReActExpertService extends ExpertService {
         do {
 
             String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId) ;
+            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
             loop++;
 
             String prompt = Prompt.buildPrompt(role , tools , thought , goal , datasetKnowledgeDocument) ;
             prompt = Prompt.buildHumanHelpPrompt(prompt , askHumanHelpThought) ;
 
-            List<Message> messages = new ArrayList<>();
-            handleHistoryUserMessage(messages , taskInfo.getChannelId()) ;
-            messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
+            eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
-            eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId) ;
+            // 历史对话
+            HistoriesPrompt historyPrompt = new HistoriesPrompt();
+            handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
+            historyPrompt.addMessage(new HumanMessage(prompt));
 
-            CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-
-                StringBuilder outputStr = new StringBuilder();
-                Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages , "qwen-plus") ;
-
-                StringBuilder preMsg = new StringBuilder() ;
-
-                result.blockingForEach(message -> {
-
-                    String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
-                    String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
-
-                    log.debug(msg);
-
-                    msg.substring(preMsg.toString().length()) ;
-
-                    FlowStepStatusDto stepDto = new FlowStepStatusDto();
-
-                    stepDto.setMessage("任务进行中...");
-                    stepDto.setStepId(oneChatId);
-                    stepDto.setStatus(AgentConstants.STEP_PROCESS);
-                    stepDto.setFlowChatText(msg.substring(preMsg.toString().length()));
-                    stepDto.setPrint(true);
-
-                    taskInfo.setFlowStep(stepDto);
-                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, taskInfo, getTaskInfo().getTraceBusId());
-
-                    preMsg.setLength(0);
-                    preMsg.append(msg) ;
-
-                    if(finishReason != null && finishReason.equals("stop")){
-                        outputStr.append(msg);
-                    }
-                });
-
-                eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, oneChatId) ;
-
-                // 生成任务结果
-                return outputStr.toString() ;
-            });
-
-//            Llm llm = getLlm(role) ;
-//            CompletableFuture<String> future = getAiChatResultAsync(llm, replacePlaceholders(nodeData.getPrompt()));
+            Llm llm = getLlm(role) ;
+            CompletableFuture<String> future = getAiChatResultAsync(llm, historyPrompt , taskInfo , oneChatId) ; // replacePlaceholders(nodeData.getPrompt()));
 
             // 等待异步任务完成并获取结果
             try {
+
                 String output = future.get();
                 log.debug("output = {}" , output);
+
+                eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, oneChatId  , taskInfo) ;
 
                 List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(output);
                 CodeContent codeContent = codeContentList.get(0);
@@ -168,7 +132,7 @@ public class ReActExpertService extends ExpertService {
 
                         // 如果是咨询人类的
                         if(toolFullName.equals(AskHumanHelpTool.class.getSimpleName())){
-                           String question = tool.getArgsList().get("question")+"" ;
+                            String question = tool.getArgsList().get("question")+"" ;
 
                             streamMessagePublisher.doStuffAndPublishAnEvent(question ,
                                     role,
@@ -256,7 +220,7 @@ public class ReActExpertService extends ExpertService {
         config.setApiKey(llmModel.getApiKey()) ;
         config.setModel(llmModel.getModel()) ;
 
-        return llmAdapter.getLlm(llmModel.getModelType(), config);
+        return llmAdapter.getLlm(llmModel.getProviderCode(), config);
     }
 
 
@@ -318,7 +282,7 @@ public class ReActExpertService extends ExpertService {
         return null;
     }
 
-//    protected CompletableFuture<String> getAiChatResultAsync(Llm llm, String prompt , MessageTaskInfo taskInfo , String oneChatId) {
+//    protected CompletableFuture<String> getAiChatResultAsync(Llm llm,  HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId) {
 //        CompletableFuture<String> future = new CompletableFuture<>();
 //        AtomicReference<String> outputStr = new AtomicReference<>("");
 //
@@ -326,15 +290,25 @@ public class ReActExpertService extends ExpertService {
 //        final MessageTaskInfo localTaskInfo = taskInfo;
 //
 //        try {
-//            llm.chatStream(prompt, (context, response) -> {
+//            llm.chatStream(historyPrompt, (context, response) -> {
+//
 //                AiMessage message = response.getMessage();
+//
 //                System.out.println(">>>> " + message);
 //
 //                FlowStepStatusDto stepDto = new FlowStepStatusDto();
 //                stepDto.setMessage("任务进行中...");
 //                stepDto.setStepId(oneChatId);
 //                stepDto.setStatus(AgentConstants.STEP_PROCESS);
-//                stepDto.setFlowChatText(message.getContent());
+//
+//                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getContent())) {
+//                    stepDto.setFlowChatText(message.getContent());
+//                }
+//
+//                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getReasoningContent())){
+//                    stepDto.setFlowReasoningText(message.getReasoningContent());
+//                }
+//
 //                stepDto.setPrint(true);
 //
 //                synchronized (localTaskInfo) {
@@ -346,10 +320,10 @@ public class ReActExpertService extends ExpertService {
 //                        if (message.getStatus() == MessageStatus.END) {
 //                            outputStr.set(message.getFullContent());
 //                            stepDto.setStatus(AgentConstants.STEP_FINISH);
-//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getFlowChatId());
+//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
 //                            future.complete(outputStr.get());
 //                        } else {
-//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getFlowChatId());
+//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
 //                        }
 //                    }
 //                } catch (Exception e) {
@@ -367,25 +341,88 @@ public class ReActExpertService extends ExpertService {
 //        return future;
 //    }
 
+    protected CompletableFuture<String> getAiChatResultAsync(Llm llm,  HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId) {
+        CompletableFuture<String> future = new CompletableFuture<>();
+        AtomicReference<String> outputStr = new AtomicReference<>("");
+
+        // 创建一个 final 局部变量来持有 taskInfo 的引用
+        final MessageTaskInfo localTaskInfo = taskInfo;
+
+        try {
+            llm.chatStream(historyPrompt, (context, response) -> {
+
+                AiMessage message = response.getMessage();
+
+                System.out.println(">>>> " + message);
+
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(oneChatId);
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+
+                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getContent())) {
+                    stepDto.setFlowChatText(message.getContent());
+                }
+
+                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getReasoningContent())){
+                    stepDto.setFlowReasoningText(message.getReasoningContent());
+                }
+
+                stepDto.setPrint(true);
+
+                synchronized (localTaskInfo) {
+                    localTaskInfo.setFlowStep(stepDto);
+                }
+
+                try {
+                    boolean isEnd = false;
+                    synchronized (localTaskInfo) {
+                        if (message.getStatus() == MessageStatus.END) {
+                            outputStr.set(message.getFullContent());
+                            stepDto.setStatus(AgentConstants.STEP_FINISH);
+                            isEnd = true;
+                        }
+                    }
+
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
+
+                    if (isEnd) {
+                        future.complete(outputStr.get());
+                    }
+                } catch (Exception e) {
+                    // 处理发布事件时的异常
+                    log.error(e.getMessage());
+                    future.completeExceptionally(e);
+                }
+            });
+        } catch (Exception e) {
+            // 处理 chatStream 方法的异常
+            log.error(e.getMessage());
+            future.completeExceptionally(e);
+        }
+
+        return future;
+    }
+
     /**
      * 流程节点消息
      * @param stepMessage
      * @param status
      */
-    public void eventStepMessage(String stepMessage, String status, String stepId) {
+    public void eventStepMessage(String stepMessage, String status, String stepId , MessageTaskInfo taskInfo) {
 
         FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
         stepDto.setMessage(stepMessage) ;
         stepDto.setStepId(stepId) ;
         stepDto.setStatus(status);
-        // stepDto.setPrint(node.isPrint());
+        stepDto.setPrint(false);
 
-        getTaskInfo().setFlowStep(stepDto);
+        taskInfo.setFlowStep(stepDto);
 
         streamMessagePublisher.doStuffAndPublishAnEvent(null,
                 getRole(),
                 getTaskInfo(),
-                getTaskInfo().getTraceBusId()
+                taskInfo.getTraceBusId()
         );
 
     }
