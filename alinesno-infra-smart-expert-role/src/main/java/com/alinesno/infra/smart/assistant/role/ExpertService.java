@@ -3,7 +3,9 @@ package com.alinesno.infra.smart.assistant.role;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.HumanMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.agentsflex.core.util.StringUtil;
 import com.alibaba.dashscope.aigc.generation.GenerationResult;
 import com.alibaba.dashscope.common.ResultCallback;
@@ -13,6 +15,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
+import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
@@ -21,8 +25,6 @@ import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
-import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
-import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.AgentFlexLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
@@ -237,13 +239,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
         record.setEndTime(System.currentTimeMillis());
         record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
-
-//        // 如果是异步的，则为插入不为更新
-//        MessageEntity e = messageService.getById(record.getId());
-//        streamMessagePublisher.doStuffAndPublishAnEvent(e != null && TASK_SYNC.equals(e.getFieldProp())?"同步任务完成.":"异步任务完成.",
-//                getRole() ,
-//                getTaskInfo() ,
-//                IdUtil.getSnowflakeNextId()) ;
 
         return record;
     }
@@ -663,6 +658,30 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 getRole() ,
                 getTaskInfo() ,
                 message.getId()) ;
+    }
+
+    /**
+     * 处理本次会话的历史记录
+     * @param historyPrompt
+     * @param channelId
+     */
+    protected void handleHistoryUserMessage(HistoriesPrompt historyPrompt, long channelId) {
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 500");;
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            if ("person".equals(dto.getRoleType())) {
+                historyPrompt.addMessage(new HumanMessage(chatText));
+            }
+        }
+
+//        Collections.reverse(messages);
+
     }
 
     /**
