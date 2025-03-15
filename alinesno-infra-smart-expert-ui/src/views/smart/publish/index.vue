@@ -120,8 +120,7 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <el-row :gutter="20">
-                <el-col :span="16">
+              <div class="message-chat-container">
                   <div class="message-input">
 
                     <el-input class="input-chat-box" @keydown.ctrl.enter.prevent="keyDown" v-model="message"
@@ -133,32 +132,28 @@
                     </el-input>
 
                   </div>
-                </el-col>
 
-                <el-col :span="8" class="button-box-item">
-
-                  <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
-
-                    <span style="margin-right:10px;" v-if="isRecording">
-                      <img :src="speakingIcon" style="width:35px" />
-                      <el-button type="primary" text bg size="large" @click="stopRecording()">
-                        <i class="fa-solid fa-headset icon-btn"></i>
+                  <span class="box-item-bottom">
+                    <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
+                      <span style="margin-right:10px;display: flex;" v-if="isRecording">
+                        <img :src="speakingIcon" style="width:35px" />
+                        <el-button type="primary" text bg size="large" @click="stopRecording()">
+                          <i class="fa-solid fa-headset icon-btn"></i>
+                        </el-button>
+                      </span>
+                      <el-button v-if="!isRecording" type="primary" text bg size="large" @click="startRecording()">
+                        <i class="fa-solid fa-microphone-lines icon-btn"></i>
                       </el-button>
-                    </span>
+                    </el-tooltip>
 
-                    <el-button v-if="!isRecording" type="primary" text bg size="large" @click="startRecording()">
-                      <i class="fa-solid fa-microphone-lines icon-btn"></i>
-                    </el-button>
-                  </el-tooltip>
+                    <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
+                      <el-button type="danger" text bg size="large" @click="sendMessage('send')">
+                        <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
+                      </el-button>
+                    </el-tooltip>
+                  </span>
 
-                  <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
-                    <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
-                    </el-button>
-                  </el-tooltip>
-
-                </el-col>
-              </el-row>
+                </div>
 
             </div>
           </div>
@@ -182,7 +177,7 @@ import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 import { getShareInfo, chatShareRole, shareRecognize } from '@/api/smart/assistant/publishChat'
-import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
+import { openSseConnect } from "@/api/smart/assistant/chatsse";
 
 import { getParam } from '@/utils/ruoyi'
 import { nextTick, onMounted } from "vue";
@@ -194,7 +189,7 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
 
-const openDebuggerDialog = ref(true)
+// const openDebuggerDialog = ref(true)
 
 const isSpeaking = ref(false)
 // 定义响应式变量
@@ -202,7 +197,8 @@ const isRecording = ref(false);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 const audioUrl = ref('');
-const transcription = ref('');
+
+// const transcription = ref('');
 
 const { proxy } = getCurrentInstance();
 
@@ -396,6 +392,7 @@ const pushResponseMessageList = (newMessage) => {
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText;
           console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
         } else {
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
@@ -473,11 +470,11 @@ function handleSseConnect(channelId) {
   })
 }
 
-function handleBusinessIdToMessageBox(item) {
-  const businessIdMessage = ' #' + item.businessId + ' ';
-  businessId.value = item.businessId;
-  message.value += businessIdMessage;
-}
+// function handleBusinessIdToMessageBox(item) {
+//   const businessIdMessage = ' #' + item.businessId + ' ';
+//   businessId.value = item.businessId;
+//   message.value += businessIdMessage;
+// }
 
 /** 获取角色信息 */
 function handleGetInfo(shareId) {
@@ -625,10 +622,7 @@ html pre code.hljs {
       }
 
     }
-
-
   }
-
 
   .chat-ai-say-body {
     float: left;
@@ -723,12 +717,31 @@ html pre code.hljs {
   }
 }
 
-.button-box-item {
-  display: flex !important;
-  padding-left: 0px !important;
+.robot-chat-footer{
+  .message-chat-container{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
 
-  .el-button+.el-button {
-    margin-left: 7px;
+    .message-input{
+      width: 100%;
+    }
+  }
+
+  .box-item-bottom{
+    display: flex;
+    justify-content: space-between;
+    flex-direction: row;
   }
 }
+
+// .button-box-item {
+//   display: flex !important;
+//   padding-left: 0px !important;
+
+//   .el-button+.el-button {
+//     margin-left: 7px;
+//   }
+// }
 </style>
