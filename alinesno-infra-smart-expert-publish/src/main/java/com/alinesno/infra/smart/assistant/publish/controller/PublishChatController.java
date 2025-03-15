@@ -6,7 +6,7 @@ import com.alibaba.dashscope.common.Role;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.publish.constants.PublishConst;
+import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
