@@ -188,8 +188,11 @@
 
         <div v-if="!chatLoading"  >
 
-          <el-alert title="Success alert" type="success" />
-          <div style="margin-top:10px; line-height: 23px;padding: 10px;background: #f5f5f5;border-radius: 2px;">
+          <el-alert title="Success alert" type="success"  />
+          <div class="reasoning-chat-content" v-if="testLlmModelReasoingReponse">
+              {{ testLlmModelReasoingReponse }}
+          </div> 
+          <div class="text-chat-content">
               {{ testLlmModelReponse }}
           </div> 
         </div>
@@ -225,9 +228,7 @@
           <el-button type="primary" 
               v-if="form.modelType === 'large_language_model' || form.modelType === 'image_generation' || form.modelType === 'vector_model' || form.modelType === 're_ranking_model' " 
               @click="handleTestLlmModel" 
-              text 
-              bg 
-              size="large">测试</el-button>
+              text bg size="large">测试</el-button>
 
           <el-button type="primary" @click="submitForm" text bg size="large">保存</el-button>
           <el-button @click="cancel" text bg size="large">取 消</el-button>
@@ -239,6 +240,7 @@
 </template>
 
 <script setup name="LlmModel">
+
 // import { getToken } from "@/utils/auth";
 
 import {
@@ -252,8 +254,13 @@ import {
   getAllModelTypesInfo,
 } from "@/api/smart/assistant/llmModel";
 
-import { reactive, ref } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import speakingIcon from '@/assets/icons/speaking.gif';
+
+import { openSseConnect } from "@/api/smart/assistant/chatsse";
+
+import SnowflakeId from "snowflake-id";
+const snowflake = new SnowflakeId();
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -267,17 +274,19 @@ const ids = ref([]);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
+const channelId = ref(null);
 
 // 模型测试
 const chatLoading = ref(true);
 const isSpeaking = ref(false)
+const streamLoading = ref(null)
 
 const providerOptions = ref(undefined)
 const modelTypeOptions = ref(undefined)
 const baseModelOptions = ref(undefined)
 
-const testLlmModelReponse = ref('')
-
+const testLlmModelReasoingReponse = ref(undefined)
+const testLlmModelReponse = ref(undefined)
 
 const data = reactive({
   form: {},
@@ -358,6 +367,10 @@ function reset() {
     apiUrl: undefined,
     model: undefined,
   };
+
+  testLlmModelReasoingReponse.value = '' ; 
+  testLlmModelReponse.value = '' ;
+
   proxy.resetForm("LlmModelRef");
 };
 
@@ -377,6 +390,8 @@ function handleAdd() {
 /** 修改按钮操作 */
 function handleUpdate(row) {
   reset();
+
+
   const id = row.id || ids.value;
   getLlmModel(id).then(response => {
     form.value = response.data;
@@ -410,13 +425,20 @@ function submitForm() {
 /** 测试提交 */
 function handleTestLlmModel(){
   proxy.$refs["LlmModelRef"].validate(valid => {
+
     if (valid) {
+      form.value.testChannelId = channelId.value ; 
+
+      testLlmModelReasoingReponse.value = '' ; 
+      testLlmModelReponse.value = '' ;
+
       testLlmModel(form.value).then(response => {
         proxy.$modal.msgSuccess("测试成功");
-        testLlmModelReponse.value = response.data;
+        // testLlmModelReponse.value = response.data;
         chatLoading.value = false ;
       });
     }
+
   });
 }
 
@@ -465,8 +487,56 @@ const listenPlayVoiceOption = () => {
   isSpeaking.value = !isSpeaking.value
 }
 
-getList();
-handleAllModelProvidersInfo();
+/** 连接sse */
+function handleSseConnect(channelId) {
+  nextTick(() => {
+    if (channelId) {
+
+      let sseSource = openSseConnect(channelId);
+      // 接收到数据
+      sseSource.onmessage = function (event) {
+
+        if (!event.data.includes('[DONE]')) {
+          let resData = event.data;
+          if (resData != 'ping') {  // 非心跳消息
+            const data = JSON.parse(resData);
+            pushResponseMessageList(data);
+          }
+        } else {
+          console.log('消息接收结束.')
+          if (streamLoading.value) {
+            streamLoading.value.close();
+          }
+        }
+
+      }
+    }
+  })
+}
+
+/** 消息输出 */
+function pushResponseMessageList(data){
+
+  if(data.reasoningText){
+    testLlmModelReasoingReponse.value += data.reasoningText ;
+    console.log('reasoningText = ' + data.reasoningText + ', testLlmModelReasoingReponse = ' + testLlmModelReasoingReponse.value)
+  }
+
+  if(data.chatText){
+    testLlmModelReponse.value += data.chatText ;
+    console.log('chatText = ' + data.chatText + ' , testLlmModelReponse = ' + testLlmModelReponse.value)
+  }
+}
+
+onMounted(() => {
+  getList();
+  handleAllModelProvidersInfo();
+
+  // 监听sse
+  channelId.value = snowflake.generate()
+  handleSseConnect(channelId.value);
+})
+
 
 </script>
 
@@ -494,6 +564,24 @@ handleAllModelProvidersInfo();
   gap: 10px;
   flex-direction: row;
   justify-content: flex-end;
+}
+
+.reasoning-chat-content{
+  margin-top: 10px;
+  line-height: 23px;
+  padding: 10px;
+  background: rgb(245, 245, 245);
+  border-left: 2px solid #a5a5a5;
+  border-radius: 5px;
+  color: #a5a5a5;
+}
+
+.text-chat-content{
+  margin-top:10px; 
+  line-height: 23px;
+  padding: 10px;
+  background: #f5f5f5;
+  border-radius: 2px;
 }
 
 </style>
