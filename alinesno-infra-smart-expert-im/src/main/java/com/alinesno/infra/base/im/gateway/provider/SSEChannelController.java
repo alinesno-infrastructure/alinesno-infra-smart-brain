@@ -59,24 +59,40 @@ public class SSEChannelController {
         long bId = event.getBId() ;
 
         final SseEmitter emitter = service.getConn(channelId + "");
-        CompletableFuture.runAsync(() -> {
 
-            ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, bId) ;
-            msgDto.setLoading(false);
-            msgDto.setChatText(msg);
-            msgDto.setLlmStream(true);
-            msgDto.setReasoningText(reasoningText);  // 推理内容
-            msgDto.setFlowStep(flowStepDto);  // 执行流程节点信息
-            msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
-            msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
+        ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, bId) ;
+        msgDto.setLoading(false);
+        msgDto.setChatText(msg);
+        msgDto.setLlmStream(true);
+        msgDto.setReasoningText(reasoningText);  // 推理内容
+        msgDto.setFlowStep(flowStepDto);  // 执行流程节点信息
+        msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
+        msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
 
-            try {
-                emitter.send(msgDto) ;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+        try {
+            emitter.send(msgDto) ;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        });
+//        CompletableFuture.runAsync(() -> {
+//
+//            ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, bId) ;
+//            msgDto.setLoading(false);
+//            msgDto.setChatText(msg);
+//            msgDto.setLlmStream(true);
+//            msgDto.setReasoningText(reasoningText);  // 推理内容
+//            msgDto.setFlowStep(flowStepDto);  // 执行流程节点信息
+//            msgDto.setRoleType(StringUtils.isNotEmpty(info.getRoleType())?info.getRoleType():"agent");
+//            msgDto.setContentReferenceArticle(info.getContentReferenceArticle());
+//
+//            try {
+//                emitter.send(msgDto) ;
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
+
     }
 
     /**
