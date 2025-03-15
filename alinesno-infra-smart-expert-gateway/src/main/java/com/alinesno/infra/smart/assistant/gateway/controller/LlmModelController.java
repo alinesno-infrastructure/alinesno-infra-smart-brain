@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -127,7 +128,7 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
      * @return
      */
     @PostMapping("/testLlmModel")
-    public AjaxResult testLlmModel(@RequestBody TestLlmModelDto dto) {
+    public AjaxResult testLlmModel(@RequestBody @Validated TestLlmModelDto dto) {
         log.debug("dto = {}" , dto);
         String result = service.testLlmModel(dto) ;
         return AjaxResult.success("操作成功" , result) ;
