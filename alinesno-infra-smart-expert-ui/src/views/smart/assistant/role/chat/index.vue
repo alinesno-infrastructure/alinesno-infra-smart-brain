@@ -383,6 +383,7 @@ const pushResponseMessageList = (newMessage) => {
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText;
           console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
         } else {
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
