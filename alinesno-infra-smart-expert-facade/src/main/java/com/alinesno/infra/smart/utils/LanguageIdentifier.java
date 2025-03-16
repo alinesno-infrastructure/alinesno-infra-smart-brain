@@ -66,7 +66,7 @@ public class LanguageIdentifier {
                 Yaml yaml = new Yaml();
                 yaml.load(content);
                 return true;
-            } catch (ParserException e) {
+            } catch (Exception e) {
                 return false;
             }
         }
