@@ -94,7 +94,7 @@
                     {{ 'http://alinesno-infra-smart-expert-boot.beta.base.infra.linesno.com/api/infra/smart/assistant/publishWeChat/' + props.shareId }} 
                 </div>
                 <div style="margin-top:20px;">
-                    <img src="https://cloud.fastgpt.cn/imgs/outlink/offiaccount-copylink-instruction.png" style="width: 100%;border-radius: 5px;" />
+                    <img src="http://data.linesno.com/icons/offiaccount-copylink.png" style="width: 100%;border-radius: 5px;" />
                 </div>
             </div>
         </div>
