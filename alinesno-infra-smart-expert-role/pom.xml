@@ -13,6 +13,10 @@
 	<artifactId>alinesno-infra-smart-expert-role</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<graalvm.version>23.1.1</graalvm.version>
+	</properties>
+
 	<dependencies>
 
 		<!-- 引用公共门面服务 -->
@@ -122,7 +126,25 @@
 			</exclusions>
 		</dependency>
 
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>polyglot</artifactId>
+			<version>${graalvm.version}</version>
+		</dependency>
 
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>js</artifactId>
+			<version>${graalvm.version}</version>
+			<type>pom</type>
+		</dependency>
+
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>python</artifactId>
+			<version>${graalvm.version}</version>
+			<type>pom</type>
+		</dependency>
 
 		<!-- spring-retry_start -->
 		<dependency>
