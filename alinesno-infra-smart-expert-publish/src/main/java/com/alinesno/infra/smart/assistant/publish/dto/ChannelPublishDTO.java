@@ -138,17 +138,17 @@ public class ChannelPublishDTO extends BaseDto {
             }
             if (configMap.containsKey("secret")) {
                 String secret = configMap.get("secret").toString();
-                String aesEncrypted = EncryptionUtils.aesEncrypt(secret, EncryptionUtils.DEFAULT_KEY);
+                String aesEncrypted = EncryptionUtils.aesDecrypt(secret, EncryptionUtils.DEFAULT_KEY);
                 dto.setSecret(aesEncrypted) ;
             }
             if (configMap.containsKey("token")) {
                 String token = configMap.get("token").toString();
-                String aesEncrypted = EncryptionUtils.aesEncrypt(token, EncryptionUtils.DEFAULT_KEY);
+                String aesEncrypted = EncryptionUtils.aesDecrypt(token, EncryptionUtils.DEFAULT_KEY);
                 dto.setToken(aesEncrypted) ;
             }
             if (configMap.containsKey("aesKey")) {
                 String aesKey = configMap.get("aesKey").toString();
-                String aesEncrypted = EncryptionUtils.aesEncrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
+                String aesEncrypted = EncryptionUtils.aesDecrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
                 dto.setAesKey(aesEncrypted) ;
             }
             if (configMap.containsKey("hasAuth")) {
@@ -156,7 +156,7 @@ public class ChannelPublishDTO extends BaseDto {
             }
             if (configMap.containsKey("authPassword")) {
                 String authPassword = configMap.get("authPassword").toString();
-                String aesEncrypted = EncryptionUtils.aesEncrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
+                String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
                 dto.setAuthPassword(aesEncrypted)  ;
             }
 
@@ -170,6 +170,7 @@ public class ChannelPublishDTO extends BaseDto {
      * @param entity 发布渠道实体对象
      * @return 发布渠道DTO对象
      */
+    @SneakyThrows
     public static Map<String , Object> toMap(ChannelPublishEntity entity) {
 
         String configMapStr = entity.getConfigMap();
@@ -186,6 +187,32 @@ public class ChannelPublishDTO extends BaseDto {
             configMap.put("paramKey", entity.getParamKey()) ;
             configMap.put("apiKey", entity.getApiKey()) ;
             configMap.put("isConfigured", entity.getHasConfigured()) ;
+
+            if (configMap.containsKey("appId")) {
+                String appId = configMap.get("appId").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(appId, EncryptionUtils.DEFAULT_KEY);
+                configMap.put("appId", aesEncrypted);
+            }
+            if (configMap.containsKey("secret")) {
+                String secret = configMap.get("secret").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(secret, EncryptionUtils.DEFAULT_KEY);
+                configMap.put("secret", aesEncrypted);
+            }
+            if (configMap.containsKey("token")) {
+                String token = configMap.get("token").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(token, EncryptionUtils.DEFAULT_KEY);
+                configMap.put("token", aesEncrypted);
+            }
+            if (configMap.containsKey("aesKey")) {
+                String aesKey = configMap.get("aesKey").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
+                configMap.put("aesKey", aesEncrypted);
+            }
+            if (configMap.containsKey("authPassword")) {
+                String authPassword = configMap.get("authPassword").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
+                configMap.put("authPassword", aesEncrypted);
+            }
 
             return configMap;
         }
