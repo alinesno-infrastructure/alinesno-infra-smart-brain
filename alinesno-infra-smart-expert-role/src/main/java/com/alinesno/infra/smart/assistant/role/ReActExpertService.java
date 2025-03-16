@@ -282,65 +282,6 @@ public class ReActExpertService extends ExpertService {
         return null;
     }
 
-//    protected CompletableFuture<String> getAiChatResultAsync(Llm llm,  HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId) {
-//        CompletableFuture<String> future = new CompletableFuture<>();
-//        AtomicReference<String> outputStr = new AtomicReference<>("");
-//
-//        // 创建一个 final 局部变量来持有 taskInfo 的引用
-//        final MessageTaskInfo localTaskInfo = taskInfo;
-//
-//        try {
-//            llm.chatStream(historyPrompt, (context, response) -> {
-//
-//                AiMessage message = response.getMessage();
-//
-//                System.out.println(">>>> " + message);
-//
-//                FlowStepStatusDto stepDto = new FlowStepStatusDto();
-//                stepDto.setMessage("任务进行中...");
-//                stepDto.setStepId(oneChatId);
-//                stepDto.setStatus(AgentConstants.STEP_PROCESS);
-//
-//                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getContent())) {
-//                    stepDto.setFlowChatText(message.getContent());
-//                }
-//
-//                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getReasoningContent())){
-//                    stepDto.setFlowReasoningText(message.getReasoningContent());
-//                }
-//
-//                stepDto.setPrint(true);
-//
-//                synchronized (localTaskInfo) {
-//                    localTaskInfo.setFlowStep(stepDto);
-//                }
-//
-//                try {
-//                    synchronized (localTaskInfo) {
-//                        if (message.getStatus() == MessageStatus.END) {
-//                            outputStr.set(message.getFullContent());
-//                            stepDto.setStatus(AgentConstants.STEP_FINISH);
-//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
-//                            future.complete(outputStr.get());
-//                        } else {
-//                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
-//                        }
-//                    }
-//                } catch (Exception e) {
-//                    // 处理发布事件时的异常
-//                    log.error(e.getMessage());
-//                    future.completeExceptionally(e);
-//                }
-//            });
-//        } catch (Exception e) {
-//            // 处理 chatStream 方法的异常
-//            log.error(e.getMessage());
-//            future.completeExceptionally(e);
-//        }
-//
-//        return future;
-//    }
-
     protected CompletableFuture<String> getAiChatResultAsync(Llm llm,  HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId) {
         CompletableFuture<String> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
