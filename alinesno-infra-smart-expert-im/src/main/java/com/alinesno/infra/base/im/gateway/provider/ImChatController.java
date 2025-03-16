@@ -107,6 +107,7 @@ public class ImChatController extends SuperController {
         // 设置账户信息
         message.setAccountId(managerAccount.getId());
         message.setAccountName(managerAccount.getName());
+        message.setAccountEmail(managerAccount.getEmail());
         message.setAccountIcon(managerAccount.getAvatarPath());
 
         messageService.sendUserMessage(message , roleList , personDto);
