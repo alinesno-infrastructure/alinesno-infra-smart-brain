@@ -84,14 +84,18 @@
                 </div>
             </div>
             <div v-if="props.channel.paramKey === 'wechat_official_account'">
-                <div class="instruction">
-                    <span>配置完成后，您可以：</span>
+                <div class="instruction show-copy-btn">
+                    <span>将以下网页复制到你的浏览器中：</span>
+                    <span>
+                        <el-button type="primary" size="large" text bg icon="CopyDocument" @click="copyClick('http://alinesno-infra-smart-expert-boot.beta.base.infra.linesno.com/api/infra/smart/assistant/publishWeChat/' + props.shareId)">复制</el-button>
+                    </span>
                 </div>
-                <ul class="mt-15">
-                    <li>通过公众号菜单触发对话</li>
-                    <li>接收用户消息推送</li>
-                    <li>设置自动回复规则</li>
-                </ul>
+                <div class="code-block">
+                    {{ 'http://alinesno-infra-smart-expert-boot.beta.base.infra.linesno.com/api/infra/smart/assistant/publishWeChat/' + props.shareId }} 
+                </div>
+                <div style="margin-top:20px;">
+                    <img src="https://cloud.fastgpt.cn/imgs/outlink/offiaccount-copylink-instruction.png" style="width: 100%;border-radius: 5px;" />
+                </div>
             </div>
         </div>
         <template #footer>
