@@ -32,6 +32,7 @@ public class TaskUtils {
         msg.setAccountId(message.getAccountId());
         msg.setAccountName(message.getAccountName());
         msg.setAccountIcon(message.getAccountIcon());
+        msg.setAccountEmail(message.getAccountEmail()) ;
 
         return msg ;
 
