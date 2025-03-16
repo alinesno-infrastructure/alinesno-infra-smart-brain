@@ -8,13 +8,13 @@ import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.assistant.publish.utils.WechatSignatureUtils;
 import com.thoughtworks.xstream.XStream;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,7 +34,7 @@ public class PublishWeChatController {
 
     // 处理微信服务器验证
     @GetMapping("/api/infra/smart/assistant/publishWeChat/{apiKey}")
-    public AjaxResult verify(
+    public String verify(
                 @PathVariable("apiKey") String apiKey ,
                 @RequestParam("signature") String signature,
                 @RequestParam("timestamp") String timestamp,
@@ -48,12 +48,14 @@ public class PublishWeChatController {
 
         // 进行签名验证
         if (WechatSignatureUtils.validateSignature(signature, timestamp, nonce, channelDto.getToken())) {
-            return AjaxResult.success(echostr);
+            return echostr ;
         } else {
             log.error("签名验证失败，可能不是来自微信服务器的请求");
-            return AjaxResult.error("签名验证失败");
+            return null ;
         }
     }
+
+
 
     // 处理微信消息
     @PostMapping("/api/infra/smart/assistant/publishWeChat/{apiKey}")
@@ -78,6 +80,8 @@ public class PublishWeChatController {
                     xmlData.append(line);
                 }
             }
+
+            log.debug("xmlData = {}" , xmlData);
 
             // 使用 XStream 将 XML 转换为 WechatMessage 对象
             XStream xStream = new XStream();
