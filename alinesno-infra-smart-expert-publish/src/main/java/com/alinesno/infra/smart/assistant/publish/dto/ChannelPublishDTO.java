@@ -5,10 +5,12 @@ import com.alibaba.fastjson.TypeReference;
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.enums.ChannelListEnums;
+import com.alinesno.infra.smart.assistant.publish.utils.EncryptionUtils;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.SneakyThrows;
 import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 
@@ -49,6 +51,7 @@ public class ChannelPublishDTO extends BaseDto {
      * 转换为实体对象
      * @return
      */
+    @SneakyThrows
     public ChannelPublishEntity toEntity() {
 
         ChannelListEnums channelListEnums = ChannelListEnums.getByParamKey(paramKey);
@@ -73,20 +76,25 @@ public class ChannelPublishDTO extends BaseDto {
             config.put("expireTime", expireTime);
         }
         if (appId != null && !appId.isEmpty()) {
-            config.put("appId", appId);
+            String aesEncrypted = EncryptionUtils.aesEncrypt(appId, EncryptionUtils.DEFAULT_KEY);
+            config.put("appId", aesEncrypted);
         }
         if (secret != null && !secret.isEmpty()) {
-            config.put("secret", secret);
+            String aesEncrypted = EncryptionUtils.aesEncrypt(secret, EncryptionUtils.DEFAULT_KEY);
+            config.put("secret", aesEncrypted);
         }
         if (token != null && !token.isEmpty()) {
-            config.put("token", token);
+            String aesEncrypted = EncryptionUtils.aesEncrypt(token, EncryptionUtils.DEFAULT_KEY);
+            config.put("token", aesEncrypted);
         }
         if (aesKey != null && !aesKey.isEmpty()) {
-            config.put("aesKey", aesKey);
+            String aesEncrypted = EncryptionUtils.aesEncrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
+            config.put("aesKey", aesEncrypted);
         }
         config.put("hasAuth", hasAuth);
         if (authPassword != null && !authPassword.isEmpty()) {
-            config.put("authPassword", authPassword);
+            String aesEncrypted = EncryptionUtils.aesEncrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
+            config.put("authPassword", aesEncrypted);
         }
 
         entity.setConfigMap(JSONObject.toJSONString(config));
@@ -99,6 +107,7 @@ public class ChannelPublishDTO extends BaseDto {
      * @param entity 发布渠道实体对象
      * @return 发布渠道DTO对象
      */
+    @SneakyThrows
     public static ChannelPublishDTO toDto(ChannelPublishEntity entity) {
         ChannelPublishDTO dto = new ChannelPublishDTO();
         dto.setRoleId(entity.getRoleId());
@@ -123,22 +132,32 @@ public class ChannelPublishDTO extends BaseDto {
                 dto.setQpm(Integer.parseInt(configMap.get("qpm").toString()));
             }
             if (configMap.containsKey("appId")) {
-                dto.setAppId(configMap.get("appId").toString());
+                String appId = configMap.get("appId").toString();
+                String aesEncrypted = EncryptionUtils.aesDecrypt(appId, EncryptionUtils.DEFAULT_KEY);
+                dto.setAppId(aesEncrypted) ;
             }
             if (configMap.containsKey("secret")) {
-                dto.setSecret(configMap.get("secret").toString());
+                String secret = configMap.get("secret").toString();
+                String aesEncrypted = EncryptionUtils.aesEncrypt(secret, EncryptionUtils.DEFAULT_KEY);
+                dto.setSecret(aesEncrypted) ;
             }
             if (configMap.containsKey("token")) {
-                dto.setToken(configMap.get("token").toString());
+                String token = configMap.get("token").toString();
+                String aesEncrypted = EncryptionUtils.aesEncrypt(token, EncryptionUtils.DEFAULT_KEY);
+                dto.setToken(aesEncrypted) ;
             }
             if (configMap.containsKey("aesKey")) {
-                dto.setAesKey(configMap.get("aesKey").toString());
+                String aesKey = configMap.get("aesKey").toString();
+                String aesEncrypted = EncryptionUtils.aesEncrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
+                dto.setAesKey(aesEncrypted) ;
             }
             if (configMap.containsKey("hasAuth")) {
                 dto.setHasAuth(Boolean.parseBoolean(configMap.get("hasAuth").toString()));
             }
             if (configMap.containsKey("authPassword")) {
-                dto.setAuthPassword(configMap.get("authPassword").toString());
+                String authPassword = configMap.get("authPassword").toString();
+                String aesEncrypted = EncryptionUtils.aesEncrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
+                dto.setAuthPassword(aesEncrypted)  ;
             }
 
         }
