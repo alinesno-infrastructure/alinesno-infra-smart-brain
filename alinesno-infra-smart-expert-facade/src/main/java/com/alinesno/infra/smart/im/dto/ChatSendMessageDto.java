@@ -16,6 +16,7 @@ public class ChatSendMessageDto implements Serializable {
     private Long accountId ; // 操作账号ID
     private String accountName; // 操作账号名称
     private String accountIcon ; // 操作账号头像
+    private String accountEmail ; // 操作账号邮箱
 
     private String type;
 
