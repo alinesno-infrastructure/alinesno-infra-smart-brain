@@ -410,12 +410,14 @@ function submitForm() {
           proxy.$modal.msgSuccess("修改成功");
           // open.value = false;
           getList();
+          open.value = false;
         });
       } else {
         addLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
           // open.value = false;
           getList();
+          open.value = false;
         });
       }
     }
