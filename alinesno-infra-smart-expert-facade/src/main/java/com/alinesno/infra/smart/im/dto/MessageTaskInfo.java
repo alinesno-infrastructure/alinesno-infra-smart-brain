@@ -86,7 +86,13 @@ public class MessageTaskInfo implements Serializable {
     // 内容引用文章列表
     private List<MessageReferenceDto> contentReferenceArticle;
 
-   // 消息内额外参数
+    // 错误信息
+    private String errorMessage;
+
+    // 是否异常
+    private boolean hasError = false ;
+
+    // 消息内额外参数
     private Map<String , Object> params;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
