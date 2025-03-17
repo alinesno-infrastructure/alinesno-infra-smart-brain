@@ -143,7 +143,7 @@ public class EncryptionUtils {
             return new String(decrypted, StandardCharsets.UTF_8);
         } catch (Exception e) {
             log.error("AES 解密时发生异常，加密字符串: {}, 密钥: {}", encrypted, key, e);
-            throw e;
+            return "" ;
         }
     }
 }
