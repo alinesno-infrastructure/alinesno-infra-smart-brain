@@ -14,10 +14,10 @@ import java.util.Map;
 public enum ChannelListEnums {
 
     WEB_VERSION("网页版", "可通过PC或移动设备立即开始对话", "fa-brands fa-edge", "web_version", false),
-    CUSTOMER_SERVICE("客服", "提供客户服务接入系统的渠道", "fas fa-user-tie", "customer_service", false),
-    WECHAT_OFFICIAL_ACCOUNT("微信公众号", "可推送消息到用户的订阅渠道", "fab fa-weixin", "wechat_official_account", false),
-    DINGTALK("钉钉", "与钉钉平台集成的渠道", "fab fa-alipay", "dingtalk", false),
-    API_INTERFACE("API接口", "提供系统间数据交互的接口渠道", "fas fa-plug", "api_interface", false),
+//    CUSTOMER_SERVICE("客服", "提供客户服务接入系统的渠道", "fas fa-user-tie", "customer_service", false),
+//    WECHAT_OFFICIAL_ACCOUNT("微信公众号", "可推送消息到用户的订阅渠道", "fab fa-weixin", "wechat_official_account", false),
+//    DINGTALK("钉钉", "与钉钉平台集成的渠道", "fab fa-alipay", "dingtalk", false),
+//    API_INTERFACE("API接口", "提供系统间数据交互的接口渠道", "fas fa-plug", "api_interface", false),
     WEB_EMBEDDED("网站嵌入", "通过 iframe/JS 将应用以页面或聊天气泡的形式，快速集成到你的网站", "fas fa-comment-dots", "web_embedded", false);
 
     private final String name;
