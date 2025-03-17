@@ -12,13 +12,12 @@ import java.util.Map;
 @Getter
 public enum LlmModelProviderEnums {
 
-    QWEN("千问(Qwen)", "qwen", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
-    OPENAI("ChatGPT", "openai", "https://api.openai.com"),
-    DOUBAO("豆包", "doubao", "https://ark.cn-beijing.volces.com/api/v3"),
+    QWEN("阿里百炼(Qwen)", "qwen", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
+    DOUBAO("云雀大模型", "doubao", "https://ark.cn-beijing.volces.com/api/v3"),
     GITEE("GiteeAI", "gitee", "https://ai.gitee.com"),
     OLLAMA("Ollama", "ollama", "http://localhost:11434"),
-    DEEPSEEK("DeepSeek", "deepseek", "https://dashscope.aliyuncs.com/compatible-mode/v1"),
-    QWQ("千问（QwQ）", "qwq", "https://dashscope.aliyuncs.com/compatible-mode/v1");
+    SILICONFLOW("硅基流动", "siliconflow", "https://api.siliconflow.cn"),
+    QWQ("阿里百炼（QwQ）", "qwq", "https://dashscope.aliyuncs.com/compatible-mode/v1");
 
     private final String displayName;
     private final String code;
