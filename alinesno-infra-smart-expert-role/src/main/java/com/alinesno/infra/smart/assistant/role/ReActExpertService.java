@@ -69,7 +69,6 @@ public class ReActExpertService extends ExpertService {
                                 MessageEntity workflowExecution,
                                 MessageTaskInfo taskInfo) {
 
-
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
         List<ToolDto> tools = toolService.getByToolIds(role.getSelectionToolsData()) ;
@@ -162,6 +161,7 @@ public class ReActExpertService extends ExpertService {
                                         role,
                                         taskInfo,
                                         taskInfo.getTraceBusId()) ;
+                                answer = String.valueOf(executeToolOutput) ;
 
                             }
                             log.debug("工具执行结果：{}", executeToolOutput);
