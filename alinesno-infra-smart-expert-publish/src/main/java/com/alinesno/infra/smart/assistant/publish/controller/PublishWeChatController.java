@@ -1,14 +1,19 @@
 package com.alinesno.infra.smart.assistant.publish.controller;
 
+import cn.hutool.http.server.HttpServerResponse;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.publish.dto.ChannelPublishDTO;
 import com.alinesno.infra.smart.assistant.publish.dto.WechatMessageDto;
 import com.alinesno.infra.smart.assistant.publish.dto.WechatReplyMessageDto;
 import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
+import com.alinesno.infra.smart.assistant.publish.utils.EventDispatcher;
+import com.alinesno.infra.smart.assistant.publish.utils.MessageUtil;
+import com.alinesno.infra.smart.assistant.publish.utils.MsgDispatcher;
 import com.alinesno.infra.smart.assistant.publish.utils.WechatSignatureUtils;
 import com.thoughtworks.xstream.XStream;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -17,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -55,63 +62,60 @@ public class PublishWeChatController {
         }
     }
 
-
-
     // 处理微信消息
     @PostMapping("/api/infra/smart/assistant/publishWeChat/{apiKey}")
-    public AjaxResult handleMessage(
-            @PathVariable("apiKey") String apiKey ,
-            HttpServletRequest request) {
+    public void handleMessage(
+            @PathVariable("apiKey") String apiKey,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        log.debug("收到微信消息: {}", apiKey);
 
-        log.debug("收到微信消息:{}" , apiKey);
+        ChannelPublishEntity channel = channelPublishService.getByShareToken(apiKey) ;
+        ChannelPublishDTO channelDto = ChannelPublishDTO.toDto(channel) ;
 
         // 流量限制检查
         if (requestCount.incrementAndGet() > MAX_REQUESTS) {
             log.warn("流量超出限制，拒绝请求");
             requestCount.decrementAndGet();
-            return AjaxResult.error("流量超出限制");
+            try {
+                response.sendError(HttpServletResponse.SC_SERVICE_UNAVAILABLE, "流量超出限制");
+            } catch (Exception e) {
+                log.error("发送流量超出限制响应时出错", e);
+            }
+            return;
         }
+
         try {
-            // 获取请求中的 XML 数据
-            StringBuilder xmlData = new StringBuilder();
-            try (BufferedReader reader = request.getReader()) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    xmlData.append(line);
+            // 解析微信消息
+            Map<String, String> messageMap = MessageUtil.parseXml(request);
+            log.debug("解析到的消息内容: {}", messageMap.get("Content"));
+
+            String type = messageMap.get("MsgType");
+            if (MessageUtil.REQ_MESSAGE_TYPE_EVENT.equals(type)) {
+                // 事件处理
+                EventDispatcher.processEvent(messageMap);
+            } else {
+                // 设置请求和响应的字符编码
+                request.setCharacterEncoding("UTF-8");
+                response.setCharacterEncoding("UTF-8");
+                // 消息处理
+                String data = MsgDispatcher.processMessage(messageMap , channelDto.getAppId() , channelDto.getSecret() , apiKey);
+                try (PrintWriter out = response.getWriter()) {
+                    out.print(data);
                 }
             }
-
-            log.debug("xmlData = {}" , xmlData);
-
-            // 使用 XStream 将 XML 转换为 WechatMessage 对象
-            XStream xStream = new XStream();
-            xStream.processAnnotations(WechatMessageDto.class);
-            WechatMessageDto message = (WechatMessageDto) xStream.fromXML(xmlData.toString());
-
-            // 自定义回复内容
-            String replyContent = "你发送的消息是：" + message.getContent();
-
-            // 构建回复消息对象
-            WechatReplyMessageDto replyMessage = new WechatReplyMessageDto();
-            replyMessage.setToUserName(message.getFromUserName());
-            replyMessage.setFromUserName(message.getToUserName());
-            replyMessage.setCreateTime(System.currentTimeMillis() / 1000);
-            replyMessage.setContent(replyContent);
-
-            // 使用 XStream 将回复消息对象转换为 XML
-            xStream.processAnnotations(WechatReplyMessageDto.class);
-            String replyXml = xStream.toXML(replyMessage);
-
-            return AjaxResult.success("消息处理成功", replyXml);
-        } catch (IOException e) {
-            log.error("处理微信消息时发生 I/O 异常", e);
-            return AjaxResult.error("处理微信消息时发生 I/O 异常");
         } catch (Exception e) {
-            log.error("处理微信消息时发生未知异常", e);
-            return AjaxResult.error("处理微信消息时发生未知异常");
+            log.error("处理微信消息时发生异常", e);
+            try {
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "处理微信消息时发生异常");
+            } catch (Exception ex) {
+                log.error("发送异常响应时出错", ex);
+            }
         } finally {
             // 请求处理完成后，减少请求计数
             requestCount.decrementAndGet();
         }
     }
+
 }
