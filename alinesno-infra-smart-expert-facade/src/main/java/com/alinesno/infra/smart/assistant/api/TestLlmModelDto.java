@@ -25,4 +25,7 @@ public class TestLlmModelDto {
     @Min(value = 1 , message = "测试频道ID不能为空")
     private long testChannelId;
 
+    // 图像处理服务的密钥，用于验证身份
+    private String secretKey ;
+
 }
