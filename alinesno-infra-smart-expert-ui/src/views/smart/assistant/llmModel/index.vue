@@ -112,7 +112,7 @@
     </el-row>
 
     <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
+    <el-dialog :title="title" v-model="open" width="600px" append-to-body :before-close="handleClose">
 
       <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px" style="padding:20px;">
         <el-row>
@@ -127,6 +127,9 @@
             <el-form-item label="模型厂商" prop="providerCode">
               <el-radio-group v-model="form.providerCode" @change="selectLLMProvider">
                 <el-radio v-for="item in providerOptions" :value="item.code" :label="item.code" :key="item.code">
+                  <!-- 添加图标 -->
+                  <img :src="'http://data.linesno.com/icons/llm/' + item.code + '.png'" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
+
                   {{ item.displayName }}
                 </el-radio>
               </el-radio-group>
@@ -184,11 +187,7 @@
 
         <el-divider content-position="left">测试结果</el-divider>
 
-          <el-skeleton :rows="1" v-if="chatLoading" />
-
-        <div v-if="!chatLoading"  >
-
-          <el-alert title="Success alert" type="success"  />
+        <div>
           <div class="reasoning-chat-content" v-if="testLlmModelReasoingReponse">
               {{ testLlmModelReasoingReponse }}
           </div> 
@@ -226,11 +225,32 @@
 
           <!-- 大模型测试-->
           <el-button type="primary" 
-              v-if="form.modelType === 'large_language_model' || form.modelType === 'image_generation' || form.modelType === 'vector_model' || form.modelType === 're_ranking_model' " 
+              v-if="form.modelType === 'large_language_model'" 
               @click="handleTestLlmModel" 
-              text bg size="large">测试</el-button>
+              text bg size="large" :loading="chatLoading">模型测试</el-button>
+            
+          <!-- 向量测试-->
+          <el-button type="primary" 
+              v-if="form.modelType === 'vector_model'" 
+              @click="handleTestVectorModel" 
+              text bg size="large" :loading="chatLoading">向量测试</el-button>
 
-          <el-button type="primary" @click="submitForm" text bg size="large">保存</el-button>
+          <!-- 重排测试-->
+          <el-button type="primary" 
+              v-if="form.modelType === 're_ranking_model'" 
+              @click="handleTestVectorModel" 
+              text bg size="large" :loading="chatLoading">重排测试</el-button>
+
+          <!-- 图片生成测试-->
+          <el-button type="primary" 
+              v-if="form.modelType === 'image_generation'" 
+              @click="handleTestVectorModel" 
+              text bg size="large" :loading="chatLoading">生成图片</el-button>
+
+          <el-tooltip content="请先测试通过，确认模型可用." placement="top">
+            <el-button type="primary" @click="submitForm" text bg size="large" :disabled="isValidatedStatus">保存</el-button>
+          </el-tooltip>
+
           <el-button @click="cancel" text bg size="large">取 消</el-button>
         </div>
       </template>
@@ -277,7 +297,8 @@ const dateRange = ref([]);
 const channelId = ref(null);
 
 // 模型测试
-const chatLoading = ref(true);
+const isValidatedStatus = ref(true)  // 验证状态(false通过|true不通过)
+const chatLoading = ref(false);
 const isSpeaking = ref(false)
 const streamLoading = ref(null)
 
@@ -305,6 +326,7 @@ const data = reactive({
       message: "大模型名称长度必须介于 2 和 255 之间",
       trigger: "blur"
     }],
+    modelPermission: [{ required: true, message: "模型权限不能为空", trigger: "blur" }],
     providerCode: [{ required: true, message: "所属提供商名称不能为空", trigger: "blur" }],
     modelType: [{ required: true, message: "所属模型类型不能为空", trigger: "blur" }],
     apiKey: [{ required: true, message: "API 密钥不能为空", trigger: "blur" }],
@@ -383,6 +405,7 @@ function cancel() {
 /** 新增按钮操作 */
 function handleAdd() {
   reset();
+  isValidatedStatus.value = true 
   open.value = true;
   title.value = "添加大模型";
 };
@@ -391,6 +414,7 @@ function handleAdd() {
 function handleUpdate(row) {
   reset();
 
+  isValidatedStatus.value = true;
 
   const id = row.id || ids.value;
   getLlmModel(id).then(response => {
@@ -424,20 +448,42 @@ function submitForm() {
   });
 };
 
-/** 测试提交 */
+/** 测试大模型 */
 function handleTestLlmModel(){
   proxy.$refs["LlmModelRef"].validate(valid => {
 
     if (valid) {
-      form.value.testChannelId = channelId.value ; 
 
+      chatLoading.value = true ;
+      form.value.testChannelId = channelId.value ; 
       testLlmModelReasoingReponse.value = '' ; 
       testLlmModelReponse.value = '' ;
 
       testLlmModel(form.value).then(response => {
-        proxy.$modal.msgSuccess("测试成功");
-        // testLlmModelReponse.value = response.data;
+      })
+    }
+
+  });
+}
+
+/** 测试向量化 */
+function handleTestVectorModel(){
+  proxy.$refs["LlmModelRef"].validate(valid => {
+
+    if (valid) {
+
+      chatLoading.value = true ;
+      form.value.testChannelId = channelId.value ; 
+      testLlmModelReasoingReponse.value = '' ; 
+      testLlmModelReponse.value = '' ;
+
+      testLlmModel(form.value).then(response => {
         chatLoading.value = false ;
+        isValidatedStatus.value = false;
+        proxy.$modal.msgSuccess("验证通过");
+      }).catch(error => {
+        chatLoading.value = false ;
+        // proxy.$modal.msgError(error.message);
       });
     }
 
@@ -489,6 +535,12 @@ const listenPlayVoiceOption = () => {
   isSpeaking.value = !isSpeaking.value
 }
 
+// 关闭事件
+const handleClose = (done) => {
+  chatLoading.value = false
+  open.value = false 
+}
+
 /** 连接sse */
 function handleSseConnect(channelId) {
   nextTick(() => {
@@ -503,6 +555,14 @@ function handleSseConnect(channelId) {
           if (resData != 'ping') {  // 非心跳消息
             const data = JSON.parse(resData);
             pushResponseMessageList(data);
+
+            chatLoading.value = false
+            isValidatedStatus.value = false 
+
+            if (data.hasError) {
+              proxy.$modal.msgError("模型测试失败，请检查模型配置是否正确");
+            }
+
           }
         } else {
           console.log('消息接收结束.')
