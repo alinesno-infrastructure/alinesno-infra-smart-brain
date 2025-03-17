@@ -39,4 +39,7 @@ public class ChatMessageDto {
     private boolean llmStream = false ; // 是否为LLM输出流
     private List<MessageReferenceDto> contentReferenceArticle ; // 消息引用文章
 
+    private String errorMessage; // 错误信息
+    private boolean hasError ; // 是否异常
+
 }
