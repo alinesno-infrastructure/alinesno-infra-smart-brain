@@ -100,6 +100,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-llm-siliconflow</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
 			<artifactId>alinesno-smart-model-adapter-llm-gitee</artifactId>
 			<version>${model-adapter.version}</version>
 		</dependency>
@@ -147,6 +152,11 @@
 		<dependency>
 			<groupId>com.agentsflex</groupId>
 			<artifactId>alinesno-smart-model-adapter-image-gitee</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-image-siliconflow</artifactId>
 			<version>${model-adapter.version}</version>
 		</dependency>
 		<!-- images_end -->
