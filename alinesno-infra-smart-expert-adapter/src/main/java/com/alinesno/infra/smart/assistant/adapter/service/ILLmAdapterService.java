@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.adapter.service;
 
+import com.agentsflex.core.image.ImageConfig;
 import com.agentsflex.core.image.ImageModel;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
@@ -23,6 +24,6 @@ public interface ILLmAdapterService {
      * @param config
      * @return
      */
-    ImageModel getImageModel(String type , GiteeImageModelConfig config);
+    ImageModel getImageModel(String type , ImageConfig config);
 
 }
