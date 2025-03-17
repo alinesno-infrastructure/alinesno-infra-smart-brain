@@ -101,6 +101,12 @@
         </dependency>
         <!-- spring-retry_end -->
 
+		<!-- Jedis 用于操作 Redis -->
+		<dependency>
+			<groupId>redis.clients</groupId>
+			<artifactId>jedis</artifactId>
+		</dependency>
+
 	</dependencies>
 
 </project>
