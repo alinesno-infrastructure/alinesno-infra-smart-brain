@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.entity;
 
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
+import com.alinesno.infra.common.security.mapper.AESEncryptHandler;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
@@ -16,7 +17,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-@TableName("llm_model")
+@TableName(value = "llm_model" , autoResultMap = true)
 @Table(comment = "大模型信息表")
 public class LlmModelEntity extends InfraBaseEntity {
 
@@ -62,15 +63,23 @@ public class LlmModelEntity extends InfraBaseEntity {
      */
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
     @ColumnComment("API 密钥")
-    @TableField("api_key")
+    @TableField(value = "api_key" , typeHandler = AESEncryptHandler.class)
     private String apiKey;
+
+    /**
+     * 接入大模型的 API 密钥，该字段在数据库表中可以为空。
+     */
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
+    @ColumnComment("SecretKey 密钥")
+    @TableField(value = "secret_key" , typeHandler = AESEncryptHandler.class)
+    private String secretKey;
 
     /**
      * 接入大模型的 API 地址，该字段在数据库表中不能为空。
      */
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
     @ColumnComment("API 地址")
-    @TableField("api_url")
+    @TableField(value = "api_url" , typeHandler = AESEncryptHandler.class)
     private String apiUrl;
 
     /**
