@@ -161,6 +161,19 @@
 		</dependency>
 		<!-- images_end -->
 
+		<!-- 重排序模型_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-reranker-qwen</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-reranker-siliconflow</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- 重排序模型_end-->
+
 	</dependencies>
 
 </project>
