@@ -11,8 +11,17 @@ import com.agentsflex.core.llm.StreamResponseListener;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.reranker.ReRanker;
+import com.agentsflex.core.reranker.ReRankerConfig;
+import com.agentsflex.core.reranker.ReRankerRequest;
+import com.agentsflex.core.reranker.ReRankerResponse;
+import com.agentsflex.core.speech.SpeechConfig;
+import com.agentsflex.core.speech.SpeechModel;
+import com.agentsflex.core.speech.SpeechResponse;
+import com.agentsflex.core.speech.SynthesizeSpeechRequest;
 import com.agentsflex.core.store.VectorData;
 import com.agentsflex.core.util.StringUtil;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
@@ -31,6 +40,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -70,7 +80,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         if(modelType.equals(ModelTypeEnums.LARGE_LANGUAGE_MODEL.getCode())){  // 大语言模型
 
-            validateLargeLanguageModel(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
+            validateLargeLanguageModel(url, apiKey, secretKey , modelName, modelProvider, taskInfo, role, workflowId);
 
         } else if(modelType.equals(ModelTypeEnums.VECTOR_MODEL.getCode())){  // 向量模型
 
@@ -86,11 +96,11 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         }else if(modelType.equals(ModelTypeEnums.SPEECH_SYNTHESIS.getCode())){  // 语音合成
 
-            validateSpeechSynthesis(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
+          return validateSpeechSynthesis(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
 
         }else if(modelType.equals(ModelTypeEnums.IMAGE_GENERATION.getCode())){ // 图片生成
 
-            validateImageGeneration(url, apiKey, secretKey , modelName, modelProvider, taskInfo, role, workflowId);
+           return validateImageGeneration(url, apiKey, secretKey , modelName, modelProvider, taskInfo, role, workflowId);
 
         }else if(modelType.equals(ModelTypeEnums.VISION_MODEL.getCode())){  // 视觉模型
 
@@ -123,6 +133,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
     /**
      * 测试图片生成
+     *
      * @param url
      * @param apiKey
      * @param modelName
@@ -130,15 +141,16 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
      * @param taskInfo
      * @param role
      * @param workflowId
+     * @return
      */
-    private void validateImageGeneration(String url,
-                                         String apiKey,
-                                         String secretKey,
-                                         String modelName,
-                                         String modelProvider,
-                                         MessageTaskInfo taskInfo,
-                                         IndustryRoleEntity role,
-                                         long workflowId) {
+    private String validateImageGeneration(String url,
+                                           String apiKey,
+                                           String secretKey,
+                                           String modelName,
+                                           String modelProvider,
+                                           MessageTaskInfo taskInfo,
+                                           IndustryRoleEntity role,
+                                           long workflowId) {
         ImageConfig config = new ImageConfig();
 
         config.setApiKey(apiKey);
@@ -151,18 +163,26 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         GenerateImageRequest request = new GenerateImageRequest();
         request.setPrompt("画面左侧是一个人皱着眉头，有些生气的表情，旁边气泡中文字：“有人说我说话直别介意怎么办？”，字体为黑色描边的白色字体。这个人站在一个普通的室内场景中，身后有简单的沙发和茶几。 画面右侧是另一个人双手抱在胸前，一脸不屑，旁边气泡中文字：“我怼人你也别介意。”，字体为红色立体的抖音风格字体。这个人站在同样的室内场景中，但位置与左侧的人稍有间隔，身后也有简单的沙发和茶几。整个场景色调较为明亮，但两个人的情绪让画面稍显紧张。") ;
         request.setNegativePrompt("人物");
-        request.setN(3);
+        request.setN(1);
         request.setSize(512,512);
 
         ImageResponse generate = imageModel.generate(request) ;
         if (generate != null && generate.getImages() != null){
             int index = 0;
             for (Image image : generate.getImages()) {
-                image.writeToFile(new File("E:\\tmp\\mp3\\image_" + UUID.randomUUID() + "_" +(index++)+".jpg"));
+
+                String tempDir = System.getProperty("java.io.tmpdir");
+                String fileName = "Image" + UUID.randomUUID() + ".png"; // 生成唯一的文件名
+                File file = new File(tempDir, fileName); // 构建完整的文件路径
+
+                image.writeToFile(file) ;
+
+                return file.getAbsolutePath() ;
             }
         }
 
         log.debug("generate={}" , generate);
+        return null ;
     }
 
     /**
@@ -175,14 +195,38 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
      * @param role
      * @param workflowId
      */
-    private void validateSpeechSynthesis(String url,
+    private String validateSpeechSynthesis(String url,
                                          String apiKey,
                                          String modelName,
                                          String modelProvider,
                                          MessageTaskInfo taskInfo,
                                          IndustryRoleEntity role,
                                          long workflowId) {
+        SpeechConfig config = new SpeechConfig();
+        config.setEndpoint(url);
+        config.setApiKey(apiKey) ;
+        config.setModel(modelName);
 
+        SpeechModel speechModel = llmAdapterService.speechModel(modelProvider,config) ;
+
+        SynthesizeSpeechRequest request = new SynthesizeSpeechRequest();
+        request.setText("一间有着精致窗户的花店，漂亮的木质门，摆放着花朵");
+
+        SpeechResponse generate = speechModel.synthesize(request);
+        if (generate != null && generate.getSpeechMp3() != null){
+
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String fileName = "Speech_" + UUID.randomUUID() + ".mp3"; // 生成唯一的文件名
+            File file = new File(tempDir, fileName); // 构建完整的文件路径
+
+            generate.getSpeechMp3().writeToFile(file) ;
+
+            return file.getAbsolutePath() ;
+        }
+
+        log.debug("generate = {}" , generate);
+
+        return null ;
     }
 
     /**
@@ -203,6 +247,32 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
                                       IndustryRoleEntity role,
                                       long workflowId) {
 
+        ReRankerConfig config = new ReRankerConfig() ;
+        config.setEndpoint(url);
+        config.setApiKey(apiKey) ;
+        config.setModel(modelName);
+
+        ReRanker reRanker = llmAdapterService.reranker(modelProvider , config) ;
+
+
+        // 创建测试用的 ReRankerRequest 实例
+        ReRankerRequest request = new ReRankerRequest();
+        request.setTop_n(2);
+        request.setReturn_documents(true);
+        request.setQuery("什么是文本排序模型");
+        List<String> documents = Arrays.asList(
+                "文本排序模型广泛用于搜索引擎和推荐系统中，它们根据文本相关性对候选文本进行排序",
+                "量子计算是计算科学的一个前沿领域",
+                "预训练语言模型的发展给文本排序模型带来了新的进展"
+        );
+        request.setDocuments(documents);
+
+        // 调用 reranker 方法获取响应
+        ReRankerResponse response = reRanker.reranker(request);
+
+        // 使用 Fastjson 格式化打印响应
+        String formattedJson = JSON.toJSONString(response, true);
+        log.info("ReRanker Response: {}", formattedJson);
     }
 
     /**
@@ -254,6 +324,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
      */
     private void validateLargeLanguageModel(String url,
                                             String apiKey,
+                                            String secretKey,
                                             String modelName,
                                             String modelProvider,
                                             MessageTaskInfo taskInfo,
@@ -262,6 +333,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         LlmConfig llmConfig = new LlmConfig();
         llmConfig.setEndpoint(url);
         llmConfig.setApiKey(apiKey) ;
+        llmConfig.setApiSecret(secretKey);
         llmConfig.setModel(modelName);
 
         Llm llm = llmAdapterService.getLlm(modelProvider, llmConfig);
