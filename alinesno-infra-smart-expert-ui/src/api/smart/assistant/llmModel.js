@@ -18,8 +18,38 @@ var managerUrl = {
     allModelProvidersInfo: prefix + "getAllModelProvidersInfo", 
     allModelTypesInfo: prefix + "getAllModelTypesInfo" ,
     listLlmMode: prefix + "listLlmMode",
-    testLlmModel: prefix + "testLlmModel"
-};
+    testLlmModel: prefix + "testLlmModel",
+    getSpeech: prefix + "getSpeech",
+    getGenerateImage: prefix + "getGenerateImage"
+}
+
+// 获取图片请求
+export function getGenerateImage(data) {
+    return request({
+        url: managerUrl.getGenerateImage,
+        method: 'post',
+        data: data,
+        responseType: 'blob', // 显式声明返回二进制流
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'image/*' // 明确期望图片类型
+        }
+    })
+}   
+
+// 获取语音请求
+export function getSpeech(data) {
+    return request({
+        url: managerUrl.getSpeech,
+        method: 'post',
+        data: data,
+        responseType: 'blob', // 显式声明
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'audio/mpeg' // 明确期望音频类型
+        }
+    })
+}
 
 // 测试模型
 export function testLlmModel(data) {
