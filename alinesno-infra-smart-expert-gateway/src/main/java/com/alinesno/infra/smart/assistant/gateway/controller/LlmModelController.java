@@ -15,17 +15,31 @@ import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import io.lettuce.core.output.ByteArrayOutput;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -132,6 +146,63 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
         log.debug("dto = {}" , dto);
         String result = service.testLlmModel(dto) ;
         return AjaxResult.success("操作成功" , result) ;
+    }
+
+    @PostMapping("/getSpeech")
+    public ResponseEntity<Resource> getSpeech(@RequestBody @Validated TestLlmModelDto dto) {
+
+        String filePath = service.testLlmModel(dto) ;
+        log.debug("getSpeech filePath = {}" , filePath);
+
+        try {
+            // 本地录音文件路径
+            File audioFile = new File(filePath) ;
+
+            // 确保文件存在
+            if (!audioFile.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            FileInputStream fileInputStream = new FileInputStream(audioFile);
+            InputStreamResource inputStreamResource = new InputStreamResource(fileInputStream);
+
+            // 设置响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(audioFile.length());
+            headers.setContentDispositionFormData("attachment", audioFile.getName());
+
+            return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @PostMapping("/getGenerateImage")
+    public ResponseEntity<byte[]> getGenerateImage(@RequestBody @Validated TestLlmModelDto dto) {
+
+        String filePath = service.testLlmModel(dto) ;
+        log.debug("getGenerateImage filePath = {}" , filePath);
+
+        try {
+            // 指定图片文件路径，这里需要根据实际情况修改
+            File imageFile = new File(filePath) ;
+            if (!imageFile.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+            // 读取图片文件
+            BufferedImage image = ImageIO.read(imageFile);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", baos);
+            byte[] imageBytes = baos.toByteArray();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.IMAGE_PNG);
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            log.error("Error generating image" ,e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Override
