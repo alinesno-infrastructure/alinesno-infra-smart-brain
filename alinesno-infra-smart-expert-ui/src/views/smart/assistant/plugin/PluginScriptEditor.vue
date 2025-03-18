@@ -87,6 +87,13 @@ const calculateFirstSectionHeight = () => {
   console.log(editorHeight.value); //打印高度
 }
 
+/** 确认提交 */
+function submitDialog(){
+  console.log('submitDialog')
+  codeVal.value = cloneContent.value
+  dialogVisible.value = false
+}
+
 /**
  * 获取到codeValue
  */
