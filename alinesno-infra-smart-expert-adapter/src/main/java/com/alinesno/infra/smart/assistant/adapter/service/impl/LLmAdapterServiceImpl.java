@@ -4,6 +4,10 @@ import com.agentsflex.core.image.ImageConfig;
 import com.agentsflex.core.image.ImageModel;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.reranker.ReRanker;
+import com.agentsflex.core.reranker.ReRankerConfig;
+import com.agentsflex.core.speech.SpeechConfig;
+import com.agentsflex.core.speech.SpeechModel;
 import com.agentsflex.image.doubao.DoubaoImageModel;
 import com.agentsflex.image.doubao.DoubaoImageModelConfig;
 import com.agentsflex.image.gitee.GiteeImageModel;
@@ -12,24 +16,28 @@ import com.agentsflex.image.qwen.QwenImageModel;
 import com.agentsflex.image.qwen.QwenImageModelConfig;
 import com.agentsflex.image.siliconflow.SiliconImageModel;
 import com.agentsflex.image.siliconflow.SiliconflowImageModelConfig;
-import com.agentsflex.llm.deepseek.DeepseekLlm;
-import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.agentsflex.llm.doubao.DoubaoLlm;
 import com.agentsflex.llm.doubao.DoubaoLlmConfig;
 import com.agentsflex.llm.gitee.GiteeAiLlm;
 import com.agentsflex.llm.gitee.GiteeAiLlmConfig;
 import com.agentsflex.llm.ollama.OllamaLlm;
 import com.agentsflex.llm.ollama.OllamaLlmConfig;
-import com.agentsflex.llm.openai.OpenAiLlm;
-import com.agentsflex.llm.openai.OpenAiLlmConfig;
 import com.agentsflex.llm.qwen.QwenLlm;
 import com.agentsflex.llm.qwen.QwenLlmConfig;
 import com.agentsflex.llm.qwq.QwqLlm;
 import com.agentsflex.llm.qwq.QwqLlmConfig;
 import com.agentsflex.llm.siliconflow.SiliconflowLlm;
 import com.agentsflex.llm.siliconflow.SiliconflowLlmConfig;
-import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
+import com.agentsflex.reranker.qwen.QwenReRanker;
+import com.agentsflex.reranker.qwen.QwenRerankerConfig;
+import com.agentsflex.reranker.siliconflow.SiliconFlowReRanker;
+import com.agentsflex.reranker.siliconflow.SiliconFlowRerankerConfig;
+import com.agentsflex.speech.qwen.QwenSpeechModel;
+import com.agentsflex.speech.qwen.QwenSpeechModelConfig;
+import com.agentsflex.speech.siliconflow.SiliconflowSpeechModel;
+import com.agentsflex.speech.siliconflow.SiliconflowSpeechModelConfig;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
+import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -58,9 +66,6 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
                 LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new)
         );
 
-//     LlmModelProviderEnums.DEEPSEEK.getCode(), deepseekAiConfig -> createLlm(new DeepseekLlmConfig(), deepseekAiConfig, DeepseekLlm::new),
-//     LlmModelProviderEnums.OPENAI.getCode(), openAiConfig -> createLlm(new OpenAiLlmConfig(), openAiConfig, OpenAiLlm::new),
-
         // 获取对应的工厂方法
         Function<LlmConfig, Llm> factoryMethod = llmFactoryMap.get(type.toLowerCase());
         if (factoryMethod == null) {
@@ -73,7 +78,10 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
     // 提取公共逻辑到辅助方法
     private <T extends LlmConfig> Llm createLlm(T specificConfig, LlmConfig baseConfig, Function<T, Llm> llmConstructor) {
         specificConfig.setEndpoint(baseConfig.getEndpoint());
+
         specificConfig.setApiKey(baseConfig.getApiKey());
+        specificConfig.setApiSecret(baseConfig.getApiSecret());
+
         specificConfig.setModel(baseConfig.getModel());
         return llmConstructor.apply(specificConfig);
     }
@@ -105,6 +113,53 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         }
     }
 
+    @Override
+    public ReRanker reranker(String type , ReRankerConfig config) {
+
+        // siliconflow和qwen的重排序
+        if (LlmModelProviderEnums.SILICONFLOW.getCode().equals(type)) {
+
+            SiliconFlowRerankerConfig rerankerConfig = new SiliconFlowRerankerConfig();
+            rerankerConfig.setApiKey(config.getApiKey()) ;
+            rerankerConfig.setEndpoint(config.getEndpoint());
+            rerankerConfig.setModel(config.getModel()) ;
+
+            return new SiliconFlowReRanker(rerankerConfig);
+        } else if (LlmModelProviderEnums.QWEN.getCode().equals(type)) {
+
+            QwenRerankerConfig rerankerConfig = new QwenRerankerConfig();
+            rerankerConfig.setApiKey(config.getApiKey()) ;
+            rerankerConfig.setEndpoint(config.getEndpoint());
+            rerankerConfig.setModel(config.getModel()) ;
+
+            return new QwenReRanker(rerankerConfig);
+        }
+
+        return null;
+    }
+
+    @Override
+    public SpeechModel speechModel(String type, SpeechConfig config) {
+        if (LlmModelProviderEnums.QWEN.getCode().equals(type)) {
+
+            QwenSpeechModelConfig speechModelConfig = new QwenSpeechModelConfig();
+            speechModelConfig.setEndpoint(config.getEndpoint());
+            speechModelConfig.setApiKey(config.getApiKey());
+            speechModelConfig.setModel(config.getModel());
+
+            return new QwenSpeechModel(speechModelConfig);
+        } else if(LlmModelProviderEnums.SILICONFLOW.getCode().equals(type)){
+
+            SiliconflowSpeechModelConfig speechModelConfig = new SiliconflowSpeechModelConfig();
+            speechModelConfig.setEndpoint(config.getEndpoint());
+            speechModelConfig.setApiKey(config.getApiKey());
+            speechModelConfig.setModel(config.getModel());
+
+            return new SiliconflowSpeechModel(speechModelConfig);
+        }
+        return null;
+    }
+
     private Supplier<ImageModel> getImageModelSupplier(String type, ImageConfig config) {
         Map<String, Supplier<ImageModel>> imageModelFactory = Map.of(
                 LlmModelProviderEnums.GITEE.getCode(), () -> createGiteeImageModel(config),
@@ -130,7 +185,7 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
     private ImageModel createDoubaoImageModel(ImageConfig config) {
         DoubaoImageModelConfig imageModelConfig = new DoubaoImageModelConfig();
         imageModelConfig.setEndpoint(config.getEndpoint());
-        imageModelConfig.setAccessKey(config.getAccessKey());
+        imageModelConfig.setAccessKey(config.getApiKey());
         imageModelConfig.setSecretKey(config.getSecretKey());
         imageModelConfig.setModel(config.getModel());
         return new DoubaoImageModel(imageModelConfig);
