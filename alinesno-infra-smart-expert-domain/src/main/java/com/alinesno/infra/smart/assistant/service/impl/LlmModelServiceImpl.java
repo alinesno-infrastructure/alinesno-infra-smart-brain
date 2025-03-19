@@ -24,6 +24,7 @@ import com.agentsflex.core.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
@@ -41,6 +42,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -393,4 +395,25 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
             }
         });
     }
+
+    /**
+     * 获取声音模型
+     *
+     * @param modelId
+     * @return
+     */
+    @Override
+    public Map<String, Object> getVoiceModelSpeech(String modelId) {
+        LlmModelEntity modelEntity = getById(modelId) ;
+
+        String providerCode = modelEntity.getProviderCode() ;  // 模型提供商
+        String model = modelEntity.getModel() ;  // 获取模型
+
+        // 获取语音模型
+        Map<String, Object> modelInfo = LlmModelProviderEnums.getSpeechModelInfoByTypeAndModelName(providerCode , model) ;
+
+        log.debug(">>>> " + JSONObject.toJSONString(modelInfo));
+        return modelInfo ;
+    }
+
 }
