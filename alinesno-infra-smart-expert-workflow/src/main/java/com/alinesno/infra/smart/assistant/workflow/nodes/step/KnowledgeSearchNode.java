@@ -1,7 +1,7 @@
 // KnowledgeSearchNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
-import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
