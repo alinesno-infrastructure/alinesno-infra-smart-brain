@@ -20,7 +20,30 @@ var managerUrl = {
     listLlmMode: prefix + "listLlmMode",
     testLlmModel: prefix + "testLlmModel",
     getSpeech: prefix + "getSpeech",
-    getGenerateImage: prefix + "getGenerateImage"
+    getSpeechByModelId: prefix + "getSpeechByModelId" ,
+    getGenerateImage: prefix + "getGenerateImage" , 
+    getVoiceModelSpeech: prefix + "getVoiceModelSpeech"
+}
+
+// 获取语音模型语音请求
+export function getSpeechByModelId(modelId , voice) {
+    return request({
+        url: managerUrl.getSpeechByModelId + '?modelId=' + parseStrEmpty(modelId) + '&voice=' + parseStrEmpty(voice),
+        method: 'get',
+        responseType: 'blob', // 显式声明返回二进制流
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'image/*' // 明确期望图片类型
+        }
+    })
+}
+
+// 获取语音模型语音请求
+export function getVoiceModelSpeech(modelId) {
+    return request({
+        url: managerUrl.getVoiceModelSpeech + '?modelId=' + parseStrEmpty(modelId),
+        method: 'get'
+    })
 }
 
 // 获取图片请求
