@@ -11,7 +11,7 @@ import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
