@@ -2,7 +2,7 @@ package com.alinesno.infra.smart.assistant.role.prompt;
 
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
