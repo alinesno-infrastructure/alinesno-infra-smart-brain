@@ -96,7 +96,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         }else if(modelType.equals(ModelTypeEnums.SPEECH_SYNTHESIS.getCode())){  // 语音合成
 
-          return validateSpeechSynthesis(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
+          return validateSpeechSynthesis(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId , dto.getVoice());
 
         }else if(modelType.equals(ModelTypeEnums.IMAGE_GENERATION.getCode())){ // 图片生成
 
@@ -187,6 +187,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
     /**
      * 测试语音合成
+     *
      * @param url
      * @param apiKey
      * @param modelName
@@ -194,14 +195,17 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
      * @param taskInfo
      * @param role
      * @param workflowId
+     * @param voice
      */
     private String validateSpeechSynthesis(String url,
-                                         String apiKey,
-                                         String modelName,
-                                         String modelProvider,
-                                         MessageTaskInfo taskInfo,
-                                         IndustryRoleEntity role,
-                                         long workflowId) {
+                                           String apiKey,
+                                           String modelName,
+                                           String modelProvider,
+                                           MessageTaskInfo taskInfo,
+                                           IndustryRoleEntity role,
+                                           long workflowId,
+                                           String voice) {
+
         SpeechConfig config = new SpeechConfig();
         config.setEndpoint(url);
         config.setApiKey(apiKey) ;
@@ -210,6 +214,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         SpeechModel speechModel = llmAdapterService.speechModel(modelProvider,config) ;
 
         SynthesizeSpeechRequest request = new SynthesizeSpeechRequest();
+        request.setVoice(voice);
         request.setText("一间有着精致窗户的花店，漂亮的木质门，摆放着花朵");
 
         SpeechResponse generate = speechModel.synthesize(request);
