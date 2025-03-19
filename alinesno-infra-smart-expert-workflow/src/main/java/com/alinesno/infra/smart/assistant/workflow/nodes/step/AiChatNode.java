@@ -9,7 +9,7 @@ import com.agentsflex.llm.qwen.QwenLlmConfig;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
-import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.workflow.constants.FlowConst;
 import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import com.alinesno.infra.smart.assistant.workflow.nodes.variable.step.AiChatNodeData;
