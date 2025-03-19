@@ -2,22 +2,27 @@
   <div class="row" style="padding: 20px">
     <el-form :model="formData" :rules="rules" ref="formRef" label-width="90px" :label-position="'left'">
 
-      <!-- <el-form-item label="是否启用" prop="isEnable">
-        <el-radio-group size="large" v-model="formData.isEnable">
-          <el-radio value="true">启用</el-radio>
-          <el-radio value="false">不启用</el-radio>
-        </el-radio-group>
-      </el-form-item> -->
-
       <!-- 语音模型选择项 -->
       <el-form-item label="语音模型" prop="voiceModel">
-        <el-select v-model="formData.voiceModel" placeholder="请选择大模型" size="large" style="width:100%">
+        <el-select v-model="formData.voiceModel" placeholder="请选择大模型" size="large" style="width:100%" @change="handleChangeVoiceModelParams">
           <el-option v-for="item in voiceModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
             <template #default>
               <div>
                 <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
                   style="width: 25px; height: 25px; border-radius: 50%;">
                 {{ item.modelName }}
+              </div>
+            </template>
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="播放音色" prop="voiceSpeechModel">
+        <el-select v-model="formData.voiceSpeechModel" placeholder="请选择语音人员" size="large" style="width:100%">
+          <el-option v-for="item in voiceModelSpeechOptions" :key="item.voice" :label="item.voice" :value="item.voice">
+            <template #default>
+              <div>
+                {{ item.voice }}({{ item.description }})
               </div>
             </template>
           </el-option>
@@ -41,7 +46,7 @@
             <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
           </el-button>
 
-          <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
+          <el-button v-if="!isSpeaking" type="primary" text bg size="large" :loading="chatLoading" @click="handleTestSpeechModel()"> 
             <i class="fa-solid fa-headphones-simple"></i> &nbsp;&nbsp; 试听
           </el-button>
 
@@ -55,23 +60,27 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import speakingIcon from '@/assets/icons/speaking.gif';
+import { getVoiceModelSpeech , getSpeechByModelId} from '@/api/smart/assistant/llmModel'
 
 const emit = defineEmits(['handleVoiceConfigParams'])
 
 // 初始化表单数据
 const formData = ref({
   voiceModel: '',
+  voiceSpeechModel: '' ,
   speechRate: 1 // 默认语速为 1
 });
 
 // 定义可用的语音模型数组
 const voiceModelOptions = ref([]);
+const voiceModelSpeechOptions = ref([]);
 
 const isSpeaking = ref(false)
+const chatLoading = ref(false)
 
 // 表单验证规则
 const rules = ref({
@@ -104,6 +113,8 @@ const handleSubmit = async () => {
     });
 };
 
+
+
 const setVoiceModelOptions = (models) => {
   voiceModelOptions.value = models;
 }
@@ -112,15 +123,57 @@ const setVoiceModelParams = (params) => {
   formData.value = params;
 }
 
+const handleChangeVoiceModelParams = (value) => {
+  console.log('handleChangeVoiceModelParams value = ' + value);
+  formData.value.voiceSpeechModel = null;
+  getVoiceModelSpeech(value).then(res => {
+    console.log('res = ' + res);
+    voiceModelSpeechOptions.value = res.data.voiceInfos;
+  })
+}
+
 /** 是否在播放 */
 const listenPlayVoiceOption = () => {
   isSpeaking.value = !isSpeaking.value
 }
 
-// 重置表单的方法
-// const resetForm = () => {
-//   formRef.resetFields();
-// };
+// 验证语音播放
+const handleTestSpeechModel = async () => {
+
+// 表单验证通过后，发出语音请求
+
+chatLoading.value = true ;
+
+getSpeechByModelId(formData.value.voiceModel , formData.value.voiceSpeechModel).then(res => {
+  const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+  const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+  const audio = new Audio(audioUrl);
+
+  audio.addEventListener('ended', () => {
+    console.log('音频播放完成');
+    isSpeaking.value = false;
+  });
+
+  audio.play();
+  chatLoading.value = false ;
+  isSpeaking.value = true ;
+
+}).catch(error => {
+  chatLoading.value = false;
+  console.error('操作失败:', error.message);
+}); 
+};
+
+nextTick(() => {
+  const modelId = formData.value.voiceModel
+  console.log('onMounted : ' + modelId) ; 
+  if(modelId){
+    getVoiceModelSpeech(modelId).then(res => {
+      console.log('res = ' + res);
+      voiceModelSpeechOptions.value = res.data.voiceInfos;
+    })
+  }
+})
 
 defineExpose({
   setVoiceModelOptions,
