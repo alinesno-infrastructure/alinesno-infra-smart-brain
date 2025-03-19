@@ -73,9 +73,6 @@
                   <el-button text bg type="primary">
                     {{ item.modelPermission == 'org' ? '组织' : '私有' }}
                   </el-button>
-                  <!-- <el-button text bg type="danger">
-                    {{ item.providerCode }}
-                  </el-button> -->
                 </div>
 
                 <div class="vc-text" title="">
@@ -120,7 +117,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型名称" prop="modelName">
-              <el-input v-model="form.modelName" placeholder="请输入大模型名称" maxlength="255" />
+              <el-input v-model="form.modelName" placeholder="请输入大模型名称" maxlength="255" size="large" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -142,7 +139,7 @@
           <el-col :span="24">
             <el-form-item label="模型类型" prop="modelType">
 
-              <el-radio-group v-model="form.modelType">
+              <el-radio-group v-model="form.modelType" size="large">
                 <el-radio v-for="item in filteredOptions" :value="item.code" :label="item.code" :key="item.code" @change="handleSelectModelType(item)">
                   {{ item.displayName }}
                 </el-radio>
@@ -157,7 +154,7 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="权限" prop="modelPermission">
-              <el-radio-group v-model="form.modelPermission">
+              <el-radio-group v-model="form.modelPermission" size="large">
                 <el-radio :value="'person'" :label="'person'">私有</el-radio>
                 <el-radio :value="'org'" :label="'org'">组织</el-radio>
               </el-radio-group>
@@ -168,26 +165,86 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型地址" prop="apiUrl">
-              <el-input v-model="form.apiUrl" placeholder="请输入 API 地址" maxlength="255" autocomplete="off" />
+              <el-input v-model="form.apiUrl" size="large" placeholder="请输入 API 地址" maxlength="255" autocomplete="off" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
             <el-form-item label="ApiKey" prop="apiKey">
-              <el-input type="password" v-model="form.apiKey" placeholder="请输入 API 密钥" maxlength="255" show-password="true" autocomplete="off" />
+              <el-input type="password" v-model="form.apiKey" size="large" placeholder="请输入 API 密钥" maxlength="255" show-password="true" autocomplete="off" />
             </el-form-item>
           </el-col>
           <el-col :span="24" v-if="form.providerCode === 'doubao' && form.modelType === 'image_generation'" prop="secretKey">
             <el-form-item label="SecretKey" prop="secretKey">
-              <el-input type="password" v-model="form.secretKey" placeholder="请输入 secretKey 密钥" maxlength="255" show-password="true" autocomplete="off" />
+              <el-input type="password" size="large" v-model="form.secretKey" placeholder="请输入 secretKey 密钥" maxlength="255" show-password="true" autocomplete="off" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="基础模型" prop="model">
-              <el-input type="text" v-model="form.model" placeholder="请输入基础模型，比如 deepseek-r1:7b" maxlength="255" />
+            <el-form-item label="基础模型" prop="model" v-if="form.modelType !== 'speech_synthesis'">
+              <el-select
+                  v-model="form.model"
+                  filterable
+                  allow-create
+                  default-first-option
+                  :reserve-keyword="false"
+                  placeholder="自定义基础输入模型后回车即可"
+                  size="large">
+                  <el-option
+                    v-for="item in currentLlmModelList"
+                    :key="item.modelName"
+                    :label="item.modelName"
+                    :value="item.modelName"
+                  >
+                    {{ item.modelName }}
+                  </el-option>
+                </el-select>
+            </el-form-item>
+
+            <el-form-item label="基础模型" prop="model" v-if="form.modelType === 'speech_synthesis'">
+              <el-select
+                  v-model="form.model"
+                  filterable
+                  allow-create
+                  default-first-option
+                  :reserve-keyword="false"
+                  placeholder="自定义基础输入模型后回车即可"
+                  @change="handleSelectSpeechModel"
+                  size="large">
+                  <el-option
+                    v-for="speechItem in currentSpeechModelList"
+                    :key="speechItem.modelName"
+                    :label="speechItem.modelName"
+                    :value="speechItem.modelName"
+                  >
+                    {{ speechItem.modelName }}
+                  </el-option>
+                </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="24">
+            <el-form-item label="发音人" prop="voice" v-if="form.modelType === 'speech_synthesis'">
+              <!-- <el-input type="text" v-model="form.voice" placeholder="请输入对应模型的发音人" maxlength="255" /> -->
+              <el-select
+                  v-model="form.voice"
+                  filterable
+                  allow-create
+                  default-first-option
+                  :reserve-keyword="false"
+                  placeholder="自定义基础输入模型后回车即可"
+                  size="large">
+                  <el-option
+                    v-for="item in currentSpeechVoiceModelList"
+                    :key="item.voice"
+                    :label="item.voice"
+                    :value="item.voice"
+                  >
+                    {{ item.voice }}({{ item.description }})
+                  </el-option>
+                </el-select>
             </el-form-item>
           </el-col>
         </el-row>
@@ -328,11 +385,13 @@ const streamLoading = ref(null)
 const providerOptions = ref(undefined)
 const modelTypeOptions = ref(undefined)
 const filteredOptions = ref([])
-// const baseModelOptions = ref(undefined)
 const generatedImageUrl = ref('');
 
 // 当前模型提供商
 const currentModelProvider = ref(undefined)
+const currentLlmModelList = ref([])
+const currentSpeechModelList = ref([])
+const currentSpeechVoiceModelList = ref([])
 
 const testLlmModelReasoingReponse = ref(undefined)
 const testLlmModelReponse = ref(undefined)
@@ -361,6 +420,7 @@ const data = reactive({
     secretKey: [{ required: true, message: "SecretKey 密钥不能为空", trigger: "blur" }],
     apiUrl: [{ required: true, message: "API 地址不能为空", trigger: "blur" }],
     model: [{ required: true, message: "模型名称不能为空", trigger: "blur" }],
+    voice: [{ required: true, message: "发音人模型不能为空", trigger: "blur" }],
   }
 });
 
@@ -567,6 +627,9 @@ const handleSelectModelType = (item) => {
   form.value.apiKey = null ;
   form.value.secretKey = null ;
   form.value.model = null ;
+
+  currentLlmModelList.value = item.modelList ;
+  currentSpeechModelList.value = item.speechModelList ;
 }
 
 // 把表单验证包装成返回 Promise 的函数
@@ -635,6 +698,18 @@ const handleTestGenerateImageModel = async () => {
     chatLoading.value = false;
     console.error('操作失败:', error.message);
   }); 
+}
+
+// 选择发音人
+const handleSelectSpeechModel = (value) => {
+  console.log('item = ' + JSON.stringify(value))
+  form.value.voice = null;
+
+  const selectedSpeechItem = currentSpeechModelList.value.find(item => item.modelName === value);
+  if (selectedSpeechItem) {
+    console.log('选中的 speechItem 是:', selectedSpeechItem.voiceInfos);
+    currentSpeechVoiceModelList.value = selectedSpeechItem.voiceInfos;
+  }
 }
 
 const handleImageError = () => {
