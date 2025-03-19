@@ -30,6 +30,7 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
+import com.alinesno.infra.smart.assistant.role.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
@@ -70,6 +71,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
+
+    @Value("${alinesno.infra.smart.assistant.maxHistory:100}")
+    protected int maxHistory = 100 ;
 
     @Autowired
     protected QianWenNewApiLLM qianWenNewApiLLM ;
@@ -670,17 +674,24 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MessageEntity::getChannelId, channelId)
                 .orderByDesc(MessageEntity::getAddTime)
-                .last("limit 500");;
+                .last("limit " + maxHistory);;
         List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
 
         for (MessageEntity dto : chatMessageDtoList) {
+
             String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-            if ("person".equals(dto.getRoleType())) {
-                historyPrompt.addMessage(new HumanMessage(chatText));
+            boolean isFilterWorker = FilterWordUtils.filter(chatText) ;
+
+            if(isFilterWorker){
+                if ("person".equals(dto.getRoleType())) {
+                    historyPrompt.addMessage(new HumanMessage(chatText));
+                }else if("agent".equals(dto.getRoleType())){
+                    AiMessage aiMessage = new AiMessage() ;
+                    aiMessage.setFullContent(chatText);
+                    historyPrompt.addMessage(aiMessage);
+                }
             }
         }
-
-//        Collections.reverse(messages);
 
     }
 
