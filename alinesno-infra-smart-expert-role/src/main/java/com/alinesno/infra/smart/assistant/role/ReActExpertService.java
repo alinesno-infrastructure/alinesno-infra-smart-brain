@@ -19,7 +19,7 @@ import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
-import com.alinesno.infra.smart.assistant.role.context.AgentConstants;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
@@ -76,9 +76,13 @@ public class ReActExpertService extends ExpertService {
             return "没有可用的工具，请检查工具是否正常。";
         }
 
+        HistoriesPrompt historyPrompt = new HistoriesPrompt();
+        historyPrompt.setMaxAttachedMessageCount(maxHistory);
+        historyPrompt.setHistoryMessageTruncateEnable(false);
+
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
         handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
-        String datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList) ;
+        String datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList , workflowExecution) ;
 
         boolean isCompleted = false ;  // 是否已经完成
         int loop = 0 ;
@@ -100,7 +104,6 @@ public class ReActExpertService extends ExpertService {
             eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
             // 历史对话
-            HistoriesPrompt historyPrompt = new HistoriesPrompt();
             handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
             historyPrompt.addMessage(new HumanMessage(prompt));
 
@@ -167,7 +170,7 @@ public class ReActExpertService extends ExpertService {
                             log.debug("工具执行结果：{}", executeToolOutput);
 
                             if(toolResult.isFinished()){
-                                answer = "表达结束" ;
+                                answer = AgentConstants.ChatText.CHAT_FINISH ;
                                 isCompleted = true ;   // 结束对话
                             }
 
@@ -200,7 +203,7 @@ public class ReActExpertService extends ExpertService {
             }
         } while (!isCompleted);
 
-        return StringUtils.hasLength(answer)? answer : "我尝试找了很多次，但是未找到答案";
+        return StringUtils.hasLength(answer)? answer : AgentConstants.ChatText.CHAT_NO_ANSWER;
     }
 
     /**
@@ -226,10 +229,12 @@ public class ReActExpertService extends ExpertService {
 
     /**
      * 处理并合并文档内容
+     *
      * @param datasetKnowledgeDocumentList
+     * @param workflowExecution
      * @return
      */
-    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList) {
+    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList, MessageEntity workflowExecution) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -237,6 +242,12 @@ public class ReActExpertService extends ExpertService {
             for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
                 sb.append(bean.getDocument_content()).append("\n");
             }
+        }
+
+        // 如果上一个节点有内容，则自动的获取到上一个节点的结果做为知识库内容的一部分
+        if(workflowExecution != null && StringUtils.hasLength(workflowExecution.getContent())){
+            sb.append(AgentConstants.Slices.PRE_CONTENT);
+            sb.append(workflowExecution.getContent()).append("\n");
         }
 
         return sb.toString() ;
