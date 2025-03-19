@@ -18,8 +18,6 @@ import com.agentsflex.image.siliconflow.SiliconImageModel;
 import com.agentsflex.image.siliconflow.SiliconflowImageModelConfig;
 import com.agentsflex.llm.doubao.DoubaoLlm;
 import com.agentsflex.llm.doubao.DoubaoLlmConfig;
-import com.agentsflex.llm.gitee.GiteeAiLlm;
-import com.agentsflex.llm.gitee.GiteeAiLlmConfig;
 import com.agentsflex.llm.ollama.OllamaLlm;
 import com.agentsflex.llm.ollama.OllamaLlmConfig;
 import com.agentsflex.llm.qwen.QwenLlm;
@@ -36,8 +34,8 @@ import com.agentsflex.speech.qwen.QwenSpeechModel;
 import com.agentsflex.speech.qwen.QwenSpeechModelConfig;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModel;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModelConfig;
-import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -60,7 +58,7 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         Map<String, Function<LlmConfig, Llm>> llmFactoryMap = Map.of(
                 LlmModelProviderEnums.QWEN.getCode(), qwenConfig -> createLlm(new QwenLlmConfig(), qwenConfig, QwenLlm::new),
                 LlmModelProviderEnums.DOUBAO.getCode(), doubaoAiConfig -> createLlm(new DoubaoLlmConfig(), doubaoAiConfig, DoubaoLlm::new),
-                LlmModelProviderEnums.GITEE.getCode(), giteeAiConfig -> createLlm(new GiteeAiLlmConfig(), giteeAiConfig, GiteeAiLlm::new),
+//                LlmModelProviderEnums.GITEE.getCode(), giteeAiConfig -> createLlm(new GiteeAiLlmConfig(), giteeAiConfig, GiteeAiLlm::new),
                 LlmModelProviderEnums.OLLAMA.getCode(), ollamaAiConfig -> createLlm(new OllamaLlmConfig(), ollamaAiConfig, OllamaLlm::new),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), siliconAiConfig -> createLlm(new SiliconflowLlmConfig(), siliconAiConfig, SiliconflowLlm::new),
                 LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new)
@@ -162,7 +160,7 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
 
     private Supplier<ImageModel> getImageModelSupplier(String type, ImageConfig config) {
         Map<String, Supplier<ImageModel>> imageModelFactory = Map.of(
-                LlmModelProviderEnums.GITEE.getCode(), () -> createGiteeImageModel(config),
+//                LlmModelProviderEnums.GITEE.getCode(), () -> createGiteeImageModel(config),
                 LlmModelProviderEnums.DOUBAO.getCode(), () -> createDoubaoImageModel(config),
                 LlmModelProviderEnums.QWEN.getCode(), () -> createQwenImageModel(config),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), () -> createSiliconflowImageModel(config)
