@@ -9,9 +9,9 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
-import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -19,6 +19,7 @@ import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.InputStreamResource;
@@ -148,7 +149,11 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
 
     @PostMapping("/getSpeech")
     public ResponseEntity<Resource> getSpeech(@RequestBody @Validated TestLlmModelDto dto) {
+        return getResourceResponseEntity(dto);
+    }
 
+    @NotNull
+    private ResponseEntity<Resource> getResourceResponseEntity(TestLlmModelDto dto) {
         String filePath = service.testLlmModel(dto) ;
         log.debug("getSpeech filePath = {}" , filePath);
 
@@ -174,6 +179,29 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
         } catch (IOException e) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * 根据模型ID获取语音
+     *
+     * @param modelId
+     * @return
+     */
+    @GetMapping("/getSpeechByModelId")
+    public ResponseEntity<Resource> getSpeechByModelId(String modelId , String voice) {
+        LlmModelEntity modelEntity = service.getById(modelId) ;
+
+        TestLlmModelDto dto = new TestLlmModelDto() ;
+        dto.setModelType(modelEntity.getModelType());
+        dto.setProviderCode(modelEntity.getProviderCode());
+        dto.setApiUrl(modelEntity.getApiUrl());
+        dto.setApiKey(modelEntity.getApiKey());
+        dto.setModel(modelEntity.getModel());
+        dto.setTestChannelId(modelEntity.getId());
+        dto.setSecretKey(modelEntity.getSecretKey());
+        dto.setVoice(voice);
+
+        return getResourceResponseEntity(dto);
     }
 
     @PostMapping("/getGenerateImage")
@@ -202,6 +230,17 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * 获取模型声音 getVoiceModelSpeech
+     * @return
+     */
+    @GetMapping("/getVoiceModelSpeech")
+    public AjaxResult getVoiceModelSpeech(String modelId) {
+        Map<String , Object> voiceSpeech = service.getVoiceModelSpeech(modelId) ;
+        return AjaxResult.success(voiceSpeech) ;
+    }
+
 
     @Override
     public ILlmModelService getFeign() {
