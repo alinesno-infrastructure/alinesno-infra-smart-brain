@@ -22,7 +22,6 @@ import java.io.File;
 public class SpeechRecognitionController {
 
     // 新增的接收FormData数据的方法
-    // 新增的接收FormData数据的方法
     @SneakyThrows
     @PostMapping(value = "/recognizeFormData", consumes = "multipart/form-data")
     public AjaxResult recognizeFormData(
