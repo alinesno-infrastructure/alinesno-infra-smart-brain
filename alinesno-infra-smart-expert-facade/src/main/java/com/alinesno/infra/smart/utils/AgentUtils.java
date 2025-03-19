@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.utils;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.dto.WebMessageDto;
@@ -71,7 +72,7 @@ public class AgentUtils {
 
         // 发送消息给前端
         ChatMessageDto personDto = new ChatMessageDto() ;
-        personDto.setChatText("收到，任务我已经在处理，请稍等1-2分钟 :-)");
+        personDto.setChatText(AgentConstants.ChatText.CHAT_WAITING_NOT_TIME);
 
         personDto.setRoleId(roleDto.getId());
         personDto.setName(roleDto.getRoleName());
