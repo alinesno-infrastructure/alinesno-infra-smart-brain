@@ -28,4 +28,7 @@ public class TestLlmModelDto {
     // 图像处理服务的密钥，用于验证身份
     private String secretKey ;
 
+    // 语音合成，发音人
+    private String voice ;
+
 }
