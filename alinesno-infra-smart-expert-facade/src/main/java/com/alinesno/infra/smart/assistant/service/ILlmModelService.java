@@ -4,6 +4,8 @@ import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 
+import java.util.Map;
+
 /**
  * 应用构建Service接口
  * 
@@ -17,5 +19,13 @@ public interface ILlmModelService extends IBaseService<LlmModelEntity> {
      * @param dto
      */
     String testLlmModel(TestLlmModelDto dto);
+
+    /**
+     * 获取语音模型声音
+     *
+     * @param modelId
+     * @return
+     */
+    Map<String, Object> getVoiceModelSpeech(String modelId);
 
 }
