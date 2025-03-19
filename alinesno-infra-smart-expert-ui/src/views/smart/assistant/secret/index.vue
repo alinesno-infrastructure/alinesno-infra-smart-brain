@@ -51,13 +51,15 @@
             </template>
           </el-table-column>
 
+          <!-- 
           <el-table-column label="脚本" align="center" width="120"  key="target" prop="target" v-if="columns[6].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text v-copyText="scope.row.secretValue">
                 <i class="fa-solid fa-code"></i>复制值
               </el-button>
             </template>
-          </el-table-column>
+          </el-table-column> 
+          -->
 
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
