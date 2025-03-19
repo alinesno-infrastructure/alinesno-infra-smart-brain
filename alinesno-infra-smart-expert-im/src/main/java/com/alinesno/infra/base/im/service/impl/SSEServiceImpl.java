@@ -102,7 +102,7 @@ public class SSEServiceImpl implements ISSEService {
     /**
      *  定时任务 用于测试后端推送的数据
      */
-    @Scheduled(fixedDelay = 3, initialDelay = 1,timeUnit = TimeUnit.SECONDS)
+    @Scheduled(fixedDelay = 60, initialDelay = 1,timeUnit = TimeUnit.SECONDS)
     public void job(){
         if (!SSE_CACHE.isEmpty()){
 
