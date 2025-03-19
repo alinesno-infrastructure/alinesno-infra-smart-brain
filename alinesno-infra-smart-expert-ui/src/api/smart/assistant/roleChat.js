@@ -10,7 +10,7 @@ var managerUrl = {
   getInfo: prefix +"getInfo",
   chatRole: prefix + "chatRole",
 
-  recognizeForm: speechPrefix + "recognizeForm" ,
+  recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
 }
 
