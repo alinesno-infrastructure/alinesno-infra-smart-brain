@@ -612,10 +612,14 @@ const handleClose = (done) => {
 // 模型管理
 const handleSelectLLMProvider = (item) => {
   console.log('item = ' + JSON.stringify(item));
-
   currentModelProvider.value = item ;
-
   filteredOptions.value = item.supportedModels
+
+  form.value.modelType = null ; 
+  form.value.apiUrl = null ;
+  form.value.apiKey = null ;
+  form.value.secretKey = null ;
+  form.value.model = null ;
 }
 
 // 模型类型选择
