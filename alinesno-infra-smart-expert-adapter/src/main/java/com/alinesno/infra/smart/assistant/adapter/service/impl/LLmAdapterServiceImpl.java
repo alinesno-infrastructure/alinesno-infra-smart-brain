@@ -37,7 +37,7 @@ import com.agentsflex.speech.qwen.QwenSpeechModelConfig;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModel;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModelConfig;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
-import com.alinesno.infra.smart.assistant.enums.LlmModelProviderEnums;
+import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
