@@ -91,6 +91,14 @@ public class LlmModelEntity extends InfraBaseEntity {
     private String model;
 
     /**
+     * 发音人
+     */
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
+    @ColumnComment("发音人")
+    @TableField("voice")
+    private String voice;
+
+    /**
      * 模型权限
      */
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
