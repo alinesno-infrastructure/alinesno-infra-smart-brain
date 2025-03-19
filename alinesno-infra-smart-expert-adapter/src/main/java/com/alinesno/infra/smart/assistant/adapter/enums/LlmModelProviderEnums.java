@@ -12,12 +12,18 @@ import com.agentsflex.reranker.qwen.QwenReRankerModelEnums;
 import com.agentsflex.reranker.siliconflow.SiliconflowRerankerModels;
 import com.agentsflex.speech.qwen.QwenSpeechModelEnums;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModelEnums;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+@Slf4j
 @AllArgsConstructor
 @Getter
 public enum LlmModelProviderEnums {
@@ -147,6 +153,27 @@ public enum LlmModelProviderEnums {
             this.url = url;
             this.speechModelList = speechModels;
         }
+    }
+
+    /**
+     * 通过Provider类型和模型名称，获取到模型信息
+     */
+    public static Map<String, Object> getSpeechModelInfoByTypeAndModelName(String providerType, String modelName) {
+        for (LlmModelProviderEnums provider : values()) {
+            if (provider.getCode().equals(providerType)) {
+                for (ModelInfo modelInfo : provider.getSupportedModels()) {
+                    if (modelInfo.getCode().equals(ModelTypeEnums.SPEECH_SYNTHESIS.getCode())) {
+                        for (Map<String, Object> speechModel : modelInfo.getSpeechModelList()) {
+                            if (speechModel.get("modelName").equals(modelName) ) {
+                                log.debug(">>>> " + JSONObject.toJSONString(speechModel.get("modelName")));
+                                return speechModel;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
 }
