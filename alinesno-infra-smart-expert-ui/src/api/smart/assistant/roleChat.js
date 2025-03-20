@@ -12,6 +12,21 @@ var managerUrl = {
 
   recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
+  playGenContent: speechPrefix + "playGenContent" ,
+}
+
+// 获取语音模型语音请求
+export function playGenContent(item) {
+    return request({
+        url: managerUrl.playGenContent , 
+        method: 'post',
+        data: item ,
+        responseType: 'blob', // 显式声明返回二进制流
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'image/*' // 明确期望图片类型
+        }
+    })
 }
 
 // 语音识别
