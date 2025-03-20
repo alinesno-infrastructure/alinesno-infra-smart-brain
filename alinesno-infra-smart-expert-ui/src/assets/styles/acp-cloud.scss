@@ -941,6 +941,9 @@ $chartColor: #3b5998;
 
   .robot-chat-footer {
     background: #fff;
+    box-shadow: rgba(0, 0, 0, 0.2) 0px 0px 10px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 5px;
 
     .chat-completion {
       textarea {
