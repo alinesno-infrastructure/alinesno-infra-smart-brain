@@ -155,6 +155,10 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         this.setMsgUuid(IdUtil.getSnowflakeNextId());
         this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
 
+        if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
+           taskInfo.setHasExecuteTool(true);
+        }
+
         if (taskInfo.isFunctionCall()) {  // 执行方法
 
             record.setChatType(TYPE_FUNCTION);
