@@ -83,7 +83,7 @@
                         <div>
                             <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
                             <el-button type="danger" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
-                            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">执行</el-button>
+                            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
                             <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
                             <el-button type="info" v-if="item.businessId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
                         </div>
@@ -117,19 +117,7 @@
 
                 <el-col :span="8" style="text-align:right;display:fiex">
 
-                  <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
-
-                    <span style="margin-right:10px;" v-if="isRecording">
-                      <img :src="speakingIcon" style="width:35px" />
-                      <el-button type="primary" text bg size="large" @click="stopRecording()" >
-                        <i class="fa-solid fa-headset icon-btn"></i>
-                      </el-button>
-                    </span>
-
-                    <el-button v-if="!isRecording" type="primary" text bg size="large" @click="startRecording()">
-                      <i class="fa-solid fa-microphone-lines icon-btn"></i>
-                    </el-button>
-                  </el-tooltip>
+                  <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" />
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
@@ -166,6 +154,8 @@ import { ElLoading, ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
+
+import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
 
 // import AgentSingleRightPanel from './rightPanel.vue'
 
@@ -266,48 +256,48 @@ const handleShowDebuggerContent = (messageIndex, stepIndex) => {
   messageList.value[messageIndex].flowStepArr[stepIndex].isPrint = !messageList.value[messageIndex].flowStepArr[stepIndex].isPrint;
 }
 
-// 开始录音函数
-const startRecording = async () => {
-  try {
-    if (!('MediaRecorder' in window)) {
-      alert('当前浏览器不支持录音功能');
-      return;
-    }
+// // 开始录音函数
+// const startRecording = async () => {
+//   try {
+//     if (!('MediaRecorder' in window)) {
+//       alert('当前浏览器不支持录音功能');
+//       return;
+//     }
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-    mediaRecorder.value = new MediaRecorder(stream);
+//     mediaRecorder.value = new MediaRecorder(stream);
 
-    mediaRecorder.value.addEventListener('dataavailable', (event) => {
-      if (event.data.size > 0) {
-        audioChunks.value.push(event.data);
-      }
-    });
+//     mediaRecorder.value.addEventListener('dataavailable', (event) => {
+//       if (event.data.size > 0) {
+//         audioChunks.value.push(event.data);
+//       }
+//     });
 
-    mediaRecorder.value.addEventListener('stop', async () => {
-      const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
-      audioUrl.value = URL.createObjectURL(audioBlob);
-      audioChunks.value = [];
+//     mediaRecorder.value.addEventListener('stop', async () => {
+//       const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
+//       audioUrl.value = URL.createObjectURL(audioBlob);
+//       audioChunks.value = [];
 
-      // 调用后端语音识别接口
-      await sendAudioToBackend(audioBlob);
-    });
+//       // 调用后端语音识别接口
+//       await sendAudioToBackend(audioBlob);
+//     });
 
-    mediaRecorder.value.start();
-    isRecording.value = true;
-  } catch (error) {
-    console.error('录音失败:', error);
-    alert('录音失败，请检查麦克风权限或设备是否正常');
-  }
-};
+//     mediaRecorder.value.start();
+//     isRecording.value = true;
+//   } catch (error) {
+//     console.error('录音失败:', error);
+//     alert('录音失败，请检查麦克风权限或设备是否正常');
+//   }
+// };
 
-// 停止录音函数
-const stopRecording = () => {
-  if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
-    mediaRecorder.value.stop();
-    isRecording.value = false;
-  }
-};
+// // 停止录音函数
+// const stopRecording = () => {
+//   if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
+//     mediaRecorder.value.stop();
+//     isRecording.value = false;
+//   }
+// };
 
 const formatTime = (milliseconds) => {
   if (milliseconds) {
@@ -317,10 +307,7 @@ const formatTime = (milliseconds) => {
 }
 
 // 发送音频数据到后端
-const sendAudioToBackend = async (audioBlob) => {
-  const formData = new FormData();
-  formData.append('audio', audioBlob);
-
+const sendAudioToBackend = async (voiceMessage) => {
   try {
 
     streamLoading.value = ElLoading.service({
@@ -329,8 +316,7 @@ const sendAudioToBackend = async (audioBlob) => {
       background: 'rgba(0, 0, 0, 0.2)',
     })
 
-    const response = await recognize(formData);
-    message.value = response.data;
+    message.value = voiceMessage ; 
 
     streamLoading.value.close();
     sendMessage('send');
@@ -340,6 +326,7 @@ const sendAudioToBackend = async (audioBlob) => {
     streamLoading.value.close();
   }
 };
+
 
 /** 播放生成内容 */
 const handlePlayGenContent = (item) => {
