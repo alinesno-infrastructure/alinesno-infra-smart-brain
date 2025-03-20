@@ -28,6 +28,7 @@ import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.dto.MessageUsageDto;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,8 @@ public class ReActExpertService extends ExpertService {
 
     @Autowired
     private ILlmModelService llmModelService ;
+
+    private MessageUsageDto usage = new MessageUsageDto();  // 消耗统计
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
@@ -299,6 +302,7 @@ public class ReActExpertService extends ExpertService {
 
         // 创建一个 final 局部变量来持有 taskInfo 的引用
         final MessageTaskInfo localTaskInfo = taskInfo;
+        long startTime = System.currentTimeMillis();
 
         try {
             llm.chatStream(historyPrompt, (context, response) -> {
@@ -339,6 +343,14 @@ public class ReActExpertService extends ExpertService {
                     streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
 
                     if (isEnd) {
+                        long endTime = System.currentTimeMillis();
+                        int totalToken = getTotalToken(message) ;
+
+                        taskInfo.setUsage(usage);
+
+                        usage.setTime(endTime - startTime);
+                        usage.setToken(totalToken);
+
                         future.complete(outputStr.get());
                     }
                 } catch (Exception e) {
@@ -354,6 +366,19 @@ public class ReActExpertService extends ExpertService {
         }
 
         return future;
+    }
+
+    /**
+     * 获取总token
+     * @param aiMessage
+     * @return
+     */
+    private int getTotalToken(AiMessage aiMessage) {
+        try{
+            return aiMessage.getTotalTokens();
+        }catch(Exception e){
+            return 0 ;
+        }
     }
 
     /**
