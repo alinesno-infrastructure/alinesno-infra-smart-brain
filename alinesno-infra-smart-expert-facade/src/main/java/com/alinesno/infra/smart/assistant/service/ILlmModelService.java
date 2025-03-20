@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.assistant.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 
 import java.util.Map;
 
@@ -28,4 +30,10 @@ public interface ILlmModelService extends IBaseService<LlmModelEntity> {
      */
     Map<String, Object> getVoiceModelSpeech(String modelId);
 
+    /**
+     * 语音识别，并返回生成的文件
+     * @param dto
+     * @return
+     */
+    String speechRecognitionFile(IndustryRoleEntity role , ChatMessageDto dto);
 }
