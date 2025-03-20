@@ -7,7 +7,7 @@
         <el-col :span="24">
           <div class="robot-chat-windows">
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 240px)">
+            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 220px)">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -41,7 +41,6 @@
                       </div>
 
                       <!-- 流程输出调试信息_start -->
-                        <!-- v-if="item.roleType != 'person'" -->
                       <div class="chat-debugger-box" 
                         @click="handleShowDebuggerContent(index, flowStepIndex)"
                         v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" 
@@ -80,14 +79,16 @@
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
-                        :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small"
-                          @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
-                          size="small" @click="handleExecutorMessage(item)">执行</el-button>
+                      <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+                        <div>
+                            <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+                            <el-button type="danger" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+                            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">执行</el-button>
+                            <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                            <el-button type="info" v-if="item.businessId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                        </div>
                       </div>
+
                     </div>
                   </div>
 
@@ -120,7 +121,7 @@
 
                     <span style="margin-right:10px;" v-if="isRecording">
                       <img :src="speakingIcon" style="width:35px" />
-                      <el-button type="primary" text bg size="large" @click="stopRecording()">
+                      <el-button type="primary" text bg size="large" @click="stopRecording()" >
                         <i class="fa-solid fa-headset icon-btn"></i>
                       </el-button>
                     </span>
@@ -168,7 +169,7 @@ import hljs from 'highlight.js';
 
 // import AgentSingleRightPanel from './rightPanel.vue'
 
-import { getInfo, chatRole, recognize } from '@/api/smart/assistant/roleChat'
+import { getInfo, chatRole, recognize , playGenContent} from '@/api/smart/assistant/roleChat'
 import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
 
 import { getParam } from '@/utils/ruoyi'
@@ -184,6 +185,10 @@ const snowflake = new SnowflakeId();
 const openDebuggerDialog = ref(true)
 
 const isSpeaking = ref(false)
+const isPlaySpeaking = ref(false)
+const getSpeechLoading = ref(false)
+const visible = ref(false)
+
 // 定义响应式变量
 const isRecording = ref(false);
 const mediaRecorder = ref(null);
@@ -304,6 +309,13 @@ const stopRecording = () => {
   }
 };
 
+const formatTime = (milliseconds) => {
+  if (milliseconds) {
+    return (milliseconds / 1000).toFixed(2); // 转换为秒并保留两位小数
+  }
+  return '0.00';
+}
+
 // 发送音频数据到后端
 const sendAudioToBackend = async (audioBlob) => {
   const formData = new FormData();
@@ -328,6 +340,42 @@ const sendAudioToBackend = async (audioBlob) => {
     streamLoading.value.close();
   }
 };
+
+/** 播放生成内容 */
+const handlePlayGenContent = (item) => {
+  // getSpeechLoading.value = true ;
+
+  if(!roleInfo.value.voicePlayStatus){
+    ElMessage.error('未开启语音播放');
+    return ;
+  }
+
+  item.getSpeechLoading = true ;
+
+  playGenContent(item).then(res => {
+    const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+    const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+    const audio = new Audio(audioUrl);
+
+    audio.addEventListener('ended', () => {
+      console.log('音频播放完成');
+      // isPlaySpeaking.value = false 
+      item.isPlaySpeaking = false 
+    });
+
+    // getSpeechLoading.value = false ;
+    // isPlaySpeaking.value = true 
+
+    item.getSpeechLoading = false ;
+    item.isPlaySpeaking = true 
+
+    audio.play(); 
+  }).catch(error => {
+    // getSpeechLoading.value = false ;
+    item.getSpeechLoading = false ;
+    ElMessage.error('播放失败，请确认是否配置语音服务');
+  });
+}
 
 /** 读取html文本 */
 function readerHtml(chatText) {
@@ -371,6 +419,9 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      if(newMessage.usage){
+        messageList.value[existingIndex].usage = newMessage.usage;
+      }
 
       const findMessage = messageList.value[existingIndex];
 
@@ -550,8 +601,9 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
-function setRoleInfo(roleInfo) {
-  roleInfo.value = roleInfo
+function setRoleInfo(newRoleInfo) {
+  console.log('roleInfo = ' + newRoleInfo.voicePlayStatus)
+  roleInfo.value = newRoleInfo
 }
 
 onMounted(() => {
@@ -635,6 +687,16 @@ defineExpose({
 
     }
 
+  }
+
+  .chat-ai-say-tools{
+    margin-top: 3px;
+    text-align: right;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 30px;
   }
 
   .chat-ai-say-body {
