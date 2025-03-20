@@ -1,6 +1,7 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.role.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -70,18 +71,10 @@ public class TaskServiceImpl implements ITaskService {
                 log.warn("任务列表已满，不能再添加新任务.");
             }
         }
-
-//        ThreadUtil.execAsync(() -> {
-//            processTask(info) ;
-//        });
-
-//        processTask(info) ;
-
     }
 
     @Async
     private void processTask() {
-//        private void processTask(MessageTaskInfo taskInfo) {
          MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
 
         if (taskInfo != null) {
