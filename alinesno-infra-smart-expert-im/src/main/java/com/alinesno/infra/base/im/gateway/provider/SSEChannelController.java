@@ -72,10 +72,13 @@ public class SSEChannelController {
         msgDto.setErrorMessage(info.getErrorMessage());
         msgDto.setHasError(info.isHasError());
 
+        msgDto.setUsage(info.getUsage());
+        msgDto.setHasExecuteTool(info.isHasExecuteTool());
+
         try {
             emitter.send(msgDto) ;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error(e.getMessage(), e);
         }
 
     }
