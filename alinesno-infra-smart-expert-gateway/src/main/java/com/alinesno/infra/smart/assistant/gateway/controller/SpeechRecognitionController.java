@@ -1,16 +1,26 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import io.swagger.annotations.Api;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 /**
  * 语音识别控制器
@@ -20,6 +30,12 @@ import java.io.File;
 @RestController
 @RequestMapping("/api/infra/smart/assistant/speechRecognition")
 public class SpeechRecognitionController {
+
+    @Autowired
+    private ILlmModelService llmModelService ;
+
+    @Autowired
+    private IIndustryRoleService industryRoleService ;
 
     // 新增的接收FormData数据的方法
     @SneakyThrows
@@ -80,5 +96,42 @@ public class SpeechRecognitionController {
 //
 //        return AjaxResult.success("语音识别成功");
 //    }
+
+    /**
+     * 语音播放 speechRecognition
+     */
+    @SneakyThrows
+    @PostMapping(value = "/playGenContent")
+    public ResponseEntity<Resource> playGenContent(@RequestBody ChatMessageDto dto) {
+        log.debug("语音播放请求已收到");
+
+        IndustryRoleEntity role = industryRoleService.getById(dto.getRoleId()) ;
+
+        String filePath = llmModelService.speechRecognitionFile(role , dto) ;
+        log.debug("getSpeech filePath = {}" , filePath);
+
+        try {
+            // 本地录音文件路径
+            File audioFile = new File(filePath) ;
+
+            // 确保文件存在
+            if (!audioFile.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            FileInputStream fileInputStream = new FileInputStream(audioFile);
+            InputStreamResource inputStreamResource = new InputStreamResource(fileInputStream);
+
+            // 设置响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(audioFile.length());
+            headers.setContentDispositionFormData("attachment", audioFile.getName());
+
+            return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
 }
