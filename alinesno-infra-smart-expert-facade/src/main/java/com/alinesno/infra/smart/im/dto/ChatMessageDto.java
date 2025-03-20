@@ -42,4 +42,7 @@ public class ChatMessageDto {
     private String errorMessage; // 错误信息
     private boolean hasError ; // 是否异常
 
+    private boolean hasExecuteTool ; // 是否有执行能力(此为脚本配置角色特有，其它类型无)
+    private MessageUsageDto usage ;   // 角色消耗能力，包括消耗的token数，以及消耗的时长
+
 }
