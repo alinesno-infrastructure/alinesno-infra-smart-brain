@@ -59,18 +59,7 @@ public class UserController extends BaseController<IndustryRoleEntity, IIndustry
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
-        // return roleService.getAgentList(page.getPageNum() , page.getPageSize() , "");
-
         return this.toPage(model, this.getFeign(), page);
-
-//        Page<IndustryRoleEntity> svcPage = Page.of(page.getPageNum() , page.getPageSize()) ;
-//        svcPage = roleService.page(svcPage) ;
-//
-//        TableDataInfo tableDataInfo = new TableDataInfo();
-//        tableDataInfo.setRows(svcPage.getRecords());
-//        tableDataInfo.setTotal(svcPage.getTotal());
-//
-//        return tableDataInfo;
     }
 
     /**
