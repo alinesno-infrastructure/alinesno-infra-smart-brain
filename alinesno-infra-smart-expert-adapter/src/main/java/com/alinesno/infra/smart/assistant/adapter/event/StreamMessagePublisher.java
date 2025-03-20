@@ -14,7 +14,6 @@ public class StreamMessagePublisher {
     private ApplicationEventPublisher applicationEventPublisher;
 
     public void doStuffAndPublishAnEvent(final String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
-        System.out.println("LLM Stream Message Publishing custom event. ");
         StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId);
         applicationEventPublisher.publishEvent(customEvent);
     }
