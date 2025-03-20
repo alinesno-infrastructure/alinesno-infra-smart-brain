@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -18,9 +19,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 语音识别控制器
@@ -37,65 +43,66 @@ public class SpeechRecognitionController {
     @Autowired
     private IIndustryRoleService industryRoleService ;
 
-    // 新增的接收FormData数据的方法
-    @SneakyThrows
-    @PostMapping(value = "/recognizeFormData", consumes = "multipart/form-data")
-    public AjaxResult recognizeFormData(
-            @RequestPart("act") String act,
-            @RequestPart("prompt") String prompt,
-            @RequestPart("duration") Double duration,
-            @RequestPart("file") MultipartFile file
-    ) {
-        log.debug("语音识别（FormData）请求已收到");
-
-        // 获取系统临时目录
-        String tempDir = System.getProperty("java.io.tmpdir");
-
-        // 保存文件
-        if (!file.isEmpty()) {
-            File dest = new File(tempDir + File.separator + file.getOriginalFilename());
-
-            log.debug("文件保存路径: " + dest.getAbsolutePath());
-
-            file.transferTo(dest);
+    /**
+     * 文件上传并识别
+     * @param act
+     * @param prompt
+     * @param duration
+     * @param file
+     * @return
+     * @throws IOException
+     */
+    @PostMapping("/recognizeFormData")
+    public AjaxResult uploadFile(@RequestParam("act") String act,
+                                 @RequestParam("prompt") String prompt,
+                                 @RequestParam("duration") String duration,
+                                 @RequestParam("file") MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            return AjaxResult.error("文件为空");
         }
 
-        // 打印接收到的信息
+        // 获取临时目录
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+
+        // 生成唯一的文件名
+        String fileName = IdUtil.fastSimpleUUID() + "_" + file.getOriginalFilename();
+        fileName = fileName.replaceFirst("[.][^.]+$", ".wav"); // 确保文件名为 .wav 格式
+        Path filePath = tempDir.resolve(fileName);
+
+        try {
+            // 将 MultipartFile 转换为 File
+            File tempFile = File.createTempFile("temp", null);
+            file.transferTo(tempFile);
+
+            // 读取音频文件
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(tempFile);
+            AudioFileFormat.Type targetType = AudioFileFormat.Type.WAVE;
+
+            // 保存为 WAV 格式
+            AudioSystem.write(audioInputStream, targetType, filePath.toFile());
+            log.debug("文件保存路径: " + filePath);
+
+            // 关闭音频流
+            audioInputStream.close();
+
+            // 删除临时文件
+            tempFile.delete();
+        } catch (Exception e) {
+            log.error("文件转换为 WAV 格式失败" , e);
+            return AjaxResult.error("文件转换为 WAV 格式失败: " + e.getMessage());
+        }
+
+        // 输出保存目录
+        String saveDirectory = filePath.getParent().toString();
+        System.out.println("文件保存目录: " + saveDirectory);
+
+        // 打印其它参数
         log.debug("act: " + act);
         log.debug("prompt: " + prompt);
         log.debug("duration: " + duration);
-        log.debug("文件名: " + file.getOriginalFilename());
 
-        return AjaxResult.success("语音识别成功");
+        return AjaxResult.success() ;
     }
-
-//    @SneakyThrows
-//    @PostMapping(value = "/recognize")
-//    public AjaxResult recognize(@RequestBody MicDataDto micData) {
-//        log.debug("语音识别请求已收到");
-//
-//        MicDataDto.ActData actData = micData.getActData();
-//        MultipartFile file = actData.getFile();
-//        String prompt = actData.getPrompt();
-//        Double duration = actData.getDuration();
-//
-//        // 获取系统临时目录
-//        String tempDir = System.getProperty("java.io.tmpdir");
-//
-//        // 保存文件
-//        if (!file.isEmpty()) {
-//            File dest = new File(tempDir + File.separator + file.getOriginalFilename());
-//            file.transferTo(dest);
-//        }
-//
-//        // 这里可以进行其他信息的保存操作，例如保存到数据库等
-//        // 为了示例简单，这里只是打印一下相关信息
-//        log.debug("act: " + micData.getAct());
-//        log.debug("prompt: " + prompt);
-//        log.debug("duration: " + duration);
-//
-//        return AjaxResult.success("语音识别成功");
-//    }
 
     /**
      * 语音播放 speechRecognition
