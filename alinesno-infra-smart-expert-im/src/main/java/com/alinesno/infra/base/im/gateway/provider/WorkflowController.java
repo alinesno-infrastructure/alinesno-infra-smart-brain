@@ -51,9 +51,6 @@ public class WorkflowController extends SuperController {
      */
     @GetMapping("/detail")
     public AjaxResult getWorkflowExecution(@RequestParam String messageId) {
-
-//        WorkflowExecutionDto dto = workflowService.getWorkflowExecution(businessId) ;
-
         MessageEntity dto = messageService.getById(messageId) ;
         return AjaxResult.success(dto) ;
     }
@@ -95,50 +92,6 @@ public class WorkflowController extends SuperController {
         sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
 
         return ok() ;
-
-//        WorkflowExecutionEntity workflowExecution = workflowExecutionService.getById(dto.getBusinessId());
-//        workflowExecution.setId(null); // 变成新的消息进行保存
-//
-//        if(Boolean.parseBoolean(dto.getCode())){
-//            workflowExecution.setGenContent(formatCodeBlack(dto.getContent()));
-//        }else{
-//            workflowExecution.setGenContent(dto.getContent().toString());
-//        }
-//
-//        workflowExecutionService.save(workflowExecution) ;
-//
-//        IndustryRoleEntity role = roleService.getById(workflowExecution.getRoleId());
-//
-//        // 添加到消息记录表中
-//        MessageTaskInfo taskInfo = new MessageTaskInfo();
-//
-//        taskInfo.setRoleId(workflowExecution.getRoleId());
-//        taskInfo.setChannelId(workflowExecution.getChannelId());
-//        taskInfo.setUsageTime(workflowExecution.getUsageTimeSeconds());
-//        taskInfo.setRoleDto(role);
-//
-//        log.info("任务处理完成: {}", taskInfo);
-//
-//        ChatMessageDto queMessage = AgentUtils.genTaskStatusMessageDto(taskInfo , workflowExecution.getUsageTimeSeconds()) ;
-//
-//        if(Boolean.parseBoolean(dto.getCode())){
-//            queMessage.setChatText(formatCodeBlack(dto.getContent()));
-//        }else{
-//            queMessage.setChatText(dto.getContent());
-//        }
-//
-//        queMessage.setBusinessId(workflowExecution.getId());
-//        queMessage.setRoleId(taskInfo.getRoleId());
-//        queMessage.setAccountId(taskInfo.getAccountId());
-//        queMessage.setLoading(false);
-//        queMessage.setStatus(TaskStatusEnums.COMPLETED.getValue());
-//
-//        sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
-//
-//        // 保存到消息记录表中
-//        messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
-
-//        return ok() ;
     }
 
     /**
