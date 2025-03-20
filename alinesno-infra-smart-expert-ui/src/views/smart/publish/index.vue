@@ -102,13 +102,25 @@
                       <div class="say-message-body markdown-body" v-if="item.chatText"
                         v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
+                      <!-- <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right"
                         :class="item.showTools ? 'show-tools' : 'hide-tools'">
                         <el-button type="primary" link icon="DocumentCopy" size="small"
                           @click="handleCopyGenContent(item)">复制</el-button>
                         <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position"
                           size="small">播放</el-button>
+                      </div> -->
+
+                      <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+                        <div>
+                            <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+                            <el-button type="danger" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+                            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">执行</el-button>
+                            <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                            <el-button type="info" v-if="item.businessId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                        </div>
                       </div>
+
+
                     </div>
                   </div>
 
@@ -178,6 +190,7 @@ import hljs from 'highlight.js';
 
 import { getShareInfo, chatShareRole, shareRecognize } from '@/api/smart/assistant/publishChat'
 import { openSseConnect } from "@/api/smart/assistant/chatsse";
+import { playGenContent} from '@/api/smart/assistant/roleChat'
 
 import { getParam } from '@/utils/ruoyi'
 import { nextTick, onMounted } from "vue";
@@ -380,6 +393,9 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      if(newMessage.usage){
+        messageList.value[existingIndex].usage = newMessage.usage;
+      }
 
       const findMessage = messageList.value[existingIndex];
 
@@ -441,6 +457,42 @@ function handleExecutorMessage(item) {
 
   sendMessage('function');
 
+}
+
+/** 播放生成内容 */
+const handlePlayGenContent = (item) => {
+  // getSpeechLoading.value = true ;
+
+  if(!roleInfo.value.voicePlayStatus){
+    ElMessage.error('未开启语音播放');
+    return ;
+  }
+
+  item.getSpeechLoading = true ;
+
+  playGenContent(item).then(res => {
+    const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+    const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+    const audio = new Audio(audioUrl);
+
+    audio.addEventListener('ended', () => {
+      console.log('音频播放完成');
+      // isPlaySpeaking.value = false 
+      item.isPlaySpeaking = false 
+    });
+
+    // getSpeechLoading.value = false ;
+    // isPlaySpeaking.value = true 
+
+    item.getSpeechLoading = false ;
+    item.isPlaySpeaking = true 
+
+    audio.play(); 
+  }).catch(error => {
+    // getSpeechLoading.value = false ;
+    item.getSpeechLoading = false ;
+    ElMessage.error('播放失败，请确认是否配置语音服务');
+  });
 }
 
 /** 连接sse */
@@ -595,6 +647,17 @@ html pre code.hljs {
 .hide-tools {
   visibility: hidden;
 }
+
+  .chat-ai-say-tools{
+    margin-top: 3px;
+    text-align: right;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 30px;
+  }
+
 
 .robot-chat-ai-say-box {
   float: left;
