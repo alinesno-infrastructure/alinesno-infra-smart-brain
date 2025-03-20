@@ -27,13 +27,16 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
+import com.alinesno.infra.smart.assistant.api.config.VoicePlayData;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.mapper.LlmModelMapper;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -414,6 +417,45 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         log.debug(">>>> " + JSONObject.toJSONString(modelInfo));
         return modelInfo ;
+    }
+
+    @Override
+    public String speechRecognitionFile(IndustryRoleEntity role , ChatMessageDto dto) {
+
+        IndustryRoleDto roleDto = IndustryRoleDto.fromEntity(role) ;
+        VoicePlayData voicePlayData = roleDto.getVoicePlayData() ;
+
+        Assert.isTrue(roleDto.isVoicePlayStatus() , "语音播放未开启") ;
+        Assert.notNull(voicePlayData, "语音模型未配置");
+
+        LlmModelEntity modelEntity = getById(voicePlayData.getVoiceModel()) ;
+
+        SpeechConfig config = new SpeechConfig();
+        config.setEndpoint(modelEntity.getApiUrl());
+        config.setApiKey(modelEntity.getApiKey()) ;
+
+        config.setModel(modelEntity.getModel());
+
+        SpeechModel speechModel = llmAdapterService.speechModel(modelEntity.getProviderCode(),config) ;
+
+        SynthesizeSpeechRequest request = new SynthesizeSpeechRequest();
+        request.setVoice(voicePlayData.getVoiceSpeechModel());
+        request.setText(dto.getChatText()+"");
+
+        SpeechResponse generate = speechModel.synthesize(request);
+        if (generate != null && generate.getSpeechMp3() != null){
+
+            String tempDir = System.getProperty("java.io.tmpdir");
+            String fileName = "Speech_" + UUID.randomUUID() + ".mp3"; // 生成唯一的文件名
+            File file = new File(tempDir, fileName); // 构建完整的文件路径
+
+            generate.getSpeechMp3().writeToFile(file) ;
+
+            return file.getAbsolutePath() ;
+        }
+
+        log.debug("generate = {}" , generate);
+        return null;
     }
 
 }
