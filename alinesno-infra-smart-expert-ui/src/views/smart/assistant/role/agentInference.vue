@@ -390,18 +390,17 @@ const displayRoleInfoBack = (currentRole) =>{
     agentModelConfigForm.value.modelId = currentRole.modelId;
     agentModelConfigForm.value.promptContent = currentRole.promptContent;
     agentModelConfigForm.value.greeting = currentRole.greeting;
-
     // 长期记忆
     longTermMemoryEnabled.value = currentRole.longTermMemoryEnabled ;
     agentModelConfigForm.value.longTermMemoryEnabled = currentRole.longTermMemoryEnabled ;
 
-    if(currentRole.value.knowledgeBaseIds){
+    if(currentRole.knowledgeBaseIds){
         const datasetParsedArray = currentRole.knowledgeBaseIds ; // JSON.parse(currentRole.knowledgeBaseIds);
         selectionDatasetData.value = datasetParsedArray;
         agentModelConfigForm.value.knowledgeBaseIds = datasetParsedArray ;
     }
 
-    if(currentRole.value.selectionToolsData){
+    if(currentRole.selectionToolsData){
         const toolsParsedArray = currentRole.selectionToolsData ; // JSON.parse(currentRole.selectionToolsData);
         selectionToolsData.value = toolsParsedArray;
         agentModelConfigForm.value.selectionToolsData = toolsParsedArray ; 
@@ -416,6 +415,7 @@ const displayRoleInfoBack = (currentRole) =>{
 
     // 语音播放
     voicePlayStatus.value = currentRole.voicePlayStatus ;
+
     agentModelConfigForm.value.voicePlayStatus = currentRole.voicePlayStatus ;
     if(currentRole.voicePlayData){
         agentModelConfigForm.value.voicePlayData = currentRole.voicePlayData ; // JSON.parse(currentRole.voicePlayData);
@@ -609,7 +609,6 @@ function toggleVoiceInputStatusPanel() {
 
 function handleVoiceInputStatusPanelClose(voiceInputData) {
     if (voiceInputStatusPanelRef.value) {
-        // const voiceInputData = voiceInputStatusPanelRef.value.getFormData();
         console.log('voiceInputData = ' + JSON.stringify(voiceInputData))
 
         voiceInputStatus.value = voiceInputData.enable; // !voiceInputStatus.value;
@@ -648,18 +647,6 @@ function syncPromptContent(content) {
     promptDialogVisible.value = false;
 }
 
-/** 保存模型配置 */
-// const submitModelConfig = () =>  {
-//     console.log('agentModelConfigFormRef = ' + agentModelConfigFormRef.value)
-//     const isValid = agentModelConfigFormRef.validate();
-//     console.log('isValid'+ isValid.value)
-//     if(isValid){
-//         console.log('保存模型配置' + JSON.stringify(agentModelConfigForm.value))
-//     }
-// }
-
-
-
 const submitModelConfig = async () => {
 
     await agentModelConfigFormRef.value.validate((valid, fields) => {
@@ -678,8 +665,9 @@ const submitModelConfig = async () => {
 
             saveRoleWithReActConfig(agentModelConfigForm.value).then(res => {
                 console.log('res = ' + res);
-                proxy.$modal.msgSuccess("新增成功");
+                proxy.$modal.msgSuccess("保存成功");
                 loading.close();
+                getRoleInfo();
             }).catch(() => {
                 loading.close();
             })
@@ -690,11 +678,8 @@ const submitModelConfig = async () => {
     });
 };
 
-// defineEmits(['sysncPromptContent'])
 
 nextTick(() => {
-    // getRoleInfo();
-    // handleListAllLlmModel();
     initData() ; 
 })
 
