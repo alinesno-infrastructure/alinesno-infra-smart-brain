@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -8,8 +9,10 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
@@ -32,13 +35,20 @@ import org.springframework.ui.Model;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioFileFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -56,6 +66,9 @@ import java.util.Map;
 @Scope("prototype")
 @RequestMapping("/api/infra/smart/assistant/llmModel")
 public class LlmModelController extends BaseController<LlmModelEntity, ILlmModelService> {
+
+    @Autowired
+    protected CloudStorageConsumer cloudStorageConsumer;
 
     @Autowired
     private ILlmModelService service;
@@ -143,6 +156,84 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
     @PostMapping("/testLlmModel")
     public AjaxResult testLlmModel(@RequestBody @Validated TestLlmModelDto dto) {
         log.debug("dto = {}" , dto);
+        String result = service.testLlmModel(dto) ;
+        return AjaxResult.success("操作成功" , result) ;
+    }
+
+    /**
+     * 测试录音识别
+     * @return 语音识别结果
+     */
+    @PostMapping("/testRecognition")
+    public AjaxResult testRecognition(
+            @RequestParam("modelType") String modelType,
+            @RequestParam("providerCode") String providerCode,
+            @RequestParam("apiUrl") String apiUrl,
+            @RequestParam("apiKey") String apiKey,
+            @RequestParam("model") String model,
+
+            @RequestParam("act") String act,
+            @RequestParam("prompt") String prompt,
+            @RequestParam("duration") String duration,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        if (file.isEmpty()) {
+            return AjaxResult.error("文件为空");
+        }
+
+        // 获取临时目录
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+
+        // 生成唯一的文件名
+        String fileName = IdUtil.fastSimpleUUID() + "_" + file.getOriginalFilename();
+        fileName = fileName.replaceFirst("[.][^.]+$", ".wav"); // 确保文件名为 .wav 格式
+        Path filePath = tempDir.resolve(fileName);
+
+        try {
+            // 将 MultipartFile 转换为 File
+            File tempFile = File.createTempFile("temp", null);
+            file.transferTo(tempFile);
+
+            // 读取音频文件
+            AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(tempFile);
+            AudioFileFormat.Type targetType = AudioFileFormat.Type.WAVE;
+
+            // 保存为 WAV 格式
+            AudioSystem.write(audioInputStream, targetType, filePath.toFile());
+            log.debug("文件保存路径: " + filePath);
+
+            // 关闭音频流
+            audioInputStream.close();
+
+            // 删除临时文件
+            tempFile.delete();
+        } catch (Exception e) {
+            log.error("文件转换为 WAV 格式失败" , e);
+            return AjaxResult.error("文件转换为 WAV 格式失败: " + e.getMessage());
+        }
+
+        // 输出保存目录
+        System.out.println("文件保存目录: " + filePath);
+
+        // 打印其它参数
+        log.debug("act: " + act);
+        log.debug("prompt: " + prompt);
+        log.debug("duration: " + duration);
+
+        TestLlmModelDto dto = new TestLlmModelDto() ;
+
+        R<String> r = cloudStorageConsumer.uploadCallbackUrl(filePath.toFile().getAbsoluteFile() , "qiniu-kodo-pub");
+
+        List<String> audioList = new ArrayList<>();
+        audioList.add(r.getData());
+
+        dto.setAudioList(audioList);
+        dto.setModelType(modelType);
+        dto.setProviderCode(providerCode);
+        dto.setApiUrl(apiUrl);
+        dto.setApiKey(apiKey);
+        dto.setModel(model);
+
         String result = service.testLlmModel(dto) ;
         return AjaxResult.success("操作成功" , result) ;
     }
