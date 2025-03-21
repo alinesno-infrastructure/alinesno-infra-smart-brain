@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -20,10 +21,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -48,6 +57,46 @@ public class PublishChatController {
 
     @Autowired
     private IChannelPublishService channelPublishService ;
+
+    @Autowired
+    private ILlmModelService llmModelService ;
+
+    /**
+     * 语音播放 speechRecognition
+     */
+    @SneakyThrows
+    @PostMapping(value = "/playShareGenContent")
+    public ResponseEntity<Resource> playShareGenContent(@RequestBody ChatMessageDto dto, @RequestParam String shareId) {
+        log.debug("语音播放请求已收到 , shareId = {}" , shareId);
+
+        IndustryRoleEntity role = industryRoleService.getById(dto.getRoleId()) ;
+        String filePath = llmModelService.speechSynthesisFile(role , dto) ;
+
+        log.debug("getSpeech filePath = {}" , filePath);
+
+        try {
+            // 本地录音文件路径
+            File audioFile = new File(filePath) ;
+
+            // 确保文件存在
+            if (!audioFile.exists()) {
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+            }
+
+            FileInputStream fileInputStream = new FileInputStream(audioFile);
+            InputStreamResource inputStreamResource = new InputStreamResource(fileInputStream);
+
+            // 设置响应头
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+            headers.setContentLength(audioFile.length());
+            headers.setContentDispositionFormData("attachment", audioFile.getName());
+
+            return new ResponseEntity<>(inputStreamResource, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 
     /**
      * 获取角色信息
