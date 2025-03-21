@@ -129,7 +129,7 @@
               <!-- 聊天窗口_end -->
             </div>
 
-            <div class="robot-chat-footer chat-container" style="float:left;width:100%">
+            <div class="robot-chat-footer chat-container publish-chat-footer">
 
               <div class="message-chat-container">
                   <div class="message-input">
@@ -145,6 +145,7 @@
                   </div>
 
                   <span class="box-item-bottom">
+                    <!-- 
                     <el-tooltip class="box-item" effect="dark" content="语音输入" placement="top">
                       <span style="margin-right:10px;display: flex;" v-if="isRecording">
                         <img :src="speakingIcon" style="width:35px" />
@@ -155,7 +156,10 @@
                       <el-button v-if="!isRecording" type="primary" text bg size="large" @click="startRecording()">
                         <i class="fa-solid fa-microphone-lines icon-btn"></i>
                       </el-button>
-                    </el-tooltip>
+                    </el-tooltip> 
+                    -->
+
+                    <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
 
                     <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                       <el-button type="danger" text bg size="large" @click="sendMessage('send')">
@@ -187,9 +191,11 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
-import { getShareInfo, chatShareRole, shareRecognize } from '@/api/smart/assistant/publishChat'
+import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
+
+import { getShareInfo, chatShareRole, playShareGenContent } from '@/api/smart/assistant/publishChat'
 import { openSseConnect } from "@/api/smart/assistant/chatsse";
-import { playGenContent} from '@/api/smart/assistant/roleChat'
+// import { playGenContent} from '@/api/smart/assistant/roleChat'
 
 import { getParam } from '@/utils/ruoyi'
 import { nextTick, onMounted } from "vue";
@@ -326,10 +332,32 @@ const stopRecording = () => {
 };
 
 // 发送音频数据到后端
-const sendAudioToBackend = async (audioBlob) => {
-  const formData = new FormData();
-  formData.append('audio', audioBlob);
+// const sendAudioToBackend = async (audioBlob) => {
+//   const formData = new FormData();
+//   formData.append('audio', audioBlob);
 
+//   try {
+
+//     streamLoading.value = ElLoading.service({
+//       lock: true,
+//       text: '语音识别中...',
+//       background: 'rgba(0, 0, 0, 0.2)',
+//     })
+
+//     const response = await shareRecognize(formData);
+//     message.value = response.data;
+
+//     streamLoading.value.close();
+//     sendMessage('send');
+
+//   } catch (error) {
+//     console.error('语音识别请求失败:', error);
+//     streamLoading.value.close();
+//   }
+// };
+
+// 发送音频数据到后端
+const sendAudioToBackend = async (voiceMessage) => {
   try {
 
     streamLoading.value = ElLoading.service({
@@ -338,8 +366,7 @@ const sendAudioToBackend = async (audioBlob) => {
       background: 'rgba(0, 0, 0, 0.2)',
     })
 
-    const response = await shareRecognize(formData);
-    message.value = response.data;
+    message.value = voiceMessage ; 
 
     streamLoading.value.close();
     sendMessage('send');
@@ -469,7 +496,7 @@ const handlePlayGenContent = (item) => {
 
   item.getSpeechLoading = true ;
 
-  playGenContent(item).then(res => {
+  playShareGenContent(item , shareId.value).then(res => {
     const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
     const audioUrl = URL.createObjectURL(audioBlob) // 生成url
     const audio = new Audio(audioUrl);
@@ -624,6 +651,8 @@ html pre code.hljs {
     float: none;
     max-width: 1200px;
     margin: auto;
+    display: flex;
+    flex-direction: column;
   }
 
   .inner-robot-chat-body {
@@ -748,9 +777,13 @@ html pre code.hljs {
   font-size: 14px;
 
   .logo-section {
+
     display: flex;
     align-items: center;
     gap: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    justify-content: flex-start;
 
     img {
       width: 30px;
@@ -796,6 +829,13 @@ html pre code.hljs {
     justify-content: space-between;
     flex-direction: row;
   }
+}
+
+.publish-chat-footer {
+  float: left;
+  width: calc(100% - 10px);
+  margin-right: 5px;
+  margin-left: 5px;
 }
 
 // .button-box-item {
