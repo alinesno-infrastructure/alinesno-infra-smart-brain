@@ -22,7 +22,20 @@ var managerUrl = {
     getSpeech: prefix + "getSpeech",
     getSpeechByModelId: prefix + "getSpeechByModelId" ,
     getGenerateImage: prefix + "getGenerateImage" , 
-    getVoiceModelSpeech: prefix + "getVoiceModelSpeech"
+    getVoiceModelSpeech: prefix + "getVoiceModelSpeech" , 
+    testRecognition: prefix + "testRecognition"
+}
+
+// 测试语音识别
+export function testRecognition(audioFormData) {
+    return request({
+        url: managerUrl.testRecognition ,
+        method: 'post',
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        },
+        data: audioFormData  
+    })
 }
 
 // 获取语音模型语音请求
