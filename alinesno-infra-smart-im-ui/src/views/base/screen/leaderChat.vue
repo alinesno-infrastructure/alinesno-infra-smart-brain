@@ -22,7 +22,7 @@
               -->
             </div>
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 200px)">
+            <div class="robot-chat-body inner-robot-chat-body" >
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -93,9 +93,9 @@
 
             </div>
 
-                <div style="position: absolute;bottom: 5px;font-size: 80%;color: #777;">
-                  内容由第三方 AI 生成，无法确保真实准确，仅供参考
-                </div>
+            <div class="aigen-text-warning">
+              内容由第三方 AI 生成，无法确保真实准确，仅供参考
+            </div>
 
           </div>
         </el-col>
@@ -403,7 +403,7 @@ defineExpose({
   }
 
   .inner-robot-chat-body {
-    height: calc(100vh - 100px);
+    height: calc(100vh - 275px);
   }
 }
 
@@ -411,7 +411,7 @@ defineExpose({
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 95px);
+  height: calc(100%);
   overflow: hidden;
 }
 
