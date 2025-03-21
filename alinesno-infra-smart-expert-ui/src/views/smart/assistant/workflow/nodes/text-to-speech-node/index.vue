@@ -11,7 +11,7 @@
         <el-form :model="form" label-width="auto" label-position="top">
           <!-- 语音识别模型选择项 -->
           <el-form-item label="语音识别模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" :modelType="'speech_synthesis'" />
           </el-form-item>
           <!-- 选择语音文件选择项 -->
           <el-form-item label="选择内容文件">
