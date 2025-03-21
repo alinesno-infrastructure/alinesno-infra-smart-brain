@@ -332,9 +332,9 @@ onMounted(() => {
       border:0px !important;
     }
 
-    .inner-robot-chat-body {
-        height: calc(100vh - 100px);
-    }
+    // .inner-robot-chat-body {
+    //     height: calc(100vh - 100px);
+    // }
 }
 .scroll-panel {
   padding-bottom: 10px;
