@@ -10,7 +10,7 @@
       <div class="settings-form">
         <el-form :model="formData" label-width="auto" label-position="top">
           <el-form-item label="视觉模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId"  :modelType="'large_language_model'" />
           </el-form-item>
           <el-form-item label="提示词">
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
