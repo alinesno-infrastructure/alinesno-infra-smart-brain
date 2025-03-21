@@ -165,14 +165,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
 
-                streamMessagePublisher.doStuffAndPublishAnEvent("未配置执行能力." ,
-                        role,
-                        taskInfo,
-                        IdUtil.getSnowflakeNextId());
-                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" ,
-                        role,
-                        taskInfo,
-                        IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("未配置执行能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role,  taskInfo, IdUtil.getSnowflakeNextId());
+                record.setGenContent("未配置执行能力.");
 
                 return record ;
             }
@@ -198,8 +193,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             if(StringUtils.isEmpty(role.getAuditScript())){
 
-                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
-                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+                record.setGenContent("未配置审核修改能力.");
 
                 return record ;
             }
@@ -238,8 +234,9 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
             } catch (Exception e) {
                 log.error("解析代码块异常:{}", e.getMessage());
 
-                streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
-                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+                record.setGenContent("执行异常:" + e.getMessage());
             }
         }
 
@@ -514,13 +511,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      */
     @SneakyThrows
     public void processStream(IndustryRoleEntity role, List<PromptMessage> messages, MessageTaskInfo taskInfo) {
-        // 异步任务，则更新任务状态
-//        MessageEntity record = workflowExecutionService.getById(taskInfo.getWorkflowRecordId());
-//        if (record != null) {
-//            record.setFieldProp(TASK_SYNC);
-//            workflowExecutionService.update(record);
-//        }
-
         MessageManager msgManager = new MessageManager(10);
 
         for(PromptMessage m : messages) {
@@ -571,7 +561,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
         Semaphore semaphore = new Semaphore(0);
         StringBuilder fullContent = new StringBuilder();
-        long traceBusId = taskInfo.getTraceBusId() ; // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
+        long traceBusId = taskInfo.getTraceBusId() ;
 
         msgManager.setTraceBusId(taskInfo.getTraceBusId());
         msgManager.setWorkflowId(traceBusId);
@@ -628,11 +618,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 entity.setRoleId(role.getId()) ;
 
                 messageService.save(entity);
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
-//                        getRole() ,
-//                        getTaskInfo() ,
-//                        traceBusId) ;
 
             }
         }) ;
