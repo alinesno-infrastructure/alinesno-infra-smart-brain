@@ -76,25 +76,25 @@
                 </div>
 
                 <div class="vc-text" title="">
-                    <el-button type="primary" text bg v-if="item.modelType === 'large_language_model'">
+                    <el-button type="info" text bg v-if="item.modelType === 'large_language_model'">
                         <i class="fas fa-file-signature"></i> {{ item.fieldProp }}
                     </el-button>
-                    <el-button type="danger" text bg v-if="item.modelType ==='speech_synthesis'">
+                    <el-button type="info" text bg v-if="item.modelType ==='speech_synthesis'">
                         <i class="fa-solid fa-volume-up"></i> {{ item.fieldProp }}
                     </el-button>
-                    <el-button type="success" text bg v-if="item.modelType ==='vector_model'">
+                    <el-button type="info" text bg v-if="item.modelType ==='vector_model'">
                         <i class="fa-solid fa-arrows-alt-v"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
                     </el-button>
-                    <el-button type="warning" text bg v-if="item.modelType ==='re_ranking_model'">
+                    <el-button type="info" text bg v-if="item.modelType ==='re_ranking_model'">
                         <i class="fa-solid fa-sync-alt"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
                     </el-button>
                     <el-button type="info" text bg v-if="item.modelType ==='speech_recognition'">
                         <i class="fa-solid fa-microphone-alt"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
                     </el-button>
-                    <el-button type="danger" text bg v-if="item.modelType === 'vision_model'">
+                    <el-button type="info" text bg v-if="item.modelType === 'vision_model'">
                         <i class="fa-solid fa-eye"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
                     </el-button>
-                    <el-button type="primary" text bg v-if="item.modelType === 'image_generation'">
+                    <el-button type="info" text bg v-if="item.modelType === 'image_generation'">
                         <i class="fa-solid fa-palette"></i> {{ item.fieldProp }} <!-- 这里的图标是示意，可按需更换 -->
                     </el-button>
                 </div>
@@ -260,6 +260,15 @@
           </div> 
         </div>
 
+        <div v-if="form.modelType === 'speech_recognition' && speechRecognitionResult">
+          <el-divider content-position="left">识别结果</el-divider>
+
+          <div class="text-chat-content">
+              {{ speechRecognitionResult }}
+          </div> 
+        </div>
+
+
         <el-row v-if="form.modelType === 'image_generation' && generatedImageUrl">
           <el-divider content-position="left"> 图片生成</el-divider>
           <div>
@@ -282,13 +291,13 @@
 
           <!-- 语音识别模型 -->
            <div v-if="form.modelType === 'speech_recognition'" >
-              <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
+              <img v-if="isRecording" :src="speakingIcon" style="width:35px" />
 
-              <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
-                <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
+              <el-button v-if="isRecording" type="danger" text bg size="large" @click="stopRecording()"> 
+                <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止
               </el-button>
-              <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
-                <i class="fa-solid fa-microphone-lines"></i> 试讲 
+              <el-button v-if="!isRecording" type="primary" text bg size="large" @click="listenPlayVoiceOption()" :loading="chatLoading"> 
+                <i class="fa-solid fa-microphone-lines"></i> 录音试讲 
               </el-button>
            </div>
 
@@ -348,6 +357,7 @@ import {
   updateLlmModel,
   addLlmModel,
   testLlmModel,
+  testRecognition ,
   getAllModelProvidersInfo,
   getAllModelTypesInfo,
   getGenerateImage,
@@ -355,7 +365,9 @@ import {
 } from "@/api/smart/assistant/llmModel";
 
 import { onMounted, reactive, ref } from "vue";
+import { ElMessage } from "element-plus";
 import speakingIcon from '@/assets/icons/speaking.gif';
+import Recorder from 'js-audio-recorder';
 
 import { openSseConnect } from "@/api/smart/assistant/chatsse";
 
@@ -395,6 +407,23 @@ const currentSpeechVoiceModelList = ref([])
 
 const testLlmModelReasoingReponse = ref(undefined)
 const testLlmModelReponse = ref(undefined)
+
+// 语音识别
+const isRecording = ref(false);
+const speechRecognitionResult = ref('')
+
+const recorder = new Recorder({
+  sampleBits: 16, // 采样位数，支持 8 或 16，默认是16
+  sampleRate: 16000, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
+  numChannels: 1 // 声道，支持 1 或 2， 默认是1
+});
+
+// 监听录音状态
+const stat = ref({ duration: 0, fileSize: 0, vol: 0 });
+const st = ref({ start: 0, isGo: false });
+recorder.onprogress = (params) => {
+  stat.value = { duration: params.duration, fileSize: params.fileSize, vol: params.vol };
+};
 
 const data = reactive({
   form: {},
@@ -599,9 +628,9 @@ function handleAllModelProvidersInfo() {
 
 // >>>>>>>>>>>>>>>>>> 模型测试
 /** 是否在播放 */
-const listenPlayVoiceOption = () => {
-  isSpeaking.value = !isSpeaking.value
-}
+// const listenPlayVoiceOption = () => {
+//   isSpeaking.value = !isSpeaking.value
+// }
 
 // 关闭事件
 const handleClose = (done) => {
@@ -770,6 +799,90 @@ function pushResponseMessageList(data){
     console.log('chatText = ' + data.chatText + ' , testLlmModelReponse = ' + testLlmModelReponse.value)
   }
 }
+
+// 录音识别
+// 开始录音函数
+const listenPlayVoiceOption = async () => {
+
+  // 等待表单验证通过
+  await validateForm();
+
+  speechRecognitionResult.value = '' ;
+
+  isRecording.value = !isRecording.value;
+  recorder.start().then(() => {
+    st.value.start = 1;
+    st.value.isGo = true;
+  }).catch((e) => {
+    console.log('录音错误' + e);
+    ElMessage.error('录音失败');
+    // emit('cancel');
+  });
+};
+
+// 停止录音函数
+const stopRecording = () => {
+  isRecording.value = false;
+  st.value.start = 0;
+  recorder.stop();
+  recorder.stopPlay();
+  send();
+};
+
+const send = async () => {
+  console.log('recorder.getWAVBlob() = ' + recorder.getWAVBlob());
+  console.log('stat.value = ' + stat.value);
+
+  const blob = recorder.getWAVBlob();
+  if (!blob) {
+    console.error('获取的音频数据为空');
+    return;
+  }
+
+  const du = "whisper.wav";
+  const file = new File([blob], du, { type: "audio/wav" });
+
+  var newbolb = new Blob([blob], { type: 'audio/wav' });
+  var fileOfBlob = new File([newbolb], new Date().getTime() + '.wav');
+
+  const micData = {
+    act: "gpt.whisper",
+    actData: { file: fileOfBlob, prompt: "whisper", duration: stat.value?.duration },
+  };
+
+  var formData = new FormData();
+
+  formData.append('modelType', form.value.modelType);
+  formData.append('providerCode', form.value.providerCode) ; 
+  formData.append('apiUrl', form.value.apiUrl) ; 
+  formData.append('apiKey', form.value.apiKey) ; 
+  formData.append('model', form.value.model) ; 
+
+  formData.append('act', "gpt.whisper");
+  formData.append('prompt', "whisper");
+  formData.append('duration', stat.value?.duration);
+  formData.append('file', fileOfBlob);
+
+  sendAudioFileToBackend(formData);
+
+  stat.value = { duration: 0, fileSize: 0, vol: 0 };
+};
+
+// 发送音频文件到后端
+const sendAudioFileToBackend = (audioFormData) => {
+  chatLoading.value = true;
+  // const response = await testRecognition(audioFormData);
+  testRecognition(audioFormData).then(response => {
+    chatLoading.value = false ;
+    isValidatedStatus.value = false
+    console.log('response = ' + JSON.stringify(response));
+    speechRecognitionResult.value = response.data ;
+  }).catch(error => {
+    chatLoading.value = false;
+    isValidatedStatus.value = true 
+  }) ;
+  // emits("sendAudioToBackend" , response);
+};
 
 onMounted(() => {
   getList();
