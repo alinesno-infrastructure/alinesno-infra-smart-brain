@@ -31,9 +31,17 @@ public interface ILlmModelService extends IBaseService<LlmModelEntity> {
     Map<String, Object> getVoiceModelSpeech(String modelId);
 
     /**
-     * 语音识别，并返回生成的文件
+     * 语音合成，并返回生成的文件
      * @param dto
      * @return
      */
-    String speechRecognitionFile(IndustryRoleEntity role , ChatMessageDto dto);
+    String speechSynthesisFile(IndustryRoleEntity role , ChatMessageDto dto);
+
+    /**
+     * 语音识别
+     * @param role
+     * @param data
+     * @return 识别的内容
+     */
+    String speechRecognitionFile(IndustryRoleEntity role, String data);
 }
