@@ -614,6 +614,7 @@ function handleVoiceInputStatusPanelClose(voiceInputData) {
         voiceInputStatus.value = voiceInputData.enable; // !voiceInputStatus.value;
         agentModelConfigForm.value.voiceInputStatus = voiceInputData.enable;// voiceInputStatus.value;
 
+        voiceInputStatusVisible.value = false ;
         agentModelConfigForm.value.voiceInputData = voiceInputData;
     }
 }
