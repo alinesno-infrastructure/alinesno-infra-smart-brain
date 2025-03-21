@@ -79,7 +79,7 @@
 
             </div>
 
-            <div style="position: absolute;bottom: 3px;font-size: 80%;color: #777;">
+            <div class="aigen-text-warning">
               内容由第三方 AI 生成，无法确保真实准确，仅供参考
             </div>
 
@@ -397,6 +397,43 @@ function keyDown(e) {
   }
 
 }
+
+/** 播放生成内容 */
+// const handlePlayGenContent = (item) => {
+//   // getSpeechLoading.value = true ;
+
+//   if(!roleInfo.value.voicePlayStatus){
+//     ElMessage.error('未开启语音播放');
+//     return ;
+//   }
+
+//   item.getSpeechLoading = true ;
+
+//   playGenContent(item).then(res => {
+//     const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+//     const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+//     const audio = new Audio(audioUrl);
+
+//     audio.addEventListener('ended', () => {
+//       console.log('音频播放完成');
+//       // isPlaySpeaking.value = false 
+//       item.isPlaySpeaking = false 
+//     });
+
+//     // getSpeechLoading.value = false ;
+//     // isPlaySpeaking.value = true 
+
+//     item.getSpeechLoading = false ;
+//     item.isPlaySpeaking = true 
+
+//     audio.play(); 
+//   }).catch(error => {
+//     // getSpeechLoading.value = false ;
+//     item.getSpeechLoading = false ;
+//     ElMessage.error('播放失败，请确认是否配置语音服务');
+//   });
+// }
+
 
 onMounted(() => {
   //绑定监听事件
