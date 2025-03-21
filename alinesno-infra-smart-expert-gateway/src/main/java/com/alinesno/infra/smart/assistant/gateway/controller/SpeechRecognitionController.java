@@ -2,6 +2,8 @@ package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
@@ -43,6 +45,9 @@ public class SpeechRecognitionController {
     @Autowired
     private IIndustryRoleService industryRoleService ;
 
+    @Autowired
+    protected CloudStorageConsumer cloudStorageConsumer;
+
     /**
      * 文件上传并识别
      * @param act
@@ -53,10 +58,14 @@ public class SpeechRecognitionController {
      * @throws IOException
      */
     @PostMapping("/recognizeFormData")
-    public AjaxResult uploadFile(@RequestParam("act") String act,
-                                 @RequestParam("prompt") String prompt,
-                                 @RequestParam("duration") String duration,
-                                 @RequestParam("file") MultipartFile file) throws IOException {
+    public AjaxResult uploadFile(
+            @RequestParam("roleId") String roleId ,
+
+            @RequestParam("act") String act,
+            @RequestParam("prompt") String prompt,
+            @RequestParam("duration") String duration,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
         if (file.isEmpty()) {
             return AjaxResult.error("文件为空");
         }
@@ -101,7 +110,12 @@ public class SpeechRecognitionController {
         log.debug("prompt: " + prompt);
         log.debug("duration: " + duration);
 
-        return AjaxResult.success() ;
+        R<String> r = cloudStorageConsumer.uploadCallbackUrl(filePath.toFile().getAbsoluteFile() , "qiniu-kodo-pub");
+
+        IndustryRoleEntity role = industryRoleService.getById(roleId) ;
+        String recognitionText = llmModelService.speechRecognitionFile(role , r.getData()) ;
+
+        return AjaxResult.success("识别成功" , recognitionText) ;
     }
 
     /**
@@ -113,8 +127,8 @@ public class SpeechRecognitionController {
         log.debug("语音播放请求已收到");
 
         IndustryRoleEntity role = industryRoleService.getById(dto.getRoleId()) ;
+        String filePath = llmModelService.speechSynthesisFile(role , dto) ;
 
-        String filePath = llmModelService.speechRecognitionFile(role , dto) ;
         log.debug("getSpeech filePath = {}" , filePath);
 
         try {
