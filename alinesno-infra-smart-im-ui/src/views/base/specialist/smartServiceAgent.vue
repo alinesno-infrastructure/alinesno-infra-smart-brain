@@ -7,13 +7,6 @@
       <span class="stat-item">💬 9K 使用</span>
       <span class="stat-item">🗣️ 60.3K 对话</span>
     </div>
-
-    <!-- 中间内容区域 -->
-    <div class="content-area">
-      <div class="intro">
-        {{ channelInfo.channelDesc }}
-      </div>
-    </div>
     
     <div class="robot-chat-help-panel">
       <div class="robot-chat-help-title">频道专家Agent列表</div>
@@ -25,8 +18,6 @@
                 <img style="width:35px;height:35px;border-radius: 50%;" :src="imagePathByPath(item.roleAvatar)" />
                 <div class="item-process-content" style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;margin-top: -2px;">
                   {{ item.roleName }}
-                  <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg @click="handleSelectAgentToChat(item)" >选择</el-button> -->
-                  <!-- <el-button type="primary" style="float:right;position: absolute;right:25px" icon="Link" text bg>工作中</el-button> -->
                 </div>
               </li>
             </ul>
@@ -35,6 +26,13 @@
             <el-button type="primary" text bg size="large" icon="ChatRound" @click="dialogVisible = true">添加Agent到频道</el-button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- 中间内容区域 -->
+    <div class="content-area">
+      <div class="intro">
+        {{ channelInfo.channelDesc }}
       </div>
     </div>
 
