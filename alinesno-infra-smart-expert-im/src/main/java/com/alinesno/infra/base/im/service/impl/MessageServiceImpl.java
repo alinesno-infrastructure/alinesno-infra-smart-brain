@@ -89,6 +89,15 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         List<MessageEntity> entityList = list(wrapper);
 
+        List<IndustryRoleEntity> roleList = null ;
+        if (!entityList.isEmpty()) {
+            List<Long> roleIds = entityList.stream()
+                    .map(MessageEntity::getRoleId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            roleList = industryRoleService.listByIds(roleIds);
+        }
+
         if (!entityList.isEmpty()) {
             int size = entityList.size();
 
@@ -108,6 +117,15 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
                 dto.setReaderType(e.getReaderType());
                 dto.setBusinessId(e.getId());
                 dto.setDateTime(DateUtil.formatDateTime(e.getAddTime()));
+
+                IndustryRoleEntity role = roleList.stream()
+                        .filter(r -> r.getId().equals(e.getRoleId()))
+                        .findFirst()
+                        .orElse(null);
+                if (role != null) {
+                    dto.setHasExecuteTool(StringUtils.isNoneBlank(role.getFunctionCallbackScript()));
+                    dto.setVoicePlayStatus(role.isVoicePlayStatus());
+                }
 
                 list.add(dto);
             }
