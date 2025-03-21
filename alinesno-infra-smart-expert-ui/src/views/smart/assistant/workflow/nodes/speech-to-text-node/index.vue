@@ -11,7 +11,7 @@
         <el-form :model="formData" label-width="auto" label-position="top">
           <!-- 语音识别模型选择项 -->
           <el-form-item label="语音识别模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.llmModelId" :modelType="'speech_recognition'" />
           </el-form-item>
           <!-- 选择语音文件选择项 -->
           <el-form-item label="选择语音文件">
@@ -34,6 +34,7 @@ import { ref, reactive } from 'vue'
 import FlowContainer from '@/views/smart/assistant/workflow/common/FlowContainer'
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 import FlowCascader from '@/views/smart/assistant/workflow/common/FlowCascader'
+import { ModelType } from '@logicflow/core'
 
 const props = defineProps({
   properties: {
