@@ -115,9 +115,11 @@
                   </div>
                 </el-col>
 
-                <el-col :span="8" style="text-align:right;display:fiex">
+                <el-col :span="8">
 
-                  <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" />
+                  <div style="display: flex;align-items: center;justify-content: flex-end;">
+
+                  <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
 
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
@@ -130,6 +132,7 @@
                       <i class="fa-solid fa-feather icon-btn"></i>
                     </el-button>
                   </el-tooltip>
+                  </div>
 
                 </el-col>
               </el-row>
