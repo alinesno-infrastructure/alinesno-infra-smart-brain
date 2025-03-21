@@ -21,7 +21,7 @@
               </div>
             </div>
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 130px)">
+            <div class="robot-chat-body inner-robot-chat-body">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -90,12 +90,14 @@
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools ? 'show-tools' : 'hide-tools'">
-                        <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-                        <el-button type="primary" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
-                        <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
+                      <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+                        <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+                        <el-button type="danger" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+                        <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
+                        <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                        <el-button type="info" v-if="item.businessId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
                       </div>
+
                     </div>
                   </div>
 
@@ -122,6 +124,8 @@
 
                 <div class="message-btn-box">
 
+                  <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
+
                   <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
                     <el-button type="danger" text bg size="large" @click="sendMessage('send')">
                       <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
@@ -137,9 +141,9 @@
                 </div>
 
             </div>
-                <div style="position: absolute;bottom: 15px;font-size: 80%;color: #777;">
-                  内容由第三方 AI 生成，无法确保真实准确，仅供参考
-                </div>
+            <div class="aigen-text-warning">
+              内容由第三方 AI 生成，无法确保真实准确，仅供参考
+            </div>
 
           </div>
         </el-col>
@@ -167,11 +171,14 @@ import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 import AgentSingleRightPanel from './rightPanel.vue'
+import AIVoiceInput from '@/components/aiVoiceInput'
 
-import { getInfo, chatRole } from '@/api/base/im/roleChat'
+import { getInfo, chatRole , playGenContent  } from '@/api/base/im/roleChat'
 import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { nextTick, onMounted } from "vue";
+
+import speakingIcon from '@/assets/icons/speaking.gif';
 
 import ChatMessageEditor from '@/views/base/specialist/chatMessageEditor.vue'
 
@@ -261,6 +268,9 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      if(newMessage.usage){
+        messageList.value[existingIndex].usage = newMessage.usage;
+      }
 
       const findMessage = messageList.value[existingIndex];
 
@@ -386,6 +396,42 @@ function handleGetInfo(roleId) {
   })
 }
 
+/** 播放生成内容 */
+const handlePlayGenContent = (item) => {
+  // getSpeechLoading.value = true ;
+
+  if(!roleInfo.value.voicePlayStatus){
+    ElMessage.error('未开启语音播放');
+    return ;
+  }
+
+  item.getSpeechLoading = true ;
+
+  playGenContent(item).then(res => {
+    const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+    const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+    const audio = new Audio(audioUrl);
+
+    audio.addEventListener('ended', () => {
+      console.log('音频播放完成');
+      // isPlaySpeaking.value = false 
+      item.isPlaySpeaking = false 
+    });
+
+    // getSpeechLoading.value = false ;
+    // isPlaySpeaking.value = true 
+
+    item.getSpeechLoading = false ;
+    item.isPlaySpeaking = true 
+
+    audio.play(); 
+  }).catch(error => {
+    // getSpeechLoading.value = false ;
+    item.getSpeechLoading = false ;
+    ElMessage.error('播放失败，请确认是否配置语音服务');
+  });
+}
+
 /** 发送消息 */
 const sendMessage = (type) => {
 
@@ -415,6 +461,27 @@ const sendMessage = (type) => {
   })
 
   message.value = '';
+};
+
+// 发送音频数据到后端
+const sendAudioToBackend = async (voiceMessage) => {
+  try {
+
+    streamLoading.value = ElLoading.service({
+      lock: true,
+      text: '语音识别中...',
+      background: 'rgba(0, 0, 0, 0.2)',
+    })
+
+    message.value = voiceMessage ; 
+
+    streamLoading.value.close();
+    sendMessage('send');
+
+  } catch (error) {
+    console.error('语音识别请求失败:', error);
+    streamLoading.value.close();
+  }
 };
 
 /** 显示工具条 */
@@ -457,16 +524,16 @@ onBeforeUnmount(() => {
     border: 0px !important;
   }
 
-  .inner-robot-chat-body {
-    height: calc(100vh - 100px);
-  }
+  // .inner-robot-chat-body {
+  //   height: calc(100vh - 100px);
+  // }
 }
 
 .scroll-panel {
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 95px);
+  height: calc(100%);
   overflow: hidden;
 }
 
@@ -505,6 +572,16 @@ onBeforeUnmount(() => {
 
     }
 
+  }
+
+  .chat-ai-say-tools{
+    margin-top: 3px;
+    text-align: right;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 30px;
   }
 
   .chat-ai-say-body {
