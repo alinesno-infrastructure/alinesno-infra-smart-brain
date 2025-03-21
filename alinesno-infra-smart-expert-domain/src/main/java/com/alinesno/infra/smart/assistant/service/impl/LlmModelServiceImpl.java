@@ -15,10 +15,7 @@ import com.agentsflex.core.reranker.ReRanker;
 import com.agentsflex.core.reranker.ReRankerConfig;
 import com.agentsflex.core.reranker.ReRankerRequest;
 import com.agentsflex.core.reranker.ReRankerResponse;
-import com.agentsflex.core.speech.SpeechConfig;
-import com.agentsflex.core.speech.SpeechModel;
-import com.agentsflex.core.speech.SpeechResponse;
-import com.agentsflex.core.speech.SynthesizeSpeechRequest;
+import com.agentsflex.core.speech.*;
 import com.agentsflex.core.store.VectorData;
 import com.agentsflex.core.util.StringUtil;
 import com.alibaba.fastjson.JSON;
@@ -29,6 +26,7 @@ import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
+import com.alinesno.infra.smart.assistant.api.config.VoiceInputData;
 import com.alinesno.infra.smart.assistant.api.config.VoicePlayData;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -97,7 +95,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         }else if(modelType.equals(ModelTypeEnums.SPEECH_RECOGNITION.getCode())){  // 语音识别
 
-            log.debug("语音识别（FormData）请求已收到");
+            return validateSpeechRecognition(url, apiKey, modelName, modelProvider, taskInfo, role, dto);
 
         }else if(modelType.equals(ModelTypeEnums.SPEECH_SYNTHESIS.getCode())){  // 语音合成
 
@@ -117,6 +115,49 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
     }
 
     /**
+     * 测试识别内容返回文字
+     * @param url
+     * @param apiKey
+     * @param modelName
+     * @param modelProvider
+     * @param taskInfo
+     * @param role
+     * @param dto
+     * @return
+     */
+    private String validateSpeechRecognition(String url,
+                                             String apiKey,
+                                             String modelName,
+                                             String modelProvider,
+                                             MessageTaskInfo taskInfo,
+                                             IndustryRoleEntity role,
+                                             TestLlmModelDto dto) {
+
+        SpeechConfig config = new SpeechConfig();
+        config.setEndpoint(url);
+        config.setApiKey(apiKey) ;
+        config.setModel(modelName);
+
+        SpeechModel speechModel = llmAdapterService.speechModel(modelProvider,config) ;
+
+        RecognizeSpeechRequest request = new RecognizeSpeechRequest();
+        request.setAudioList(dto.getAudioList()) ;
+
+        List<RecognizeSpeechResponse> generate = speechModel.recognize(request);
+        String output = null ;
+        if(generate != null){
+            for(RecognizeSpeechResponse speechResponse : generate){
+                output = speechResponse.getTranscripts().get(0).getText() ;
+                log.debug("speechResponse = {}" , output) ;
+            }
+        }else{
+            output = "识别失败" ;
+        }
+
+        return output ;
+    }
+
+    /**
      * 测试视觉模型
      * @param url
      * @param apiKey
@@ -133,7 +174,6 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
                                      MessageTaskInfo taskInfo,
                                      IndustryRoleEntity role,
                                      long workflowId) {
-
     }
 
     /**
@@ -420,7 +460,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
     }
 
     @Override
-    public String speechRecognitionFile(IndustryRoleEntity role , ChatMessageDto dto) {
+    public String speechSynthesisFile(IndustryRoleEntity role , ChatMessageDto dto) {
 
         IndustryRoleDto roleDto = IndustryRoleDto.fromEntity(role) ;
         VoicePlayData voicePlayData = roleDto.getVoicePlayData() ;
@@ -456,6 +496,38 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         log.debug("generate = {}" , generate);
         return null;
+    }
+
+    @Override
+    public String speechRecognitionFile(IndustryRoleEntity role, String data) {
+
+        IndustryRoleDto roleDto = IndustryRoleDto.fromEntity(role) ;
+        VoiceInputData voiceRecognitionData = roleDto.getVoiceInputData() ;
+
+        LlmModelEntity modelEntity = getById(voiceRecognitionData.getVoiceModel()) ;
+
+        Assert.notNull(modelEntity, "语音识别模型未配置");
+
+        SpeechConfig config = new SpeechConfig();
+        config.setEndpoint(modelEntity.getApiUrl());
+        config.setApiKey(modelEntity.getApiKey()) ;
+        config.setModel(modelEntity.getModel());
+
+        SpeechModel speechModel = llmAdapterService.speechModel(modelEntity.getProviderCode(),config) ;
+
+        RecognizeSpeechRequest request = new RecognizeSpeechRequest();
+        request.setAudioList(List.of(data)) ;
+
+        List<RecognizeSpeechResponse> generate = speechModel.recognize(request);
+        String output = null ;
+        if(generate != null){
+            for(RecognizeSpeechResponse speechResponse : generate){
+                output = speechResponse.getTranscripts().get(0).getText() ;
+                log.debug("speechResponse = {}" , output) ;
+            }
+        }
+
+        return output ;
     }
 
 }
