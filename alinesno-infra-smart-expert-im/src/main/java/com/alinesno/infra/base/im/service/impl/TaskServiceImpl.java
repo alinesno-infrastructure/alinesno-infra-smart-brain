@@ -12,6 +12,7 @@ import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -99,6 +100,7 @@ public class TaskServiceImpl implements ITaskService {
     @SneakyThrows
     @Override
     public void handleWorkflowMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
+
         taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
 
         log.info("任务处理完成: {}", taskInfo);
