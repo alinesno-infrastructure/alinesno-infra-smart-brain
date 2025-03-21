@@ -4,6 +4,8 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class TestLlmModelDto {
 
@@ -30,5 +32,8 @@ public class TestLlmModelDto {
 
     // 语音合成，发音人
     private String voice ;
+
+    // 录音识别，录音列表
+    private List<String>  audioList;
 
 }
