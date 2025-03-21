@@ -72,6 +72,7 @@ alinesno:
       - /v1/api/infra/base/im/chat/**
       - /api/infra/base/im/channel/**
       - /api/infra/smart/assistant/speechRecognition/playGenContent
+      - /api/infra/smart/assistant/speechRecognition/recognizeFormData
       - /api/infra/smart/assistant/publishChat/**
       - /api/infra/smart/assistant/publishWeChat/**
       - /api/infra/smart/assistant/template/testTemplate
