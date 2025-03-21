@@ -11,6 +11,7 @@ import com.agentsflex.llm.siliconflow.SiliconflowVectorModelEnums;
 import com.agentsflex.reranker.qwen.QwenReRankerModelEnums;
 import com.agentsflex.reranker.siliconflow.SiliconflowRerankerModels;
 import com.agentsflex.speech.qwen.QwenSpeechModelEnums;
+import com.agentsflex.speech.qwen.QwenSpeechRecognizeModelEnums;
 import com.agentsflex.speech.siliconflow.SiliconflowSpeechModelEnums;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
@@ -32,6 +33,7 @@ public enum LlmModelProviderEnums {
             new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://dashscope.aliyuncs.com" , QwenLlmModelEnums.getAllModels()),
             new ModelInfo(ModelTypeEnums.VECTOR_MODEL, "https://dashscope.aliyuncs.com" , QwenVectorModelEnums.getAllModels()),
             new ModelInfo(ModelTypeEnums.RE_RANKING_MODEL, "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank" , QwenReRankerModelEnums.getAllModels()),
+            new ModelInfo(ModelTypeEnums.SPEECH_RECOGNITION, "https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription" , QwenSpeechRecognizeModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.SPEECH_SYNTHESIS, "https://dashscope.aliyuncs.com" , QwenSpeechModelEnums.getAllModels() , 2) ,
             new ModelInfo(ModelTypeEnums.IMAGE_GENERATION, "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis" , QwenImageModelEnums.getAllModels())
     )),
