@@ -29,11 +29,11 @@
           </div>
 
           <!-- 流程输出调试信息_start -->
+            <!-- v-if="item.roleType != 'person'" -->
           <div class="chat-debugger-box" 
             @click="handleShowDebuggerContent(index, flowStepIndex)"
             v-for="(flowStepItem, flowStepIndex) in item.flowStepArr" 
-            :key="flowStepIndex"
-            v-if="item.roleType != 'person'">
+            :key="flowStepIndex">
 
             <div class="chat-debugger">
               <div class="chat-debugger-item">
@@ -69,13 +69,13 @@
           <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
           <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-          <!-- <div class="say-message-body markdown-body" v-html="readerHtml(item.chatText)"></div> -->
-
-          <div class="chat-ai-say-tools" style="margin-top: 3px;;text-align: right;float:right" :class="item.showTools?'show-tools':'hide-tools'">
-              <el-button type="danger" link icon="Promotion" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-              <el-button type="primary" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-              <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
-              <el-button type="primary" v-if="item.businessId && item.roleId" link icon="Position" size="small" @click="handleExecutorMessage(item)">执行</el-button>
+          <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+            <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+            <el-button type="danger" v-if="!item.isPlaySpeaking" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
+            <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
+            <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+            <el-button type="info" v-if="item.businessId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
           </div>
 
         </div>
@@ -95,7 +95,9 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import { playGenContent  } from '@/api/base/im/roleChat'
 
+import speakingIcon from '@/assets/icons/speaking.gif';
 import { handleCopyGenContent } from '@/utils/ruoyi'
 import useUserStore from '@/store/modules/user'
 const userStore = useUserStore()
@@ -286,6 +288,44 @@ function handleEditGenContent(item){
 //   }
 // };
 
+/** 播放生成内容 */
+const handlePlayGenContent = (item) => {
+  // getSpeechLoading.value = true ;
+
+  // if(!roleInfo.value.voicePlayStatus){
+  //   ElMessage.error('未开启语音播放');
+  //   return ;
+  // }
+
+  item.getSpeechLoading = true ;
+
+  playGenContent(item).then(res => {
+    const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
+    const audioUrl = URL.createObjectURL(audioBlob) // 生成url
+    const audio = new Audio(audioUrl);
+
+    audio.addEventListener('ended', () => {
+      console.log('音频播放完成');
+      // isPlaySpeaking.value = false 
+      item.isPlaySpeaking = false 
+    });
+
+    // getSpeechLoading.value = false ;
+    // isPlaySpeaking.value = true 
+
+    item.getSpeechLoading = false ;
+    item.isPlaySpeaking = true 
+
+    audio.play(); 
+  }).catch(error => {
+    // getSpeechLoading.value = false ;
+    item.getSpeechLoading = false ;
+    ElMessage.error('播放失败，请确认是否配置语音服务');
+  });
+}
+
+
+
 function handleExecutorMessage(item){
   emit('executorMessage' , item) ; 
 }
@@ -325,7 +365,7 @@ defineExpose({
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 95px);
+  height: calc(100%);
   overflow: hidden;
 }
 
@@ -364,6 +404,17 @@ defineExpose({
 
     }
 
+  } 
+
+
+  .chat-ai-say-tools{
+    margin-top: 3px;
+    text-align: right;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 30px;
   }
 
   .chat-ai-say-body {
