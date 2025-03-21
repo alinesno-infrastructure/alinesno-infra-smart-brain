@@ -45,4 +45,6 @@ public class ChatMessageDto {
     private boolean hasExecuteTool ; // 是否有执行能力(此为脚本配置角色特有，其它类型无)
     private MessageUsageDto usage ;   // 角色消耗能力，包括消耗的token数，以及消耗的时长
 
+    private boolean voicePlayStatus = false ; // 语音播放能力(默认为false)
+
 }
