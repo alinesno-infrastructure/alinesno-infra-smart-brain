@@ -24,13 +24,15 @@
 
       </el-form-item>
 
+      <!-- 
       <el-form-item label="识别内容" prop="speechRate">
          <div style="width:100%">
           <div style="width: 100%;font-size:14px;color:#a5a5a5;">
             这里显示识别内容
           </div>
          </div>
-      </el-form-item> 
+      </el-form-item>  
+      -->
 
       <!-- 提交按钮 -->
       <el-form-item>
@@ -38,12 +40,14 @@
 
           <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
 
+          <!-- 
           <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="stopRecording()"> 
             <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
           </el-button>
           <el-button v-if="!isSpeaking" type="primary" text bg size="large" @click="listenPlayVoiceOption()"> 
             <i class="fa-solid fa-microphone-lines"></i> 试讲 
-          </el-button>
+          </el-button> 
+          -->
 
           <el-button type="primary" @click="handleSubmit" size="large" text bg>确认</el-button>
         </div>
@@ -200,7 +204,6 @@ const sendAudioToBackend = async (audioBlob) => {
 };
 
 const setConfigParams = (params) => {
-  console.log('params 888>>> = ' + JSON.stringify(params));
   formData.value = params ;
 }
 
