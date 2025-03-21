@@ -197,25 +197,6 @@ public class FlowExpertService extends ExpertService {
                     outputContent.append(fullContent) ;   // 将内容输出到最终结果中
                 }
 
-//                MessageEntity entity = new MessageEntity();
-//
-//                entity.setTraceBusId(taskInfo.getTraceBusId());
-//                entity.setId(IdUtil.getSnowflakeNextId()); // msgManager.getWorkflowId());
-//                entity.setContent(fullContent.toString());
-//                entity.setFormatContent(fullContent.toString());
-//                entity.setName(role.getRoleName());
-//
-//                entity.setRoleType("agent");
-//                entity.setReaderType("html");
-//
-//                entity.setAddTime(new Date());
-//                entity.setIcon(role.getRoleAvatar());
-//
-//                entity.setChannelId(msgManager.getChannelId());
-//                entity.setRoleId(role.getId());
-//
-//                messageService.save(entity);
-
             }
         });
 
