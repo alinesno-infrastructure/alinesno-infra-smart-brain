@@ -28,6 +28,12 @@ public class AskHumanHelpTool extends Tool {
     @Override
     public String execute() {
         log.debug("askHumanHelpTool : {}", question);
-        return "";
+        return question ;
     }
+
+    @Override
+    public boolean isFinished() {
+        return true ;
+    }
+
 }
