@@ -2,10 +2,11 @@ package com.alinesno.infra.smart.assistant.role.prompt;
 
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -59,8 +60,10 @@ public class Prompt {
         List<String> toolList = new ArrayList<>() ;
 
         // 用户自定义的工具类
-        for (ToolDto tool : tools) {
-            toolList.add(tool.getToolInfo()) ;
+        if(!CollectionUtils.isEmpty(tools)){
+            for (ToolDto tool : tools) {
+                toolList.add(tool.getToolInfo()) ;
+            }
         }
 
         if(askHumanHelp){
