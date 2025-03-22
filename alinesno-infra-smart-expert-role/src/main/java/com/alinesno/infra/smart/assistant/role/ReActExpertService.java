@@ -75,9 +75,6 @@ public class ReActExpertService extends ExpertService {
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
         List<ToolDto> tools = toolService.getByToolIds(role.getSelectionToolsData()) ;
-        if(tools == null || tools.isEmpty()){
-            return "没有可用的工具，请检查工具是否正常。";
-        }
 
         HistoriesPrompt historyPrompt = new HistoriesPrompt();
         historyPrompt.setMaxAttachedMessageCount(maxHistory);
@@ -88,11 +85,11 @@ public class ReActExpertService extends ExpertService {
         String datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList , workflowExecution) ;
 
         boolean isCompleted = false ;  // 是否已经完成
+        boolean isToolCompleted = false ;  // 是否已经完成
         int loop = 0 ;
 
-        String answer = null; // 回答
-        StringBuilder thought = new StringBuilder(); // 思考
-        StringBuilder askHumanHelpThought = new StringBuilder(); // 交流过程
+        String answer = "" ; // 回答
+        StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
 
         do {
 
@@ -101,8 +98,7 @@ public class ReActExpertService extends ExpertService {
             taskInfo.setReasoningText(null);
             loop++;
 
-            String prompt = Prompt.buildPrompt(role , tools , thought , goal , datasetKnowledgeDocument) ;
-            prompt = Prompt.buildHumanHelpPrompt(prompt , askHumanHelpThought) ;
+            String prompt = Prompt.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument) ;
 
             eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
@@ -142,8 +138,9 @@ public class ReActExpertService extends ExpertService {
                             streamMessagePublisher.doStuffAndPublishAnEvent(question ,
                                     role,
                                     taskInfo,
-                                    IdUtil.getSnowflakeNextId());
+                                    taskInfo.getTraceBusId());
 
+                            isToolCompleted = true ;
                             isCompleted = true ;   // 结束对话，等待人类回复
                             continue;
                         }
@@ -154,26 +151,31 @@ public class ReActExpertService extends ExpertService {
                         Map<String, Object> argsList = tool.getArgsList();
 
                         try {
-                            ToolResult  toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
+                            ToolResult toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
                             Object executeToolOutput = toolResult.getOutput() ;
 
                             if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
 
-                                String toolAndObservable = String.format("%s\r\n" , executeToolOutput) ;
-                                thought.append(toolAndObservable);
+                                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                                stepDto.setMessage("工具执行完成.");
+                                stepDto.setStepId(oneChatId);
+                                stepDto.setStatus(AgentConstants.STEP_FINISH);
+                                stepDto.setFlowChatText("\r\n" + executeToolOutput);
+                                stepDto.setPrint(false);
+                                taskInfo.setFlowStep(stepDto);
+                                streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), taskInfo, taskInfo.getTraceBusId());
 
-                                taskInfo.setReasoningText(observation);
-                                streamStoreMessagePublisher.doStuffAndPublishAnEvent(String.valueOf(executeToolOutput),
-                                        role,
-                                        taskInfo,
-                                        taskInfo.getTraceBusId()) ;
-                                answer = String.valueOf(executeToolOutput) ;
+                                String toolAndObservable = "\r\n" + executeToolOutput ;
+                                toolOutput.append(toolAndObservable);
 
+                                taskInfo.setReasoningText("<p>" + observation + "</p>");
                             }
+
                             log.debug("工具执行结果：{}", executeToolOutput);
 
-                            if(toolResult.isFinished()){
-                                answer = AgentConstants.ChatText.CHAT_FINISH ;
+                            if(toolResult.isFinished()){  // 设置工具执行结果即是答案
+                                answer = String.valueOf(executeToolOutput) ;
+                                isToolCompleted = true ;
                                 isCompleted = true ;   // 结束对话
                             }
 
@@ -206,7 +208,12 @@ public class ReActExpertService extends ExpertService {
             }
         } while (!isCompleted);
 
-        return StringUtils.hasLength(answer)? answer : AgentConstants.ChatText.CHAT_NO_ANSWER;
+        streamStoreMessagePublisher.doStuffAndPublishAnEvent(answer == null ? "" : answer,
+                role,
+                taskInfo,
+                taskInfo.getTraceBusId()) ;
+
+        return StringUtils.hasLength(answer)? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
     }
 
     /**
@@ -316,11 +323,11 @@ public class ReActExpertService extends ExpertService {
                 stepDto.setStepId(oneChatId);
                 stepDto.setStatus(AgentConstants.STEP_PROCESS);
 
-                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getContent())) {
+                if(StringUtils.hasLength(message.getContent())) {
                     stepDto.setFlowChatText(message.getContent());
                 }
 
-                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getReasoningContent())){
+                if(StringUtils.hasLength(message.getReasoningContent())){
                     stepDto.setFlowReasoningText(message.getReasoningContent());
                 }
 
