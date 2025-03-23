@@ -9,11 +9,25 @@ var speechPrefix = '/api/infra/smart/assistant/speechRecognition/' ;  // 语音�
 var managerUrl = {
   getInfo: prefix +"getInfo",
   chatRole: prefix + "chatRole",
+  uploadFile: prefix + "uploadFile",
 
   recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
   playGenContent: speechPrefix + "playGenContent" ,
 }
+
+// 文件上传接口
+export function uploadFile(formData){
+    return request({
+        url: managerUrl.uploadFile , 
+        method: 'post',
+        data: formData,
+        noCheckRepeatSubmit: true,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+    })
+};
 
 // 获取语音模型语音请求
 export function playGenContent(item) {
