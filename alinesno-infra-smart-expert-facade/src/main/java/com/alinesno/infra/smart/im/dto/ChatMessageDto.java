@@ -24,6 +24,8 @@ public class ChatMessageDto {
     private Object chatText;
     private String reasoningText ;  // 推理内容
 
+    private List<FileAttachmentDto> fileAttributeList = new ArrayList<>();  // 文件列表(这条消息中的文件列表)
+
     private FlowStepStatusDto flowStep ; // 流程节点运行状态
     private List<FlowStepStatusDto> flowStepArr = new ArrayList<>(); // 流程信息
     private String readerType ; // 读取方式和类型
