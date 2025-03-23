@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.FileDetailService;
 import com.alinesno.infra.smart.assistant.entity.StorageFileEntity;
 import com.alinesno.infra.smart.assistant.service.IStorageFileService;
+import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dtflys.forest.callback.OnProgress;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Component;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 三方存储管理平台
@@ -137,6 +140,36 @@ public class CloudStorageServiceImpl implements CloudStorageConsumer {
             }
         }).bytes() ;
 
+    }
+
+    @Override
+    public List<FileAttachmentDto> list(List<Long> fileIds) {
+
+        if(fileIds != null && !fileIds.isEmpty()){
+            List<StorageFileEntity> list = fileService.list(new LambdaQueryWrapper<StorageFileEntity>().in(StorageFileEntity::getId,fileIds));
+            log.debug("文件列表：{}",list);
+
+            if(list != null && !list.isEmpty()){
+                return list.stream().map(item -> {
+                    FileAttachmentDto dto = new FileAttachmentDto();
+                    dto.setFileId(item.getId());
+                    dto.setFileName(item.getOriginalFilename());
+                    dto.setFileType(item.getContentType());
+                    dto.setLength(item.getSize());
+                    dto.setWordCount(100);
+                    dto.setOrder(0);
+                    return dto;
+                }).collect(Collectors.toList());
+            }
+
+//            if(list != null && !list.isEmpty()){
+//                return list.stream().map(item -> {
+//                }).collect(Collectors.toList());
+//            }
+
+        }
+
+        return null;
     }
 
     public FileInfo getById(String id) {
