@@ -476,6 +476,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setGuessWhatYouAskStatus(dto.isGuessWhatYouAskStatus());
         role.setLongTermMemoryEnabled(dto.isLongTermMemoryEnabled());
         role.setVoicePlayStatus(dto.isVoicePlayStatus());
+        role.setUploadStatus(dto.isUploadStatus());
+
+        if(dto.getUploadData() != null){
+            role.setUploadData(JSONObject.toJSONString(dto.getUploadData()));
+        }
 
         if(dto.getModelConfig() != null){
             role.setModelConfig(JSONObject.toJSONString(dto.getModelConfig()));
