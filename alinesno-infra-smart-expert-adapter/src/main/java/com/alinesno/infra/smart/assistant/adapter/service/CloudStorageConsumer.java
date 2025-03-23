@@ -1,9 +1,11 @@
 package com.alinesno.infra.smart.assistant.adapter.service;
 
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.dtflys.forest.callback.OnProgress;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * 云文件存储上传
@@ -39,5 +41,13 @@ public interface CloudStorageConsumer {
      * @return 返回文件的字节数组表示形式
      */
     byte[] download(String storageId, OnProgress onProgress) ;
+
+    /**
+     * 获取文件列表
+     *
+     * @param fileIds 文件ID列表，以逗号分隔
+     * @return 返回文件列表的列表形式
+     */
+    List<FileAttachmentDto> list(List<Long> fileIds) ;
 
 }
