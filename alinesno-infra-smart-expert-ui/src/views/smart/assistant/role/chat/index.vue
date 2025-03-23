@@ -7,7 +7,7 @@
         <el-col :span="24">
           <div class="robot-chat-windows">
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 220px)">
+            <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -39,6 +39,11 @@
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }} </span>
 
                       </div>
+
+                      <!-- 文件输出列表__start -->
+                       <!-- {{ item.fileAttributeList }} -->
+                      <ChatAttachmentMessagePanel :message="item"  />
+                      <!-- 文件输出列表__end -->
 
                       <!-- 流程输出调试信息_start -->
                       <div class="chat-debugger-box" 
@@ -72,7 +77,6 @@
                             </div>
                           </el-collapse-transition>
                         </div>
-
                       </div>
                       <!-- 流程输出调试信息_end -->
 
@@ -100,6 +104,8 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
+              <ChatAttachmentPanel @updateChatWindowHeight="updateChatWindowHeight"  ref="attachmentPanelRef" />
+
               <el-row :gutter="20">
                 <el-col :span="16">
                   <div class="message-input">
@@ -119,19 +125,26 @@
 
                   <div style="display: flex;align-items: center;justify-content: flex-end;">
 
-                  <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
+                        <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
 
-                  <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
-                    <el-button type="danger" text bg size="large" @click="sendMessage('send')">
-                      <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
-                    </el-button>
-                  </el-tooltip>
+                        <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
+                          <el-button type="danger" text bg size="large" @click="sendMessage('send')">
+                            <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
+                          </el-button>
+                        </el-tooltip>
 
-                  <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top">
-                    <el-button type="warning" text bg size="large" @click="sendMessage('function')">
-                      <i class="fa-solid fa-feather icon-btn"></i>
-                    </el-button>
-                  </el-tooltip>
+                        <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top">
+                          <el-button type="warning" text bg size="large" @click="sendMessage('function')">
+                            <i class="fa-solid fa-feather icon-btn"></i>
+                          </el-button>
+                        </el-tooltip>
+
+                        <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top" v-if="roleInfo.uploadStatus">
+                          <el-button type="primary" text bg size="large" @click="handleUploadFile">
+                            <i class="fa-solid fa-file-word icon-btn"></i>
+                          </el-button>
+                        </el-tooltip>
+
                   </div>
 
                 </el-col>
@@ -140,10 +153,6 @@
             </div>
           </div>
         </el-col>
-
-        <!-- <el-col :span="5">
-          <AgentSingleRightPanel ref="agentSingleRightPanelRef" />
-        </el-col> -->
 
       </el-row>
     </div>
@@ -159,8 +168,8 @@ import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
-
-// import AgentSingleRightPanel from './rightPanel.vue'
+import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
+import ChatAttachmentMessagePanel from '@/views/smart/assistant/llmModel/chatAttachmentMessagePanel'
 
 import { getInfo, chatRole, recognize , playGenContent} from '@/api/smart/assistant/roleChat'
 import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
@@ -182,6 +191,8 @@ const isPlaySpeaking = ref(false)
 const getSpeechLoading = ref(false)
 const visible = ref(false)
 
+const attachmentPanelRef = ref(null);
+
 // 定义响应式变量
 const isRecording = ref(false);
 const mediaRecorder = ref(null);
@@ -189,9 +200,10 @@ const audioChunks = ref([]);
 const audioUrl = ref('');
 const transcription = ref('');
 
-const { proxy } = getCurrentInstance();
+// 记录当前的高度差值
+const heightDiff = ref(220);
 
-// const agentSingleRightPanelRef = ref(null)
+const { proxy } = getCurrentInstance();
 
 const loading = ref(true)
 const roleId = ref(null);
@@ -259,49 +271,6 @@ const handleShowDebuggerContent = (messageIndex, stepIndex) => {
   messageList.value[messageIndex].flowStepArr[stepIndex].isPrint = !messageList.value[messageIndex].flowStepArr[stepIndex].isPrint;
 }
 
-// // 开始录音函数
-// const startRecording = async () => {
-//   try {
-//     if (!('MediaRecorder' in window)) {
-//       alert('当前浏览器不支持录音功能');
-//       return;
-//     }
-
-//     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-//     mediaRecorder.value = new MediaRecorder(stream);
-
-//     mediaRecorder.value.addEventListener('dataavailable', (event) => {
-//       if (event.data.size > 0) {
-//         audioChunks.value.push(event.data);
-//       }
-//     });
-
-//     mediaRecorder.value.addEventListener('stop', async () => {
-//       const audioBlob = new Blob(audioChunks.value, { type: 'audio/webm' });
-//       audioUrl.value = URL.createObjectURL(audioBlob);
-//       audioChunks.value = [];
-
-//       // 调用后端语音识别接口
-//       await sendAudioToBackend(audioBlob);
-//     });
-
-//     mediaRecorder.value.start();
-//     isRecording.value = true;
-//   } catch (error) {
-//     console.error('录音失败:', error);
-//     alert('录音失败，请检查麦克风权限或设备是否正常');
-//   }
-// };
-
-// // 停止录音函数
-// const stopRecording = () => {
-//   if (mediaRecorder.value && mediaRecorder.value.state === 'recording') {
-//     mediaRecorder.value.stop();
-//     isRecording.value = false;
-//   }
-// };
-
 const formatTime = (milliseconds) => {
   if (milliseconds) {
     return (milliseconds / 1000).toFixed(2); // 转换为秒并保留两位小数
@@ -330,6 +299,9 @@ const sendAudioToBackend = async (voiceMessage) => {
   }
 };
 
+const handleUploadFile = () => {
+  attachmentPanelRef.value.openFileSelector();
+};
 
 /** 播放生成内容 */
 const handlePlayGenContent = (item) => {
@@ -412,6 +384,7 @@ const pushResponseMessageList = (newMessage) => {
       if(newMessage.usage){
         messageList.value[existingIndex].usage = newMessage.usage;
       }
+      messageList.value[existingIndex].fileAttributeList = newMessage.fileAttributeList;
 
       const findMessage = messageList.value[existingIndex];
 
@@ -465,29 +438,22 @@ const speakText = (text) => {
   speechSynthesis.speak(utterance);
 };
 
+// 计算聊天窗口的高度
+const calculateChatWindowHeight = () => {
+  return `calc(100vh - 230px - ${heightDiff.value}px)`;
+};
+
+// 动态更新高度
+const updateChatWindowHeight = (heightVal) => {
+  console.log('heightVal = ' + heightVal);
+  if(heightVal > 0){
+    heightDiff.value = heightVal;
+  }else {
+    heightDiff.value = 220;
+  }
+};
+
 function handleExecutorMessage(item) {
-
-  // emit('executorMessage' , item) ; 
-  // let channelId = getParam("channel");
-  // let users = [item.roleId];
-  // let bId = [item.businessId];
-  // let type = 'function';
-  // let message = " #"+item.businessId+" @图片设计专家 " ; 
-
-  // streamLoading.value = ElLoading.service({
-  //   lock: true,
-  //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.7)',
-  // })
-
-  // sendUserMessage(message, users, bId , channelId, type).then(response => {
-  //   console.log("发送消息", response.data);
-  //   response.data.forEach(item => {
-  //     chatListRef.value.pushResponseMessageList(item);
-  //   })
-  // }).catch(error => {
-  //   streamLoading.value.close();
-  // })
 
   const businessIdMessage = ' #' + item.businessId + ' ';
   businessId.value = item.businessId;
@@ -551,6 +517,10 @@ function handleGetInfo(roleId) {
 /** 发送消息 */
 const sendMessage = (type) => {
 
+  // 获取到上传的文件列表
+  const uploadFiles = attachmentPanelRef.value.handleGetUploadFiles();
+  console.log('handleGetUploadFiles = ' + uploadFiles);
+
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
     return;
@@ -566,7 +536,8 @@ const sendMessage = (type) => {
     channelId: channelId.value,
     message: message.value,
     businessIds: [businessId.value],
-    type: type
+    type: type , 
+    fileIds: uploadFiles ,
   }
 
   chatRole(formData, roleId.value).then(res => {
