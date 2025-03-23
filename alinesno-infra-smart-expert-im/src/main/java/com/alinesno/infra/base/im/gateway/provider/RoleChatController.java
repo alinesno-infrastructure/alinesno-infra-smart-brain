@@ -5,8 +5,10 @@ import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
@@ -16,11 +18,18 @@ import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.utils.AgentUtils;
+import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -29,12 +38,10 @@ import java.util.List;
  * 使用于多个网站针对于专家单独咨询的接口
  */
 @Slf4j
+@Scope("prototype")
 @RestController
 @RequestMapping(value = "/v1/api/infra/base/im/roleChat/")
 public class RoleChatController extends SuperController {
-
-//    @Autowired
-//    private IRoleChatService roleChatService;
 
     @Autowired
     private IMessageService messageService;
@@ -47,6 +54,9 @@ public class RoleChatController extends SuperController {
 
     @Autowired
     private ISSEService sseService;
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     /**
      * 获取角色信息
@@ -134,8 +144,53 @@ public class RoleChatController extends SuperController {
         msgDto.setName(CurrentAccountJwt.get().getName());
         msgDto.setRoleType("person");
         msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
+        msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
 
         return AjaxResult.success(msgDto);
+    }
+
+    // 处理文件上传的方法
+    @SneakyThrows
+    @PostMapping("/uploadFile")
+    public AjaxResult uploadFile(@RequestParam("file") MultipartFile file) {
+
+        // 文件保存在系统临时目录
+        if (file.isEmpty()) {
+            return AjaxResult.error("文件为空");
+        }
+
+        Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"));
+        if (!Files.exists(tempDir)) {
+            Files.createDirectories(tempDir);
+        }
+
+        String fileName = file.getOriginalFilename();
+        Path filePath = tempDir.resolve(fileName);
+
+        File targetFile =  new File(String.valueOf(filePath)) ;
+        file.transferTo(targetFile);
+
+        R<String> r = storageConsumer.upload(targetFile) ;
+
+        // 模拟返回文件的字数信息，这里假设你有获取字数的逻辑，这里简单返回0
+        int wordCount = 100;
+
+        FileAttachment fileAttachment = new FileAttachment();
+        fileAttachment.setId(r.getData());
+        fileAttachment.setWordCount(wordCount);
+        fileAttachment.setHasStatus(0);
+
+        return AjaxResult.success(fileAttachment) ;
+    }
+
+    /**
+     * 文件信息
+     */
+    @Data
+    static class FileAttachment {
+        private String id ;  // 文件id
+        private int wordCount ; // 文件字数
+        private int hasStatus ; // 上传中|解析中|入库中
     }
 
 }
