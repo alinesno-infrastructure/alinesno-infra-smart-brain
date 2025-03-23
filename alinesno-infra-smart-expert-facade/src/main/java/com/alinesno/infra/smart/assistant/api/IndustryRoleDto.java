@@ -28,6 +28,8 @@ public class IndustryRoleDto {
     private boolean voiceInputStatus; // 是否启用语音输入状态
     private boolean guessWhatYouAskStatus; // 是否用户问题建议
     private boolean voicePlayStatus; // 语音播放
+    private boolean uploadStatus ; // 文件上传
+    private UploadData uploadData; // 文件上传配置
     private VoiceInputData voiceInputData; // 语音输入相关数据配置
     private VoicePlayData voicePlayData; // 语音播放
     private GuessWhatYouAskData guessWhatYouAskData; // 猜测用户问题相关数据配置
@@ -86,6 +88,11 @@ public class IndustryRoleDto {
 
         if (entity.getVoicePlayData() != null) {
             dto.setVoicePlayData(JSONObject.parseObject(entity.getVoicePlayData(), VoicePlayData.class));
+        }
+
+        // 文件上传
+        if (entity.getUploadData() != null) {
+            dto.setUploadData(JSONObject.parseObject(entity.getUploadData(), UploadData.class));
         }
 
         return dto;
