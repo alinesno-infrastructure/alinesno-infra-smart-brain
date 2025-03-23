@@ -47,6 +47,12 @@ public class RoleReActConfigDto {
     // 语音播放
     private boolean voicePlayStatus ;
 
+    // 文件上传
+    private boolean uploadStatus ;
+
+    // 文件上传相关数据
+    private UploadData uploadData ;
+
     // 语音输入相关数据配置
     private VoiceInputData voiceInputData;
 
