@@ -472,7 +472,7 @@ li.product_list_li.count-li {
       overflow: hidden;
       border-width: 0px;
       border-style: solid;
-      border-radius: 2px;
+      border-radius: 8px;
       transition: all 0.1s linear;
       height: 60px;
       margin-top: 6px;
