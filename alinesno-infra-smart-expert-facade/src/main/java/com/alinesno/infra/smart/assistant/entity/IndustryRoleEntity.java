@@ -144,6 +144,10 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "语音播放")
     private boolean voicePlayStatus ;
 
+    @TableField("upload_status")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "上传状态")
+    private boolean uploadStatus ;
+
     // 模型
     @TableField("model_id")
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true , comment = "模型")
@@ -173,6 +177,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @TableField("dataset_search_config")
     @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "数据集搜索配置")
     private String datasetSearchConfig;
+
+    // 是否文件上传配置
+    @TableField("upload_data")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 128, isNull = true , comment = "文件上传配置")
+    private String uploadData;
 
     // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     // 执行脚本
