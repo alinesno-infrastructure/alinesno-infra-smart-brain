@@ -25,11 +25,6 @@
                                     <span style="font-weight: bold;">
                                         {{ currentRole.roleName }}
                                     </span>
-                                    <!-- 
-                                    <div class="text item">
-                                        <el-button type="primary" text bg @click="handleInference">编辑</el-button>
-                                    </div> 
-                                    -->
                                 </div>
                                 <div class="text-role-item-desc">
                                     {{ currentRole.responsibilities }}
@@ -190,6 +185,25 @@
                                     </div>
                                 </el-col>
                             </el-row>
+
+                            <!-- 附件上传_start -->
+                            <el-row class="nav-row">
+                                <el-col :span="12">
+                                    <div class="ai-config-section-title">
+                                        <i class="fa-solid fa-file-word"></i> <span>附件上传</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text bg @click="toggleUploadStatus">
+                                            {{ uploadStatus ? '关闭' : '开启' }}
+                                        </el-button>
+                                        <el-button v-if="uploadStatus" type="primary" text bg @click="toggleUploadSettingsPanel">参数</el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <!-- 附件上传_end -->
+
                             <el-row class="nav-row">
                                 <el-col :span="12">
                                     <div class="ai-config-section-title">
@@ -263,6 +277,11 @@
         <VoiceInputStatusPanel @handleVoiceInputStatusPanelClose="handleVoiceInputStatusPanelClose" ref="voiceInputStatusPanelRef" />
     </el-dialog>
 
+    <!-- 附件上传 -->
+     <el-dialog title="附件上传" v-model="uploadStatusVisible" width="500px">
+        <AttachmentUploadStatusPanel @handleAttachmentUploadStatusPanelClose="handleAttachmentUploadStatusPanelClose" ref="uploadStatusVisiblePanelRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -286,6 +305,7 @@ import LllModelConfigPanel from '@/views/smart/assistant/llmModel/lllModelConfig
 import guessWhatYouAskPanel from '@/views/smart/assistant/llmModel/guessWhatYouAskPanel'
 import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPanel'
 import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
+import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -304,6 +324,7 @@ const voiceConfigDialogVisible = ref(false)
 const promptDialogVisible = ref(false)
 const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
+const uploadStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -314,11 +335,15 @@ const voiceChoicePanelRef = ref(null)
 const guessWhatYouAskRef = ref(null)
 const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
+const uploadStatusVisiblePanelRef = ref(null)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
 const voiceModelOptions = ref([])  // 语音播放模型
 const voiceRecoModelOptions = ref([])  // 语音播放模型
+
+// 附件上传
+const uploadStatus = ref(false)
 
 // AI大模型配置窗口相关
 const agentModelConfigFormRef = ref(null)
@@ -436,6 +461,13 @@ const displayRoleInfoBack = (currentRole) =>{
     // 搜索配置
     if(currentRole.datasetSearchConfig){
         agentModelConfigForm.value.datasetSearchConfig = currentRole.datasetSearchConfig ; // JSON.parse(currentRole.searchConfig);
+    } 
+
+    // 附件上传
+    if(currentRole.uploadStatus){
+        uploadStatus.value = currentRole.uploadStatus ;
+        agentModelConfigForm.value.uploadStatus = currentRole.uploadStatus ;
+        agentModelConfigForm.value.uploadData = currentRole.uploadData;
     }
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
@@ -531,6 +563,8 @@ function toggleLongTermMemory() {
 function toggleVoicePlayStatus() {
     voicePlayStatus.value = !voicePlayStatus.value;
     agentModelConfigForm.value.voicePlayStatus = voicePlayStatus.value;
+
+    submitModelConfig();
 }
 
 // 设置语音播放窗口参数
@@ -556,12 +590,48 @@ function toggleVoicePlayback() {
             voiceChoicePanelRef.value.setVoiceModelParams(agentModelConfigForm.value.voicePlayData)
         }
     });
+}
+
+// 附件上传_start 
+function toggleUploadStatus() {
+    uploadStatus.value = !uploadStatus.value;
+    agentModelConfigForm.value.uploadStatus = uploadStatus.value;
+
+    submitModelConfig();
+}
+
+
+// 配置语音输入参数 
+function toggleUploadSettingsPanel() {
+    uploadStatusVisible.value = !uploadStatusVisible.value;
+    uploadStatusVisible.value && nextTick(() => {
+        console.log(uploadStatusVisiblePanelRef.value)
+        uploadStatusVisiblePanelRef.value.setMultiModalOptions(llmModelOptions.value);
+
+        nextTick(() => {
+            if(agentModelConfigForm.value.uploadData){
+                uploadStatusVisiblePanelRef.value.setConfigParams(agentModelConfigForm.value.uploadData);
+            }
+        });
+    });
+}
+
+// 附件上传关闭
+function handleAttachmentUploadStatusPanelClose(uploadData) {
+        console.log('uploadData = ' + JSON.stringify(uploadData))
+
+        uploadStatusVisible.value = false ;
+        uploadStatus.value = uploadData.enable; 
+        agentModelConfigForm.value.uploadData = uploadData;
 
 }
+
 // 切换语音输入状态
 function toggleVoiceInput() {
     voiceInputStatus.value = !voiceInputStatus.value;
     agentModelConfigForm.value.voiceInputStatus = voiceInputStatus.value;
+
+    submitModelConfig();
 }
 // 切换用户问题建议状态
 function toggleGuessWhatYouAsk() {
