@@ -15,13 +15,15 @@ public class StreamMessageEvent extends ApplicationEvent {
     private final IndustryRoleEntity role ;
     private final MessageTaskInfo taskInfo ;
     private final long bId;
+    private final Long messageId ;
 
-    public StreamMessageEvent(Object source, String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
+    public StreamMessageEvent(Object source, String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId , Long messageId) {
         super(source);
         this.message = message;
         this.role = role ;
         this.taskInfo = taskInfo ;
         this.bId = bId;
+        this.messageId = messageId ;
     }
 
 }
