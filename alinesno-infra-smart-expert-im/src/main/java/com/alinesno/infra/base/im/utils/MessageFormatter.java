@@ -60,4 +60,17 @@ public class MessageFormatter {
             this.value = value;
         }
     }
+
+    public static String clearMessage(String message) {
+        String[] words = message.split(" ");
+
+        StringBuilder result = new StringBuilder();
+        for (String word : words) {
+            if (!word.startsWith("@") && !word.startsWith("#")) {
+                result.append(word);
+            }
+        }
+
+        return result.toString();
+    }
 }
