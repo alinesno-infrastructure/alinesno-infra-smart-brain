@@ -59,6 +59,8 @@
 <script setup name="ChatAttachmentPanel">
 import { ref, onMounted, watch } from 'vue';
 
+const emit = defineEmits(['handleFileIdToMessageBox']);
+
 const props = defineProps({
   message: {
     type: String,
@@ -82,7 +84,7 @@ const getFileIconClass = (extension) => {
         return 'fa-solid fa-file-powerpoint';
     } else if (extension.includes('xlsx')) {
         return 'fa-solid fa-file-excel';
-    } else if (extension.includes('docx')) {
+    } else if (extension.includes('docx') || extension.includes('doc') ) {
         return 'fa-solid fa-file-word';
     } else if (extension.includes('jpg') || extension.includes('png') || extension.includes('gif')) {
         return 'fa-solid fa-file-image';
@@ -95,30 +97,6 @@ const getFileIconClass = (extension) => {
     }
 };
     
-
-// const getFileIconClass = (extension) => {
-//   switch (extension) {
-//     case 'pdf':
-//       return 'fa-solid fa-file-pdf';
-//     case 'ppt':
-//       return 'fa-solid fa-file-powerpoint';
-//     case 'xlsx':
-//       return 'fa-solid fa-file-excel';
-//     case 'docx':
-//       return 'fa-solid fa-file-word';
-//     case 'jpg':
-//     case 'png':
-//     case 'gif':
-//       return 'fa-solid fa-file-image';
-//     case 'mp4':
-//       return 'fa-solid fa-file-video';
-//     case 'mp3':
-//       return 'fa-solid fa-file-audio';
-//     default:
-//       return 'fa-solid fa-file-question';
-//   }
-// };
-
 // 文件大小格式化
 const formatFileSize = (bytes) => {
   if (bytes === 0) return '0 Bytes';
@@ -129,8 +107,10 @@ const formatFileSize = (bytes) => {
 };
 
 // 删除文件
-const removeFile = (index) => {
-  uploadedFiles.value.splice(index, 1);
+const linkFile = (index) => {
+  // 查询当前的文件信息
+  const file = uploadedFiles.value[index];
+  emit('handleFileIdToMessageBox', file);
 };
 
 // 显示删除按钮
