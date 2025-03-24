@@ -1,8 +1,7 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.Role;
+import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
@@ -10,8 +9,6 @@ import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
-import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
@@ -49,8 +46,8 @@ public class RoleChatController extends SuperController {
     @Autowired
     private IIndustryRoleService industryRoleService;
 
-    @Autowired
-    private QianWenLLM qianWenLLM;
+//    @Autowired
+//    private QianWenLLM qianWenLLM;
 
     @Autowired
     private ISSEService sseService;
@@ -71,17 +68,17 @@ public class RoleChatController extends SuperController {
         IndustryRoleEntity role = industryRoleService.getById(roleId);
         ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
-        // 生成介绍的chat
-        Message userMsg = getMessage(role);
-
-        MessageManager msgManager = new MessageManager(10);
-        msgManager.add(userMsg);
+//        // 生成介绍的chat
+//        Message userMsg = getMessage(role);
+//        MessageManager msgManager = new MessageManager(10);
+//        msgManager.add(userMsg);
 
         if(StringUtils.isNotBlank(role.getGreeting())){
             message.setChatText(role.getGreeting());
         }else{
-            StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
-            message.setChatText(stringBuilder.toString());
+//            StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
+//            stringBuilder.toString());
+            message.setChatText(role.getRoleName()) ;
         }
         message.setLoading(false);
 
@@ -93,21 +90,21 @@ public class RoleChatController extends SuperController {
         return result;
     }
 
-    private static Message getMessage(IndustryRoleEntity role) {
-        String introBuilder = "你是一名[" +
-                role.getRoleName() +
-                "], " +
-                role.getRoleLevel() +
-                "，" +
-                role.getResponsibilities() +
-                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
-
-        return Message
-                .builder()
-                .role(Role.USER.getValue())
-                .content(introBuilder)
-                .build();
-    }
+//    private static Message getMessage(IndustryRoleEntity role) {
+//        String introBuilder = "你是一名[" +
+//                role.getRoleName() +
+//                "], " +
+//                role.getRoleLevel() +
+//                "，" +
+//                role.getResponsibilities() +
+//                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
+//
+//        return Message
+//                .builder()
+//                .role(Role.USER.getValue())
+//                .content(introBuilder)
+//                .build();
+//    }
 
     /**
      * 角色对话
@@ -140,7 +137,7 @@ public class RoleChatController extends SuperController {
 
         ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
-        msgDto.setChatText(chatMessage.getMessage());
+        msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
         msgDto.setName(CurrentAccountJwt.get().getName());
         msgDto.setRoleType("person");
         msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
@@ -173,12 +170,15 @@ public class RoleChatController extends SuperController {
         R<String> r = storageConsumer.upload(targetFile) ;
 
         // 模拟返回文件的字数信息，这里假设你有获取字数的逻辑，这里简单返回0
-        int wordCount = 100;
+//        int wordCount = 100;
 
         FileAttachment fileAttachment = new FileAttachment();
         fileAttachment.setId(r.getData());
-        fileAttachment.setWordCount(wordCount);
         fileAttachment.setHasStatus(0);
+        // 如果非图片类型，则解析出字数
+//        if (!file.) {
+//            fileAttachment.setWordCount(wordCount);
+//        }
 
         return AjaxResult.success(fileAttachment) ;
     }
