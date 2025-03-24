@@ -1,6 +1,33 @@
 <template>
   <!-- 聊天上传附件面板 -->
-   <div >
+   <div>
+    <div class="chat-fileds-reference" v-if="referenceFile">
+      <div class="reference-panel" >
+        <div class="file-info">
+          <span>
+             <i class="fa-solid fa-paperclip"></i> <i :class="getFileIconClass(referenceFile.extension)"></i>
+          </span>
+          <span>
+            {{ referenceFile.name }}
+          </span>
+        </div>
+        <div class="file-remove">
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="回答问题将不再仅仅围绕附件进行回答"
+            placement="top"
+          >
+            <el-button
+              @click="removeReferenceFile()"
+              size="default"
+              text>
+              <el-icon><CloseBold /></el-icon>
+            </el-button>
+          </el-tooltip>
+        </div>
+      </div>
+    </div> 
 
      <!-- 添加文件输入框 -->
     <input
@@ -38,8 +65,7 @@
             :class="{ 'delete-button': true, 'delete-button-visible': isDeleteButtonVisible[index] }"
             @click="removeFile(index)"
             size="default"
-            text
-          >
+            text>
             <el-icon><CircleCloseFilled /></el-icon>
           </el-button>
         </div>
@@ -54,19 +80,30 @@
     </button>
   </div>
 
-  <div style="margin-bottom: 10px;" v-if="uploadedFiles.length != 0">
-    <el-button type="info" size="small" bg text style="background: #f6f6f6;">
-      解析这张图片 
+  <div class="chat-attachment-actions" v-if="uploadedFiles.length != 0">
+    <el-button type="info" size="small" bg text style="background: #f6f6f6;" @click="sendAttachmentActionTxt('解析内容')">
+      解析内容
       <el-icon><Right /></el-icon>
     </el-button>
-    <el-button type="info" size="small" bg text style="background: #f6f6f6;">
+
+    <!--如果类型有图片的显示这个 -->
+    <el-button type="info" v-if="hasImage" size="small" bg text style="background: #f6f6f6;" @click="sendAttachmentActionTxt('解析这几张图片')">
+      解析这几张图片 
+      <el-icon><Right /></el-icon>
+    </el-button>
+
+    <!-- 如果是文档类型的显示下面的内容 -->
+      <div v-if="hasDocument">
+
+    <el-button type="info" size="small" bg text style="background: #f6f6f6;" @click="sendAttachmentActionTxt('总结这份文档内容')">
       总结这份文档内容 
       <el-icon><Right /></el-icon>
     </el-button>
-    <el-button type="info" size="small" bg text style="background: #f6f6f6;">
+    <el-button type="info" size="small" bg text style="background: #f6f6f6;" @click="sendAttachmentActionTxt('说说文档讲了什么')">
       说说文档讲了什么 
       <el-icon><Right /></el-icon>
     </el-button>
+      </div>
 
   </div>
 
@@ -79,7 +116,7 @@ import { ElMessage } from 'element-plus';
 import { uploadFile } from '@/api/smart/assistant/roleChat';
 
 // emits updateChatWindowHeight
-const emit = defineEmits(['updateChatWindowHeight']);
+const emit = defineEmits(['updateChatWindowHeight' , 'sendAttachmentActions']);
 
 // 文件输入框引用
 const fileInput = ref(null);
@@ -91,6 +128,11 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const isDeleteButtonVisible = ref({});
 
+const docTypes = ['pdf', 'word', 'ppt', 'excel' , 'docx' , 'doc'];
+
+// 引用文件
+const referenceFile = ref(null);
+
 // 根据文件扩展名获取图标类名
 const getFileIconClass = (extension) => {
   switch (extension) {
@@ -101,6 +143,7 @@ const getFileIconClass = (extension) => {
     case 'xlsx':
       return 'fa-solid fa-file-excel';
     case 'docx':
+    case 'doc':
       return 'fa-solid fa-file-word';
     case 'jpg':
     case 'png':
@@ -158,18 +201,99 @@ const checkScrollability = () => {
     if(uploadedFiles.value.length > 0){
       emit('updateChatWindowHeight', 320) ;
     }else{
-      emit('updateChatWindowHeight', 0);
+      if(referenceFile.value){
+        emit('updateChatWindowHeight', 266) ;
+      }else{
+        emit('updateChatWindowHeight', 0);
+      }
     }
 
 };
 
-// onMounted(() => {
-//   // 初始检查滚动状态
-//   setTimeout(() => {
-//     checkScrollability();
-//   }, 0);
-//   containerRef.value.addEventListener('scroll', checkScrollability);
+// 发送附件操作并提供附件解析指令
+const sendAttachmentActionTxt = (actionTxt) => {
+
+  // 判断是否有文档未上传完成的，如果有的话，则提示还不能操作
+  if (uploadedFiles.value.some(file => file.uploading)) {
+    ElMessage.warning('请等待所有文件上传完成');
+    return;
+  }
+
+  emit('sendAttachmentActions', actionTxt);
+}
+
+// // 添加计算属性
+// const hasImage = computed(() => {
+//   // 这里也要判断引用附件的值
+//   if (referenceFile.value && referenceFile.value.type === 'image') {
+//     return true;
+//   }
+//   return uploadedFiles.value.some(file => file.type === 'image');
 // });
+
+// const hasDocument = computed(() => {
+
+//   // 也要判断引用附件的值
+//   if (referenceFile.value && docTypes.includes(referenceFile.value.type)) {
+//     return true;
+//   }
+
+//   return uploadedFiles.value.some(file => docTypes.includes(file.type));
+// });
+
+const hasImage = computed(() => {
+  return (referenceFile.value?.type === 'image') || 
+         uploadedFiles.value.some(file => file.type === 'image');
+});
+
+const hasDocument = computed(() => {
+  const docTypes = ['pdf', 'word', 'ppt', 'excel'];
+  return (docTypes.includes(referenceFile.value?.type)) || 
+         uploadedFiles.value.some(file => docTypes.includes(file.type));
+});
+
+// 设置引用文件(只能一份)
+// const setReferenceFile = (file) => {
+//   // 如果上传的文件已经有了，就不能再引用
+//   if (uploadedFiles.value.length > 0) {
+//     ElMessage.warning('引用与上传文件不能同时存在');
+//     return;
+//   }
+//   referenceFile.value = file;
+//   emit('updateChatWindowHeight', 265) ;
+
+
+//   console.log('file.type = ' + file.extension)
+
+//   if(docTypes.includes(file.extension)){
+//     hasDocument.value = true ;
+//   }
+
+//   if(file.extension === 'png'){
+//     hasImage.value = true ;
+//     console.log('hasImage = ' + hasImage.value)
+//   }
+
+// };
+
+// 设置引用文件(只能一份)
+const setReferenceFile = (file) => {
+  if (uploadedFiles.value.length > 0) {
+    ElMessage.warning('引用与上传文件不能同时存在');
+    return;
+  }
+  
+  // 补充处理文件类型
+  file.type = getFileType(file.extension);
+  referenceFile.value = file;
+  emit('updateChatWindowHeight', 265);
+};
+
+// 删除引用文件
+const removeReferenceFile = () => {
+  referenceFile.value = null;
+  emit('updateChatWindowHeight', 220) ;
+};
 
 // 文件上传处理
 const handleFileSelect = (e) => {
@@ -251,7 +375,15 @@ const formatFileSize = (bytes) => {
 
 // 暴露给父组件的方法
 const openFileSelector = () => {
+
+  // 如果已经有引用，不能再选择文件，请先删除引用
+  if (referenceFile.value) {
+    ElMessage.warning('引用与上传文件不能同时存在');
+    return;
+  }
+
   fileInput.value.click();
+
 };
 
 watch(uploadedFiles, () => {
@@ -269,21 +401,39 @@ const handleGetUploadFiles = () => {
   uploadedFiles.value = [];
   checkScrollability();
 
-  return filterArr ;
+  return [...filterArr , referenceFile.value ? referenceFile.value.id : null] ;
 };
 
 defineExpose({
   openFileSelector,
+  setReferenceFile,
   handleGetUploadFiles
 });
 
 
 </script>
 <style lang="scss" scoped>
+
+.chat-fileds-reference{
+  background: #fafafa;
+  border-radius: 5px;
+  padding: 2px 10px;
+  margin-bottom: 10px;
+  color: #a5a5a5;
+
+  .reference-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+  }
+}
+
 .chat-attachment-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+
 
   .chat-attachment-container {
     display: flex;
@@ -385,4 +535,11 @@ defineExpose({
     }
   }
 }
+  .chat-attachment-actions{
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
 </style>    
