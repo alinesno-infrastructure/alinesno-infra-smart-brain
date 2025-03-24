@@ -1,5 +1,6 @@
 package com.alinesno.infra.base.search.service.reader;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.SneakyThrows;
 import okhttp3.*;
@@ -42,7 +43,11 @@ public class ImageReaderServiceImpl  extends BaseReaderServiceImpl {
             Response response = client.newCall(request).execute();
             if (response.isSuccessful()) {
                 assert response.body() != null;
-                return response.body().string();
+                String result = response.body().string();
+                JSONObject jsonObject = JSONObject.parseObject(result);
+                if (jsonObject.get("code").equals(200)) {
+                    return jsonObject.getString("data");
+                }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
