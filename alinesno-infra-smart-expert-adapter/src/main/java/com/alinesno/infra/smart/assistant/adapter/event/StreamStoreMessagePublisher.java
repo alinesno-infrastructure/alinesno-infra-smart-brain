@@ -21,16 +21,11 @@ public class StreamStoreMessagePublisher {
     private IMessageService messageService ;
 
     public void doStuffAndPublishAnEvent(final String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
-        System.out.println("LLM Stream Message Publishing custom event. ");
-        StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId);
-        applicationEventPublisher.publishEvent(customEvent);
 
         // 保存消息
-
         MessageEntity entity = new MessageEntity();
 
         entity.setTraceBusId(taskInfo.getTraceBusId());
-
         entity.setContent(message) ;
         entity.setFormatContent(message);
         entity.setName(role.getRoleName());
@@ -47,6 +42,9 @@ public class StreamStoreMessagePublisher {
 
         messageService.save(entity);
 
+        long messageId = entity.getId() ;
+        StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId , messageId);
+        applicationEventPublisher.publishEvent(customEvent);
     }
 
 }
