@@ -28,7 +28,9 @@ public interface AgentConstants {
 
     interface Slices {
         String OBSERVATION = "\n观察";
-        String PRE_CONTENT= "\n目标相关内容\n";
+        String PRE_CONTENT= "\n上一个环境输出的内容\n";
+        String DATASET_CONTENT= "\n你的知识库内容\n";
+        String REFERENCE_CONTENT= "\n你引用内容\n";
         String TASK = "\n当前任务: %s\n\n开始！这对您来说非常重要，请充分利用可用工具并给出您的最佳最终答案，您的工作取决于此！\n\n思考：";
         String MEMORY = "\n\n# 有用的上下文: \n%s";
         String ROLE_PLAYING = "你是 %s。%s\n你的个人目标是: %s";
