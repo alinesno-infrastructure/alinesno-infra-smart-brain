@@ -164,9 +164,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
             record.setChatType(TYPE_FUNCTION);
 
             if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("未配置执行能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
-//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role,  taskInfo, IdUtil.getSnowflakeNextId());
                 record.setGenContent("未配置执行能力.");
 
                 return record ;
@@ -189,12 +186,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
             record.setChatType(TYPE_MODIFY);
 
-            // Assert.isTrue(StringUtils.isNotEmpty(role.getAuditScript()) , role.getRoleName()+" 未配置审核修改能力。");
-
             if(StringUtils.isEmpty(role.getAuditScript())){
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent("未配置审核修改能力." , role, taskInfo, IdUtil.getSnowflakeNextId());
-//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
                 record.setGenContent("未配置审核修改能力.");
 
                 return record ;
@@ -233,9 +225,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 record.setCodeContent(codeContentList);
             } catch (Exception e) {
                 log.error("解析代码块异常:{}", e.getMessage());
-
-//                streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
-//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
                 record.setGenContent("执行异常:" + e.getMessage());
             }
         }
