@@ -2,8 +2,11 @@ package com.alinesno.infra.smart.assistant.role;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.ChatContext;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.llm.StreamResponseListener;
+import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.HumanMessage;
 import com.agentsflex.core.message.MessageStatus;
@@ -19,13 +22,13 @@ import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
-import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
-import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
+import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
@@ -95,6 +98,8 @@ public class ReActExpertService extends ExpertService {
         String answer = "" ; // 回答
         StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
 
+        Llm llm = getLlm(role) ;
+
         do {
 
             oneChatId = IdUtil.getSnowflakeNextIdStr() ;
@@ -110,7 +115,6 @@ public class ReActExpertService extends ExpertService {
             handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
             historyPrompt.addMessage(new HumanMessage(prompt));
 
-            Llm llm = getLlm(role) ;
             CompletableFuture<String> future = getAiChatResultAsync(llm, historyPrompt , taskInfo , oneChatId) ; // replacePlaceholders(nodeData.getPrompt()));
 
             // 等待异步任务完成并获取结果
@@ -205,6 +209,8 @@ public class ReActExpertService extends ExpertService {
                         role,
                         taskInfo,
                         taskInfo.getTraceBusId()) ;
+                answer = "角色调用失败，请根据异常处理" ;
+                break ; // 跳出循环
             }
 
             if(loop >= maxLoop){
@@ -253,9 +259,11 @@ public class ReActExpertService extends ExpertService {
      * @return
      */
     private Llm getLlm(IndustryRoleEntity role) {
-        long modelId = role.getModelId(); ; // 模型ID
-        LlmModelEntity llmModel = llmModelService.getById(modelId) ;
 
+        Assert.notNull(role.getModelId(), "角色模型未配置.");
+        long modelId = role.getModelId(); ; // 模型ID
+
+        LlmModelEntity llmModel = llmModelService.getById(modelId) ;
         Assert.notNull(llmModel, "模型未配置或者不存在.");
 
         LlmConfig config = new LlmConfig() ;
@@ -366,67 +374,79 @@ public class ReActExpertService extends ExpertService {
         final MessageTaskInfo localTaskInfo = taskInfo;
         long startTime = System.currentTimeMillis();
 
-        try {
-            llm.chatStream(historyPrompt, (context, response) -> {
+//        try {
+            llm.chatStream(historyPrompt, new StreamResponseListener() {
+                @Override
+                public void onMessage(ChatContext context, AiMessageResponse response) {
 
-                AiMessage message = response.getMessage();
+                        AiMessage message = response.getMessage();
 
-                System.out.println(">>>> " + message);
+                        System.out.println(">>>> " + message);
 
-                FlowStepStatusDto stepDto = new FlowStepStatusDto();
-                stepDto.setMessage("任务进行中...");
-                stepDto.setStepId(oneChatId);
-                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                        FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                        stepDto.setMessage("任务进行中...");
+                        stepDto.setStepId(oneChatId);
+                        stepDto.setStatus(AgentConstants.STEP_PROCESS);
 
-                if(StringUtils.hasLength(message.getContent())) {
-                    stepDto.setFlowChatText(message.getContent());
-                }
-
-                if(StringUtils.hasLength(message.getReasoningContent())){
-                    stepDto.setFlowReasoningText(message.getReasoningContent());
-                }
-
-                stepDto.setPrint(true);
-
-                synchronized (localTaskInfo) {
-                    localTaskInfo.setFlowStep(stepDto);
-                }
-
-                try {
-                    boolean isEnd = false;
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            outputStr.set(message.getFullContent());
-                            stepDto.setStatus(AgentConstants.STEP_FINISH);
-                            isEnd = true;
+                        if(StringUtils.hasLength(message.getContent())) {
+                            stepDto.setFlowChatText(message.getContent());
                         }
-                    }
 
-                    streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
+                        if(StringUtils.hasLength(message.getReasoningContent())){
+                            stepDto.setFlowReasoningText(message.getReasoningContent());
+                        }
 
-                    if (isEnd) {
-                        long endTime = System.currentTimeMillis();
-                        int totalToken = getTotalToken(message) ;
+                        stepDto.setPrint(true);
 
-                        taskInfo.setUsage(usage);
+                        synchronized (localTaskInfo) {
+                            localTaskInfo.setFlowStep(stepDto);
+                        }
 
-                        usage.setTime(endTime - startTime);
-                        usage.setToken(totalToken);
-                        taskInfo.setUsage(usage);
+                        try {
+                            boolean isEnd = false;
+                            synchronized (localTaskInfo) {
+                                if (message.getStatus() == MessageStatus.END) {
+                                    outputStr.set(message.getFullContent());
+                                    stepDto.setStatus(AgentConstants.STEP_FINISH);
+                                    isEnd = true;
+                                }
+                            }
 
-                        future.complete(outputStr.get());
-                    }
-                } catch (Exception e) {
-                    // 处理发布事件时的异常
-                    log.error(e.getMessage());
-                    future.completeExceptionally(e);
+                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
+
+                            if (isEnd) {
+                                long endTime = System.currentTimeMillis();
+                                int totalToken = getTotalToken(message) ;
+
+                                taskInfo.setUsage(usage);
+
+                                usage.setTime(endTime - startTime);
+                                usage.setToken(totalToken);
+                                taskInfo.setUsage(usage);
+
+                                future.complete(outputStr.get());
+                            }
+                        } catch (Exception e) {
+                            // 处理发布事件时的异常
+                            log.error(e.getMessage());
+                            future.completeExceptionally(e);
+                        }
                 }
-            });
-        } catch (Exception e) {
-            // 处理 chatStream 方法的异常
-            log.error(e.getMessage());
-            future.completeExceptionally(e);
-        }
+
+                @Override
+                public void onFailure(ChatContext context, Throwable throwable) {
+                    log.error("消息处理失败" , throwable);
+                    eventStepMessage("消息处理失败", AgentConstants.STEP_FINISH , oneChatId , taskInfo) ;
+                    future.completeExceptionally(throwable);
+                }
+
+            }) ;
+
+//        } catch (Exception e) {
+//            // 处理 chatStream 方法的异常
+//            log.error(e.getMessage());
+//            future.completeExceptionally(e);
+//        }
 
         return future;
     }
