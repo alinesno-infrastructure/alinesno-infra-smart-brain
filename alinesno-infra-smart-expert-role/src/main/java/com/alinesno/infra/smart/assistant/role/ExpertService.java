@@ -657,7 +657,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         for (MessageEntity dto : chatMessageDtoList) {
 
-            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+            String chatText = !StringUtils.isNotBlank(dto.getContent()) ? dto.getContent() : dto.getFormatContent();
             boolean isFilterWorker = FilterWordUtils.filter(chatText) ;
 
             if(isFilterWorker){
