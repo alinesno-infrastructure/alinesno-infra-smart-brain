@@ -113,7 +113,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
-//    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @Override
     public WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo) {
 
