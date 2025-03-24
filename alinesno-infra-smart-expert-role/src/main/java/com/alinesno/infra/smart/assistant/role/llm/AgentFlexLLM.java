@@ -59,23 +59,42 @@ public class AgentFlexLLM {
 
         long workflowId = IdUtil.getSnowflakeNextId() ;
 
-        CompletableFuture<String> future = getAiChatResultAsync(llm, role, prompt, taskInfo, workflowId+"") ;
+        CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo, workflowId+"") ;
 
-        String output = future.get();
-        log.debug("output = {}" , output);
+        AiMessage message = future.get();
+        log.debug("output = {}" , message.getFullContent());
 
+        MessageEntity entity = new MessageEntity();
 
-        return output ;
+        entity.setTraceBusId(taskInfo.getTraceBusId());
+        entity.setId(workflowId) ;
+        entity.setContent(message.getFullContent()) ;
+        entity.setReasoningContent(message.getFullReasoningContent());
+        entity.setFormatContent(message.getFullContent());
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setChannelId(taskInfo.getChannelId()) ;
+        entity.setRoleId(role.getId()) ;
+
+        messageService.save(entity);
+
+        return message.getFullContent() ;
 
     }
 
-    protected CompletableFuture<String> getAiChatResultAsync(Llm llm,
+    protected CompletableFuture<AiMessage> getAiChatResultAsync(Llm llm,
                                                              IndustryRoleEntity role  ,
                                                              String prompt,
                                                              MessageTaskInfo taskInfo ,
                                                              String oneChatId) {
 
-        CompletableFuture<String> future = new CompletableFuture<>();
+        CompletableFuture<AiMessage> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
 
         // 创建一个 final 局部变量来持有 taskInfo 的引用
@@ -120,29 +139,9 @@ public class AgentFlexLLM {
 
                     streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
 
+                    // TODO 是否在这里插入完成的消息？
                     if (isEnd) {
-
-                        MessageEntity entity = new MessageEntity();
-
-                        entity.setTraceBusId(taskInfo.getTraceBusId());
-                        entity.setId(Long.parseLong(oneChatId)) ;
-                        entity.setContent(message.getFullContent()) ;
-                        entity.setReasoningContent(message.getFullReasoningContent());
-                        entity.setFormatContent(message.getFullContent());
-                        entity.setName(role.getRoleName());
-
-                        entity.setRoleType("agent");
-                        entity.setReaderType("html");
-
-                        entity.setAddTime(new Date());
-                        entity.setIcon(role.getRoleAvatar());
-
-                        entity.setChannelId(taskInfo.getChannelId()) ;
-                        entity.setRoleId(role.getId()) ;
-
-                        messageService.save(entity);
-
-                        future.complete(outputStr.get());
+                        future.complete(message);
                     }
                 } catch (Exception e) {
                     // 处理发布事件时的异常
