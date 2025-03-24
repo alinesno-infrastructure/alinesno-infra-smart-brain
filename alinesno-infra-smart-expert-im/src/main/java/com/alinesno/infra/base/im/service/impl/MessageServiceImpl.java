@@ -6,13 +6,11 @@ import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.base.im.utils.TaskUtils;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.dto.WebMessageDto;
+import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -22,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +37,9 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
     @Autowired
     private IIndustryRoleService industryRoleService;
+
+    @Autowired
+    private CloudStorageConsumer cloudStorageConsumer ;
 
     @Override
     public void saveUserMessage(List<WebMessageDto> parsedMessages, Long channelId) {
@@ -202,6 +204,12 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             // 当前只能处理一条业务消息(TODO 处理多条前端业务消息)
             if(message.getBusinessIds() != null && !message.getBusinessIds().isEmpty()){
                 taskInfo.setPreBusinessId(String.valueOf(message.getBusinessIds().get(0)));
+            }
+
+            // 引用附件不为空，则引入和解析附件
+            if(!CollectionUtils.isEmpty(message.getFileIds())){
+                List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(message.getFileIds());
+                taskInfo.setAttachments(attachmentList);
             }
 
             taskService.addTask(taskInfo);
