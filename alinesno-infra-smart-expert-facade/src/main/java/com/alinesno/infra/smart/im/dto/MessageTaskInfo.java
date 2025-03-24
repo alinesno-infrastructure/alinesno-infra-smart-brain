@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.im.dto;
 
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.plexpt.chatgpt.entity.billing.Usage;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -101,6 +100,9 @@ public class MessageTaskInfo implements Serializable {
 
     // 是否有执行能力
     private boolean hasExecuteTool = false ;
+
+    // 附件列表
+    private List<FileAttachmentDto> attachments ;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
