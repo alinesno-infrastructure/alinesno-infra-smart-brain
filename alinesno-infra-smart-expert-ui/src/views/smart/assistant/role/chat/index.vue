@@ -407,7 +407,7 @@ const pushResponseMessageList = (newMessage) => {
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText;
-          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
+          // console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
         } else {
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
         }
@@ -505,7 +505,7 @@ function handleBusinessIdToMessageBox(item) {
   // message.value += businessIdMessage;
 
   const businessIdMessage = ' #' + item.messageId + ' ';
-  businessId.value = item.businessId;
+  businessId.value = item.messageId;
   message.value += businessIdMessage;
 }
 
@@ -622,6 +622,12 @@ defineExpose({
 
 </script>
 
+<style>
+html pre code.hljs {
+  white-space: pre-wrap !important;
+}
+</style>
+
 <style lang="scss" scoped>
 .inner-smart-container {
   max-width: 100% ! important;
@@ -631,7 +637,7 @@ defineExpose({
   }
 
   .inner-robot-chat-body {
-    height: calc(100vh - 100px);
+    height: calc(100vh);
   }
 }
 
@@ -639,7 +645,7 @@ defineExpose({
   padding-bottom: 10px;
   float: left;
   width: 100%;
-  height: calc(100% - 55px);
+  height: calc(100%);
   overflow: hidden;
 }
 
