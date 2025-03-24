@@ -19,19 +19,18 @@ import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
+import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
-import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
-import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.dto.MessageUsageDto;
+import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -63,13 +62,16 @@ public class ReActExpertService extends ExpertService {
     private ILLmAdapterService llmAdapter ;
 
     @Autowired
+    private AttachmentReaderUtils  attachmentReaderUtils; ;
+
+    @Autowired
     private ILlmModelService llmModelService ;
 
-    private MessageUsageDto usage = new MessageUsageDto();  // 消耗统计
+    private final MessageUsageDto usage = new MessageUsageDto();  // 消耗统计
 
     @Override
     protected String handleRole(IndustryRoleEntity role,
-                                MessageEntity workflowExecution,
+                                MessageEntity workflowMessage,
                                 MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
@@ -82,7 +84,9 @@ public class ReActExpertService extends ExpertService {
 
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
         handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
-        String datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList , workflowExecution) ;
+
+        String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
+        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
         boolean isCompleted = false ;  // 是否已经完成
         boolean isToolCompleted = false ;  // 是否已经完成
@@ -93,7 +97,7 @@ public class ReActExpertService extends ExpertService {
 
         do {
 
-            String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
+            oneChatId = IdUtil.getSnowflakeNextIdStr() ;
             eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
             loop++;
@@ -217,6 +221,33 @@ public class ReActExpertService extends ExpertService {
     }
 
     /**
+     * 获取知识库
+     * @param workflowMessage
+     * @param taskInfo
+     * @param datasetKnowledgeDocumentList
+     * @param oneChatId
+     * @param historyPrompt
+     * @return
+     */
+    @NotNull
+    private String getDatasetKnowledgeDocument(MessageEntity workflowMessage, MessageTaskInfo taskInfo, List<DocumentVectorBean> datasetKnowledgeDocumentList, String oneChatId, HistoriesPrompt historyPrompt) {
+        String datasetKnowledgeDocument = "" ;
+        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList) || !CollectionUtils.isEmpty(taskInfo.getAttachments()) || workflowMessage != null){
+
+            String preKnowledgeProcess = "解析知识库" + (taskInfo.getAttachments() == null ? "" : "和" + taskInfo.getAttachments().size() + "个附件")  ;
+
+            if(workflowMessage != null){
+                preKnowledgeProcess += "和" + workflowMessage.getId() + "消息" ;
+            }
+
+            eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
+            datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList, workflowMessage, taskInfo.getAttachments() , historyPrompt) ;
+            eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, datasetKnowledgeDocument) ;
+        }
+        return datasetKnowledgeDocument;
+    }
+
+    /**
      * 获取到指定的模型
      * @param role
      * @return
@@ -241,23 +272,47 @@ public class ReActExpertService extends ExpertService {
      * 处理并合并文档内容
      *
      * @param datasetKnowledgeDocumentList
-     * @param workflowExecution
+     * @param workflowMessage
+     * @param attachments
+     * @param historyPrompt
      * @return
      */
-    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList, MessageEntity workflowExecution) {
+    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList, MessageEntity workflowMessage, List<FileAttachmentDto> attachments, HistoriesPrompt historyPrompt) {
 
         StringBuilder sb = new StringBuilder();
 
-        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList)){
-            for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
-                sb.append(bean.getDocument_content()).append("\n");
+        // 如果上一个节点有内容，则自动的获取到上一个节点的结果做为知识库内容的一部分
+        if(workflowMessage != null && StringUtils.hasLength(workflowMessage.getContent())){
+            sb.append(AgentConstants.Slices.PRE_CONTENT);
+            sb.append(workflowMessage.getContent()).append("\n");
+        }
+
+        // 添加附件解析 attachments(比如文件或者图片之类的)
+        if(!CollectionUtils.isEmpty(attachments)){
+            List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(attachments) ;
+            for(FileAttachmentDto fileAttachmentDto : newAttachments){
+                sb.append(AgentConstants.Slices.REFERENCE_CONTENT);
+
+
+                StringBuilder treatmentSb = new StringBuilder();
+                treatmentSb.append("文件名称:").append(fileAttachmentDto.getFileName()).append("\n");
+                treatmentSb.append("文件类型:").append(fileAttachmentDto.getFileType()).append("\n");
+                treatmentSb.append("文件大小:").append(fileAttachmentDto.getLength()).append("\n");
+                treatmentSb.append("文件内容:").append(fileAttachmentDto.getFileContent()).append("\n");
+
+                // 将附件内容同步放到用户消息历史中，以确保之前的消息包含逻辑
+                historyPrompt.addMessage(new HumanMessage(treatmentSb.toString()));
+
+                sb.append(treatmentSb);
             }
         }
 
-        // 如果上一个节点有内容，则自动的获取到上一个节点的结果做为知识库内容的一部分
-        if(workflowExecution != null && StringUtils.hasLength(workflowExecution.getContent())){
-            sb.append(AgentConstants.Slices.PRE_CONTENT);
-            sb.append(workflowExecution.getContent()).append("\n");
+        // 添加知识库内容
+        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList)){
+            for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
+                sb.append(AgentConstants.Slices.DATASET_CONTENT);
+                sb.append(bean.getDocument_content()).append("\n");
+            }
         }
 
         return sb.toString() ;
@@ -287,7 +342,7 @@ public class ReActExpertService extends ExpertService {
 
     @Override
     protected String handleModifyCall(IndustryRoleEntity role,
-                                      MessageEntity workflowExecution,
+                                      MessageEntity workflowMessage,
                                       List<CodeContent> codeContentList,
                                       MessageTaskInfo taskInfo) {
 
@@ -296,7 +351,7 @@ public class ReActExpertService extends ExpertService {
 
     @Override
     protected String handleFunctionCall(IndustryRoleEntity role,
-                                        MessageEntity workflowExecution,
+                                        MessageEntity workflowMessage,
                                         List<CodeContent> codeContentList,
                                         MessageTaskInfo taskInfo) {
 
@@ -357,6 +412,7 @@ public class ReActExpertService extends ExpertService {
 
                         usage.setTime(endTime - startTime);
                         usage.setToken(totalToken);
+                        taskInfo.setUsage(usage);
 
                         future.complete(outputStr.get());
                     }
@@ -393,13 +449,21 @@ public class ReActExpertService extends ExpertService {
      * @param stepMessage
      * @param status
      */
-    public void eventStepMessage(String stepMessage, String status, String stepId , MessageTaskInfo taskInfo) {
+    public void eventStepMessage(String stepMessage, String status, String stepId , MessageTaskInfo taskInfo , String stepContent) {
 
         FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
         stepDto.setMessage(stepMessage) ;
         stepDto.setStepId(stepId) ;
         stepDto.setStatus(status);
         stepDto.setPrint(false);
+
+        if(StringUtils.hasLength(stepContent)){
+            // 如果stepContent的内容超过2048个字符，则进行截取
+            if(stepContent.length() > 2048){
+                stepContent = stepContent.substring(0, 2048);
+            }
+            stepDto.setFlowChatText(stepContent);
+        }
 
         taskInfo.setFlowStep(stepDto);
 
@@ -411,4 +475,7 @@ public class ReActExpertService extends ExpertService {
 
     }
 
+    public void eventStepMessage(String stepMessage, String status, String stepId , MessageTaskInfo taskInfo) {
+        eventStepMessage(stepMessage, status, stepId, taskInfo, null);
+    }
 }
