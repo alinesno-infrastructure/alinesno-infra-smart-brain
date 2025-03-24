@@ -74,6 +74,7 @@ public class SSEChannelController {
 
         msgDto.setUsage(info.getUsage());
         msgDto.setHasExecuteTool(info.isHasExecuteTool());
+        msgDto.setMessageId(event.getMessageId());  // 设置消息ID
 
         try {
             emitter.send(msgDto) ;
