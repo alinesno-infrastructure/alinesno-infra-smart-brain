@@ -42,11 +42,11 @@
 
           <img v-if="isSpeaking" :src="speakingIcon" style="width:35px" />
 
-          <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()"> 
-            <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止 
+          <el-button v-if="isSpeaking" type="danger" text bg size="large" @click="listenPlayVoiceOption()">
+            <i class="fa-regular fa-circle-stop"></i> &nbsp;&nbsp; 停止
           </el-button>
 
-          <el-button v-if="!isSpeaking" type="primary" text bg size="large" :loading="chatLoading" @click="handleTestSpeechModel()"> 
+          <el-button v-if="!isSpeaking" type="primary" text bg size="large" :loading="chatLoading" @click="handleTestSpeechModel()">
             <i class="fa-solid fa-headphones-simple"></i> &nbsp;&nbsp; 试听
           </el-button>
 
@@ -161,12 +161,12 @@ getSpeechByModelId(formData.value.voiceModel , formData.value.voiceSpeechModel).
 }).catch(error => {
   chatLoading.value = false;
   console.error('操作失败:', error.message);
-}); 
+});
 };
 
 nextTick(() => {
   const modelId = formData.value.voiceModel
-  console.log('onMounted : ' + modelId) ; 
+  console.log('onMounted : ' + modelId) ;
   if(modelId){
     getVoiceModelSpeech(modelId).then(res => {
       console.log('res = ' + res);
