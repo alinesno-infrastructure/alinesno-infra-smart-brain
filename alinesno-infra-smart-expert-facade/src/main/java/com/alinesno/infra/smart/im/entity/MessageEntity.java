@@ -42,14 +42,17 @@ public class MessageEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "消息内容")
     private String content;
 
+    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "格式化消息内容")
+    private String formatContent ;
+
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, comment = "关联业务ID，以,号进行拼接")
+    private String preBusinessIds ;
+
     @Column(type = MySqlTypeConstant.VARCHAR, length = 1024, comment = "文件ID")
     private String fileIds ;
 
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "推理内容")
     private String reasoningContent;
-
-    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "格式化消息内容")
-    private String formatContent ;
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 20, comment = "聊天类型")
 	private String msgType ; // 聊天类型
