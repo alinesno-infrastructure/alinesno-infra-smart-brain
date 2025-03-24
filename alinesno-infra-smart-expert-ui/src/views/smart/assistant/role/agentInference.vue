@@ -518,6 +518,9 @@ function handleSelectDatasetConfigClose(selectItem) {
         datasetConfigDialogVisible.value = false;
         selectionDatasetData.value = selectItem ; // datasetChoicePanelRef.value.getSelectItemList();
         agentModelConfigForm.value.knowledgeBaseIds = selectionDatasetData.value;
+
+        // 更新配置
+        submitModelConfig();
     }
 }
 
@@ -529,6 +532,9 @@ function handleSelectDatasetParamsConfigClose(formData) {
     if (datasetParamsConfigDialogVisible.value) {
         datasetParamsConfigDialogVisible.value = false;
         agentModelConfigForm.value.datasetSearchConfig = formData;
+
+        // 更新配置
+        submitModelConfig();
     }
 }
 
@@ -571,6 +577,9 @@ function toggleVoicePlayStatus() {
 function handleVoiceConfigParams(formData){
     agentModelConfigForm.value.voicePlayData = formData;
     voiceConfigDialogVisible.value = false;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 切换语音播放状态
@@ -686,6 +695,9 @@ function handleVoiceInputStatusPanelClose(voiceInputData) {
 
         voiceInputStatusVisible.value = false ;
         agentModelConfigForm.value.voiceInputData = voiceInputData;
+
+        // 更新配置
+        submitModelConfig();
     }
 }
 
