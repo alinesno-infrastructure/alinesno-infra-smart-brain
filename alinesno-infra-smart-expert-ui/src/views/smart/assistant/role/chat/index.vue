@@ -42,7 +42,8 @@
 
                       <!-- 文件输出列表__start -->
                        <!-- {{ item.fileAttributeList }} -->
-                      <ChatAttachmentMessagePanel :message="item"  />
+                      <ChatAttachmentMessagePanel :message="item" 
+                          @handleFileIdToMessageBox="handleFileIdToMessageBox" />
                       <!-- 文件输出列表__end -->
 
                       <!-- 流程输出调试信息_start -->
@@ -79,7 +80,6 @@
                         </div>
                       </div>
                       <!-- 流程输出调试信息_end -->
-
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
@@ -87,9 +87,9 @@
                         <div>
                             <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
                             <el-button type="danger" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
-                            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
+                            <el-button type="primary" v-if="item.messageId" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
                             <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                            <el-button type="info" v-if="item.businessId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                            <el-button type="info" v-if="item.messageId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
                         </div>
                       </div>
 
@@ -104,7 +104,7 @@
 
             <div class="robot-chat-footer chat-container" style="float:left;width:100%">
 
-              <ChatAttachmentPanel @updateChatWindowHeight="updateChatWindowHeight"  ref="attachmentPanelRef" />
+              <ChatAttachmentPanel @updateChatWindowHeight="updateChatWindowHeight" @sendAttachmentActions="sendAttachmentActions"  ref="attachmentPanelRef" />
 
               <el-row :gutter="20">
                 <el-col :span="16">
@@ -215,6 +215,7 @@ const businessId = ref(null);
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
+const refreshFieldId = ref([]); // 引用文件的ID
 
 const isSpeechSynthesisSupported = 'speechSynthesis' in window;
 
@@ -254,6 +255,13 @@ function keyDown(e) {
   if (!message.value) {
     return;
   }
+  sendMessage('send');
+  message.value = '';
+}
+
+
+function sendAttachmentActions(actionTxt) {
+  message.value = actionTxt ;
   sendMessage('send');
   message.value = '';
 }
@@ -381,6 +389,7 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      messageList.value[existingIndex].messageId += newMessage.messageId;
       if(newMessage.usage){
         messageList.value[existingIndex].usage = newMessage.usage;
       }
@@ -439,9 +448,9 @@ const speakText = (text) => {
 };
 
 // 计算聊天窗口的高度
-const calculateChatWindowHeight = () => {
-  return `calc(100vh - 230px - ${heightDiff.value}px)`;
-};
+// const calculateChatWindowHeight = () => {
+//   return `calc(100vh - 230px - ${heightDiff.value}px)`;
+// };
 
 // 动态更新高度
 const updateChatWindowHeight = (heightVal) => {
@@ -455,8 +464,8 @@ const updateChatWindowHeight = (heightVal) => {
 
 function handleExecutorMessage(item) {
 
-  const businessIdMessage = ' #' + item.businessId + ' ';
-  businessId.value = item.businessId;
+  const businessIdMessage = ' #' + item.messageId + ' ';
+  businessId.value = item.messageId ;
   message.value += businessIdMessage;
 
   sendMessage('function');
@@ -491,9 +500,29 @@ function handleSseConnect(channelId) {
 }
 
 function handleBusinessIdToMessageBox(item) {
-  const businessIdMessage = ' #' + item.businessId + ' ';
+  // const businessIdMessage = ' #' + item.businessId + ' ';
+  // businessId.value = item.businessId;
+  // message.value += businessIdMessage;
+
+  const businessIdMessage = ' #' + item.messageId + ' ';
   businessId.value = item.businessId;
   message.value += businessIdMessage;
+}
+
+/** 文件引用 */
+function handleFileIdToMessageBox(file) {
+
+  // const businessIdMessage = ' #doc' + fileId + ' ';
+  // businessId.value = fileId;
+  // message.value += businessIdMessage;
+  // refreshFieldId.value.push(fileId);
+
+  const attFile = {
+    id: file.fileId,
+    name: file.fileName , 
+    extension: file.fileType
+  }
+  attachmentPanelRef.value.setReferenceFile(attFile)
 }
 
 /** 获取角色信息 */
@@ -537,7 +566,7 @@ const sendMessage = (type) => {
     message: message.value,
     businessIds: [businessId.value],
     type: type , 
-    fileIds: uploadFiles ,
+    fileIds: uploadFiles // [...uploadFiles , ...refreshFieldId.value]
   }
 
   chatRole(formData, roleId.value).then(res => {
@@ -548,6 +577,7 @@ const sendMessage = (type) => {
   })
 
   message.value = '';
+  refreshFieldId.value = [];
 };
 
 /** 显示工具条 */
