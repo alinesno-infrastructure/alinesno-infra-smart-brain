@@ -109,15 +109,28 @@ const send = async () => {
 // 发送音频文件到后端
 const sendAudioFileToBackend = async (audioFormData) => {
   chatLoading.value = true;
-  const response = await recognizeForm(audioFormData);
-  chatLoading.value = false ;
-  console.log('response = ' + response.data);
-  if(response.data){
-    emits("sendAudioToBackend" , response.data);
-  }else{
+  // const response = await recognizeForm(audioFormData);
+  // chatLoading.value = false ;
+  // console.log('response = ' + response.data);
+  // if(response.data){
+  //   emits("sendAudioToBackend" , response.data);
+  // }else{
+  //   chatLoading.value = false ;
+  //   ElMessage.error('录音识别失败，请重试或者确认麦克风正常.');
+  // }
+
+  recognizeForm(audioFormData).then(response => {
     chatLoading.value = false ;
-    ElMessage.error('录音识别失败，请重试或者确认麦克风正常.');
-  }
+    console.log('response = ' + response.data);
+    if(response.data){
+      emits("sendAudioToBackend" , response.data);
+    }else{
+      chatLoading.value = false ;
+      ElMessage.error('录音识别失败，请重试或者确认麦克风正常.');
+    }
+  }).catch(error => {
+      chatLoading.value = false ;
+  });
 };
 
 // 按下 Ctrl + R 开始录音
