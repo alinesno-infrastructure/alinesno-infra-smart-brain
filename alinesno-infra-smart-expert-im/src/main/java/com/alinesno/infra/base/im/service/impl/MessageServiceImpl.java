@@ -175,12 +175,16 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         MessageEntity msg = getMessageEntity(
                 message.getChannelId(),
-                message.getMessage(),
-                MessageFormatter.getMessage(message.getMessage()),
+                MessageFormatter.clearMessage(message.getMessage()), // 只纯为消息内容
+                MessageFormatter.getMessage(message.getMessage()),  // 格式化的消息内容
                 ids ,
                 message.getAccountName()
         );
 
+        if(!message.getBusinessIds().isEmpty()){
+            String preBusinessIds = message.getBusinessIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+            msg.setPreBusinessIds(preBusinessIds);
+        }
         msg.setFileIds(fileIds);  // 配置消息里面的文件id
         msg.setAccountId(message.getAccountId());
         save(msg);
@@ -238,7 +242,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
             agentInfo.setAccountId(accountId) ;
             agentInfo.setAddTime(new Date());
-//            agentInfo.setBusinessId(IdUtil.getSnowflakeNextId());
 
             agentInfo.setChannelId(Long.valueOf(channelId));
 
@@ -295,31 +298,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         }
         return getOne(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getTraceBusId, traceBusId));
     }
-
-//    @Override
-//    public MessageEntity saveMessage(IndustryRoleEntity role, MessageTaskInfo info, String msg , long messageId) {
-//
-//        MessageEntity entity = new MessageEntity();
-//
-//        entity.setContent(msg) ;
-//        entity.setFormatContent(msg);
-//        entity.setName(role.getRoleName());
-//
-//        entity.setRoleType("agent");
-//        entity.setReaderType("html");
-//
-//        entity.setAddTime(new Date());
-//        entity.setIcon(role.getRoleAvatar());
-//
-////        entity.setBusinessId(Long.parseLong(info.getBusinessId()));
-//        entity.setChannelId(info.getChannelId());
-//        entity.setRoleId(role.getId()) ;
-//
-//        save(entity);
-//        // 保存流程消息
-//
-//        return entity ;
-//    }
 
     private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId , String accountName) {
         MessageEntity msg = new MessageEntity();
