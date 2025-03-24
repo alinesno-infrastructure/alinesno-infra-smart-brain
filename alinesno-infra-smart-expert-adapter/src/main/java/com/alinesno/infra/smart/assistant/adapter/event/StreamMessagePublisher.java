@@ -14,7 +14,7 @@ public class StreamMessagePublisher {
     private ApplicationEventPublisher applicationEventPublisher;
 
     public void doStuffAndPublishAnEvent(final String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
-        StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId);
+        StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId , null);
         applicationEventPublisher.publishEvent(customEvent);
     }
 
