@@ -16,6 +16,7 @@ public class ChatMessageDto {
     private long channelId ; // 所属频道Id
     private long roleId ; //所属角色Id
     private long accountId ; // 登陆用户ID
+    private Long messageId ; // 消息ID(设置成Long前端可为null)
 
     private String roleType;
     private String icon ;
