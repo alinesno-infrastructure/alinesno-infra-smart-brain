@@ -12,16 +12,39 @@ import lombok.NoArgsConstructor;
 @Data
 public class FileAttachmentDto {
 
-    private long fileId; /** 文件ID */
+    /**
+     * 文件 ID
+     */
+    private long fileId;
 
-    private long length; /** 文件长度 */
+    /**
+     * 文件长度
+     */
+    private long length;
 
-    private String fileName; /** 文件名 */
+    /**
+     * 文件名
+     */
+    private String fileName;
 
-    private String fileType; /** 文件类型 */
+    /**
+     * 文件类型
+     */
+    private String fileType;
 
-    private int wordCount ; /** 文字数量 */
+    /**
+     * 文件内容
+     */
+    private String fileContent = "" ;
 
-    private int order; /** 附件顺序 */
+    /**
+     * 文字数量
+     */
+    private int wordCount;
+
+    /**
+     * 附件顺序
+     */
+    private int order;
 
 }
