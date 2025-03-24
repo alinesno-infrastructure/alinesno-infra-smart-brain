@@ -503,6 +503,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         IndustryRoleDto roleDto = IndustryRoleDto.fromEntity(role) ;
         VoiceInputData voiceRecognitionData = roleDto.getVoiceInputData() ;
+        Assert.notNull(voiceRecognitionData , "语音识别未配置，请先配置") ;
 
         LlmModelEntity modelEntity = getById(voiceRecognitionData.getVoiceModel()) ;
 
