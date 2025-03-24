@@ -154,18 +154,13 @@ public class CloudStorageServiceImpl implements CloudStorageConsumer {
                     FileAttachmentDto dto = new FileAttachmentDto();
                     dto.setFileId(item.getId());
                     dto.setFileName(item.getOriginalFilename());
-                    dto.setFileType(item.getContentType());
+                    dto.setFileType(item.getExt());
                     dto.setLength(item.getSize());
                     dto.setWordCount(100);
                     dto.setOrder(0);
                     return dto;
                 }).collect(Collectors.toList());
             }
-
-//            if(list != null && !list.isEmpty()){
-//                return list.stream().map(item -> {
-//                }).collect(Collectors.toList());
-//            }
 
         }
 
