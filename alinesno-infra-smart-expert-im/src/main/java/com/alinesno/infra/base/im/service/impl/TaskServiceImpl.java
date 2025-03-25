@@ -1,7 +1,7 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.role.utils.FilterWordUtils;
+import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -12,7 +12,6 @@ import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -101,6 +100,14 @@ public class TaskServiceImpl implements ITaskService {
     @Override
     public void handleWorkflowMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
 
+        String channelId = String.valueOf(taskInfo.getChannelId()) ;
+
+        // 如果是过滤结果词，则不做输出
+        if(FilterWordUtils.contains(genContent.getGenContent())){
+            sseService.sendDone(channelId);
+            return ;
+        }
+
         taskInfo.setUsageTime(genContent.getUsageTimeSeconds());
 
         log.info("任务处理完成: {}", taskInfo);
@@ -119,11 +126,8 @@ public class TaskServiceImpl implements ITaskService {
         long messageId = messageService.saveChatMessage(queMessage , taskInfo.getChannelId());
         queMessage.setBusinessId(messageId);
 
-        // 保存到任务流程中
-        // workflowExecutionService.saveWorkflowExecution(taskInfo , genContent , messageId) ;
-
         // 发送到前端
-        sseService.send(String.valueOf(taskInfo.getChannelId()), queMessage);
+        sseService.send(channelId, queMessage);
     }
 
     @Override
