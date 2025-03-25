@@ -1,27 +1,40 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.llm.response.AiMessageResponse;
+import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.HumanMessage;
+import com.agentsflex.core.prompt.HistoriesPrompt;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.GuessWhatYouAskData;
 import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.*;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
+import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
@@ -62,6 +75,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
     @Autowired
     private IToolService toolService ;
+
+    @Autowired
+    private ILlmModelService llmModelService;
+
+    @Autowired
+    private ILLmAdapterService llmAdapter ;
 
     private static final Gson gson = new Gson();
 
@@ -468,6 +487,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     }
 
     private void setRoleConfigParams(RoleReActConfigDto dto, IndustryRoleEntity role) {
+
         role.setModelId(dto.getModelId());
         role.setPromptContent(dto.getPromptContent());
         role.setGreeting(dto.getGreeting());
@@ -476,6 +496,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setLongTermMemoryEnabled(dto.isLongTermMemoryEnabled());
         role.setVoicePlayStatus(dto.isVoicePlayStatus());
         role.setUploadStatus(dto.isUploadStatus());
+
+        // 开场白问题
+        if(CollectionUtils.isNotEmpty(dto.getGreetingQuestion())){
+            role.setGreetingQuestion(JSONObject.toJSONString(dto.getGreetingQuestion()));
+        }
 
         if(dto.getUploadData() != null){
             role.setUploadData(JSONObject.toJSONString(dto.getUploadData()));
@@ -602,6 +627,107 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 //            }
 //
 //        }
+    }
+
+    @Override
+    public List<String> getQuestionSuggestion(RoleQuestionSuggestionDto sugDto) {
+
+        List<String> questionSug = new ArrayList<>() ;
+
+        long roleId = sugDto.getRoleId() ;
+        IndustryRoleEntity role = getById(roleId) ;
+        if(role == null){
+            return questionSug ;
+        }
+
+        boolean isGuessWhatYouAskStatus = role.isGuessWhatYouAskStatus() ;
+        if(!isGuessWhatYouAskStatus){
+            return questionSug ;
+        }
+
+        IndustryRoleDto roleDto = IndustryRoleDto.fromEntity(role) ;
+        if(roleDto.getGuessWhatYouAskData() == null){
+            return questionSug ;
+        }
+
+        GuessWhatYouAskData guessWhatYouAskData = roleDto.getGuessWhatYouAskData() ;
+        String modelId = guessWhatYouAskData.getVoiceModel() ;
+        if(!StringUtils.hasLength(modelId)){
+            return questionSug ;
+        }
+
+        LlmModelEntity llmModel = llmModelService.getById(modelId) ;
+        if(llmModel == null){
+            return questionSug ;
+        }
+
+        LlmConfig config = new LlmConfig() ;
+
+        config.setEndpoint(llmModel.getApiUrl());
+        config.setApiKey(llmModel.getApiKey()) ;
+        config.setModel(llmModel.getModel()) ;
+
+        Llm llm =  llmAdapter.getLlm(llmModel.getProviderCode(), config);
+
+        String prompt = guessWhatYouAskData.getPrompt() ;
+        prompt += "请返回以下json数据格式:" +
+                "```json" +
+                    "[" +
+                    "    \"推荐问题1\",\n" +
+                    "    \"推荐问题2\",\n" +
+                    "    \"推荐问题3\"" +
+                    "]" +
+                "```" ;
+
+        IMessageService messageService = SpringUtils.getBean(IMessageService.class); ;
+
+        long channelId = sugDto.getChannelId() ;
+
+        int maxHistory = 20 ;
+
+        HistoriesPrompt historyPrompt = new HistoriesPrompt();
+        historyPrompt.setMaxAttachedMessageCount(maxHistory);
+        historyPrompt.setHistoryMessageTruncateEnable(false);
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit " + maxHistory);;
+
+        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+
+        for (MessageEntity dto : chatMessageDtoList) {
+
+            String chatText = !StringUtils.hasLength(dto.getContent()) ? dto.getContent() : dto.getFormatContent();
+            boolean isFilterWorker = FilterWordUtils.filter(chatText) ;
+
+            if(isFilterWorker){
+                if ("person".equals(dto.getRoleType())) {
+                    historyPrompt.addMessage(new HumanMessage(chatText));
+                }else if("agent".equals(dto.getRoleType())){
+                    AiMessage aiMessage = new AiMessage() ;
+                    aiMessage.setFullContent(chatText);
+                    historyPrompt.addMessage(aiMessage);
+                }
+            }
+        }
+
+        historyPrompt.addMessage(new HumanMessage(prompt));
+        AiMessageResponse response = llm.chat(historyPrompt) ;
+
+        log.debug("response = {}" , response.getMessage().getFullContent());
+
+        String fullContent = response.getMessage().getContent() ;
+        List<CodeContent> genContentJson =  CodeBlockParser.parseCodeBlocks(fullContent) ;
+
+        for (CodeContent codeContent : genContentJson) {
+            if ("json".equals(codeContent.getLanguage())) {
+                List<String> questionSuggestion = JSON.parseArray(codeContent.getContent(), String.class);
+                questionSug.addAll(questionSuggestion);
+            }
+        }
+
+        return questionSug ;
     }
 
 }
