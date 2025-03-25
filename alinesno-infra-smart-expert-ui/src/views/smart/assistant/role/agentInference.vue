@@ -8,7 +8,10 @@
                     </div>
                 </template>
             </el-page-header>
-            <el-button type="primary" text bg size="large" @click="submitModelConfig()">保存配置</el-button>
+            <div>
+                <el-button type="primary" icon="Setting" text bg size="large" @click="submitModelConfig()">保存配置</el-button>
+                <el-button type="danger" icon="Position" text bg size="large" @click="publishRoleConfig()">发布角色</el-button>
+            </div>
         </div>
         <el-row :gutter="20">
             <!--类型数据-->
@@ -138,9 +141,16 @@
                                 </el-col>
                             </el-row>
                             <el-row class="nav-row">
-                                <el-col :span="24">
+                                <el-col :span="12">
                                     <div class="ai-config-section-title">
                                         <i class="fa-solid fa-comment-slash"></i> 对话开场白
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text @click="openGreetingQuestionPanel">
+                                            开场白预置问题
+                                        </el-button>
                                     </div>
                                 </el-col>
                                 <el-col :span="24">
@@ -282,6 +292,11 @@
         <AttachmentUploadStatusPanel @handleAttachmentUploadStatusPanelClose="handleAttachmentUploadStatusPanelClose" ref="uploadStatusVisiblePanelRef" />
     </el-dialog>
 
+    <!-- 开场白预置问题 -->
+     <el-dialog title="开场白预置问题" v-model="openingPhraseStatusVisible" width="500px">
+        <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -289,7 +304,8 @@ import { ElLoading , ElMessage } from 'element-plus'
 
 import {
     getRole , 
-    saveRoleWithReActConfig
+    saveRoleWithReActConfig , 
+    publishRole
 } from "@/api/smart/assistant/role";
 
 import {
@@ -297,15 +313,18 @@ import {
 } from "@/api/smart/assistant/llmModel"
 
 
-import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
+// import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
+import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
 import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
-import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
+// import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
+import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoiceTransferPanel'
 import VoiceChoicePanel from '@/views/smart/assistant/llmModel/choiceVoicePanel'
 import LllModelConfigPanel from '@/views/smart/assistant/llmModel/lllModelConfigPanel'
 import guessWhatYouAskPanel from '@/views/smart/assistant/llmModel/guessWhatYouAskPanel'
 import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPanel'
 import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
 import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
+import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -325,6 +344,7 @@ const promptDialogVisible = ref(false)
 const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
+const openingPhraseStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -336,6 +356,7 @@ const guessWhatYouAskRef = ref(null)
 const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
+const openingPhraseStatusPanelRef  = ref(null)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
@@ -470,6 +491,11 @@ const displayRoleInfoBack = (currentRole) =>{
         agentModelConfigForm.value.uploadData = currentRole.uploadData;
     }
 
+    //  对话开场白
+    if(currentRole.greetingQuestion){
+        agentModelConfigForm.value.greetingQuestion = currentRole.greetingQuestion ;
+    }
+
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
 
@@ -556,6 +582,9 @@ function handleSelectToolsConfigClose(selectItem) {
     if (toolsChoicePanelRef.value) {
         selectionToolsData.value = selectItem ; 
         agentModelConfigForm.value.selectionToolsData = selectionToolsData.value;
+
+        // 更新配置
+        submitModelConfig();
     }
 }
 
@@ -730,6 +759,27 @@ function syncPromptContent(content) {
     promptDialogVisible.value = false;
 }
 
+/** 打开开场白角色配置 */
+const openGreetingQuestionPanel = () => {
+    openingPhraseStatusVisible.value = true;
+
+    nextTick(() => {
+       openingPhraseStatusPanelRef.value.setOpeningQuestions(agentModelConfigForm.value.greetingQuestion) 
+    });
+}
+
+/** 开场白角色配置 */
+const handleOpeningPhraseStatusPanelClose = (formData) => {
+    console.log('handleOpeningPhraseStatusPanelClose formData = ' + JSON.stringify(formData))
+    openingPhraseStatusVisible.value = false ;
+    if(formData){
+        agentModelConfigForm.value.greetingQuestion = formData ;
+
+        // 更新配置
+        submitModelConfig();
+    }
+}
+
 const submitModelConfig = async () => {
 
     await agentModelConfigFormRef.value.validate((valid, fields) => {
@@ -748,7 +798,7 @@ const submitModelConfig = async () => {
 
             saveRoleWithReActConfig(agentModelConfigForm.value).then(res => {
                 console.log('res = ' + res);
-                proxy.$modal.msgSuccess("保存成功");
+                proxy.$modal.msgSuccess("角色信息保存成功");
                 loading.close();
                 getRoleInfo();
             }).catch(() => {
@@ -759,6 +809,13 @@ const submitModelConfig = async () => {
             console.log('error submit!', fields);
         }
     });
+};
+
+/**  发布角色 */
+const publishRoleConfig = () => {
+    publishRole(currentRoleId.id).then(response => {
+        ElMessage.success('发布成功');
+    })
 };
 
 
