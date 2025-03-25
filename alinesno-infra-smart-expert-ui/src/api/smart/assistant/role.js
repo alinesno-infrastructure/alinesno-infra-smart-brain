@@ -36,6 +36,16 @@ var managerUrl = {
   saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
   saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
   updateFlowConfig: prefix + "updateFlowConfig",
+  publishRole: prefix + "publishRole",
+}
+
+// 发布角色
+export function publishRole(roleId) {
+  return request({
+    url: managerUrl.publishRole + '?roleId=' + parseStrEmpty(roleId) ,
+    method: 'post',
+    data: data
+  })
 }
 
 // 更新流程角色配置
