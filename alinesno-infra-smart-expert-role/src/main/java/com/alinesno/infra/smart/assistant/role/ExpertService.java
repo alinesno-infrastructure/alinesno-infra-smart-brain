@@ -30,7 +30,7 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
-import com.alinesno.infra.smart.assistant.role.utils.FilterWordUtils;
+import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.screen.entity.ScreenEntity;
