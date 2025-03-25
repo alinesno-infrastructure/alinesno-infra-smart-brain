@@ -26,6 +26,9 @@ public class RoleReActConfigDto {
     @NotBlank(message = "问候语不能为空")
     private String greeting;
 
+    // 问候语问题
+    private List<String> greetingQuestion ;
+
     // 模型配置相关信息
     private ModelConfig modelConfig;
 
