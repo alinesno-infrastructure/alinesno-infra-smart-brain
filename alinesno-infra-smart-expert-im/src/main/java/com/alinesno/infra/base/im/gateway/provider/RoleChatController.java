@@ -1,6 +1,7 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -8,6 +9,7 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.RoleQuestionSuggestionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
@@ -46,9 +48,6 @@ public class RoleChatController extends SuperController {
     @Autowired
     private IIndustryRoleService industryRoleService;
 
-//    @Autowired
-//    private QianWenLLM qianWenLLM;
-
     @Autowired
     private ISSEService sseService;
 
@@ -68,18 +67,18 @@ public class RoleChatController extends SuperController {
         IndustryRoleEntity role = industryRoleService.getById(roleId);
         ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
-//        // 生成介绍的chat
-//        Message userMsg = getMessage(role);
-//        MessageManager msgManager = new MessageManager(10);
-//        msgManager.add(userMsg);
-
         if(StringUtils.isNotBlank(role.getGreeting())){
             message.setChatText(role.getGreeting());
         }else{
-//            StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
-//            stringBuilder.toString());
             message.setChatText(role.getRoleName()) ;
         }
+
+        // 设置用户问题
+        if(StringUtils.isNotBlank(role.getGreetingQuestion())){
+            List<String> greetingQuestion = JSONArray.parseArray(role.getGreetingQuestion() , String.class) ;
+            message.setGreetingQuestion(greetingQuestion);
+        }
+
         message.setLoading(false);
 
         AjaxResult result = AjaxResult.success();
@@ -89,22 +88,6 @@ public class RoleChatController extends SuperController {
 
         return result;
     }
-
-//    private static Message getMessage(IndustryRoleEntity role) {
-//        String introBuilder = "你是一名[" +
-//                role.getRoleName() +
-//                "], " +
-//                role.getRoleLevel() +
-//                "，" +
-//                role.getResponsibilities() +
-//                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
-//
-//        return Message
-//                .builder()
-//                .role(Role.USER.getValue())
-//                .content(introBuilder)
-//                .build();
-//    }
 
     /**
      * 角色对话
@@ -169,19 +152,25 @@ public class RoleChatController extends SuperController {
 
         R<String> r = storageConsumer.upload(targetFile) ;
 
-        // 模拟返回文件的字数信息，这里假设你有获取字数的逻辑，这里简单返回0
-//        int wordCount = 100;
-
         FileAttachment fileAttachment = new FileAttachment();
         fileAttachment.setId(r.getData());
         fileAttachment.setHasStatus(0);
-        // 如果非图片类型，则解析出字数
-//        if (!file.) {
-//            fileAttachment.setWordCount(wordCount);
-//        }
 
         return AjaxResult.success(fileAttachment) ;
     }
+
+    /**
+     * 获取用户提问问题建议
+     */
+    @PostMapping("/getRoleQuestionSuggestion")
+    public AjaxResult getQuestionSuggestion(@RequestBody RoleQuestionSuggestionDto dto) {
+        log.debug("获取用户提问问题建议:{}" , dto);
+
+        List<String> questionSug =  industryRoleService.getQuestionSuggestion(dto) ;
+
+        return AjaxResult.success("操作成功." , questionSug);
+    }
+
 
     /**
      * 文件信息
@@ -192,5 +181,4 @@ public class RoleChatController extends SuperController {
         private int wordCount ; // 文件字数
         private int hasStatus ; // 上传中|解析中|入库中
     }
-
 }
