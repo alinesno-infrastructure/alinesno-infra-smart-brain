@@ -25,6 +25,8 @@ public class ChatMessageDto {
     private Object chatText;
     private String reasoningText ;  // 推理内容
 
+    private List<String> greetingQuestion;  // 用户推荐问题列表
+
     private List<FileAttachmentDto> fileAttributeList = new ArrayList<>();  // 文件列表(这条消息中的文件列表)
 
     private FlowStepStatusDto flowStep ; // 流程节点运行状态
