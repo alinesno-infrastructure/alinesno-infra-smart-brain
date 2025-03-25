@@ -215,6 +215,7 @@ public class ReActExpertService extends ExpertService {
 
             if(loop >= maxLoop){
                 isCompleted = true ;
+                answer = AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
             }
         } while (!isCompleted);
 
