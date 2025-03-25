@@ -10,6 +10,10 @@
   font-weight: 400 !important;
 }
 
+.el-transfer{
+  --el-transfer-panel-body-height: 500px !important;
+}
+
 .el-upload {
   input[type="file"] {
     display: none !important;
