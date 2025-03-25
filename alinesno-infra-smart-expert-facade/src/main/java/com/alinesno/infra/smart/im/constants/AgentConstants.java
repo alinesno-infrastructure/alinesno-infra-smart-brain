@@ -14,6 +14,8 @@ public interface AgentConstants {
     }
 
     interface ChatText {
+        String CHAT_SUCCESS_FINISH = "success" ;
+        String CHAT_FAIL_FINISH = "fail" ;
         String CHAT_FINISH = "表达结束" ;
         String CHAT_NO_ANSWER = "我尝试找了很多次，但是未找到答案" ;
         String CHAT_WAITING_WITH_TIME = "收到，任务我已经在处理，请稍等1-2分钟 :-)" ;
@@ -28,9 +30,9 @@ public interface AgentConstants {
 
     interface Slices {
         String OBSERVATION = "\n观察";
-        String PRE_CONTENT= "\n上一个环境输出的内容\n";
-        String DATASET_CONTENT= "\n你的知识库内容\n";
-        String REFERENCE_CONTENT= "\n你引用内容\n";
+        String PRE_CONTENT= "\n##上一个环境输出的内容:\n";
+        String DATASET_CONTENT= "\n##你的知识库内容:\n";
+        String REFERENCE_CONTENT= "\n##你引用附件内容:\n";
         String TASK = "\n当前任务: %s\n\n开始！这对您来说非常重要，请充分利用可用工具并给出您的最佳最终答案，您的工作取决于此！\n\n思考：";
         String MEMORY = "\n\n# 有用的上下文: \n%s";
         String ROLE_PLAYING = "你是 %s。%s\n你的个人目标是: %s";
