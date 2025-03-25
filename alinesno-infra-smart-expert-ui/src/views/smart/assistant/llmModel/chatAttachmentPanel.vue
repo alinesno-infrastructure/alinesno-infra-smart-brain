@@ -199,7 +199,7 @@ const checkScrollability = () => {
   }
 
     if(uploadedFiles.value.length > 0){
-      emit('updateChatWindowHeight', 320) ;
+      emit('updateChatWindowHeight', 360) ;
     }else{
       if(referenceFile.value){
         emit('updateChatWindowHeight', 266) ;
@@ -286,13 +286,13 @@ const setReferenceFile = (file) => {
   // 补充处理文件类型
   file.type = getFileType(file.extension);
   referenceFile.value = file;
-  emit('updateChatWindowHeight', 265);
+  emit('updateChatWindowHeight', 305);
 };
 
 // 删除引用文件
 const removeReferenceFile = () => {
   referenceFile.value = null;
-  emit('updateChatWindowHeight', 220) ;
+  emit('updateChatWindowHeight', 260) ;
 };
 
 // 文件上传处理
