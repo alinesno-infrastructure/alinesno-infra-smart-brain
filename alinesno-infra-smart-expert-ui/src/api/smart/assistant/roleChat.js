@@ -10,10 +10,20 @@ var managerUrl = {
   getInfo: prefix +"getInfo",
   chatRole: prefix + "chatRole",
   uploadFile: prefix + "uploadFile",
+  getRoleQuestionSuggestion: prefix + "getRoleQuestionSuggestion",
 
   recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
   playGenContent: speechPrefix + "playGenContent" ,
+}
+
+// 获取角色智能问答建议
+export function getRoleQuestionSuggestion(data) {
+  return request({
+    url: managerUrl.getRoleQuestionSuggestion , 
+    method: 'post',
+    data: data 
+  })
 }
 
 // 文件上传接口
