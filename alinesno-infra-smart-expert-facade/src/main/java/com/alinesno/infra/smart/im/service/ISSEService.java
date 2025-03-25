@@ -38,6 +38,13 @@ public interface ISSEService {
     void send(@NotBlank String clientId , String message) throws IOException;
 
     /**
+     * 发送完成信息
+     * @param clientId
+     * @throws IOException
+     */
+    void sendDone(@NotBlank String clientId) throws IOException;
+
+    /**
      * 关闭与指定客户端的SSE连接.
      *
      * @param clientId 客户端ID，不能为空.
