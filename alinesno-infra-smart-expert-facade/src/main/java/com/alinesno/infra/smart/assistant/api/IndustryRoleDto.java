@@ -39,6 +39,7 @@ public class IndustryRoleDto {
     private String backstory; // 角色背景
     private String chainId; // 其他角色相关字段
     private String greeting; // 开场白
+    private List<String> greetingQuestion; // 开场白问题
     private boolean askHumanHelp = false; // 是否需要人类帮助
     private String scriptType; // 执行类型(脚本script|流程flow|默认default)
     private String otherAttributes; // 其他角色相关字段
@@ -93,6 +94,12 @@ public class IndustryRoleDto {
         // 文件上传
         if (entity.getUploadData() != null) {
             dto.setUploadData(JSONObject.parseObject(entity.getUploadData(), UploadData.class));
+        }
+
+        // 开场白问题
+        if (entity.getGreetingQuestion() != null) {
+            List<String> knowledgeBaseIds = JSONObject.parseObject(entity.getGreetingQuestion(), new TypeReference<>() {});
+            dto.setGreetingQuestion(knowledgeBaseIds);
         }
 
         return dto;
