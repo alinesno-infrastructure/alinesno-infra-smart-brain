@@ -171,7 +171,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         // 处理解析后的消息对象
         String ids = message.getUsers().stream().map(String::valueOf).collect(Collectors.joining(","));
-        String fileIds = message.getFileIds().stream().map(String::valueOf).collect(Collectors.joining(","));
 
         MessageEntity msg = getMessageEntity(
                 message.getChannelId(),
@@ -185,7 +184,12 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             String preBusinessIds = message.getBusinessIds().stream().map(String::valueOf).collect(Collectors.joining(","));
             msg.setPreBusinessIds(preBusinessIds);
         }
-        msg.setFileIds(fileIds);  // 配置消息里面的文件id
+
+        if(!message.getFileIds().isEmpty()){
+            String fileIds = message.getFileIds().stream().map(String::valueOf).collect(Collectors.joining(","));
+            msg.setFileIds(fileIds);  // 配置消息里面的文件id
+        }
+
         msg.setAccountId(message.getAccountId());
         save(msg);
 
