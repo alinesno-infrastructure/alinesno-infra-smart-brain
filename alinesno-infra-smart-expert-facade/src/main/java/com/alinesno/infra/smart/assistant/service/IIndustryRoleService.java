@@ -134,4 +134,12 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param roleId
      */
     void updateFlowConfig(RoleFlowConfigDto flowConfigDto, Long roleId);
+
+    /**
+     * 获取角色当前频道问题建议
+     * @param dto
+     * @return
+     */
+    List<String> getQuestionSuggestion(RoleQuestionSuggestionDto dto);
+
 }
