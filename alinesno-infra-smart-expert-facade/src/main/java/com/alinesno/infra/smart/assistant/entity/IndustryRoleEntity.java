@@ -44,6 +44,11 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("开场白")
     private String greeting ; // 开场白
 
+    @TableField("greeting_question")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 512)
+    @ColumnComment("开场白问题")
+    private String greetingQuestion ; // 开场白问题
+
     @TableField("ask_human_help")
     @ColumnType(value = MySqlTypeConstant.BIGINT)
     @ColumnComment("是否需要人类帮助")
@@ -111,10 +116,6 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @ColumnComment("销售来源角色ID")
     private Long saleFromRoleId = 0L ;
-
-//    @TableField
-//    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "知识库ID")
-//    private String knowledgeId ;
 
     // 知识库ID列表，用于关联相关知识数据
     @TableField("knowledge_base_ids")
