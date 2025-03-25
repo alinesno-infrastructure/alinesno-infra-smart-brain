@@ -99,6 +99,13 @@ public class SSEServiceImpl implements ISSEService {
         // emitter.complete();
     }
 
+    @Override
+    public void sendDone(String clientId) throws IOException {
+        final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
+        Assert.notNull(emitter, "客户端不存在，clientId = " + clientId);
+        emitter.send("[DONE]");
+    }
+
     /**
      *  定时任务 用于测试后端推送的数据
      */
