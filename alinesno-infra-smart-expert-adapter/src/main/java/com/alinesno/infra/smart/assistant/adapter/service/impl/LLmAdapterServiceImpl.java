@@ -1,9 +1,16 @@
 package com.alinesno.infra.smart.assistant.adapter.service.impl;
 
+import com.agentflex.ocr.aip.AipOcrModel;
+import com.agentflex.ocr.aip.AipOcrModelConfig;
+import com.agentflex.vision.qwen.QwenVision;
+import com.agentflex.vision.qwen.QwenVisionConfig;
 import com.agentsflex.core.image.ImageConfig;
 import com.agentsflex.core.image.ImageModel;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.ocr.OcrConfig;
+import com.agentsflex.core.ocr.OcrModel;
+import com.agentsflex.core.ocr.OcrResponse;
 import com.agentsflex.core.reranker.ReRanker;
 import com.agentsflex.core.reranker.ReRankerConfig;
 import com.agentsflex.core.speech.SpeechConfig;
@@ -58,7 +65,6 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         Map<String, Function<LlmConfig, Llm>> llmFactoryMap = Map.of(
                 LlmModelProviderEnums.QWEN.getCode(), qwenConfig -> createLlm(new QwenLlmConfig(), qwenConfig, QwenLlm::new),
                 LlmModelProviderEnums.DOUBAO.getCode(), doubaoAiConfig -> createLlm(new DoubaoLlmConfig(), doubaoAiConfig, DoubaoLlm::new),
-//                LlmModelProviderEnums.GITEE.getCode(), giteeAiConfig -> createLlm(new GiteeAiLlmConfig(), giteeAiConfig, GiteeAiLlm::new),
                 LlmModelProviderEnums.OLLAMA.getCode(), ollamaAiConfig -> createLlm(new OllamaLlmConfig(), ollamaAiConfig, OllamaLlm::new),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), siliconAiConfig -> createLlm(new SiliconflowLlmConfig(), siliconAiConfig, SiliconflowLlm::new),
                 LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new)
@@ -158,9 +164,30 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         return null;
     }
 
+    @Override
+    public OcrModel ocrModel(String type, OcrConfig config) {
+        if(LlmModelProviderEnums.AIP.getCode().equals(type)){
+            AipOcrModelConfig aipConfig = new AipOcrModelConfig();
+            return new AipOcrModel(aipConfig);
+        }
+        return null;
+    }
+
+    @Override
+    public Llm visionModel(String type, LlmConfig config) {
+        if(LlmModelProviderEnums.QWEN.getCode().equals(type)){
+            QwenVisionConfig visionConfig = new QwenVisionConfig();
+
+            config.setApiKey(config.getApiKey()) ;
+            config.setModel(config.getModel()) ;
+
+            return new QwenVision(visionConfig);
+        }
+        return null;
+    }
+
     private Supplier<ImageModel> getImageModelSupplier(String type, ImageConfig config) {
         Map<String, Supplier<ImageModel>> imageModelFactory = Map.of(
-//                LlmModelProviderEnums.GITEE.getCode(), () -> createGiteeImageModel(config),
                 LlmModelProviderEnums.DOUBAO.getCode(), () -> createDoubaoImageModel(config),
                 LlmModelProviderEnums.QWEN.getCode(), () -> createQwenImageModel(config),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), () -> createSiliconflowImageModel(config)
