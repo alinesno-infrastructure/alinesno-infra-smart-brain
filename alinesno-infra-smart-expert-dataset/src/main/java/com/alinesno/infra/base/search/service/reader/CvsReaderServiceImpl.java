@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.search.service.reader;
 
-import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
+import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +16,11 @@ public class CvsReaderServiceImpl extends BaseReaderServiceImpl {
      * 此方法用于读取指定 ID 的 CSV 附件内容。
      *
      * @param attachmentDto 要读取的 CSV 附件的唯一标识符。
+     * @param uploadData
      * @return 返回读取到的 CSV 附件内容，若读取失败或无内容则返回 null。
      */
     @Override
-    public String readAttachment(FileAttachmentDto attachmentDto) {
+    public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
         return null;
     }
 }
