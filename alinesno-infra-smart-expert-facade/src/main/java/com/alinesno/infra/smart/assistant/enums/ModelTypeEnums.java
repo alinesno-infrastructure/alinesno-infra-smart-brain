@@ -18,6 +18,7 @@ public enum ModelTypeEnums {
     SPEECH_RECOGNITION("语音识别", "speech_recognition"),
     SPEECH_SYNTHESIS("语音合成", "speech_synthesis"),
     VISION_MODEL("视觉模型", "vision_model"),
+    OCR_MODEL("OCR识别", "ocr_model"),
     IMAGE_GENERATION("图片生成", "image_generation");
 
     private final String displayName;
