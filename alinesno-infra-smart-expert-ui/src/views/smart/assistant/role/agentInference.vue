@@ -540,6 +540,7 @@ function handleOpenDatasetConfigPanel() {
 
 // 关闭数据集配置窗口
 function handleSelectDatasetConfigClose(selectItem) {
+    console.log('关闭数据集配置窗口 = ' + selectItem)
     if (datasetConfigDialogVisible.value) {
         datasetConfigDialogVisible.value = false;
         selectionDatasetData.value = selectItem ; // datasetChoicePanelRef.value.getSelectItemList();
