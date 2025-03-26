@@ -19,7 +19,9 @@
 		<aliyun.sdk.oss.version>3.16.1</aliyun.sdk.oss.version>
 		<qiniu.java.sdk.version>7.12.1</qiniu.java.sdk.version>
 		<minio.version>8.5.2</minio.version>
-		<model-adapter.version>2.1.0-M2-SNAPSHOT</model-adapter.version>
+
+		<!-- 模型适配 -->
+		<model-adapter.version>2.2.0-M2-SNAPSHOT</model-adapter.version>
 	</properties>
 
 	<dependencies>
@@ -186,6 +188,22 @@
 			<version>${model-adapter.version}</version>
 		</dependency>
 		<!-- 文件解析_end -->
+
+		<!-- OCR模型_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-ocr-aip</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- OCR模型_end -->
+
+		<!-- 视觉模型_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-vision-qwen</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- 视觉模型_end -->
 
 	</dependencies>
 
