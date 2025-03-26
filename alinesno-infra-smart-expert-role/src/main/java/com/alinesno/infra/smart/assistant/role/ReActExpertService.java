@@ -15,6 +15,7 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
@@ -298,21 +299,24 @@ public class ReActExpertService extends ExpertService {
 
         // 添加附件解析 attachments(比如文件或者图片之类的)
         if(!CollectionUtils.isEmpty(attachments)){
-            List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(attachments) ;
-            for(FileAttachmentDto fileAttachmentDto : newAttachments){
-                sb.append(AgentConstants.Slices.REFERENCE_CONTENT);
+            IndustryRoleDto industryRoleDto = IndustryRoleDto.fromEntity(getRole()) ;
+            if(industryRoleDto.isUploadStatus()){
+                List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(attachments ,industryRoleDto.getUploadData()) ;
+                for(FileAttachmentDto fileAttachmentDto : newAttachments){
+                    sb.append(AgentConstants.Slices.REFERENCE_CONTENT);
 
 
-                StringBuilder treatmentSb = new StringBuilder();
-                treatmentSb.append("文件名称:").append(fileAttachmentDto.getFileName()).append("\n");
-                treatmentSb.append("文件类型:").append(fileAttachmentDto.getFileType()).append("\n");
-                treatmentSb.append("文件大小:").append(fileAttachmentDto.getLength()).append("\n");
-                treatmentSb.append("文件内容:").append(fileAttachmentDto.getFileContent()).append("\n");
+                    StringBuilder treatmentSb = new StringBuilder();
+                    treatmentSb.append("文件名称:").append(fileAttachmentDto.getFileName()).append("\n");
+                    treatmentSb.append("文件类型:").append(fileAttachmentDto.getFileType()).append("\n");
+                    treatmentSb.append("文件大小:").append(fileAttachmentDto.getLength()).append("\n");
+                    treatmentSb.append("文件内容:").append(fileAttachmentDto.getFileContent()).append("\n");
 
-                // 将附件内容同步放到用户消息历史中，以确保之前的消息包含逻辑
-                historyPrompt.addMessage(new HumanMessage(treatmentSb.toString()));
+                    // 将附件内容同步放到用户消息历史中，以确保之前的消息包含逻辑
+                    historyPrompt.addMessage(new HumanMessage(treatmentSb.toString()));
 
-                sb.append(treatmentSb);
+                    sb.append(treatmentSb);
+                }
             }
         }
 
