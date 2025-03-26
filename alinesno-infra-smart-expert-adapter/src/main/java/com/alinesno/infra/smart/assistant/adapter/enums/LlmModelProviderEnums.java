@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.adapter.enums;
 
+import com.agentflex.vision.qwen.QwenVisionModelEnums;
 import com.agentsflex.image.doubao.DoubaoImageModelEnums;
 import com.agentsflex.image.qwen.QwenImageModelEnums;
 import com.agentsflex.llm.ollama.OllamaLlmModelEnums;
@@ -35,6 +36,7 @@ public enum LlmModelProviderEnums {
             new ModelInfo(ModelTypeEnums.RE_RANKING_MODEL, "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank" , QwenReRankerModelEnums.getAllModels()),
             new ModelInfo(ModelTypeEnums.SPEECH_RECOGNITION, "https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription" , QwenSpeechRecognizeModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.SPEECH_SYNTHESIS, "https://dashscope.aliyuncs.com" , QwenSpeechModelEnums.getAllModels() , 2) ,
+            new ModelInfo(ModelTypeEnums.VISION_MODEL, "https://dashscope.aliyuncs.com" , QwenVisionModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.IMAGE_GENERATION, "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis" , QwenImageModelEnums.getAllModels())
     )),
 
@@ -70,6 +72,10 @@ public enum LlmModelProviderEnums {
             new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwQLlmModelEnums.getAllModels())
     )),
 
+    AIP("AIP模型", "aip", List.of(
+            new ModelInfo(ModelTypeEnums.OCR_MODEL, "https://example.com/api/v1/vision")
+    )),
+
     CUSTOM_MODEL("自定义模型", "customModel", List.of(
             new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://example.com/api/v1"),
             new ModelInfo(ModelTypeEnums.VECTOR_MODEL, "https://example.com/api/v1/vector"),
@@ -77,6 +83,7 @@ public enum LlmModelProviderEnums {
             new ModelInfo(ModelTypeEnums.SPEECH_RECOGNITION, "https://example.com/api/v1/speech-recognition"),
             new ModelInfo(ModelTypeEnums.SPEECH_SYNTHESIS, "https://example.com/api/v1/speech-synthesis"),
             new ModelInfo(ModelTypeEnums.VISION_MODEL, "https://example.com/api/v1/vision"),
+            new ModelInfo(ModelTypeEnums.OCR_MODEL, "https://example.com/api/v1/vision"),
             new ModelInfo(ModelTypeEnums.IMAGE_GENERATION, "https://example.com/api/v1/image-generation")
     ));
 
