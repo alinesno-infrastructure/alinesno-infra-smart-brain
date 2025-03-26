@@ -1,11 +1,10 @@
 package com.alinesno.infra.base.search.service.reader;
 
+import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
-import com.spire.doc.collections.SectionCollection;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import com.spire.doc.Document;
-import com.spire.doc.collections.SectionCollection;
 
 import java.io.File;
 
@@ -21,11 +20,12 @@ public class WordReaderServiceImpl  extends BaseReaderServiceImpl {
      * 处理思路，解析出文档的菜单结构，返回每个章节的内容，然后再将每个章节内容整理成上下文会话
      *
      * @param attachmentDto 要读取的 Word 附件的唯一标识符。
+     * @param uploadData
      * @return 返回读取到的 Word 附件内容，若读取失败或者附件无内容则返回 null。
      */
     @SneakyThrows
     @Override
-    public String readAttachment(FileAttachmentDto attachmentDto) {
+    public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
         // 解析word文档的目录结构
         File file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
 
