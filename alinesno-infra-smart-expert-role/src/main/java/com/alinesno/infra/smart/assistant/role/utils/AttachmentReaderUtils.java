@@ -2,9 +2,9 @@ package com.alinesno.infra.smart.assistant.role.utils;
 
 import cn.hutool.extra.spring.SpringUtil;
 import com.alinesno.infra.base.search.service.reader.*;
+import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -19,10 +19,12 @@ public class AttachmentReaderUtils {
 
     /**
      * 读取附件列表，并解析出每个附件的内容出来
+     *
      * @param attachments
+     * @param uploadData
      * @return
      */
-    public List<FileAttachmentDto> readAttachmentList(List<FileAttachmentDto> attachments){
+    public List<FileAttachmentDto> readAttachmentList(List<FileAttachmentDto> attachments, UploadData uploadData){
 
         List<FileAttachmentDto> newAttachments = new ArrayList<>() ;
 
@@ -32,7 +34,7 @@ public class AttachmentReaderUtils {
             String fileType = attachment.getFileType() ;
             IAttachmentReaderService attachmentReaderService = getAttachmentReaderService(fileType) ;
             if(attachmentReaderService != null){
-                String fileContent = attachmentReaderService.readAttachment(attachment) ;
+                String fileContent = attachmentReaderService.readAttachment(attachment , uploadData) ;
 
                 if(fileContent != null && !fileContent.isEmpty()){
                     attachment.setFileContent(fileContent);
