@@ -2,7 +2,9 @@ package com.alinesno.infra.base.search.service.reader;
 
 import cn.hutool.core.io.FileTypeUtil;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -18,8 +20,17 @@ import java.util.List;
 @Slf4j
 public abstract class BaseReaderServiceImpl implements IAttachmentReaderService {
 
+    protected static final String IMAGE_OCR = "ocr" ; // 通过ocr识别
+    protected static final String IMAGE_LLM = "llm" ; // 通过LLM识别
+
     @Autowired
-    private CloudStorageConsumer storageConsumer;
+    protected CloudStorageConsumer storageConsumer;
+
+    @Autowired
+    protected ILLmAdapterService llmAdapter ;
+
+    @Autowired
+    protected ILlmModelService llmModelService ;
 
     /**
      * 根据附件ID获取文件
