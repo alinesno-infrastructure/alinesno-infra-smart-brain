@@ -498,9 +498,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setUploadStatus(dto.isUploadStatus());
 
         // 开场白问题
-        if(CollectionUtils.isNotEmpty(dto.getGreetingQuestion())){
-            role.setGreetingQuestion(JSONObject.toJSONString(dto.getGreetingQuestion()));
-        }
+        role.setGreetingQuestion(JSONObject.toJSONString(dto.getGreetingQuestion()));
 
         if(dto.getUploadData() != null){
             role.setUploadData(JSONObject.toJSONString(dto.getUploadData()));
@@ -510,13 +508,8 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             role.setModelConfig(JSONObject.toJSONString(dto.getModelConfig()));
         }
 
-        if(CollectionUtils.isNotEmpty(dto.getKnowledgeBaseIds())){
-            role.setKnowledgeBaseIds(JSONObject.toJSONString(dto.getKnowledgeBaseIds()));
-        }
-
-        if(CollectionUtils.isNotEmpty(dto.getSelectionToolsData())){
-            role.setSelectionToolsData(JSONObject.toJSONString(dto.getSelectionToolsData()));
-        }
+        role.setKnowledgeBaseIds(JSONObject.toJSONString(dto.getKnowledgeBaseIds()));
+        role.setSelectionToolsData(JSONObject.toJSONString(dto.getSelectionToolsData()));
 
         if(dto.getVoiceInputData() != null){
             role.setVoiceInputData(JSONObject.toJSONString(dto.getVoiceInputData()));
