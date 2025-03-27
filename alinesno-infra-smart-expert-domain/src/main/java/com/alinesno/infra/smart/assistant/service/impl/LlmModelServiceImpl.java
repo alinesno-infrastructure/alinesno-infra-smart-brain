@@ -2,6 +2,9 @@ package com.alinesno.infra.smart.assistant.service.impl;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.http.HttpUtil;
+import com.agentflex.ocr.aip.AipOcrModel;
+import com.agentflex.ocr.aip.AipOcrModelConfig;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.image.*;
 import com.agentsflex.core.llm.ChatContext;
@@ -11,6 +14,11 @@ import com.agentsflex.core.llm.StreamResponseListener;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.ocr.OcrConfig;
+import com.agentsflex.core.ocr.OcrModel;
+import com.agentsflex.core.ocr.OcrRequest;
+import com.agentsflex.core.ocr.OcrResponse;
+import com.agentsflex.core.prompt.ImagePrompt;
 import com.agentsflex.core.reranker.ReRanker;
 import com.agentsflex.core.reranker.ReRankerConfig;
 import com.agentsflex.core.reranker.ReRankerRequest;
@@ -41,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -109,9 +118,54 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
             validateVisionModel(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
 
+        }else if(modelType.equals(ModelTypeEnums.OCR_MODEL.getCode())){  // OCR模型识别
+            validateOCRModel(url, apiKey, modelName, modelProvider, taskInfo, role, workflowId);
         }
 
         return null;
+    }
+
+    /**
+     * 测试OCR模型识别
+     * @param url
+     * @param apiKey
+     * @param modelName
+     * @param modelProvider
+     * @param taskInfo
+     * @param role
+     * @param workflowId
+     */
+    private void validateOCRModel(String url,
+                                  String apiKey,
+                                  String modelName,
+                                  String modelProvider,
+                                  MessageTaskInfo taskInfo,
+                                  IndustryRoleEntity role,
+                                  long workflowId) {
+
+
+        OcrConfig ocrConfig = new OcrConfig();
+        ocrConfig.setEndpoint(url);
+        ocrConfig.setApiKey(apiKey) ;
+
+        OcrModel ocrModel = llmAdapterService.ocrModel(modelProvider,ocrConfig) ;
+
+        OcrRequest ocrRequest = new OcrRequest();
+
+        String downloadUrl = "http://data.linesno.com/OIP-C.jpg" ;
+
+        // HTTPUtil从网络下载到临时文件夹
+
+        File targetFile = new File(System.getProperty("java.io.tmpdir") + File.separator + IdUtil.getSnowflakeNextIdStr() + ".jpg");
+        HttpUtil.downloadFile(downloadUrl ,  targetFile.getAbsoluteFile()) ;
+
+        ocrRequest.setImage(targetFile) ;
+        OcrResponse response = ocrModel.recognize(ocrRequest);
+
+        log.debug("OCR识别结果:{}" , response.getResults());
+
+        streamMessagePublisher.doStuffAndPublishAnEvent(response.getResults(), role, taskInfo, IdUtil.getSnowflakeNextId()) ;
+        streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]", role, taskInfo, IdUtil.getSnowflakeNextId()) ;
     }
 
     /**
@@ -174,6 +228,58 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
                                      MessageTaskInfo taskInfo,
                                      IndustryRoleEntity role,
                                      long workflowId) {
+
+        LlmConfig llmConfig = new LlmConfig();
+        llmConfig.setEndpoint(url);
+        llmConfig.setApiKey(apiKey) ;
+        llmConfig.setModel(modelName);
+
+        Llm llm = llmAdapterService.visionModel(modelProvider, llmConfig);
+        ImagePrompt imagePrompt = new ImagePrompt("这是什么" , "https://dashscope.oss-cn-beijing.aliyuncs.com/images/dog_and_girl.jpeg");
+
+        llm.chatStream(imagePrompt , new StreamResponseListener(){
+
+            @Override
+            public void onMessage(ChatContext context , AiMessageResponse response) {
+
+                AiMessage message = response.getMessage();
+                if(StringUtil.hasText(message.getReasoningContent())){
+                    taskInfo.setReasoningText(message.getReasoningContent());
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null , role, taskInfo, workflowId);
+                }
+
+                if(StringUtil.hasText(message.getContent())){
+                    taskInfo.setReasoningText(null);
+                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, taskInfo, workflowId);
+                }
+
+                MessageStatus status =  message.getStatus() ;
+                if(status == MessageStatus.END){  // 结束
+                    streamMessagePublisher.doStuffAndPublishAnEvent("流式任务完成.",
+                            role,
+                            taskInfo,
+                            IdUtil.getSnowflakeNextId()) ;
+                }
+            }
+
+            @Override
+            public void onFailure(ChatContext context, Throwable throwable) {
+                log.error(">>>> " + throwable.getMessage());
+
+                // 标识为异常信息
+                taskInfo.setHasError(true);
+                taskInfo.setErrorMessage(throwable.getMessage());
+
+                streamMessagePublisher.doStuffAndPublishAnEvent(throwable.getMessage(), role, taskInfo, IdUtil.getSnowflakeNextId()) ;
+                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]", role, taskInfo, IdUtil.getSnowflakeNextId()) ;
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        });
     }
 
     /**
