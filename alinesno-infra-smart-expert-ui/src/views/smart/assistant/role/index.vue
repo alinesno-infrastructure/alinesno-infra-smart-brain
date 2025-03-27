@@ -50,7 +50,13 @@
           </div>
         </el-form>
 
+
         <div class="role-table-container" v-loading="loading">
+
+          <el-empty description="你还没有智能体角色，请点击新增加你的智能体." v-if="RoleList.length == 0 && !loading" style="margin-top:50px">
+            <el-button @click="handleAdd" icon="Plus" type="primary" size="large" text bg>新增加角色</el-button>
+          </el-empty>
+
           <el-row>
             <el-col class="role-item-column" :span="8" v-for="(item, index) in RoleList" :key="index">
               <div class="role-item-panel" @click="handleClick(item)">
