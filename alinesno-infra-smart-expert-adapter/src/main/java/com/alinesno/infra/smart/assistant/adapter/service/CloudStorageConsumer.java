@@ -18,6 +18,11 @@ public interface CloudStorageConsumer {
     R<String> uploadCallbackUrl(File file) ;
 
     /**
+     * 获取预览地址
+     */
+    R<String> getPreviewUrl(String storageId) ;
+
+    /**
      * 上传文件到指定的存储平台并返回访问的url
      * @param file
      * @param platform
