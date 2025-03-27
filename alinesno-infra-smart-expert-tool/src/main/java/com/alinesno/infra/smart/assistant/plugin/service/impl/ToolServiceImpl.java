@@ -86,6 +86,11 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
     public ToolEntity getToolScript(String toolFullName, String selectionToolsData) {
 
         List<Long> toolIds = JSON.parseArray(selectionToolsData, Long.class) ;
+
+        if(toolIds == null || toolIds.isEmpty()){
+            return null ;
+        }
+
         List<ToolEntity> tools = this.listByIds(toolIds) ;
 
         for (ToolEntity tool : tools) {
@@ -102,11 +107,13 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
 
         if(StringUtils.isNotEmpty(selectionToolsData)){
             List<Long> toolIds = JSON.parseArray(selectionToolsData, Long.class) ;
-            return this.listByIds(toolIds).stream().map(tool -> {
-                ToolDto dto = new ToolDto();
-                BeanUtils.copyProperties(tool, dto);
-                return dto;
-            }).toList();
+            if(toolIds != null && !toolIds.isEmpty()){
+                return this.listByIds(toolIds).stream().map(tool -> {
+                    ToolDto dto = new ToolDto();
+                    BeanUtils.copyProperties(tool, dto);
+                    return dto;
+                }).toList();
+            }
         }
 
         return null;
