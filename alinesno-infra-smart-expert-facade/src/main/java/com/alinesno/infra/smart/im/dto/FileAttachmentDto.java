@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.im.dto;
 
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,5 +47,20 @@ public class FileAttachmentDto {
      * 附件顺序
      */
     private int order;
+
+    /**
+     * 任务信息
+     */
+    private MessageTaskInfo taskInfo ;
+
+    /**
+     * 角色信息
+     */
+    private IndustryRoleEntity role ;
+
+    /**
+     * 一对一聊天 ID
+     */
+    private String oneChatId ;
 
 }
