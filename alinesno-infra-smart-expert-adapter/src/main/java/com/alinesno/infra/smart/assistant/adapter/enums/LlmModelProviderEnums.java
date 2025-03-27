@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.adapter.enums;
 
+import com.agentflex.ocr.aip.AipOcrModelEnums;
 import com.agentflex.vision.qwen.QwenVisionModelEnums;
 import com.agentsflex.image.doubao.DoubaoImageModelEnums;
 import com.agentsflex.image.qwen.QwenImageModelEnums;
@@ -73,7 +74,7 @@ public enum LlmModelProviderEnums {
     )),
 
     AIP("AIP模型", "aip", List.of(
-            new ModelInfo(ModelTypeEnums.OCR_MODEL, "https://example.com/api/v1/vision")
+            new ModelInfo(ModelTypeEnums.OCR_MODEL, "http://alinesno-infra-smart-ocr-boot.beta.base.infra.linesno.com/api/infra/smart/ocr/generalText" , AipOcrModelEnums.getAllModels())
     )),
 
     CUSTOM_MODEL("自定义模型", "customModel", List.of(
