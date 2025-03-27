@@ -67,6 +67,12 @@ export const constantRoutes = [
         meta: { title: '首页', icon: 'dashboard', affix: true }
       },
       {
+        path: '/global/config',
+        component: () => import('@/views/smart/assistant/config/index'),
+        name: '/global/config',
+        meta: { title: '全局配置', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/dashboard/smartService',
         component: () => import('@/views/smartService'),
         name: '/dashboard/smartService',
