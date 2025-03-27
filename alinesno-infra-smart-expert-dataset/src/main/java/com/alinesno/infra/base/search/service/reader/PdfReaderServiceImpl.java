@@ -5,6 +5,7 @@ import com.agentsflex.document.parser.PdfBoxDocumentParser;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.SneakyThrows;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -15,6 +16,7 @@ import java.io.FileInputStream;
  * 它实现了 IAttachmentReaderService 接口，专门用于处理 PDF 附件的读取操作。
  * 通过该类可以根据附件的唯一标识来读取对应的 PDF 附件内容。
  */
+@Scope("prototype")
 @Service
 public class PdfReaderServiceImpl  extends BaseReaderServiceImpl {
 
