@@ -3,6 +3,7 @@ package com.alinesno.infra.base.search.service.reader;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.SneakyThrows;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import com.spire.doc.Document;
 
@@ -12,6 +13,7 @@ import java.io.File;
  * WordReaderServiceImpl 类是 Word 附件读取服务的具体实现，
  * 该类实现了 IAttachmentReaderService 接口，主要负责处理 Word 格式附件的读取操作。
  */
+@Scope("prototype")
 @Service
 public class WordReaderServiceImpl  extends BaseReaderServiceImpl {
 
