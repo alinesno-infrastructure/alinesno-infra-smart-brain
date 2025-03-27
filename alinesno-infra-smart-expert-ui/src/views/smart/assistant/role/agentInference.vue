@@ -362,6 +362,8 @@ const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
 const voiceModelOptions = ref([])  // 语音播放模型
 const voiceRecoModelOptions = ref([])  // 语音播放模型
+const multiModelOptions = ref([])  // 多模态模型 
+const ocrModelOptions = ref([])  // ocr模型
 
 // 附件上传
 const uploadStatus = ref(false)
@@ -645,7 +647,8 @@ function toggleUploadSettingsPanel() {
     uploadStatusVisible.value = !uploadStatusVisible.value;
     uploadStatusVisible.value && nextTick(() => {
         console.log(uploadStatusVisiblePanelRef.value)
-        uploadStatusVisiblePanelRef.value.setMultiModalOptions(llmModelOptions.value);
+        uploadStatusVisiblePanelRef.value.setMultiModalOptions(multiModelOptions.value);
+        uploadStatusVisiblePanelRef.value.setOcrModalOptions(ocrModelOptions.value);
 
         nextTick(() => {
             if(agentModelConfigForm.value.uploadData){
@@ -657,12 +660,14 @@ function toggleUploadSettingsPanel() {
 
 // 附件上传关闭
 function handleAttachmentUploadStatusPanelClose(uploadData) {
-        console.log('uploadData = ' + JSON.stringify(uploadData))
+    console.log('uploadData = ' + JSON.stringify(uploadData))
 
-        uploadStatusVisible.value = false ;
-        uploadStatus.value = uploadData.enable; 
-        agentModelConfigForm.value.uploadData = uploadData;
+    uploadStatusVisible.value = false ;
+    uploadStatus.value = uploadData.enable; 
+    agentModelConfigForm.value.uploadData = uploadData;
 
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 切换语音输入状态
@@ -670,12 +675,16 @@ function toggleVoiceInput() {
     voiceInputStatus.value = !voiceInputStatus.value;
     agentModelConfigForm.value.voiceInputStatus = voiceInputStatus.value;
 
+    // 更新角色内容
     submitModelConfig();
 }
 // 切换用户问题建议状态
 function toggleGuessWhatYouAsk() {
     guessWhatYouAskStatus.value = !guessWhatYouAskStatus.value;
     agentModelConfigForm.value.guessWhatYouAskStatus = guessWhatYouAskStatus.value;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 用户问题建议窗口配置
@@ -684,7 +693,9 @@ function toggleGuessWhatYouAskStatusPanel() {
     nextTick(() => {
         console.log(voiceChoicePanelRef.value)
         guessWhatYouAskRef.value.setLlmModelOptions(llmModelOptions.value);
+
         console.log('--->>> agentModelConfigForm.value.guessWhatYouAskData = ' + JSON.stringify(agentModelConfigForm.value.guessWhatYouAskData))
+
         if(agentModelConfigForm.value.guessWhatYouAskData){
             guessWhatYouAskRef.value.setConfigParams(agentModelConfigForm.value.guessWhatYouAskData);
         }
@@ -700,6 +711,9 @@ function handleGuessWhatYouAskStatusPanelClose(formData) {
         console.log('handleGuessWhatYouAskStatusPanelClose formData = ' + JSON.stringify(formData))
         guessWhatYouAskStatus.value = formData.enable; 
         agentModelConfigForm.value.guessWhatYouAskData = formData;
+
+        // 更新角色内容
+        submitModelConfig();
     }
 }
 
@@ -739,6 +753,8 @@ const handleListAllLlmModel = async() => {
         llmModelOptions.value = res.data.filter(item => item.modelType === 'large_language_model');
         voiceModelOptions.value = res.data.filter(item => item.modelType === 'speech_synthesis');
         voiceRecoModelOptions.value = res.data.filter(item => item.modelType === 'speech_recognition');
+        multiModelOptions.value = res.data.filter(item => item.modelType === 'vision_model');
+        ocrModelOptions.value = res.data.filter(item => item.modelType === 'ocr_model');
 
         console.log('voiceModelOptions = ' + JSON.stringify(voiceModelOptions.value))
 
