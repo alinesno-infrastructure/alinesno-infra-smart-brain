@@ -25,7 +25,8 @@
               <li class="count-data bg-red" style="background: #409eff57;border: 1px solid #409eff40;">
                 <i :class="getRandomIcon()"></i>
                 <span class="label-tip">
-                  <router-link to="/dashboard/smart/assistant/roleTemplate/index">
+                  <!-- <router-link to="/dashboard/smart/assistant/roleTemplate/index"> -->
+                  <router-link to="/expert/smart/assistant/role/index">
                     <div class="app-icon" style="margin-top: 0px;width: 40px;height:40px;float:left;border-radius: 8px;font-size: 15px;">
                         <i class="fa-solid fa-plus" style="top:5px" />
                       </div>
