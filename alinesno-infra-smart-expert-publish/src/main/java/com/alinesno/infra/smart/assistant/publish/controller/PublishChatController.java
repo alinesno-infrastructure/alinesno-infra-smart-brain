@@ -3,8 +3,10 @@ package com.alinesno.infra.smart.assistant.publish.controller;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.dashscope.common.Message;
 import com.alibaba.dashscope.common.Role;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
@@ -52,14 +54,17 @@ public class PublishChatController {
     @Autowired
     private IIndustryRoleService industryRoleService;
 
-    @Autowired
-    private QianWenLLM qianWenLLM;
+//    @Autowired
+//    private QianWenLLM qianWenLLM;
 
     @Autowired
     private IChannelPublishService channelPublishService ;
 
     @Autowired
     private ILlmModelService llmModelService ;
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     /**
      * 语音播放 speechRecognition
@@ -114,17 +119,22 @@ public class PublishChatController {
         ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
 
         // 生成介绍的chat
-        Message userMsg = getMessage(role);
-
-        MessageManager msgManager = new MessageManager(10);
-        msgManager.add(userMsg);
+//        Message userMsg = getMessage(role);
+//        MessageManager msgManager = new MessageManager(10);
+//        msgManager.add(userMsg);
 
         if(StringUtils.isNotBlank(role.getGreeting())){
             message.setChatText(role.getGreeting());
         }else{
-            StringBuilder stringBuilder = qianWenLLM.chatComponent(msgManager);
-            message.setChatText(stringBuilder.toString());
+            message.setChatText(role.getRoleName()) ;
         }
+
+        // 设置用户问题
+        if(StringUtils.isNotBlank(role.getGreetingQuestion())){
+            List<String> greetingQuestion = JSONArray.parseArray(role.getGreetingQuestion() , String.class) ;
+            message.setGreetingQuestion(greetingQuestion);
+        }
+
         message.setLoading(false);
 
         AjaxResult result = AjaxResult.success();
@@ -168,20 +178,20 @@ public class PublishChatController {
         return AjaxResult.success("语音识别成功");
     }
 
-    private static Message getMessage(IndustryRoleEntity role) {
-        String introBuilder = "你是一名[" + role.getRoleName() +
-                "], " +
-                role.getRoleLevel() +
-                "，" +
-                role.getResponsibilities() +
-                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
-
-        return Message
-                .builder()
-                .role(Role.USER.getValue())
-                .content(introBuilder)
-                .build();
-    }
+//    private static Message getMessage(IndustryRoleEntity role) {
+//        String introBuilder = "你是一名[" + role.getRoleName() +
+//                "], " +
+//                role.getRoleLevel() +
+//                "，" +
+//                role.getResponsibilities() +
+//                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
+//
+//        return Message
+//                .builder()
+//                .role(Role.USER.getValue())
+//                .content(introBuilder)
+//                .build();
+//    }
 
     /**
      * 角色对话
@@ -220,6 +230,7 @@ public class PublishChatController {
         msgDto.setName(PublishConst.ANONYMOUS_USERNAME);
         msgDto.setRoleType("person");
         msgDto.setIcon(PublishConst.ANONYMOUS_ICON) ;
+        msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
 
         return AjaxResult.success(msgDto);
     }
