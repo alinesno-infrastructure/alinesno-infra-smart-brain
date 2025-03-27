@@ -3,8 +3,10 @@ package com.alinesno.infra.smart.assistant.role.utils;
 import cn.hutool.extra.spring.SpringUtil;
 import com.alinesno.infra.base.search.service.reader.*;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,9 +24,16 @@ public class AttachmentReaderUtils {
      *
      * @param attachments
      * @param uploadData
+     * @param taskInfo
+     * @param role
+     * @param oneChatId
      * @return
      */
-    public List<FileAttachmentDto> readAttachmentList(List<FileAttachmentDto> attachments, UploadData uploadData){
+    public List<FileAttachmentDto> readAttachmentList(List<FileAttachmentDto> attachments,
+                                                      UploadData uploadData,
+                                                      MessageTaskInfo taskInfo,
+                                                      IndustryRoleEntity role,
+                                                      String oneChatId){
 
         List<FileAttachmentDto> newAttachments = new ArrayList<>() ;
 
@@ -32,6 +41,10 @@ public class AttachmentReaderUtils {
         for(FileAttachmentDto attachment : attachments){
 
             String fileType = attachment.getFileType() ;
+            attachment.setRole(role);
+            attachment.setTaskInfo(taskInfo);
+            attachment.setOneChatId(oneChatId);
+
             IAttachmentReaderService attachmentReaderService = getAttachmentReaderService(fileType) ;
             if(attachmentReaderService != null){
                 String fileContent = attachmentReaderService.readAttachment(attachment , uploadData) ;
