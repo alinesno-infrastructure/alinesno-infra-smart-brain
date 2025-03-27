@@ -58,7 +58,7 @@
             <div class="file-name">{{ file.name }}</div>
             <div class="file-details">
               <span>{{ file.size }}</span>
-              <span v-if="file.wordCount">{{ file.wordCount }} 字</span>
+              <!-- <span v-if="file.wordCount">{{ file.wordCount }} 字</span> -->
             </div>
           </div>
           <el-button
@@ -116,7 +116,7 @@ import { ElMessage } from 'element-plus';
 import { uploadFile } from '@/api/smart/assistant/roleChat';
 
 // emits updateChatWindowHeight
-const emit = defineEmits(['updateChatWindowHeight' , 'sendAttachmentActions']);
+const emit = defineEmits(['updateChatWindowHeight', 'sendAttachmentActions']);
 
 // 文件输入框引用
 const fileInput = ref(null);
@@ -128,7 +128,9 @@ const canScrollLeft = ref(false);
 const canScrollRight = ref(false);
 const isDeleteButtonVisible = ref({});
 
-const docTypes = ['pdf', 'word', 'ppt', 'excel' , 'docx' , 'doc'];
+const uploadDataConfig = ref(null);
+
+const docTypes = ['pdf', 'word', 'ppt', 'excel', 'docx', 'doc'];
 
 // 引用文件
 const referenceFile = ref(null);
@@ -198,21 +200,19 @@ const checkScrollability = () => {
     canScrollRight.value = scrollLeft < scrollWidth - clientWidth;
   }
 
-    if(uploadedFiles.value.length > 0){
-      emit('updateChatWindowHeight', 360) ;
-    }else{
-      if(referenceFile.value){
-        emit('updateChatWindowHeight', 266) ;
-      }else{
-        emit('updateChatWindowHeight', 0);
-      }
+  if (uploadedFiles.value.length > 0) {
+    emit('updateChatWindowHeight', 360);
+  } else {
+    if (referenceFile.value) {
+      emit('updateChatWindowHeight', 306);
+    } else {
+      emit('updateChatWindowHeight', 0);
     }
-
+  }
 };
 
 // 发送附件操作并提供附件解析指令
 const sendAttachmentActionTxt = (actionTxt) => {
-
   // 判断是否有文档未上传完成的，如果有的话，则提示还不能操作
   if (uploadedFiles.value.some(file => file.uploading)) {
     ElMessage.warning('请等待所有文件上传完成');
@@ -220,26 +220,7 @@ const sendAttachmentActionTxt = (actionTxt) => {
   }
 
   emit('sendAttachmentActions', actionTxt);
-}
-
-// // 添加计算属性
-// const hasImage = computed(() => {
-//   // 这里也要判断引用附件的值
-//   if (referenceFile.value && referenceFile.value.type === 'image') {
-//     return true;
-//   }
-//   return uploadedFiles.value.some(file => file.type === 'image');
-// });
-
-// const hasDocument = computed(() => {
-
-//   // 也要判断引用附件的值
-//   if (referenceFile.value && docTypes.includes(referenceFile.value.type)) {
-//     return true;
-//   }
-
-//   return uploadedFiles.value.some(file => docTypes.includes(file.type));
-// });
+};
 
 const hasImage = computed(() => {
   return (referenceFile.value?.type === 'image') ||
@@ -251,30 +232,6 @@ const hasDocument = computed(() => {
   return (docTypes.includes(referenceFile.value?.type)) ||
          uploadedFiles.value.some(file => docTypes.includes(file.type));
 });
-
-// 设置引用文件(只能一份)
-// const setReferenceFile = (file) => {
-//   // 如果上传的文件已经有了，就不能再引用
-//   if (uploadedFiles.value.length > 0) {
-//     ElMessage.warning('引用与上传文件不能同时存在');
-//     return;
-//   }
-//   referenceFile.value = file;
-//   emit('updateChatWindowHeight', 265) ;
-
-
-//   console.log('file.type = ' + file.extension)
-
-//   if(docTypes.includes(file.extension)){
-//     hasDocument.value = true ;
-//   }
-
-//   if(file.extension === 'png'){
-//     hasImage.value = true ;
-//     console.log('hasImage = ' + hasImage.value)
-//   }
-
-// };
 
 // 设置引用文件(只能一份)
 const setReferenceFile = (file) => {
@@ -292,7 +249,7 @@ const setReferenceFile = (file) => {
 // 删除引用文件
 const removeReferenceFile = () => {
   referenceFile.value = null;
-  emit('updateChatWindowHeight', 260) ;
+  emit('updateChatWindowHeight', 260);
 };
 
 // 文件上传处理
@@ -300,13 +257,59 @@ const handleFileSelect = (e) => {
   const files = e.target.files;
   if (!files || files.length === 0) return;
 
-  const newFiles = [];
+  // 检查是否允许上传
+  if (!uploadDataConfig.value.enable) {
+    ElMessage.warning('当前不允许上传，请检查上传设置');
+    return;
+  }
+
+  let validFiles = [];
   for (const file of files) {
-    if (uploadedFiles.value.length >= 10) {
-      ElMessage.warning('最多只能上传10个文件');
-      return;
+    const extension = file.name.split('.').pop().toLowerCase();
+    const fileType = getFileType(extension);
+    if (fileType === 'image') {
+      if (uploadDataConfig.value.imageUploadLimit === 0) {
+        ElMessage.warning('当前不允许上传图片，请检查上传设置');
+        return;
+      }
+    } else {
+      if (uploadDataConfig.value.fileUploadLimit === 0) {
+        ElMessage.warning('当前不允许上传文件，请检查上传设置');
+        return;
+      }
     }
 
+    // 检查文件数量限制
+    let fileCount = 0;
+    let imageCount = 0;
+    for (const uploadedFile of uploadedFiles.value) {
+      if (getFileType(uploadedFile.extension) === 'image') {
+        imageCount++;
+      } else {
+        fileCount++;
+      }
+    }
+    if (fileType === 'image') {
+      if (imageCount >= uploadDataConfig.value.imageUploadLimit) {
+        ElMessage.warning(`最多只能上传 ${uploadDataConfig.value.imageUploadLimit} 张图片`);
+        continue;
+      }
+    } else {
+      if (fileCount >= uploadDataConfig.value.fileUploadLimit) {
+        ElMessage.warning(`最多只能上传 ${uploadDataConfig.value.fileUploadLimit} 个文件`);
+        continue;
+      }
+    }
+
+    validFiles.push(file);
+  }
+
+  if (validFiles.length === 0) {
+    return;
+  }
+
+  const newFiles = [];
+  for (const file of validFiles) {
     const extension = file.name.split('.').pop().toLowerCase();
     const fileSize = formatFileSize(file.size);
 
@@ -342,9 +345,8 @@ const startUpload = (fileItem) => {
     fileItem.wordCount = data.wordCount || '无';
     fileItem.uploading = false;
     ElMessage.success('文件上传成功');
-
   })
-  .catch((error) => {
+ .catch((error) => {
     fileItem.uploading = false;
     ElMessage.error(`文件上传失败：${error.message}`);
   });
@@ -374,7 +376,12 @@ const formatFileSize = (bytes) => {
 };
 
 // 暴露给父组件的方法
-const openFileSelector = () => {
+const openFileSelector = (uploadData) => {
+
+  if(!uploadData){
+    ElMessage.warning('当前上传未配置，请先进配置上传设置')
+    return ;
+  }
 
   // 如果已经有引用，不能再选择文件，请先删除引用
   if (referenceFile.value) {
@@ -382,8 +389,23 @@ const openFileSelector = () => {
     return;
   }
 
-  fileInput.value.click();
+  console.log('uploadData = ' + JSON.stringify(uploadData));
 
+  uploadDataConfig.value = uploadData;
+
+  // 根据配置信息决定是否允许打开文件选择器
+  if (!uploadDataConfig.value.enable) {
+    ElMessage.warning('当前不允许上传，请检查上传设置');
+    return;
+  }
+
+  if (uploadDataConfig.value.imageUploadLimit === 0) {
+    // 不允许上传图片，修改 accept 属性
+    const input = fileInput.value;
+    input.accept = input.accept.replace('image/*, ', '');
+  }
+
+  fileInput.value.click();
 };
 
 watch(uploadedFiles, () => {
@@ -395,13 +417,13 @@ watch(uploadedFiles, () => {
 
 /** 获取到正常上传的文件列表，只需要文件的id */
 const handleGetUploadFiles = () => {
-  const filterArr =  uploadedFiles.value.map(file => file.id);
+  const filterArr = uploadedFiles.value.map(file => file.id);
 
   // 清空uploadedFiles数组
   uploadedFiles.value = [];
   checkScrollability();
 
-  return [...filterArr , referenceFile.value ? referenceFile.value.id : null] ;
+  return [...filterArr, referenceFile.value? referenceFile.value.id : null];
 };
 
 defineExpose({
@@ -409,9 +431,9 @@ defineExpose({
   setReferenceFile,
   handleGetUploadFiles
 });
-
-
 </script>
+ 
+
 <style lang="scss" scoped>
 
 .chat-fileds-reference{
