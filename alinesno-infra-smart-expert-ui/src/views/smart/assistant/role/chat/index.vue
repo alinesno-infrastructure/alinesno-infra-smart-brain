@@ -326,7 +326,7 @@ const sendAudioToBackend = async (voiceMessage) => {
 };
 
 const handleUploadFile = () => {
-  attachmentPanelRef.value.openFileSelector();
+  attachmentPanelRef.value.openFileSelector(roleInfo.value.uploadData);
 };
 
 /** 播放生成内容 */
