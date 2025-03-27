@@ -206,11 +206,14 @@ public class ReActExpertService extends ExpertService {
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-                streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
-                        role,
-                        taskInfo,
-                        taskInfo.getTraceBusId()) ;
-                answer = "角色调用失败，请根据异常处理" ;
+//                streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
+//                        role,
+//                        taskInfo,
+//                        taskInfo.getTraceBusId()) ;
+                log.error("调用失败" , e) ;
+                if(!StringUtils.hasText(answer)){
+                    answer = "角色调用失败，请根据异常处理" ;
+                }
                 break ; // 跳出循环
             }
 
@@ -238,7 +241,11 @@ public class ReActExpertService extends ExpertService {
      * @return
      */
     @NotNull
-    private String getDatasetKnowledgeDocument(MessageEntity workflowMessage, MessageTaskInfo taskInfo, List<DocumentVectorBean> datasetKnowledgeDocumentList, String oneChatId, HistoriesPrompt historyPrompt) {
+    private String getDatasetKnowledgeDocument(MessageEntity workflowMessage,
+                                               MessageTaskInfo taskInfo,
+                                               List<DocumentVectorBean> datasetKnowledgeDocumentList,
+                                               String oneChatId,
+                                               HistoriesPrompt historyPrompt) {
         String datasetKnowledgeDocument = "" ;
         if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList) || !CollectionUtils.isEmpty(taskInfo.getAttachments()) || workflowMessage != null){
 
@@ -249,7 +256,11 @@ public class ReActExpertService extends ExpertService {
             }
 
             eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
-            datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList, workflowMessage, taskInfo.getAttachments() , historyPrompt) ;
+            datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList,
+                    workflowMessage,
+                    taskInfo.getAttachments() ,
+                    historyPrompt ,
+                    oneChatId) ;
             eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, datasetKnowledgeDocument) ;
         }
         return datasetKnowledgeDocument;
@@ -285,9 +296,14 @@ public class ReActExpertService extends ExpertService {
      * @param workflowMessage
      * @param attachments
      * @param historyPrompt
+     * @param oneChatId
      * @return
      */
-    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList, MessageEntity workflowMessage, List<FileAttachmentDto> attachments, HistoriesPrompt historyPrompt) {
+    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList,
+                                         MessageEntity workflowMessage,
+                                         List<FileAttachmentDto> attachments,
+                                         HistoriesPrompt historyPrompt,
+                                         String oneChatId) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -301,10 +317,16 @@ public class ReActExpertService extends ExpertService {
         if(!CollectionUtils.isEmpty(attachments)){
             IndustryRoleDto industryRoleDto = IndustryRoleDto.fromEntity(getRole()) ;
             if(industryRoleDto.isUploadStatus()){
-                List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(attachments ,industryRoleDto.getUploadData()) ;
+
+                List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(
+                        attachments ,
+                        industryRoleDto.getUploadData() ,
+                        getTaskInfo() ,
+                        getRole() ,
+                        oneChatId) ;
+
                 for(FileAttachmentDto fileAttachmentDto : newAttachments){
                     sb.append(AgentConstants.Slices.REFERENCE_CONTENT);
-
 
                     StringBuilder treatmentSb = new StringBuilder();
                     treatmentSb.append("文件名称:").append(fileAttachmentDto.getFileName()).append("\n");
@@ -379,79 +401,72 @@ public class ReActExpertService extends ExpertService {
         final MessageTaskInfo localTaskInfo = taskInfo;
         long startTime = System.currentTimeMillis();
 
-//        try {
-            llm.chatStream(historyPrompt, new StreamResponseListener() {
-                @Override
-                public void onMessage(ChatContext context, AiMessageResponse response) {
+        llm.chatStream(historyPrompt, new StreamResponseListener() {
+            @Override
+            public void onMessage(ChatContext context, AiMessageResponse response) {
 
-                        AiMessage message = response.getMessage();
+                    AiMessage message = response.getMessage();
 
-                        System.out.println(">>>> " + message);
+                    System.out.println(">>>> " + message);
 
-                        FlowStepStatusDto stepDto = new FlowStepStatusDto();
-                        stepDto.setMessage("任务进行中...");
-                        stepDto.setStepId(oneChatId);
-                        stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                    FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                    stepDto.setMessage("任务进行中...");
+                    stepDto.setStepId(oneChatId);
+                    stepDto.setStatus(AgentConstants.STEP_PROCESS);
 
-                        if(StringUtils.hasLength(message.getContent())) {
-                            stepDto.setFlowChatText(message.getContent());
-                        }
+                    if(StringUtils.hasLength(message.getContent())) {
+                        stepDto.setFlowChatText(message.getContent());
+                    }
 
-                        if(StringUtils.hasLength(message.getReasoningContent())){
-                            stepDto.setFlowReasoningText(message.getReasoningContent());
-                        }
+                    if(StringUtils.hasLength(message.getReasoningContent())){
+                        stepDto.setFlowReasoningText(message.getReasoningContent());
+                    }
 
-                        stepDto.setPrint(true);
+                    stepDto.setPrint(true);
 
+                    synchronized (localTaskInfo) {
+                        localTaskInfo.setFlowStep(stepDto);
+                    }
+
+                    try {
+                        boolean isEnd = false;
                         synchronized (localTaskInfo) {
-                            localTaskInfo.setFlowStep(stepDto);
+                            if (message.getStatus() == MessageStatus.END) {
+                                outputStr.set(message.getFullContent());
+                                stepDto.setStatus(AgentConstants.STEP_FINISH);
+                                isEnd = true;
+                            }
                         }
 
-                        try {
-                            boolean isEnd = false;
-                            synchronized (localTaskInfo) {
-                                if (message.getStatus() == MessageStatus.END) {
-                                    outputStr.set(message.getFullContent());
-                                    stepDto.setStatus(AgentConstants.STEP_FINISH);
-                                    isEnd = true;
-                                }
-                            }
+                        streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
 
-                            streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
+                        if (isEnd) {
+                            long endTime = System.currentTimeMillis();
+                            int totalToken = getTotalToken(message) ;
 
-                            if (isEnd) {
-                                long endTime = System.currentTimeMillis();
-                                int totalToken = getTotalToken(message) ;
+                            taskInfo.setUsage(usage);
 
-                                taskInfo.setUsage(usage);
+                            usage.setTime(endTime - startTime);
+                            usage.setToken(totalToken);
+                            taskInfo.setUsage(usage);
 
-                                usage.setTime(endTime - startTime);
-                                usage.setToken(totalToken);
-                                taskInfo.setUsage(usage);
-
-                                future.complete(outputStr.get());
-                            }
-                        } catch (Exception e) {
-                            // 处理发布事件时的异常
-                            log.error(e.getMessage());
-                            future.completeExceptionally(e);
+                            future.complete(outputStr.get());
                         }
-                }
+                    } catch (Exception e) {
+                        // 处理发布事件时的异常
+                        log.error(e.getMessage());
+                        future.completeExceptionally(e);
+                    }
+            }
 
-                @Override
-                public void onFailure(ChatContext context, Throwable throwable) {
-                    log.error("消息处理失败" , throwable);
-                    eventStepMessage("消息处理失败", AgentConstants.STEP_FINISH , oneChatId , taskInfo) ;
-                    future.completeExceptionally(throwable);
-                }
+            @Override
+            public void onFailure(ChatContext context, Throwable throwable) {
+                log.error("消息处理失败" , throwable);
+                eventStepMessage("消息处理失败", AgentConstants.STEP_FINISH , oneChatId , taskInfo) ;
+                future.completeExceptionally(throwable);
+            }
 
-            }) ;
-
-//        } catch (Exception e) {
-//            // 处理 chatStream 方法的异常
-//            log.error(e.getMessage());
-//            future.completeExceptionally(e);
-//        }
+        }) ;
 
         return future;
     }
