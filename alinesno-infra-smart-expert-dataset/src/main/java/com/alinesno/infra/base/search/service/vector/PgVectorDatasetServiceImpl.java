@@ -27,6 +27,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -220,6 +221,11 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
 
     @Override
     public List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr) {
+
+        if(datasetIdArr == null || datasetIdArr.isEmpty()){
+            return Collections.emptyList();
+        }
+
         List<DocumentVectorBean> list =  pgVectorService.queryMultiVectorDocument(datasetIdArr , dto.getSearchText() , dto.getTopK()) ;
 
         // Assert.isTrue(list != null , "搜索结果为空");
