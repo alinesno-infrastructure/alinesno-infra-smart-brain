@@ -1,21 +1,14 @@
 package com.alinesno.infra.smart.assistant.publish.utils;
 
-import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.extra.spring.SpringUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.api.request.*;
 import com.alinesno.infra.smart.assistant.api.response.TextMessageRes;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.screen.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
