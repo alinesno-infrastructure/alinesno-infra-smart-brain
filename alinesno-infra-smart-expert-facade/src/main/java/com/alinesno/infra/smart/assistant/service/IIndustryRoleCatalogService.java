@@ -48,4 +48,5 @@ public interface IIndustryRoleCatalogService extends IBaseService<IndustryRoleCa
      * @return
      */
     IndustryRoleCatalogEntity getDefaultCatalog(IndustryRoleCatalogEntity entity);
+
 }
