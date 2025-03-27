@@ -178,8 +178,9 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         if(LlmModelProviderEnums.QWEN.getCode().equals(type)){
             QwenVisionConfig visionConfig = new QwenVisionConfig();
 
-            config.setApiKey(config.getApiKey()) ;
-            config.setModel(config.getModel()) ;
+            visionConfig.setEndpoint(config.getEndpoint());
+            visionConfig.setApiKey(config.getApiKey()) ;
+            visionConfig.setModel(config.getModel()) ;
 
             return new QwenVision(visionConfig);
         }
