@@ -1,6 +1,13 @@
 <template>
   <div class="app-container">
     <el-row :gutter="20">
+
+      <!-- 
+      <el-col :span="4" :xs="24">
+        <ModelTypeSelectPanel />
+      </el-col> 
+      -->
+
       <!--应用数据-->
       <el-col :span="24" :xs="24">
         <div style="display: flex;align-items: center;justify-content: space-between;">
@@ -111,7 +118,7 @@
     </el-row>
 
     <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="600px" append-to-body :before-close="handleClose">
+    <el-dialog :title="title" v-model="open" width="800px" append-to-body :before-close="handleClose">
 
       <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px" style="padding:20px;">
         <el-row>
@@ -249,7 +256,7 @@
           </el-col>
         </el-row>
 
-        <div v-if="form.modelType === 'large_language_model'">
+        <div v-if="form.modelType === 'large_language_model' || form.modelType === 'vision_model' || form.modelType === 'ocr_model'">
           <el-divider content-position="left">测试结果</el-divider>
 
           <div class="reasoning-chat-content" v-if="testLlmModelReasoingReponse">
@@ -334,6 +341,18 @@
               v-if="form.modelType === 'speech_synthesis'" 
               @click="handleTestSpeechModel" 
               text bg size="large" :loading="chatLoading">语音合成</el-button>
+
+          <!-- 多模态测试 -->
+          <el-button type="primary" 
+              v-if="form.modelType === 'vision_model'" 
+              @click="handleTestLlmModel" 
+              text bg size="large" :loading="chatLoading">识别图片</el-button>
+
+          <!-- OCR识别 -->
+          <el-button type="primary" 
+              v-if="form.modelType === 'ocr_model'" 
+              @click="handleTestLlmModel" 
+              text bg size="large" :loading="chatLoading">测试识别</el-button>
 
           <el-tooltip content="请先测试通过，确认模型可用." placement="top">
             <el-button type="primary" @click="submitForm" text bg size="large" :disabled="isValidatedStatus">保存</el-button>
@@ -429,7 +448,7 @@ const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 12,
     modelName: undefined,
     providerId: undefined,
     status: undefined,
@@ -554,14 +573,12 @@ function submitForm() {
       if (form.value.id != undefined) {
         updateLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
-          // open.value = false;
           getList();
           open.value = false;
         });
       } else {
         addLlmModel(form.value).then(response => {
           proxy.$modal.msgSuccess("新增成功");
-          // open.value = false;
           getList();
           open.value = false;
         });
