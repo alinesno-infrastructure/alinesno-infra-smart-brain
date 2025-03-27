@@ -20,9 +20,9 @@
         <el-col :span="24">
           <div class="robot-chat-windows">
 
-            <div class="robot-chat-body inner-robot-chat-body" style="height: calc(100vh - 130px)">
+            <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
               <!-- 聊天窗口_start -->
-              <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
+              <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading wrap-style="padding:10px">
 
                 <div ref="innerRef">
 
@@ -54,6 +54,10 @@
                           item.dateTime }} </span>
 
                       </div>
+
+                      <!-- 文件输出列表__start -->
+                      <ChatAttachmentMessagePanel :message="item" @handleFileIdToMessageBox="handleFileIdToMessageBox" />
+                      <!-- 文件输出列表__end -->
 
                       <!-- 流程输出调试信息_start -->
                       <!-- v-if="item.roleType != 'person'" -->
@@ -119,6 +123,18 @@
                         </div>
                       </div>
 
+                      <!-- 用户问题建议_start ，只要AI最后一条消息下面输出 -->
+                      <UserQuestionSuggestions 
+                        ref="userQuestionSuggestionsRef" 
+                        v-if="item.roleType == 'agent' && index == messageList.length -1"
+                        @handleUserQuestionSuggestionsClick="sendAttachmentActions"
+                        @initChatBoxScroll="initChatBoxScroll"
+                        :roleId="item.roleId" 
+                        :channelId="channelId" 
+                        :greetingQuestion="item.greetingQuestion"
+                        :chatStreamLoading="chatStreamLoading"
+                      />
+                      <!-- 用户问题建议_end -->
 
                     </div>
                   </div>
@@ -130,6 +146,10 @@
             </div>
 
             <div class="robot-chat-footer chat-container publish-chat-footer">
+
+              <ChatAttachmentPanel @updateChatWindowHeight="updateChatWindowHeight" 
+                @sendAttachmentActions="sendAttachmentActions"  
+                ref="attachmentPanelRef" />
 
               <div class="message-chat-container">
                   <div class="message-input">
@@ -162,10 +182,23 @@
                     <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
 
                     <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
-                      <el-button type="danger" text bg size="large" @click="sendMessage('send')">
+                      <el-button type="danger" :loading="chatStreamLoading" text bg size="large" @click="sendMessage('send')">
                         <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" />
                       </el-button>
                     </el-tooltip>
+
+                        <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top">
+                          <el-button type="warning" text bg size="large" @click="sendMessage('function')">
+                            <i class="fa-solid fa-feather icon-btn"></i>
+                          </el-button>
+                        </el-tooltip>
+
+                        <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top" v-if="roleInfo.uploadStatus">
+                          <el-button type="primary" text bg size="large" @click="handleUploadFile">
+                            <i class="fa-solid fa-file-word icon-btn"></i>
+                          </el-button>
+                        </el-tooltip>
+
                   </span>
 
                 </div>
@@ -192,6 +225,9 @@ import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
+import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
+import ChatAttachmentMessagePanel from '@/views/smart/assistant/llmModel/chatAttachmentMessagePanel'
+import UserQuestionSuggestions from '@/views/smart/assistant/llmModel/userQuestionSuggestionsPanel'
 
 import { getShareInfo, chatShareRole, playShareGenContent } from '@/api/smart/assistant/publishChat'
 import { openSseConnect } from "@/api/smart/assistant/chatsse";
@@ -206,6 +242,7 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 
 import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
+const { proxy } = getCurrentInstance();
 
 // const openDebuggerDialog = ref(true)
 
@@ -218,9 +255,13 @@ const audioUrl = ref('');
 
 // const transcription = ref('');
 
-const { proxy } = getCurrentInstance();
+const userQuestionSuggestionsRef = ref(null);
+
+const attachmentPanelRef = ref(null);
 
 // const agentSingleRightPanelRef = ref(null)
+// 记录当前的高度差值
+const heightDiff = ref(170);
 
 const loading = ref(true)
 const shareId = ref(null);
@@ -232,10 +273,13 @@ const businessId = ref(null);
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
+const refreshFieldId = ref([]); // 引用文件的ID
 
 const isSpeechSynthesisSupported = 'speechSynthesis' in window;
 
+// 聊天加载
 const streamLoading = ref(null)
+const chatStreamLoading = ref(false); // 聊天加载
 
 const mdi = new MarkdownIt({
   html: true,
@@ -271,6 +315,12 @@ function keyDown(e) {
   if (!message.value) {
     return;
   }
+  sendMessage('send');
+  message.value = '';
+}
+
+function sendAttachmentActions(actionTxt) {
+  message.value = actionTxt ;
   sendMessage('send');
   message.value = '';
 }
@@ -377,6 +427,14 @@ const sendAudioToBackend = async (voiceMessage) => {
   }
 };
 
+const handleUploadFile = () => {
+  let uploadDataJson = {} ;
+  if(roleInfo.value.uploadData){
+    uploadDataJson = JSON.parse(roleInfo.value.uploadData) ;
+  }
+  attachmentPanelRef.value.openFileSelector(uploadDataJson) ; 
+};
+
 /** 读取html文本 */
 function readerHtml(chatText) {
   if (chatText) {
@@ -435,7 +493,6 @@ const pushResponseMessageList = (newMessage) => {
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText;
-          console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
         } else {
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
         }
@@ -473,6 +530,17 @@ const speakText = (text) => {
   utterance.pitch = 1;
 
   speechSynthesis.speak(utterance);
+};
+
+// 动态更新高度
+const updateChatWindowHeight = (heightVal) => {
+  console.log('heightVal = ' + heightVal);
+  if(heightVal > 0){
+    heightDiff.value = heightVal - 90;
+  }else {
+    heightDiff.value = 260 - 90;
+  }
+  console.log('heightDiff.value = ' + heightDiff.value);
 };
 
 function handleExecutorMessage(item) {
@@ -536,11 +604,12 @@ function handleSseConnect(channelId) {
             const data = JSON.parse(resData);
             pushResponseMessageList(data);
           }
-        } else {
+        } else if(event.data.includes('[DONE]')) {
           console.log('消息接收结束.')
-          if (streamLoading.value) {
-            streamLoading.value.close();
-          }
+          // if (streamLoading.value) {
+          //   streamLoading.value.close();
+          // }
+          chatStreamLoading.value = false ; // 关闭流式结束
         }
 
       }
@@ -553,6 +622,22 @@ function handleSseConnect(channelId) {
 //   businessId.value = item.businessId;
 //   message.value += businessIdMessage;
 // }
+
+/** 文件引用 */
+function handleFileIdToMessageBox(file) {
+
+  // const businessIdMessage = ' #doc' + fileId + ' ';
+  // businessId.value = fileId;
+  // message.value += businessIdMessage;
+  // refreshFieldId.value.push(fileId);
+
+  const attFile = {
+    id: file.fileId,
+    name: file.fileName , 
+    extension: file.fileType
+  }
+  attachmentPanelRef.value.setReferenceFile(attFile)
+}
 
 /** 获取角色信息 */
 function handleGetInfo(shareId) {
@@ -575,22 +660,29 @@ function handleGetInfo(shareId) {
 /** 发送消息 */
 const sendMessage = (type) => {
 
+  // 获取到上传的文件列表
+  const uploadFiles = attachmentPanelRef.value.handleGetUploadFiles();
+  console.log('handleGetUploadFiles = ' + uploadFiles);
+
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
     return;
   }
 
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.2)',
-  })
+  // streamLoading.value = ElLoading.service({
+  //   lock: true,
+  //   text: '任务执行中，请勿操作其它界面 ...',
+  //   background: 'rgba(0, 0, 0, 0.2)',
+  // })
+
+  chatStreamLoading.value = true ;
 
   let formData = {
     channelId: channelId.value,
     message: message.value,
     businessIds: [businessId.value],
-    type: type
+    type: type , 
+    fileIds: uploadFiles // [...uploadFiles , ...refreshFieldId.value]
   }
 
   chatShareRole(formData, shareId.value).then(res => {
@@ -601,6 +693,8 @@ const sendMessage = (type) => {
   })
 
   message.value = '';
+  businessId.value = '';
+  refreshFieldId.value = [];
 };
 
 /** 显示工具条 */
@@ -813,6 +907,8 @@ html pre code.hljs {
 }
 
 .robot-chat-footer{
+  margin-top:40px;
+
   .message-chat-container{
     width: 100%;
     display: flex;
