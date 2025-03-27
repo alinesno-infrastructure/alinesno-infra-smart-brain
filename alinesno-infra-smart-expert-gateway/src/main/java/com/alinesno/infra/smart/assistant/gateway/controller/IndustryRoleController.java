@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -197,6 +198,11 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @DataPermissionQuery
     @GetMapping("/catalogTreeSelect")
     public AjaxResult catalogTreeSelect(PermissionQuery query){
+        IndustryRoleCatalogEntity e = new IndustryRoleCatalogEntity() ;
+        e.setOrgId(CurrentAccountJwt.get().getOrgId());
+        e.setOperatorId(CurrentAccountJwt.getUserId());
+        e.setDepartmentId(CurrentAccountJwt.get().getDepartmentId());
+        catalogService.getDefaultCatalog(e) ;
         return AjaxResult.success("success" , catalogService.selectCatalogTreeList(query)) ;
     }
 
