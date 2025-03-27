@@ -20,7 +20,7 @@
             <div class="file-name">{{ file.fileName}}</div>
             <div class="file-details">
               <span>{{ formatFileSize(file.length) }}</span>
-              <span v-if="file.wordCount">{{ file.wordCount }} 字</span>
+              <!-- <span v-if="file.wordCount">{{ file.wordCount }} 字</span> -->
             </div>
           </div>
           <el-tooltip
