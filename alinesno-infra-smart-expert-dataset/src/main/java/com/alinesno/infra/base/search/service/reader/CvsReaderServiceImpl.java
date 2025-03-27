@@ -2,6 +2,7 @@ package com.alinesno.infra.base.search.service.reader;
 
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 /**
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
  * 它实现了 IAttachmentReaderService 接口，用于处理 CSV 附件的读取操作。
  * 该类提供了读取指定 CSV 附件内容的功能，具体实现逻辑由 readAttachment 方法完成。
  */
+@Scope("prototype")
 @Service
 public class CvsReaderServiceImpl extends BaseReaderServiceImpl {
 
