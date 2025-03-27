@@ -4,6 +4,7 @@ import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -13,6 +14,7 @@ import java.io.File;
  * 它实现了 IAttachmentReaderService 接口，主要负责读取 Markdown 格式的附件。
  * 此类提供了读取指定 Markdown 附件内容的功能。
  */
+@Scope("prototype")
 @Service
 public class MarkdownReaderServiceImpl extends BaseReaderServiceImpl {
 
