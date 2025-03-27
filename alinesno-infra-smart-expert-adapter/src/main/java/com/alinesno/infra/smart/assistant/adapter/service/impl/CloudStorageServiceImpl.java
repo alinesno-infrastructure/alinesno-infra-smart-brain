@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.adapter.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
@@ -14,11 +15,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.dromara.x.file.storage.core.FileInfo;
 import org.dromara.x.file.storage.core.FileStorageService;
 import org.dromara.x.file.storage.core.ProgressListener;
+import org.dromara.x.file.storage.core.platform.FileStorage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,6 +67,23 @@ public class CloudStorageServiceImpl implements CloudStorageConsumer {
                 .upload() ;
 
         return R.ok(fileInfo.getUrl() , "上传成功.");
+    }
+
+    @Override
+    public R<String> getPreviewUrl(String storageId) {
+        //判断对应的存储平台是否支持预签名 URL
+        FileStorage storage = fileStorageService.getFileStorage();
+        boolean supportPresignedUrl = fileStorageService.isSupportPresignedUrl(storage);
+
+        Assert.isTrue(supportPresignedUrl , "当前存储平台不支持预签名 URL");
+
+        FileInfo fileInfo = getById(storageId) ;
+
+        //快速生成用于访问或下载的 URL ，有效期为1小时
+        String presignedUrl = fileStorageService.generatePresignedUrl(fileInfo, DateUtil.offsetHour(new Date(), 1));
+        log.debug("文件授权访问地址：{}" , presignedUrl);
+
+        return R.ok(presignedUrl);
     }
 
     @Override
