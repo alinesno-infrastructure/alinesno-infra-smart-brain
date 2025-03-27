@@ -4,6 +4,7 @@ import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.File;
  * TextReaderServiceImpl 类是文本附件读取服务的具体实现，
  * 该类实现了 IAttachmentReaderService 接口，主要负责处理文本格式附件的读取操作。
  */
+@Scope("prototype")
 @Service
 public class TextReaderServiceImpl  extends BaseReaderServiceImpl {
 
