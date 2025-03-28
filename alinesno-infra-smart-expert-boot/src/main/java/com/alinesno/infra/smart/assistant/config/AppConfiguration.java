@@ -44,7 +44,7 @@ import org.springframework.util.unit.DataSize;
         "com.alinesno.infra.base.im.mapper" ,
         "com.alinesno.infra.smart.brain.mapper" ,
         "com.alinesno.infra.smart.assistant.template.mapper" ,
-        "com.alinesno.infra.smart.assistant.screen.mapper" ,
+        "com.alinesno.infra.smart.assistant.scene.**.mapper" ,
         "com.alinesno.infra.smart.assistant.plugin.mapper" ,
         "com.alinesno.infra.smart.inference.mapper",
         "com.alinesno.infra.base.search.mapper",
