@@ -288,12 +288,12 @@ html.dark {
         background: $dark-bg-color !important;
     }
 
-    .screen-card {
+    .scene-card {
         background: #262727 !important;
         color: $dark-text-color !important;
     }
 
-    .screen-app-container {
+    .scene-app-container {
 
         .app-row,
         .right-chatbox-contain {
@@ -314,10 +314,10 @@ html.dark {
         background: $dark-bg-color !important;
     }
 
-    .screen-app-container .app-row .el-col:first-child .avatar-title-container .title,
-    .screen-app-container .middle-section .subordinate-roles ul li .role-info .role-title,
-    .screen-app-container .middle-section .triggers ul li .role-info .role-title,
-    .screen-app-container .middle-section .introduction ul li .role-info .role-title {
+    .scene-app-container .app-row .el-col:first-child .avatar-title-container .title,
+    .scene-app-container .middle-section .subordinate-roles ul li .role-info .role-title,
+    .scene-app-container .middle-section .triggers ul li .role-info .role-title,
+    .scene-app-container .middle-section .introduction ul li .role-info .role-title {
         color: $dark-text-color !important;
     }
 
