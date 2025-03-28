@@ -180,7 +180,7 @@ import { nextTick, onMounted } from "vue";
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 
-import ChatMessageEditor from '@/views/base/specialist/chatMessageEditor.vue'
+import ChatMessageEditor from '@/views/base/chat/chatMessageEditor.vue'
 
 const { proxy } = getCurrentInstance();
 
