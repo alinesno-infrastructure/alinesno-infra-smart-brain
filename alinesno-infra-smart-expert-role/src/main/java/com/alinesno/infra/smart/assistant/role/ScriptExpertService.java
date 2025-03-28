@@ -132,7 +132,7 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("expertService", this);  // 操作服务
 		binding.setVariable("secretKey", getSecretKey());  // 操作服务
 		binding.setVariable("channelInfo", getChannelInfo(taskInfo.getChannelId()));  // 操作服务
-		binding.setVariable("screenInfo", getScreenInfo(taskInfo.getScreenId()));  // 操作服务
+		binding.setVariable("screenInfo", getScreenInfo(taskInfo.getSceneId()));  // 操作服务
 		binding.setVariable("tools", tools); // 工具类
 
 		binding.setVariable("codeContent", codeContentList == null || codeContentList.isEmpty() ? null : codeContentList.get(0));  // 生成 代码
