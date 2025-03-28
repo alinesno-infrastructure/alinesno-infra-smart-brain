@@ -8,7 +8,7 @@ var managerUrl = {
   employRole: prefix +"employRole" ,
 }
 
-// 录用角色
+// 复制角色
 export function employRole(roleId , isPush) {
   return request({
     url: managerUrl.employRole + '?roleId=' + roleId + '&isPush=' + isPush ,
