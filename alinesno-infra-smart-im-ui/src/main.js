@@ -25,7 +25,7 @@ import './permission' // permission control
 
 import { useDict } from '@/utils/dict'
 import { parseTime, truncateString ,resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels } from '@/utils/ruoyi'
-import { formatMessage , imagePath ,imagePathByPath } from './utils/chat'
+import { formatMessage , imagePath ,imagePathByPath , toggleTheme } from './utils/chat'
 
 // 分页组件
 import Pagination from '@/components/Pagination'
@@ -50,6 +50,7 @@ const app = createApp(App)
 app.config.globalProperties.formatMessage = formatMessage 
 app.config.globalProperties.imagePath = imagePath 
 app.config.globalProperties.imagePathByPath = imagePathByPath 
+app.config.globalProperties.toggleTheme = toggleTheme 
 
 app.config.globalProperties.useDict = useDict
 app.config.globalProperties.download = download
