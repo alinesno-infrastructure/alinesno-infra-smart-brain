@@ -25,6 +25,71 @@ import Layout from '@/layout/SaaSLayout'
   }
  */
 
+const screenRoutes = [
+  // -->>>>>>>>>>>> 长文本场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/longText/index',
+    component: () => import('@/views/base/scene/longText/index'),
+    name: '/scene/longText/index',
+    meta: { title: '长文本场景', icon: 'dashboard', affix: true }
+  },
+  // -->>>>>>>>>>>> 长文本场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 文档审核场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/documentReview/index',
+    component: () => import('@/views/base/scene/documentReview/index'),
+    name: '/scene/documentReview/index',
+    meta: { title: '文档审核场景', icon: 'fa-solid fa-file-pen', affix: true }
+  },
+  // -->>>>>>>>>>>> 文档审核场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  
+  // -->>>>>>>>>>>> 文档阅读场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/documentReading/index',
+    component: () => import('@/views/base/scene/documentReading/index'),
+    name: '/scene/documentReading/index',
+    meta: { title: '文档阅读场景', icon: 'fa-solid fa-book-open', affix: true }
+  },
+  // -->>>>>>>>>>>> 文档阅读场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 生成试卷场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/examPaperGeneration/index',
+    component: () => import('@/views/base/scene/examPaperGeneration/index'),
+    name: '/scene/examPaperGeneration/index',
+    meta: { title: '生成试卷场景', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 文案生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/copywriting/index',
+    component: () => import('@/views/base/scene/copywriting/index'),
+    name: '/scene/copywriting/index',
+    meta: { title: '文案生成场景', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>>> 文案生成场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 会议纪要场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/meetingMinutes/index',
+    component: () => import('@/views/base/scene/meetingMinutes/index'),
+    name: '/scene/meetingMinutes/index',
+    meta: { title: '会议纪要场景', icon: 'fa-solid fa-calendar-check', affix: true }
+  },
+  // -->>>>>>>>>>>> 会议纪要场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 产品进度汇总场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/productResearch/index',
+    component: () => import('@/views/base/scene/productResearch/index'),
+    name: '/scene/productResearch/index',
+    meta: { title: '产品进度汇总', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  // -->>>>>>>>>>>> 产品进度汇总场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+];
+
 // 公共路由
 export const constantRoutes = [
   {
@@ -49,7 +114,7 @@ export const constantRoutes = [
   },
   {
     path: '/channelChat',
-    component: () => import('@/views/base/specialist/channelChatPanel'),
+    component: () => import('@/views/base/chat/channelChatPanel'),
     hidden: true
   },
   {
@@ -75,46 +140,19 @@ export const constantRoutes = [
     children: [
       {
         path: '/index',
-        component: () => import('@/views/base/specialist/channelHome'),
+        component: () => import('@/views/base/chat/channelHome'),
         name: '/index',
         meta: { title: '首页', icon: 'dashboard', affix: true }
       },
       {
-        path: '/screen',
-        component: () => import('@/views/base/screen/index'),
-        name: '/screen',
+        path: '/scene',
+        component: () => import('@/views/base/scene/index'),
+        name: '/scene',
         meta: { title: '场景列表', icon: 'dashboard', affix: true }
       },
-      {
-        path: '/screen/leaderModel',
-        component: () => import('@/views/base/screen/leaderModel'),
-        name: '/screen/leaderModel',
-        meta: { title: '管理者模式', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/screen/leaderPlan',
-        component: () => import('@/views/base/screen/leaderPlan'),
-        name: '/screen/leaderPlan',
-        meta: { title: '管理者计划', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/screen/longText',
-        component: () => import('@/views/base/screen/longText'),
-        name: '/screen/longText',
-        meta: { title: '长文本场景', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/screen/mediaClip',
-        component: () => import('@/views/base/screen/media'),
-        name: '/screen/mediaClip',
-        meta: { title: '视频剪辑', icon: 'dashboard', affix: true }
-      },
-      {
-        path: '/screen/exam',
-        component: () => import('@/views/base/screen/exam'),
-        name: '/screen/exam',
-        meta: { title: '考试场景', icon: 'dashboard', affix: true }
-      },
+
+      ...screenRoutes ,
+
       {
         path: '/single/agentChat',
         component: () => import('@/views/base/agent/agentSingleChatPanel'),
@@ -123,7 +161,7 @@ export const constantRoutes = [
       },
       {
         path: '/chat',
-        component: () => import('@/views/base/specialist/smartService'),
+        component: () => import('@/views/base/chat/smartService'),
         name: '/chat',
         meta: { title: '聊天', icon: 'dashboard', affix: true }
       },
@@ -135,7 +173,7 @@ export const constantRoutes = [
       },
       {
         path: '/agentList',
-        component: () => import('@/views/base/specialist/agentList'),
+        component: () => import('@/views/base/chat/agentList'),
         name: '/agentList',
         meta: { title: '服务列表', icon: 'dashboard', affix: true }
       },
@@ -145,18 +183,6 @@ export const constantRoutes = [
         name: '/agentMarket',
         meta: { title: '智能体市场', icon: 'dashboard', affix: true }
       },
-      // {
-      //   path: '/serviceProduct',
-      //   component: () => import('@/views/base/specialist/serviceProduct'),
-      //   name: '/serviceProduct',
-      //   meta: { title: '服务列表', icon: 'dashboard', affix: true }
-      // },
-      // {
-      //   path: '/executeRecord',
-      //   component: () => import('@/views/base/specialist/executeRecord'),
-      //   name: '/executeRecord',
-      //   meta: { title: '服务列表', icon: 'dashboard', affix: true }
-      // },
       {
         path: '/dashboard/suportTechnique',
         component: () => import('@/views/suportTechnique'),
@@ -169,6 +195,7 @@ export const constantRoutes = [
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
       },
+
       // ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     ]
   },
