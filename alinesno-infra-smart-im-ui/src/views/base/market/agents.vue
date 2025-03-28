@@ -8,7 +8,7 @@
         <section>
           <h2 class="section-title" style="margin-top: 5px;margin-left: 10px;font-size: 20px;">
             <i class="type.banner" /> 智能体市场
-            <span style="font-size: 13px;color: #777;margin-left:10px;">类似于人才市场，团队向人才市场选择合适的人进行录用.</span>
+            <span style="font-size: 13px;color: #777;margin-left:10px;">类似于人才市场，团队向人才市场选择合适的人进行复制.</span>
           </h2>
           <div class="section-body" v-loading="loading">
 
@@ -96,7 +96,7 @@
                           <i class="fa-solid fa-user-secret"></i>
                         </span>
                         <el-button type="primary" @click="handleEmployRole(item.id , true)" text bg><i
-                            class="fa-solid fa-link"></i> 录用</el-button>
+                            class="fa-solid fa-link"></i> 复制</el-button>
                       </div>
                     </div>
 
@@ -175,8 +175,9 @@
                         <span v-if="item.roleType == 'scenario_role'">
                           <i class="fa-solid fa-user-secret"></i>
                         </span>
-                        <el-button type="primary" @click="handleEmployRole(item.id , false)" text bg><i
-                            class="fa-solid fa-link"></i> 录用</el-button>
+                        <el-button type="primary" @click="handleEmployRole(item.id , false)" text bg>
+                          <i class="fa-solid fa-clone"></i> &nbsp; 复制
+                        </el-button>
                       </div>
                     </div>
 
@@ -390,19 +391,19 @@ function reset() {
   proxy.resetForm("RoleRef");
 };
 
-/** 录用角色 */
+/** 复制角色 */
 function handleEmployRole(roleId , isPush) {
 
   const loading = ElLoading.service({
     lock: true,
-    text: '录用手续办理中.....',
+    text: '复制手续办理中.....',
     background: 'rgba(0, 0, 0, 0.2)',
   })
 
   employRole(roleId , isPush).then(res => {
     loading.close();
 
-    proxy.$modal.msgSuccess("角色录用成功，可以在频道中添加角色！");
+    proxy.$modal.msgSuccess("角色复制成功，可以在频道中添加角色！");
     // router.push({ path: '/agentList'})
 
   }).catch(e => {
