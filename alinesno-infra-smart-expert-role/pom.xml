@@ -42,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-expert-screen</artifactId>
+			<artifactId>alinesno-infra-smart-expert-scene</artifactId>
 			<version>${revision}</version>
 		</dependency>
 		<dependency>
