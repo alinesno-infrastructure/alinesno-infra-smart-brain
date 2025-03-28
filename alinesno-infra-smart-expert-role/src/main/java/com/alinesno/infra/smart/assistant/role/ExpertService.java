@@ -30,11 +30,11 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
+import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
+import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
 import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
-import com.alinesno.infra.smart.assistant.screen.core.entity.ScreenEntity;
-import com.alinesno.infra.smart.assistant.screen.common.service.IScreenService;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
@@ -91,7 +91,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     private IChannelService channelService ;
 
     @Autowired
-    private IScreenService screenService ;
+    private ISceneService screenService ;
 
     @Autowired
     protected ISecretService secretService ;
@@ -254,7 +254,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param channelId
      * @return
      */
-    public ScreenEntity getScreenInfo(long channelId) {
+    public SceneEntity getScreenInfo(long channelId) {
         if (channelId > 0){
             return screenService.getById(channelId) ;
         }
@@ -535,7 +535,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         entity.setAddTime(new Date());
         entity.setIcon(role.getRoleAvatar());
 
-        entity.setChannelId(taskInfo.isScreen()?taskInfo.getScreenId():taskInfo.getChannelId());
+        entity.setChannelId(taskInfo.isScreen()?taskInfo.getSceneId():taskInfo.getChannelId());
         entity.setRoleId(role.getId()) ;
 
         messageService.save(entity);
