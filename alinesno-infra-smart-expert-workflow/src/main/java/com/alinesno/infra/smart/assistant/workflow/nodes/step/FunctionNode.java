@@ -133,7 +133,7 @@ public class FunctionNode extends AbstractFlowNode {
         binding.setVariable("expertService", flowExpertService);  // 操作服务
         binding.setVariable("secretKey",flowExpertService.getSecretKey());  // 操作服务
         binding.setVariable("channelInfo",flowExpertService.getChannelInfo(taskInfo.getChannelId()));  // 操作服务
-        binding.setVariable("screenInfo",flowExpertService.getScreenInfo(taskInfo.getScreenId()));  // 操作服务
+        binding.setVariable("screenInfo",flowExpertService.getScreenInfo(taskInfo.getSceneId()));  // 操作服务
         binding.setVariable("tools", tools); // 工具类
 
         binding.setVariable("codeContent", codeContentList == null || codeContentList.isEmpty() ? null : codeContentList.get(0));  // 生成 代码
