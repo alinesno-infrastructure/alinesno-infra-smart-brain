@@ -22,7 +22,7 @@ public class MessageTaskInfo implements Serializable {
     private long channelId ;
 
     // 场景的唯一标识
-    private long screenId ;
+    private long sceneId ;
 
     // 业务的唯一标识
     private String businessId ;
@@ -119,6 +119,6 @@ public class MessageTaskInfo implements Serializable {
      */
     public boolean isScreen(){
         // 判断screenId是否大于0
-       return this.screenId > 0 ;
+       return this.getSceneId() > 0 ;
     }
 }
