@@ -60,8 +60,8 @@
 
 <script setup>
 
-import ChannelGroup from "@/views/base/specialist/channelGroup.vue";
-import ScreenGroup from "@/views/base/screen/screenGroup.vue";
+import ChannelGroup from "@/views/base/chat/channelGroup.vue";
+import ScreenGroup from "@/views/base/scene/screenGroup.vue";
 
 const createChildComp = ref(null);
 const createScreenComp = ref(null);
@@ -72,7 +72,7 @@ const router = useRouter();
 // 菜单列表
 const menuItems = ref([
   { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的频道' },
-  { id: '2', icon: 'fa-solid fa-file-signature', link: '/screen', desc: '我的场景' },
+  { id: '2', icon: 'fa-solid fa-file-signature', link: '/scene', desc: '我的场景' },
   { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '我的团队' },
   { id: '4', icon: 'fa-solid fa-ship', link: '/agentMarket', desc: '智能体市场' },
 ]);
