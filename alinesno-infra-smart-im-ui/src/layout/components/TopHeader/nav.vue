@@ -2,7 +2,7 @@
   <nav class=" header-text">
     <div class="acp-header-item ">
       <div class="header-label-text" >
-        <div style="cursor: pointer;display: flex;flex-direction: row;align-items: center;gap: 3px;" @click="toggleTheme">
+        <div style="cursor: pointer;display: flex;flex-direction: row;align-items: center;gap: 3px;" @click="navToggleTheme()">
             <svg-icon v-if="themeType!== 'dark'" icon-class="dark-theme" style="font-size:16px" /> 
             <svg-icon v-else icon-class="light-theme" style="font-size:16px" /> 主题 
         </div>
@@ -110,6 +110,7 @@ import { ElMessageBox } from 'element-plus'
 import useUserStore from '@/store/modules/user'
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { toggleTheme } from '@/utils/chat'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -137,31 +138,22 @@ function handleInOrg() {
   }
 }
 
-/** 切换主题 */
-function toggleTheme() {
+function navToggleTheme() {
+  // 切换主题类型
   themeType.value = themeType.value === 'dark' ? '' : 'dark'
-  localStorage.setItem('themeType', themeType.value)
-  updateHtmlClass()
-}
-
-/** 更新html class */
-function updateHtmlClass() {
-  if (themeType.value === 'dark') {
-    document.documentElement.classList.add('dark')
-  } else {
-    document.documentElement.classList.remove('dark')
-  }
+  toggleTheme(themeType.value);
 }
 
 onMounted(() => {
   handleInOrg()
-  updateHtmlClass() // 页面加载时根据存储的主题类型更新 html class
+  // updateHtmlClass() // 页面加载时根据存储的主题类型更新 html class
 })
 
-console.log('avatar = ' + userStore.avatar)
-console.log('name = ' + userStore.name)
-console.log('dept = ' + JSON.stringify(userStore.dept))
-console.log('role = ' + JSON.stringify(userStore.roles))
+// console.log('avatar = ' + userStore.avatar)
+// console.log('name = ' + userStore.name)
+// console.log('dept = ' + JSON.stringify(userStore.dept))
+// console.log('role = ' + JSON.stringify(userStore.roles))
+
 </script>
 
 <style lang="scss" scoped>
