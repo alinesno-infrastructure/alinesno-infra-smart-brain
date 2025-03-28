@@ -59,3 +59,18 @@ export function imagePathByPath(roleAvatar){
   }
   return import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" + roleAvatar ; 
 }
+
+/** 切换主题 */
+export function toggleTheme(themeType) {
+  localStorage.setItem('themeType', themeType)
+  updateHtmlClass(themeType)
+}
+
+/** 更新html class */
+export function updateHtmlClass(themeType) {
+  if (themeType === 'dark') {
+    document.documentElement.classList.add('dark')
+  } else {
+    document.documentElement.classList.remove('dark')
+  }
+}
