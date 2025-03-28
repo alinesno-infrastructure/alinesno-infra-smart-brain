@@ -35,7 +35,7 @@ actable:
   table:
     auto: update
   model:
-    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.screen.core.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;com.alinesno.infra.smart.assistant.publish.entity;
+    pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.scene.core.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;com.alinesno.infra.smart.assistant.publish.entity;
   database:
     type: mysql
   index:
@@ -77,7 +77,7 @@ alinesno:
       - /api/infra/smart/assistant/publishWeChat/**
       - /api/infra/smart/assistant/template/testTemplate
       - /api/infra/smart/assistant/screenChapter/**
-      - /api/infra/smart/assistant/screen/**
+      - /api/infra/smart/assistant/scene/**
       - /api/infra/smart/assistant/screenLongtext/**
   xss:
     # TODO 待处理XSS的问题
