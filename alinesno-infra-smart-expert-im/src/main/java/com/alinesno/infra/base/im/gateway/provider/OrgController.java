@@ -4,7 +4,11 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
+import com.alinesno.infra.smart.assistant.api.GlobalConfigDTO;
+import com.alinesno.infra.smart.assistant.entity.GlobalConfigEntity;
+import com.alinesno.infra.smart.assistant.service.IGlobalConfigService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +22,9 @@ public class OrgController {
 
     @Autowired
     private IBaseOrganizationConsumer baseOrgConsumer ;
+
+    @Autowired
+    private IGlobalConfigService service;
 
     /**
      * 保存组织自定义主题
@@ -57,4 +64,18 @@ public class OrgController {
         return AjaxResult.success(dto);
     }
 
+    /**
+     * 根据组织 ID 获取全局配置信息
+     * @return 包含全局配置信息的 AjaxResult
+     */
+    @GetMapping("/getByOrg")
+    public AjaxResult getByOrganizationId() {
+        GlobalConfigEntity entity = service.getByOrganizationId(CurrentAccountJwt.get().getOrgId());
+        if (entity == null) {
+            return AjaxResult.success(GlobalConfigDTO.defaultDto());
+        }
+        GlobalConfigDTO dto = new GlobalConfigDTO();
+        BeanUtils.copyProperties(entity, dto);
+        return AjaxResult.success(dto);
+    }
 }
