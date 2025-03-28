@@ -14,3 +14,14 @@ export function createOrg(data) {
   })
 }
 
+// 获取组织信息
+export function getByOrg() {
+  return request({
+    url: prefix + '/getByOrg' ,
+    headers: {
+      isEncrypt: true
+    },
+    method: 'get'
+  })
+}
+
