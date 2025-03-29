@@ -46,9 +46,6 @@
                 <p class="category">{{ recommendRole.roleName }}</p>
                 <h1 class="title">{{ recommendRole.roleName }}</h1>
                 <div class="author-info">
-                  <!-- <div class="semi-image avatar-oDHtb3">
-                    <img :src="imagePathByPath(recommendRole.roleAvatar)"  class="semi-image-img" width="14" height="14">
-                  </div> -->
                   <div class="author-name"><span>罗小东</span></div>
                   <div class="at-name"><span>@Easton</span></div>
                 </div>
@@ -227,14 +224,14 @@ function handleAllMyChannel() {
     if (!hasRole && !userHasChosen) {
       // 显示推荐角色
       ElMessageBox.confirm(
-        '你所有当前组织未包含智能体，是否需要到智能体市场选择体验', 
+        '你所有当前组织未包含智能体，是否需要到智能体商店选择体验', 
         '系统提示', { 
-          confirmButtonText: '进入智能体市场', 
+          confirmButtonText: '进入智能体商店', 
           cancelButtonText: '后期建立', 
           type: 'warning' 
         }
       ).then(() => {
-        router.push({ path: '/agentMarket'});
+        router.push({ path: '/store'});
         // 用户选择了进入智能体市场，保存选择状态
         localStorage.setItem('userHasChosenRoles', 'true');
       }).catch(() => {
