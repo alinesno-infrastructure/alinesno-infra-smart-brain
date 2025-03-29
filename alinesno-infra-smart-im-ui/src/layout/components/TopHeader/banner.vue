@@ -1,6 +1,6 @@
 <template>
   <div>
-    <router-link tag="div" class="header-logo-bar" to="/index">
+    <router-link class="header-logo-bar" to="/index">
       <div class="header-logo" v-if="enableLogo" @click="enterDomain">
         <img v-if="!saasLogoId" :src="saasLogoUrl" alt="" />
         <img v-else :src="imagePathByPath(saasLogoId)" alt="" />
