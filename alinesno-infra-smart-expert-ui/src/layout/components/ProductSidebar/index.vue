@@ -44,7 +44,7 @@ const menuItems = ref([
   { id: '2', icon: 'fa-solid fa-masks-theater', link: '/expert/smart/assistant/role/index', desc: '专家管理' },
   { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '专家分类' },
   { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道管理' },
-  { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/screen/index', desc: '场景列表' },
+  { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/scene/index', desc: '场景列表' },
 
   { id: '18', icon: 'fa-solid fa-file-pdf', link: '/base/search/vectorData/index', desc: '数据集管理' },
   { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '目录分类管理' },
