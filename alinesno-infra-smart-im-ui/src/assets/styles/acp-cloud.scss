@@ -953,6 +953,7 @@ $chartColor: #3b5998;
   .robot-chat-body {
     height: calc(100vh - 215px);
     background: #fff;
+    padding-bottom: 30px ;
   }
 
   .robot-chat-footer {
@@ -1534,4 +1535,16 @@ $chartColor: #3b5998;
     color: #58616e;
     font-size: 95%;
     border-left: 2px solid #a5a5a5;
+}
+
+.robot-chat-attachement-panel{
+  float: left;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-chat-container{
+  width: 100%;
+  display: flex;
 }
