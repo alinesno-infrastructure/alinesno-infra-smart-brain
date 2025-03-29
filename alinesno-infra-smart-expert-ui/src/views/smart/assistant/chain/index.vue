@@ -86,7 +86,7 @@
             </template>
           </el-table-column>
           <el-table-column label="渠道类型" align="center" key="toolType" prop="toolType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
-          <el-table-column label="使用场景" align="center" key="screen" prop="screen" v-if="columns[3].visible" :show-overflow-tooltip="true"/>
+          <el-table-column label="使用场景" align="center" key="scene" prop="scene" v-if="columns[3].visible" :show-overflow-tooltip="true"/>
           <el-table-column label="状态" align="center" key="hasStatus" prop="hasStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text bg icon="Link" v-if="scope.row.hasStauts === '1'">正常</el-button>
@@ -149,8 +149,8 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="使用场景" prop="screen">
-              <el-input v-model="form.screen" placeholder="请输入使用场景" maxlength="100"/>
+            <el-form-item label="使用场景" prop="scene">
+              <el-input v-model="form.scene" placeholder="请输入使用场景" maxlength="100"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -291,7 +291,7 @@ const data = reactive({
       trigger: "blur"
     }],
     toolType: [{required: true, message: "渠道类型不能为空", trigger: "blur"}],
-    screen: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
+    scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
     hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
     description: [{required: true, message: "渠道描述不能为空", trigger: "blur"}],
     target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
@@ -355,7 +355,7 @@ function reset() {
     applicationId: undefined,
     name: undefined,
     toolType: undefined,
-    screen: undefined,
+    scene: undefined,
     hasStatus: undefined,
     description: undefined,
     target: undefined,
