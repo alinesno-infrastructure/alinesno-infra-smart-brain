@@ -1,69 +1,70 @@
 <template>
   <div>
-    <el-row :gutter="20">
-       <!--应用数据-->
-      <el-col :span="24" :xs="24">
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+    <el-tabs :tab-position="'left'" class="demo-tabs" style="margin-top:20px;" v-model="currentTab">
+      <el-tab-pane name="myTeam" label="我的团队">
 
-          <el-form-item label="角色名称" prop="roleName">
-            <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable style="width: 240px" @keyup.enter="handleQuery"/>
-          </el-form-item>
+          <el-row :gutter="20" style="padding-bottom:30px">
+            <!--应用数据-->
+            <el-col :span="24" :xs="24">
+              <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
-          <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-          </el-form-item>
-        </el-form>
+                <el-form-item label="角色名称" prop="roleName">
+                  <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable style="width: 240px" @keyup.enter="handleQuery"/>
+                </el-form-item>
 
-        <el-table v-loading="loading" :data="UserList" @selection-change="handleSelectionChange">
-          <el-table-column type="index" width="40" align="center"/>
-          <el-table-column align="center" width="60px" prop="icon" v-if="columns[0].visible">
-            <template #default="scope">
-              <div class="role-icon">
-                <img :src="imagePathByPath(scope.row.roleAvatar)" style="width:40px;height:40px;border-radius: 10px"/>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="角色名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <div style="font-size: 14px;font-weight: 500;">
-                {{ scope.row.roleName }}
-              </div>
-              <div style="font-size: 12px;color: #a5a5a5;">
-                 {{ scope.row.roleLevel }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <div>
-                {{ scope.row.responsibilities }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="所属团队" align="center" width="150" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <div>
-                AIP运维团队({{ scope.row.industryCatalog }})
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="添加Agent" align="center" width="110"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding" @click="handleChainAgent(scope.row)">选择</el-button>
-            </template>
-          </el-table-column>
+                <el-form-item>
+                  <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
+                  <el-button icon="Refresh" @click="resetQuery">重置</el-button>
+                </el-form-item>
+              </el-form>
 
-        </el-table>
-        <pagination
-            v-show="total > 0"
-            :total="total"
-            v-model:page="queryParams.pageNum"
-            v-model:limit="queryParams.pageSize"
-            @pagination="getList"
-        />
-      </el-col>
-    </el-row>
+              <el-table v-loading="loading" :data="UserList" @selection-change="handleSelectionChange">
+                <el-table-column type="index" width="40" align="center"/>
+                <el-table-column label="角色名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                    <div style="font-size: 14px;font-weight: 500;display: flex;gap: 10px;align-items: center;">
+                      <img :src="imagePathByPath(scope.row.roleAvatar)" style="width:40px;height:40px;border-radius: 50%"/>
+                      {{ scope.row.roleName }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="角色描述" align="left" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                    <div>
+                      {{ scope.row.responsibilities }}
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="所属团队" align="center" width="200" key="responsibilities" prop="responsibilities" v-if="columns[2].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                    <div>
+                      AIP研发团队({{ scope.row.industryCatalog }})
+                    </div>
+                  </template>
+                </el-table-column>
+                <el-table-column label="添加频道" align="center" width="120"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding" @click="handleChainAgent(scope.row)">选择</el-button>
+                  </template>
+                </el-table-column>
+
+              </el-table>
+              <pagination
+                  v-show="total > 0"
+                  :total="total"
+                  v-model:page="queryParams.pageNum"
+                  v-model:limit="queryParams.pageSize"
+                  @pagination="getList"
+              />
+            </el-col>
+          </el-row>
+
+      </el-tab-pane>
+
+      <el-tab-pane name="storeAgent" label="商店角色">
+        <RoleAgentStore @handleChainAgent="handleChainAgent" />
+      </el-tab-pane>
+    </el-tabs>
 
   </div>
 </template>
@@ -71,6 +72,8 @@
 <script setup name="User">
 
 // import {getToken} from "@/utils/auth";
+
+import RoleAgentStore from './roleAgentStore'
 
 import {
   listUser,
@@ -118,6 +121,8 @@ const dateRange = ref([]);
 const chainOpen = ref(false);
 const chainTitle = ref("");
 
+const currentTab = ref('myTeam')
+
 // 列显隐信息
 const columns = ref([
   {key: 0, label: `图标`, visible: true},
@@ -136,7 +141,7 @@ const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
-    pageSize: 8,
+    pageSize: 10,
     roleName: undefined,
     roleName: undefined,
     responsibilities: undefined,
@@ -175,7 +180,14 @@ function getList() {
     loading.value = false;
     UserList.value = res.rows;
     total.value = res.total;
+
+    // 如果UserList为空，则tabs默认选择第二个tabs
+    if(UserList.value.length == 0){
+      currentTab.value = 'storeAgent' ; 
+    }
+
   });
+
 };
 
 /** 显示图片 */
