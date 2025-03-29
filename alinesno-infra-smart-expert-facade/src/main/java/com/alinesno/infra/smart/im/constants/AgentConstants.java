@@ -7,6 +7,9 @@ public interface AgentConstants {
     String STEP_PROCESS = "process" ; // 节点任务进行中
     String STEP_FINISH = "finish" ;  //  节点结束
 
+    long ORG_AGENT_STORE_TYPE_ID = 9527L ;  // 角色类型ID
+    long STORE_EMPTY_ORG_ID = 0L ;  // 商店组织为空
+
 
     interface Role {
         String LEADER = "leader";
