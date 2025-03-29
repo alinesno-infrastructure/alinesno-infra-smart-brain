@@ -150,6 +150,12 @@ export const constantRoutes = [
         name: '/scene',
         meta: { title: '场景列表', icon: 'dashboard', affix: true }
       },
+      {
+        path: '/store',
+        component: () => import('@/views/base/store/index'),
+        name: '/store',
+        meta: { title: '智能体商店', icon: 'dashboard', affix: true }
+      },
 
       ...screenRoutes ,
 
