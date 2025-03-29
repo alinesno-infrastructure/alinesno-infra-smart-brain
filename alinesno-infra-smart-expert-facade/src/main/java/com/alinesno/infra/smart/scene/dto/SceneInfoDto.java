@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.scene.dto;
 
-import com.alinesno.infra.smart.scene.enums.ScreenAgent;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -15,7 +14,7 @@ import java.util.List;
 @Data
 public class SceneInfoDto {
     // 场景的唯一标识符
-    private final int id;
+    private final long id;
     // 场景的名称，用于显示在界面上
     private final String sceneName;
     // 场景的代码标识，用于内部引用和识别
