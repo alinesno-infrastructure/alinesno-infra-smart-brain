@@ -2,6 +2,26 @@
     <el-dialog v-model="showStartUsing" :title="props.channel.name ? `${props.channel.name} 使用指南` : '使用指南'"
         :width="800 + 'px'">
         <div class="dialog-content">
+            
+            <div v-if="props.channel.paramKey === 'aip_agent_store'">
+                <div class="instruction">
+                    <div class="instruction show-copy-btn">
+                        <span>验证方式，将以下网页复制到你的浏览器中</span>
+                        <span>
+                            <el-button type="primary" size="large" text bg icon="CopyDocument" @click="copyClick(getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory )">复制</el-button>
+                            <el-button type="success" size="large" text bg icon="Link" @click="openLink(getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory )">打开</el-button>
+                        </span>
+                    </div>
+                    <div class="code-block">
+                       {{ getRootPath()+'/chat/publish?shareId=' + props.shareId + '&showHistory=' +config.showHistory  }} 
+                    </div>
+                    <div style="margin-top:20px;">智能体商店打开方式（<a href="http://alinesno-infra-smart-im-ui.beta.base.infra.linesno.com/agentList" target="_blank">打开商店</a>）</div>
+                    <div style="margin-top:20px;">
+                        <img src="http://data.linesno.com/icons/aip_store_search.jpg" style="width: 100%;border-radius: 5px;" />
+                    </div>
+                </div>
+            </div>
+
             <div v-if="props.channel.paramKey === 'web_version'">
                 <div class="instruction">
                     <div class="instruction show-copy-btn">
@@ -16,6 +36,7 @@
                     </div>
                 </div>
             </div>
+
             <div v-if="props.channel.paramKey === 'web_embedded'">
                 <div style="margin-top:0px;padding:10px;">
                     <el-space wrap>
@@ -110,6 +131,8 @@ import ScriptEditorPanel from './ScriptEditor.vue';
 
 import { copyClick } from '@/utils/clipboard'
 
+const showStartUsing = ref(false);
+
 const props = defineProps({
     show: {
         type: Boolean,
@@ -140,7 +163,8 @@ const selectedType = ref('iframe');
 
 const handleClose = () => {
     emit('update:show', false);
-    emit('close');
+    // emit('close');
+    showStartUsing.value = false;
 };
 
 // 引入getRootPath方法
