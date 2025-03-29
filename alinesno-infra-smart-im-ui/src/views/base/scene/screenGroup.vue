@@ -13,7 +13,7 @@
           <div class="scene-list">
             <div v-for="item in sceneList" :key="item.id"
               :class="{ 'box-card': true, 'selected': selectedId === item.id }" @mouseenter="handleMouseEnter(item.id)"
-              @mouseleave="handleMouseLeave(item.id)" @click="handleItemClick(item.id, item.code)">
+              @mouseleave="handleMouseLeave(item.id)" @click="handleItemClick(item)">
 
               <div class="scene-item">
                 <div class="scene-banner">
@@ -22,6 +22,9 @@
                 <div class="scene-info">
                   <div class="scene-title">
                     <span>{{ item.sceneName }}</span>
+                    <span v-if="item.isMature === '0'" style="margin-left:10px;">
+                      <el-tag type="info">测试中</el-tag>
+                    </span>
                   </div>
                   <div class="scene-description">
                     {{ item.sceneDescription }}
@@ -152,10 +155,21 @@ const upload = reactive({
 const handleOpenChannel = (val) => {
   centerDialogVisible.value = val;
 
+  reset() ; 
+
   supportScene().then(res => {
     console.log('res = ' + res);
     sceneList.value = res.data;
   })
+};
+
+const reset = () => {
+  imageUrl.value = [];
+  currentStep.value = 1;
+  selectedId.value = null ;
+  form.value = {
+    channelType: '2'
+  };
 };
 
 const handleMouseEnter = (id) => {
@@ -170,9 +184,15 @@ const handleMouseLeave = () => {
   hoveredId.value = null;
 };
 
-const handleItemClick = (id, code) => {
-  selectedId.value = id;
-  selectedCode.value = code;
+const handleItemClick = (item) => {
+
+  if(item.isMature === '0'){
+    proxy.$modal.msgError("该场景为还在研究测试中，暂不支持使用");
+    return;
+  }
+
+  selectedId.value = item.id;
+  selectedCode.value = item.code;
 };
 
 /** 图片上传成功 */
@@ -267,8 +287,7 @@ defineExpose({
 
       .scene-item {
         padding: 15px;
-        background: #212424;
-        margin-bottom: 10px;
+        background: #f5f5f5;
         border-radius: 5px;
         gap: 10px;
         text-align: left;
@@ -293,6 +312,7 @@ defineExpose({
           .scene-title {
             font-size: 18px;
             font-weight: bold;
+            color: #333 ;
           }
 
           .scene-description {
