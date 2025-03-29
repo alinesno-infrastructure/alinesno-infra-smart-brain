@@ -2,11 +2,15 @@ package com.alinesno.infra.smart.assistant.publish.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.smart.assistant.publish.dto.ChannelPublishDTO;
 import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
+import com.alinesno.infra.smart.assistant.publish.enums.ChannelListEnums;
 import com.alinesno.infra.smart.assistant.publish.mapper.ChannelPublishMapper;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
+import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -20,9 +24,17 @@ import java.util.Map;
 @Service
 public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEntity, ChannelPublishMapper> implements IChannelPublishService {
 
+    @Autowired
+    private IAgentStoreService agentStoreService ;
+
     @Override
-    public void updateConfig(ChannelPublishEntity entity) {
+    public void updateConfig(ChannelPublishEntity entity, ChannelPublishDTO dto) {
         this.saveOrUpdate(entity);
+
+        // 如果是发布到商店，则将角色信息添加到AIP商店里面
+        if(ChannelListEnums.AIP_AGENT_STORE.getParamKey().equals(entity.getParamKey())){
+            agentStoreService.addRoleToStore(entity.getRoleId() , dto.getAgentStoreType()) ;
+        }
     }
 
     @Override
@@ -54,6 +66,17 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
         }
 
         return null;
+    }
+
+    @Override
+    public void offlineChannel(long channelId) {
+        ChannelPublishEntity entity = this.getById(channelId) ;
+        this.removeById(channelId);
+
+        // 如果是发布到商店，则将角色信息添加到AIP商店里面
+        if(ChannelListEnums.AIP_AGENT_STORE.getParamKey().equals(entity.getParamKey())){
+            agentStoreService.offlineStore(entity.getRoleId()) ;
+        }
     }
 
 }
