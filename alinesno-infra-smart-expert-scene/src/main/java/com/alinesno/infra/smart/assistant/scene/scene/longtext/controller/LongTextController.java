@@ -10,10 +10,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextScene
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChapterEditorDto;
-import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.alinesno.infra.smart.scene.enums.ScreenAgent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
