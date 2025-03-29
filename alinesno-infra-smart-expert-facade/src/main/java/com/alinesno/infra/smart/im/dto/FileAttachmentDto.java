@@ -2,15 +2,17 @@ package com.alinesno.infra.smart.im.dto;
 
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 聊天消息中的文件列表
  */
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
+@Getter
+@Setter
 public class FileAttachmentDto {
 
     /**
