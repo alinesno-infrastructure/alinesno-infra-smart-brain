@@ -349,7 +349,7 @@ function reset() {
     applicationId: undefined,
     secretName: undefined,
     toolType: undefined,
-    screen: undefined,
+    scene: undefined,
     hasStatus: undefined,
     secretDesc: undefined,
     target: undefined,
