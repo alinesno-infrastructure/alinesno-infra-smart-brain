@@ -25,9 +25,12 @@
                         <svg-icon icon-class="phone" /> 手机号码
                         <div class="pull-right">{{ state.user.phone }}</div>
                      </li>
-                     <li class="list-group-item">
+                     <li class="list-group-item" @click="copyClick(state.user.orgId)" style="cursor: pointer;">
                         <svg-icon icon-class="email" /> 所属组织
-                        <div class="pull-right">{{ state.user.orgId }}</div>
+                        <div class="pull-right">
+                           {{ state.user.orgId }} 
+                           <el-icon><CopyDocument /></el-icon>
+                        </div>
                      </li>
                      <!--
                      <li class="list-group-item">
@@ -73,6 +76,7 @@ import userAvatar from "./userAvatar";
 import userInfo from "./userInfo";
 import resetPwd from "./resetPwd";
 import { getUserProfile } from "@/api/system/user";
+import { copyClick } from '@/utils/clipboard'
 
 const activeTab = ref("userinfo");
 const state = reactive({
