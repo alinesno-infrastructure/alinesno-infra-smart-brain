@@ -111,11 +111,11 @@
                             {{ person.responsibilities }}
                             </div>
                         </el-col>
-                        <el-col :span="24">
+                        <!-- <el-col :span="24">
                             <el-link :underline="false" :href="person.emailLink" target="_blank">
                             <el-icon><Message /></el-icon> {{ person.email }}
                             </el-link>
-                        </el-col>
+                        </el-col> -->
                         </el-row>
                     </el-col>
                     <el-col :span="8" class="avatar-container">
@@ -125,6 +125,8 @@
                 </el-card>
 
                 <el-input size="large" v-model="message" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
+
+                <!-- <div class="chat-gen-container"></div> -->
 
             <div class="dialog-footer">
                 <el-button @click="chaterDialogVisible = false">取 消</el-button>
@@ -136,6 +138,9 @@
         <TransferAgentPanel ref="transferAgentPanel" @handleCloseAgentConfig="handleCloseAgentConfig" />
         <!-- Agent选择组件_end -->
 
+        <!-- 任务执行面板 -->
+        <ExecuteHandle ref="executeHandleRef" />
+
     </div>
 </template>
 
@@ -144,6 +149,7 @@
 import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
+import ExecuteHandle from './executeHandle'
 import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
 
 import {
@@ -191,6 +197,7 @@ const currentSceneInfo = ref({
     contentEditors: [] 
 })
 const currentSceneId = ref(route.query.sceneId)
+const executeHandleRef = ref(null)
 
 const agentList = ref([])
 const chaterDialogVisible = ref(false);
@@ -359,6 +366,14 @@ function handleGetScene() {
       currentSceneInfo.value = res.data
       outline.value = res.data.chapterTree
       emit('setCurrentSceneInfo' , res.data)
+
+      // 未配置用户角色
+      if(currentSceneInfo.value.chapterEditors.length == 0){
+        setTimeout(() => {
+            executeHandleRef.value.handleOpen();
+        }, 500);
+      }
+
     })
 }
 
@@ -464,6 +479,14 @@ nextTick(() => {
     width: 100%; /* 宽度为100% */
     word-wrap: break-word; /* 长单词或URL地址在必要时断开并换行 */
     overflow-wrap: break-word; /* 同上，更现代的属性名称 */
+}
+
+.chat-gen-container {
+    height: 400px;
+    border: 1px solid #414243;
+    margin-bottom: 20px;
+    margin-top:20px;
+    border-radius: 5px;
 }
 
 </style>
