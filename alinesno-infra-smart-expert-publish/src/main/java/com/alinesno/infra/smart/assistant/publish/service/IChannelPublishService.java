@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.publish.service;
 
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.publish.dto.ChannelPublishDTO;
 import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 
 import java.util.List;
@@ -14,9 +15,11 @@ public interface IChannelPublishService extends IBaseService<ChannelPublishEntit
 
     /**
      * 更新渠道配置
+     *
      * @param entity
+     * @param dto
      */
-    void updateConfig(ChannelPublishEntity entity);
+    void updateConfig(ChannelPublishEntity entity, ChannelPublishDTO dto);
 
     /**
      * 根据 paramKey 列表查询配置信息
@@ -35,4 +38,9 @@ public interface IChannelPublishService extends IBaseService<ChannelPublishEntit
      */
     ChannelPublishEntity getByShareToken(String shareId);
 
+    /**
+     * 下线渠道
+     * @param channelId
+     */
+    void offlineChannel(long channelId);
 }
