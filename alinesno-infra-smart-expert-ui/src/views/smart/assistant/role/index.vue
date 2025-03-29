@@ -216,9 +216,9 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="pushOrgDialogFormVisible" title="请输入推送组织号" width="500">
+    <el-dialog v-model="pushOrgDialogFormVisible" title="请输入推送组织号" width="600px">
       <div
-        style="padding: 10px 20px;display: flex;align-items: center;margin-bottom:20px; line-height: 1.1rem; gap: 10px;margin-top: -20px;">
+        style="padding: 10px 20px;display: flex;align-items: center; margin-bottom:20px; line-height: 1.1rem; gap: 10px;margin-top: 20px;">
         <div>
           <img :src="imagePath(pushRoleInfo.roleAvatar)" style="width:70px;height:70px;border-radius:50%;" />
         </div>
@@ -231,26 +231,47 @@
           </span>
         </div>
       </div>
-      <el-form :model="form">
-        <el-form-item label="组织ID" label-width="70px">
-          <el-input v-model="pushOrgId" autocomplete="off" placeholder="请输入推送组织号">
+
+      <el-form :model="form" size="large" label-width="100px" width="600" label-position="top">
+
+        <el-form-item label="推送模式">
+          <el-radio-group v-model="pushType">
+            <el-radio
+              v-for="option in pushOptions"
+              :key="option.value"
+              :value="option.value"
+              border
+              style="width: 100%; margin-bottom: 10px; margin-right: 0px;">
+              <template #default>
+                <div style="display: flex; gap: 10px;">
+                  <span>{{ option.label }}</span>
+                  <div style="color: #999; font-size: 12px;">{{ option.description }}</div>
+                </div>
+              </template>
+            </el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+        <el-form-item label="推送组织ID">
+          <el-input v-model="pushOrgId" autocomplete="off" placeholder="请输入推送组织号" style="margin-right:30px;">
             <template #append>
               <el-button @click="handleFindOrg" icon="Search" />
             </template>
           </el-input>
         </el-form-item>
       </el-form>
+
       <div style="padding:10px 20px;" v-if="pushOrgInfo.id">
         <div>
-          <p><i class="fa-solid fa-paper-plane"></i> 组织ID: {{ pushOrgInfo.id }}</p>
+          <p><i class="fa-solid fa-masks-theater"></i> 组织ID: {{ pushOrgInfo.id }}</p>
           <p><i class="fa-brands fa-slack"></i> 组织名称: {{ pushOrgInfo.orgName }}</p>
           <p><i class="fa-solid fa-file-word"></i> 备注: {{ pushOrgInfo.remark }}</p>
         </div>
       </div>
       <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="pushOrgDialogFormVisible = false">取消</el-button>
-          <el-button type="primary" :disabled="enablePushOrg == false" @click="handleConfirmPushOrg">
+        <div class="dialog-footer" style="margin-bottom: 20px;">
+          <el-button size="large" :disabled="pushLoading" @click="pushOrgDialogFormVisible = false">取消</el-button>
+          <el-button size="large" :loading="pushLoading" type="primary" :disabled="enablePushOrg == false" @click="handleConfirmPushOrg">
             确认推送
           </el-button>
         </div>
@@ -298,7 +319,10 @@ const dateRange = ref([]);
 const imageUrl = ref([])
 
 const pushOrgDialogFormVisible = ref(false)
+
+const pushLoading = ref(false)
 const pushOrgId = ref(null)
+const pushType = ref('shop')
 const pushRoleInfo = ref({})
 const enablePushOrg = ref(false)
 const pushOrgInfo = ref({
@@ -307,6 +331,11 @@ const pushOrgInfo = ref({
   orgName: "",
   remark: ""
 })
+
+const pushOptions = ref([
+  { value: 'shop', label: '推送商店', description: '角色只可被组织引用不可修改' },
+  { value: 'market', label: '推送市场', description: '角色能复制修改并单独定义' }
+])
 
 const chainOpen = ref(false);
 const promptOpen = ref(false);
@@ -483,23 +512,28 @@ function pushOrg(row) {
 
 /** 确认推送到指定的组织 */
 function handleConfirmPushOrg() {
-  const loading = ElLoading.service({
-    lock: true,
-    text: 'Loading',
-    background: 'rgba(0, 0, 0, 0.7)',
-  })
+  // const loading = ElLoading.service({
+  //   lock: true,
+  //   text: 'Loading',
+  //   background: 'rgba(0, 0, 0, 0.7)',
+  // })
+
+  pushLoading.value = true;
 
   let data = {
+    pushType: pushType.value ,
     roleId: pushRoleInfo.value.id,
     orgId: pushOrgId.value,
   }
 
   confirmPushOrg(data).then(res => {
     console.log('res = ' + res);
-    loading.close();
+    // loading.close();
+    pushLoading.value = false;
     proxy.$modal.msgSuccess("推送成功");
   }).catch(() => {
-    loading.close();
+    // loading.close();
+    pushLoading.value = false;
   })
 }
 
