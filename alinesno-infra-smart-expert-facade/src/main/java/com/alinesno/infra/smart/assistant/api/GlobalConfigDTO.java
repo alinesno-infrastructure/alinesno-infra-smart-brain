@@ -78,7 +78,6 @@ public class GlobalConfigDTO extends BaseDto {
 
        dto.setProductName("AIP智能体平台");
        dto.setThemeStyle("dark");
-       dto.setLogoImg("http://data.linesno.com/logo_2.png");
        dto.setDisplayService("display");
        dto.setMaxChannelPeople(10);
 
