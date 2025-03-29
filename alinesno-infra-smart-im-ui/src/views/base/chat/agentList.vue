@@ -37,7 +37,6 @@
                     </div>
                 </div>
 
-
                 <section v-for="(type, index) in productList" :key="index">
                     <h2 class="section-title" style="margin-left:10px">
                         <i :class="type.banner" /> {{ type.name }}
