@@ -14,19 +14,16 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
-import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.alinesno.infra.smart.scene.enums.SceneTypeEnums;
 import com.alinesno.infra.smart.assistant.scene.core.utils.MarkdownToWord;
-import com.alinesno.infra.smart.assistant.scene.core.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
-import com.alinesno.infra.smart.scene.dto.ChapterEditorDto;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.LeaderUpdateDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
-import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
+import com.alinesno.infra.smart.scene.enums.SceneTypeEnums;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +43,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -101,7 +97,7 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
      */
     @GetMapping("/supportScene")
     public AjaxResult supportScene() {
-       List<Map<String, Object>> list = SceneEnum.getList() ;
+       List<SceneInfoDto> list = SceneEnum.getList() ;
        return AjaxResult.success("操作成功", list);
     }
 
@@ -226,32 +222,32 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         SceneDto dto = new SceneDto();
         BeanUtils.copyProperties(entity, dto);
 
-        if(entity.getSceneType().equals(SceneTypeEnums.LARGE_TEXT.getKey())){
-            // 查询出当前的章节编辑人员
-            dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
-
-            // 查询出当前的内容编辑人员
-            dto.setContentEditors(RoleUtils.getEditors(roleService, entity.getContentEditor()));
-
-            // 章节树信息
-            dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
-
-        }else if(entity.getSceneType().equals(SceneTypeEnums.LEADER_MODEL.getKey())){
-
-            // 管理者角色
-            if(entity.getLeaderRole() != null){
-                IndustryRoleEntity role = roleService.getById(entity.getLeaderRole());
-                IndustryRoleDto dto1 = new IndustryRoleDto();
-                BeanUtils.copyProperties(role, dto1);
-                dto.setLeader(dto1);
-            }
-
-            if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
-                dto.setWorkers(RoleUtils.getEditors(roleService, entity.getWorkerRole()));
-            }
-        } else if(entity.getSceneType().equals(SceneTypeEnums.EXAM.getKey())){  // 考试场景
-
-        }
+//        if(entity.getSceneType().equals(SceneTypeEnums.LARGE_TEXT.getKey())){
+//            // 查询出当前的章节编辑人员
+//            dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
+//
+//            // 查询出当前的内容编辑人员
+//            dto.setContentEditors(RoleUtils.getEditors(roleService, entity.getContentEditor()));
+//
+//            // 章节树信息
+//            dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
+//
+//        }else if(entity.getSceneType().equals(SceneTypeEnums.LEADER_MODEL.getKey())){
+//
+//            // 管理者角色
+//            if(entity.getLeaderRole() != null){
+//                IndustryRoleEntity role = roleService.getById(entity.getLeaderRole());
+//                IndustryRoleDto dto1 = new IndustryRoleDto();
+//                BeanUtils.copyProperties(role, dto1);
+//                dto.setLeader(dto1);
+//            }
+//
+//            if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
+//                dto.setWorkers(RoleUtils.getEditors(roleService, entity.getWorkerRole()));
+//            }
+//        } else if(entity.getSceneType().equals(SceneTypeEnums.EXAM.getKey())){  // 考试场景
+//
+//        }
 
         return AjaxResult.success("操作成功.", dto);
     }
