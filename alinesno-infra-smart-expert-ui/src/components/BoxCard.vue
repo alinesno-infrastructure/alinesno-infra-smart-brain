@@ -134,7 +134,7 @@ export default {
 	font-size: 10px;
 }
 
-@media only screen and (max-width: 1510px) {
+@media only scene and (max-width: 1510px) {
 	.mallki-text {
 		display: none;
 	}
