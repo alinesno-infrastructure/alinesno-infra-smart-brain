@@ -11,9 +11,7 @@ import com.agentsflex.core.ocr.OcrConfig;
 import com.agentsflex.core.ocr.OcrModel;
 import com.agentsflex.core.ocr.OcrRequest;
 import com.agentsflex.core.ocr.OcrResponse;
-import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.agentsflex.core.prompt.ImagePrompt;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -22,7 +20,6 @@ import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -63,8 +60,11 @@ public class ImageReaderServiceImpl extends BaseReaderServiceImpl {
     @Override
     public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
 
-        // 有一种是OCR识别，另外一种是大模型识别
+        if(uploadData.getRecognitionType() == null){
+            return "图片内容识别失败.";
+        }
 
+        // 有一种是OCR识别，另外一种是大模型识别
         String modelId = uploadData.getModelId() ;
         LlmModelEntity model = llmModelService.getById(modelId) ;
 
