@@ -20,6 +20,11 @@ public class GlobalConfigServiceImpl extends IBaseServiceImpl<GlobalConfigEntity
 
     @Override
     public GlobalConfigEntity getByOrganizationId(Long orgId) {
+        if(orgId == null || orgId <= 0){
+            return null;
+        }
+        log.debug("查询全局配置，orgId:{}", orgId);
+
         LambdaQueryWrapper<GlobalConfigEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GlobalConfigEntity::getOrgId, orgId);
         if(count(wrapper) > 0){
