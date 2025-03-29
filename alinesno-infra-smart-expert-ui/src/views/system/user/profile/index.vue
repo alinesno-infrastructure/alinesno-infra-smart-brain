@@ -26,8 +26,10 @@
                         <div class="pull-right">{{ state.user.phone }}</div>
                      </li>
                      <li class="list-group-item">
-                        <svg-icon icon-class="email" /> 所属组织
-                        <div class="pull-right">{{ state.user.orgId }}</div>
+                        <svg-icon icon-class="email" /> 所属组织 
+                        <div class="pull-right">
+                           {{ state.user.orgId }} 
+                        </div>
                      </li>
                      <!--
                      <li class="list-group-item">
