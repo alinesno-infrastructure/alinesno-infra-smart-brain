@@ -73,8 +73,9 @@ const router = useRouter();
 const menuItems = ref([
   { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的频道' },
   { id: '2', icon: 'fa-solid fa-file-signature', link: '/scene', desc: '我的场景' },
-  { id: '3', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '我的团队' },
-  { id: '4', icon: 'fa-solid fa-ship', link: '/agentMarket', desc: '智能体市场' },
+  { id: '3', icon: 'fa-solid fa-store', link: '/store', desc: '智能体商店' },
+  { id: '4', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '我的团队' },
+  { id: '5', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '智能体市场' },
 ]);
 
 // 打开服务市场
