@@ -124,13 +124,16 @@
             </el-scrollbar>
             
             <div class="dialog-footer">
-                <el-button @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="assignChaptersToUser">确 定</el-button>
+                <el-button size="large" @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" size="large" @click="assignChaptersToUser">确 定</el-button>
             </div>
         </el-dialog>
 
         <!-- 材料上传界面 -->
         <SceneUploadFile ref="uploadChildComp" />
+
+         <!-- 运行抽屉 -->
+        <DrawerChatPanel ref="drawerChatPanelRef" />
 
     </div>
 </template>
@@ -141,6 +144,8 @@ import { ElLoading } from 'element-plus'
 
 import ChapterEditor from './chapterEditor'
 import SceneUploadFile from './sceneUploadFile.vue'
+import OutlineEditor from './outlineEditor.vue'
+import DrawerChatPanel from './drawerChatPanel'
 
 import { 
     updateChapterContentEditor , 
@@ -153,7 +158,6 @@ import {
 
 import { ElMessage } from 'element-plus';
 
-import OutlineEditor from './outlineEditor.vue'
 
 const route = useRoute();
 const { proxy } = getCurrentInstance();
@@ -167,14 +171,8 @@ const chapterSelectionTree = ref(null);
 const currentUser = ref(null);
 const editorRoleId = ref(null);
 
-// 定义人物信息
-const person = ref({
-  roleAvatar: '' , 
-  roleName: '张三',
-  responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
-  email: 'zhangsan@example.com',
-});
-
+// 执行面板
+const drawerChatPanelRef = ref(null)
 
 const chapterEditorRef = ref(null)
 const uploadChildComp = ref(null)
@@ -184,6 +182,14 @@ const streamLoading = ref(null)
 const sceneId = ref(route.query.sceneId)
 
 const totalNodes = ref(0);
+
+// 定义人物信息
+const person = ref({
+  roleAvatar: '' , 
+  roleName: '张三',
+  responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
+  email: 'zhangsan@example.com',
+});
 
 const form = reactive({
     id: 0 ,
@@ -586,6 +592,7 @@ $avatar-size: 30px;
 .dialog-footer {
     text-align: right;
     margin-top: 19px;
+    margin-bottom:20px;
 }
 
 </style>
