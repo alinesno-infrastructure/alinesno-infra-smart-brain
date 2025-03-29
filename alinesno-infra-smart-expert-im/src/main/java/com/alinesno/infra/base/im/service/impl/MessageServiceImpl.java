@@ -14,6 +14,7 @@ import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
 import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -40,6 +42,9 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
     @Autowired
     private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
+    private ISSEService sseService ;
 
     @Override
     public void saveUserMessage(List<WebMessageDto> parsedMessages, Long channelId) {
@@ -166,6 +171,14 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
     @Override
     public void sendUserMessage(ChatSendMessageDto message, List<IndustryRoleEntity> roleList, List<ChatMessageDto> personDto) {
+
+        if(roleList.isEmpty()){
+            try {
+                sseService.sendDone(String.valueOf(message.getChannelId()));
+            } catch (IOException e) {
+                log.error("send message error:{}",e.getMessage());
+            }
+        }
 
         ITaskService taskService = SpringContext.getBean(ITaskService.class) ;
 
