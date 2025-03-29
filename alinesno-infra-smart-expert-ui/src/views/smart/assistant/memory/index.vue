@@ -141,8 +141,8 @@
         </el-row>
         <el-row>
           <el-col :span="24">
-            <el-form-item label="使用场景" prop="screen">
-              <el-input v-model="form.screen" placeholder="请输入使用场景" maxlength="100"/>
+            <el-form-item label="使用场景" prop="scene">
+              <el-input v-model="form.scene" placeholder="请输入使用场景" maxlength="100"/>
             </el-form-item>
           </el-col>
         </el-row>
@@ -283,7 +283,7 @@ const data = reactive({
       trigger: "blur"
     }],
     toolType: [{required: true, message: "消息类型不能为空", trigger: "blur"}],
-    screen: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
+    scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
     hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
     description: [{required: true, message: "消息描述不能为空", trigger: "blur"}],
     target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
@@ -347,7 +347,7 @@ function reset() {
     applicationId: undefined,
     name: undefined,
     toolType: undefined,
-    screen: undefined,
+    scene: undefined,
     hasStatus: undefined,
     description: undefined,
     target: undefined,
