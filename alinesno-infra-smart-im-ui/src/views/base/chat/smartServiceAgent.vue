@@ -12,7 +12,7 @@
       <div class="robot-chat-help-title">频道专家Agent列表</div>
       <div class="robot-chat-help-item-list-panel" v-loading="loading">
         <div class="process-panel">
-          <el-scrollbar :height="sc_height">
+          <el-scrollbar style="max-height: 400px;">
             <ul>
               <li class="item-process" v-for="(item, index) in favouriteList" :key="index">
                 <img style="width:35px;height:35px;border-radius: 50%;" :src="imagePathByPath(item.roleAvatar)" />
@@ -87,6 +87,14 @@ function handleGetChannelAgent(){
     favouriteList.value = response.data ;
     emit('mentionUser' , response.data) ; 
     loading.value = false ; 
+
+    // 如果没有数据，则显示弹窗
+    if(favouriteList.value.length == 0){
+      setTimeout(() => {
+        dialogVisible.value = true ;
+      }, 1000)
+    }
+
   })
 }
 
