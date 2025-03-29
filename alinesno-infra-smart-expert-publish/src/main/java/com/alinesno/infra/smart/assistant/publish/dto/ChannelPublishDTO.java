@@ -46,6 +46,7 @@ public class ChannelPublishDTO extends BaseDto {
     private boolean hasAuth = false ; // 是否进行身份验证
     private String authPassword; // 身份验证密码
     private String apiKey; // API 接口的 APIKey
+    private long agentStoreType ; // 智能体商店类型
 
     /**
      * 转换为实体对象
@@ -74,6 +75,9 @@ public class ChannelPublishDTO extends BaseDto {
 
         if (expireTime != null) {
             config.put("expireTime", expireTime);
+        }
+        if (agentStoreType != 0) {
+            config.put("agentStoreType", agentStoreType);
         }
         if (appId != null && !appId.isEmpty()) {
             String aesEncrypted = EncryptionUtils.aesEncrypt(appId, EncryptionUtils.DEFAULT_KEY);
@@ -124,6 +128,9 @@ public class ChannelPublishDTO extends BaseDto {
             Map<String, Object> configMap = JSONObject.parseObject(configMapStr, new TypeReference<>() {});
             if (configMap.containsKey("expireType")) {
                 dto.setExpireType(Integer.parseInt(configMap.get("expireType").toString()));
+            }
+            if (configMap.containsKey("agentStoreType")) {
+                dto.setAgentStoreType((Long) configMap.get("agentStoreType")) ;
             }
             if (configMap.containsKey("expireTime")) {
                 dto.setExpireTime((Date) configMap.get("expireTime"));
@@ -187,6 +194,11 @@ public class ChannelPublishDTO extends BaseDto {
             configMap.put("paramKey", entity.getParamKey()) ;
             configMap.put("apiKey", entity.getApiKey()) ;
             configMap.put("isConfigured", entity.getHasConfigured()) ;
+
+            if (configMap.containsKey("agentStoreType")) {
+                String agentStoreType = configMap.get("agentStoreType").toString();
+                configMap.put("agentStoreType", Long.parseLong(agentStoreType));
+            }
 
             if (configMap.containsKey("appId")) {
                 String appId = configMap.get("appId").toString();
