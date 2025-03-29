@@ -9,9 +9,21 @@ var speechPrefix = '/api/infra/smart/assistant/speechRecognition/' ;  // 语音�
 var managerUrl = {
   getInfo: prefix +"getInfo",
   chatRole: prefix + "chatRole",
+  uploadFile: prefix + "uploadFile",
+  getRoleQuestionSuggestion: prefix + "getRoleQuestionSuggestion",
+
   recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
   playGenContent: speechPrefix + "playGenContent" ,
+}
+
+// 获取角色智能问答建议
+export function getRoleQuestionSuggestion(data) {
+  return request({
+    url: managerUrl.getRoleQuestionSuggestion , 
+    method: 'post',
+    data: data 
+  })
 }
 
 // 获取语音模型语音请求
@@ -26,6 +38,19 @@ export function playGenContent(item) {
             'Accept': 'image/*' // 明确期望图片类型
         }
     })
+}
+
+// 文件上传接口
+export function uploadFile(formData){
+  return request({
+      url: managerUrl.uploadFile , 
+      method: 'post',
+      data: formData,
+      noCheckRepeatSubmit: true,
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+  })
 }
 
 // 语音识别
