@@ -13,6 +13,8 @@ import java.util.Map;
 @Getter
 public enum ChannelListEnums {
 
+    // 增加AIP智能体商店
+    AIP_AGENT_STORE("AIP商店", "通过AIP智能体商店，你可以轻松地创建、发布和共享你的智能助手。", "fa-solid fa-store", "aip_agent_store", false),
     WEB_VERSION("网页版", "可通过PC或移动设备立即开始对话", "fa-brands fa-edge", "web_version", false),
 //    CUSTOMER_SERVICE("客服", "提供客户服务接入系统的渠道", "fas fa-user-tie", "customer_service", false),
 //    WECHAT_OFFICIAL_ACCOUNT("微信公众号", "可推送消息到用户的订阅渠道", "fab fa-weixin", "wechat_official_account", false),
