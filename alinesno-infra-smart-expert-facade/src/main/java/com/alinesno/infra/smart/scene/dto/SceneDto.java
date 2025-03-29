@@ -1,12 +1,9 @@
 package com.alinesno.infra.smart.scene.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
-import com.alinesno.infra.smart.scene.enums.ScreenAgent;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.aspectj.weaver.loadtime.Agent;
 
 import java.util.ArrayList;
 import java.util.List;
