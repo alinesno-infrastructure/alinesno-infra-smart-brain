@@ -26,6 +26,8 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.enums.PushOptions;
+import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
@@ -67,11 +69,11 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @Autowired
     private IRolePushOrgService rolePushOrgService ;
 
-//    @Autowired
-//    private IRoleToolService roleToolService ;
-
     @Autowired
     private IIndustryRoleCatalogService catalogService ;
+
+    @Autowired
+    private IAgentStoreService agentStoreService ;
 
     /**
      * 获取ApplicationEntity的DataTables数据
@@ -127,7 +129,12 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         // 推送组织不能为当前组织
         Assert.isTrue(accountOrgId != dto.getOrgId(), "推送组织不能为当前组织");
 
-        rolePushOrgService.pushOrgRole(dto.getRoleId(), dto.getOrgId());
+        if(PushOptions.MARKET.getValue().equals(dto.getPushType())){  // 推送到市场
+            rolePushOrgService.pushOrgRole(dto.getRoleId(), dto.getOrgId());
+        }else if(PushOptions.SHOP.getValue().equals(dto.getPushType())){  // 推送到商店
+            agentStoreService.pushOrgRole(dto.getRoleId(), dto.getOrgId());
+        }
+
         return ok() ;
     }
 
