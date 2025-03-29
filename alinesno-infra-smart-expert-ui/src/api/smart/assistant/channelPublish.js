@@ -17,6 +17,15 @@ var managerUrl = {
   changeField: prefix + "changeField",
   channels: prefix + "channels",
   updateChannelConfig: prefix + "updateChannelConfig",
+  offlineChannel: prefix + "offlineChannel",
+}
+
+// 渠道下架
+export function offlineChannel(channelId){
+  return request({
+    url: managerUrl.offlineChannel + '?channelId=' + parseStrEmpty(channelId) ,
+    method: 'get',
+  })
 }
 
 // 获取到所有渠道
