@@ -664,9 +664,11 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                 if ("person".equals(dto.getRoleType())) {
                     historyPrompt.addMessage(new HumanMessage(chatText));
                 }else if("agent".equals(dto.getRoleType())){
-                    AiMessage aiMessage = new AiMessage() ;
-                    aiMessage.setFullContent(chatText);
-                    historyPrompt.addMessage(aiMessage);
+                    if(StringUtils.isNotBlank(chatText)){
+                        AiMessage aiMessage = new AiMessage() ;
+                        aiMessage.setFullContent(chatText);
+                        historyPrompt.addMessage(aiMessage);
+                    }
                 }
             }
         }
