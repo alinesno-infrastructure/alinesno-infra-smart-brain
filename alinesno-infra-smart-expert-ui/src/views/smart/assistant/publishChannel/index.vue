@@ -39,9 +39,10 @@
                                 <el-button v-if="channel.isConfigured" type="primary" text bg plain size="large" @click="startUsing(channel)">
                                     开始使用
                                 </el-button>
-                                <el-button :type="channel.isConfigured ? 'primary' : 'info'" size="large" text plain>
-                                    {{ channel.isConfigured ? '已配置' : '未配置' }}
-                                </el-button>
+
+                                <el-button v-if="!channel.isConfigured" type="info" size="large" text plain>未配置</el-button>
+                                <el-button type="danger" v-if="channel.isConfigured" size="large" @click="handleOfflineChannel(channel)" text plain>下架</el-button>
+
                                 <el-button  type="primary" text bg plain size="large" @click="configureChannel(channel)">
                                     <i class="fa-solid fa-screwdriver-wrench"></i> &nbsp; 配置
                                 </el-button>
@@ -54,9 +55,21 @@
 
         <!-- 配置模态框 -->
         <el-dialog v-model="showConfigDialog" :title="currentConfigChannel.name ? `${currentConfigChannel.name} 渠道配置` : '渠道配置'" :width="800 + 'px'">
-            <el-form :model="configForm" :rules="formRules" ref="configFormRef" label-width="120px" style="margin-top:30px;">
+            <el-form :model="configForm" size="large" :rules="formRules" ref="configFormRef" label-width="120px" style="margin-top:30px;">
                 <el-form-item label="分享名称" prop="shareName">
                     <el-input v-model="configForm.shareName" placeholder="请输入分享名称"></el-input>
+                </el-form-item>
+                <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_store'" label="发布商店分类" prop="agentStoreType">
+                    <el-select
+                        v-model="configForm.agentStoreType"
+                        placeholder="发布商店分类"
+                        style="width: 100%">
+                        <el-option
+                            v-for="item in currentConfigChannel.storeType"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id"/>
+                    </el-select>
                 </el-form-item>
                 <el-form-item label="过期时间">
                     <el-row style="width:100%">
@@ -79,7 +92,7 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
-                <el-form-item label="QPM" prop="qpm">
+                <el-form-item label="每分钟并发数" prop="qpm">
                     <el-input v-model="configForm.qpm" placeholder="请输入QPM（数字）" @input="handleQPMInput"></el-input>
                 </el-form-item>
                 <el-divider v-if="currentConfigChannel.name && currentConfigChannel.paramKey === 'wechat_official_account'" content-position="left">
@@ -160,7 +173,7 @@ import { useRouter } from 'vue-router';
 import ChannelDialog from './publishChannelDialog.vue';
 
 import { getRole } from "@/api/smart/assistant/role";
-import { updateChannelConfig , getChannels } from "@/api/smart/assistant/channelPublish";
+import { updateChannelConfig , getChannels , offlineChannel } from "@/api/smart/assistant/channelPublish";
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -200,6 +213,9 @@ const formRules = {
     ],
     expireTime: [
         { required: false, message: '过期时间不能为空', trigger: 'blur' }
+    ],
+    agentStoreType: [
+        { required: true, message: '发布商店类型', trigger: 'blur' }
     ],
     qpm: [
         { required: true, message: 'QPM不能为空', trigger: 'blur' }
@@ -286,6 +302,29 @@ function configureChannel(channel) {
     } else {
         currentConfigChannel.value = channel;
         configForm.value = channel ;
+
+        // 设置默认值
+        if(!configForm.value.shareName){
+            configForm.value.shareName = currentRole.value.roleName;
+        }
+
+        if(!configForm.value.expireType){
+            configForm.value.expireType = 0;
+        }
+
+        if(!configForm.value.qpm){
+            configForm.value.qpm = '100';
+        }
+
+        if(!configForm.value.hasAuth){
+            configForm.value.hasAuth = false;
+        }
+
+        // 发布configForm.agentStoreType类型，默认选择第1个选项
+        if(!configForm.value.agentStoreType){
+            configForm.value.agentStoreType = currentConfigChannel.value.storeType[0].id;
+        }
+
         updateFormRules(); // 更新表单验证规则
         showConfigDialog.value = true;
     }
@@ -312,9 +351,10 @@ async function saveConfig() {
               .catch(() => {
                     proxy.$modal.msgError("配置保存失败");
                 });
-        } else {
-            proxy.$modal.msgError("请填写完整信息");
-        }
+        } 
+        // else {
+        //     proxy.$modal.msgError("请填写完整信息");
+        // }
     });
 }
 
@@ -328,6 +368,14 @@ const handleGetChannels = () => {
         channelList.value = response.data;
     });
 };
+
+// 渠道下线
+const handleOfflineChannel =(channel) => {
+    offlineChannel(channel.id).then(response => {
+        proxy.$modal.msgSuccess("下线成功");
+        handleGetChannels();
+    });
+}
 
 // 渠道列表，每个元素添加了 id 属性
 const channelList = ref([]);
