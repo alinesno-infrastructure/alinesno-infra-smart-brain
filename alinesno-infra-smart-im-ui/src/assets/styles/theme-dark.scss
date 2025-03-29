@@ -373,4 +373,41 @@ html.dark {
         color: #a5a5a5;
         background: #1d1e1f;
     }
+
+    .user-question-suggestions-container span.user-question-suggestions-item{
+        background: #1d1e20;
+        color: rgb(201, 209, 217);
+    }
+
+    .chat-attachment-wrapper .chat-attachment-container .file-item{
+        background: #1d1e20;
+    }
+
+    .chat-fileds-reference{
+        background: #1d1e20;
+    }
+    .chat-attachment-action-btn{
+        background-color: #1d1e20 !important;
+    }
+
+    .dialog-content .scene-list .box-card .scene-item {
+        background-color: $dark-bg-panel !important;
+
+        .scene-title{
+            color: $dark-text-color !important;
+        }
+    }
+
+    .side-type-container {
+
+        .type-list {
+            div {
+                &:hover,
+                &.active {
+                    background: #262727 !important;
+                }
+            }
+        }
+    }
+
 }
