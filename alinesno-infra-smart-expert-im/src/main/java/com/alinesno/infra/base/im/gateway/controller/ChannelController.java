@@ -16,6 +16,7 @@ import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -50,6 +51,9 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
 
     @Autowired
     private IChannelRoleService channelRoleService ;
+
+    @Autowired
+    private IAgentStoreService agentStoreService ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -172,6 +176,11 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
         // 查询当前组织推荐角色
         IndustryRoleEntity industryRoleEntity = roleService.getRecommendRole(orgId) ;
         AjaxResult result = AjaxResult.success(channelEntities) ;
+
+        if(industryRoleEntity == null){  // 如果当前组织没有推荐角色，则从商店中找到公共推荐的角色
+            industryRoleEntity = agentStoreService.getRecommendRole() ;
+        }
+
         result.put("recommendRole", industryRoleEntity) ;
         result.put("hasRole", hasRole) ;
 
