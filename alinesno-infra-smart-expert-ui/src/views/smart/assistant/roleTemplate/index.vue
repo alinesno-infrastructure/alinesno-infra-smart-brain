@@ -141,7 +141,7 @@ const queryParams = reactive({
   pageSize: 12
 });
 // const ruleForm = reactive({
-//   screen: '',
+//   scene: '',
 //   industry: '',
 //   type: '',
 //   roleName: '',
@@ -161,7 +161,7 @@ const queryParams = reactive({
 const filterRules = ref([
   {
     name: "场景",
-    codeValue: "initializr.admin.project.template.screen",
+    codeValue: "initializr.admin.project.template.scene",
     items: []
   },
   {
@@ -173,7 +173,7 @@ const filterRules = ref([
 
 // 表单校验规则
 // const rules = reactive({
-//   screen: { required: true, message: '请输入场景', trigger: 'blur' },
+//   scene: { required: true, message: '请输入场景', trigger: 'blur' },
 //   industry: { required: true, message: '请输入行业', trigger: 'blur' },
 //   type: { required: true, message: '请选择类型', trigger: 'blur' },
 //   roleName: { required: true, message: '请输入模板名称', trigger: 'blur' },
