@@ -109,7 +109,7 @@ const data = reactive({
       trigger: "blur"
     }],
     pluginType: [{ required: true, message: "工具类型不能为空", trigger: "blur" }],
-    screen: [{ required: true, message: "使用场景不能为空", trigger: "blur" }],
+    scene: [{ required: true, message: "使用场景不能为空", trigger: "blur" }],
     hasStatus: [{ required: true, message: "状态不能为空", trigger: "blur" }],
     description: [{ required: true, message: "工具描述不能为空", trigger: "blur" }],
     target: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
