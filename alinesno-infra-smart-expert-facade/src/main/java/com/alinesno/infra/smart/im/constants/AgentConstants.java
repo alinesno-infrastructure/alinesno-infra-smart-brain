@@ -20,6 +20,7 @@ public interface AgentConstants {
         String CHAT_SUCCESS_FINISH = "success" ;
         String CHAT_FAIL_FINISH = "fail" ;
         String CHAT_FINISH = "表达结束" ;
+        String CHAT_OPT_SUCCESS_FINISH = "操作成功" ;
         String CHAT_NO_ANSWER = "我尝试找了很多次，但是未找到答案" ;
         String CHAT_WAITING_WITH_TIME = "收到，任务我已经在处理，请稍等1-2分钟 :-)" ;
         String CHAT_WAITING_NOT_TIME = "收到，任务我已经在处理，请稍等 :-)" ;
