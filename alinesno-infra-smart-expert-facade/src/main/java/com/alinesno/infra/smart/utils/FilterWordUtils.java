@@ -1,7 +1,5 @@
 package com.alinesno.infra.smart.utils;
 
-import com.alinesno.infra.smart.im.constants.AgentConstants;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +19,8 @@ public class FilterWordUtils {
     private static final Set<String> ALL_TEXTS = new HashSet<>(Arrays.asList(
             // 聊天成功结束的标识文本
             CHAT_SUCCESS_FINISH,
+            // 聊天成功结束的标识文本
+            CHAT_OPT_SUCCESS_FINISH,
             // 聊天失败结束的标识文本
             CHAT_FAIL_FINISH,
             // 通用的聊天结束标识文本
