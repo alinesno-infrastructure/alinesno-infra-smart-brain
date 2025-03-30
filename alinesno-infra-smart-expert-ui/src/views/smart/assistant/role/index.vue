@@ -119,9 +119,11 @@
                   <div class="switch-buttons">
                     <el-switch size="small" v-model="item.hasRecommended" :active-value="true" :inactive-value="false"
                       active-text="推荐" @change="handleRecommended(item.id)"></el-switch>
+
                     <el-switch size="small" v-model="item.hasSale" :active-value="1" :inactive-value="0"
                       active-text="分享" :disabled="item.saleFromRoleId"
                       @change="handleChangeSaleField('hasSale', item.hasSale, item.id)"></el-switch>
+
                   </div>
                 </div>
               </div>
@@ -537,19 +539,7 @@ function handleConfirmPushOrg() {
   })
 }
 
-/** 修改状态 */
-const handleChangeSaleField = async (field, value, id) => {
-  // 判断tags值 这样就不会进页面时调用了
-  const res = await changeSaleField({
-    field: field,
-    value: value ? 1 : 0,
-    id: id
-  }).catch(() => { })
-  if (res && res.code == 200) {
-    // 刷新表格
-    getList()
-  }
-}
+
 
 // 节点单击事件
 function handleNodeClick(data) {
