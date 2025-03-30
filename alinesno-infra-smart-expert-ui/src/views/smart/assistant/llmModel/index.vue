@@ -78,7 +78,10 @@
               <div class="vc-div tpl-item-footer">
                 <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
                   <el-button text bg type="primary">
-                    {{ item.modelPermission == 'org' ? '组织' : '私有' }}
+                    <!-- {{ item.modelPermission == 'org' ? '组织' : '私有' }} -->
+                    <span v-if="item.modelPermission == 'person'">私有</span>
+                    <span v-if="item.modelPermission == 'org'">组织</span>
+                    <span v-if="item.modelPermission == 'public'">公开</span>
                   </el-button>
                 </div>
 
@@ -161,10 +164,23 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="权限" prop="modelPermission">
+              <!--
               <el-radio-group v-model="form.modelPermission" size="large">
                 <el-radio :value="'person'" :label="'person'">私有</el-radio>
                 <el-radio :value="'org'" :label="'org'">组织</el-radio>
               </el-radio-group>
+              -->
+
+              <el-radio-group v-model="form.modelPermission" size="large">
+                <el-radio v-for="option in dataScopeOptions" :key="option.value" :value="option.value" :label="option.label">
+                    <el-tooltip class="box-item" effect="dark" :content="option.desc" placement="top-start">
+                  <div style="display: flex;align-items: center;gap: 6px;">
+                      {{ option.text }} <el-icon><QuestionFilled /></el-icon>
+                  </div>
+                    </el-tooltip>
+                </el-radio>
+              </el-radio-group>
+
             </el-form-item>
           </el-col>
         </el-row>
@@ -256,7 +272,7 @@
           </el-col>
         </el-row>
 
-        <div v-if="form.modelType === 'large_language_model' || form.modelType === 'vision_model' || form.modelType === 'ocr_model'">
+        <div v-if="(form.modelType === 'large_language_model' || form.modelType === 'vision_model' || form.modelType === 'ocr_model') && (testLlmModelReponse || testLlmModelReasoingReponse)">
           <el-divider content-position="left">测试结果</el-divider>
 
           <div class="reasoning-chat-content" v-if="testLlmModelReasoingReponse">
@@ -431,6 +447,13 @@ const testLlmModelReponse = ref(undefined)
 const isRecording = ref(false);
 const speechRecognitionResult = ref('')
 
+// 组织信息
+const dataScopeOptions = ref([
+  { value: 'person', label: 'person', text: '私有', desc: '此数据仅你个人可见和使用' },
+  { value: 'org', label: 'org', text: '组织', desc: '此数据可在组织内部共享和使用' },
+  { value: 'public', label: 'public', text: '公开', desc: '此数据可被所有人访问和查看' }
+]);
+
 const recorder = new Recorder({
   sampleBits: 16, // 采样位数，支持 8 或 16，默认是16
   sampleRate: 16000, // 采样率，支持 11025、16000、22050、24000、44100、48000，根据浏览器默认值，我的chrome是48000
@@ -445,7 +468,9 @@ recorder.onprogress = (params) => {
 };
 
 const data = reactive({
-  form: {},
+  form: {
+    modelPermission: 'person'
+  },
   queryParams: {
     pageNum: 1,
     pageSize: 12,
