@@ -253,26 +253,26 @@ public abstract class AbstractFlowNode implements FlowNode {
         // 如果是最后一个节点，则将所有内容拼接保存到数据库中
         if (node.isLastNode()) {
 
-            MessageEntity entity = new MessageEntity();
+//            MessageEntity entity = new MessageEntity();
+//
+//            entity.setTraceBusId(taskInfo.getTraceBusId());
+//            entity.setId(taskInfo.getFlowChatId()) ; // 消息保存的业务Id
+//            entity.setContent(outputContent.toString());
+//            entity.setFormatContent(outputContent.toString());
+//            entity.setName(role.getRoleName());
+//
+//            entity.setRoleType("agent");
+//            entity.setReaderType("html");
+//
+//            entity.setAddTime(new Date());
+//            entity.setIcon(role.getRoleAvatar());
+//
+//            entity.setChannelId(taskInfo.getChannelId());
+//            entity.setRoleId(role.getId());
+//
+//            flowExpertService.getMessageService().save(entity);
 
-            entity.setTraceBusId(taskInfo.getTraceBusId());
-            entity.setId(taskInfo.getFlowChatId()) ; // 消息保存的业务Id
-            entity.setContent(outputContent.toString());
-            entity.setFormatContent(outputContent.toString());
-            entity.setName(role.getRoleName());
-
-            entity.setRoleType("agent");
-            entity.setReaderType("html");
-
-            entity.setAddTime(new Date());
-            entity.setIcon(role.getRoleAvatar());
-
-            entity.setChannelId(taskInfo.getChannelId());
-            entity.setRoleId(role.getId());
-
-            flowExpertService.getMessageService().save(entity);
-
-            streamMessagePublisher.doStuffAndPublishAnEvent(outputContent.toString() ,
+            streamStoreMessagePublisher.doStuffAndPublishAnEvent(outputContent.toString() ,
                     role,
                     taskInfo,
                     taskInfo.getFlowChatId()
