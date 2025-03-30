@@ -114,7 +114,7 @@
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="600px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="DatasetRef" label-width="100px">
+      <el-form :model="form" :rules="rules" ref="DatasetRef" label-width="100px" size="large">
         <el-row>
           <el-col :span="24">
             <el-form-item label="图标" prop="icon">
