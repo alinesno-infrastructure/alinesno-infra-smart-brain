@@ -35,18 +35,47 @@
                                     <span class="channel-desc">{{ channel.desc }}</span>
                                 </div>
                             </div>
+
                             <div class="channel-actions">
                                 <el-button v-if="channel.isConfigured" type="primary" text bg plain size="large" @click="startUsing(channel)">
                                     开始使用
                                 </el-button>
 
                                 <el-button v-if="!channel.isConfigured" type="info" size="large" text plain>未配置</el-button>
-                                <el-button type="danger" v-if="channel.isConfigured" size="large" @click="handleOfflineChannel(channel)" text plain>下架</el-button>
+
+                                <el-popover :visible="channel.visible" placement="top" :width="180">
+                                    <p>确定要下架么?</p>
+                                    <div style="text-align: right; margin: 0">
+                                        <el-button type="info" text bg @click="channel.visible = false">取消</el-button>
+                                        <!-- 
+                                        <el-button size="small" type="primary" @click="visible = false">
+                                            confirm
+                                        </el-button> 
+                                        -->
+                                        <el-button type="primary" bg @click="handleOfflineChannel(channel)" text plain>确认</el-button>
+                                    </div>
+                                    <template #reference>
+                                        <el-button type="danger" size="large" text bg v-if="channel.isConfigured" @click="channel.visible = true">下架</el-button>
+                                    </template>
+                                </el-popover>
 
                                 <el-button  type="primary" text bg plain size="large" @click="configureChannel(channel)">
                                     <i class="fa-solid fa-screwdriver-wrench"></i> &nbsp; 配置
                                 </el-button>
                             </div>
+                            <!-- 
+                            <div class="channel-actions" v-if="channel.paramKey == 'aip_agent_market'">
+                                <el-switch 
+                                    v-model="channel.hasSale" 
+                                    :active-value="1" 
+                                    :inactive-value="0"
+                                    active-text="分享" 
+                                    :disabled="channel.saleFromRoleId"
+                                    @change="handleChangeSaleField('hasSale', channel.hasSale, channel.roleId)">
+                                </el-switch>
+                            </div> 
+                            -->
+
                         </div>
                     </div>
                 </el-col>
@@ -92,6 +121,10 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
+
+                <!-- aip场景配置_start -->
+                <!-- aip场景配置_end -->
+
                 <el-form-item label="每分钟并发数" prop="qpm">
                     <el-input v-model="configForm.qpm" placeholder="请输入QPM（数字）" @input="handleQPMInput"></el-input>
                 </el-form-item>
@@ -172,7 +205,7 @@ import { useRouter } from 'vue-router';
 
 import ChannelDialog from './publishChannelDialog.vue';
 
-import { getRole } from "@/api/smart/assistant/role";
+import { getRole , changeSaleField } from "@/api/smart/assistant/role";
 import { updateChannelConfig , getChannels , offlineChannel } from "@/api/smart/assistant/channelPublish";
 
 const router = useRouter();
@@ -185,6 +218,7 @@ const currentRole = ref({
     roleName: ''
 });
 
+const visible = ref(false)
 const shareId = ref(null)
 const currentRoleId = ref(null);
 
@@ -321,7 +355,7 @@ function configureChannel(channel) {
         }
 
         // 发布configForm.agentStoreType类型，默认选择第1个选项
-        if(!configForm.value.agentStoreType){
+        if(!configForm.value.agentStoreType && currentConfigChannel.value.storeType){
             configForm.value.agentStoreType = currentConfigChannel.value.storeType[0].id;
         }
 
@@ -375,6 +409,20 @@ const handleOfflineChannel =(channel) => {
         proxy.$modal.msgSuccess("下线成功");
         handleGetChannels();
     });
+}
+
+/** 修改状态 */
+const handleChangeSaleField = async (field, value, id) => {
+  // 判断tags值 这样就不会进页面时调用了
+  const res = await changeSaleField({
+    field: field,
+    value: value ? 1 : 0,
+    id: id
+  }).catch(() => { })
+  if (res && res.code == 200) {
+    // 刷新表格
+    getList()
+  }
 }
 
 // 渠道列表，每个元素添加了 id 属性
