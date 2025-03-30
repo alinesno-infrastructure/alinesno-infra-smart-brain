@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -133,6 +134,7 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
         LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.setEntityClass(LlmModelEntity.class) ;
         query.toWrapper(queryWrapper);
+        queryWrapper.or(w -> w.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PUBLIC.getValue()));
 
         if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
             queryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
