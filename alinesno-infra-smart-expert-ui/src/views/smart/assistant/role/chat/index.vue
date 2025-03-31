@@ -407,7 +407,7 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
-      messageList.value[existingIndex].messageId += newMessage.messageId;
+      messageList.value[existingIndex].messageId = newMessage.messageId;
       if(newMessage.usage){
         messageList.value[existingIndex].usage = newMessage.usage;
       }
