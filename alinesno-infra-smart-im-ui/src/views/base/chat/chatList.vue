@@ -75,7 +75,7 @@
             <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
             <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
             <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-            <el-button type="info" v-if="item.businessId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+            <el-button type="info" v-if="item.messageId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
           </div>
 
         </div>
@@ -164,6 +164,7 @@ const pushResponseMessageList = (newMessage) => {
       // messageList.value[existingIndex].chatText += message.chatText;
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText; 
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      messageList.value[existingIndex].messageId = newMessage.messageId;
 
       const findMessage = messageList.value[existingIndex] ; 
 
@@ -264,14 +265,22 @@ function readerReasonningHtml(chatText) {
 
 /** 发送业务代码到消息框中 */
 function handleBusinessIdToMessageBox(item){
-  const businessIdMessage = ' #' + item.businessId + ' ' ;
+  // const businessIdMessage = ' #' + item.businessId + ' ' ;
+  // emit('sendMessageToChatBox' , businessIdMessage) ; 
+  // emit('handleSelectPreBusinessId' , item.businessId) ; 
+
+  const businessIdMessage = ' #' + item.messageId + ' ' ;
   emit('sendMessageToChatBox' , businessIdMessage) ; 
-  emit('handleSelectPreBusinessId' , item.businessId) ; 
+  emit('handleSelectPreBusinessId' , item.messageId) ; 
 }
 
 /** 编辑生成内容和更新生成内容 */
 function handleEditGenContent(item){
-  const businessId = item.businessId + '' ;
+  // const businessId = item.businessId + '' ;
+  // console.log('businessId = ' + businessId) ;
+  // emit('handleEditorContent' , businessId) ; 
+
+  const businessId = item.messageId + '' ;
   console.log('businessId = ' + businessId) ;
   emit('handleEditorContent' , businessId) ; 
 }
