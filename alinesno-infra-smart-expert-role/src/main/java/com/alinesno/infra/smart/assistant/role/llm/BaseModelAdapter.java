@@ -3,7 +3,9 @@ package com.alinesno.infra.smart.assistant.role.llm;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
+import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.api.ModelNodeDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
@@ -31,6 +33,9 @@ public class BaseModelAdapter {
     protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
 
     @Autowired
+    protected StreamStoreMessagePublisher streamStoreMessagePublisher ;  // 不保存入库的消息
+
+    @Autowired
     protected IMessageService messageService;
 
     /**
@@ -45,10 +50,9 @@ public class BaseModelAdapter {
         }
 
         FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
-        stepDto.setMessage("任务进行中...") ;
+        stepDto.setMessage(newMsg) ;
         stepDto.setStepId(node.getId()) ;
         stepDto.setStatus(status) ;
-        stepDto.setFlowChatText(newMsg) ;
         stepDto.setPrint(node.isPrint());
 
         taskInfo.setFlowStep(stepDto);
@@ -62,8 +66,7 @@ public class BaseModelAdapter {
     protected CompletableFuture<AiMessage> getAiChatResultAsync(Llm llm,
                                                                 IndustryRoleEntity role  ,
                                                                 String prompt,
-                                                                MessageTaskInfo taskInfo ,
-                                                                String oneChatId) {
+                                                                MessageTaskInfo taskInfo) {
 
         CompletableFuture<AiMessage> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
@@ -85,11 +88,11 @@ public class BaseModelAdapter {
                 stepDto.setStatus(AgentConstants.STEP_PROCESS);
                 stepDto.setPrint(node.isPrint());
 
-                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getContent())) {
+                if(StringUtils.isNotBlank(message.getContent())) {
                     stepDto.setFlowChatText(message.getContent());
                 }
 
-                if(com.alinesno.infra.common.core.utils.StringUtils.isNotBlank(message.getReasoningContent())){
+                if(StringUtils.isNotBlank(message.getReasoningContent())){
                     stepDto.setFlowReasoningText(message.getReasoningContent());
                 }
 
@@ -109,9 +112,59 @@ public class BaseModelAdapter {
                         }
                     }
 
-                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId()) ;
 
                     // TODO 是否在这里插入完成的消息？
+                    if (isEnd) {
+                        future.complete(message);
+                    }
+                } catch (Exception e) {
+                    // 处理发布事件时的异常
+                    log.error(e.getMessage());
+                    future.completeExceptionally(e);
+                }
+            });
+        } catch (Exception e) {
+            // 处理 chatStream 方法的异常
+            log.error(e.getMessage());
+            future.completeExceptionally(e);
+        }
+
+        return future;
+    }
+
+    protected CompletableFuture<AiMessage> getSingleAiChatResultAsync(Llm llm,
+                                                                IndustryRoleEntity role  ,
+                                                                String prompt,
+                                                                MessageTaskInfo taskInfo ,
+                                                                      long messageId) {
+
+        CompletableFuture<AiMessage> future = new CompletableFuture<>();
+
+        // 创建一个 final 局部变量来持有 taskInfo 的引用
+        final MessageTaskInfo localTaskInfo = taskInfo;
+
+        try {
+            llm.chatStream(prompt, (context, response) -> {
+
+                AiMessage message = response.getMessage();
+
+                if(StringUtils.isNotBlank(message.getReasoningContent())){
+                    taskInfo.setReasoningText(message.getReasoningContent());
+                }else{
+                    taskInfo.setReasoningText(StringUtils.EMPTY);
+                }
+
+                try {
+                    boolean isEnd = false;
+                    synchronized (localTaskInfo) {
+                        if (message.getStatus() == MessageStatus.END) {
+                            isEnd = true;
+                        }
+                    }
+
+                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, localTaskInfo, localTaskInfo.getTraceBusId() , messageId);
+
                     if (isEnd) {
                         future.complete(message);
                     }
