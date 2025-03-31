@@ -112,7 +112,8 @@ public class ImChatController extends SuperController {
 
         messageService.sendUserMessage(message , roleList , personDto);
 
-        return AjaxResult.success("操作成功." , personDto) ;
+//        return AjaxResult.success("操作成功." , personDto) ;
+        return AjaxResult.success("操作成功.") ;
     }
 
     /**
