@@ -322,6 +322,7 @@ const pushResponseMessageList = (newMessage) => {
       // 如果找到，更新该消息
       messageList.value[existingIndex].reasoningText += newMessage.reasoningText;
       messageList.value[existingIndex].chatText += newMessage.chatText;
+      messageList.value[existingIndex].messageId = newMessage.messageId;
       if(newMessage.usage){
         messageList.value[existingIndex].usage = newMessage.usage;
       }
@@ -383,8 +384,8 @@ function handleExecutorMessage(item){
   //   streamLoading.value.close();
   // })
 
-  const businessIdMessage = ' #' + item.businessId + ' ';
-  businessId.value = item.businessId;
+  const businessIdMessage = ' #' + item.messageId + ' ';
+  businessId.value = item.messageId;
   message.value += businessIdMessage;
 
   sendMessage('function');
@@ -434,8 +435,8 @@ function handleSseConnect(channelId) {
 }
 
 function handleBusinessIdToMessageBox(item) {
-  const businessIdMessage = ' #' + item.businessId + ' ';
-  businessId.value = item.businessId;
+  const businessIdMessage = ' #' + item.messageId + ' ';
+  businessId.value = item.messageId;
   message.value += businessIdMessage;
 }
 
