@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -30,6 +31,16 @@ public class ModelAdapterLLM extends BaseModelAdapter {
     }
 
     /**
+     * 输出内容
+     */
+    public void outputContent(String answer) {
+        streamStoreMessagePublisher.doStuffAndPublishAnEvent(answer == null ? "" : answer,
+                getRole(),
+                getTaskInfo(),
+                getTaskInfo().getTraceBusId()) ;
+    }
+
+    /**
      * 流式任务完成并保存消息，用于最后回答
      *
      * @param role
@@ -40,35 +51,82 @@ public class ModelAdapterLLM extends BaseModelAdapter {
     @SneakyThrows
     public String processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , boolean isSave) {
 
-        long workflowId = IdUtil.getSnowflakeNextId() ;
+//        long workflowId = IdUtil.getSnowflakeNextId() ;
 
 //        CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo, workflowId+"") ;
-        CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo, getNode().getId()) ;
+        CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo) ; //, getNode().getId()) ;
 
         AiMessage message = future.get();
         log.debug("output = {}" , message.getFullContent());
 
         if(isSave){
-            MessageEntity entity = new MessageEntity();
-
-            entity.setTraceBusId(taskInfo.getTraceBusId());
-            entity.setId(workflowId) ;
-            entity.setContent(message.getFullContent()) ;
-            entity.setReasoningContent(message.getFullReasoningContent());
-            entity.setFormatContent(message.getFullContent());
-            entity.setName(role.getRoleName());
-
-            entity.setRoleType("agent");
-            entity.setReaderType("html");
-
-            entity.setAddTime(new Date());
-            entity.setIcon(role.getRoleAvatar());
-
-            entity.setChannelId(taskInfo.getChannelId()) ;
-            entity.setRoleId(role.getId()) ;
+            MessageEntity entity = getMessageEntity(role, taskInfo, message);
 
             messageService.save(entity);
         }
+
+        return message.getFullContent() ;
+
+    }
+
+    @NotNull
+    private static MessageEntity getMessageEntity(IndustryRoleEntity role, MessageTaskInfo taskInfo, AiMessage message) {
+        MessageEntity entity = new MessageEntity();
+
+        entity.setTraceBusId(taskInfo.getTraceBusId());
+//            entity.setId(workflowId) ;
+        entity.setContent(message.getFullContent()) ;
+        entity.setReasoningContent(message.getFullReasoningContent());
+        entity.setFormatContent(message.getFullContent());
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setChannelId(taskInfo.getChannelId()) ;
+        entity.setRoleId(role.getId()) ;
+        return entity;
+    }
+
+    /**
+     * 流式任务完成并保存消息，用于最后回答
+     *
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     * @return
+     */
+    @SneakyThrows
+    public String processStreamSingle(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+
+        long messageId = IdUtil.getSnowflakeNextId() ;
+        CompletableFuture<AiMessage> future = getSingleAiChatResultAsync(llm, role, prompt, taskInfo , messageId) ;
+
+        AiMessage message = future.get();
+        log.debug("output = {}" , message.getFullContent());
+
+        MessageEntity entity = new MessageEntity();
+
+        entity.setTraceBusId(taskInfo.getTraceBusId());
+        entity.setId(messageId) ;
+        entity.setContent(message.getFullContent()) ;
+        entity.setReasoningContent(message.getFullReasoningContent());
+        entity.setFormatContent(message.getFullContent());
+        entity.setName(role.getRoleName());
+
+        entity.setRoleType("agent");
+        entity.setReaderType("html");
+
+        entity.setAddTime(new Date());
+        entity.setIcon(role.getRoleAvatar());
+
+        entity.setChannelId(taskInfo.getChannelId()) ;
+        entity.setRoleId(role.getId()) ;
+
+        messageService.save(entity);
 
         return message.getFullContent() ;
 
