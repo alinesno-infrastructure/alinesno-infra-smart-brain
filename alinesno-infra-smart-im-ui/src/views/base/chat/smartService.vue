@@ -269,11 +269,17 @@ function handleSendUserMessage(message, type) {
 /** 执行脚本任务 */
 function executorMessage(item){
 
+  // let channelId = getParam("channel");
+  // let users = [item.roleId];
+  // let bId = [item.businessId];
+  // let type = 'function';
+  // let message = " #"+item.businessId+" " ; 
+
   let channelId = getParam("channel");
   let users = [item.roleId];
-  let bId = [item.businessId];
+  let bId = [item.messageId];
   let type = 'function';
-  let message = " #"+item.businessId+" " ; 
+  let message = " #"+item.messageId+" " ; 
 
   streamLoading.value = ElLoading.service({
     lock: true,
