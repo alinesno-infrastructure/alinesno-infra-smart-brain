@@ -5,33 +5,28 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.agentsflex.core.util.StringUtil;
-import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.ResultCallback;
-import com.alibaba.dashscope.utils.JsonUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.ExpertService;
-import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_ROLE;
 
@@ -136,71 +131,71 @@ public class FlowExpertService extends ExpertService {
 
     @Override
     protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
-        Semaphore semaphore = new Semaphore(0);
-        StringBuilder fullContent = new StringBuilder();
-        long traceBusId = taskInfo.getTraceBusId(); // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
-
-        msgManager.setTraceBusId(taskInfo.getTraceBusId());
-        msgManager.setWorkflowId(traceBusId);
-        msgManager.setChannelId(taskInfo.getChannelId());
-
-        qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
-            @SneakyThrows
-            @Override
-            public void onEvent(GenerationResult message) {
-
-                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
-                String finishReason = message.getOutput().getChoices().get(0).getFinishReason();
-
-                log.info("Received message: {}", JsonUtils.toJson(message));
-
-                if (finishReason != null && finishReason.equals("stop")) {
-
-
-                    taskInfo.setFlowStepContent(fullContent.toString());
-                    msg = "[DONE]";
-                    semaphore.release();
-                } else {
-                    fullContent.append(msg);
-                }
-
-                FlowStepStatusDto stepDto = new FlowStepStatusDto();
-
-                stepDto.setMessage("任务进行中...");
-                stepDto.setStepId(node.getId());
-                stepDto.setStatus(AgentConstants.STEP_PROCESS);
-                stepDto.setFlowChatText(msg);
-                stepDto.setPrint(node.isPrint());
-
-                taskInfo.setFlowStep(stepDto);
-
-                streamMessagePublisher.doStuffAndPublishAnEvent(null, //  msg.substring(preMsg.toString().length()),
-                        role,
-                        taskInfo,
-                        taskInfo.getFlowChatId());
-
-            }
-
-            @Override
-            public void onError(Exception err) {
-                log.error("Exception occurred: {}", err.getMessage());
-                semaphore.release();
-            }
-
-            @Override
-            public void onComplete() {
-                log.info("Completed");
-                semaphore.release();
-                log.info("Full content: \n{}", fullContent);
-
-                if(node.isPrint()){
-                    outputContent.append(fullContent) ;   // 将内容输出到最终结果中
-                }
-
-            }
-        });
-
-        semaphore.acquire();
+//        Semaphore semaphore = new Semaphore(0);
+//        StringBuilder fullContent = new StringBuilder();
+//        long traceBusId = taskInfo.getTraceBusId(); // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
+//
+//        msgManager.setTraceBusId(taskInfo.getTraceBusId());
+//        msgManager.setWorkflowId(traceBusId);
+//        msgManager.setChannelId(taskInfo.getChannelId());
+//
+//        qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
+//            @SneakyThrows
+//            @Override
+//            public void onEvent(GenerationResult message) {
+//
+//                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
+//                String finishReason = message.getOutput().getChoices().get(0).getFinishReason();
+//
+//                log.info("Received message: {}", JsonUtils.toJson(message));
+//
+//                if (finishReason != null && finishReason.equals("stop")) {
+//
+//
+//                    taskInfo.setFlowStepContent(fullContent.toString());
+//                    msg = "[DONE]";
+//                    semaphore.release();
+//                } else {
+//                    fullContent.append(msg);
+//                }
+//
+//                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+//
+//                stepDto.setMessage("任务进行中...");
+//                stepDto.setStepId(node.getId());
+//                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+//                stepDto.setFlowChatText(msg);
+//                stepDto.setPrint(node.isPrint());
+//
+//                taskInfo.setFlowStep(stepDto);
+//
+//                streamMessagePublisher.doStuffAndPublishAnEvent(null, //  msg.substring(preMsg.toString().length()),
+//                        role,
+//                        taskInfo,
+//                        taskInfo.getFlowChatId());
+//
+//            }
+//
+//            @Override
+//            public void onError(Exception err) {
+//                log.error("Exception occurred: {}", err.getMessage());
+//                semaphore.release();
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//                log.info("Completed");
+//                semaphore.release();
+//                log.info("Full content: \n{}", fullContent);
+//
+//                if(node.isPrint()){
+//                    outputContent.append(fullContent) ;   // 将内容输出到最终结果中
+//                }
+//
+//            }
+//        });
+//
+//        semaphore.acquire();
     }
 
     @Override
