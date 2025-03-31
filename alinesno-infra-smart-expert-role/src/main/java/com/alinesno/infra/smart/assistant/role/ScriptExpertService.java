@@ -4,6 +4,7 @@ import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.context.ContextManager;
+import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -11,6 +12,7 @@ import com.alinesno.infra.smart.utils.CodeBlockParser;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,9 @@ import java.util.List;
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_SCRIPT)
 public class ScriptExpertService extends ExpertService {
+
+	@Autowired
+	private ModelAdapterLLM modelAdapterLLM ;
 
 	@Override
 	protected String handleRole(IndustryRoleEntity role,
@@ -116,8 +121,10 @@ public class ScriptExpertService extends ExpertService {
 									   List<CodeContent> codeContentList,
 									   String scriptText) {
 
-		// TODO 待处理Groovy脚本安全的问题
+		modelAdapterLLM.setRole(role);
+		modelAdapterLLM.setTaskInfo(taskInfo);
 
+		// TODO 待处理Groovy脚本安全的问题
 		ToolsUtil tools = new ToolsUtil() ;
 
 		// 创建 Binding 对象，用于绑定变量到 Groovy 脚本
@@ -125,7 +132,9 @@ public class ScriptExpertService extends ExpertService {
 		binding.setVariable("role", role); // 角色信息
 		binding.setVariable("taskInfo", taskInfo); // 任务信息
 		binding.setVariable("workflow", workflow); // 执行流程节点
+
 		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
+		binding.setVariable("modelAdapterLLM", modelAdapterLLM); // 文本和图片生成
 		binding.setVariable("agentFlexLLM", agentFlexLLM); // 多模型适配生成
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
