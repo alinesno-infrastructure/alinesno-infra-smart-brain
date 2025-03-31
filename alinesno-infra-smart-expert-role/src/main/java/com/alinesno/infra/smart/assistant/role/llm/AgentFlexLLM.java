@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * AgentFlexLLM
  */
+@Deprecated
 @Slf4j
 @Service
 public class AgentFlexLLM {
@@ -47,7 +48,7 @@ public class AgentFlexLLM {
     }
 
     /**
-     * 流式任务
+     * 流式任务完成并保存消息，用于最后回答
      *
      * @param role
      * @param prompt
@@ -55,7 +56,7 @@ public class AgentFlexLLM {
      * @return
      */
     @SneakyThrows
-    public String processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+    public String processStreamFinish(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , boolean isSave) {
 
         long workflowId = IdUtil.getSnowflakeNextId() ;
 
@@ -64,28 +65,43 @@ public class AgentFlexLLM {
         AiMessage message = future.get();
         log.debug("output = {}" , message.getFullContent());
 
-        MessageEntity entity = new MessageEntity();
+        if(isSave){
+            MessageEntity entity = new MessageEntity();
 
-        entity.setTraceBusId(taskInfo.getTraceBusId());
-        entity.setId(workflowId) ;
-        entity.setContent(message.getFullContent()) ;
-        entity.setReasoningContent(message.getFullReasoningContent());
-        entity.setFormatContent(message.getFullContent());
-        entity.setName(role.getRoleName());
+            entity.setTraceBusId(taskInfo.getTraceBusId());
+            entity.setId(workflowId) ;
+            entity.setContent(message.getFullContent()) ;
+            entity.setReasoningContent(message.getFullReasoningContent());
+            entity.setFormatContent(message.getFullContent());
+            entity.setName(role.getRoleName());
 
-        entity.setRoleType("agent");
-        entity.setReaderType("html");
+            entity.setRoleType("agent");
+            entity.setReaderType("html");
 
-        entity.setAddTime(new Date());
-        entity.setIcon(role.getRoleAvatar());
+            entity.setAddTime(new Date());
+            entity.setIcon(role.getRoleAvatar());
 
-        entity.setChannelId(taskInfo.getChannelId()) ;
-        entity.setRoleId(role.getId()) ;
+            entity.setChannelId(taskInfo.getChannelId()) ;
+            entity.setRoleId(role.getId()) ;
 
-        messageService.save(entity);
+            messageService.save(entity);
+        }
 
         return message.getFullContent() ;
 
+    }
+
+    /**
+     * 流式任务，不保存消息
+     *
+     * @param role
+     * @param prompt
+     * @param taskInfo
+     * @return
+     */
+    @SneakyThrows
+    public String processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+        return processStreamFinish(llm, role, prompt, taskInfo, false) ;
     }
 
     protected CompletableFuture<AiMessage> getAiChatResultAsync(Llm llm,
