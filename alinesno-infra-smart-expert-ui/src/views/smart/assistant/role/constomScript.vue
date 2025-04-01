@@ -53,7 +53,7 @@
                                 <ParamsConfigPanel ref="paramsConfigRef" />
                             </el-tab-pane>
 
-                            <el-tab-pane name="execute" label="执行脚本">
+                            <el-tab-pane name="execute" label="角色脚本">
                                 <ScriptEditorPanel ref="executeEditorRef" :lang="'java'" />
                             </el-tab-pane>
 
@@ -61,7 +61,7 @@
                                 <ScriptEditorPanel ref="auditEditorRef" :lang="'java'" />
                             </el-tab-pane>
 
-                            <el-tab-pane name="functionCall" label="方法回调">
+                            <el-tab-pane name="functionCall" label="角色执行">
                                 <ScriptEditorPanel ref="functionCallEditorRef" :lang="'java'" />
                             </el-tab-pane>
 
