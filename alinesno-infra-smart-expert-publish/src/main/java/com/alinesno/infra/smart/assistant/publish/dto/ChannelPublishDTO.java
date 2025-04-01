@@ -48,6 +48,9 @@ public class ChannelPublishDTO extends BaseDto {
     private String apiKey; // API 接口的 APIKey
     private long agentStoreType ; // 智能体商店类型
 
+    private long sceneId ; // 场景的智能体ID
+    private long sceneAgentId ; // 场景的智能体ID
+
     /**
      * 转换为实体对象
      * @return
