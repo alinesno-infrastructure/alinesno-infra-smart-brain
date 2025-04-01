@@ -88,6 +88,8 @@
                 <el-form-item label="分享名称" prop="shareName">
                     <el-input v-model="configForm.shareName" placeholder="请输入分享名称"></el-input>
                 </el-form-item>
+
+                <!-- 渠道为商店时，需要选择分类_start -->
                 <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_store'" label="发布商店分类" prop="agentStoreType">
                     <el-select
                         v-model="configForm.agentStoreType"
@@ -100,6 +102,37 @@
                             :value="item.id"/>
                     </el-select>
                 </el-form-item>
+                <!-- 渠道为商店时，需要选择分类_end -->
+
+                <!-- 渠道为场景时，需要选择分类_start -->
+                <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="发布场景类型" prop="sceneId">
+                    <el-select
+                        v-model="configForm.sceneId"
+                        placeholder="请选择发布场景类型"
+                        @change="handleChangeSceneType"
+                        style="width: 100%">
+                        <el-option
+                            v-for="item in currentConfigChannel.sceneType"
+                            :key="item.id"
+                            :label="item.sceneName"
+                            :value="item.id" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="指定Agent类型" prop="agentTypeId">
+                    <el-select
+                        v-model="configForm.agentTypeId"
+                        placeholder="请选择指定的Agent类型"
+                        style="width: 100%">
+                        <el-option
+                            v-for="item in currentConfigChannel.agentTypes"
+                            :key="item.id"
+                            :label="item.name"
+                            :value="item.id"/>
+                    </el-select>
+                </el-form-item>
+                <!-- 渠道为场景时，需要选择分类_end -->
+
+
                 <el-form-item label="过期时间">
                     <el-row style="width:100%">
                         <el-col :span="15">
@@ -272,6 +305,12 @@ const formRules = {
     // apiKey: [
     //     { required: false, message: 'APIKey不能为空', trigger: 'blur' }
     // ]
+    sceneId: [
+        { required: false, message: '场景ID不能为空', trigger: 'blur' }
+    ] , 
+    agentTypeId: [
+        { required: false, message: '场景Agent类型ID不能为空', trigger: 'blur' }
+    ]
 };
 
 const updateFormRules = () => {
@@ -401,6 +440,22 @@ const handleGetChannels = () => {
     getChannels(currentRoleId.value).then(response => {
         channelList.value = response.data;
     });
+};
+
+// 场景类型切换
+const handleChangeSceneType = (selectedId) => {
+    console.log('selectedId = ' + JSON.stringify(selectedId));
+    // currentConfigChannel.agentTypes = item.agents;
+
+    const selectedItem = currentConfigChannel.value.sceneType.find(
+        (item) => item.id === selectedId
+    );
+
+    if (selectedItem) {
+        console.log('item = ' + JSON.stringify(selectedItem));
+        currentConfigChannel.value.agentTypes = selectedItem.agents;
+    }
+
 };
 
 // 渠道下线
