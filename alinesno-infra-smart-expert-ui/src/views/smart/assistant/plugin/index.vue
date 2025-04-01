@@ -340,7 +340,7 @@ function handleManagerType(){
   router.push({ path: "/template/smart/assistant/plugin/type" });
 }
 
-/** 配置执行脚本 */
+/** 配置角色脚本 */
 function configToolScript(row) {
   router.push({ path: "/expert/smart/assistant/tool/script", query: { toolId: row.id } });
 }
