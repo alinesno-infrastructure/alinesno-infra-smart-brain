@@ -14,6 +14,7 @@ import com.alinesno.infra.smart.assistant.publish.enums.ChannelListEnums;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.assistant.publish.utils.ApiKeyGenerator;
 import com.alinesno.infra.smart.im.enums.AgentStoreTypeEnum;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -108,6 +109,11 @@ public class ChannelPublishController extends BaseController<ChannelPublishEntit
             // 如果paramKey的类型是ChannelListEnums.AIP_AGENT_STORE，则添加商店类型
             if (paramKey.equals(ChannelListEnums.AIP_AGENT_STORE.getParamKey())) {
                 channel.put("storeType", AgentStoreTypeEnum.getList());
+            }
+
+            // 如果paramKey的类型是ChannelListEnums.AIP_AGENT_SCENE, 则添加场景类型
+            if (paramKey.equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
+                channel.put("sceneType", SceneEnum.getList());
             }
         }
 
