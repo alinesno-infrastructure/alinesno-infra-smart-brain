@@ -578,7 +578,7 @@ function handleDelete(row) {
   });
 };
 
-/** 配置执行脚本 */
+/** 配置角色脚本 */
 function configExecuteScript(row) {
 
   console.log('scriptType = ' + row.scriptType)
