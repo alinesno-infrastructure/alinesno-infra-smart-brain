@@ -279,7 +279,7 @@ const beforeAvatarUpload = (rawFile) => {
   return true;
 };
 
-/** 配置执行脚本 */
+/** 配置角色脚本 */
 // function configSecretScript(row){
 //   router.push({path:"/expert/smart/assistant/tool/script" , query: {toolId: row.id}});
 // }
