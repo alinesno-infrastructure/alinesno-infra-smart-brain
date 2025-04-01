@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.enums.ChannelListEnums;
 import com.alinesno.infra.smart.assistant.publish.mapper.ChannelPublishMapper;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
+import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +28,9 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
     @Autowired
     private IAgentStoreService agentStoreService ;
 
+    @Autowired
+    private IAgentSceneService agentSceneService ;
+
     @Override
     public void updateConfig(ChannelPublishEntity entity, ChannelPublishDTO dto) {
         this.saveOrUpdate(entity);
@@ -34,6 +38,11 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
         // 如果是发布到商店，则将角色信息添加到AIP商店里面
         if(ChannelListEnums.AIP_AGENT_STORE.getParamKey().equals(entity.getParamKey())){
             agentStoreService.addRoleToStore(entity.getRoleId() , dto.getAgentStoreType()) ;
+        }
+
+        // 如果是发布到场景，则将角色信息添加到AIP场景里面
+        if(ChannelListEnums.AIP_AGENT_SCENE.getParamKey().equals(entity.getParamKey())){
+            agentSceneService.addRoleToScene(entity.getRoleId() , dto.getSceneId() , dto.getSceneAgentId()) ;
         }
     }
 
