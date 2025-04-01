@@ -1,7 +1,8 @@
 <template>
     <div class="flow-agent-inference-container">
         <!-- AI配置界面 -->
-        <el-card class="box-card" shadow="never" style="height:calc(100vh - 295px)">
+        diffHeight: {{ props.diffHeight }}
+        <el-card class="box-card" shadow="never" :style="'height:calc(100vh - ' + props.diffHeight + 'px)'">
 
             <el-form ref="agentModelConfigFormRef" :model="agentModelConfigForm" :rules="agentModelConfigRules">
 
@@ -137,6 +138,12 @@ import {
     listAllLlmModel
 } from "@/api/smart/assistant/llmModel"
 
+const props = defineProps({
+    diffHeight: {
+        type: Number,
+        default: 295
+    }
+})
 
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
 import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
