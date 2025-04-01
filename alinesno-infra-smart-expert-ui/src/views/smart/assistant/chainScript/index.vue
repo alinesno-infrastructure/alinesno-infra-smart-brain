@@ -85,7 +85,7 @@
             </template>
           </el-table-column>
           <el-table-column label="脚本类型" align="center" key="scriptType" width="200" prop="scriptType" v-if="columns[2].visible" :show-overflow-tooltip="true"/>
-          <el-table-column label="执行脚本" align="center" width="150"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
+          <el-table-column label="角色脚本" align="center" width="150"  key="storagePath" prop="storagePath" v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button @click="configScript(scope.row)" type="primary" text bg icon="Paperclip">脚本配置</el-button>
             </template>
