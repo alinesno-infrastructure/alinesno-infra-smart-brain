@@ -110,8 +110,13 @@
         <div class="aip-flow-drawer">
             <el-drawer v-model="showParamsDialog" v-if="showParamsDialog" :modal="false" size="40%" style="max-width: 600px;" title="角色参数配置"
                 :with-header="true">
-                <div style="margin-top: 0px;">
-                    <ParamsConfigPanel ref="paramsConfigRef" />
+                <div style="margin-top: 0px;padding:0px !important" class="agent-chat-box  agent-inference-container">
+                    <ParamsConfigPanel ref="paramsConfigRef" :diffHeight="295" />
+                </div> 
+                <div class="config-form-footer">
+                    <div class="button-group">
+                        <el-button type="primary" size="large" text bg @click="saveAgentModelConfig">保存配置</el-button>
+                    </div>
                 </div>
             </el-drawer>
         </div>
@@ -131,7 +136,8 @@ import {
 
 import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
-import ParamsConfigPanel from '@/views/smart/assistant/workflow/components/ParamsConfigPanel.vue';
+// import ParamsConfigPanel from '@/views/smart/assistant/workflow/components/ParamsConfigPanel.vue';
+import ParamsConfigPanel from '@/views/smart/assistant/role/ParamsConfigPanel.vue';
 
 import { ElMessage, ElLoading } from "element-plus";
 import { nextTick, ref } from "vue";
@@ -253,10 +259,6 @@ const addNode = (item) => {
 const roleConfiguration = () => {
     console.log('角色配置操作');
     showParamsDialog.value = !showParamsDialog.value;
-
-    // nextTick(() => {
-    //     paramsConfigRef.value.displayRoleInfoBack(currentRole.value);
-    // })
 };
 
 /**
@@ -314,6 +316,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+
+.config-form-footer{
+    margin-top: 20px;
+    text-align: right;
+}
 </style>
 
 <style>
