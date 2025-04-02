@@ -18,7 +18,7 @@ public class ChapterGenFormDto {
      * 场景ID，用于标识章节所属的场景
      */
     @Min(value = 1, message = "场景ID不能小于0")
-    private long screenId;
+    private long sceneId;
 
     /**
      * 章节标题，用于展示章节的名称
