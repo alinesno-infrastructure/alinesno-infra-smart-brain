@@ -43,6 +43,10 @@ public class StreamStoreMessagePublisher {
         messageService.save(entity);
 
         long messageId = entity.getId() ;
+
+        // 设置任务数据库信息
+        taskInfo.setMessageId(messageId);
+
         StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId , messageId);
         applicationEventPublisher.publishEvent(customEvent);
     }
