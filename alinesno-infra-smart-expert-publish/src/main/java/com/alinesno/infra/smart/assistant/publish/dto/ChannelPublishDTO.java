@@ -49,7 +49,7 @@ public class ChannelPublishDTO extends BaseDto {
     private long agentStoreType ; // 智能体商店类型
 
     private long sceneId ; // 场景的智能体ID
-    private long sceneAgentId ; // 场景的智能体ID
+    private long agentTypeId ; // 场景的智能体类型ID
 
     /**
      * 转换为实体对象
@@ -75,6 +75,12 @@ public class ChannelPublishDTO extends BaseDto {
         Map<String, Object> config = new HashMap<>();
         config.put("expireType", expireType);
         config.put("qpm", qpm);
+
+        // 处理场景类型和智能体类型
+        if (channelListEnums == ChannelListEnums.AIP_AGENT_SCENE) {
+            config.put("sceneId", sceneId);
+            config.put("agentTypeId", agentTypeId);
+        }
 
         if (expireTime != null) {
             config.put("expireTime", expireTime);
@@ -104,6 +110,7 @@ public class ChannelPublishDTO extends BaseDto {
             config.put("authPassword", aesEncrypted);
         }
 
+
         entity.setConfigMap(JSONObject.toJSONString(config));
 
         return entity;
@@ -126,6 +133,7 @@ public class ChannelPublishDTO extends BaseDto {
         dto.setApiKey(entity.getApiKey());
 
         String configMapStr = entity.getConfigMap();
+
         if (configMapStr != null && !configMapStr.isEmpty()) {
             // 指定泛型类型参数来消除警告
             Map<String, Object> configMap = JSONObject.parseObject(configMapStr, new TypeReference<>() {});
@@ -168,6 +176,12 @@ public class ChannelPublishDTO extends BaseDto {
                 String authPassword = configMap.get("authPassword").toString();
                 String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
                 dto.setAuthPassword(aesEncrypted)  ;
+            }
+
+            // 处理场景类型和智能体类型
+            if (entity.getParamKey().equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
+                dto.setSceneId((Long) configMap.get("sceneId"));
+                dto.setAgentTypeId((Long) configMap.get("agentTypeId"));
             }
 
         }
@@ -227,6 +241,12 @@ public class ChannelPublishDTO extends BaseDto {
                 String authPassword = configMap.get("authPassword").toString();
                 String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
                 configMap.put("authPassword", aesEncrypted);
+            }
+
+            // 处理场景类型和智能体类型
+            if (entity.getParamKey().equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
+                configMap.put("sceneId", configMap.get("sceneId"));
+                configMap.put("agentTypeId", configMap.get("agentTypeId"));
             }
 
             return configMap;
