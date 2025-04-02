@@ -142,4 +142,9 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      */
     List<String> getQuestionSuggestion(RoleQuestionSuggestionDto dto);
 
+    /**
+     * 保存角色和工作流配置关联
+     * @param dto
+     */
+    void saveRoleWithWorkflowConfig(RoleFlowConfigDto dto);
 }
