@@ -331,7 +331,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     }
 
     /**
-     * 保存用户配置
+     * 保存ReActRole配置
      * @return
      */
     @PostMapping("/saveRoleWithReActConfig")
@@ -339,6 +339,19 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
 
         log.debug("dto = {}", dto);
         service.saveRoleWithReActConfig(dto) ;
+
+        return ok() ;
+    }
+
+    /**
+     * 保存WorkflowRole配置
+     * @return
+     */
+    @PostMapping("/saveRoleWithWorkflowConfig")
+    public AjaxResult saveRoleWithWorkflowConfig(@RequestBody @Validated RoleFlowConfigDto dto){
+
+        log.debug("dto = {}", dto);
+        service.saveRoleWithWorkflowConfig(dto) ;
 
         return ok() ;
     }
@@ -352,16 +365,16 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         return ok() ;
     }
 
-    /**
-     * 更新流程角色配置 updateFlowConfig
-     * @return
-     */
-    @PostMapping("/updateFlowConfig")
-    public AjaxResult updateFlowConfig(@RequestBody @Validated RoleFlowConfigDto flowConfigDto , @RequestParam Long roleId ) {
-        log.debug("dto = {}", flowConfigDto);
-        service.updateFlowConfig(flowConfigDto , roleId) ;
-        return ok() ;
-    }
+//    /**
+//     * 更新流程角色配置 updateFlowConfig
+//     * @return
+//     */
+//    @PostMapping("/updateFlowConfig")
+//    public AjaxResult updateFlowConfig(@RequestBody @Validated RoleFlowConfigDto flowConfigDto , @RequestParam Long roleId ) {
+//        log.debug("dto = {}", flowConfigDto);
+//        service.updateFlowConfig(flowConfigDto , roleId) ;
+//        return ok() ;
+//    }
 
     @Override
     public AjaxResult detail(@PathVariable String id) {
