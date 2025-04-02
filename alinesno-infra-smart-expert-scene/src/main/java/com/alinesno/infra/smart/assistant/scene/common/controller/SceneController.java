@@ -11,14 +11,17 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
 import com.alinesno.infra.smart.assistant.scene.core.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.scene.dto.LeaderUpdateDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
@@ -76,6 +79,9 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     @Autowired
     private IChapterService chapterService;
 
+    @Autowired
+    private IAgentSceneService agentSceneService ;
+
     /**
      * 获取BusinessLogEntity的DataTables数据。
      *
@@ -90,6 +96,20 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
         return this.toPage(model, this.getFeign(), page);
+    }
+
+    /**
+     * 通过场景id和角色类型获取到角色列表
+     */
+    @GetMapping("/getRoleBySceneIdAndAgentType")
+    public AjaxResult getRoleBySceneIdAndAgentType(@RequestParam("sceneId") long sceneId,
+                                                   @RequestParam("agentTypeId") long agentTypeId) {
+        log.debug("sceneId = {} , agentType = {}" , sceneId , agentTypeId);
+
+        long orgId = CurrentAccountJwt.get().getOrgId() ;
+        List<IndustryRoleEntity> list = agentSceneService.getRoleBySceneIdAndAgentType(sceneId, agentTypeId , orgId);
+
+        return AjaxResult.success("操作成功", list);
     }
 
     /**
