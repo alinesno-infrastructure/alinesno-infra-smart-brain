@@ -74,6 +74,9 @@ import { computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { copyClick } from '@/utils/clipboard'
 
+// import { initDefaultShortcut } from '@/views/smart/assistant/workflow/common/shortcut'; // 替换为实际的模块路径
+// const { copy_node, paste_node, delete_node } = initDefaultShortcut(lf, graph);
+
 import FlowEditorStepPanel from '@/views/smart/assistant/workflow/common/FlowEditorStepPanel.vue'
 
 const props = defineProps({
