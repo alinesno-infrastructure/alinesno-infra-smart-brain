@@ -3,32 +3,23 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 // 接口配置项
 var prefix = '/api/infra/smart/assistant/scene/' ;
-// var chapterPrefix = '/api/infra/smart/assistant/sceneChapter/' ;
-// var leaderPrefix = '/api/infra/smart/assistant/sceneLeader/' ;
 
 var managerUrl = {
-  // 场景
   createScene: prefix + "saveOrUpdate" , 
-  // updateChapterEditor: prefix + "updateChapterEditor" , 
   getScene: prefix +"getScene",
   sceneList: prefix +"sceneList",
   uploadOss: prefix +"uploadOss",
   updateLeaderRole: prefix +"updateLeaderRole",
   supportScene: prefix +"supportScene",
+  getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
+}
 
-  // 大文本
-  // saveChapter: chapterPrefix +"saveChapters",
-  // processParagraph: chapterPrefix +"processParagraph",
-  // chatRole: chapterPrefix +"chatRole",
-  // chatRoleSync: chapterPrefix +"chatRoleSync",
-  // : chapterPrefix +"updateChapterContentEditor",
-  // getChapterByRole: chapterPrefix +"getChapterByRole",
-  // getChapterContent: chapterPrefix +"getChapterContent",
-  // updateChapterContent: chapterPrefix +"updateChapterContent",
-
-  // // 管理者
-  // leaderPlan: leaderPrefix +"leaderPlan",
-  // executeSceneTask: leaderPrefix +"executeSceneTask",
+// 通过场景id和角色类型获取到角色列表
+export function getRoleBySceneIdAndAgentType(sceneId , agentTypeId) {
+  return request({
+    url: managerUrl.getRoleBySceneIdAndAgentType + "?sceneId=" + parseStrEmpty(sceneId) + "&agentTypeId=" + parseStrEmpty(agentTypeId),
+    method: 'get'
+  })
 }
 
 // 获取到支持场景
