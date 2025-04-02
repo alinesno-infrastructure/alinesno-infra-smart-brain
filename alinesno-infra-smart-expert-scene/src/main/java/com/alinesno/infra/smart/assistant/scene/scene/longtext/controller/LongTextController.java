@@ -54,7 +54,9 @@ public class LongTextController extends SuperController {
         BeanUtils.copyProperties(entity, dto);
 
         SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoByCode(entity.getSceneType());
+
         dto.setAgents(sceneInfoDto.getAgents());
+        dto.setSceneId(sceneInfoDto.getId());
 
         // 查询出当前的章节编辑人员
         dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
