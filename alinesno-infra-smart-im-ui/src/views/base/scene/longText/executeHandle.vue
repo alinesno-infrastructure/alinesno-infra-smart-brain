@@ -7,63 +7,66 @@
       @close="handleClose"
     >
       <template #default>
-
-        <div style="padding: 20px 0px;padding-top: 10px;font-size: 15px;">
+        <div class="dialog-description">
           由多个智能体协作，请根据需求选择大纲生成智能体和章节工程师，并输入内容生成相关信息。
         </div>
-
         <el-form ref="formRef" :model="formData" :rules="rules" size="large" :label-position="'top'">
           <el-form-item label="选择大纲设计专员" prop="outlineEngineer">
-            <el-scrollbar height="150px">
-            <el-radio-group v-model="formData.outlineEngineer">
-              <el-radio
-                v-for="engineer in outlineEngineers"
-                border
-                class="longtext-el-radio"
-                :key="engineer.id"
-                :value="engineer.id"
-                :label="engineer.id"
-              >
-              <div style="display: flex;align-items: center;">
-
-                <img
-                  :src="imagePathByPath(engineer.roleAvatar)" 
-                  alt="工程师头像"
-                  style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px"
-                />
-                <div>
-
-                <span>
-                {{ engineer.roleName }}
-                </span>
+            <el-scrollbar class="scrollbar">
+              <div class="custom-radio-group" >
+                <div
+                  v-for="engineer in outlineEngineers"
+                  :key="engineer.id"
+                  class="custom-radio"
+                  :class="{ 'selected': formData.outlineEngineer === engineer.id }"
+                  @click="selectOutlineEngineer(engineer.id)"
+                >
+                  <div class="engineer-info">
+                    <img
+                      :src="imagePathByPath(engineer.roleAvatar)"
+                      alt="工程师头像"
+                      class="engineer-avatar"
+                    />
+                    <div class="engineer-details">
+                      <span class="engineer-name">
+                        {{ engineer.roleName }}
+                      </span>
+                      <span class="engineer-responsibilities">
+                        {{ engineer.responsibilities }}
+                      </span>
+                    </div>
+                  </div>
                 </div>
-
               </div>
-              </el-radio>
-            </el-radio-group>
             </el-scrollbar>
           </el-form-item>
           <el-form-item label="选择章节工程师" prop="chapterEngineer">
-            <el-scrollbar height="150px">
-            <el-radio-group v-model="formData.chapterEngineer">
-              <el-radio
-                v-for="engineer in chapterEngineers"
-                border
-                class="longtext-el-radio"
-                :key="engineer.id"
-                :value="engineer.id"
-                :label="engineer.id"
-              >
-              <div style="display: flex;align-items: center;">
-                <img
-                  :src="imagePathByPath(engineer.roleAvatar)" 
-                  alt="工程师头像"
-                  style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px"
-                />
-                {{ engineer.roleName }}
+            <el-scrollbar class="scrollbar">
+              <div class="custom-radio-group" >
+                <div
+                  v-for="engineer in chapterEngineers"
+                  :key="engineer.id"
+                  class="custom-radio"
+                  :class="{ 'selected': formData.chapterEngineer === engineer.id }"
+                  @click="selectChapterEngineer(engineer.id)"
+                >
+                  <div class="engineer-info">
+                    <img
+                      :src="imagePathByPath(engineer.roleAvatar)"
+                      alt="工程师头像"
+                      class="engineer-avatar"
+                    />
+                    <div class="engineer-details">
+                      <span class="engineer-name">
+                        {{ engineer.roleName }}
+                      </span>
+                      <span class="engineer-responsibilities">
+                        {{ engineer.responsibilities }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              </el-radio>
-            </el-radio-group>
             </el-scrollbar>
           </el-form-item>
           <el-form-item label="内容生成输入" prop="contentInput">
@@ -71,26 +74,25 @@
           </el-form-item>
           <el-form-item label="内容上传" prop="contentInput">
             <el-upload
-    ref="uploadRef"
-    class="upload-demo"
-    action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-    :auto-upload="false"
-  >
-    <template #trigger>
-      <el-button type="primary">选择参考文献</el-button>
-    </template>
-
-    <template #tip>
-      <div class="el-upload__tip">
-        jpg/png files with a size less than 500kb
-      </div>
-    </template>
-  </el-upload>
+              ref="uploadRef"
+              class="upload-demo"
+              action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
+              :auto-upload="false"
+            >
+              <template #trigger>
+                <el-button type="primary">选择参考文献</el-button>
+              </template>
+              <template #tip>
+                <div class="el-upload__tip">
+                  jpg/png files with a size less than 500kb
+                </div>
+              </template>
+            </el-upload>
           </el-form-item>
         </el-form>
       </template>
       <template #footer>
-        <div style="margin-bottom:20px;">
+        <div class="dialog-footer">
           <el-button size="large" @click="dialogVisible = false">取消</el-button>
           <el-button size="large" type="primary" @click="handleConfirm">确定</el-button>
         </div>
@@ -101,10 +103,11 @@
 
 <script setup>
 import { nextTick, ref } from 'vue';
-import { ElDialog, ElRadioGroup, ElRadio, ElButton, ElInput, ElForm, ElFormItem } from 'element-plus';
+import { ElDialog, ElButton, ElInput, ElForm, ElFormItem, ElScrollbar, ElUpload } from 'element-plus';
 import { listAll } from '@/api/base/im/user';
+import { getRoleBySceneIdAndAgentType } from '@/api/base/im/scene';
 
-const agentList = ref([])
+const agentList = ref([]);
 const dialogVisible = ref(false);
 const formRef = ref(null);
 
@@ -117,11 +120,12 @@ const formData = ref({
   contentInput: ''
 });
 
-const uploadRef = ref()
+const currentSceneInfo = ref({});
+const uploadRef = ref();
 
 const submitUpload = () => {
-  uploadRef.value.submit()
-}
+  uploadRef.value.submit();
+};
 
 const rules = ref({
   outlineEngineer: [
@@ -180,45 +184,124 @@ const handleConfirm = () => {
   });
 };
 
+const selectOutlineEngineer = (id) => {
+  formData.value.outlineEngineer = id;
+};
 
-/** 获取到所有的角色信息 */
-const handleListAllRole = async (agents) => {
-    agentList.value = []
+const selectChapterEngineer = (id) => {
+  formData.value.chapterEngineer = id;
+};
 
-    listAll().then(res => {
-        for (let i = 0; i < res.data.length ; i++) {
-            let item = res.data[i]
+/** 根据场景id和类型获取到角色信息 */
+const handleRoleBySceneIdAndAgentType = async () => {
+  console.log('sceneId = ' + currentSceneInfo.value.sceneId + ' , agents = ' + currentSceneInfo.value.agents);
 
-            agentList.value.push(item) ; 
-        }
+  if (currentSceneInfo.value.sceneId && currentSceneInfo.value.agents) {
+    for (let i = 0; i < currentSceneInfo.value.agents.length; i++) {
+      let item = currentSceneInfo.value.agents[i];
 
-        outlineEngineers.value = agentList.value; 
-        chapterEngineers.value = agentList.value ; 
-    })
-}
+      if (item.code === 'chapterEditor') {
+        const response = await getRoleBySceneIdAndAgentType(currentSceneInfo.value.sceneId, item.id);
+        console.log('chapterEditor response = ' + response);
+        outlineEngineers.value = response.data;
+      } else if (item.code === 'contentEditor') {
+        const response = await getRoleBySceneIdAndAgentType(currentSceneInfo.value.sceneId, item.id);
+        console.log('contentEditor response = ' + response);
+        chapterEngineers.value = response.data;
+      }
+    }
+  }
+};
 
 /** 打开弹出窗口 */
-const handleOpen = () => {
-    dialogVisible.value = true;
-    handleListAllRole() ; 
-}
+const handleOpen = (sceneInfo) => {
+  dialogVisible.value = true;
+  currentSceneInfo.value = sceneInfo;
+  handleRoleBySceneIdAndAgentType();
+};
 
 // nextTick(() => {
-//   handleOpen() ;
+//   handleOpen();
 // })
 
 defineExpose({
   handleOpen
-})
-
+});
 </script>
 
 <style lang="scss" scoped>
-/* 这里可以添加自定义样式 */
-.longtext-el-radio{
-  width: calc(33% - 30px);
-  margin-bottom: 10px;
-  margin-right: 15px;
-  margin-left: 15px;
+$border-color: #4c4d4f;
+$selected-border-color: #262727;
+$selected-bg-color: #262727;
+
+.dialog-description {
+  padding: 20px 0px;
+  padding-top: 10px;
+  font-size: 15px;
+}
+
+.scrollbar {
+  max-height: 150px;
+  width: 100%;
+}
+
+.custom-radio-group {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  justify-content: flex-start;
+  flex-direction: row;
+
+  .custom-radio {
+    cursor: pointer;
+    padding: 10px;
+    border: 1px solid $border-color;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    width: 33%;
+
+    &.selected {
+      border-color: $selected-border-color;
+      background-color: $selected-bg-color;
+    }
+
+    .engineer-info {
+      display: flex;
+      align-items: center;
+
+      .engineer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-right: 10px;
+      }
+
+      .engineer-details {
+        display: flex;
+        flex-direction: column;
+        line-height: 25px;
+
+        .engineer-name {
+          font-size: 15px;
+          font-weight: bold;
+        }
+
+        .engineer-responsibilities {
+          font-size: 13px;
+          color: rgb(85, 85, 85);
+          line-height: 20px;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+}
+
+.dialog-footer {
+  margin-bottom: 20px;
 }
 </style>    
