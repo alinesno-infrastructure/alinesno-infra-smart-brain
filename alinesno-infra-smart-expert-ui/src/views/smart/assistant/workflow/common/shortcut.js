@@ -142,4 +142,5 @@ export function initDefaultShortcut(lf, graph) {
     });
     // delete
     keyboard.on(['backspace'], delete_node);
+
 }
