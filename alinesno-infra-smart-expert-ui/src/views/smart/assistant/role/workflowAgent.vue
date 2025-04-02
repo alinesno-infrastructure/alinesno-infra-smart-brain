@@ -21,9 +21,11 @@
       </el-page-header>
 
       <div class="page-header-btn-container">
-        <el-button type="primary" size="large" @click="handlePublishedFlow">
-          <i class="fa-solid fa-location-arrow"></i>
-          &nbsp; 发布
+        <el-button type="danger" icon="Setting" size="large" text bg @click="handlePublishedFlow">
+          保存配置
+        </el-button>
+        <el-button type="primary" icon="Position" size="large" text bg @click="handlePublishedFlow">
+          发布角色
         </el-button>
       </div>
     </div>
