@@ -104,7 +104,7 @@ function getRawScript() {
 
 /** 设置值  */
 function setRawScript(val) {
-  console.log('setRawScript = '+ val);
+  // console.log('setRawScript = '+ val);
   if(val){
     return codeVal.value = val;
   }
