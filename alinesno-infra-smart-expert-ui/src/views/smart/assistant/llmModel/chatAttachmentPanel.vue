@@ -377,6 +377,7 @@ const formatFileSize = (bytes) => {
 
 // 暴露给父组件的方法
 const openFileSelector = (uploadData) => {
+  console.log('uploadData = ' + uploadData);
 
   if(!uploadData){
     ElMessage.warning('当前上传未配置，请先进配置上传设置')
@@ -391,7 +392,18 @@ const openFileSelector = (uploadData) => {
 
   console.log('uploadData = ' + JSON.stringify(uploadData));
 
-  uploadDataConfig.value = uploadData;
+  if(typeof uploadData === 'string'){
+    uploadDataConfig.value = JSON.parse(uploadData);
+  }else if (typeof uploadData === 'object'){
+    uploadDataConfig.value = uploadData;
+  }else{
+    ElMessage.warning('上传设置格式错误，请检查上传设置')
+    return ;
+  }
+
+  // uploadDataConfig.value = uploadData;
+  // console.log('uploadData.enable = ' + uploadData.enable)
+  // console.log('uploadDataConfig.value.enable = ' + uploadDataConfig.value.enable)
 
   // 根据配置信息决定是否允许打开文件选择器
   if (!uploadDataConfig.value.enable) {
