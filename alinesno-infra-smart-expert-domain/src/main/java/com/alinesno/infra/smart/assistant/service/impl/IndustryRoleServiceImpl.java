@@ -29,7 +29,6 @@ import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.*;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -39,7 +38,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -433,7 +432,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     public void saveRoleWithReActConfig(RoleReActConfigDto dto) {
         IndustryRoleEntity role = getById(dto.getRoleId());
         setRoleConfigParams(dto, role);
-
         update(role);
     }
 
@@ -721,6 +719,15 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         }
 
         return questionSug ;
+    }
+
+    @Override
+    public void saveRoleWithWorkflowConfig(RoleFlowConfigDto dto) {
+        IndustryRoleEntity role = getById(dto.getRoleId());
+        RoleReActConfigDto roleReActConfigDto = new RoleReActConfigDto();
+        BeanUtils.copyProperties(dto , roleReActConfigDto) ;
+        setRoleConfigParams(roleReActConfigDto, role);
+        update(role);
     }
 
 }
