@@ -16,6 +16,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterS
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.*;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
@@ -116,8 +117,8 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
             taskInfo.setRoleId(roleId);
-            taskInfo.setChannelId(dto.getScreenId());
-            taskInfo.setSceneId(dto.getScreenId());
+            taskInfo.setChannelId(dto.getSceneId());
+            taskInfo.setSceneId(dto.getSceneId());
             taskInfo.setText("章节标题:"+dto.getChapterTitle() + ",要求:" + dto.getChapterDescription());
 
             WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
@@ -196,8 +197,37 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         taskInfo.setSceneId(chatRole.getScreenId());
         taskInfo.setText(chatRole.getMessage());
 
+        String formatContent = "\n最终请你下面的格式进行直接输出，不要输出其他信息，格式：\n" +
+                " ```json \n" +
+                "[\n" +
+                "    {\n" +
+                "        \"label\": \"第一部分大纲标题\",\n" +
+                "        \"description\": \"第一部分编写要求\",\n" +
+                "        \"children\": [\n" +
+                "            {\n" +
+                "                \"label\": \"第一部分大纲子标题1\",\n" +
+                "                \"description\": \"第一部分大纲子标题1编写要求\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"label\": \"第一部分大纲子标题2\",\n" +
+                "                \"description\": \"第一部分大纲子标题2编写要求\"\n" +
+                "            },\n" +
+                "        ]\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"label\": \"第二部分大纲标题\",\n" +
+                "        \"description\": \"第二部分编写要求\" \n" +
+                "    }\n" +
+                "]\n" +
+                " ```" ;
+
+        taskInfo.setText(taskInfo.getText() + formatContent);
+
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
         log.debug("chatRole = {}" , chatRole);
+
+        genContent.setGenContent(taskInfo.getFullContent());
+        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(genContent.getGenContent()));
 
         // 解析得到代码内容
         if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
