@@ -42,7 +42,7 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
 
         // 如果是发布到场景，则将角色信息添加到AIP场景里面
         if(ChannelListEnums.AIP_AGENT_SCENE.getParamKey().equals(entity.getParamKey())){
-            agentSceneService.addRoleToScene(entity.getRoleId() , dto.getSceneId() , dto.getSceneAgentId()) ;
+            agentSceneService.addRoleToScene(entity.getRoleId() , dto.getSceneId() , dto.getAgentTypeId()) ;
         }
     }
 
@@ -85,6 +85,11 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
         // 如果是发布到商店，则将角色信息添加到AIP商店里面
         if(ChannelListEnums.AIP_AGENT_STORE.getParamKey().equals(entity.getParamKey())){
             agentStoreService.offlineStore(entity.getRoleId()) ;
+        }
+
+        // 如果是发布到场景，则将角色信息添加到AIP场景里面
+        if(ChannelListEnums.AIP_AGENT_SCENE.getParamKey().equals(entity.getParamKey())){
+            agentSceneService.offlineScene(entity.getRoleId()) ;
         }
     }
 
