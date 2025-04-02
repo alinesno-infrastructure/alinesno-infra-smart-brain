@@ -1,11 +1,13 @@
 package com.alinesno.infra.smart.assistant.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,4 +46,12 @@ public interface ILlmModelService extends IBaseService<LlmModelEntity> {
      * @return 识别的内容
      */
     String speechRecognitionFile(IndustryRoleEntity role, String data);
+
+    /**
+     * 获取模型列表，同时包含公共模型
+     * @param query
+     * @param modelType
+     * @return
+     */
+    List<LlmModelEntity> listLlmMode(PermissionQuery query, String modelType);
 }
