@@ -11,7 +11,9 @@
             </el-page-header>
             <div>
                 <!-- <el-button type="warning" bg @click="validateRoleScript" text size="large">验证脚本</el-button> -->
-                <el-button type="primary" bg @click="submitForm" text size="large">保存配置</el-button>
+                <!-- <el-button type="primary" bg @click="submitModelConfig" text size="large">保存配置</el-button> -->
+                <el-button type="primary" icon="Setting" text bg size="large" @click="submitModelConfig()">保存配置</el-button>
+                <el-button type="danger" icon="Position" text bg size="large" @click="publishRoleConfig()">发布角色</el-button>
             </div>
         </div>
 
@@ -50,7 +52,7 @@
                             class="demo-tabs">
 
                             <el-tab-pane name="params" label="参数配置">
-                                <ParamsConfigPanel ref="paramsConfigRef" />
+                                <ParamsConfigPanel ref="paramsConfigRef" @submitModelConfig="submitModelConfig" />
                             </el-tab-pane>
 
                             <el-tab-pane name="execute" label="角色脚本">
@@ -75,7 +77,7 @@
             <!--类型数据-->
             <el-col :span="12" :xs="24">
                 <el-card shadow="never" class="agent-chat-box">
-                    <RoleChatPanel />
+                    <RoleChatPanel ref="roleChatPanelRef" />
                 </el-card>
             </el-col>
         </el-row>
@@ -116,6 +118,7 @@ const executeEditorRef = ref(null)
 const auditEditorRef = ref(null)
 const paramsConfigRef = ref(null)
 const functionCallEditorRef = ref(null)
+const roleChatPanelRef = ref(null)
 
 const scriptType = ref("params")
 const genContent = ref(null)
@@ -173,7 +176,7 @@ function setCurrentRoleId(id) {
 // }
 
 /** 提交脚本任务 */
-const submitForm = async() => {
+const submitModelConfig = async() => {
 
     const { valid, formData } = await paramsConfigRef.value.validateForm();
     if (!valid) {
@@ -202,6 +205,7 @@ const submitForm = async() => {
         console.log('res = ' + res);
         loading.value = false
         proxy.$modal.msgSuccess("更新成功");
+        getRoleInfo();
     }).catch(err => {
         console.log('err = ' + err);
         loading.value = false
@@ -219,6 +223,8 @@ function getRoleInfo() {
     currentRoleId.value = router.currentRoute.value.query.roleId;
     getRole(currentRoleId.value).then(response => {
         currentRole.value = response.data;
+
+        roleChatPanelRef.value.setRoleInfo(currentRole.value)
 
         // 设置脚本
         executeEditorRef.value.setRawScript(currentRole.value.executeScript);
