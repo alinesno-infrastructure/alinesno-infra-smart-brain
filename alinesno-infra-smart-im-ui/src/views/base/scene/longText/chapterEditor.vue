@@ -69,7 +69,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, defineProps, defineExpose } from 'vue';
+import { ref, onMounted, defineExpose } from 'vue';
 import CodeMirror from 'vue-codemirror6';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { markdown } from '@codemirror/lang-markdown';
