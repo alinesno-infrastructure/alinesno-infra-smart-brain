@@ -111,11 +111,12 @@
             <el-drawer v-model="showParamsDialog" v-if="showParamsDialog" :modal="false" size="40%" style="max-width: 600px;" title="角色参数配置"
                 :with-header="true">
                 <div style="margin-top: 0px;padding:0px !important" class="agent-chat-box  agent-inference-container">
-                    <ParamsConfigPanel ref="paramsConfigRef" :diffHeight="295" />
+                    <!-- <ParamsConfigPanel ref="paramsConfigRef" :diffHeight="295" /> -->
+                    <ParamsConfigPanel ref="paramsConfigRef" @submitModelConfig="submitModelConfig" :diffHeight="295" />
                 </div> 
                 <div class="config-form-footer">
                     <div class="button-group">
-                        <el-button type="primary" size="large" text bg @click="saveAgentModelConfig">保存配置</el-button>
+                        <el-button :loading="loading" type="primary" size="large" text bg @click="submitModelConfig">保存配置</el-button>
                     </div>
                 </div>
             </el-drawer>
@@ -131,8 +132,11 @@ import {
 } from "@/api/smart/assistant/flow";
 
 import {
-    getRole
+    getRole , 
+    saveRoleWithWorkflowConfig
 } from "@/api/smart/assistant/role";
+
+const { proxy } = getCurrentInstance();
 
 import NodeComponents from '@/views/smart/assistant/workflow/components/NodeComponents.vue'
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
@@ -146,6 +150,8 @@ const emits = defineEmits(['clickNode'])
 
 const router = useRouter();
 const currentRoleId = ref(null)
+
+const loading = ref(false)
 
 const showComponent = ref(false);
 const showParamsDialog = ref(false);
@@ -306,6 +312,39 @@ function getRoleInfo() {
 
 }
 
+/** 提交脚本任务 */
+const submitModelConfig = async() => {
+
+    console.log('submitModelConfig');
+
+    const { valid, formData } = await paramsConfigRef.value.validateForm();
+    if (!valid) {
+        console.log('formData = ' + JSON.stringify(formData));
+        return 
+    }
+
+    // const type = scriptType.value && scriptType.value !== 'params'?scriptType.value:'execute' ;
+    // console.log('type = ' + type);
+
+    // const scriptCode = getCode()[type];
+    // const roleId = currentRoleId.value;
+
+    loading.value = true
+
+    const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
+    console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
+
+    saveRoleWithWorkflowConfig(agentConfigParams).then(res => {
+        console.log('res = ' + res);
+        loading.value = false
+        proxy.$modal.msgSuccess("更新成功");
+        // getRoleInfo();
+    }).catch(err => {
+        console.log('err = ' + err);
+        loading.value = false
+    })
+
+}
 
 onMounted(() => {
     // console.log('props.lf = ' + JSON.stringify(props.lf))
