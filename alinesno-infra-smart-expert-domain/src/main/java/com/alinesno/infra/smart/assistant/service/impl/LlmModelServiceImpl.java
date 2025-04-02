@@ -3,8 +3,6 @@ package com.alinesno.infra.smart.assistant.service.impl;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.http.HttpUtil;
-import com.agentflex.ocr.aip.AipOcrModel;
-import com.agentflex.ocr.aip.AipOcrModelConfig;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.image.*;
 import com.agentsflex.core.llm.ChatContext;
@@ -29,6 +27,8 @@ import com.agentsflex.core.util.StringUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.core.utils.StringUtils;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
@@ -39,21 +39,19 @@ import com.alinesno.infra.smart.assistant.api.config.VoicePlayData;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.mapper.LlmModelMapper;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.net.HttpURLConnection;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 应用构建Service业务层处理
@@ -635,6 +633,41 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         }
 
         return output ;
+    }
+
+    @Override
+    public List<LlmModelEntity> listLlmMode(PermissionQuery query, String modelType) {
+
+        LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.setEntityClass(LlmModelEntity.class) ;
+        query.toWrapper(queryWrapper);
+
+        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
+            queryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
+        }
+
+        List<LlmModelEntity> list = list(queryWrapper);
+
+        // 查询出公共模块
+        LambdaQueryWrapper<LlmModelEntity> publicQueryWrapper = new LambdaQueryWrapper<>();
+        publicQueryWrapper.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PUBLIC.getValue());
+
+        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
+            publicQueryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
+        }
+
+        List<LlmModelEntity> publicList = list(publicQueryWrapper);
+
+        // 合并两个模块，同时考虑为空或者null的异常处理情况
+        List<LlmModelEntity> mergedList = new ArrayList<>();
+        if (list != null) {
+            mergedList.addAll(list);
+        }
+        if (publicList != null) {
+            mergedList.addAll(publicList);
+        }
+
+        return mergedList;
     }
 
 }
