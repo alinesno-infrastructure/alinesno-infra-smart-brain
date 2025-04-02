@@ -223,6 +223,8 @@ public class ReActExpertService extends ExpertService {
             }
         } while (!isCompleted);
 
+        taskInfo.setFullContent(answer);
+
         streamStoreMessagePublisher.doStuffAndPublishAnEvent(answer == null ? "" : answer,
                 role,
                 taskInfo,
