@@ -14,10 +14,8 @@ public enum SceneEnum {
 
     LONG_TEXT(new SceneInfoDto(10000000L, "长内容编写场景", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             Arrays.asList(
-                    new ScreenAgent(10000101L, "内容规划助手", "chapterEditor", "协助规划长文本的整体内容结构，确定各章节的主题和要点。"),
                     new ScreenAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。"),
-                    new ScreenAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。"),
-                    new ScreenAgent(10000104L, "图片生成助手", "imageEditor", "根据文本内容生成相关的图片，增强文本的可视化效果。")
+                    new ScreenAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。")
             ))),
     DOCUMENT_REVIEW(new SceneInfoDto(40000000L, "文档审核场景", "documentReview", "上传一份文档进行文档审核和修改建议，给出审核的意见和内容", "已集成", "0", "", "fa-solid fa-file-pen",
             Arrays.asList(
