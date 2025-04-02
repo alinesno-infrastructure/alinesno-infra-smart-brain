@@ -370,7 +370,7 @@ function handleGetScene() {
       // 未配置用户角色
       if(currentSceneInfo.value.chapterEditors.length == 0){
         setTimeout(() => {
-            executeHandleRef.value.handleOpen();
+            executeHandleRef.value.handleOpen(currentSceneInfo.value);
         }, 500);
       }
 
