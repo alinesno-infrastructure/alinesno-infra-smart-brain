@@ -63,18 +63,6 @@
                                     <i class="fa-solid fa-screwdriver-wrench"></i> &nbsp; 配置
                                 </el-button>
                             </div>
-                            <!-- 
-                            <div class="channel-actions" v-if="channel.paramKey == 'aip_agent_market'">
-                                <el-switch 
-                                    v-model="channel.hasSale" 
-                                    :active-value="1" 
-                                    :inactive-value="0"
-                                    active-text="分享" 
-                                    :disabled="channel.saleFromRoleId"
-                                    @change="handleChangeSaleField('hasSale', channel.hasSale, channel.roleId)">
-                                </el-switch>
-                            </div> 
-                            -->
 
                         </div>
                     </div>
@@ -127,7 +115,8 @@
                             v-for="item in currentConfigChannel.agentTypes"
                             :key="item.id"
                             :label="item.name"
-                            :value="item.id"/>
+                            :value="item.id">
+                        </el-option>
                     </el-select>
                 </el-form-item>
                 <!-- 渠道为场景时，需要选择分类_end -->
@@ -154,9 +143,6 @@
                         </el-col>
                     </el-row>
                 </el-form-item>
-
-                <!-- aip场景配置_start -->
-                <!-- aip场景配置_end -->
 
                 <el-form-item label="每分钟并发数" prop="qpm">
                     <el-input v-model="configForm.qpm" placeholder="请输入QPM（数字）" @input="handleQPMInput"></el-input>
@@ -279,7 +265,7 @@ const formRules = {
         { required: true, message: '分享名称不能为空', trigger: 'blur' }
     ],
     expireTime: [
-        { required: false, message: '过期时间不能为空', trigger: 'blur' }
+        { required: true, message: '过期时间不能为空', trigger: 'blur' }
     ],
     agentStoreType: [
         { required: true, message: '发布商店类型', trigger: 'blur' }
@@ -302,14 +288,11 @@ const formRules = {
     authPassword: [
         { required: false, message: '身份验证密码不能为空', trigger: 'blur' }
     ],
-    // apiKey: [
-    //     { required: false, message: 'APIKey不能为空', trigger: 'blur' }
-    // ]
     sceneId: [
-        { required: false, message: '场景ID不能为空', trigger: 'blur' }
+        { required: true, message: '场景ID不能为空', trigger: 'blur' }
     ] , 
     agentTypeId: [
-        { required: false, message: '场景Agent类型ID不能为空', trigger: 'blur' }
+        { required: true, message: '场景Agent类型ID不能为空', trigger: 'blur' }
     ]
 };
 
@@ -370,10 +353,19 @@ function getRoleInfo() {
 
 /** 配置渠道 */
 function configureChannel(channel) {
+
     if (channel.paramKey === 'chat_window') {
         showChatWindowConfig.value = true;
     } else {
+
+        let tempAgentTypes = currentConfigChannel.value.agentTypes ; 
+
         currentConfigChannel.value = channel;
+
+        if(tempAgentTypes && tempAgentTypes.length > 0){
+            currentConfigChannel.value.agentTypes = tempAgentTypes ; 
+        }
+
         configForm.value = channel ;
 
         // 设置默认值
@@ -438,7 +430,33 @@ const handleQPMInput = (value) => {
 
 const handleGetChannels = () => {
     getChannels(currentRoleId.value).then(response => {
+
         channelList.value = response.data;
+
+        if(response.data){
+            for(let i = 0; i < response.data.length; i++){
+                let item = response.data[i];
+                if(item.paramKey === 'aip_agent_scene'){
+                    // console.log('item = ' + JSON.stringify(item));
+                    // handleChangeSceneType(item.sceneId) ; 
+                    // currentConfigChannel.value.agentTypes = selectedItem.agents;
+
+                    const selectedId = item.sceneId;
+                    console.log('selectedId = ' + selectedId);
+
+                    const selectedItem = item.sceneType.find(
+                        (item) => item.id === selectedId
+                    );
+                    if (selectedItem) {
+                        console.log('selectedItem = ' + JSON.stringify(selectedItem.agents));
+                        currentConfigChannel.value.agentTypes = selectedItem.agents;
+
+                        console.log('currentConfigChannel.agentTypes = ' + currentConfigChannel.value.agentTypes)
+                    }
+                }
+            }
+        }
+
     });
 };
 
@@ -454,6 +472,7 @@ const handleChangeSceneType = (selectedId) => {
     if (selectedItem) {
         console.log('item = ' + JSON.stringify(selectedItem));
         currentConfigChannel.value.agentTypes = selectedItem.agents;
+        currentConfigChannel.value.agentTypeId = null ; 
     }
 
 };
