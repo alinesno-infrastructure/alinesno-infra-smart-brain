@@ -63,9 +63,9 @@ export function updateLeaderRole(data) {
 }
 
 // 上传文件到OSS
-export function uploadOss(screenId) {
+export function uploadOss(sceneId) {
   return request({
-    url: managerUrl.uploadOss + '?screenId=' + parseStrEmpty(screenId),
+    url: managerUrl.uploadOss + '?sceneId=' + parseStrEmpty(sceneId),
     method: 'get',
   })
 }
@@ -109,9 +109,9 @@ export function getChapterContent(id) {
 }
 
 // 查询章节详细
-export function getChapterByRole(roleId , screenId) {
+export function getChapterByRole(roleId , sceneId) {
   return request({
-    url: managerUrl.getChapterByRole + '?roleId=' + parseStrEmpty(roleId) + "&screenId="+ parseStrEmpty(screenId),
+    url: managerUrl.getChapterByRole + '?roleId=' + parseStrEmpty(roleId) + "&sceneId="+ parseStrEmpty(sceneId),
     method: 'get'
   })
 }
@@ -143,9 +143,9 @@ export function chatRole(data) {
 }
 
 // 保存章节
-export function saveChapter(data , screenId) {
+export function saveChapter(data , sceneId) {
   return request({
-    url: managerUrl.saveChapter + "?screenId=" + parseStrEmpty(screenId) ,
+    url: managerUrl.saveChapter + "?sceneId=" + parseStrEmpty(sceneId) ,
     method: 'post',
     data: data
   })
