@@ -232,6 +232,8 @@ import {
     listAllLlmModel
 } from "@/api/smart/assistant/llmModel"
 
+const emit = defineEmits(['submitModelConfig'])
+
 const props = defineProps({
     diffHeight: {
         type: Number,
@@ -408,6 +410,9 @@ function toggleVoiceInput() {
 
     voiceInputStatus.value = !voiceInputStatus.value;
     agentModelConfigForm.value.voiceInputStatus = voiceInputStatus.value;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 配置语音输入参数 
@@ -427,6 +432,9 @@ function toggleVoiceInput() {
 function toggleLongTermMemory() {
     longTermMemoryEnabled.value = !longTermMemoryEnabled.value;
     agentModelConfigForm.value.longTermMemoryEnabled = longTermMemoryEnabled.value;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 打开语音播放窗口
@@ -439,12 +447,18 @@ function toggleVoicePlayStatus() {
 
     voicePlayStatus.value = !voicePlayStatus.value;
     agentModelConfigForm.value.voicePlayStatus = voicePlayStatus.value;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 设置语音播放窗口参数
 function handleVoiceConfigParams(formData) {
     agentModelConfigForm.value.voicePlayData = formData;
     voiceConfigDialogVisible.value = false;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 切换语音播放状态
@@ -463,6 +477,7 @@ function toggleVoicePlayback() {
         if(agentModelConfigForm.value.voicePlayData){
             voiceChoicePanelRef.value.setVoiceModelParams(agentModelConfigForm.value.voicePlayData)
         }
+
     });
 
 }
@@ -472,6 +487,9 @@ function toggleVoicePlayback() {
 function toggleGuessWhatYouAsk() {
     guessWhatYouAskStatus.value = !guessWhatYouAskStatus.value;
     agentModelConfigForm.value.guessWhatYouAskStatus = guessWhatYouAskStatus.value;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 用户问题建议窗口配置
@@ -513,6 +531,7 @@ function getRoleInfo() {
 
 /** 回显角色信息 */
 const displayRoleInfoBack = (currentRole) =>{
+
     // 回显当前角色信息
     agentModelConfigForm.value.roleId = currentRole.id ;
     // agentModelConfigForm.value.modelId = currentRole.modelId;
@@ -523,42 +542,78 @@ const displayRoleInfoBack = (currentRole) =>{
     longTermMemoryEnabled.value = currentRole.longTermMemoryEnabled ;
     agentModelConfigForm.value.longTermMemoryEnabled = currentRole.longTermMemoryEnabled ;
 
-    // if(currentRole.value.knowledgeBaseIds){
-    //     const datasetParsedArray = JSON.parse(currentRole.knowledgeBaseIds);
-    //     selectionDatasetData.value = datasetParsedArray;
-    //     agentModelConfigForm.value.knowledgeBaseIds = datasetParsedArray ;
-    // }
+    if(currentRole.knowledgeBaseIds){
+        let datasetParsedArray = null ; 
+        if(typeof currentRole.knowledgeBaseIds === 'object'){
+            datasetParsedArray = currentRole.knowledgeBaseIds;
+        }else{
+            datasetParsedArray = JSON.parse(currentRole.knowledgeBaseIds);
+        }
+        selectionDatasetData.value = datasetParsedArray;
+        agentModelConfigForm.value.knowledgeBaseIds = datasetParsedArray ;
+    }
 
-    // if(currentRole.value.selectionToolsData){
-    //     const toolsParsedArray = JSON.parse(currentRole.selectionToolsData);
-    //     selectionToolsData.value = toolsParsedArray;
-    //     agentModelConfigForm.value.selectionToolsData = toolsParsedArray ; 
-    // }
+    if(currentRole.selectionToolsData){
+        const toolsParsedArray = JSON.parse(currentRole.selectionToolsData);
+        selectionToolsData.value = toolsParsedArray;
+        agentModelConfigForm.value.selectionToolsData = toolsParsedArray ; 
+    }
 
     // 语音输入
     voiceInputStatus.value = currentRole.voiceInputStatus ;
     agentModelConfigForm.value.voiceInputStatus = currentRole.voiceInputStatus ;
     if(currentRole.voiceInputData){
-        agentModelConfigForm.value.voiceInputData = JSON.parse(currentRole.voiceInputData);
+        // agentModelConfigForm.value.voiceInputData = JSON.parse(currentRole.voiceInputData);
+        if(typeof currentRole.voiceInputData === 'object'){
+            agentModelConfigForm.value.voiceInputData = currentRole.voiceInputData;
+        }else{
+            agentModelConfigForm.value.voiceInputData = JSON.parse(currentRole.voiceInputData);
+        }
     }
 
     // 语音播放
     voicePlayStatus.value = currentRole.voicePlayStatus ;
     agentModelConfigForm.value.voicePlayStatus = currentRole.voicePlayStatus ;
     if(currentRole.voicePlayData){
-        agentModelConfigForm.value.voicePlayData = JSON.parse(currentRole.voicePlayData);
+        if(typeof currentRole.voicePlayData === 'object'){
+            agentModelConfigForm.value.voicePlayData = currentRole.voicePlayData;
+        }else{
+            agentModelConfigForm.value.voicePlayData = JSON.parse(currentRole.voicePlayData);
+        }
     }
 
     // 用户问题建议
     guessWhatYouAskStatus.value = currentRole.guessWhatYouAskStatus ;
     agentModelConfigForm.value.guessWhatYouAskStatus = currentRole.guessWhatYouAskStatus ;
     if(currentRole.guessWhatYouAskData){
-        agentModelConfigForm.value.guessWhatYouAskData = JSON.parse(currentRole.guessWhatYouAskData);
+        console.log('currentRole.guessWhatYouAskData = ' + currentRole.guessWhatYouAskData)
+        // 判断currentRole.guessWhatYouAskData是否为object对象
+        if(typeof currentRole.guessWhatYouAskData === 'object'){
+            agentModelConfigForm.value.guessWhatYouAskData = currentRole.guessWhatYouAskData;
+        }else{
+            agentModelConfigForm.value.guessWhatYouAskData = JSON.parse(currentRole.guessWhatYouAskData);
+        }
     }
 
     // 模型配置
     if(currentRole.modelConfig){
         agentModelConfigForm.value.modelConfig = JSON.parse(currentRole.modelConfig);
+    }
+
+    // 附件上传
+    if(currentRole.uploadStatus){
+        uploadStatus.value = currentRole.uploadStatus ;
+        agentModelConfigForm.value.uploadStatus = currentRole.uploadStatus ;
+        if(typeof currentRole.uploadData === 'object'){
+            agentModelConfigForm.value.uploadData = currentRole.uploadData;
+        }else {
+            agentModelConfigForm.value.uploadData = JSON.parse(currentRole.uploadData);
+        }
+    }
+
+    //  对话开场白
+    if(currentRole.greetingQuestion){
+        agentModelConfigForm.value.greetingQuestion = currentRole.greetingQuestion ;
     }
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
@@ -709,7 +764,6 @@ function toggleVoiceInputStatusPanel() {
 
 function handleVoiceInputStatusPanelClose(voiceInputData) {
     if (voiceInputStatusPanelRef.value) {
-        console.log('voiceInputData = ' + JSON.stringify(voiceInputData))
 
         voiceInputStatus.value = voiceInputData.enable; // !voiceInputStatus.value;
         agentModelConfigForm.value.voiceInputStatus = voiceInputData.enable;// voiceInputStatus.value;
@@ -759,6 +813,12 @@ function openPromptDialog() {
 function syncPromptContent(content) {
     agentModelConfigForm.value.promptContent = content;
     promptDialogVisible.value = false;
+}
+
+// 更新配置
+function submitModelConfig() {
+    console.log('submitModelConfig agentModelConfigForm.value = ' + JSON.stringify(agentModelConfigForm.value))
+    emit('submitModelConfig') ; 
 }
 
 /** 打开开场白角色配置 */
