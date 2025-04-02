@@ -34,6 +34,7 @@ var managerUrl = {
   findOrg: prefix + "findOrg",
   confirmPushOrg: prefix + "confirmPushOrg",
   saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
+  saveRoleWithWorkflowConfig: prefix + "saveRoleWithWorkflowConfig",
   saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
   updateFlowConfig: prefix + "updateFlowConfig",
   publishRole: prefix + "publishRole",
@@ -61,6 +62,15 @@ export function updateFlowConfig(data , roleId) {
 export function saveRoleWithScriptConfig(data) {
   return request({
     url: managerUrl.saveRoleWithScriptConfig,
+    method: 'post',
+    data: data
+  })
+}
+
+// 保存Workflow角色配置
+export function saveRoleWithWorkflowConfig(data) {
+  return request({
+    url: managerUrl.saveRoleWithWorkflowConfig,
     method: 'post',
     data: data
   })
