@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.gateway.controller;
 
 import cn.hutool.core.util.IdUtil;
-import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -15,10 +14,8 @@ import com.alinesno.infra.smart.assistant.adapter.enums.LlmModelProviderEnums;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.TestLlmModelDto;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
-import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -131,16 +128,7 @@ public class LlmModelController extends BaseController<LlmModelEntity, ILlmModel
     @GetMapping("/listLlmMode")
     public AjaxResult listLlmMode(PermissionQuery query , String modelType) {
 
-        LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.setEntityClass(LlmModelEntity.class) ;
-        query.toWrapper(queryWrapper);
-        queryWrapper.or(w -> w.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PUBLIC.getValue()));
-
-        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
-            queryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
-        }
-
-        List<LlmModelEntity> allLlmMode = service.list(queryWrapper);
+        List<LlmModelEntity> allLlmMode = service.listLlmMode(query , modelType);
 
         if(!CollectionUtils.isEmpty(allLlmMode)){
             for(LlmModelEntity entity : allLlmMode) {
