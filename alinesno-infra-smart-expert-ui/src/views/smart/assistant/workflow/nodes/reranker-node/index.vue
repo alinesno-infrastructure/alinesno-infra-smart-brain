@@ -16,7 +16,7 @@
             <FlowCascader :nodeModel="props.nodeModel" v-model="formData.questionReference" />
           </el-form-item>
           <el-form-item label="重排模型">
-            <LLMSelector :nodeModel="props.nodeModel" v-model="formData.rerankerModelId" />
+            <LLMSelector :nodeModel="props.nodeModel" :modelType="'re_ranking_model'"  v-model="formData.rerankerModelId" />
           </el-form-item>
         </el-form>
         <div class="settings-title" style="display: flex;align-items: center;justify-content: space-between;">
