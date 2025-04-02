@@ -16,6 +16,11 @@ import java.util.List;
 public class SceneDto extends BaseDto {
 
     /**
+     * 场景ID，唯一标识场景的唯一标识符
+     */
+    private long sceneId;
+
+    /**
      * 场景名称，用于标识特定的场景或页面
      */
     @NotBlank(message = "场景名称不能为空")
