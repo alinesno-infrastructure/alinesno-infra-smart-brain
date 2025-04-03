@@ -15,7 +15,27 @@ var managerUrl = {
   updateChapterContentEditor: prefix +"updateChapterContentEditor",
   getChapterByRole: prefix +"getChapterByRole",
   getChapterContent: prefix +"getChapterContent",
+  uploadOss: prefix +"uploadOss",
   updateChapterContent: prefix +"updateChapterContent",
+  dispatchAgent: prefix +"dispatchAgent",
+  initAgents: prefix + "initAgents"
+}
+
+// 分配Agent角色到每个章节
+export function dispatchAgent(sceneId){
+  return request({
+    url: managerUrl.dispatchAgent + '?sceneId=' + parseStrEmpty(sceneId) , 
+    method: 'get'
+  })
+}
+
+// 初始化Agent角色
+export function initAgents(data){
+  return request({
+    url: managerUrl.initAgents , 
+    method: 'post',
+    data: data
+  })
 }
 
 
@@ -93,7 +113,7 @@ export function processParagraph(data) {
   return request({
     url: managerUrl.processParagraph, 
     headers: {
-      isEncrypt: true
+      isEncrypt: false 
     },
     method: 'post',
     data: data
@@ -103,7 +123,8 @@ export function processParagraph(data) {
 // 查询章节内容
 export function getChapterContent(id) {
   return request({
-    url: chapterPrefix + 'getChapterContent?chapterId=' + parseStrEmpty(id),
+    // url: chapterPrefix + 'getChapterContent?chapterId=' + parseStrEmpty(id),
+    url: managerUrl.getChapterContent + '?chapterId=' + parseStrEmpty(id),
     method: 'get'
   })
 }
@@ -172,7 +193,7 @@ export function updateChapterEditor(id , editors , type) {
   return request({
     url: managerUrl.updateChapterEditor , 
     headers: {
-      isEncrypt: true 
+      isEncrypt: false 
     },
     method: 'post',
     data: data
@@ -185,7 +206,7 @@ export function createScreen(data) {
   return request({
     url: managerUrl.createScreen,
     headers: {
-      isEncrypt: true
+      isEncrypt: false 
     },
     method: 'post',
     data: data
