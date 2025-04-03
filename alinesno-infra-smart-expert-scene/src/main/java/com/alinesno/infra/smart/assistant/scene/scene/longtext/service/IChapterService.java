@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.longtext.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 
@@ -38,4 +39,9 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      */
     void updateChapterEditor(ChatContentEditDto dto);
 
+    /**
+     * 初始化智能助手
+     * @param dto
+     */
+    void initAgents(InitAgentsDto dto);
 }
