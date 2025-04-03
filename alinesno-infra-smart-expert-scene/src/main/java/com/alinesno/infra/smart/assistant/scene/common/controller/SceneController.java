@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.common.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
-import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -18,7 +17,6 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
-import com.alinesno.infra.smart.assistant.scene.core.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
@@ -121,32 +119,6 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
        return AjaxResult.success("操作成功", list);
     }
 
-    /**
-     * 下载文件并返回文件下载
-     * @param sceneId
-     * @return
-     */
-    @GetMapping("/uploadOss")
-    public AjaxResult uploadOss(@RequestParam("sceneId") long sceneId) {
-
-        String markdownContent = service.genMarkdownContent(sceneId) ;
-        String filename = IdUtil.fastSimpleUUID() ;
-
-        log.debug("markdownContent = {}", markdownContent);
-        Assert.notNull(markdownContent, "markdownContent为空") ;
-
-        String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
-        Assert.notNull(filePath, "文件路径为空") ;
-
-        R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub") ;
-//        , progress -> {
-//            log.debug("progress: " + Math.round(progress.getRate() * 100) + "%");
-//        }) ;
-
-        String downloadUrl = r.getData() ;
-
-        return AjaxResult.success("操作成功" , downloadUrl);
-    }
 
     /**
      * 保存或更新屏幕场景
