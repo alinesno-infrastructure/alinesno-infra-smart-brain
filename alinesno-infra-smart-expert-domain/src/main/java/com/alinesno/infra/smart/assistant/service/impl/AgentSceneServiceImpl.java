@@ -26,7 +26,7 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
     private IIndustryRoleService industryRoleService ;
 
     @Override
-    public void addRoleToScene(Long roleId, long sceneId, long agentTypeId) {
+    public void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId) {
 
         log.debug("添加角色到场景中 roleId = {} , sceneId = {} ,agentTypeId = {} " , roleId , sceneId ,  agentTypeId);
 
@@ -56,6 +56,8 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
 
             agentSceneEntity.setSortOrder((int) count);
             agentSceneEntity.setRoleOrganizationId(AgentConstants.STORE_EMPTY_ORG_ID); // 发布到公共角色场景
+
+            agentSceneEntity.setLlmModelId(llmModelId);
 
             saveOrUpdate(agentSceneEntity);
 
@@ -91,5 +93,17 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
         }
 
         return Collections.emptyList() ;
+    }
+
+    @Override
+    public AgentSceneEntity getByRoleAndScene(long roleId, long sceneId) {
+        if(roleId != 0){
+            LambdaQueryWrapper<AgentSceneEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+            lambdaQueryWrapper.eq(AgentSceneEntity::getAgentId, roleId);
+            lambdaQueryWrapper.eq(AgentSceneEntity::getSceneId, sceneId);
+
+            return getOne(lambdaQueryWrapper);
+        }
+        return null;
     }
 }
