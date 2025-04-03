@@ -133,7 +133,7 @@ public class BaseModelAdapter {
         return future;
     }
 
-    protected CompletableFuture<AiMessage> getSingleAiChatResultAsync(Llm llm,
+    public CompletableFuture<AiMessage> getSingleAiChatResultAsync(Llm llm,
                                                                 IndustryRoleEntity role  ,
                                                                 String prompt,
                                                                 MessageTaskInfo taskInfo ,
