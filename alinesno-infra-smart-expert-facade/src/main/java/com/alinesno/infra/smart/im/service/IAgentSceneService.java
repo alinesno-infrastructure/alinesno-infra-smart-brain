@@ -10,11 +10,13 @@ public interface IAgentSceneService extends IBaseService<AgentSceneEntity> {
 
     /**
      * 为场景添加角色
+     *
      * @param roleId
      * @param sceneId
      * @param agentTypeId
+     * @param llmModelId
      */
-    void addRoleToScene(Long roleId, long sceneId, long agentTypeId);
+    void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId);
 
     /**
      * 下线场景角色
@@ -31,4 +33,12 @@ public interface IAgentSceneService extends IBaseService<AgentSceneEntity> {
      * @return
      */
     List<IndustryRoleEntity> getRoleBySceneIdAndAgentType(long sceneId, long agentTypeId , long orgId);
+
+    /**
+     * 根据角色ID和场景获取场景角色
+     * @param roleId
+     * @param sceneId
+     * @return
+     */
+    AgentSceneEntity getByRoleAndScene(long roleId, long sceneId);
 }
