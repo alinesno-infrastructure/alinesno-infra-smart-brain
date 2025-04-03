@@ -1,13 +1,17 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
+import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.mapper.ChapterMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
-import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +25,9 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+//    @Autowired
+//    private ISceneService sceneService;
 
     @Override
     public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId) {
@@ -125,6 +132,21 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
 
             updateBatchById(chapterList);
         }
+    }
+
+    @Override
+    public void initAgents(InitAgentsDto dto) {
+
+        ISceneService sceneService = SpringUtils.getBean(ISceneService.class) ;
+
+        long id = Long.parseLong(dto.getSceneId());
+        SceneEntity entity = sceneService.getById(id);
+
+        entity.setChapterEditor(dto.getOutlineEngineer());  // 大纲内容工程师
+        entity.setContentEditor(dto.getChapterEngineer());  // 章节内容工程师
+
+        sceneService.updateById(entity);
+
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
