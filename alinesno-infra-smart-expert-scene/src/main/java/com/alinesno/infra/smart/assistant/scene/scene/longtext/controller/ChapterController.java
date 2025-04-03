@@ -9,14 +9,15 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.*;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
@@ -53,7 +54,13 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     private IIndustryRoleService roleService ;
 
     @Autowired
-    private CloudStorageConsumer storageConsumer ;
+    private ILLmAdapterService llmAdapterService ;
+
+    @Autowired
+    private ILlmModelService llmModelService ;
+
+    @Autowired
+    private FormatMessageTool formatMessageTool ;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -91,14 +98,6 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         return ok() ;
     }
 
-    /**
-     * 更新用户编辑章节，即每个章节需要指定编辑人员
-     */
-    @PostMapping("/updateChapterContentEditor")
-    public AjaxResult updateChapterContentEditor(@RequestBody @Validated ChatContentEditDto dto) {
-        service.updateChapterEditor(dto);
-        return ok() ;
-    }
 
     /**
      * 生成章节内容
@@ -125,10 +124,10 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
             log.debug("chatRole = {}" , genContent);
 
             // 更新章节内容
-            chapterEntity.setContent(genContent.getGenContent());
+            chapterEntity.setContent(taskInfo.getFullContent());
             service.update(chapterEntity);
 
-            return AjaxResult.success("生成成功",genContent.getGenContent()) ;
+            return AjaxResult.success("生成成功",chapterEntity.getContent()) ;
         }
 
         return AjaxResult.success("操作成功" , "此章节未指定编辑人员");
@@ -193,41 +192,15 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
         taskInfo.setRoleId(chatRole.getRoleId());
-        taskInfo.setChannelId(chatRole.getScreenId());
-        taskInfo.setSceneId(chatRole.getScreenId());
+        taskInfo.setChannelId(chatRole.getSceneId());
+        taskInfo.setSceneId(chatRole.getSceneId());
         taskInfo.setText(chatRole.getMessage());
 
-        String formatContent = "\n最终请你下面的格式进行直接输出，不要输出其他信息，格式：\n" +
-                " ```json \n" +
-                "[\n" +
-                "    {\n" +
-                "        \"label\": \"第一部分大纲标题\",\n" +
-                "        \"description\": \"第一部分编写要求\",\n" +
-                "        \"children\": [\n" +
-                "            {\n" +
-                "                \"label\": \"第一部分大纲子标题1\",\n" +
-                "                \"description\": \"第一部分大纲子标题1编写要求\"\n" +
-                "            },\n" +
-                "            {\n" +
-                "                \"label\": \"第一部分大纲子标题2\",\n" +
-                "                \"description\": \"第一部分大纲子标题2编写要求\"\n" +
-                "            },\n" +
-                "        ]\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"label\": \"第二部分大纲标题\",\n" +
-                "        \"description\": \"第二部分编写要求\" \n" +
-                "    }\n" +
-                "]\n" +
-                " ```" ;
-
-        taskInfo.setText(taskInfo.getText() + formatContent);
-
+        // 优先获取到结果内容
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("chatRole = {}" , chatRole);
 
-        genContent.setGenContent(taskInfo.getFullContent());
-        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(genContent.getGenContent()));
+        // 获取到格式化的内容
+        formatMessageTool.handleChapterMessage(genContent , taskInfo);
 
         // 解析得到代码内容
         if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
