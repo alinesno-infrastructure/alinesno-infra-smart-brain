@@ -5,6 +5,9 @@
                 <!-- 目录大纲编辑界面 -->
                 <OutlineEditor 
                     ref="OutlineEditorRef"
+                    @handleExecuteHandle="handleExecuteHandle"
+                    @closeShowDebugRunDialog="closeShowDebugRunDialog"
+                    @genChapterContentByAgent="genChapterContentByAgent"
                     @setCurrentSceneInfo="setCurrentSceneInfo"
                     @editContent="editContent"
                      />
@@ -32,6 +35,8 @@
                                         </span>
                                     </el-tooltip>
                                 </div>
+
+                                <!-- 执行按钮_start -->
                                 <div>
                                     <el-tooltip class="box-item" effect="dark" content="执行文档生成" placement="top">
                                         <el-button type="primary" text bg size="large" @click="genChapterContent()">
@@ -62,9 +67,8 @@
                                         </el-button>
                                     </el-tooltip>
 
-                                    <!-- <el-button type="primary" @click="onSubmitChapter">保存</el-button> -->
-                                    <!-- <el-button type="danger" @click="onDownloadContent">下载</el-button> -->
                                 </div>
+                                <!-- 执行按钮_end -->
                             </div>
                         </template>
                         <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
@@ -132,8 +136,19 @@
         <!-- 材料上传界面 -->
         <SceneUploadFile ref="uploadChildComp" />
 
+        <!-- 任务执行面板 -->
+        <ExecuteHandle ref="executeHandleRef" @openChatBox="openChatBox" @handleGetScene="handleGetScene" />
+
          <!-- 运行抽屉 -->
-        <DrawerChatPanel ref="drawerChatPanelRef" />
+        <!-- <DrawerChatPanel ref="drawerChatPanelRef" /> -->
+        <div class="aip-flow-drawer">
+            <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+                :with-header="true">
+                <div style="margin-top: 0px;">
+                    <RoleChatPanel ref="roleChatPanelRef" />
+                </div>
+            </el-drawer>
+        </div>
 
     </div>
 </template>
@@ -146,6 +161,8 @@ import ChapterEditor from './chapterEditor'
 import SceneUploadFile from './sceneUploadFile.vue'
 import OutlineEditor from './outlineEditor.vue'
 import DrawerChatPanel from './drawerChatPanel'
+import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import ExecuteHandle from './executeHandle'
 
 import { 
     updateChapterContentEditor , 
@@ -153,10 +170,12 @@ import {
     getChapterContent , 
     updateChapterContent,
     chatRoleSync,
+    dispatchAgent , 
     uploadOss 
 } from '@/api/base/im/scene/longText'
 
 import { ElMessage } from 'element-plus';
+import { nextTick } from 'vue'
 
 
 const route = useRoute();
@@ -172,7 +191,10 @@ const currentUser = ref(null);
 const editorRoleId = ref(null);
 
 // 执行面板
-const drawerChatPanelRef = ref(null)
+const showDebugRunDialog = ref(false);
+const roleChatPanelRef = ref(null)
+
+const executeHandleRef = ref(null)
 
 const chapterEditorRef = ref(null)
 const uploadChildComp = ref(null)
@@ -271,12 +293,15 @@ const genSingleChapterContent = async () => {
         return ;
     }
 
+
     // 开始生成
     streamLoading.value = ElLoading.service({
         lock: true,
-        background: 'rgba(255, 255, 255, 0.5)',
+        background: 'rgba(255, 255, 255, 0.2)',
         customClass: 'custom-loading'
     });
+
+    showDebugRunDialog.value = true ;
 
     let text = '正在重新生成【'+ form.title +'】内容，请稍等.';
     streamLoading.value.setText(text)
@@ -289,16 +314,37 @@ const genSingleChapterContent = async () => {
     }
 
     console.log('formData = ' + JSON.stringify(formData));
+    console.log('formData = ' + JSON.stringify(form));
+
+    nextTick(() => {
+        roleChatPanelRef.value.openChatBox(editorRoleId.value, formData.chapterTitle);
+    })
 
     const result = await chatRoleSync(formData);
     chapterEditorRef.value.setData(result.data) ;
 
     streamLoading.value.close();
+    showDebugRunDialog.value = false;
 
+};
+
+// 生成全部章节内容通过角色
+const genChapterContentByAgent = async () => {
+    console.log('开始生成全部章节内容通过角色 = genChapterContentByAgent');
+    // 分配章节角色
+    dispatchAgent(sceneId.value).then(res => {
+        genChapterContent() ;
+        // executeHandleRef.value.handleGetScene()
+        handleGetScene();
+
+        showDebugRunDialog.value = true ;
+    })
 };
 
 // 定义一个异步函数来调用 chatRoleSync
 const genChapterContent = async () => {
+
+
   try {
     totalNodes.value = countNodes(outline.value); 
     console.log('文档总数量 = ' + totalNodes.value);
@@ -322,9 +368,12 @@ const genChapterContent = async () => {
         customClass: 'custom-loading'
      });
 
+    showDebugRunDialog.value = true ;
+
     // 遍历输出每个节点的信息
     for (let i = 0; i < nodeList.length; i++) {
       const node = nodeList[i];
+      console.log('节点 = ' + JSON.stringify(node));
       console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
       let processMsg = ` ${i + 1}: 章节:${node.label}`;
 
@@ -339,6 +388,10 @@ const genChapterContent = async () => {
         chapterDescription: node.description,
         chapterId : node.id ,
       }
+      nextTick(() => {
+        console.log('--->> editorRoleId = ' + editorRoleId.value)
+        roleChatPanelRef.value.openChatBox(editorRoleId.value, node.label);
+      })
       const result = await chatRoleSync(formData);
       chapterEditorRef.value.setData(result.data) ;
       
@@ -393,12 +446,13 @@ const editContent = (node , data) => {
 
     form.id = data.id ;
     form.title = node.label;
+    form.chapterEditor = node.chapterEditor;
     form.description = node.data.description;
 
     getChapterContent(chapterId).then(res => {
         console.log('res = ' + JSON.stringify(res))
         // form.content = res.data ;
-        chapterEditorRef.value.setData(res.data , editorRoleId.value);
+        chapterEditorRef.value.setData(res.data == null ? '' : res.data , editorRoleId.value);
         loading.value = false ;
     })
 
@@ -430,6 +484,37 @@ const assignChaptersToUser = () => {
   })
 
 };
+
+// 获取场景信息
+const handleGetScene = () => {
+    console.log('handleGetScene');
+    OutlineEditorRef.value.handleGetScene();
+};
+
+// 打开角色选择窗口
+const handleExecuteHandle = (currentSceneInfo) => {
+    console.log('currentSceneInfo = ' + currentSceneInfo);
+    executeHandleRef.value.handleOpen(currentSceneInfo);
+};
+
+/** 打开窗口 */
+const openChatBox = (roleId , message) => {
+
+    showDebugRunDialog.value = true ;
+    console.log('roleId = ' + roleId + ' , message = ' + message);
+
+    nextTick(() => {
+        roleChatPanelRef.value.openChatBox(roleId , message);
+        OutlineEditorRef.value.genStreamContentByMessage(roleId , message);
+
+        console.log('-->>> 编写任务完成');
+    })
+
+}
+
+const closeShowDebugRunDialog = () => {
+    showDebugRunDialog.value = false ;
+}
 
 </script>
 
@@ -595,4 +680,23 @@ $avatar-size: 30px;
     margin-bottom:20px;
 }
 
+</style>
+
+<style>
+.flow-control-panel .el-card__body {
+    padding: 13px !important
+}
+
+.aip-flow-drawer .el-drawer.ltr,
+.aip-flow-drawer .el-drawer.rtl {
+    height: 93%;
+    bottom: 10px;
+    top: auto;
+    right: 10px;
+    border-radius: 8px;
+}
+
+.aip-flow-drawer .el-drawer__header {
+    margin-bottom: 0px;
+}
 </style>
