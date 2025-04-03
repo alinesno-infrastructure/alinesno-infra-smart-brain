@@ -93,6 +93,9 @@
                 <!-- 渠道为商店时，需要选择分类_end -->
 
                 <!-- 渠道为场景时，需要选择分类_start -->
+                <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="数据处理模型">
+                    <LLMSelector :modelType="'large_language_model'" v-model="configForm.llmModelId" />
+                </el-form-item>
                 <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="发布场景类型" prop="sceneId">
                     <el-select
                         v-model="configForm.sceneId"
@@ -223,6 +226,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 import ChannelDialog from './publishChannelDialog.vue';
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 import { getRole , changeSaleField } from "@/api/smart/assistant/role";
 import { updateChannelConfig , getChannels , offlineChannel } from "@/api/smart/assistant/channelPublish";
@@ -287,6 +291,9 @@ const formRules = {
     ],
     authPassword: [
         { required: false, message: '身份验证密码不能为空', trigger: 'blur' }
+    ],
+    lllmModelId: [
+        { required: true, message: '场景模型不能为空', trigger: 'blur' }
     ],
     sceneId: [
         { required: true, message: '场景ID不能为空', trigger: 'blur' }
