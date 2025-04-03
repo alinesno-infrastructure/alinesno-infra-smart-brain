@@ -1,17 +1,25 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
+import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
+import com.alinesno.infra.smart.assistant.scene.core.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.core.utils.RoleUtils;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChapterEditorDto;
+import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +27,9 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -28,6 +39,9 @@ public class LongTextController extends SuperController {
 
     @Autowired
     private ISceneService service;
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     @Autowired
     private IChapterService chapterService;
@@ -124,4 +138,79 @@ public class LongTextController extends SuperController {
         return ok();
     }
 
+    /**
+     * 设置Agent的任务
+     * @return
+     */
+    @PostMapping("/initAgents")
+    public AjaxResult initAgents(@RequestBody @Validated InitAgentsDto dto){
+        log.debug("dto = {}" , dto) ;
+
+        chapterService.initAgents(dto) ;
+
+        return AjaxResult.success("操作成功.") ;
+    }
+
+    /**
+     * 更新用户编辑章节，即每个章节需要指定编辑人员
+     */
+    @PostMapping("/updateChapterContentEditor")
+    public AjaxResult updateChapterContentEditor(@RequestBody @Validated ChatContentEditDto dto) {
+        chapterService.updateChapterEditor(dto);
+        return ok() ;
+    }
+
+    /**
+     * 分配智能助手到每个章节内容
+     * @return
+     */
+    @GetMapping("/dispatchAgent")
+    public AjaxResult dispatchAgent(@RequestParam long sceneId) {
+
+        SceneEntity entity = service.getById(sceneId) ;
+
+        ChatContentEditDto dto = new ChatContentEditDto() ;
+        dto.setSceneId(sceneId);
+        dto.setRoleId(Long.parseLong(entity.getContentEditor()));
+
+        List<ChapterEntity> chapters = chapterService.list(new LambdaQueryWrapper<ChapterEntity>().eq(ChapterEntity::getSceneId, sceneId)) ;
+        List<Long> chapterIds = chapters.stream()
+                .map(ChapterEntity::getId)
+                .toList();
+
+        List<String> chapterIdsStr = chapterIds.stream()
+                .map(String::valueOf)
+                .toList();
+
+        dto.setChapters(chapterIdsStr);
+
+        chapterService.updateChapterEditor(dto);
+
+        return AjaxResult.success("操作成功");
+    }
+
+
+    /**
+     * 下载文件并返回文件下载
+     * @param sceneId
+     * @return
+     */
+    @GetMapping("/uploadOss")
+    public AjaxResult uploadOss(@RequestParam("sceneId") long sceneId) {
+
+        String markdownContent = service.genMarkdownContent(sceneId) ;
+        String filename = IdUtil.fastSimpleUUID() ;
+
+        log.debug("markdownContent = {}", markdownContent);
+        Assert.notNull(markdownContent, "markdownContent为空") ;
+
+        String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
+        Assert.notNull(filePath, "文件路径为空") ;
+
+        R<String> r = storageConsumer.uploadCallbackUrl(new File(filePath), "qiniu-kodo-pub") ;
+
+        String downloadUrl = r.getData() ;
+
+        return AjaxResult.success("操作成功" , downloadUrl);
+    }
 }
