@@ -40,6 +40,7 @@
 
 // 自定义样式
 .custom-loading {
+    z-index: 3000 !important;
     .el-loading-text {
         font-size: 3rem !important;
         color: #333 !important;
