@@ -3,7 +3,7 @@
     <el-dialog
       v-model="dialogVisible"
       width="1000px"
-      title="Agent内容生成对话框"
+      title="请选择智能体"
       @close="handleClose"
     >
       <template #default>
@@ -72,29 +72,30 @@
           <el-form-item label="内容生成输入" prop="contentInput">
             <el-input v-model="formData.contentInput" placeholder="请输入内容生成的相关信息"></el-input>
           </el-form-item>
-          <el-form-item label="内容上传" prop="contentInput">
+
+          <el-form-item label="附件上传" prop="contentInput">
             <el-upload
               ref="uploadRef"
               class="upload-demo"
               action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15"
-              :auto-upload="false"
-            >
+              :auto-upload="false">
               <template #trigger>
-                <el-button type="primary">选择参考文献</el-button>
+                <el-button type="primary" icon="UploadFilled" text bg>请选择你的文档内容</el-button>
               </template>
               <template #tip>
                 <div class="el-upload__tip">
-                  jpg/png files with a size less than 500kb
+                  上传 PDF、TXT、DOCX 等格式的文件
                 </div>
               </template>
             </el-upload>
-          </el-form-item>
+          </el-form-item> 
+
         </el-form>
       </template>
       <template #footer>
         <div class="dialog-footer">
           <el-button size="large" @click="dialogVisible = false">取消</el-button>
-          <el-button size="large" type="primary" @click="handleConfirm">确定</el-button>
+          <el-button size="large" type="primary" @click="handleConfirm">开始工作</el-button>
         </div>
       </template>
     </el-dialog>
@@ -103,9 +104,14 @@
 
 <script setup>
 import { nextTick, ref } from 'vue';
-import { ElDialog, ElButton, ElInput, ElForm, ElFormItem, ElScrollbar, ElUpload } from 'element-plus';
-import { listAll } from '@/api/base/im/user';
+
+// import { ElDialog, ElButton, ElInput, ElForm, ElFormItem, ElScrollbar, ElUpload } from 'element-plus';
+// import { listAll } from '@/api/base/im/user';
+
+import { initAgents } from '@/api/base/im/scene/longText';
 import { getRoleBySceneIdAndAgentType } from '@/api/base/im/scene';
+
+const emit = defineEmits(['openChatBox' , 'handleGetScene']) ; 
 
 const agentList = ref([]);
 const dialogVisible = ref(false);
@@ -170,19 +176,47 @@ const handleClose = () => {
   console.log('对话框已关闭');
 };
 
-const handleConfirm = () => {
-  formRef.value.validate((valid) => {
-    if (valid) {
+const handleConfirm = async() => {
+
+  const valid = await new Promise((resolve) => {
+      formRef.value.validate((valid) => {
+          resolve(valid);
+      });
+  });
+
+  if (valid) {
       console.log('点击了确定按钮');
       console.log('选中的大纲设计工程师:', formData.value.outlineEngineer);
       console.log('选中的章节工程师:', formData.value.chapterEngineer);
       console.log('内容生成输入:', formData.value.contentInput);
       dialogVisible.value = false;
-    } else {
+
+      formData.value.sceneId = currentSceneInfo.value.id ;
+      const response = await initAgents(formData.value) ;
+      console.log('response = ' + response)
+
+      emit('handleGetScene')
+      emit('openChatBox' , formData.value.outlineEngineer , formData.value.contentInput)
+
+  } else {
       console.log('表单校验不通过');
-    }
-  });
-};
+  }
+
+  // formRef.value.validate((valid) => {
+  //   if (valid) {
+  //     console.log('点击了确定按钮');
+  //     console.log('选中的大纲设计工程师:', formData.value.outlineEngineer);
+  //     console.log('选中的章节工程师:', formData.value.chapterEngineer);
+  //     console.log('内容生成输入:', formData.value.contentInput);
+  //     dialogVisible.value = false;
+
+  //     // const response = await initAgents(formData) ;
+
+  //   } else {
+  //     console.log('表单校验不通过');
+  //   }
+  // });
+}
 
 const selectOutlineEngineer = (id) => {
   formData.value.outlineEngineer = id;
