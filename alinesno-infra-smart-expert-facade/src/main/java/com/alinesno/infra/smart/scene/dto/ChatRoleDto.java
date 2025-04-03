@@ -12,8 +12,8 @@ import java.io.Serializable;
 @Data
 public class ChatRoleDto implements Serializable {
 
-    @Min(value = 1, message = "screenId不能为空")
-    private long screenId ;  // 场景ID
+    @Min(value = 1, message = "sceneId不能为空")
+    private long sceneId ;  // 场景ID
 
     @NotBlank(message = "message不能为空")
     private String message ; // 消息内容
