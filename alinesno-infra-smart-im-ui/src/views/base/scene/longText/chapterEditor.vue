@@ -124,7 +124,7 @@ const formRef = ref(null);
 
 /** 设置数据内容 */
 const setData = (content , chapterEditor) => {
-  data.value = content ?? '未生成内容.';
+  data.value = content ? content:'未生成内容.' ; 
   editorRoleId.value = chapterEditor ?? '0';
   console.log('data.value  = ' + data.value + ' , chapterEditor = ' + editorRoleId.value) ; 
 }
