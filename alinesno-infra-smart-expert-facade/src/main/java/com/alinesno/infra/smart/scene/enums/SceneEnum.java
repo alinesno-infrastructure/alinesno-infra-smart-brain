@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 @Getter
 public enum SceneEnum {
 
-    LONG_TEXT(new SceneInfoDto(10000000L, "长内容编写场景", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
+    LONG_TEXT(new SceneInfoDto(10000000L, "长文档编写场景", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             Arrays.asList(
                     new ScreenAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。"),
                     new ScreenAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。")
@@ -34,12 +34,12 @@ public enum SceneEnum {
                     new ScreenAgent(40000401L, "题目生成助手", "questionGenerator", "根据培训内容和要求，自动生成试卷题目。"),
                     new ScreenAgent(40000402L, "Word 导出助手", "wordExporter", "将生成的试卷内容导出为 Word 文档。")
             ))),
-    COPYWRITING(new SceneInfoDto(70000000L, "文案生成场景", "copywriting", "可以根据所提供的模板，自动生成文案信息，比较年度报告、合作协议等复杂文件初稿【待定】", "待定", "0", "", "fa-solid fa-file-word",
-            Arrays.asList(
-                    new ScreenAgent(50000501L, "模板匹配助手", "templateMatcher", "根据用户需求，匹配合适的文案模板。"),
-                    new ScreenAgent(50000502L, "文案内容生成助手", "contentGenerator", "依据匹配的模板，生成具体的文案内容。"),
-                    new ScreenAgent(50000503L, "初稿优化助手", "draftOptimizer", "对生成的文案初稿进行优化，提升文案质量。")
-            ))),
+//    COPYWRITING(new SceneInfoDto(70000000L, "文案生成场景", "copywriting", "可以根据所提供的模板，自动生成文案信息，比较年度报告、合作协议等复杂文件初稿【待定】", "待定", "0", "", "fa-solid fa-file-word",
+//            Arrays.asList(
+//                    new ScreenAgent(50000501L, "模板匹配助手", "templateMatcher", "根据用户需求，匹配合适的文案模板。"),
+//                    new ScreenAgent(50000502L, "文案内容生成助手", "contentGenerator", "依据匹配的模板，生成具体的文案内容。"),
+//                    new ScreenAgent(50000503L, "初稿优化助手", "draftOptimizer", "对生成的文案初稿进行优化，提升文案质量。")
+//            ))),
     MEETING_MINUTES(new SceneInfoDto(80000000L, "会议纪要场景", "meetingMinutes", "自动生成会议纪要，生成专业报告并优化排版，根据上传的模板生成会议纪要", "已集成", "0", "", "fa-solid fa-calendar-check",
             Arrays.asList(
                     new ScreenAgent(60000601L, "语音识别助手", "reportFormatter", "将会议中的语音内容转换为文字信息。"),
