@@ -138,9 +138,6 @@
         <TransferAgentPanel ref="transferAgentPanel" @handleCloseAgentConfig="handleCloseAgentConfig" />
         <!-- Agent选择组件_end -->
 
-        <!-- 任务执行面板 -->
-        <ExecuteHandle ref="executeHandleRef" />
-
     </div>
 </template>
 
@@ -149,7 +146,7 @@
 import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
-import ExecuteHandle from './executeHandle'
+import { getParam } from '@/utils/ruoyi'
 import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
 
 import {
@@ -163,7 +160,12 @@ const route = useRoute();
 const { proxy } = getCurrentInstance();
 
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
-const emit = defineEmits(['setCurrentSceneInfo' , 'editContent'])
+const emit = defineEmits([
+    'setCurrentSceneInfo' , 
+    'closeShowDebugRunDialog',
+    'genChapterContentByAgent',
+    'editContent' , 
+    'handleExecuteHandle'])
 
 // 选择Agent组件
 const transferAgentPanel = ref(null)
@@ -197,7 +199,6 @@ const currentSceneInfo = ref({
     contentEditors: [] 
 })
 const currentSceneId = ref(route.query.sceneId)
-const executeHandleRef = ref(null)
 
 const agentList = ref([])
 const chaterDialogVisible = ref(false);
@@ -263,7 +264,17 @@ const saveEdit = () => {
 };
 
 /** 生成内容 */
-const genStreamContent = () => {
+const genStreamContentByMessage = async (roleIdVal , messageVal) => {
+    message.value = messageVal ; 
+    person.value.id = roleIdVal ;
+    currentSceneId.value = getParam('sceneId') ; 
+
+    await genStreamContent();
+
+}
+
+/** 生成内容 */
+const genStreamContent = async() => {
 
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
@@ -282,18 +293,34 @@ const genStreamContent = () => {
     roleId: person.value.id ,
   }
 
-  chatRole(formData).then(res => {
-    proxy.$modal.msgSuccess("发送成功");
-    chaterDialogVisible.value = false ;
-    message.value = '';
+  const response = await chatRole(formData)
+  console.log('response = ' + response)
 
-    // 合并数组
-    Array.prototype.push.apply(outline.value, res.data);
+  proxy.$modal.msgSuccess("发送成功");
+  chaterDialogVisible.value = false ;
+  message.value = '';
 
-    closeStreamDialog();
-  }).catch(err => {
-    closeStreamDialog();
-  })
+  // 合并数组
+  Array.prototype.push.apply(outline.value, response.data);
+  closeStreamDialog();
+
+  // 自动保存章节
+  getOutlineJson();
+
+//   chatRole(formData).then(res => {
+//     proxy.$modal.msgSuccess("发送成功");
+//     chaterDialogVisible.value = false ;
+//     message.value = '';
+
+//     // 合并数组
+//     Array.prototype.push.apply(outline.value, res.data);
+
+//     closeStreamDialog();
+
+//   }).catch(err => {
+//     closeStreamDialog();
+//   })
+
 };
 
 const addChapter = () => {
@@ -369,8 +396,11 @@ function handleGetScene() {
 
       // 未配置用户角色
       if(currentSceneInfo.value.chapterEditors.length == 0){
+        // setTimeout(() => {
+        //     executeHandleRef.value.handleOpen(currentSceneInfo.value);
+        // }, 500);
         setTimeout(() => {
-            executeHandleRef.value.handleOpen(currentSceneInfo.value);
+            emit('handleExecuteHandle' , currentSceneInfo.value)  
         }, 500);
       }
 
@@ -385,6 +415,9 @@ const getOutlineJson = () => {
     saveChapter(jsonResult , route.query.sceneId).then(res => {
         proxy.$modal.msgSuccess("保存成功");
         handleGetScene()
+
+        // 章节生成完成之后，开始生成内容
+        emit('genChapterContentByAgent')
     })
 };
 
@@ -393,12 +426,14 @@ const closeStreamDialog = () => {
   if(streamLoading.value){
     streamLoading.value.close()
   }
+  emit('closeShowDebugRunDialog')
 }
 
 // 主动暴露childMethod方法
 defineExpose({ 
     closeStreamDialog ,
     handleGetScene,
+    genStreamContentByMessage,
     configAgent
 })
 
@@ -406,7 +441,7 @@ defineExpose({
 nextTick(() => {
     console.log('sceneId = ' + route.query.sceneId) ;
     // handleListAllRole()
-    handleGetScene()
+    handleGetScene() 
 })
 
 </script>
