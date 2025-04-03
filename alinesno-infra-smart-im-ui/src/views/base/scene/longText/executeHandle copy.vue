@@ -3,7 +3,7 @@
     <el-dialog
       v-model="dialogVisible"
       width="1000px"
-      title="Agent内容生成对话框"
+      title="请选择智能体"
       @close="handleClose"
     >
       <template #default>
