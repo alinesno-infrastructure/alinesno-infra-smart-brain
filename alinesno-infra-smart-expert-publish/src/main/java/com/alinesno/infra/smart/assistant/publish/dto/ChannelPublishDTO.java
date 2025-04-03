@@ -43,13 +43,14 @@ public class ChannelPublishDTO extends BaseDto {
     private String secret; // 微信公众号 Secret
     private String token; // 微信公众号 Token
     private String aesKey; // 微信公众号 AES Key
-    private boolean hasAuth = false ; // 是否进行身份验证
+    private boolean hasAuth = false; // 是否进行身份验证
     private String authPassword; // 身份验证密码
     private String apiKey; // API 接口的 APIKey
-    private long agentStoreType ; // 智能体商店类型
+    private long agentStoreType; // 智能体商店类型
 
-    private long sceneId ; // 场景的智能体ID
-    private long agentTypeId ; // 场景的智能体类型ID
+    private long llmModelId; // 场景的LLM 模型的智能体ID
+    private long sceneId; // 场景的智能体ID
+    private long agentTypeId; // 场景的智能体类型ID
 
     /**
      * 转换为实体对象
@@ -57,12 +58,11 @@ public class ChannelPublishDTO extends BaseDto {
      */
     @SneakyThrows
     public ChannelPublishEntity toEntity() {
-
         ChannelListEnums channelListEnums = ChannelListEnums.getByParamKey(paramKey);
-        Assert.notNull(channelListEnums , "paramKey is not found in ChannelListEnums") ;
+        Assert.notNull(channelListEnums, "paramKey is not found in ChannelListEnums");
 
         ChannelPublishEntity entity = new ChannelPublishEntity();
-        BeanUtils.copyProperties(this , entity) ;
+        BeanUtils.copyProperties(this, entity);
 
         entity.setRoleId(roleId);
         entity.setApiKey(apiKey);
@@ -72,45 +72,7 @@ public class ChannelPublishDTO extends BaseDto {
         entity.setParamKey(paramKey);
         entity.setHasConfigured(hasConfigured);
 
-        Map<String, Object> config = new HashMap<>();
-        config.put("expireType", expireType);
-        config.put("qpm", qpm);
-
-        // 处理场景类型和智能体类型
-        if (channelListEnums == ChannelListEnums.AIP_AGENT_SCENE) {
-            config.put("sceneId", sceneId);
-            config.put("agentTypeId", agentTypeId);
-        }
-
-        if (expireTime != null) {
-            config.put("expireTime", expireTime);
-        }
-        if (agentStoreType != 0) {
-            config.put("agentStoreType", agentStoreType);
-        }
-        if (appId != null && !appId.isEmpty()) {
-            String aesEncrypted = EncryptionUtils.aesEncrypt(appId, EncryptionUtils.DEFAULT_KEY);
-            config.put("appId", aesEncrypted);
-        }
-        if (secret != null && !secret.isEmpty()) {
-            String aesEncrypted = EncryptionUtils.aesEncrypt(secret, EncryptionUtils.DEFAULT_KEY);
-            config.put("secret", aesEncrypted);
-        }
-        if (token != null && !token.isEmpty()) {
-            String aesEncrypted = EncryptionUtils.aesEncrypt(token, EncryptionUtils.DEFAULT_KEY);
-            config.put("token", aesEncrypted);
-        }
-        if (aesKey != null && !aesKey.isEmpty()) {
-            String aesEncrypted = EncryptionUtils.aesEncrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
-            config.put("aesKey", aesEncrypted);
-        }
-        config.put("hasAuth", hasAuth);
-        if (authPassword != null && !authPassword.isEmpty()) {
-            String aesEncrypted = EncryptionUtils.aesEncrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
-            config.put("authPassword", aesEncrypted);
-        }
-
-
+        Map<String, Object> config = buildConfigMap();
         entity.setConfigMap(JSONObject.toJSONString(config));
 
         return entity;
@@ -133,125 +95,154 @@ public class ChannelPublishDTO extends BaseDto {
         dto.setApiKey(entity.getApiKey());
 
         String configMapStr = entity.getConfigMap();
-
         if (configMapStr != null && !configMapStr.isEmpty()) {
-            // 指定泛型类型参数来消除警告
             Map<String, Object> configMap = JSONObject.parseObject(configMapStr, new TypeReference<>() {});
-            if (configMap.containsKey("expireType")) {
-                dto.setExpireType(Integer.parseInt(configMap.get("expireType").toString()));
-            }
-            if (configMap.containsKey("agentStoreType")) {
-                dto.setAgentStoreType((Long) configMap.get("agentStoreType")) ;
-            }
-            if (configMap.containsKey("expireTime")) {
-                dto.setExpireTime((Date) configMap.get("expireTime"));
-            }
-            if (configMap.containsKey("qpm")) {
-                dto.setQpm(Integer.parseInt(configMap.get("qpm").toString()));
-            }
-            if (configMap.containsKey("appId")) {
-                String appId = configMap.get("appId").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(appId, EncryptionUtils.DEFAULT_KEY);
-                dto.setAppId(aesEncrypted) ;
-            }
-            if (configMap.containsKey("secret")) {
-                String secret = configMap.get("secret").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(secret, EncryptionUtils.DEFAULT_KEY);
-                dto.setSecret(aesEncrypted) ;
-            }
-            if (configMap.containsKey("token")) {
-                String token = configMap.get("token").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(token, EncryptionUtils.DEFAULT_KEY);
-                dto.setToken(aesEncrypted) ;
-            }
-            if (configMap.containsKey("aesKey")) {
-                String aesKey = configMap.get("aesKey").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
-                dto.setAesKey(aesEncrypted) ;
-            }
-            if (configMap.containsKey("hasAuth")) {
-                dto.setHasAuth(Boolean.parseBoolean(configMap.get("hasAuth").toString()));
-            }
-            if (configMap.containsKey("authPassword")) {
-                String authPassword = configMap.get("authPassword").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
-                dto.setAuthPassword(aesEncrypted)  ;
-            }
-
-            // 处理场景类型和智能体类型
-            if (entity.getParamKey().equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
-                dto.setSceneId((Long) configMap.get("sceneId"));
-                dto.setAgentTypeId((Long) configMap.get("agentTypeId"));
-            }
-
+            setConfigToDto(dto, configMap, entity.getParamKey());
         }
 
         return dto;
     }
 
     /**
-     * 从实体对象转换为DTO对象
+     * 从实体对象转换为Map对象
      * @param entity 发布渠道实体对象
-     * @return 发布渠道DTO对象
+     * @return 包含发布渠道信息的Map对象
      */
     @SneakyThrows
-    public static Map<String , Object> toMap(ChannelPublishEntity entity) {
-
+    public static Map<String, Object> toMap(ChannelPublishEntity entity) {
         String configMapStr = entity.getConfigMap();
-
+        Map<String, Object> configMap = new HashMap<>();
         if (configMapStr != null && !configMapStr.isEmpty()) {
-            // 指定泛型类型参数来消除警告
-            Map<String, Object> configMap = JSONObject.parseObject(configMapStr, new TypeReference<>() {});
-
-            configMap.put("id", entity.getId()) ;
-            configMap.put("roleId", entity.getRoleId()) ;
-            configMap.put("shareName", entity.getName()) ;
-            configMap.put("description", entity.getDescription()) ;
-            configMap.put("iconClass", entity.getIconClass()) ;
-            configMap.put("paramKey", entity.getParamKey()) ;
-            configMap.put("apiKey", entity.getApiKey()) ;
-            configMap.put("isConfigured", entity.getHasConfigured()) ;
-
-            if (configMap.containsKey("agentStoreType")) {
-                String agentStoreType = configMap.get("agentStoreType").toString();
-                configMap.put("agentStoreType", Long.parseLong(agentStoreType));
-            }
-
-            if (configMap.containsKey("appId")) {
-                String appId = configMap.get("appId").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(appId, EncryptionUtils.DEFAULT_KEY);
-                configMap.put("appId", aesEncrypted);
-            }
-            if (configMap.containsKey("secret")) {
-                String secret = configMap.get("secret").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(secret, EncryptionUtils.DEFAULT_KEY);
-                configMap.put("secret", aesEncrypted);
-            }
-            if (configMap.containsKey("token")) {
-                String token = configMap.get("token").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(token, EncryptionUtils.DEFAULT_KEY);
-                configMap.put("token", aesEncrypted);
-            }
-            if (configMap.containsKey("aesKey")) {
-                String aesKey = configMap.get("aesKey").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(aesKey, EncryptionUtils.DEFAULT_KEY);
-                configMap.put("aesKey", aesEncrypted);
-            }
-            if (configMap.containsKey("authPassword")) {
-                String authPassword = configMap.get("authPassword").toString();
-                String aesEncrypted = EncryptionUtils.aesDecrypt(authPassword, EncryptionUtils.DEFAULT_KEY);
-                configMap.put("authPassword", aesEncrypted);
-            }
-
-            // 处理场景类型和智能体类型
-            if (entity.getParamKey().equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
-                configMap.put("sceneId", configMap.get("sceneId"));
-                configMap.put("agentTypeId", configMap.get("agentTypeId"));
-            }
-
-            return configMap;
+            configMap = JSONObject.parseObject(configMapStr, new TypeReference<>() {});
         }
 
-        return new HashMap<>();
+        configMap.put("id", entity.getId());
+        configMap.put("roleId", entity.getRoleId());
+        configMap.put("shareName", entity.getName());
+        configMap.put("description", entity.getDescription());
+        configMap.put("iconClass", entity.getIconClass());
+        configMap.put("paramKey", entity.getParamKey());
+        configMap.put("apiKey", entity.getApiKey());
+        configMap.put("isConfigured", entity.getHasConfigured());
+
+        decryptConfigValues(configMap);
+
+        if (entity.getParamKey().equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
+            configMap.put("sceneId", configMap.get("sceneId"));
+            configMap.put("agentTypeId", configMap.get("agentTypeId"));
+            configMap.put("llmModelId", configMap.get("llmModelId"));
+        }
+
+        return configMap;
+    }
+
+    /**
+     * 构建配置映射
+     * @return 配置映射
+     */
+    private Map<String, Object> buildConfigMap() {
+        Map<String, Object> config = new HashMap<>();
+        config.put("expireType", expireType);
+        config.put("qpm", qpm);
+
+        if (expireTime != null) {
+            config.put("expireTime", expireTime);
+        }
+        if (agentStoreType != 0) {
+            config.put("agentStoreType", agentStoreType);
+        }
+
+        putEncryptedValue(config, "appId", appId);
+        putEncryptedValue(config, "secret", secret);
+        putEncryptedValue(config, "token", token);
+        putEncryptedValue(config, "aesKey", aesKey);
+
+        config.put("hasAuth", hasAuth);
+        putEncryptedValue(config, "authPassword", authPassword);
+
+        if (ChannelListEnums.getByParamKey(paramKey) == ChannelListEnums.AIP_AGENT_SCENE) {
+            config.put("llmModelId", llmModelId);
+            config.put("sceneId", sceneId);
+            config.put("agentTypeId", agentTypeId);
+        }
+
+        return config;
+    }
+
+    /**
+     * 将配置项设置到 DTO 对象中
+     * @param dto 发布渠道 DTO 对象
+     * @param configMap 配置映射
+     * @param paramKey 参数键
+     */
+    private static void setConfigToDto(ChannelPublishDTO dto, Map<String, Object> configMap, String paramKey) {
+        if (configMap.containsKey("expireType")) {
+            dto.setExpireType(Integer.parseInt(configMap.get("expireType").toString()));
+        }
+        if (configMap.containsKey("agentStoreType")) {
+            dto.setAgentStoreType((Long) configMap.get("agentStoreType"));
+        }
+        if (configMap.containsKey("expireTime")) {
+            dto.setExpireTime((Date) configMap.get("expireTime"));
+        }
+        if (configMap.containsKey("qpm")) {
+            dto.setQpm(Integer.parseInt(configMap.get("qpm").toString()));
+        }
+
+        setDecryptedValue(dto::setAppId, configMap, "appId");
+        setDecryptedValue(dto::setSecret, configMap, "secret");
+        setDecryptedValue(dto::setToken, configMap, "token");
+        setDecryptedValue(dto::setAesKey, configMap, "aesKey");
+
+        if (configMap.containsKey("hasAuth")) {
+            dto.setHasAuth(Boolean.parseBoolean(configMap.get("hasAuth").toString()));
+        }
+        setDecryptedValue(dto::setAuthPassword, configMap, "authPassword");
+
+        if (paramKey.equals(ChannelListEnums.AIP_AGENT_SCENE.getParamKey())) {
+            dto.setSceneId((Long) configMap.get("sceneId"));
+            dto.setAgentTypeId((Long) configMap.get("agentTypeId"));
+            dto.setLlmModelId((Long) configMap.get("llmModelId"));
+        }
+    }
+
+    /**
+     * 将加密值放入配置映射
+     * @param config 配置映射
+     * @param key 键
+     * @param value 值
+     */
+    @SneakyThrows
+    private void putEncryptedValue(Map<String, Object> config, String key, String value) {
+        if (value != null && !value.isEmpty()) {
+            config.put(key, EncryptionUtils.aesEncrypt(value, EncryptionUtils.DEFAULT_KEY));
+        }
+    }
+
+    /**
+     * 设置解密后的值
+     * @param setter 设置方法
+     * @param configMap 配置映射
+     * @param key 键
+     */
+    @SneakyThrows
+    private static void setDecryptedValue(java.util.function.Consumer<String> setter, Map<String, Object> configMap, String key) {
+        if (configMap.containsKey(key)) {
+            String encryptedValue = configMap.get(key).toString();
+            String decryptedValue = EncryptionUtils.aesDecrypt(encryptedValue, EncryptionUtils.DEFAULT_KEY);
+            setter.accept(decryptedValue);
+        }
+    }
+
+    /**
+     * 解密配置值
+     * @param configMap 配置映射
+     */
+    private static void decryptConfigValues(Map<String, Object> configMap) {
+        setDecryptedValue(value -> configMap.put("appId", value), configMap, "appId");
+        setDecryptedValue(value -> configMap.put("secret", value), configMap, "secret");
+        setDecryptedValue(value -> configMap.put("token", value), configMap, "token");
+        setDecryptedValue(value -> configMap.put("aesKey", value), configMap, "aesKey");
+        setDecryptedValue(value -> configMap.put("authPassword", value), configMap, "authPassword");
     }
 }
