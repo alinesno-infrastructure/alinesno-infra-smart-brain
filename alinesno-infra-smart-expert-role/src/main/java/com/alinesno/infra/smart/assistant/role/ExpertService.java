@@ -32,8 +32,6 @@ import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
-import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
@@ -90,8 +88,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     private IChannelService channelService ;
 
-    @Autowired
-    private ISceneService screenService ;
+//    @Autowired
+//    private ISceneService screenService ;
 
     @Autowired
     protected ISecretService secretService ;
@@ -249,18 +247,17 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         return null ;
     }
 
-    /**
-     * 场景唯一标识
-     * @param channelId
-     * @return
-     */
-    public SceneEntity getScreenInfo(long channelId) {
-        if (channelId > 0){
-            return screenService.getById(channelId) ;
-        }
-        return null ;
-    }
-
+//    /**
+//     * 场景唯一标识
+//     * @param channelId
+//     * @return
+//     */
+//    public SceneEntity getScreenInfo(long channelId) {
+//        if (channelId > 0){
+//            return screenService.getById(channelId) ;
+//        }
+//        return null ;
+//    }
 
     /**
      * 获取到任务执行详情
