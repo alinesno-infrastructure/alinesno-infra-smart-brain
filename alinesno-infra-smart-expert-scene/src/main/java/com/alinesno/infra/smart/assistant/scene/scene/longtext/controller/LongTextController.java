@@ -17,6 +17,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterS
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChapterEditorDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
+import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -183,10 +184,15 @@ public class LongTextController extends SuperController {
                 .toList();
 
         dto.setChapters(chapterIdsStr);
-
         chapterService.updateChapterEditor(dto);
 
-        return AjaxResult.success("操作成功");
+        SceneDto sceneEntity = new SceneDto();
+        BeanUtils.copyProperties(entity, sceneEntity);
+
+        AjaxResult result = AjaxResult.success("操作成功");
+        result.put("sceneInfo", sceneEntity) ;
+
+        return result ;
     }
 
 
