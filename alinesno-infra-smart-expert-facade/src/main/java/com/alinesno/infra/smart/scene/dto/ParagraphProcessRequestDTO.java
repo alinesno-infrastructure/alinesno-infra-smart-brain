@@ -11,7 +11,7 @@ public class ParagraphProcessRequestDTO {
     private long roleId ; // 角色ID
 
     @Min(value = 1 , message = "频道ID不能为空")
-    private long screenId ;
+    private long sceneId ;
 
     @NotBlank(message = "要修改的内容不能为空")
     private String modifyContent; // 要修改的内容
