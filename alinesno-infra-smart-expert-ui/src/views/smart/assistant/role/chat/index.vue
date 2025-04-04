@@ -647,11 +647,11 @@ onMounted(() => {
 
 
 // 销毁信息
-// onBeforeUnmount(() => {
-//   handleCloseSse(channelId.value).then(res => {
-//     console.log('关闭sse连接成功:' + channelId)
-//   })
-// });
+onBeforeUnmount(() => {
+  handleCloseSse(channelId.value).then(res => {
+    console.log('关闭sse连接成功:' + channelId)
+  })
+});
 
 defineExpose({
   setRoleInfo
