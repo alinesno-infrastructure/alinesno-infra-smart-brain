@@ -38,7 +38,7 @@
               </div>
             </template>
           </el-option>
-        </el-select>
+        </el-select> 
       </el-form-item>
 
       <!-- OCR模型选择项 -->
@@ -70,6 +70,7 @@
 
 import { nextTick, onUnmounted , ref } from 'vue';
 import { ElMessage } from 'element-plus'
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 const emit = defineEmits(['handleAttachmentUploadStatusPanelClose'])
 
