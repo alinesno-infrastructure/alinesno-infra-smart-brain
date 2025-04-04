@@ -63,6 +63,18 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
         return this.toPage(model, this.getFeign(), page);
     }
 
+    /**
+     * 获取工具选择器的数据
+     * @param page
+     * @return
+     */
+    @DataPermissionQuery
+    @ResponseBody
+    @PostMapping("/toolSelection")
+    public TableDataInfo toolSelection(DatatablesPageBean page , PermissionQuery query) {
+        return service.toolSelection(page , query) ; // . this.toPage(model, this.getFeign(), page);
+    }
+
     @DataPermissionSave
     @ResponseBody
     @PostMapping("/saveTool")
