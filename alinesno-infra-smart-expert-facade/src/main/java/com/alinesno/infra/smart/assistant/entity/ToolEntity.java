@@ -89,4 +89,8 @@ public class ToolEntity extends InfraBaseEntity {
     @TableField(value = "from_id")
     private Long fromId; // 来源ID
 
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 16)
+    @ColumnComment("工具权限")
+    @TableField("tool_permission")
+    private String toolPermission;
 }
