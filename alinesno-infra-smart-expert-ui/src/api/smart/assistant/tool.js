@@ -6,6 +6,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 var prefix = '/api/infra/smart/assistant/tool/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
+  toolSelection: prefix +"toolSelection" ,
   createUrl: prefix + 'add' ,
   saveUrl: prefix + 'saveTool' ,
   updateUrl: prefix +"modify" ,
@@ -53,6 +54,15 @@ export function changStatusField(data){
     url: managerUrl.changeField ,
     method: 'post',
     data: data
+  })
+}
+
+// 查询应用列表
+export function toolSelection(query) {
+  return request({
+    url: managerUrl.toolSelection,
+    method: 'post',
+    params: query
   })
 }
 
