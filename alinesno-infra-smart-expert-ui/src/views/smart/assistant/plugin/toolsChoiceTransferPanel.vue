@@ -57,6 +57,7 @@
 <script setup name="Tool">
 import {
   listTool,
+  toolSelection ,
 } from "@/api/smart/assistant/tool";
 import { reactive, ref, computed, nextTick } from "vue";
 import { ElMessage } from 'element-plus';
@@ -124,7 +125,7 @@ function getList() {
   const savedSelectedToolIds = [...selectedToolIds.value]; // 保存当前已选工具的ID
   loading.value = true;
 
-  listTool(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  toolSelection(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
 
     loading.value = false;
     ToolList.value = res.rows;
@@ -161,7 +162,9 @@ function resetQuery() {
 
 /** 过滤工具 */
 function filterTool(value, item) {
-  return item.name.toLowerCase().includes(value.toLowerCase());
+  if(item){
+    return item?.name?.toLowerCase().includes(value.toLowerCase());
+  }
 }
 
 /** 穿梭框选择变化 */
