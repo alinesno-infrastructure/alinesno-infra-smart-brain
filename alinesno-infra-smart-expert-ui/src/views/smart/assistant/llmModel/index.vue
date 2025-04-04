@@ -78,7 +78,6 @@
               <div class="vc-div tpl-item-footer">
                 <div class="vc-text text_l14lqa1g" :title="item.tempTeam">
                   <el-button text bg type="primary">
-                    <!-- {{ item.modelPermission == 'org' ? '组织' : '私有' }} -->
                     <span v-if="item.modelPermission == 'person'">私有</span>
                     <span v-if="item.modelPermission == 'org'">组织</span>
                     <span v-if="item.modelPermission == 'public'">公开</span>
