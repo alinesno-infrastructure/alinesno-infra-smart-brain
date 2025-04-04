@@ -124,7 +124,12 @@ const formRef = ref(null);
 
 /** 设置数据内容 */
 const setData = (content , chapterEditor) => {
-  data.value = content ? content:'未生成内容.' ; 
+
+  if(!content){
+    content = '未生成内容' ;
+  }
+
+  data.value = content ; // ? content:'未生成内容.' ; 
   editorRoleId.value = chapterEditor ?? '0';
   console.log('data.value  = ' + data.value + ' , chapterEditor = ' + editorRoleId.value) ; 
 }
@@ -364,7 +369,28 @@ const confirmReplacement = () => {
     proxy.$modal.msgWarning("替换内容为空.");
     return ;
   }
+
+  const editorView = currentSelection.editorView;
+  const from = currentSelection.from;
+  const to = currentSelection.to;
+
+  // 检查选择范围的有效性
+  const docLength = editorView.state.doc.length;
+  if (from < 0 || to < 0 || from > docLength || to > docLength) {
+    console.error('Selection range is out of document bounds');
+    return;
+  }
+
   replaceSelectedText(newText, currentSelection.editorView, currentSelection.from, currentSelection.to);
+
+  // 更新 currentSelection
+  currentSelection = {
+    text: newText,
+    from: from,
+    to: from + newText.length,
+    editorView
+  };
+
   dialogVisible.value = false;
   hideContextMenu();
 };
