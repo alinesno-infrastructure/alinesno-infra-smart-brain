@@ -5,6 +5,7 @@
                 <!-- 目录大纲编辑界面 -->
                 <OutlineEditor 
                     ref="OutlineEditorRef"
+                    @openChatBox="openChatBox"
                     @handleExecuteHandle="handleExecuteHandle"
                     @closeShowDebugRunDialog="closeShowDebugRunDialog"
                     @genChapterContentByAgent="genChapterContentByAgent"
@@ -170,6 +171,7 @@ import {
     getChapterContent , 
     updateChapterContent,
     chatRoleSync,
+    getScene,
     dispatchAgent , 
     uploadOss 
 } from '@/api/base/im/scene/longText'
@@ -320,6 +322,12 @@ const genSingleChapterContent = async () => {
         roleChatPanelRef.value.openChatBox(editorRoleId.value, formData.chapterTitle);
     })
 
+    // chatRoleSync(formData).then(res => {
+    //     chapterEditorRef.value.setData(result.data) ;
+    //     streamLoading.value.close();
+    //     showDebugRunDialog.value = false;
+    // });
+
     const result = await chatRoleSync(formData);
     chapterEditorRef.value.setData(result.data) ;
 
@@ -333,17 +341,28 @@ const genChapterContentByAgent = async () => {
     console.log('开始生成全部章节内容通过角色 = genChapterContentByAgent');
     // 分配章节角色
     dispatchAgent(sceneId.value).then(res => {
-        genChapterContent() ;
         // executeHandleRef.value.handleGetScene()
-        handleGetScene();
+        // handleGetScene();
 
-        showDebugRunDialog.value = true ;
+        // outline.value = res.sceneInfo.chapterTree
+        // currentSceneInfo.value = res.sceneInfo.data
+        // outline.value = res.sceneInfo..chapterTree
+
+        // setCurrentSceneInfo(res.sceneInfo);
+        getScene(sceneId.value).then(res => {
+            // currentSceneInfo.value = res.data
+            // outline.value = res.data.chapterTree
+            setCurrentSceneInfo(res.data)
+
+            genChapterContent() ;
+            showDebugRunDialog.value = true ;
+        })
+
     })
 };
 
 // 定义一个异步函数来调用 chatRoleSync
 const genChapterContent = async () => {
-
 
   try {
     totalNodes.value = countNodes(outline.value); 
@@ -353,6 +372,7 @@ const genChapterContent = async () => {
     const nodeList = [];
     const flattenTree = (nodes) => {
       for (let node of nodes) {
+        console.log('--->>> node = ' + JSON.stringify(node));
         nodeList.push(node);
         if (node.children && node.children.length) {
           flattenTree(node.children);
@@ -388,10 +408,12 @@ const genChapterContent = async () => {
         chapterDescription: node.description,
         chapterId : node.id ,
       }
+
       nextTick(() => {
-        console.log('--->> editorRoleId = ' + editorRoleId.value)
-        roleChatPanelRef.value.openChatBox(editorRoleId.value, node.label);
+        console.log('--->> editorRoleId = ' + node.chapterEditor)
+        roleChatPanelRef.value.openChatBox(node.chapterEditor, node.label);
       })
+
       const result = await chatRoleSync(formData);
       chapterEditorRef.value.setData(result.data) ;
       
