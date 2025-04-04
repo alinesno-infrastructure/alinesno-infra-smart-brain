@@ -165,7 +165,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
         taskInfo.setRoleId(dto.getRoleId());
-        taskInfo.setSceneId(dto.getScreenId());
+        taskInfo.setSceneId(dto.getSceneId());
         taskInfo.setText(dto.getAction() +":"+dto.getRequirement()+ ":"+ dto.getModifyContent());
         taskInfo.setModify(true);
         taskInfo.setModifyPreBusinessId(false); ;
