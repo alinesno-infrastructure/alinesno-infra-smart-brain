@@ -130,7 +130,8 @@
 
             <div class="dialog-footer">
                 <el-button @click="chaterDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="genStreamContent()">生成章节</el-button>
+                <!-- <el-button type="primary" @click="genStreamContent()">生成章节</el-button> -->
+                <el-button type="primary" @click="openChatBoxStreamContent()">生成章节</el-button>
             </div>
         </el-dialog>
 
@@ -162,6 +163,7 @@ const { proxy } = getCurrentInstance();
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
 const emit = defineEmits([
     'setCurrentSceneInfo' , 
+    'openChatBox' ,
     'closeShowDebugRunDialog',
     'genChapterContentByAgent',
     'editContent' , 
@@ -220,6 +222,11 @@ const allowDrag = (draggingNode) => {
 const handleNodeClick = (data) => {
     console.log('Node clicked: ', data);
 };
+
+const openChatBoxStreamContent = () => {
+    chaterDialogVisible.value = false ;
+    emit('openChatBox' , person.value.id, message.value)
+}
 
 const handleNodeContextMenu = (event, data, node) => {
     event.preventDefault();
