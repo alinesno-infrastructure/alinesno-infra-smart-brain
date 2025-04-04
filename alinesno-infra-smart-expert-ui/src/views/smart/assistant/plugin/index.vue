@@ -87,6 +87,15 @@
               {{ getPluginTypeName(scope.row.toolType) }}
             </template>
           </el-table-column>
+          <el-table-column label="工具范围" align="center" key="toolType" width="150" prop="toolPermission" v-if="columns[2].visible">
+            <template #default="scope">
+              <el-button text bg type="primary">
+                <span v-if="scope.row.toolPermission == 'person'">私有</span>
+                <span v-if="scope.row.toolPermission == 'org'">组织</span>
+                <span v-if="scope.row.toolPermission == 'public'">公开</span>
+              </el-button>
+            </template>
+          </el-table-column>
           <el-table-column label="脚本" align="center" width="110" key="target" prop="target" v-if="columns[6].visible"
             :show-overflow-tooltip="true">
             <template #default="scope">
@@ -155,6 +164,22 @@
               <el-radio-group v-model="form.toolType">
                 <el-radio v-for="item in pluginCategories" :key="item.id" :label="item.id">{{ item.name }}</el-radio>
               </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
+          <el-col :span="24">
+            <el-form-item label="权限" prop="toolPermission">
+              <el-radio-group v-model="form.toolPermission" size="large">
+                <el-radio v-for="option in dataScopeOptions" :key="option.value" :value="option.value" :label="option.label">
+                    <el-tooltip class="box-item" effect="dark" :content="option.desc" placement="top-start">
+                  <div style="display: flex;align-items: center;gap: 6px;">
+                      {{ option.text }} <el-icon><QuestionFilled /></el-icon>
+                  </div>
+                    </el-tooltip>
+                </el-radio>
+              </el-radio-group>
+
             </el-form-item>
           </el-col>
         </el-row>
@@ -278,15 +303,25 @@ const data = reactive({
       message: "工具名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
+    icon: [{ required: true, message: "图标不能为空", trigger: "blur" }],
     pluginType: [{ required: true, message: "工具类型不能为空", trigger: "blur" }],
     scene: [{ required: true, message: "使用场景不能为空", trigger: "blur" }],
     hasStatus: [{ required: true, message: "状态不能为空", trigger: "blur" }],
     description: [{ required: true, message: "工具描述不能为空", trigger: "blur" }],
     target: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
+    toolType: [{ required: true, message: "工具类型不能为空", trigger: "blur" }],
+    toolPermission: [{ required: true, message: "数据范围不能为空", trigger: "blur" }],
   }
 });
 
 const { queryParams, form, rules } = toRefs(data);
+
+// 组织信息
+const dataScopeOptions = ref([
+  { value: 'person', label: 'person', text: '私有', desc: '此数据仅你个人可见和使用' },
+  { value: 'org', label: 'org', text: '组织', desc: '此数据可在组织内部共享和使用' },
+  { value: 'public', label: 'public', text: '公开', desc: '此数据可被所有人访问和查看' }
+]);
 
 // 定义工具分类数组，每个元素包含 code 和 label
 const pluginCategories = ref([
