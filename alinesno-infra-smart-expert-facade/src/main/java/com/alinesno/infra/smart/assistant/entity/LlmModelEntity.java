@@ -101,7 +101,7 @@ public class LlmModelEntity extends InfraBaseEntity {
     /**
      * 模型权限
      */
-    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 16)
     @ColumnComment("模型权限")
     @TableField("model_permission")
     private String modelPermission;
