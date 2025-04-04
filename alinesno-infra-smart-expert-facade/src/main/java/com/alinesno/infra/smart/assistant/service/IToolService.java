@@ -1,5 +1,8 @@
 package com.alinesno.infra.smart.assistant.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
@@ -44,4 +47,12 @@ public interface IToolService extends IBaseService<ToolEntity> {
      * @return
      */
     List<ToolDto> getByToolIds(String selectionToolsData);
+
+    /**
+     * 工具列表
+     * @param page
+     * @param query
+     * @return
+     */
+    TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query);
 }
