@@ -54,6 +54,7 @@
                                 <el-col :span="18">
                                     <div class="select-wrapper" style="align-items: flex-start;">
                                         <el-form-item prop="modelName" class="form-item-wrapper">
+                                            <!-- 
                                             <el-select v-model="agentModelConfigForm.modelId" placeholder="请选择大模型"
                                                 size="large" style="width:100%">
                                                 <el-option v-for="item in llmModelOptions" :key="item.id"
@@ -67,7 +68,9 @@
                                                         </div>
                                                     </template>
                                                 </el-option>
-                                            </el-select>
+                                            </el-select> 
+                                            -->
+                                            <LLMSelector :modelType="'large_language_model'" v-model="agentModelConfigForm.modelId" />
                                         </el-form-item>
                                         <el-button type="primary" size="large" text bg @click="openModelConfigDialog">
                                             <i class="fa-solid fa-screwdriver-wrench"></i>
@@ -312,6 +315,7 @@ import {
     listAllLlmModel
 } from "@/api/smart/assistant/llmModel"
 
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 // import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
