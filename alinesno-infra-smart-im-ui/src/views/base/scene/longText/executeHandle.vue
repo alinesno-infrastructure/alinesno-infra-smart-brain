@@ -11,6 +11,11 @@
           由多个智能体协作，请根据需求选择大纲生成智能体和章节工程师，并输入内容生成相关信息。
         </div>
         <el-form ref="formRef" :model="formData" :rules="rules" size="large" :label-position="'top'">
+
+          <el-form-item label="内容生成输入" prop="contentInput">
+            <el-input type="textarea" :rows="3" resize="none" v-model="formData.contentInput" placeholder="请输入内容生成的相关信息"></el-input>
+          </el-form-item>
+
           <el-form-item label="选择大纲设计专员" prop="outlineEngineer">
             <el-scrollbar class="scrollbar">
               <div class="custom-radio-group" >
@@ -69,10 +74,8 @@
               </div>
             </el-scrollbar>
           </el-form-item>
-          <el-form-item label="内容生成输入" prop="contentInput">
-            <el-input v-model="formData.contentInput" placeholder="请输入内容生成的相关信息"></el-input>
-          </el-form-item>
 
+          <!-- 
           <el-form-item label="附件上传" prop="contentInput">
             <el-upload
               ref="uploadRef"
@@ -88,7 +91,8 @@
                 </div>
               </template>
             </el-upload>
-          </el-form-item> 
+          </el-form-item>  
+          -->
 
         </el-form>
       </template>
