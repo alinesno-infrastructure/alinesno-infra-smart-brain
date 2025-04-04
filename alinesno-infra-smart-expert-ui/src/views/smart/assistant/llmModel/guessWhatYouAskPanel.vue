@@ -12,6 +12,7 @@
 
       <!-- 语音模型选择项 -->
       <el-form-item label="大模型" prop="voiceModel">
+        <!-- 
         <el-select v-model="formData.voiceModel" placeholder="请选择大模型" size="large" style="width:100%">
           <el-option v-for="item in llmModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
             <template #default>
@@ -22,8 +23,10 @@
               </div>
             </template>
           </el-option>
-        </el-select>
+        </el-select> 
+        -->
 
+        <LLMSelector :modelType="'large_language_model'" v-model="formData.voiceModel" />
       </el-form-item>
 
       <el-form-item label="Prompt" prop="prompt">
@@ -56,6 +59,8 @@ import { ElMessage } from 'element-plus';
 
 const emit = defineEmits(['handleGuessWhatYouAskStatusPanelClose'])
 // import speakingIcon from '@/assets/icons/speaking.gif';
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 // 初始化表单数据
 const formData = ref({
