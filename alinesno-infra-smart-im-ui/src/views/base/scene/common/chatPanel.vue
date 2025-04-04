@@ -397,6 +397,11 @@ const handleCopyGenContent = async (item) => {
 // 推送消息到当前面板
 const pushResponseMessageList = (newMessage) => {
 
+  // 判断messageList长度是否超过10,超过则保留最后10条消息(规避消息太多网页卡顿问题)
+  if (messageList.value.length >= 3) {
+    messageList.value.splice(0, 1);
+  }
+
   if (newMessage.llmStream === true) { // 是否为流式输出
 
     // 查找是否有相同businessId的消息
@@ -651,24 +656,25 @@ function setRoleInfo(newRoleInfo) {
 /** 打开运行聊天界面 */
 function openChatBox(roleIdVal , messageVal){
   initChatBoxScroll();
+  chatStreamLoading.value = true ;
 
   console.log('roleIdVal = ' + roleIdVal + ' , messageVal = ' + messageVal)
 
   roleId.value = roleIdVal ; // getParam('roleId')
-  channelId.value = getParam('sceneId') ; // snowflake.generate()
-
-  handleSseConnect(channelId.value)
   handleGetInfo(roleId.value);
-
 }
 
+onMounted(() => {
+  channelId.value = getParam('sceneId') ; // snowflake.generate()
+  handleSseConnect(channelId.value)
+})
 
 // 销毁信息
-// onBeforeUnmount(() => {
-//   handleCloseSse(channelId.value).then(res => {
-//     console.log('关闭sse连接成功:' + channelId)
-//   })
-// });
+onBeforeUnmount(() => {
+  handleCloseSse(channelId.value).then(res => {
+    console.log('关闭sse连接成功:' + channelId)
+  })
+});
 
 defineExpose({
   setRoleInfo, 
