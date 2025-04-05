@@ -148,9 +148,24 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
 
         TableDataInfo tableDataInfo = new TableDataInfo();
 
-        publicTools.addAll(pageResult.getRecords())  ;
-        tableDataInfo.setRows(publicTools);
+        // 存储 pageResult.getRecords() 中的 id
+        Set<Long> recordIds = new HashSet<>();
+        for (ToolEntity record : pageResult.getRecords()) {
+            recordIds.add(record.getId());
+        }
 
+        // 过滤掉 publicTools 中已经存在于 pageResult.getRecords() 的元素
+        List<ToolEntity> uniquePublicTools = new ArrayList<>();
+        for (ToolEntity tool : publicTools) {
+            if (!recordIds.contains(tool.getId())) {
+                uniquePublicTools.add(tool);
+            }
+        }
+
+        // 添加不重复的公共工具
+        uniquePublicTools.addAll(pageResult.getRecords());
+
+        tableDataInfo.setRows(uniquePublicTools);
         tableDataInfo.setTotal(pageResult.getTotal() + publicTools.size());
 
         return tableDataInfo;
