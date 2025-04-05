@@ -9,6 +9,8 @@ import com.alinesno.infra.base.search.vector.dto.EmbeddingBean;
 import com.alinesno.infra.base.search.vector.service.IMilvusDataService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.google.gson.Gson;
@@ -102,6 +104,11 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
 
     @Override
     public List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr) {
+        return null;
+    }
+
+    @Override
+    public TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query) {
         return null;
     }
 
