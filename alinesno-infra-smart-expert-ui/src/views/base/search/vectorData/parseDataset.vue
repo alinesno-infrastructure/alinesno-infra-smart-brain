@@ -5,7 +5,11 @@
                 <span class="text-large font-600 mr-3" style="font-size: 16px;"> 配置 [{{ currentDataset?.name }}]</span>
             </template>
         </el-page-header>
+        <div style="margin-top:20px">
+            <DatasetList :dataset="currentDataset" />
+        </div>
 
+        <!-- 
         <div style="margin-top:20px">
             <el-tabs :tab-position="tabPosition" style="height: calc(100vh - 150px)" class="demo-tabs" @tab-click="handleClick">
                 <el-tab-pane style="height: 100%;" label="数据源管理">
@@ -15,7 +19,8 @@
                     <DatasetSearch ref="datasetSearchRef" />
                 </el-tab-pane>
             </el-tabs>
-        </div>
+        </div> 
+        -->
     </div>
 </template>
 
