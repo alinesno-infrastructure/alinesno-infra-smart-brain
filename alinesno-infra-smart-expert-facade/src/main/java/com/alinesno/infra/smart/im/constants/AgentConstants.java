@@ -34,11 +34,11 @@ public interface AgentConstants {
 
     interface Slices {
         String OBSERVATION = "\n观察";
-        String PRE_CONTENT= "\n##上一个环境输出的内容:\n";
-        String DATASET_CONTENT= "\n##你的知识库内容:\n";
-        String REFERENCE_CONTENT= "\n##你引用附件内容:\n";
+        String PRE_CONTENT= "\n## 上一个环境输出的内容:\n";
+        String DATASET_CONTENT= "\n## 你的知识库内容:\n";
+        String REFERENCE_CONTENT= "\n## 你引用附件内容:\n";
         String TASK = "\n当前任务: %s\n\n开始！这对您来说非常重要，请充分利用可用工具并给出您的最佳最终答案，您的工作取决于此！\n\n思考：";
-        String MEMORY = "\n\n# 有用的上下文: \n%s";
+        String MEMORY = "\n\n## 有用的上下文: \n%s";
         String ROLE_PLAYING = "你是 %s。%s\n你的个人目标是: %s";
         String TOOLS = "\n你仅能访问以下工具，绝不能编造未列出的工具：\n\n%s\n\n请使用以下格式：\n\n思考：你应始终考虑要做什么\n行动：采取的行动，只能是[%s]中的一个名称，仅名称，完全按照所写的形式。\n行动输入：行动的输入，只是一个简单的Python字典，用大括号包围，使用\"来包裹键和值。\n观察：行动的结果\n\n一旦收集到所有必要的信息：\n\n思考：我现在知道了最终答案\n最终答案：对原始输入问题的最佳最终答案\n";
         String NO_TOOLS = "为了给出对任务的最佳完整最终答案，请使用确切的以下格式：\n\n思考：我现在可以给出一个很好的答案\n最终答案：我对任务的最佳完整最终答案。\n你的最终答案必须尽可能伟大且完整，它必须描述结果。\n\n我必须使用这些格式，我的工作取决于此！";
