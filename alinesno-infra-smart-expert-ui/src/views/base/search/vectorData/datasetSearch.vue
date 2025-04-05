@@ -2,8 +2,7 @@
     <div>
         <el-row :gutter="20">
             <el-col :span="17">
-                <el-form :model="queryParams" ref="queryRef" :rules="rules" :inline="true" v-show="showSearch"
-                    label-width="100px">
+                <el-form :model="queryParams" ref="queryRef" :rules="rules" :inline="true" v-show="showSearch" label-width="100px">
                     <el-form-item label="搜索条件" prop="searchText">
                         <el-input v-model="queryParams.searchText" placeholder="请输入搜索条件" clearable style="width: 540px"
                             @keyup.enter="handleQuery" />
@@ -293,7 +292,7 @@ defineExpose({
 }
 
 .result-scrollbar {
-    height: calc(100vh - 150px);
+    height: calc(100vh - 250px);
 }
 
 .result-item {
