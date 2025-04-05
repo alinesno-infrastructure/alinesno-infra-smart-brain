@@ -55,7 +55,7 @@
 
 <script setup name="Dataset">
 import {
-  listDataset,
+  toolSelection,
   catalogManifestTreeSelect,
 } from "@/api/base/search/vectorDataset";
 
@@ -126,7 +126,7 @@ function getList() {
   const savedSelectedDatasetIds = [...selectedDatasetIds.value]; // 保存当前已选数据集的ID
   loading.value = true;
 
-  listDataset(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  toolSelection(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
     loading.value = false;
     DatasetList.value = res.rows;
     total.value = res.total;
