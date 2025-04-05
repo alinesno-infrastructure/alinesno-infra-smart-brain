@@ -6,6 +6,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 var prefix = '/api/infra/base/search/vectorDataset/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
+  toolSelection: prefix +"toolSelection" ,
   createUrl: prefix + 'add' ,
   saveUrl: prefix + 'save' ,
   updateUrl: prefix +"modify" ,
@@ -19,6 +20,15 @@ var managerUrl = {
   downloadfile: prefix + "downloadfile"
 }
 
+// 查询数据集列表
+export function toolSelection(query) {
+  return request({
+    url: managerUrl.toolSelection ,
+    method: 'post',
+    params: query
+  })
+}
+
 // 搜索
 export function getSearch(data) {
   return request({
@@ -28,7 +38,7 @@ export function getSearch(data) {
   })
 }
 
-// 查询应用列表
+// 查询数据集列表
 export function listDataset(query) {
   return request({
     url: managerUrl.datatables ,
@@ -37,7 +47,7 @@ export function listDataset(query) {
   })
 }
 
-// 查询应用详细
+// 查询数据集详细
 export function getDataset(DatasetId) {
   return request({
     url: managerUrl.detailUrl + '/' + parseStrEmpty(DatasetId),
@@ -45,7 +55,7 @@ export function getDataset(DatasetId) {
   })
 }
 
-// 新增应用
+// 新增数据集
 export function addDataset(data) {
   return request({
     url: managerUrl.saveUrl ,
@@ -54,7 +64,7 @@ export function addDataset(data) {
   })
 }
 
-// 修改应用
+// 修改数据集
 export function updateDataset(data) {
   return request({
     url: managerUrl.updateUrl ,
@@ -63,7 +73,7 @@ export function updateDataset(data) {
   })
 }
 
-// 删除应用
+// 删除数据集
 export function delDataset(DatasetId) {
   return request({
     url: managerUrl.removeUrl + '/' + parseStrEmpty(DatasetId),
@@ -71,7 +81,7 @@ export function delDataset(DatasetId) {
   })
 }
 
-// 应用密码重置
+// 数据集密码重置
 export function resetDatasetPwd(DatasetId, password) {
   const data = {
     DatasetId,
@@ -84,7 +94,7 @@ export function resetDatasetPwd(DatasetId, password) {
   })
 }
 
-// 应用状态修改
+// 数据集状态修改
 export function changeDatasetStatus(DatasetId, status) {
   const data = {
     DatasetId,
