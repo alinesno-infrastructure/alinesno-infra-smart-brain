@@ -6,6 +6,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 var prefix = '/api/infra/base/search/vectorDataset/' ;
 var managerUrl = {
   datatables : prefix +"datatables" ,
+  toolSelection: prefix +"toolSelection" ,
   createUrl: prefix + 'add' ,
   saveUrl: prefix + 'save' ,
   updateUrl: prefix +"modify" ,
@@ -19,6 +20,15 @@ var managerUrl = {
   downloadfile: prefix + "downloadfile",
   catalogManifestTreeSelect: prefix + "catalogManifestTreeSelect",
   updateDatasetConfig: prefix + "updateDatasetConfig"
+}
+
+// 查询数据集列表
+export function toolSelection(query) {
+  return request({
+    url: managerUrl.toolSelection ,
+    method: 'post',
+    params: query
+  })
 }
 
 // 更新数据集配置
