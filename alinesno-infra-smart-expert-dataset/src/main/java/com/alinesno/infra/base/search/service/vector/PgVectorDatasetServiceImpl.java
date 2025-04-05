@@ -6,16 +6,16 @@ import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.base.search.enums.SearchType;
 import com.alinesno.infra.base.search.mapper.VectorDatasetMapper;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
-import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.base.search.vector.service.IPgVectorService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.smart.assistant.adapter.RerankConsumer;
-import com.alinesno.infra.smart.assistant.adapter.dto.RerankOutput;
-import com.alinesno.infra.smart.assistant.adapter.dto.Result;
-import com.alinesno.infra.smart.assistant.adapter.dto.TextRerankRequest;
-import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
+import com.alinesno.infra.smart.assistant.adapter.dto.*;
+import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -98,9 +95,13 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
 
         VectorDatasetEntity vectorDatasetEntity = getById(dto.getDatasetId()) ;
 
+        if(vectorDatasetEntity.getSearchType() == null){
+            vectorDatasetEntity.setSearchType(SearchType.VECTOR.getCode());
+        }
+
         if(vectorDatasetEntity.getSearchType().equals(SearchType.VECTOR.getCode()) && StringUtils.hasLength(dto.getMinRelevance()) && dto.getQuoteLimit() != 0){  // 最新的搜索方式
-            dto.setMinRelevance(vectorDatasetEntity.getMinRelevance()) ;
-            dto.setQuoteLimit(dto.getQuoteLimit());
+            dto.setMinRelevance(vectorDatasetEntity.getMinRelevance() == null ? dto.getMinRelevance() : vectorDatasetEntity.getMinRelevance()) ;
+            dto.setQuoteLimit(vectorDatasetEntity.getQuoteLimit() == 0 ? dto.getQuoteLimit(): vectorDatasetEntity.getQuoteLimit());
 
             if(vectorDatasetEntity.getSearchType().equals(SearchType.VECTOR.getCode())){  // 向量检索
                 list =  pgVectorService.queryVectorDocument(dto) ;
@@ -230,6 +231,53 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
 
         // Assert.isTrue(list != null , "搜索结果为空");
         return list.stream().sorted((o1, o2) -> Float.compare(o2.getScore(), o1.getScore())).collect(Collectors.toList());
+    }
+
+    @Override
+    public TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query) {
+        // TODO: 待处理分页的问题
+        int pageNow = page.getPageNum();
+        int pageSize = page.getPageSize();
+
+        LambdaQueryWrapper<VectorDatasetEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.setEntityClass(VectorDatasetEntity.class) ;
+        query.toWrapper(wrapper);
+
+        Page<VectorDatasetEntity> pageResult = new Page<>(pageNow, pageSize) ;
+        pageResult = this.page(pageResult, wrapper);
+
+        // 查询出公共的工具
+        LambdaQueryWrapper<VectorDatasetEntity> publicWrapper = new LambdaQueryWrapper<>();
+        publicWrapper.eq(VectorDatasetEntity::getAccessPermission, ModelDataScopeOptions.PUBLIC.getValue());
+        List<VectorDatasetEntity> publicTools = this.list(publicWrapper);
+
+        if(publicTools == null){
+            publicTools = new ArrayList<>();
+        }
+
+        TableDataInfo tableDataInfo = new TableDataInfo();
+
+        // 存储 pageResult.getRecords() 中的 id
+        Set<Long> recordIds = new HashSet<>();
+        for (VectorDatasetEntity record : pageResult.getRecords()) {
+            recordIds.add(record.getId());
+        }
+
+        // 过滤掉 publicTools 中已经存在于 pageResult.getRecords() 的元素
+        List<VectorDatasetEntity> uniquePublicTools = new ArrayList<>();
+        for (VectorDatasetEntity tool : publicTools) {
+            if (!recordIds.contains(tool.getId())) {
+                uniquePublicTools.add(tool);
+            }
+        }
+
+        // 添加不重复的公共工具
+        uniquePublicTools.addAll(pageResult.getRecords());
+
+        tableDataInfo.setRows(uniquePublicTools);
+        tableDataInfo.setTotal(pageResult.getTotal() + publicTools.size());
+
+        return tableDataInfo;
     }
 
     /**
