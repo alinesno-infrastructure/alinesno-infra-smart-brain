@@ -3,6 +3,8 @@ package com.alinesno.infra.base.search.service;
 
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
@@ -80,4 +82,12 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @return
      */
     List<DocumentVectorBean> searchMultiDataset(VectorSearchDto dto, List<Long> datasetIdArr);
+
+    /**
+     * 工具选择
+     * @param page
+     * @param query
+     * @return
+     */
+    TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query);
 }
