@@ -123,7 +123,7 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     private String knowledgeBaseIds;
 
     @TableField("selection_tools_data")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "知识库ID列表")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = true , comment = "工具ID列表")
     private String selectionToolsData;
 
     // 是否启用长期记忆功能
