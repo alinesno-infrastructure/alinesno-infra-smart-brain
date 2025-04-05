@@ -156,7 +156,7 @@ export const constantRoutes = [
         path: '/base/search/catalog/index',
         component: () => import('@/views/base/search/catalog/index'),
         name: '/base/search/catalog/index',
-        meta: { title: '目录分类管理', icon: 'dashboard', affix: true }
+        meta: { title: '数据集分类', icon: 'dashboard', affix: true }
       },
       {
         path: '/expert/smart/assistant/role/workflowAgent',
