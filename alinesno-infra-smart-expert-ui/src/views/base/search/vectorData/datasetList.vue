@@ -44,6 +44,13 @@
               </div>
             </template>
           </el-table-column>
+
+          <el-table-column label="测试" align="center" width="300" key="datasetStatus" prop="datasetStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <el-button type="primary" @click="handleTestSearch(scope.row.id)" text icon="Search">向量测试</el-button>
+            </template>
+          </el-table-column>
+
           <el-table-column label="分割模式" align="center" key="description" prop="description" v-if="columns[3].visible"
             :show-overflow-tooltip="true">
             <template #default="scope">
@@ -62,8 +69,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" align="center" width="300" key="datasetStatus" prop="datasetStatus"
-            v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <el-table-column label="状态" align="center" width="300" key="datasetStatus" prop="datasetStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button type="primary" text bg icon="Link">{{scope.row.status}}</el-button>
             </template>
@@ -210,6 +216,11 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog :title="'向量测试'" v-model="vectorTestDialog" width="80%" append-to-body>
+      <DatasetSearch ref="datasetSearchRef" />
+    </el-dialog>
+
   </div>
 </template>
 
@@ -226,6 +237,8 @@ import {
 
 import { reactive } from "vue";
 import { getParam } from "@/utils/ruoyi";
+
+import DatasetSearch from './datasetSearch';
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -244,12 +257,15 @@ const title = ref("");
 const dateRange = ref([]);
 
 const splitterType = ref(null);
+const datasetSearchRef = ref(null);
 
 const deptName = ref("");
 const deptOptions = ref(undefined);
 const initPassword = ref(undefined);
 const postOptions = ref([]);
 const roleOptions = ref([]);
+
+const vectorTestDialog = ref(false);
 
 const splitterTextType = ref([
   {"code": "direct_segmentation", "name": "直接分段"},
@@ -494,6 +510,11 @@ function submitForm() {
       }
     }
   });
+}
+
+/** 向量测试 */
+function handleTestSearch(item) {
+  vectorTestDialog.value = true ;
 }
 
 getList();
