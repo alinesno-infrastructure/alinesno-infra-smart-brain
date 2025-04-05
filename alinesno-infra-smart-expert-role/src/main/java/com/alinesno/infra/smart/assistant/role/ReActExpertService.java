@@ -90,7 +90,7 @@ public class ReActExpertService extends ExpertService {
         handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
 
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
+        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
         boolean isCompleted = false ;  // 是否已经完成
         boolean isToolCompleted = false ;  // 是否已经完成
@@ -235,6 +235,8 @@ public class ReActExpertService extends ExpertService {
 
     /**
      * 获取知识库
+     *
+     * @param goal
      * @param workflowMessage
      * @param taskInfo
      * @param datasetKnowledgeDocumentList
@@ -243,7 +245,8 @@ public class ReActExpertService extends ExpertService {
      * @return
      */
     @NotNull
-    private String getDatasetKnowledgeDocument(MessageEntity workflowMessage,
+    private String getDatasetKnowledgeDocument(String goal,
+                                               MessageEntity workflowMessage,
                                                MessageTaskInfo taskInfo,
                                                List<DocumentVectorBean> datasetKnowledgeDocumentList,
                                                String oneChatId,
@@ -258,7 +261,8 @@ public class ReActExpertService extends ExpertService {
             }
 
             eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
-            datasetKnowledgeDocument = handleDocumentContent(datasetKnowledgeDocumentList,
+            datasetKnowledgeDocument = handleDocumentContent(goal ,
+                    datasetKnowledgeDocumentList,
                     workflowMessage,
                     taskInfo.getAttachments() ,
                     historyPrompt ,
@@ -294,6 +298,7 @@ public class ReActExpertService extends ExpertService {
     /**
      * 处理并合并文档内容
      *
+     * @param goal
      * @param datasetKnowledgeDocumentList
      * @param workflowMessage
      * @param attachments
@@ -301,7 +306,8 @@ public class ReActExpertService extends ExpertService {
      * @param oneChatId
      * @return
      */
-    private String handleDocumentContent(List<DocumentVectorBean> datasetKnowledgeDocumentList,
+    private String handleDocumentContent(String goal,
+                                         List<DocumentVectorBean> datasetKnowledgeDocumentList,
                                          MessageEntity workflowMessage,
                                          List<FileAttachmentDto> attachments,
                                          HistoriesPrompt historyPrompt,
@@ -346,8 +352,8 @@ public class ReActExpertService extends ExpertService {
 
         // 添加知识库内容
         if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList)){
+            sb.append(AgentConstants.Slices.DATASET_CONTENT) ;
             for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
-                sb.append(AgentConstants.Slices.DATASET_CONTENT);
                 sb.append(bean.getDocument_content()).append("\n");
             }
         }
