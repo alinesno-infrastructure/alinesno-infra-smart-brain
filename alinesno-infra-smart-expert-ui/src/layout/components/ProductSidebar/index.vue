@@ -47,7 +47,7 @@ const menuItems = ref([
   { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/scene/index', desc: '场景列表' },
 
   { id: '18', icon: 'fa-solid fa-file-pdf', link: '/base/search/vectorData/index', desc: '数据集管理' },
-  { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '目录分类管理' },
+  { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '数据集分类' },
   
   { id: '6', icon: 'fa-solid fa-pen-nib', link: '/template/smart/assistant/plugin/index', desc: '工具管理' },
   { id: '7', icon: 'fa-solid fa-paper-plane', link: '/template/smart/assistant/secret/index', desc: '密钥管理' },
