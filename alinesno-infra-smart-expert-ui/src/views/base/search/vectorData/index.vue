@@ -56,7 +56,7 @@
         <el-table v-loading="loading" :data="DatasetList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
-          <el-table-column label="数据集名称" align="left" width="300" key="name" prop="name" v-if="columns[1].visible"
+          <el-table-column label="数据集名称" align="left" key="name" prop="name" v-if="columns[1].visible"
             :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
@@ -65,12 +65,12 @@
                 </router-link>
               </div>
               <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" v-copyText="scope.row.id">
-                标识: {{ scope.row.id }} <el-icon>
-                  <CopyDocument />
-                </el-icon>
+                {{ scope.row.description }}
               </div>
             </template>
           </el-table-column>
+
+          <!--
           <el-table-column label="描述信息" align="left" key="description" prop="description" v-if="columns[3].visible">
             <template #default="scope">
               <div class="dataset-description">
@@ -78,10 +78,17 @@
               </div>
             </template>
           </el-table-column>
+          -->
+
           <el-table-column label="访问权限" align="center" width="130" key="accessPermission" prop="accessPermission"
             v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="danger" text bg icon="Link">{{ scope.row.accessPermission }}</el-button>
+              <!-- <el-button type="danger" text bg icon="Link">{{ scope.row.accessPermission }}</el-button> -->
+                <el-button text bg type="primary">
+                  <span v-if="scope.row.accessPermission == 'person'">私有</span>
+                  <span v-if="scope.row.accessPermission == 'org'">组织</span>
+                  <span v-if="scope.row.accessPermission == 'public'">公开</span>
+                </el-button>
             </template>
           </el-table-column>
           <el-table-column label="数据总量" align="center" width="130" key="datasetSize" prop="datasetSize"
@@ -129,6 +136,7 @@
               </el-radio-group>
             </el-form-item>
           </el-col>
+
           <el-col :span="24">
             <el-form-item label="数据集名称" prop="name">
               <el-input v-model="form.name" placeholder="请输入应用名称" maxlength="50" />
@@ -138,20 +146,24 @@
 
         <el-row>
           <el-col :span="24">
-            <el-form-item label="描述信息" prop="description">
-              <el-input v-model="form.description" placeholder="请输入描述信息" maxlength="100" />
+            <el-form-item label="访问权限" prop="accessPermission">
+              <el-radio-group v-model="form.accessPermission" size="large">
+                <el-radio v-for="option in dataScopeOptions" :key="option.code" :value="option.code" :label="option.label">
+                    <el-tooltip class="box-item" effect="dark" :content="option.desc" placement="top-start">
+                  <div style="display: flex;align-items: center;gap: 6px;">
+                      {{ option.text }} <el-icon><QuestionFilled /></el-icon>
+                  </div>
+                    </el-tooltip>
+                </el-radio>
+              </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
 
         <el-row>
           <el-col :span="24">
-            <el-form-item label="访问权限" prop="accessPermission">
-              <el-radio-group v-model="form.accessPermission">
-                <el-radio v-for="option in resourceOptions" :key="option.code" :label="option.code">
-                  {{ option.label }}
-                </el-radio>
-              </el-radio-group>
+            <el-form-item label="描述信息" prop="description">
+              <el-input v-model="form.description" placeholder="请输入描述信息" maxlength="100" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -203,9 +215,10 @@ const dateRange = ref([]);
 const deptName = ref("");
 const deptOptions = ref(undefined);
 
-const resourceOptions = ref([
-  { label: '私人', code: 'private' },
-  { label: '组织', code: 'organization' }
+const dataScopeOptions = ref([
+  { value: 'person', label: 'person', text: '私有', desc: '此数据仅你个人可见和使用' },
+  { value: 'org', label: 'org', text: '组织', desc: '此数据可在组织内部共享和使用' },
+  { value: 'public', label: 'public', text: '公开', desc: '此数据可被所有人访问和查看' }
 ]);
 
 const icons = ref([
@@ -272,10 +285,11 @@ const data = reactive({
       message: "应用名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
+    icon: [{ required: true, message: "图标不能为空", trigger: "blur" }],
     ownerId: [{ required: true, message: "显示名称不能为空", trigger: "blur" }],
     description: [{ required: true, message: "描述信息不能为空", trigger: "blur" }],
     datasetStatus: [{ required: true, message: "域名不能为空", trigger: "blur" }],
-    accessPermission: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
+    accessPermission: [{ required: true, message: "数据范围不能为空", trigger: "blur" }],
     datasetSize: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
   }
 });
