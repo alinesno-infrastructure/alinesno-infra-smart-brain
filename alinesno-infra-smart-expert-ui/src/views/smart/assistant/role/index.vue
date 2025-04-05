@@ -700,7 +700,7 @@ getList();
   img {
     width: 55px;
     height: 55px;
-    border-radius: 3px;
+    border-radius: 8px;
   }
 }
 
