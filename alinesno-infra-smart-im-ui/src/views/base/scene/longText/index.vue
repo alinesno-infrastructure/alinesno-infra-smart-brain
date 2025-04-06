@@ -137,7 +137,7 @@
         <!-- 材料上传界面 -->
         <SceneUploadFile ref="uploadChildComp" />
 
-        <!-- 任务执行面板 -->
+        <!-- 角色选择面板 -->
         <ExecuteHandle ref="executeHandleRef" @openChatBox="openChatBox" @handleGetScene="handleGetScene" />
 
          <!-- 运行抽屉 -->
