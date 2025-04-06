@@ -93,9 +93,6 @@
                 <!-- 渠道为商店时，需要选择分类_end -->
 
                 <!-- 渠道为场景时，需要选择分类_start -->
-                <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="数据处理模型">
-                    <LLMSelector :modelType="'large_language_model'" v-model="configForm.llmModelId" />
-                </el-form-item>
                 <el-form-item v-if="currentConfigChannel.paramKey === 'aip_agent_scene'" label="发布场景类型" prop="sceneId">
                     <el-select
                         v-model="configForm.sceneId"
@@ -113,6 +110,7 @@
                     <el-select
                         v-model="configForm.agentTypeId"
                         placeholder="请选择指定的Agent类型"
+                        @change="handleChangeAgentType"
                         style="width: 100%">
                         <el-option
                             v-for="item in currentConfigChannel.agentTypes"
@@ -121,6 +119,10 @@
                             :value="item.id">
                         </el-option>
                     </el-select>
+                </el-form-item>
+
+                <el-form-item v-if="currentScreenAgent.needDataModel" label="数据处理模型" props="lllmModelId">
+                    <LLMSelector :modelType="'large_language_model'" v-model="configForm.llmModelId" />
                 </el-form-item>
                 <!-- 渠道为场景时，需要选择分类_end -->
 
@@ -245,6 +247,8 @@ const visible = ref(false)
 const shareId = ref(null)
 const currentRoleId = ref(null);
 
+const currentScreenAgent = ref(false);
+
 const showChatWindowConfig = ref(false);
 const showConfigDialog = ref(false);
 const currentConfigChannel = ref({}); // 初始化一个空对象
@@ -300,7 +304,7 @@ const formRules = {
     ] , 
     agentTypeId: [
         { required: true, message: '场景Agent类型ID不能为空', trigger: 'blur' }
-    ]
+    ] 
 };
 
 const updateFormRules = () => {
@@ -482,6 +486,16 @@ const handleChangeSceneType = (selectedId) => {
         currentConfigChannel.value.agentTypeId = null ; 
     }
 
+};
+
+const handleChangeAgentType = (selectedId) => {
+    console.log('selectedId = ' + JSON.stringify(selectedId));
+    // 从currentConfigChannel.value.agentTypes查询到当前的currentScreenAgent
+
+    currentScreenAgent.value = currentConfigChannel.value.agentTypes.find(
+        (item) => item.id === selectedId
+    );
+    
 };
 
 // 渠道下线
