@@ -70,7 +70,7 @@ public class SceneDto extends BaseDto {
     /**
      * 智能助手，包含多个智能助手，用于处理场景的智能操作
      */
-   private List<ScreenAgent>  agents = new ArrayList<>();
+   private List<SceneAgent>  agents = new ArrayList<>();
 
 //    /**
 //     * 管理人员
