@@ -42,6 +42,18 @@ const screenRoutes = [
     name: '/scene/documentReview/index',
     meta: { title: '文档审核场景', icon: 'fa-solid fa-file-pen', affix: true }
   },
+  {
+    path: '/scene/documentReview/documentParser',
+    component: () => import('@/views/base/scene/documentReview/documentParser'),
+    name: '/scene/documentReview/documentParser',
+    meta: { title: '文档审核解析', icon: 'fa-solid fa-file-pen', affix: true }
+  },
+  {
+    path: '/scene/documentReview/documentDataset',
+    component: () => import('@/views/base/scene/documentReview/datasetList'),
+    name: '/scene/documentReview/documentDataset',
+    meta: { title: '文档审核知识库', icon: 'fa-solid fa-file-pen', affix: true }
+  },
   // -->>>>>>>>>>>> 文档审核场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   
   // -->>>>>>>>>>>> 文档阅读场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
