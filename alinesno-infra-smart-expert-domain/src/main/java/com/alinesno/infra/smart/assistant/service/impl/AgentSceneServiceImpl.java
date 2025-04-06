@@ -7,8 +7,8 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
+import com.alinesno.infra.smart.scene.dto.SceneAgent;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
-import com.alinesno.infra.smart.scene.dto.ScreenAgent;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -44,7 +44,7 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
             }
 
             SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoById(sceneId) ;
-            ScreenAgent sceneAgent = SceneEnum.getAgentById(agentTypeId) ;
+            SceneAgent sceneAgent = SceneEnum.getAgentById(agentTypeId) ;
 
             agentSceneEntity.setAgentId(roleId);
 
