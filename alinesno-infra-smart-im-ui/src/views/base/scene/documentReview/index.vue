@@ -21,17 +21,29 @@
                         <div class="review-description">快速识别合同潜在风险，提供专业的风险评估和修改建议</div>
                     </div>
                     <div class="review-upload-container">
-                        <el-upload class="upload-demo" drag
-                            action="https://run.mocky.io/v3/9d059bf9-4660-45f2-925d-ce80ad6c4d15" multiple>
+                        <el-upload 
+                            class="upload-demo" 
+                            drag
+                            :file-list="imageUrl"
+                            :action="upload.url + '?sceneId=' + currentSceneInfo.id" 
+                            :auto-upload="true" 
+                            accept=".doc,.docx" 
+                            :on-success="handleAvatarSuccess" 
+                            :before-upload="beforeAvatarUpload"
+                            :headers="upload.headers" 
+                            multiple>
+
                             <el-icon class="el-icon--upload"><upload-filled /></el-icon>
                             <div class="el-upload__text">
                                 <em>点击</em>或将文档拖拽到这里上传
                             </div>
+
                             <template #tip>
                                 <div class="el-upload__tip">
-                                    单个合同文件的字数不超过10万字，格式支持：pdf/doc/docx
+                                    单个合同文件的字数不超过10万字，格式支持：doc/docx
                                 </div>
                             </template>
+
                         </el-upload>
                     </div>
                     <div class="review-knowledge-base" @click="handleOpenDataset()">
@@ -71,13 +83,17 @@
 
 <script setup>
 import { ref } from 'vue';
+import { ElLoading , ElMessage } from 'element-plus'
 import { getRoleBySceneIdAndAgentType } from '@/api/base/im/scene';
+import { getToken } from "@/utils/auth";
 
 import ExecuteHandle from './executeHandle'
 import RoleSelectPanel from './roleSelectPanel'
 
 // 设置角色
 const roleSelectPanelRef = ref(null)
+
+const uploadLoading = ref(null);
 
 // 角色信息
 const analysisAgentEngineers = ref([]);
@@ -86,9 +102,12 @@ const logicReviewerEngineers = ref([]);
 const currentSceneInfo = ref({});
 
 const route = useRoute();
+const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 import { getScene } from '@/api/base/im/scene/documentReview';
+
+const imageUrl = ref([])
 
 const executeHandleRef = ref(null)
 const sceneId = ref(route.query.sceneId)
@@ -99,6 +118,24 @@ const historyRecords = [
     { sceneId: '4' , title: '大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件' },
     { sceneId: '3' , title: '广西人工智能产业发展白皮书（2024）' }
 ];
+
+/*** 应用导入参数 */
+const upload = reactive({
+  // 是否显示弹出层（应用导入）
+  open: false,
+  // 弹出层标题（应用导入）
+  title: "",
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的应用数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: { Authorization: "Bearer " + getToken() },
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/documentReview/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
 
 historyRecords.forEach(record => {
     record.hover = false;
@@ -133,6 +170,41 @@ const openExecuteHandle = () => {
     executeHandleRef.value.handleOpen(currentSceneInfo.value , analysisAgentEngineers.value , logicReviewerEngineers.value);
 }
 
+/** 图片上传成功 */
+const handleAvatarSuccess = (response, uploadFile) => {
+  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
+
+//   form.value.sceneBanner = response.data;
+//   console.log('form.icon = ' + form.value.sceneBanner);
+
+    uploadLoading.value.close();
+
+  // 上传成功，进入分析界面
+  router.push({
+      path: '/scene/documentReview/documentParser',
+      query: {
+          sceneId: sceneId.value
+      }
+  })
+
+};
+
+/** 图片上传之前 */
+const beforeAvatarUpload = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!');
+    return false;
+  }
+
+  uploadLoading.value = ElLoading.service({
+      lock: true,
+      text: '文件上传中 ...',
+      background: 'rgba(0, 0, 0, 0.7)'
+  });
+
+  return true;
+};
 
 const handleOpenDataset = () => {
     proxy.$router.push({
