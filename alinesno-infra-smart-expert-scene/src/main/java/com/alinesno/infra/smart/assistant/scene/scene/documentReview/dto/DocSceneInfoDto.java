@@ -7,8 +7,12 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * 文档场景信息传输对象
+ * 用于文档审核场景中传输相关信息和配置
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -16,19 +20,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DocSceneInfoDto extends SceneInfoDto {
 
-    private long sceneId;
+    private long sceneId;  // 场景ID
     private String documentId;   // 文档ID
+    private String documentName; // 文档名称
 
-    private long analysisAgentEngineer; // 分析智能工程师
-    private IndustryRoleEntity analysisAgentEngineerEntity;
+    private long analysisAgentEngineer; // 分析智能工程师ID
+    private IndustryRoleEntity analysisAgentEngineerEntity;  // 分析智能工程师实体
 
-    private long logicReviewerEngineer; // 逻辑审核工程师
-    private IndustryRoleEntity logicReviewerEngineerEntity;
+    private long logicReviewerEngineer; // 逻辑审核工程师ID
+    private IndustryRoleEntity logicReviewerEngineerEntity;  // 逻辑审核工程师实体
 
-    private String contractType;
-    private String reviewPosition;
-    private String reviewList;
-    private String reviewListKnowledgeBase;
-    private String contractOverview;
+    private String contractType;  // 合同类型
+    private String reviewPosition;  // 审查立场
+    private String reviewListOption ;  // 审核列表选项
+    private String reviewList;  // 审核列表
+    private List<DocReviewRulesDto> reviewListDtos ;  // 审核列表
+    private String reviewListKnowledgeBase;  // 审核列表知识库
+    private String contractOverview;  // 合同概述
 
+    private List<Map<String , String>> contractTypes ;   // 合同类型列表，每项包含合同类型的有关信息
 }
