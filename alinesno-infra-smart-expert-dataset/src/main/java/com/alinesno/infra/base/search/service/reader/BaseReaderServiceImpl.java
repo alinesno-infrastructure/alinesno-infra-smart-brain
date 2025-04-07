@@ -53,7 +53,7 @@ public abstract class BaseReaderServiceImpl implements IAttachmentReaderService 
     }
 
 
-    protected String cleanText(String text) {
+    public static String cleanText(String text) {
         // 移除特定短语 'Free eBooks at Planet eBook.com' 及其周围的空白
         text = text.replaceAll("\\s*Free eBooks at Planet eBook\\.com\\s*", "");
         // 移除多余的空格
