@@ -1,73 +1,84 @@
 <template>
 
-    <div class="app-container tpl-app">
-        <div class="search-container-panel">
-            <el-row>
-                <el-col :span="24">
-                    <div class="feature-header-xqbyQk feature-team-box">
-                        <div style="gap: 12px;">
-                            <h1
-                                style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                                我的场景
-                            </h1>
-                        </div>
-                        <div class="search-container-weDuEn">
-                            <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                                :suffix-icon="Search" />
-                        </div>
-                    </div>
-                </el-col>
-            </el-row>
+    <div class="tpl-app" style="display: flex;margin-left: 0px;">
 
-        </div>
-        <div class="header">
-            <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
-        </div>
+        <SideTypePanel />
 
-        <div class="channel-container-panel" style="margin-top:20px">
-            <el-row>
+        <div style="width: calc(100% - 220px);margin-top: 10px;">
 
-                <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
-                    <div class="scene-card-container" @click="enterScreen(item)">
-                        <article class="scene-card">
-                            <div class="scene-image-container">
-                                <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
+            <div class="search-container-panel">
+                <el-row>
+                    <el-col :span="24">
+                        <div class="feature-header-xqbyQk feature-team-box">
+                            <div style="gap: 12px;">
+                                <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+                                    我的场景
+                                </h1>
                             </div>
-                            <div class="scene-card-content">
-                                <div class="scene-header">
-                                    <span class="scene-title">{{ item.sceneName }}</span>
-                                    <div class="scene-tag">
-                                        <span class="scene-tag-icon"></span>
-                                        <span>{{ item.fieldProp }}</span>
-                                    </div>
-                                </div>
-                                <div class="scene-author-info">
-                                    <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar"
-                                        class="scene-avatar">
-                                    <span class="scene-name">罗小东</span>
-                                    <span class="scene-username">@Easton</span>
-                                </div>
-                                <div class="scene-description">
-                                    {{ item.sceneDesc }}
-                                </div>
-                                <div class="semi-divider semi-divider-horizontal"></div>
-                                <div class="scene-footer">
-                                    <div class="scene-price">免费{{ item.usage_count }}</div>
-                                    <div class="scene-stats">
-                                        <span>{{ item.usage_count }}</span>
-                                        <span>使用</span>
-                                    </div>
-                                </div>
+                            <div class="search-container-weDuEn">
+                                <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
+                                    :suffix-icon="Search" />
                             </div>
-                        </article>
-                    </div>
-                </el-col>
+                            <!--
+                            <div>
+                                <el-button type="primary" size="large" @click="handleAddScene">新建场景</el-button>
+                            </div>
+                            -->
+                        </div>
+                    </el-col>
+                </el-row>
 
-                <el-col :span="24" v-if="sceneLists.length == 0">
-                    <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
-                </el-col>
+            </div>
+            <div class="header">
+                <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
+            </div>
 
-            </el-row>
+            <div class="channel-container-panel" style="margin-top:20px">
+                <el-scrollbar style="height:calc(100vh - 180px)">
+                    <el-row>
+                        <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
+                            <div class="scene-card-container" @click="enterScreen(item)">
+                                <article class="scene-card">
+                                    <div class="scene-image-container">
+                                        <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
+                                    </div>
+                                    <div class="scene-card-content">
+                                        <div class="scene-header">
+                                            <span class="scene-title">{{ item.sceneName }}</span>
+                                            <div class="scene-tag">
+                                                <span class="scene-tag-icon"></span>
+                                                <span>{{ item.fieldProp }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="scene-author-info">
+                                            <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar"
+                                                class="scene-avatar">
+                                            <span class="scene-name">罗小东</span>
+                                            <span class="scene-username">@Easton</span>
+                                        </div>
+                                        <div class="scene-description">
+                                            {{ item.sceneDesc }}
+                                        </div>
+                                        <div class="semi-divider semi-divider-horizontal"></div>
+                                        <div class="scene-footer">
+                                            <div class="scene-price">免费{{ item.usage_count }}</div>
+                                            <div class="scene-stats">
+                                                <span>{{ item.usage_count }}</span>
+                                                <span>使用</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                        </el-col>
+
+                        <el-col :span="24" v-if="sceneLists.length == 0">
+                            <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
+                        </el-col>
+
+                    </el-row>
+                </el-scrollbar>
+            </div>
         </div>
 
     </div>
@@ -79,6 +90,8 @@
 import {
     sceneList
 } from '@/api/base/im/scene';
+
+import SideTypePanel from './sideTypePanel'
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
