@@ -35,4 +35,13 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
     }
 
+    @Override
+    public DocReviewSceneEntity getBySceneId(long sceneId) {
+
+        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<DocReviewSceneEntity>();
+        wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
+
+        return getOne(wrapper) ;
+    }
+
 }
