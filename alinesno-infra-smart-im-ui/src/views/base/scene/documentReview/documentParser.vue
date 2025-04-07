@@ -2,11 +2,16 @@
     <div class="app-container docuemnt-parser-container">
         <el-row>
             <el-col :span="12">
-                <div style="font-size: 16px;font-weight: bold;">
-                    大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件
+                <div style="font-size: 16px;font-weight: bold;display: flex;align-items: center;gap:20px; justify-content: flex-start;">
+                    <el-button type="primary" text bg @click="onClickLeft()">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </el-button>
+                    <span>
+                        {{ currentSceneInfo?.documentName }}
+                    </span>
                 </div>
                 <div class="document-wrapper" v-loading="loadingDocument" >
-                    <el-scrollbar class="scrollable-area" style="height: calc(100vh - 130px);margin-top:20px; padding-right:0px">
+                    <el-scrollbar class="scrollable-area" style="height: calc(100vh - 140px);margin-top:20px; padding-right:0px">
                         <div id="fileshow" class="content" style="width: 100%;height: 100vh;border-radius: 5px;" ref="contentRef"></div>
                     </el-scrollbar>
                 </div>
@@ -33,14 +38,21 @@
 
 <script setup>
 
+import { useRouter } from 'vue-router'
+const router = useRouter()
+const route = useRoute()
+
 import DocumentOverview from '@/views/base/scene/documentReview/documentOverview.vue'
 import ReviewCheckList  from '@/views/base/scene/documentReview/reviewChecklist.vue'
 import ReviewResult  from '@/views/base/scene/documentReview/reviewResult.vue'
 
 import axios from "axios";
+import { getScene } from '@/api/base/im/scene/documentReview';
 import { getPreviewDocx } from '@/api/base/im/scene/documentReview';
 import { renderAsync } from 'docx-preview';
 
+const sceneId = ref(route.query.sceneId)
+const currentSceneInfo = ref({});
 const loadingDocument = ref(true)
 const contentRef = ref(null)
 const currentActive = ref(1)
@@ -50,16 +62,11 @@ const handleStepClick = (index) => {
     currentActive.value = index
 }
 
-// const getDocxContent =() => {
-//     // 在这里调用getPreviewDocx函数获取docx文件内容，并使用renderAsync函数渲染到页面上
-
-// }
-
 const getDocxContent = async() => {
     try {
         loadingDocument.value = true;
 
-        const response = await getPreviewDocx('123');
+        const response = await getPreviewDocx(sceneId.value);
 
         console.log('response.data:' + response); // 打印数据内容
         renderAsync(response, contentRef.value , null  , {
@@ -73,8 +80,29 @@ const getDocxContent = async() => {
         console.error('获取或渲染文档失败', error);
     }
 }
+ 
+const onClickLeft = () => {
+  // 判断历史记录中是否有回退
+  if (history.state?.back) {
+    router.back()
+  } else {
+    router.push('/')
+  }
+}
+
+const handleGetScene = () => {
+    getScene(sceneId.value).then(res => {
+        currentSceneInfo.value = res.data;
+    })
+}
+
+// onMounted(() => {
+//     handleGetScene();
+//     getDocxContent()
+// })
 
 nextTick(() => {
+    handleGetScene();
     getDocxContent()
 })
 
