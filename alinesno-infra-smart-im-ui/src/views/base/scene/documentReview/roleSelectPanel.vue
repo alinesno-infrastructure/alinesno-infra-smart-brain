@@ -5,12 +5,12 @@
 
       <div style="display: flex;align-items: center;gap: 10px;font-size: 14px;">
         <span>文档分析专员</span>
-        <img class="review-agent" :src="imagePathByPath(props.currentSeneInfo.analysisAgentEngineerEntity?.roleAvatar)" />
+        <img v-if="props.currentSeneInfo.analysisAgentEngineerEntity?.roleAvatar" class="review-agent" :src="imagePathByPath(props.currentSeneInfo.analysisAgentEngineerEntity?.roleAvatar)" />
       </div>
 
       <div style="display: flex;align-items: center;gap: 10px;font-size: 14px;">
         <span>文档审核专员</span>
-        <img class="review-agent" :src="imagePathByPath(props.currentSeneInfo.logicReviewerEngineerEntity?.roleAvatar)" />
+        <img v-if="props.currentSeneInfo.logicReviewerEngineerEntity?.roleAvatar" class="review-agent" :src="imagePathByPath(props.currentSeneInfo.logicReviewerEngineerEntity?.roleAvatar)" />
       </div>
 
     </div>
