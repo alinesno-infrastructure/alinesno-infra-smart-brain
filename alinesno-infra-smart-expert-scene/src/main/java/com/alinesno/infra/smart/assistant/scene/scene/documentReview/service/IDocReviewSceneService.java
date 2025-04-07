@@ -18,4 +18,10 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
      */
     void initAgents(DocReviewInitDto dto);
 
+    /**
+     * 根据场景ID获取场景信息
+     * @param sceneId
+     * @return
+     */
+    DocReviewSceneEntity getBySceneId(long sceneId);
 }
