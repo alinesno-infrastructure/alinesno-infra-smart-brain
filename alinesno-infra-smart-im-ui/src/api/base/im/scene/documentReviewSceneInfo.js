@@ -5,7 +5,17 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 var prefix = '/api/infra/smart/assistant/scene/documentReview/sceneInfo/' ;
 
 var managerUrl = {
-  initAgents: prefix +"initAgents"
+  initAgents: prefix +"initAgents",
+  genReviewList: prefix +"genReviewList"
+}
+
+// 生成文档审核场景信息
+export function genReviewList(data) {
+  return request({
+    url: managerUrl.genReviewList , 
+    method: 'post' , 
+    data: data
+  })
 }
 
 // 初始化Agent角色
