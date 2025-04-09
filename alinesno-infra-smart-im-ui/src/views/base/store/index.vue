@@ -9,18 +9,17 @@
                     <i class="type.banner" /> 智能体商店
                     <span style="font-size: 13px;color: #777;margin-left:10px;">由组织提供出来公共可用的智能体商店.</span>
                 </h2>
-                        <el-form :model="queryParams" style="padding-left:10px;" ref="queryRef" :inline="true"  label-width="68px">
 
+                <el-form :model="queryParams" style="padding-left:10px;" ref="queryRef" :inline="true"  label-width="68px">
                         <el-form-item label="角色名称" prop="roleName">
                             <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
                             style="width: 240px" @keyup.enter="handleQuery" />
                         </el-form-item>
-
                         <el-form-item>
                             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
                             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
                         </el-form-item>
-                        </el-form>
+                </el-form>
 
                 <section>
                     <div style="font-size: 20px;font-weight: 500;padding: 10px;" v-if="orgRoleList.length > 0">
