@@ -1,17 +1,13 @@
 package com.alinesno.infra.smart.assistant.publish.controller;
 
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.Role;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
-import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
