@@ -38,6 +38,15 @@ var managerUrl = {
   saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
   updateFlowConfig: prefix + "updateFlowConfig",
   publishRole: prefix + "publishRole",
+  listPublicRole: prefix + "listPublicRole",
+}
+
+// 列出所有公共商店角色
+export function listPublicRole() {
+  return request({
+    url: managerUrl.listPublicRole ,
+    method: 'get'
+  })
 }
 
 // 发布角色
