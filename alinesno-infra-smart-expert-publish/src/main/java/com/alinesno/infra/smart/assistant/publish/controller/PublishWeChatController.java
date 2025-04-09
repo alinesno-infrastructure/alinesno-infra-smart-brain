@@ -1,17 +1,12 @@
 package com.alinesno.infra.smart.assistant.publish.controller;
 
-import cn.hutool.http.server.HttpServerResponse;
-import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.publish.dto.ChannelPublishDTO;
-import com.alinesno.infra.smart.assistant.publish.dto.WechatMessageDto;
-import com.alinesno.infra.smart.assistant.publish.dto.WechatReplyMessageDto;
 import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.assistant.publish.utils.EventDispatcher;
 import com.alinesno.infra.smart.assistant.publish.utils.MessageUtil;
 import com.alinesno.infra.smart.assistant.publish.utils.MsgDispatcher;
 import com.alinesno.infra.smart.assistant.publish.utils.WechatSignatureUtils;
-import com.thoughtworks.xstream.XStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -20,8 +15,6 @@ import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
