@@ -38,6 +38,12 @@ public class SceneDto extends BaseDto {
     private String sceneDesc;
 
     /**
+     * 场景范围，定义场景 applicableTo 的范围，可以是全局、部门、用户等
+     */
+    @NotBlank(message = "场景范围不能为空")
+    private String sceneScope ;
+
+    /**
      * 场景数量，表示与此场景相关的项目或元素的数量
      */
     private Integer sceneCount;
