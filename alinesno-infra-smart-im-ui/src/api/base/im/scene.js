@@ -8,6 +8,7 @@ var managerUrl = {
   createScene: prefix + "saveOrUpdate" , 
   getScene: prefix +"getScene",
   sceneList: prefix +"sceneList",
+  sceneListByPage: prefix +"sceneListByPage",
   uploadOss: prefix +"uploadOss",
   updateLeaderRole: prefix +"updateLeaderRole",
   supportScene: prefix +"supportScene",
@@ -62,6 +63,15 @@ export function uploadOss(sceneId) {
   return request({
     url: managerUrl.uploadOss + '?sceneId=' + parseStrEmpty(sceneId),
     method: 'get',
+  })
+}
+
+// 场景列表
+export function sceneListByPage(query) {
+  return request({
+    url: managerUrl.sceneListByPage,
+    method: 'get',
+    params: query
   })
 }
 
