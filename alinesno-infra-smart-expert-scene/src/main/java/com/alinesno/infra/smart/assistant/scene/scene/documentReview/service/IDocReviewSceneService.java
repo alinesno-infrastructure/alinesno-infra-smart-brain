@@ -1,8 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
+import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 
 /**
  *
