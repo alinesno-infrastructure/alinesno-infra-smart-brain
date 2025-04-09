@@ -7,10 +7,13 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.enums.HasStatusEnums;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
+import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.constants.ImConstants;
+import com.alinesno.infra.smart.im.dto.ChannelResponseDto;
 import com.alinesno.infra.smart.im.entity.AccountChannelEntity;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.entity.ChannelRoleEntity;
@@ -20,12 +23,18 @@ import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,6 +52,9 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     @Autowired
     private BaseSearchConsumer baseSearchConsumer; ;
 
+    @Autowired
+    private IBaseOrganizationConsumer organizationConsumer ;
+
     @Override
     public void initPersonChannel(long accountId) {
 
@@ -50,7 +62,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         queryPersonPublicWrapper
                 .eq(ChannelEntity::getHasStatus, HasStatusEnums.LEGAL.value)
                 .eq(ChannelEntity::getOperatorId , accountId)
-                .eq(ChannelEntity::getChannelType , ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
+                .eq(ChannelEntity::getChannelType , ChannelType.PRIVATE_CHANNEL.getValue());
 
         List<ChannelEntity> personPublicChannel = list(queryPersonPublicWrapper) ;
 
@@ -60,7 +72,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
             e.setChannelName("个人公共频道");
             e.setChannelDesc("公共频道服务，我的个人公共频道！这是一个开放且充满活力的空间，旨在为所有对技术、创新、生活方式以及个人成长，用于公共交流");
-            e.setChannelType(ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
+            e.setChannelType(ChannelType.PRIVATE_CHANNEL.getValue());
 
             e.setHasStatus(HasStatusEnums.LEGAL.value);
             e.setIcon(ImConstants.DEFAULT_AVATAR) ;
@@ -106,7 +118,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
         updateWrapper.eq(ChannelEntity::getId ,  channelId)
                 .set(ChannelEntity::getHasDelete , HasDeleteEnums.ILLEGAL.value)
-                .notIn(ChannelEntity::getChannelType , ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue());
+                .notIn(ChannelEntity::getChannelType , ChannelType.PRIVATE_CHANNEL.getValue());
 
         this.update(updateWrapper) ;
     }
@@ -161,7 +173,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
         long channelId = 0L;
 
         for(ChannelEntity e : list){
-            if(e.getChannelType().equals(ChannelType.PERSONAL_PUBLIC_CHANNEL.getValue())){
+            if(e.getChannelType().equals(ChannelType.PRIVATE_CHANNEL.getValue())){
                 channelId = e.getId() ;
             }
         }
@@ -232,7 +244,7 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
             ChannelEntity channelEntity = new ChannelEntity() ;
 
             channelEntity.setOrgId(orgId);
-            channelEntity.setChannelType(ChannelType.PUBLIC_CHANNEL.getValue());
+            channelEntity.setChannelType(ChannelType.PRIVATE_CHANNEL.getValue());
             channelEntity.setChannelName("默认频道");
             channelEntity.setChannelDesc("默认频道是用户与系统或其他用户进行初次互动的场所，这里可以查看通用信息或开始创建自己的第一个频道。");
             channelEntity.setChannelKey("default");
@@ -249,6 +261,55 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     public boolean hasRole(long orgId) {
         long count = roleService.count(new LambdaQueryWrapper<IndustryRoleEntity>().eq(IndustryRoleEntity::getOrgId, orgId));
         return count != 0 ;
+    }
+
+    @Override
+    public IPage<ChannelResponseDto> allMyAndPublicChannel(PermissionQuery query , long pageNum, long pageSize) {
+
+        long orgId = query.getOrgId(); // 组织 id
+        long operatorId = query.getOperatorId();  // 创建人员(私有频道)
+
+        String publicChannelType = ChannelType.PUBLIC_CHANNEL.getValue() ;
+        String privateChannelType = ChannelType.PRIVATE_CHANNEL.getValue() ;
+
+        LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(ChannelEntity::getHasDelete, HasDeleteEnums.LEGAL.value);
+
+        // 查询当前组织频道、公共频道、我的私有频道
+        queryWrapper.and(wrapper -> wrapper
+                .eq(ChannelEntity::getOrgId, orgId)
+                .or()
+                .eq(ChannelEntity::getChannelType, publicChannelType)
+                .or(w -> w
+                        .eq(ChannelEntity::getChannelType, privateChannelType)
+                        .eq(ChannelEntity::getOperatorId, operatorId)
+                ));
+
+        queryWrapper.orderByDesc(ChannelEntity::getAddTime);
+
+        IPage<ChannelEntity> page = new Page<>(pageNum, pageSize);
+        page =  this.page(page, queryWrapper);
+
+        // 获取到orgId
+        List<Long> orgIds = page.getRecords().stream()
+                .map(ChannelEntity::getOrgId)
+                .distinct()
+                .toList();
+
+        log.debug("orgIds = {}" , orgIds);
+
+        return page.convert(entity -> {
+
+            ChannelResponseDto dto = new ChannelResponseDto() ;
+            BeanUtils.copyProperties(entity, dto);
+
+            OrganizationDto org = organizationConsumer.findOrg(entity.getOrgId()).getData();
+            if(org != null){
+                dto.setOrgName(org.getOrgName());
+            }
+
+            return dto ;
+        });
     }
 
 }
