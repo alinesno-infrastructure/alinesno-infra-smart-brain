@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
@@ -31,6 +32,7 @@ import com.alinesno.infra.smart.assistant.service.*;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.FilterWordUtils;
@@ -728,6 +730,19 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         BeanUtils.copyProperties(dto , roleReActConfigDto) ;
         setRoleConfigParams(roleReActConfigDto, role);
         update(role);
+    }
+
+    @Override
+    public List<IndustryRoleEntity> listPublicRole(PermissionQuery query) {
+
+        // 从应用商店中获取到角色
+        IAgentStoreService agentStoreService = SpringUtils.getBean(IAgentStoreService.class);
+
+        DatatablesPageBean page = new DatatablesPageBean() ;
+        page.setPageNum(0);
+        page.setPageSize(1000);
+
+        return agentStoreService.findRoleFromStore(page);
     }
 
 }
