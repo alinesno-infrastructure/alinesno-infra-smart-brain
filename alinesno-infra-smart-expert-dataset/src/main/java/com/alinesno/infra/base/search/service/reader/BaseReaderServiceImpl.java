@@ -1,18 +1,15 @@
 package com.alinesno.infra.base.search.service.reader;
 
-import cn.hutool.core.io.FileTypeUtil;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
-import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * BaseReaderServiceImpl
