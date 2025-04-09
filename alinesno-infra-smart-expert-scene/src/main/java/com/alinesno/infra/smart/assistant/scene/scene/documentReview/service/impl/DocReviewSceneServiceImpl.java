@@ -1,10 +1,10 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
-import com.alinesno.infra.smart.assistant.scene.core.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.mapper.DocReviewSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -18,7 +18,7 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
         long sceneId = dto.getSceneId() ;
 
-        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<DocReviewSceneEntity>();
+        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
         long count = count(wrapper) ;
 
@@ -38,7 +38,7 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     @Override
     public DocReviewSceneEntity getBySceneId(long sceneId) {
 
-        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<DocReviewSceneEntity>();
+        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
 
         return getOne(wrapper) ;
