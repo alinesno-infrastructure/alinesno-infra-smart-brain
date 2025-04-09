@@ -23,10 +23,24 @@
             <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入应用名称" clearable style="width: 240px"
               @keyup.enter="handleQuery" />
           </el-form-item>
+          <!-- 
           <el-form-item label="所有者" prop="ownerId" label-width="100px">
             <el-input v-model="queryParams['condition[ownerId|like]']" placeholder="请输入显示名称" clearable
               style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item>
+          </el-form-item> 
+          -->
+
+          <el-form-item label="访问权限" prop="accessPermission" label-width="100px">
+            <el-radio-group v-model="queryParams.accessPermission" label="数据范围" label-width="100px" @change="handleQuery">
+              <el-radio v-for="item in dataScopeOptions" 
+                :key="item.value" 
+                :label="item.value">
+
+                {{ item.text }}
+
+              </el-radio>
+            </el-radio-group>
+          </el-form-item> 
 
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -56,12 +70,21 @@
         <el-table v-loading="loading" :data="DatasetList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
+          <el-table-column width="60" align="center" label="图标" v-if="columns[0].visible">
+            <template #default="scope">
+              <div style="font-size: 20px;color:#3b5998">
+                <i v-if="scope.row.icon" :class="scope.row.icon"></i>  
+                <i v-else class="fa-solid fa-file-pdf"></i>
+              </div>
+            </template>
+          </el-table-column>
+
           <el-table-column label="数据集名称" align="left" key="name" prop="name" v-if="columns[1].visible"
             :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
                 <router-link :to="'/base/search/vectorData/parseDataset?datasetId=' + scope.row.id">
-                <i :class="scope.row.icon"></i>  {{ scope.row.name }}
+                {{ scope.row.name }}
                 </router-link>
               </div>
               <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" v-copyText="scope.row.id">
