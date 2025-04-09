@@ -2,7 +2,7 @@
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
       <el-menu-item index="1" @click="jumpTo">
-        <i class="fa-solid fa-desktop"></i>
+        <i class="fa-solid fa-computer"></i>
       </el-menu-item>
 
       <el-tooltip effect="dark" :content="item.desc" v-for="item in menuItems" :key="item.id" placement="right">
@@ -40,7 +40,7 @@ const footerMenuItems = ref([
 ])
 
 const menuItems = ref([
-
+  { id: '9', icon: 'fa-solid fa-ship', link: '/expert/smart/assistant/workplace/index', desc: '工作台管理' },
   { id: '2', icon: 'fa-solid fa-masks-theater', link: '/expert/smart/assistant/role/index', desc: '专家管理' },
   { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '专家分类' },
   { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道管理' },
