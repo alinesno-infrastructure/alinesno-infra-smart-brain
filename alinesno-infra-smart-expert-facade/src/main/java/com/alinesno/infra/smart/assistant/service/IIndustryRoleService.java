@@ -147,4 +147,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @param dto
      */
     void saveRoleWithWorkflowConfig(RoleFlowConfigDto dto);
+
+    /**
+     * 获取公开角色列表
+     * @param query
+     * @return
+     */
+    List<IndustryRoleEntity> listPublicRole(PermissionQuery query);
 }
