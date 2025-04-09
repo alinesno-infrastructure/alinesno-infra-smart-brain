@@ -15,10 +15,13 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.api.ChannelAgentDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.ChannelResponseDto;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.alinesno.infra.smart.im.service.IChannelRoleService;
 import com.alinesno.infra.smart.im.service.IChannelService;
+import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -106,6 +109,13 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
         return AjaxResult.success() ;
     }
 
+    /**
+     * 列出所有频道类型
+     */
+    @GetMapping("/listAllChannelType")
+    public AjaxResult listAllChannelType(){
+        return AjaxResult.success(ChannelType.getAllChannelTypes()) ;
+    }
 
     /**
      * createChannel
@@ -115,7 +125,11 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     @PostMapping("/createChannel")
     public AjaxResult createChannel(@RequestBody ChannelEntity entity){
 
-       log.debug("entity = {}" , JSONObject.toJSONString(entity));
+        Assert.hasLength(entity.getChannelName(), "频道名称不能为空");
+        Assert.hasLength(entity.getChannelDesc(), "频道描述不能为空");
+        Assert.hasLength(entity.getChannelType(), "频道类型不能为空");
+        // 判断频道类型是否正确
+        Assert.isTrue(ChannelType.isValidChannelType(entity.getChannelType()), "频道类型不正确");
 
         String channelId = service.createChannel(entity) ;
 
@@ -168,7 +182,8 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
         long orgId = CurrentAccountJwt.get().getOrgId() ;
         service.initOrgChannel(orgId);
 
-        List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
+//        List<ChannelEntity> channelEntities = service.allMyChannel(query) ;
+        List<ChannelResponseDto> channelEntities = service.allMyAndPublicChannel(query , 0 , 1000).getRecords() ;
 
         // 判断当前组织是否包含角色
         boolean hasRole = service.hasRole(orgId) ;
