@@ -9,12 +9,18 @@
             <el-input v-model="queryParams.sceneName" placeholder="请输入场景名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
-          <!-- 
-          <el-form-item label="场景类型" prop="toolType" label-width="100px">
-            <el-input v-model="queryParams['condition[toolType|like]']" placeholder="请输入场景类型" clearable
-                      style="width: 240px" @keyup.enter="handleQuery"/>
+
+          <el-form-item label="数据范围" prop="sceneScope" label-width="100px">
+            <el-radio-group v-model="queryParams.sceneScope" label="数据范围" label-width="100px" @change="handleQuery">
+              <el-radio v-for="item in sceneScopeList" 
+                :key="item.value" 
+                :label="item.value">
+
+                {{ item.label }}
+
+              </el-radio>
+            </el-radio-group>
           </el-form-item> 
-          -->
 
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -67,41 +73,42 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="场景名称" align="left" width="250" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="场景名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                {{ scope.row.sceneName }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
-                Key: {{ scope.row.id }}
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column label="场景描述" align="left" key="description" prop="description" v-if="columns[5].visible" :show-overflow-tooltip="true">
-            <template #default="scope">
-              <div>
                 {{ scope.row.sceneDesc }}
               </div>
             </template>
           </el-table-column>
+          <el-table-column label="数据范围" align="left" key="description"  width="180" prop="description" v-if="columns[5].visible" :show-overflow-tooltip="true">
+            <template #default="scope">
+              <i :class="getSceneScopeByType(scope.row.sceneScope)?.icon"></i>
+              {{  getSceneScopeByType(scope.row.sceneScope)?.label }}
+            </template>
+          </el-table-column> 
           <el-table-column label="场景类型" align="center" key="sceneType" width="180" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
+              <!-- 
               <el-button v-if="scope.row.sceneType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i>&nbsp;个人场景</el-button>
               <el-button v-if="scope.row.sceneType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i>&nbsp;私人场景</el-button>
               <el-button v-if="scope.row.sceneType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i>&nbsp;推荐场景</el-button>
-              <el-button v-if="scope.row.sceneType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i>&nbsp;公共场景</el-button>
+              <el-button v-if="scope.row.sceneType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i>&nbsp;公共场景</el-button> 
+              -->
+              <i  :class="getSceneTypeByType(scope.row.sceneType)?.icon" />
+              {{ getSceneTypeByType(scope.row.sceneType)?.sceneName }}
             </template>
           </el-table-column>
 
-          <!--
-          <el-table-column label="成员" align="center" key="sceneType" width="180" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <el-table-column label="智能体" align="center" key="sceneType" width="220" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="primary" @click="configAgent(scope.row)">
-                <i class="fa-solid fa-user-shield"></i>&nbsp;成员管理({{ scope.row.roles.length }})
+                <i class="fa-solid fa-user-shield"></i>&nbsp;智能体配置
               </el-button>
             </template>
           </el-table-column>
-          -->
 
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
@@ -144,7 +151,7 @@
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="SceneRef" label-width="80px">
+      <el-form :model="form" :rules="rules" size="large" ref="SceneRef" label-width="80px">
           <el-row>
             <el-col :span="24" class="editor-after-div">
               <el-form-item
@@ -155,7 +162,6 @@
                     :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
                     list-type="picture-card"
                     :auto-upload="true"
-                    :limit="1"
                     :on-success="handleAvatarSuccess"
                     :before-upload="beforeAvatarUpload"
                     :headers="upload.headers"
@@ -171,14 +177,53 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="场景类型" prop="sceneType">
-              <!-- <el-input v-model="form.sceneType" placeholder="请输入机器人Key" maxlength="50"/> -->
+              <el-radio-group v-model="form.sceneType">
+                <el-radio v-for="item in supportSceneList" 
+                  :key="item.code" 
+                  :value="item.code"
+                  :label="item.code" size="large">
+                  <i :class="item.icon" /> {{ item.sceneName }}
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="频道类型" prop="sceneScope">
+
+              <el-alert title="频道类型提交确认后不可修改" type="warning" :closable="false" show-icon style="margin-bottom: 10px;" />
+
+              <el-radio-group v-model="form.sceneScope" :disabled="form.id">
+                <el-radio v-for="item in sceneScopeList" 
+                  style="margin-top: 10px;margin-bottom: 10px;" 
+                  :key="item.value" 
+                  :value="item.value"
+                  :label="item.value" 
+                  size="large">
+
+                  <div style="padding:10px; display: flex;flex-direction: column;line-height: 1.5rem;">
+                    <span style="font-size:15px;font-weight: bold;">
+                      <i :class="item.icon"></i> {{ item.label }}
+                    </span>
+                    <span style="color:#a5a5a5">
+                      {{  item.desc }}
+                    </span>
+                  </div>
+
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+
+            <!-- 
+            <el-form-item label="数据权限" prop="sceneType">
               <el-radio-group v-model="form.sceneType">
                 <el-radio v-for="item in sceneTypesArr" 
                   :key="item.id" 
                   :value="item.id"
                   :label="item.id" size="large">{{ item.name }}</el-radio>
               </el-radio-group>
-            </el-form-item>
+            </el-form-item> 
+            -->
+
           </el-col>
         </el-row>
         <el-row>
@@ -200,13 +245,14 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" size="large" @click="submitForm">确 定</el-button>
+          <el-button @click="cancel" size="large">取 消</el-button>
         </div>
       </template>
     </el-dialog>
 
     <!-- 应用导入对话框 -->
+    <!-- 
     <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
       <el-upload
           ref="uploadRef"
@@ -243,7 +289,8 @@
           <el-button @click="upload.open = false">取 消</el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> 
+    -->
 
     <el-dialog v-model="configAgentDialogVisible" :title="sceneAgentConfigTitle" width="50%">
         <div style="text-align: center">
@@ -279,8 +326,10 @@ import {
   delScene,
   getScene,
   updateScene,
+  getSceneScope,
   addScene,
-  updateSceneAgent
+  updateSceneAgent,
+  supportScene
 } from "@/api/smart/assistant/scene";
 
 import {
@@ -313,15 +362,18 @@ const imageUrl = ref([])
 // const roleOptions = ref([]);
 
 const sceneTypesArr = [
-  { "id": "long_text", "name": "大文本" },  // 对外公开场景
-  { "id": "leader_model", "name": "管理者" },  // 个人公共场景
+  // { "id": "long_text", "name": "大文本" },  // 对外公开场景
+  // { "id": "leader_model", "name": "管理者" },  // 个人公共场景
 ];
+
+const sceneScopeList = ref([])
 
 const agentList = ref([])
 const configAgentDialogVisible = ref(false)
 const sceneAgentConfigTitle = ref("")
 const sceneAgentList = ref([])
 const currentSceneId = ref(0) ;
+const supportSceneList = ref([])
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -367,17 +419,13 @@ const data = reactive({
     deptId: undefined
   },
   rules: {
-    sceneName: [{required: true, message: "场景名称不能为空", trigger: "blur"}, {
-      min: 2,
-      max: 20,
-      message: "场景名称长度必须介于 2 和 20 之间",
-      trigger: "blur"
-    }],
+    sceneName: [{required: true, message: "场景名称不能为空", trigger: "blur"}, {min: 2, max: 20, message: "场景名称长度必须介于 2 和 20 之间", trigger: "blur" }],
     sceneDesc: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
-    scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
-    hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
-    description: [{required: true, message: "场景描述不能为空", trigger: "blur"}],
-    target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
+    sceneType: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
+    // scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
+    // hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
+    // description: [{required: true, message: "场景描述不能为空", trigger: "blur"}],
+    // target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
   }
 });
 
@@ -402,9 +450,16 @@ function handleQuery() {
   getList();
 };
 
+// /** 图片上传成功 */
+// const handleAvatarSuccess = (response, uploadFile) => {
+//   imageUrl.value = URL.createObjectURL(uploadFile.raw);
+//   form.value.sceneBanner = response.data ;
+// };
+
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
-  imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
   form.value.sceneBanner = response.data ;
 };
 
@@ -558,8 +613,44 @@ const filterAgentMethod = (query, item) => {
   return item ;
 }
 
+/** 通过场景代码获取场景信息 */
+const getSceneTypeByType = (type) => {
+  for (let i = 0; i < supportSceneList.value.length; i++) {
+    const item = supportSceneList.value[i];
+    if(item.code == type){
+      return item ;
+    }
+  }
+}
+
+/** 场景数据权限 */
+const getSceneScopeByType = (type) => {
+  for (let i = 0; i < sceneScopeList.value.length; i++) {
+    const item = sceneScopeList.value[i];
+    if(item.value == type){
+      return item ;
+    }
+  }
+}
+
+/** 支持的场景列表 */
+const handleSupportScene = () => {
+  supportScene().then(res => {
+    supportSceneList.value = res.data ;
+  })
+}
+
+/** 场景数据权限 */
+const handleGetSceneScope = () => {
+  getSceneScope().then(res => {
+    sceneScopeList.value = res.data ;
+  })
+}
+
 getList();
 handleListAllRole();
+handleSupportScene();
+handleGetSceneScope();
 
 </script>
 
