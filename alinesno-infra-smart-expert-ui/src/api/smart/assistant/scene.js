@@ -23,14 +23,52 @@ var managerUrl = {
   joinScene: prefix + "joinScene" ,
   getDefaultSceneId: prefix + "getDefaultSceneId" ,
   updateSceneAgent: prefix + "updateSceneAgent" ,
+  supportScene: prefix + "supportScene" ,
+  getSceneScope: prefix + "getSceneScope" ,
+
+  listAllScene: prefix + "listAllScene" ,
+  listPublicScene: prefix + "listPublicScene" ,
+
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
 }
 
+// 获取到所有场景列表
+export function listAllScene() {
+  return request({
+    url: managerUrl.listAllScene ,
+    method: 'get'
+  })
+}
+
+// 获取到所有公共场景列表
+export function listPublicScene() {
+  return request({
+    url: managerUrl.listPublicScene ,
+    method: 'get'
+  })
+}
+
+// 获取场景范围
+export function getSceneScope() {
+  return request({
+    url: managerUrl.getSceneScope ,
+    method: 'get'
+  })
+}
+
+// 支持的场景列表
+export function supportScene(){
+  return request({
+    url: managerUrl.supportScene , 
+    method: 'get'
+  })
+}
+
 // 更新频道角色列表
-export function updateSceneAgent(screenId , rolesId) {
+export function updateSceneAgent(sceneId , rolesId) {
   const data = {
-    screenId : screenId ,
+    sceneId : sceneId ,
     rolesId : rolesId
   }
   return request({
@@ -65,9 +103,9 @@ export function getDefaultSceneId(){
 }
 
 // 加入频道
-export function joinScene(screenId){
+export function joinScene(sceneId){
   return request({
-    url: managerUrl.joinScene + '?screenId=' + screenId , 
+    url: managerUrl.joinScene + '?sceneId=' + sceneId , 
     method: 'get'
   })
 }
@@ -137,7 +175,7 @@ export function updateScene(data) {
 // 删除频道
 export function removeScene(id) {
   return request({
-    url: managerUrl.removeScene+ '?screenId=' + parseStrEmpty(id),
+    url: managerUrl.removeScene+ '?sceneId=' + parseStrEmpty(id),
     method: 'delete'
   })
 }
