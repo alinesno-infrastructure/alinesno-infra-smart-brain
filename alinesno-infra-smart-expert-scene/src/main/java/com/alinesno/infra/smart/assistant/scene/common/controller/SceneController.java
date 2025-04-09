@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.common.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
+import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -15,16 +16,17 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
+import com.alinesno.infra.smart.scene.enums.SceneScopeType;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.scene.dto.LeaderUpdateDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.alinesno.infra.smart.scene.enums.SceneTypeEnums;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -119,6 +121,14 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
        return AjaxResult.success("操作成功", list);
     }
 
+    /**
+     * 获取到场景数据范围
+     */
+    @GetMapping("/getSceneScope")
+    public AjaxResult getSceneScope() {
+        return AjaxResult.success("操作成功", SceneScopeType.getAllSceneTypes());
+    }
+
 
     /**
      * 保存或更新屏幕场景
@@ -140,6 +150,15 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     }
 
     /**
+     * 保存场景
+     */
+    @DataPermissionSave
+    @PostMapping("/createScene")
+    public AjaxResult createScene(@RequestBody @Validated SceneDto sceneDto) {
+        return this.saveOrUpdate(sceneDto);
+    }
+
+    /**
      * 获取场景列表sceneList
      */
     @DataPermissionQuery
@@ -156,9 +175,35 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         // 调整类型标识
         if(!list.isEmpty()){
             list.forEach(e -> {
-                e.setFieldProp(SceneTypeEnums.getByKey(e.getSceneType()) == null ?
-                        SceneTypeEnums.LARGE_TEXT.getName() :
-                        Objects.requireNonNull(SceneTypeEnums.getByKey(e.getSceneType())).getName()); ;
+                e.setFieldProp(
+                        SceneEnum.getByCode(e.getSceneType()).isPresent() ?
+                                JSON.toJSONString(SceneEnum.getByCode(e.getSceneType()).get().getSceneInfo()):null
+                );
+            });
+        }
+
+        return AjaxResult.success("操作成功", list);
+    }
+
+    /**
+     * 获取场景列表sceneList
+     */
+    @DataPermissionQuery
+    @GetMapping("/sceneListByPage")
+    public AjaxResult sceneListByPage(PermissionQuery query) {
+
+        int pageNow = 0 ;
+        int pageSize = 1000 ;
+
+        List<SceneResponseDto> list = service.sceneListByPage(query , pageNow , pageSize).getRecords() ;
+
+        // 调整类型标识
+        if(!list.isEmpty()){
+            list.forEach(e -> {
+                e.setFieldProp(
+                        SceneEnum.getByCode(e.getSceneType()).isPresent() ?
+                                JSON.toJSONString(SceneEnum.getByCode(e.getSceneType()).get().getSceneInfo()):null
+                );
             });
         }
 
