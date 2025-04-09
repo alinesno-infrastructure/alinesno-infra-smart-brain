@@ -3,11 +3,11 @@ package com.alinesno.infra.base.search.service;
 
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
-import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
-import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 
 import java.util.List;
