@@ -5,8 +5,8 @@ import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScop
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.scene.core.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewRulesService;
+import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
