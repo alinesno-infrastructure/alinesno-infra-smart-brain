@@ -50,14 +50,14 @@ public class GlobalConfigDTO extends BaseDto {
      * 默认生成模型
      * 指定智能体平台的默认生成模型
      */
-    @NotBlank(message = "默认生成模型不能为空")
+//    @NotBlank(message = "默认生成模型不能为空")
     private String defaultLargeModel;
 
     /**
      * 默认图片模型
      * 指定智能体平台的默认图片生成模型
      */
-    @NotBlank(message = "默认图片模型不能为空")
+//    @NotBlank(message = "默认图片模型不能为空")
     private String defaultImageModel;
 
     /**
@@ -77,7 +77,7 @@ public class GlobalConfigDTO extends BaseDto {
         GlobalConfigDTO dto = new GlobalConfigDTO();
 
        dto.setProductName("AIP智能体平台");
-       dto.setThemeStyle("dark");
+       dto.setThemeStyle("light");
        dto.setDisplayService("display");
        dto.setMaxChannelPeople(10);
 
