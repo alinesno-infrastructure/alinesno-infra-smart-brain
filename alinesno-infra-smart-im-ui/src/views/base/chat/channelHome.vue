@@ -7,7 +7,7 @@
           <div class="feature-header-xqbyQk feature-team-box">
             <div style="gap: 12px;">
               <h1>
-                我的频道</h1>
+                频道市场</h1>
             </div>
             <div class="search-container-weDuEn">
               <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索频道" :suffix-icon="Search" />
@@ -76,16 +76,16 @@
                     {{ item.channelName }}
                   </span>
                 </span>
+
                 <div class="semi-space container-center" style="gap: 6px;">
-                  <div class="semi-image avatar-oDHtb3" style="width: 14px; height: 14px;">
-                    <img
-                      src="http://data.linesno.com/switch_header.png"
-                      class="semi-image-img" width="14" height="14">
-                  </div>
-                  <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 2px;">
-                    <span class="semi-typography text" style="max-width: 150px;"><span>Easton</span></span>
+                  <div class="semi-space semi-space-align-center semi-space-horizontal" style="display: flex;flex-direction: row;align-items: center;gap: 5px;">
+                    <span class="semi-typography text">
+                      <i class="fa-solid fa-paper-plane"></i>
+                      {{ item.orgName }}
+                    </span>
                   </div>
                 </div>
+
                 <p class="semi-typography card-desc">
                   <span>
                     {{ truncateString(item.channelDesc, 65) }}
@@ -96,19 +96,21 @@
             </div>
             <div class="semi-divider semi-divider-horizontal"></div>
             <div class="semi-space" style="width: 100%; gap: 8px;display: flex; justify-content: space-between;">
-              <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children"
-                style="display: inline-flex;">
+
+              <div class="semi-space semi-space-align-center card-statics semi-space-horizontal" style="display: flex;align-items: center;gap: 10px;">
+
+                <span class="semi-typography text-h6" v-if="item.channelType == 'public'" ><i class="fa-solid fa-globe"></i> 公共频道</span>
+                <span class="semi-typography text-h6" v-if="item.channelType == 'private'"><i class="fa-solid fa-lock"></i> 私人频道</span>
+                <span class="semi-typography text-h6" v-if="item.channelType == 'org'" ><i class="fa-solid fa-truck-plane"></i> 组织频道</span>
+
                 <div class="semi-space card-statics" style="gap: 8px;">
-                  <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
-                  <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
+                  <span class="semi-typography text-h6"><i class="fa-solid fa-masks-theater"></i> 2.1K</span>
                   <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
                 </div>
               </div>
               
               <div class="platform-container-YOpW3B">
                 <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;" v-if="item.knowledgeType">
-
-                  <!-- 包含则显示-->
                   <img v-if="item.knowledgeType.includes('docx')" src="http://data.linesno.com/dataset_icons/docx.webp" class="knowledge-type-icon" />
                   <img v-if="item.knowledgeType.includes('pdf')" src="http://data.linesno.com/dataset_icons/pdf.webp" class="knowledge-type-icon" />
                 </div>
