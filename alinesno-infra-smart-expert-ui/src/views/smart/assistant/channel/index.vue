@@ -9,14 +9,19 @@
             <el-input v-model="queryParams.channelName" placeholder="请输入频道名称" clearable
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
-          
-          <!-- 
-          <el-form-item label="频道类型" prop="toolType" label-width="100px">
-            <el-input v-model="queryParams.toolType" placeholder="请输入频道类型" clearable
-                      style="width: 240px" @keyup.enter="handleQuery"/>
-          </el-form-item> 
-          -->
 
+          <el-form-item label="数据范围" prop="sceneScope" label-width="100px">
+            <el-radio-group v-model="queryParams.channelType" label="数据范围" label-width="100px" @change="handleQuery">
+              <el-radio v-for="item in channelTypesArr" 
+                :key="item.value" 
+                :label="item.value">
+
+                {{ item.label }}
+
+              </el-radio>
+            </el-radio-group>
+          </el-form-item> 
+          
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -68,29 +73,29 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="频道名称" align="left" width="200" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="频道名称" align="left" key="name" prop="name" v-if="columns[1].visible" >
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
                {{ scope.row.channelName }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
-                Key: {{ scope.row.channelId }}
+                {{ truncateString(scope.row.channelDesc , 50) }}
               </div>
             </template>
           </el-table-column>
+          <!-- 
           <el-table-column label="频道描述" align="left" key="description" prop="description" v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
                 {{ scope.row.channelDesc }}
               </div>
             </template>
-          </el-table-column>
-          <el-table-column label="频道类型" align="center" key="channelType" width="180" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          </el-table-column> 
+          -->
+          <el-table-column label="数据范围" align="center" key="channelType" width="180" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button v-if="scope.row.channelType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i>&nbsp;个人频道</el-button>
-              <el-button v-if="scope.row.channelType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i>&nbsp;私人频道</el-button>
-              <el-button v-if="scope.row.channelType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i>&nbsp;推荐频道</el-button>
-              <el-button v-if="scope.row.channelType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i>&nbsp;公共频道</el-button>
+              <i :class="getChannelTypeByType(scope.row.channelType)?.icon"></i>
+              {{  getChannelTypeByType(scope.row.channelType)?.label }}
             </template>
           </el-table-column>
           <el-table-column label="成员" align="center" key="channelType" width="180" prop="channelType" v-if="columns[2].visible" :show-overflow-tooltip="true">
@@ -141,7 +146,7 @@
 
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="ChannelRef" label-width="80px">
+      <el-form :model="form" :rules="rules" size="large" ref="ChannelRef" label-width="80px">
           <el-row>
             <el-col :span="24" class="editor-after-div">
               <el-form-item
@@ -167,12 +172,27 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="频道类型" prop="channelType">
-              <!-- <el-input v-model="form.channelType" placeholder="请输入机器人Key" maxlength="50"/> -->
-              <el-radio-group v-model="form.channelType">
+
+              <el-alert title="频道类型提交确认后不可修改" type="warning" :closable="false" show-icon style="margin-bottom: 10px;" />
+
+              <el-radio-group v-model="form.channelType" :disabled="form.id">
                 <el-radio v-for="item in channelTypesArr" 
-                  :key="item.id" 
-                  :value="item.id"
-                  :label="item.id" size="large">{{ item.name }}</el-radio>
+                  style="margin-top: 10px;margin-bottom: 10px;" 
+                  :key="item.value" 
+                  :value="item.value"
+                  :label="item.value" 
+                  size="large">
+
+                  <div style="padding:10px; display: flex;flex-direction: column;line-height: 1.5rem;">
+                    <span style="font-size:15px;font-weight: bold;">
+                      <i :class="item.icon"></i> {{ item.label }}
+                    </span>
+                    <span style="color:#a5a5a5">
+                      {{  item.desc }}
+                    </span>
+                  </div>
+
+                </el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -203,6 +223,7 @@
     </el-dialog>
 
     <!-- 应用导入对话框 -->
+    <!-- 
     <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
       <el-upload
           ref="uploadRef"
@@ -239,7 +260,8 @@
           <el-button @click="upload.open = false">取 消</el-button>
         </div>
       </template>
-    </el-dialog>
+    </el-dialog> 
+    -->
 
     <el-dialog v-model="configAgentDialogVisible" :title="channelAgentConfigTitle" width="50%">
         <div style="text-align: center">
@@ -254,7 +276,14 @@
               }"
               :filter-method="filterAgentMethod"
               filter-placeholder="搜索角色" 
-            :data="agentList" />
+            :data="agentList" >
+                <!-- 自定义源列表项 -->
+                <template #default="{ option }">
+                    <div class="aip-el-transfer-panel__item">
+                        <img :src="imagePath(option.avatar)" /> {{ option.label }}
+                    </div>
+                </template>
+          </el-transfer>
         </div>
 
         <template #footer>
@@ -274,13 +303,15 @@ import {
   listChannel,
   delChannel,
   getChannel,
+  listAllChannelType , 
   updateChannel,
   addChannel,
   updateChannelAgent
 } from "@/api/smart/assistant/channel";
 
 import {
-  listAllRole
+  listAllRole , 
+  listPublicRole
 } from '@/api/smart/assistant/role';
 
 import {reactive} from "vue";
@@ -308,12 +339,7 @@ const imageUrl = ref('')
 // const postOptions = ref([]);
 // const roleOptions = ref([]);
 
-const channelTypesArr = [
-  { "id": "9", "name": "公开频道" },  // 对外公开频道
-  { "id": "1", "name": "个人公共频道" },  // 个人公共频道
-  { "id": "3", "name": "推荐频道" },
-  { "id": "2", "name": "私有频道" }
-];
+const channelTypesArr = ref([]);
 
 const agentList = ref([])
 const configAgentDialogVisible = ref(false)
@@ -354,7 +380,9 @@ const columns = ref([
 ]);
 
 const data = reactive({
-  form: {},
+  form: {
+    channelType: 'org'
+  },
   queryParams: {
     pageNum: 1,
     pageSize: 10,
@@ -371,6 +399,7 @@ const data = reactive({
       message: "频道名称长度必须介于 2 和 20 之间",
       trigger: "blur"
     }],
+    channelType: [{required: true, message: "频道类型不能为空", trigger: "blur"}],
     channelDesc: [{required: true, message: "频道类型不能为空", trigger: "blur"}],
     scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
     hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
@@ -516,29 +545,56 @@ function submitForm() {
 };
 
 /** 配置成员 */
-function configAgent(row){
+const configAgent = async(row) => {
+
+    const channelType = row.channelType ;
+    if(channelType == 'org'){
+      await handleListAllRole() ;
+    }else if(channelType == 'public'){
+      await handleListPublicRole();
+    }
 
     configAgentDialogVisible.value = true ;
     channelAgentConfigTitle.value = row.channelName + "成员" ; 
     currentChannelId.value = row.id ;
     channelAgentList.value = row.roles ;
+
 }
 
-/** 获取到所有的角色信息 */
-function handleListAllRole(){
+/** 获取到所有的角色包括公共角色信息 */
+const handleListAllRole = async() => {
 
-  listAllRole().then(res => {
+  const res = await listAllRole() ; // .then(res => {
 
-    for (let i = 0; i < res.data.length ; i++) {
-        let item = res.data[i]
+  for (let i = 0; i < res.data.length ; i++) {
+      let item = res.data[i]
 
-        agentList.value.push({
-          key: item.id ,
-          label: item.roleName , 
-          disabled: false ,
+      agentList.value.push({
+        key: item.id ,
+        avatar: item.roleAvatar,
+        label: item.roleName , 
+        disabled: false ,
+    })
+  }
+
+  // })
+}
+
+/** 获取到所有的公共角色(即在商店里面的角色) */
+const handleListPublicRole = async() => {
+
+  const res = await listPublicRole() ; // .then(res => {
+
+  for (let i = 0; i < res.data.length ; i++) {
+      let item = res.data[i]
+
+      agentList.value.push({
+        key: item.id ,
+        avatar: item.roleAvatar,
+        label: item.roleName, 
       })
-    }
-  })
+  }
+
 }
 
 /** 关闭弹窗 */
@@ -558,8 +614,23 @@ const filterAgentMethod = (query, item) => {
   return item ;
 }
 
+const handleListAllChannelType = () => {
+  listAllChannelType().then(res => {
+    channelTypesArr.value = res.data
+  })
+}
+
+const getChannelTypeByType = (type) => {
+  for (let i = 0; i < channelTypesArr.value.length; i++) {
+    if (channelTypesArr.value[i].value == type) {
+      return channelTypesArr.value[i] ;
+    }
+  }
+}
+
 getList();
-handleListAllRole();
+// handleListAllRole();
+handleListAllChannelType() ;
 
 </script>
 
