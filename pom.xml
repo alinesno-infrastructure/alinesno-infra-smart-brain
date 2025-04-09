@@ -49,6 +49,7 @@
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
+        <module>alinesno-infra-smart-expert-portal</module>  <!-- 场景工作台门户 -->
 
         <module>alinesno-infra-smart-expert-boot</module>  <!-- 启动服务 -->
     </modules>
