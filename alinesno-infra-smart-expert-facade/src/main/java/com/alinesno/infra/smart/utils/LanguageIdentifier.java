@@ -2,7 +2,6 @@ package com.alinesno.infra.smart.utils;
 
 import org.springframework.util.StringUtils;
 import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.parser.ParserException;
 
 import java.util.regex.Pattern;
 
