@@ -15,10 +15,10 @@ import lombok.EqualsAndHashCode;
 public class ChannelEntity extends InfraBaseEntity {
 
     @TableField("channel_desc")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 512, isNull = false, comment = "频道Desc")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 256, isNull = false, comment = "频道Desc")
 	private String channelDesc ;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 256, isNull = false, comment = "频道Icon")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 128, isNull = false, comment = "频道Icon")
 	private String icon ;
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 64, isNull = false, comment = "频道ID")
@@ -27,7 +27,7 @@ public class ChannelEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 50, isNull = false, comment = "频道名")
     private String channelName;
 
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 1, isNull = false, comment = "频道类型")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 10, isNull = false, comment = "频道类型")
     private String channelType ;
 
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true , comment = "频道进入key")
