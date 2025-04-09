@@ -58,10 +58,16 @@ const screenRoutes = [
   
   // -->>>>>>>>>>>> 文档阅读场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
-    path: '/scene/documentReading/index',
-    component: () => import('@/views/base/scene/documentReading/index'),
-    name: '/scene/documentReading/index',
+    path: '/scene/documentReader/index',
+    component: () => import('@/views/base/scene/documentReader/index'),
+    name: '/scene/documentReader/index',
     meta: { title: '文档阅读场景', icon: 'fa-solid fa-book-open', affix: true }
+  },
+  {
+    path: '/scene/documentReader/documentParser',
+    component: () => import('@/views/base/scene/documentReader/documentParser'),
+    name: '/scene/documentReader/documentParser',
+    meta: { title: '文档阅读解析', icon: 'fa-solid fa-file-pen', affix: true }
   },
   // -->>>>>>>>>>>> 文档阅读场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -74,14 +80,14 @@ const screenRoutes = [
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  // -->>>>>>>>>>>> 文案生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // -->>>>>>>>>>>> 短视频生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
-    path: '/scene/copywriting/index',
-    component: () => import('@/views/base/scene/copywriting/index'),
-    name: '/scene/copywriting/index',
-    meta: { title: '文案生成场景', icon: 'fa-solid fa-file-word', affix: true }
+    path: '/scene/videoGeneration/index',
+    component: () => import('@/views/base/scene/videoGeneration/index'),
+    name: '/scene/videoGeneration/index',
+    meta: { title: '短视频生成场景', icon: 'fa-solid fa-file-word', affix: true }
   },
-  // -->>>>>>>>>>>> 文案生成场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  // -->>>>>>>>>>>> 短视频生成场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 会议纪要场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
@@ -152,9 +158,15 @@ export const constantRoutes = [
     children: [
       {
         path: '/index',
-        component: () => import('@/views/base/chat/channelHome'),
+        component: () => import('@/views/base/portal/index'),
         name: '/index',
-        meta: { title: '首页', icon: 'dashboard', affix: true }
+        meta: { title: '组织工作台', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/channel',
+        component: () => import('@/views/base/chat/channelHome'),
+        name: '/channel',
+        meta: { title: '频道列表', icon: 'dashboard', affix: true }
       },
       {
         path: '/scene',
