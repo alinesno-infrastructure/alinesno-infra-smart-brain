@@ -12,7 +12,7 @@
                         <div class="feature-header-xqbyQk feature-team-box">
                             <div style="gap: 12px;">
                                 <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                                    我的场景
+                                    场景市场
                                 </h1>
                             </div>
                             <div class="search-container-weDuEn">
@@ -46,15 +46,18 @@
                                         <div class="scene-header">
                                             <span class="scene-title">{{ item.sceneName }}</span>
                                             <div class="scene-tag">
-                                                <span class="scene-tag-icon"></span>
-                                                <span>{{ item.fieldProp }}</span>
+                                                <!-- <span class="scene-tag-icon"></span> -->
+                                                 <el-button type="primary" size="default" text bg>
+                                                   <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
+                                                </el-button>
+                                                <!-- <span>{{ item.fieldProp }}</span> -->
                                             </div>
                                         </div>
                                         <div class="scene-author-info">
-                                            <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar"
-                                                class="scene-avatar">
-                                            <span class="scene-name">罗小东</span>
-                                            <span class="scene-username">@Easton</span>
+                                            <span class="scene-name">
+                                                <i class="fa-solid fa-paper-plane"></i>
+                                                {{ item.orgName }}
+                                            </span>
                                         </div>
                                         <div class="scene-description">
                                             {{ item.sceneDesc }}
@@ -88,7 +91,8 @@
 <script setup>
 
 import {
-    sceneList
+    sceneList , 
+    sceneListByPage
 } from '@/api/base/im/scene';
 
 import SideTypePanel from './sideTypePanel'
@@ -135,7 +139,7 @@ function enterScreen(item) {
 
 /** 获取场景列表 */
 function handleScreenList() {
-    sceneList().then(res => {
+    sceneListByPage().then(res => {
         sceneLists.value = res.data
     })
 }
