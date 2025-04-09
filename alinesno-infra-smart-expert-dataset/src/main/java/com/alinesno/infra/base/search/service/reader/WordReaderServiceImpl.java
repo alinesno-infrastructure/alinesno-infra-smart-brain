@@ -2,10 +2,10 @@ package com.alinesno.infra.base.search.service.reader;
 
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
+import com.spire.doc.Document;
 import lombok.SneakyThrows;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import com.spire.doc.Document;
 
 import java.io.File;
 
