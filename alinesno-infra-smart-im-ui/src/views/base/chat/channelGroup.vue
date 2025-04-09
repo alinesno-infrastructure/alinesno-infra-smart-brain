@@ -88,21 +88,29 @@
           </el-row>
 
           <el-row>
-              <el-col :span="12">
+              <el-col :span="24">
                 <el-form-item label="频道类型" prop="channelType">
-                  <el-select size="large" v-model="form.channelType" placeholder="选择频道类型">
-                    <el-option label="公共频道" value="9" />
-                    <el-option label="个人频道" value="2" />
-                  </el-select>
+                  <!-- <el-select size="large" v-model="form.channelType" placeholder="选择频道类型">
+                    <el-option label="组织频道" value="org" />
+                    <el-option label="个人频道" value="private" />
+                  </el-select> -->
+
+                  <el-radio-group v-model="form.channelType" size="large">
+                    <el-radio label="org">组织频道</el-radio>
+                    <el-radio label="private">个人频道</el-radio>
+                  </el-radio-group>
+
                 </el-form-item>
               </el-col>
+              <!-- 
               <el-col :span="1">
               </el-col>
               <el-col :span="11" v-if="form.channelType === '9'">
                 <el-form-item label="进入密钥" prop="channelKey">
                     <el-input size="large" v-model="form.channelKey" placeholder="请输入进入密钥" maxlength="30" />
                 </el-form-item>
-              </el-col>
+              </el-col> 
+              -->
           </el-row>
 
         </el-form> 
@@ -142,7 +150,7 @@ const router = useRouter();
 
 const data = reactive({
   form: {
-    channelType: '2'
+    channelType: 'org'
   },
   rules: {
     // channelImage: [{ required: true, message: "频道头像不能为空", trigger: "blur" }],
