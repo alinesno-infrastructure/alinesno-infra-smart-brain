@@ -81,12 +81,16 @@
               </div>
             </template>
           </el-table-column>
+
+          <!--
           <el-table-column label="工具类型" align="center" key="toolType" width="150" prop="pluginType"
             v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               {{ getPluginTypeName(scope.row.toolType) }}
             </template>
           </el-table-column>
+          -->
+
           <el-table-column label="工具范围" align="center" key="toolType" width="150" prop="toolPermission" v-if="columns[2].visible">
             <template #default="scope">
               <el-button text bg type="primary">
