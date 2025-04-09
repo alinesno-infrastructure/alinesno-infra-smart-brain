@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.im.service;
 
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.im.dto.ChannelResponseDto;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
 
@@ -84,4 +86,12 @@ public interface IChannelService extends IBaseService<ChannelEntity> {
      * @return
      */
     boolean hasRole(long orgId);
+
+    /**
+     * 查询我的和公共的频道
+     * @param query
+     * @return
+     */
+    IPage<ChannelResponseDto> allMyAndPublicChannel(PermissionQuery query , long pageNum, long pageSize);
+
 }
