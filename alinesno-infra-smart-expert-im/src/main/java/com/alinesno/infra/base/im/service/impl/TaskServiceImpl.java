@@ -1,7 +1,6 @@
 package com.alinesno.infra.base.im.service.impl;
 
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -10,6 +9,7 @@ import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.AgentUtils;
+import com.alinesno.infra.smart.utils.FilterWordUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
