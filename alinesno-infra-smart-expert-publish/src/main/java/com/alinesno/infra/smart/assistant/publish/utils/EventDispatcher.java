@@ -1,7 +1,8 @@
 package com.alinesno.infra.smart.assistant.publish.utils;
 
-import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Map;
 
 /**
  * 事件消息业务分发器，负责根据不同类型的微信事件消息进行相应的处理和分发。
