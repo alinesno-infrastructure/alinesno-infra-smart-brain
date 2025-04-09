@@ -1,8 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.RoleExecuteEntity;
 import com.alinesno.infra.smart.scene.dto.RoleTaskDto;
+import com.alinesno.infra.smart.scene.entity.RoleExecuteEntity;
 
 import java.util.List;
 
