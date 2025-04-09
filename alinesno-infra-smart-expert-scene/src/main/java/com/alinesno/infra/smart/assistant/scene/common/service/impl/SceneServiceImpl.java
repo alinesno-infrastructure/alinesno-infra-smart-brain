@@ -1,15 +1,25 @@
 package com.alinesno.infra.smart.assistant.scene.common.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
+import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
-import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
-import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
+import com.alinesno.infra.smart.im.dto.ChannelResponseDto;
+import com.alinesno.infra.smart.im.entity.ChannelEntity;
+import com.alinesno.infra.smart.im.enums.ChannelType;
+import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
+import com.alinesno.infra.smart.scene.entity.ChapterEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +36,9 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
 
     @Autowired
     private IChapterService chapterService ;
+
+    @Autowired
+    private IBaseOrganizationConsumer organizationConsumer ;
 
     @Override
     public SceneEntity saveScene(SceneDto sceneDto) {
@@ -80,5 +93,54 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
                 buildMarkdownForChapter(subtitle, markdownBuilder);
             }
         }
+    }
+
+    @Override
+    public IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, int pageNum, int pageSize) {
+
+        long orgId = query.getOrgId(); // 组织 id
+        long operatorId = query.getOperatorId();  // 创建人员(私有频道)
+
+        String publicChannelType = ChannelType.PUBLIC_CHANNEL.getValue() ;
+        String privateChannelType = ChannelType.PRIVATE_CHANNEL.getValue() ;
+
+        LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(SceneEntity::getHasDelete, HasDeleteEnums.LEGAL.value);
+
+        // 查询当前组织频道、公共频道、我的私有频道
+        queryWrapper.and(wrapper -> wrapper
+                .eq(SceneEntity::getOrgId, orgId)
+                .or()
+                .eq(SceneEntity::getSceneScope, publicChannelType)
+                .or(w -> w
+                        .eq(SceneEntity::getSceneScope, privateChannelType)
+                        .eq(SceneEntity::getOperatorId, operatorId)
+                ));
+
+        queryWrapper.orderByDesc(SceneEntity::getAddTime);
+
+        IPage<SceneEntity> page = new Page<>(pageNum, pageSize);
+        page =  this.page(page, queryWrapper);
+
+        // 获取到orgId
+        List<Long> orgIds = page.getRecords().stream()
+                .map(SceneEntity::getOrgId)
+                .distinct()
+                .toList();
+
+        log.debug("orgIds = {}" , orgIds);
+
+        return page.convert(entity -> {
+
+            SceneResponseDto dto = new SceneResponseDto() ;
+            BeanUtils.copyProperties(entity, dto);
+
+            OrganizationDto org = organizationConsumer.findOrg(entity.getOrgId()).getData();
+            if(org != null){
+                dto.setOrgName(org.getOrgName());
+            }
+
+            return dto ;
+        });
     }
 }
