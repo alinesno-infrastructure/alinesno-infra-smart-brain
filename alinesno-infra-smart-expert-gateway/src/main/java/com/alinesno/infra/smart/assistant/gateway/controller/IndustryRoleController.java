@@ -193,6 +193,23 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     }
 
     /**
+     * 列出所有公共的角色
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/listPublicRole")
+    public AjaxResult listPublicRole(PermissionQuery query){
+
+//        LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
+//        wrapper.setEntityClass(IndustryRoleEntity.class);
+//        query.toWrapper(wrapper);
+//        wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
+
+        List<IndustryRoleEntity> roleEntityList = service.listPublicRole(query) ;
+        return AjaxResult.success(roleEntityList) ;
+    }
+
+    /**
      *
      * @return
      */
