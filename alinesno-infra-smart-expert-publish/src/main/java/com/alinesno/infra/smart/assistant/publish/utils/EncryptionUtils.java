@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.publish.utils;
 
+import lombok.extern.slf4j.Slf4j;
+
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -9,7 +11,6 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * 加密和解密工具类，包含 MD5、SHA - 256 和 AES 加密解密方法
