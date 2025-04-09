@@ -8,17 +8,17 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.common.service.ISceneService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.DocReviewSceneEntity;
-import com.alinesno.infra.smart.assistant.scene.core.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocSceneInfoDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -100,7 +100,7 @@ public class DocumentReviewController extends SuperController {
         dto.setAgents(sceneInfoDto.getAgents());
         dto.setSceneId(sceneInfoDto.getId());
 
-        DocSceneInfoDto docSceneInfoDto = new DocSceneInfoDto();
+        DocReviewSceneInfoDto docSceneInfoDto = new DocReviewSceneInfoDto();
         BeanUtils.copyProperties(dto, docSceneInfoDto);
 
         // 查询出Entity信息
