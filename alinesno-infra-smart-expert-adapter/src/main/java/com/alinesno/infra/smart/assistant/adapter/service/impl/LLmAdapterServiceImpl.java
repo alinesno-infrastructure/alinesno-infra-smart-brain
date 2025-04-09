@@ -10,7 +10,6 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.ocr.OcrConfig;
 import com.agentsflex.core.ocr.OcrModel;
-import com.agentsflex.core.ocr.OcrResponse;
 import com.agentsflex.core.reranker.ReRanker;
 import com.agentsflex.core.reranker.ReRankerConfig;
 import com.agentsflex.core.speech.SpeechConfig;
