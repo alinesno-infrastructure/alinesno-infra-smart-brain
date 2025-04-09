@@ -242,8 +242,8 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-$border-color: #4c4d4f;
-$selected-border-color: #262727;
+$border-color: rgb(233, 235, 242) ; // #4c4d4f;
+$selected-border-color: #f5f5f5;
 $selected-bg-color: #262727;
 
 .dialog-description {
