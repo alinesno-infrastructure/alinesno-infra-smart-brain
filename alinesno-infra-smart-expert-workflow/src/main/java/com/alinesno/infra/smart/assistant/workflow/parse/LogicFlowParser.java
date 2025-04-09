@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.workflow.parse;
 
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
