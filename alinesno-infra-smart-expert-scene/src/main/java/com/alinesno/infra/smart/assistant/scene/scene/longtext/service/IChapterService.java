@@ -1,10 +1,10 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.assistant.scene.core.entity.ChapterEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
+import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 
 import java.util.List;
 
