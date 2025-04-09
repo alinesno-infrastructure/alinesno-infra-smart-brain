@@ -17,12 +17,12 @@
       </el-tooltip>
       <el-tooltip effect="dark" content="创建场景" placement="right">
         <el-menu-item index="11" @click="addScreen()">
-          <i class="fa-solid fa-pen-nib"></i>
+          <i class="fa-solid fa-paper-plane"></i>
       </el-menu-item>
       </el-tooltip>
       <el-tooltip effect="dark" content="优化建议" placement="right">
         <el-menu-item index="12" @click="dialogVisible = true">
-          <i class="fa-solid fa-paper-plane"></i>
+          <i class="fa-solid fa-message"></i>
         </el-menu-item>
       </el-tooltip>
     </el-menu>
@@ -71,11 +71,12 @@ const router = useRouter();
 
 // 菜单列表
 const menuItems = ref([
-  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的频道' },
-  { id: '2', icon: 'fa-solid fa-file-signature', link: '/scene', desc: '我的场景' },
-  { id: '3', icon: 'fa-solid fa-store', link: '/store', desc: '智能体商店' },
-  { id: '4', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '我的团队' },
-  { id: '5', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '智能体市场' },
+  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的工作台' },
+  { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道市场' },
+  { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景市场' },
+  { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体商店' },
+  { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织智能体' },
+  { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '模板市场' },
 ]);
 
 // 打开服务市场
