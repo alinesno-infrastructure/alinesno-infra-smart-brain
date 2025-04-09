@@ -75,6 +75,7 @@
           </el-radio-group>
         </el-form-item>
 
+        <!-- 
         <el-divider>默认模型配置</el-divider>
         <div class="default-model-config">
           <el-form-item label="默认生成模型" prop="defaultLargeModel">
@@ -128,7 +129,9 @@
               <template #append>人</template>
             </el-input-number>
           </el-form-item>
-        </div>
+        </div> 
+        -->
+
         <br />
         <el-form-item>
           <el-button type="primary" @click="submitForm('form')">
