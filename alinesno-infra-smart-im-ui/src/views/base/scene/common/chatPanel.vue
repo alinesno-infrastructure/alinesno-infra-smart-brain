@@ -217,7 +217,7 @@ const audioUrl = ref('');
 const transcription = ref('');
 
 // 记录当前的高度差值
-const heightDiff = ref(280);
+const heightDiff = ref(260);
 
 const { proxy } = getCurrentInstance();
 
@@ -237,6 +237,7 @@ const isSpeechSynthesisSupported = 'speechSynthesis' in window;
 
 // 聊天加载
 const streamLoading = ref(null)
+const limitLength = ref(50);
 const chatStreamLoading = ref(false); // 聊天加载
 
 const mdi = new MarkdownIt({
@@ -398,7 +399,7 @@ const handleCopyGenContent = async (item) => {
 const pushResponseMessageList = (newMessage) => {
 
   // 判断messageList长度是否超过10,超过则保留最后10条消息(规避消息太多网页卡顿问题)
-  if (messageList.value.length >= 3) {
+  if (messageList.value.length >= limitLength.value) {
     messageList.value.splice(0, 1);
   }
 
@@ -481,7 +482,7 @@ const updateChatWindowHeight = (heightVal) => {
   if(heightVal > 0){
     heightDiff.value = heightVal + 20;
   }else {
-    heightDiff.value = 280;
+    heightDiff.value = 260;
   }
 };
 
@@ -588,8 +589,8 @@ function handleGetInfo(roleId) {
 const sendMessage = (type) => {
 
   // 获取到上传的文件列表
-  const uploadFiles = attachmentPanelRef.value.handleGetUploadFiles();
-  console.log('handleGetUploadFiles = ' + uploadFiles);
+  const uploadFiles = [] ; // attachmentPanelRef.value.handleGetUploadFiles();
+  // console.log('handleGetUploadFiles = ' + uploadFiles);
 
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
@@ -656,11 +657,18 @@ function setRoleInfo(newRoleInfo) {
 /** 打开运行聊天界面 */
 function openChatBox(roleIdVal , messageVal){
   initChatBoxScroll();
-  chatStreamLoading.value = true ;
 
-  console.log('roleIdVal = ' + roleIdVal + ' , messageVal = ' + messageVal)
+  chatStreamLoading.value = true ;
+  limitLength.value = 3 ;
 
   roleId.value = roleIdVal ; // getParam('roleId')
+  handleGetInfo(roleId.value);
+}
+
+/** 打开运行聊天界面 */
+function openChatBoxWithRole(roleIdVal){
+  initChatBoxScroll();
+  roleId.value = roleIdVal ; 
   handleGetInfo(roleId.value);
 }
 
@@ -678,7 +686,8 @@ onBeforeUnmount(() => {
 
 defineExpose({
   setRoleInfo, 
-  openChatBox
+  openChatBox,
+  openChatBoxWithRole
 })
 
 </script>
