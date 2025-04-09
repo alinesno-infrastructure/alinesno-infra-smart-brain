@@ -302,6 +302,7 @@ defineExpose({
         cursor: pointer;
         flex-direction: row;
         justify-content: start;
+        border-radius: 10px;
 
         .scene-banner {
           i {
