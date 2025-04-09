@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.workflow.nodes.variable;
 
 import lombok.Data;
+
 import java.util.List;
 
 @Data
