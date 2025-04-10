@@ -42,6 +42,12 @@ import {
   listPublicRole
 } from '@/api/smart/assistant/role';
 
+import {
+  updateWorkplaceItem
+} from "@/api/smart/assistant/workplace";
+
+const emit = defineEmits(['getList'])
+
 const router = useRouter();
 const {proxy} = getCurrentInstance();
 
@@ -91,11 +97,24 @@ const handleListPublicRole = async() => {
 function handleCloseAgentConfig(){
   configAgentDialogVisible.value = false ;
 
-  updateWorkplaceAgent(currentWorkplaceId.value , workplaceAgentList.value).then(res => {
+  const data = {
+    workplaceId: currentWorkplaceId.value ,
+    itemIds: workplaceAgentList.value ,
+    itemType: 'agent'
+  }
+  
+  updateWorkplaceItem(data).then(res => {
     proxy.$modal.msgSuccess("更新成功");
-    getList() ;
+    // getList() ;
+    emit('getList')
   })
   
+}
+
+/** 搜索过滤方法 */
+const filterAgentMethod = (query, item) => {
+  // return item.initial.includes(query)
+  return item ;
 }
 
 /** 配置成员 */
@@ -114,7 +133,13 @@ const configAgent = async(row) =>{
     }
 
     currentWorkplaceId.value = row.id ;
-    workplaceAgentList.value = row.roles ;
+
+    // 从scope.row.agentsList列表中获取到id
+    if(row.agentsList){
+      let agentIds = row.agentsList.map(item => item.id) ;
+      console.log('agentIds= ' + agentIds)
+      workplaceAgentList.value = agentIds;
+    }
 }
 
 defineExpose({ 
