@@ -106,7 +106,7 @@
           <el-table-column label="智能体" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="primary" @click="configAgent(scope.row)">
-                <i class="fa-solid fa-user-shield"></i>&nbsp;智能体配置({{ scope.row.agentsList == null ? 0 : scope.row.agentList.length }})
+                <i class="fa-solid fa-user-shield"></i>&nbsp;智能体配置({{ scope.row.agentsList == null ? 0 : scope.row.agentsList.length}})
               </el-button>
             </template>
           </el-table-column>
@@ -120,7 +120,7 @@
           <el-table-column label="应用场景" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="primary" @click="configScene(scope.row)">
-                <i class="fa-solid fa-user-shield"></i>&nbsp;场景配置({{ scope.row.sceneList == null? 0 : scope.row.sceneList.length }})
+                <i class="fa-solid fa-user-shield"></i>&nbsp;场景配置({{ scope.row.scenesList == null? 0 : scope.row.scenesList.length }})
               </el-button>
             </template>
           </el-table-column>
@@ -240,13 +240,13 @@
 
     
     <!-- 配置智能体对话框 -->
-    <ConfigAgentPanel ref="configAgentPanelRef" />
+    <ConfigAgentPanel ref="configAgentPanelRef" @getList="getList" />
 
     <!-- 工作台频道库配置对话框 -->
-    <ConfigChannelPanel ref="configChannelPanelRef" />
+    <ConfigChannelPanel ref="configChannelPanelRef" @getList="getList" />
 
     <!-- 工作台场景配置对话框架 -->
-    <ConfigScenePanel ref="configScenePanelRef" />
+    <ConfigScenePanel ref="configScenePanelRef" @getList="getList" />
 
   </div>
 </template>
@@ -264,7 +264,7 @@ import {
   getWorkplace,
   updateWorkplace,
   addWorkplace,
-  updateWorkplaceAgent
+  // updateWorkplaceAgent
 } from "@/api/smart/assistant/workplace";
 
 // import {
@@ -307,7 +307,7 @@ const configScenePanelRef = ref(null);
 
 const workplaceTypesArr = [
     { "id": "public", "name": "公开工作台", "icon": "fa-solid fa-globe" , "desc":"公开工作台只能选择公共智能体、公开频道、公开场景" },
-    { "id": "org", "name": "组织工作台", "icon": "fa-solid fa-building" , "desc":"组织工作台可以选择公共和组织内的智能体、频道和场景" }
+    { "id": "org", "name": "组织工作台", "icon": "fa-solid fa-truck-plane" , "desc":"组织工作台可以选择公共和组织内的智能体、频道和场景" }
 ];
 
 // const agentList = ref([])
@@ -427,8 +427,8 @@ function resetQuery() {
   dateRange.value = [];
   proxy.resetForm("queryRef");
   queryParams.value.name = undefined;
-  queryParams.value.toolType = undefined;
-  proxy.$refs.deptTreeRef.setCurrentKey(null);
+  queryParams.value.workplaceType = undefined;
+  // proxy.$refs.deptTreeRef.setCurrentKey(null);
   handleQuery();
 };
 
@@ -537,13 +537,6 @@ const configChannel = async(row) =>{
 const configScene = async(row) =>{
   console.log('configScene = ' + configScenePanelRef.value)
   configScenePanelRef.value.configScene(row)
-}
-
-
-/** 搜索过滤方法 */
-const filterAgentMethod = (query, item) => {
-  // return item.initial.includes(query)
-  return item ;
 }
 
 getList();
