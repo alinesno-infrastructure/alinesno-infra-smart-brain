@@ -1,9 +1,11 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.mapper.DocReviewSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +44,29 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
         wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
 
         return getOne(wrapper) ;
+    }
+
+    @Override
+    public void updateSceneAgents(UpdateSceneAgentDto dto) {
+        long sceneId = dto.getSceneId() ;
+
+        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
+        long count = count(wrapper) ;
+
+        DocReviewSceneEntity entity = new DocReviewSceneEntity() ;
+        if(count > 0){
+            entity = getOne(wrapper) ;
+        }
+
+        long analysisAgentEngineer = RoleUtils.findSelectAgentIdByCode(dto , "analysisAgent") ;
+        long logicReviewerEngineer = RoleUtils.findSelectAgentIdByCode(dto , "logicReviewer") ;
+
+        entity.setAnalysisAgentEngineer(analysisAgentEngineer) ;
+        entity.setLogicReviewerEngineer(logicReviewerEngineer) ;
+        entity.setSceneId(sceneId);
+
+        saveOrUpdate(entity) ;
     }
 
 }
