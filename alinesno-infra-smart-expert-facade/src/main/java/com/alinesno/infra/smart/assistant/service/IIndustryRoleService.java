@@ -154,4 +154,11 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     List<IndustryRoleEntity> listPublicRole(PermissionQuery query);
+
+    /**
+     * 获取所有组织角色和公共角色列表
+     * @param query
+     * @return
+     */
+    List<IndustryRoleEntity> listOrgRoleAndPublicRole(PermissionQuery query);
 }
