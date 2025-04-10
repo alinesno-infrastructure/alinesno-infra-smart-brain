@@ -70,9 +70,9 @@
         <el-table v-loading="loading" :data="DatasetList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
-          <el-table-column width="60" align="center" label="图标" v-if="columns[0].visible">
+          <el-table-column width="50px" align="center" label="图标" v-if="columns[0].visible">
             <template #default="scope">
-              <div style="font-size: 20px;color:#3b5998">
+              <div style="font-size: 26px;color:#3b5998">
                 <i v-if="scope.row.icon" :class="scope.row.icon"></i>  
                 <i v-else class="fa-solid fa-file-pdf"></i>
               </div>
@@ -83,7 +83,7 @@
             :show-overflow-tooltip="true">
             <template #default="scope">
               <div>
-                <router-link :to="'/base/search/vectorData/parseDataset?datasetId=' + scope.row.id">
+                <router-link style="font-size:15px;font-weight: bold;" :to="'/base/search/vectorData/parseDataset?datasetId=' + scope.row.id">
                 {{ scope.row.name }}
                 </router-link>
               </div>
