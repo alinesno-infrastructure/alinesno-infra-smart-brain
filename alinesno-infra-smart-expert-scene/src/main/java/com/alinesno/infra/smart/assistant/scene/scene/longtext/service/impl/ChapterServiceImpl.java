@@ -3,6 +3,8 @@ package com.alinesno.infra.smart.assistant.scene.scene.longtext.service.impl;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.mapper.ChapterMapper;
@@ -146,7 +148,22 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         entity.setContentEditor(dto.getChapterEngineer());  // 章节内容工程师
 
         sceneService.updateById(entity);
+    }
 
+    @Override
+    public void updateSceneAgents(UpdateSceneAgentDto dto) {
+        ISceneService sceneService = SpringUtils.getBean(ISceneService.class) ;
+
+        long id = dto.getSceneId();
+        SceneEntity entity = sceneService.getById(id);
+
+        long outlineEngineer = RoleUtils.findSelectAgentIdByCode(dto , "chapterEditor") ;
+        long chapterEngineer = RoleUtils.findSelectAgentIdByCode(dto , "contentEditor") ;
+
+        entity.setChapterEditor(String.valueOf(outlineEngineer));  // 大纲内容工程师
+        entity.setContentEditor(String.valueOf(chapterEngineer));  // 章节内容工程师
+
+        sceneService.updateById(entity);
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
