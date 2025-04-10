@@ -91,12 +91,6 @@
           </el-table-column> 
           <el-table-column label="场景类型" align="center" key="sceneType" width="180" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <!-- 
-              <el-button v-if="scope.row.sceneType == 1" text bg type="primary"><i class="fa-solid fa-user-shield"></i>&nbsp;个人场景</el-button>
-              <el-button v-if="scope.row.sceneType == 2" text bg type="danger"><i class="fa-solid fa-user-ninja"></i>&nbsp;私人场景</el-button>
-              <el-button v-if="scope.row.sceneType == 3" text bg type="success"><i class="fa-solid fa-user-ninja"></i>&nbsp;推荐场景</el-button>
-              <el-button v-if="scope.row.sceneType == 9" text bg type="primary"><i class="fa-solid fa-users-gear"></i>&nbsp;公共场景</el-button> 
-              -->
               <i  :class="getSceneTypeByType(scope.row.sceneType)?.icon" />
               {{ getSceneTypeByType(scope.row.sceneType)?.sceneName }}
             </template>
@@ -213,17 +207,6 @@
               </el-radio-group>
             </el-form-item>
 
-            <!-- 
-            <el-form-item label="数据权限" prop="sceneType">
-              <el-radio-group v-model="form.sceneType">
-                <el-radio v-for="item in sceneTypesArr" 
-                  :key="item.id" 
-                  :value="item.id"
-                  :label="item.id" size="large">{{ item.name }}</el-radio>
-              </el-radio-group>
-            </el-form-item> 
-            -->
-
           </el-col>
         </el-row>
         <el-row>
@@ -251,70 +234,11 @@
       </template>
     </el-dialog>
 
-    <!-- 应用导入对话框 -->
-    <!-- 
-    <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body>
-      <el-upload
-          ref="uploadRef"
-          :limit="1"
-          accept=".xlsx, .xls"
-          :headers="upload.headers"
-          :action="upload.url + '?updateSupport=' + upload.updateSupport"
-          :disabled="upload.isUploading"
-          :on-progress="handleFileUploadProgress"
-          :on-success="handleFileSuccess"
-          :auto-upload="false"
-          drag
-      >
-        <el-icon class="el-icon--upload">
-          <upload-filled/>
-        </el-icon>
-        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
-        <template #tip>
-          <div class="el-upload__tip text-center">
-            <div class="el-upload__tip">
-              <el-checkbox v-model="upload.updateSupport"/>
-              是否更新已经存在的应用数据
-            </div>
-            <span>仅允许导入xls、xlsx格式文件。</span>
-            <el-link type="primary" :underline="false" style="font-size:12px;vertical-align: baseline;"
-                     @click="importTemplate">下载模板
-            </el-link>
-          </div>
-        </template>
-      </el-upload>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button type="primary" @click="submitFileForm">确 定</el-button>
-          <el-button @click="upload.open = false">取 消</el-button>
-        </div>
-      </template>
-    </el-dialog> 
-    -->
-
-    <el-dialog v-model="configAgentDialogVisible" :title="sceneAgentConfigTitle" width="50%">
-        <div style="text-align: center">
-          <el-transfer 
-              v-model="sceneAgentList" 
-              filterable
-              style="text-align: left; width:100%; display: inline-block"
-              :titles="['源角色', '已选择']"
-              :format="{
-                noChecked: '${total}',
-                hasChecked: '${checked}/${total}',
-              }"
-              :filter-method="filterAgentMethod"
-              filter-placeholder="搜索角色" 
-            :data="agentList" />
-        </div>
-
-        <template #footer>
-          <div class="dialog-footer">
-            <el-button @click="configAgentDialogVisible = false">关闭</el-button>
-            <el-button type="primary" @click="handleCloseAgentConfig">确认</el-button>
-          </div>
-        </template>
+    <el-dialog v-model="configAgentDialogVisible" :title="sceneAgentConfigTitle" width="960px">
+      <!-- 配置场景智能体角色 -->
+     <ConfigSceneAgent ref="configSceneAgentRef" />
     </el-dialog>
+
 
   </div>
 </template>
@@ -336,11 +260,14 @@ import {
   listAllRole
 } from '@/api/smart/assistant/role';
 
-import {reactive} from "vue";
+import {nextTick, reactive} from "vue";
+
+import ConfigSceneAgent from "./configSceneAgent.vue"
 
 const router = useRouter();
 const {proxy} = getCurrentInstance();
-// const { sys_normal_disable, sys_Scene_sex } = proxy.useDict("sys_normal_disable", "sys_Scene_sex");
+
+const configSceneAgentRef = ref(null)
 
 const SceneList = ref([]);
 const open = ref(false);
@@ -355,16 +282,7 @@ const dateRange = ref([]);
 
 const imageUrl = ref([])
 
-// const deptName = ref("");
-// const deptOptions = ref(undefined);
-// const initPassword = ref(undefined);
-// const postOptions = ref([]);
-// const roleOptions = ref([]);
-
-const sceneTypesArr = [
-  // { "id": "long_text", "name": "大文本" },  // 对外公开场景
-  // { "id": "leader_model", "name": "管理者" },  // 个人公共场景
-];
+const sceneTypesArr = [];
 
 const sceneScopeList = ref([])
 
@@ -422,10 +340,6 @@ const data = reactive({
     sceneName: [{required: true, message: "场景名称不能为空", trigger: "blur"}, {min: 2, max: 20, message: "场景名称长度必须介于 2 和 20 之间", trigger: "blur" }],
     sceneDesc: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
     sceneType: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
-    // scene: [{required: true, message: "使用场景不能为空", trigger: "blur"}],
-    // hasStatus: [{required: true, message: "状态不能为空", trigger: "blur"}],
-    // description: [{required: true, message: "场景描述不能为空", trigger: "blur"}],
-    // target: [{required: true, message: "应用目标不能为空", trigger: "blur"}],
   }
 });
 
@@ -449,12 +363,6 @@ function handleQuery() {
   queryParams.value.pageNum = 1;
   getList();
 };
-
-// /** 图片上传成功 */
-// const handleAvatarSuccess = (response, uploadFile) => {
-//   imageUrl.value = URL.createObjectURL(uploadFile.raw);
-//   form.value.sceneBanner = response.data ;
-// };
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
@@ -574,9 +482,11 @@ function submitForm() {
 function configAgent(row){
 
     configAgentDialogVisible.value = true ;
-    sceneAgentConfigTitle.value = row.sceneName + "成员" ; 
-    currentSceneId.value = row.id ;
-    sceneAgentList.value = row.roles ;
+    sceneAgentConfigTitle.value = row.sceneName + "配置" ; 
+
+    nextTick(() => {
+      configSceneAgentRef.value.configSceneAgent(row , supportSceneList.value);
+    })
 }
 
 /** 获取到所有的角色信息 */
