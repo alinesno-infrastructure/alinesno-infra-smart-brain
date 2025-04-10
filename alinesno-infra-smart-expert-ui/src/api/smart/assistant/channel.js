@@ -25,7 +25,7 @@ var managerUrl = {
   getDefaultChannelId: prefix + "getDefaultChannelId" ,
   updateChannelAgent: prefix + "updateChannelAgent" ,
   listAllChannel: prefix + "listAllChannel" ,
-  listPublicChannel: prefix + "listPublicChannel" ,
+  // listPublicChannel: prefix + "listPublicChannel" ,
   closeChannelSSE: "/v1/api/infra/base/im/sseChannelTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
 }
@@ -38,13 +38,13 @@ export function listAllChannel() {
   })
 }
 
-// 获取到公共频道信息列表
-export function listPublicChannel() {
-  return request({
-    url: managerUrl.listPublicChannel ,
-    method: 'get'
-  })
-}
+// // 获取到公共频道信息列表
+// export function listPublicChannel() {
+//   return request({
+//     url: managerUrl.listPublicChannel ,
+//     method: 'get'
+//   })
+// }
 
 // 获取到频道信息列表
 export function listAllChannelType() {
