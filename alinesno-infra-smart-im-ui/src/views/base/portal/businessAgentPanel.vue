@@ -1,33 +1,9 @@
 <template>
-    <!-- <el-scrollbar height="100vh"> -->
         <div class="container-main" style="display: flex;flex-direction: row;justify-content: space-between;">
-
-            <!-- <SideTypePanel /> -->
 
             <div style="width: calc(100% - 0px);margin: 0px;" v-loading="fullscreenLoading">
 
-                <!-- 
-                <el-form :model="queryParams" style="padding-left:10px;" ref="queryRef" :inline="true"  label-width="68px">
-                        <el-form-item label="角色名称" prop="roleName">
-                            <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
-                            style="width: 240px" @keyup.enter="handleQuery" />
-                        </el-form-item>
-                        <el-form-item>
-                            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-                            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-                        </el-form-item>
-                </el-form> 
-                -->
-
                 <section>
-                    <!-- 
-                    <div style="font-size: 20px;font-weight: 500;padding: 10px;" v-if="publicRoleList.length > 0">
-                        <i class="fa-solid fa-route"></i> 公共角色
-                        <span style="font-size: 13px;font-weight: normal;">
-                            对外所有组织都可以看到的角色
-                        </span>
-                    </div> 
-                    -->
                     <div class="section-body">
                         <el-row>
                             <el-col :span="6" v-for="(item, i) in publicRoleList" :key="i" style="padding:8px;">
@@ -50,16 +26,10 @@
                                                 </span>
                                             </span>
                                             <div class="semi-space container-center" style="gap: 6px;">
-                                                <div class="semi-image avatar-oDHtb3"
-                                                    style="width: 14px; height: 14px;">
-                                                    <img src="http://data.linesno.com/switch_header.png"
-                                                        class="semi-image-img" style="border-radius: 50%;">
-                                                </div>
-                                                <div class="semi-space semi-space-align-center semi-space-horizontal"
-                                                    style="gap: 2px;">
-                                                    <span class="semi-typography text"
-                                                        style="max-width: 150px;"><span>韦恩W</span></span>
-                                                </div>
+                                                <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    {{ item.orgName }}
+                                                </span>
                                             </div>
                                             <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;margin-bottom:0px">
                                                 <span>
@@ -74,6 +44,7 @@
                                     
                                     <div class="semi-space" style="width: 100%;gap: 8px;display: flex;justify-content: space-between;align-items: center;">
                                         <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children" style="display: inline-flex;">
+
                                             <div class="semi-space card-statics" style="gap: 8px;">
                                                 <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
                                                 <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
@@ -105,7 +76,7 @@
                 </section>
 
 
-                <el-row v-if="publicRoleList.length == 0 && orgRoleList.length == 0">
+                <el-row v-if="publicRoleList.length == 0 && !fullscreenLoading">
                     <el-col :span="24">
                         <el-empty 
                             :image-size="400"
@@ -127,107 +98,29 @@
 
 <script setup name="ServiceList">
 
-import { ElLoading } from 'element-plus'
-import { getAllCatalog } from "@/api/base/im/robot";
 import SnowflakeId from "snowflake-id";
 
-import { getAgentStoreRole } from '@/api/base/im/store';
+import {
+    getWorkplaceItem
+} from "@/api/base/im/workplace"
 
-// import SideTypePanel from './sideTypePanel'
 import learnLogo from '@/assets/icons/data_03.svg';
-
 const snowflake = new SnowflakeId();
 
+const fullscreenLoading = ref(true)
 const router = useRouter();
-const productList = ref([])
-const chatTitle = ref("")
 const dialogVisible = ref(false)
 const roleChatUri = ref("")
 
 const publicRoleList = ref([])
 const orgRoleList = ref([])
-const demoProductList = ref([])
-
-/**  获取产品列表 */
-function handleGetProductList() {
-    // const loading = ElLoading.service({
-    //     lock: true,
-    //     text: 'Loading',
-    // })
-    // getAllCatalog().then(response => {
-    //     console.log('response = ' + response);
-    //     productList.value = response.data;
-
-    //     // 循环处理 jsonData.data 数组中的每一个元素
-    //     response.data.forEach(item => {
-    //         if (demoProductList.value.length < 7) {
-    //             demoProductList.value.push({
-    //                 name: item.name, // 使用 data 中的 name 字段
-    //                 typeDescribe: "", // 如果没有对应的字段，这里可以留空或自定义
-    //                 teamSize: 0, // 如果没有对应的字段，这里可以留空或自定义
-    //                 mainResponsibilities: [item.description], // 使用 data 中的 description 字段作为 responsibilities 的一个元素
-    //                 description: item.description // 使用 data 中的 description 字段
-    //             });
-    //         }
-    //     });
-
-    //     loading.close();
-    // });
-}
-
-const data = reactive({
-  form: {
-    roleAvatar: null,
-    scriptType: 'script'
-  },
-  queryParams: {
-    pageNum: 1,
-    pageSize: 10,
-    roleName: undefined,
-    roleName: undefined,
-    responsibilities: undefined,
-    status: undefined,
-    industryCatalog: undefined
-  },
-  rules: {
-    roleId: [{ required: true, message: "应用编号不能为空", trigger: "blur" }],
-    roleType: [{ required: true, message: "应用类型不能为空", trigger: "blur" }],
-    scriptType: [{ required: true, message: "脚本类型不能为空", trigger: "blur" }],
-    roleName: [{ required: true, message: "角色名称不能为空", trigger: "blur" }, {
-      min: 2,
-      max: 20,
-      message: "角色名称长度必须介于 2 和 20 之间",
-      trigger: "blur"
-    }],
-    responsibilities: [{ required: true, message: "角色描述不能为空", trigger: "blur" }],
-    domain: [{ required: true, message: "所属领域不能为空", trigger: "blur" }],
-    roleLevel: [{ required: true, message: "角色级别不能为空", trigger: "blur" }],
-    storagePath: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
-    industryCatalog: [{ required: true, message: "角色类型不能为空", trigger: "blur" }],
-  },
-  chainForm: {
-    roleId: undefined,
-  },
-  chainRules: {
-    chainName: [{ required: true, message: "链路名称不能为空", trigger: "blur" }],
-    elData: [{ required: true, message: "链路流程不能为空", trigger: "blur" }],
-  }
-});
-
-const { queryParams, form, rules, chainForm, chainRules } = toRefs(data);
-
 
 /** 与单个Role发信息 */
 function handleRoleChat(item) {
-
     router.push({
         path: '/single/agentChat',
         query: { 'roleId': item.id, 'channelId': snowflake.generate() }
     })
-
-    // roleChatUri.value = "/agentChat?roleId=" + item.id;
-    // chatTitle.value = item.roleName;
-    // dialogVisible.value = true;
 }
 
 /** 关闭对话框 */
@@ -235,26 +128,16 @@ function handleClose() {
     dialogVisible.value = false;
 }
 
-// handleGetProductList();
-
-const handleAgentStoreRole = () => {
-    getAgentStoreRole().then(response => {
-        console.log('response = ' + response);
-        publicRoleList.value = response.data.publicRoleList || [];
-        orgRoleList.value = response.data.orgRoleList || [];
-
-        // productList.value = response.data;
-        // // 循环处理 jsonData.data 数组中的每一个元素
-        // response.data.forEach(item => {
-        //     if (demoProductList.value.length < 7) {
-        //         demoProductList.value.push({
-        //             name: item.name, // 使用data 中的 name 字段
-        //         })
-        //     }
-        // })
+const handleGetWorkplaceItem = (workplaceId , type) => {
+    getWorkplaceItem(workplaceId , type).then(response => {
+        publicRoleList.value = response.data || [];
+        fullscreenLoading.value = false 
     })
-}
+} 
 
-handleAgentStoreRole();
+// 对外暴露的方法 
+defineExpose({
+    handleGetWorkplaceItem
+})
 
 </script>
