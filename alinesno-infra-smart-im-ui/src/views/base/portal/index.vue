@@ -9,7 +9,7 @@
                 </div>
                 <div class="icon">
                     <div class="title">
-                        {{ currentEnvClusterObj.appName }}
+                        {{ currentWorkplace.name }}
                     </div>
                 </div>
             </div>
@@ -21,10 +21,11 @@
 
                         <div class="card-container" style="margin-right: 4rem;margin-left: 1rem;">
                             <div>
-                                <p><span style="color: rgba(29, 28, 35, 0.6);font-size: 17px;font-weight: 400;line-height: 30px;margin-bottom: 28px;">
-                                        清晰，还充满惊喜和幽默感，保证让你的作品脱颖而出，成为朋友圈的焦点！🔥👀 快来试试“镜界大导演”，让它带你领略创意无限的新世界！🌍🌟
-                                        从此，你不再是孤军奋战的创作者，而是拥有智能助手的电影大师！🎬👑 赶紧来体验吧，让我们一起开启分镜创作的新
-                                    </span></p>
+                                <p>
+                                    <span style="color: rgba(29, 28, 35, 0.6);font-size: 17px;font-weight: 400;line-height: 30px;margin-bottom: 28px;">
+                                        {{ currentWorkplace.description? currentWorkplace.description : defaultDesc }}
+                                    </span>
+                                </p>
                             </div>
                         </div>
 
@@ -58,40 +59,41 @@
                 </h2>
 
                 <!-- 解决方案 -->
+                <BusinessAgentPanel v-if="activeCode === 'agent'" ref="businessAgentPanelRef" />
+                <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
+                <ScenePanel v-if="activeCode === 'scene'" ref="scenePanelRef" />
                 <!-- <el-collapse-transition> -->
-                <transition name="el-fade-in-linear">
-                    <BusinessAgentPanel v-if="activeCode === 'agent'" />
+                <!-- <transition name="el-fade-in-linear">
                 </transition>
                 <transition name="el-fade-in-linear">
-                    <ChannelPanel v-if="activeCode === 'channel'" />
                 </transition>
                 <transition name="el-fade-in-linear">
-                    <ScenePanel v-if="activeCode === 'scene'" />
-                </transition>
+                </transition> -->
                 <!-- </el-collapse-transition> -->
             </div>
 
         </el-scrollbar>
 
-        <CreatePortal />
+        <CreatePortal ref="createPortalRef" @handleHasWorkplace="handleHasWorkplace" />
 
     </div>
 </template>
 
 <script setup name="Index">
 
-// import {
-//   getGreeting
-// } from '@/api/console/dashboard'
+import {
+    isHasWorkplace , 
+    getCurrentWorkplace 
+} from "@/api/base/im/workplace"
 
-// import DashboardProductAll from './dashboard/product-all'
 import BusinessAgentPanel from './businessAgentPanel.vue'
-// import DashboardService from './dashboardService'
 import CreatePortal from './createPortal.vue'
 import ChannelPanel from './channelPanel.vue'
 import ScenePanel from './scenePanel.vue'
-// import SideAgentPanel from './sideAgentPanel.vue'
-// import DashboardNotices from './dashboard/notices.vue'
+
+const scenePanelRef = ref(null);
+const businessAgentPanelRef = ref(null);
+const channelPanelRef = ref(null);
 
 const setupConst = [
     { code: 'agent', label: '单聊智能体', icon: 'fa-solid fa-user-tag' },
@@ -99,17 +101,16 @@ const setupConst = [
     { code: 'scene', label: '应用场景', icon: 'fa-solid fa-sailboat' }
 ];
 
-const chatTitle = ref("")
-const dialogVisible = ref(false)
-const roleChatUri = ref("")
-
-const currentEnvClusterObj = ref({
-    appName: 'GDG人工智能协会',
-    clusterName: '赋能团队创建自主智能体的全生命周期管理平台，驱动业务创新与智能自动化',
+const defaultDesc = ref('AI工作台是融合多种先进技术的综合性工作平台，具备知识管理、内容生成、创作辅助等多种功能，功能包括多模型接入、知识管理、智能创作等功能，能够极大提升工作效率与创新能力，助力企业和个人在数字化时代实现高效、智能的工作模式 。')
+const currentWorkplace = ref({
+    name: 'AIP产品运营工作台',
+    description: defaultDesc.value , 
 })
 
 const activeCode = ref('agent');
 const hoveredCode = ref('');
+const workplaceId = ref(''); 
+const createPortalRef = ref(null);
 
 const isActive = (code) => code === activeCode.value;
 const isHovered = (code) => code === hoveredCode.value;
@@ -117,34 +118,58 @@ const isHovered = (code) => code === hoveredCode.value;
 const handleClick = (code) => {
     activeCode.value = code;
     console.log('code = ' + code);
-};
+
+    nextTick(() => {
+        if(activeCode.value === 'agent'){
+            businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+        }else if(activeCode.value === 'channel'){
+            channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+        }else if(activeCode.value === 'scene'){
+            scenePanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value)
+        }
+    })
+
+    // if(activeCode.value === 'agent'){
+    //     businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+    // }else if(activeCode.value === 'channel'){
+    //     channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+    // }else if(activeCode.value === 'scene'){
+    //     scenePanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+    // }
+}
 
 const handleMouseEnter = (code) => {
     hoveredCode.value = code;
-};
+}
 
 const getNameByCode = (code) => {
     const item = setupConst.find((item) => item.code === code);
     return item ? item.label : '';
-};
+}
 
 const handleMouseLeave = () => {
     hoveredCode.value = '';
-};
+}
 
-// /** 与单个频道发信息 */
-// function handleChannelChat(item){
-//     // roleChatUri.value = "/channelChat?channel=" + item.id;
-//     roleChatUri.value = "http://alinesno-infra-smart-im-ui.beta.smart.infra.linesno.com/channelChat?channel=1"
-//     chatTitle.value = item.channelName;
-//     dialogVisible.value = true ;
-// }
+const handleHasWorkplace = () => {
+    isHasWorkplace().then(res => {
+        if(!res.data){
+            createPortalRef.value.openSelectWorkplace();
+        }else{
+            workplaceId.value = res.data;
+            getCurrentWorkplace(workplaceId.value).then(ress => {
+                console.log('ress = ' + ress);
+                currentWorkplace.value = ress.data;
+                handleClick(activeCode.value)
+            })
+        }
+    })
+}
 
-// onMounted(() => {
-//   getGreeting().then(res => {
-//     currentEnvClusterObj.value.appName = res.data;
-//   })
-// })
+
+nextTick(() => {
+    handleHasWorkplace();
+});
 
 </script>
 
