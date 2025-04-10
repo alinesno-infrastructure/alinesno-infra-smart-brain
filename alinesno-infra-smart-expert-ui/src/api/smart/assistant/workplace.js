@@ -22,19 +22,15 @@ var managerUrl = {
   allPublicWorkplace: prefix + "allPublicWorkplace" ,
   joinWorkplace: prefix + "joinWorkplace" ,
   getDefaultWorkplaceId: prefix + "getDefaultWorkplaceId" ,
-  updateWorkplaceAgent: prefix + "updateWorkplaceAgent" ,
+  updateWorkplaceItem: prefix + "updateWorkplaceItem" ,
   closeWorkplaceSSE: "/v1/api/infra/base/im/sseWorkplaceTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
 }
 
 // 更新频道角色列表
-export function updateWorkplaceAgent(channelId , rolesId) {
-  const data = {
-    channelId : channelId ,
-    rolesId : rolesId
-  }
+export function updateWorkplaceItem(data) {
   return request({
-    url: managerUrl.updateWorkplaceAgent , 
+    url: managerUrl.updateWorkplaceItem, 
     method: 'post',
     data: data
   })
