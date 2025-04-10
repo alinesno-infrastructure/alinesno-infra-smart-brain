@@ -32,9 +32,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -139,8 +136,11 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
     public List<ChannelEntity> allPublicChannel(PermissionQuery query) {
 
         LambdaQueryWrapper<ChannelEntity> queryWrapper = new LambdaQueryWrapper<>() ;
-        queryWrapper.setEntityClass(ChannelEntity.class) ;
-        query.toWrapper(queryWrapper);
+
+//        queryWrapper.setEntityClass(ChannelEntity.class) ;
+//        query.toWrapper(queryWrapper);
+
+        queryWrapper.eq(ChannelEntity::getChannelType , ChannelType.PUBLIC_CHANNEL.getValue());
         queryWrapper.eq(ChannelEntity::getHasDelete , HasDeleteEnums.LEGAL.value) ;
 
         return list(queryWrapper) ;
