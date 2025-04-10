@@ -30,7 +30,9 @@ import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.*;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.alinesno.infra.smart.im.service.IMessageService;
@@ -743,6 +745,27 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         page.setPageSize(1000);
 
         return agentStoreService.findRoleFromStore(page);
+    }
+
+    @Override
+    public List<IndustryRoleEntity> listOrgRoleAndPublicRole(PermissionQuery query) {
+
+        IAgentStoreService agentStoreService = SpringUtils.getBean(IAgentStoreService.class);
+
+        // 子查询：查询 agent_id 列表
+        LambdaQueryWrapper<AgentStoreEntity> subQueryWrapper = new LambdaQueryWrapper<>();
+        subQueryWrapper.select(AgentStoreEntity::getAgentId)
+                .eq(AgentStoreEntity::getRoleOrganizationId , AgentConstants.STORE_EMPTY_ORG_ID);
+        List<Object> agentIds = agentStoreService.listObjs(subQueryWrapper);
+
+        // 主查询：构建查询条件
+        LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(IndustryRoleEntity::getOrgId, query.getOrgId())
+                .or()
+                .in(IndustryRoleEntity::getId, agentIds);
+
+        // 执行查询
+        return list(queryWrapper);
     }
 
 }
