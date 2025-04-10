@@ -203,6 +203,27 @@ public class ChannelController extends BaseController<ChannelEntity, IChannelSer
     }
 
     /**
+     * 列出所有的频道listAllChannel
+     */
+    @DataPermissionQuery
+    @GetMapping("/listAllChannel")
+    public AjaxResult listAllChannel(PermissionQuery query){
+        List<ChannelResponseDto> channelEntities = service.allMyAndPublicChannel(query , 0 , 1000).getRecords() ;
+        return AjaxResult.success(channelEntities) ;
+    }
+
+
+//    /**
+//     * 查询所有的公共渠道
+//     */
+//    @DataPermissionQuery
+//    @GetMapping("/listPublicChannel")
+//    public AjaxResult listPublicChannel(PermissionQuery query){
+//        List<ChannelEntity> channelEntities = service.allPublicChannel(query) ;
+//        return AjaxResult.success(channelEntities) ;
+//    }
+
+    /**
      * 加入频道
      * @param channelId
      * @return
