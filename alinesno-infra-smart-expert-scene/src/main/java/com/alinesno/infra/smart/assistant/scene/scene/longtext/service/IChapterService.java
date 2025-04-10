@@ -4,6 +4,7 @@ import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 
 import java.util.List;
@@ -44,4 +45,10 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      * @param dto
      */
     void initAgents(InitAgentsDto dto);
+
+    /**
+     * 更新智能助手
+     * @param dto
+     */
+    void updateSceneAgents(UpdateSceneAgentDto dto);
 }
