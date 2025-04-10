@@ -68,6 +68,11 @@
             <artifactId>alinesno-infra-smart-expert-role</artifactId>
 			<version>${revision}</version>
         </dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-portal</artifactId>
+			<version>${revision}</version>
+		</dependency>
 
 		<!-- 引用公共数据权限_start -->
         <dependency>
