@@ -27,8 +27,7 @@ public enum SceneEnum {
     VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "1", "", "fa-solid fa-video",
             List.of(
                     new SceneAgent(70000701L, "视频脚本生成助手", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
-                    new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。"),
-                    new SceneAgent(70000703L, "视频导出助手", "videoExporter", "将生成的视频内容导出为 MP4 文件。")
+                    new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
             ))),
     DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "1", "", "fa-solid fa-book-open-reader",
             List.of(
