@@ -229,6 +229,7 @@ function submitSceneForm() {
       })
 
       form.value.sceneType = selectedCode.value;
+      form.value.sceneScope = 'org';
 
       createScene(form.value).then(response => {
         proxy.$modal.msgSuccess("新增成功");
@@ -281,7 +282,7 @@ defineExpose({
       width: calc(33% - 10px);
       border-radius: 10px;
       transition: box-shadow 0.3s ease;
-      border: 2px solid transparent;
+      border: 2px solid #f5f5f5;
 
       &:hover {
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
