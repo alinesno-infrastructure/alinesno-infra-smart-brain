@@ -9,6 +9,7 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceAddDto;
+import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceItemDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceEntity;
 import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceSourceEnums;
@@ -43,7 +44,7 @@ public class WorkplaceController extends BaseController<WorkplaceEntity, IWorkpl
     private IWorkplaceService service;
 
     @Autowired
-    private IWorkplaceItemService workplaceItemService; ;
+    private IWorkplaceItemService workplaceItemService;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -92,11 +93,25 @@ public class WorkplaceController extends BaseController<WorkplaceEntity, IWorkpl
     @PostMapping("/createWorkplace")
     public AjaxResult createWorkplace(@RequestBody @Validated WorkplaceAddDto dto){
 
-        Long workplaceId = service.createWorkplace(dto) ;
+//        Assert.isTrue(WorkplaceSourceEnums.isValidate(dto.getWorkplaceType()) , "工作区类型错误");
+
         dto.setWorkplaceSource(WorkplaceSourceEnums.BACKEND.getCode());
+        Long workplaceId = service.createWorkplace(dto) ;
 
         return AjaxResult.success("操作成功" , workplaceId) ;
     }
+
+    /**
+     * 更新工作区Item信息
+     * @param dto
+     * @return
+     */
+    @DataPermissionSave
+    @PostMapping("/updateWorkplaceItem")
+    public AjaxResult updateWorkplaceItem(@RequestBody @Validated WorkplaceItemDto dto){
+        return AjaxResult.success("操作成功" , workplaceItemService.updateWorkplaceItem(dto)) ;
+    }
+
 
     @Override
     public IWorkplaceService getFeign() {
