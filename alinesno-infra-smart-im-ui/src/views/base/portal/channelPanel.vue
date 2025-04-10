@@ -1,65 +1,8 @@
 <template>
 
   <div >
-    <!-- <div class="search-container-panel">
-      <el-row>
-        <el-col :span="24">
-          <div class="feature-header-xqbyQk feature-team-box">
-            <div style="gap: 12px;">
-              <h1>
-                我的频道</h1>
-            </div>
-            <div class="search-container-weDuEn">
-              <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索频道" :suffix-icon="Search" />
-            </div>
-          </div>
-        </el-col>
-      </el-row>
-    </div> -->
 
-    <!-- 
-    <div class="banner-container-panel" v-if="recommendRole">
-      <el-row>
-        <el-col :span="17">
-
-          <div class="card-container">
-            <div>
-              <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
-              <p><span>{{ truncateString(recommendRole.responsibilities , 50) }}</span></p>
-            </div>
-            <el-button type="primary" bg text size="large" @click="handleRoleChat()">
-              <span class="semi-button-content">立即聊聊</span>
-            </el-button>
-          </div>
-
-
-        </el-col>
-        <el-col :span="7">
-
-          <div class="right-container">
-            <img src="http://data.linesno.com/banner/agent_bg.png" class="bot-banner-bg" alt="Banner Background Image">
-
-            <div class="banner-info">
-              <span class="avatar">
-                <img :src="imagePathByPath(recommendRole.roleAvatar)"  alt="Avatar Image">
-              </span>
-              <div class="info-text">
-                <p class="category">{{ recommendRole.roleName }}</p>
-                <h1 class="title">{{ recommendRole.roleName }}</h1>
-                <div class="author-info">
-                  <div class="author-name"><span>罗小东</span></div>
-                  <div class="at-name"><span>@Easton</span></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </el-col>
-      </el-row>
-    </div> 
-    -->
-
-    <div class="channel-container-panel">
+    <div class="channel-container-panel"  v-loading="fullscreenLoading">
 
       <el-row>
 
@@ -80,14 +23,10 @@
                   </span>
                 </span>
                 <div class="semi-space container-center" style="gap: 6px;">
-                  <div class="semi-image avatar-oDHtb3" style="width: 14px; height: 14px;">
-                    <img
-                      src="http://data.linesno.com/switch_header.png"
-                      class="semi-image-img" width="14" height="14">
-                  </div>
-                  <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 2px;">
-                    <span class="semi-typography text" style="max-width: 150px;"><span>Easton</span></span>
-                  </div>
+                    <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                      <i class="fa-solid fa-paper-plane"></i>
+                      {{ item.orgName }}
+                    </span>
                 </div>
                 <p class="semi-typography card-desc">
                   <span>
@@ -99,10 +38,13 @@
             </div>
             <div class="semi-divider semi-divider-horizontal"></div>
             <div class="semi-space" style="width: 100%; gap: 8px;display: flex; justify-content: space-between;">
-              <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children"
-                style="display: inline-flex;">
+              <div class="semi-space semi-space-align-center card-statics semi-space-horizontal" style="display: flex;align-items: center;gap: 10px;">
+
+                <span class="semi-typography text-h6" v-if="item.channelType == 'public'" ><i class="fa-solid fa-globe"></i> 公共频道</span>
+                <span class="semi-typography text-h6" v-if="item.channelType == 'private'"><i class="fa-solid fa-lock"></i> 私人频道</span>
+                <span class="semi-typography text-h6" v-if="item.channelType == 'org'" ><i class="fa-solid fa-truck-plane"></i> 组织频道</span>
+
                 <div class="semi-space card-statics" style="gap: 8px;">
-                  <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
                   <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
                   <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
                 </div>
@@ -120,7 +62,18 @@
             </div>
           </div>
         </el-col>
+
       </el-row>
+
+      <el-row v-if="publicChatChannel.length == 0 && !fullscreenLoading">
+          <el-col :span="24">
+              <el-empty 
+                  :image-size="400"
+                  :image="learnLogo"
+                  description="当前未创建团队，可以进入智能体人才市场选择智能体，或者自行创建团队。" />
+          </el-col>
+      </el-row>
+
     </div>
 
   </div>
@@ -129,38 +82,16 @@
 
 <script setup>
 
-import { ElMessageBox , ElLoading } from 'element-plus'
-
 import {
-  allMyChannel,
-} from '@/api/base/im/channel'
-import { nextTick, ref } from 'vue';
+    getWorkplaceItem
+} from "@/api/base/im/workplace"
 
-import SnowflakeId from "snowflake-id";
+import { ref } from 'vue';
 
-const snowflake = new SnowflakeId();
-
+const fullscreenLoading = ref(true)
+import learnLogo from '@/assets/icons/data_03.svg';
 const router = useRouter();
-// const loading = ref(false)
-
 const publicChatChannel = ref([]);
-const recommendRole = ref(null);
-
-const data = reactive({
-  form: {},
-  queryParams: {
-    total: 100,
-    pageNum: 1,
-    pageSize: 8,
-    roleName: undefined,
-    roleName: undefined,
-    responsibilities: undefined,
-    status: undefined,
-    deptId: undefined
-  },
-});
-
-const { queryParams } = toRefs(data);
 
 function enterChannel(item) {
   router.push({
@@ -169,90 +100,17 @@ function enterChannel(item) {
   })
 }
 
-/** 与单个Role发信息 */
-function handleRoleChat() {
-
-  let id = recommendRole.value.id 
-  router.push({
-      path: '/single/agentChat',
-      query: { 'roleId': id, 'channelId': snowflake.generate() }
+const handleGetWorkplaceItem = (workplaceId , type) => {
+  getWorkplaceItem(workplaceId , type).then(response => {
+      publicChatChannel.value = response.data || [] ;
+      fullscreenLoading.value = false
   })
-}
+} 
 
-/** 查询所所有我在参与的频道 */
-// function handleAllMyChannel() {
-//   loading.value = true;
-//   allMyChannel().then(response => {
-//     let items = response.data;
-
-//     recommendRole.value = response.recommendRole;
-//     publicChatChannel.value = items; 
-
-//     loading.value = false;
-
-//     let hasRole = response.hasRole;  // 判断组织是否包含角色
-//     if (!hasRole) {
-//       // 显示推荐角色
-//         ElMessageBox.confirm('你所有当前组织未包含智能体，是否需要到智能体市场选择体验', '系统提示', { confirmButtonText: '进入智能体市场', cancelButtonText: '后期建立', type: 'warning' })
-//         .then(() => {
-//           router.push({ path: '/agentMarket'})
-//         });
-//     }
-
-//   })
-// }
-
-function handleAllMyChannel() {
-  // loading.value = true;
-
-  const loading = ElLoading.service({
-    lock: true,
-    text: 'Loading',
-    background: 'rgba(0, 0, 0, 0.2)',
-  })
-
-  allMyChannel().then(response => {
-    let items = response.data;
-
-    recommendRole.value = response.recommendRole;
-    publicChatChannel.value = items; 
-
-    loading.close()
-
-    let hasRole = response.hasRole;  // 判断组织是否包含角色
-
-    // 检查用户是否已经做出选择
-    const userHasChosen = localStorage.getItem('userHasChosenRoles');
-
-    if (!hasRole && !userHasChosen) {
-      // 显示推荐角色
-      ElMessageBox.confirm(
-        '你所有当前组织未包含智能体，是否需要到智能体商店选择体验', 
-        '系统提示', { 
-          confirmButtonText: '进入智能体商店', 
-          cancelButtonText: '后期建立', 
-          type: 'warning' 
-        }
-      ).then(() => {
-        router.push({ path: '/store'});
-        // 用户选择了进入智能体市场，保存选择状态
-        localStorage.setItem('userHasChosenRoles', 'true');
-      }).catch(() => {
-        // 用户选择了后期建立，也视为做出了选择
-        localStorage.setItem('userHasChosenRoles', 'true');
-      });
-    }
-
-  }).catch(error => {
-    // 处理错误
-    console.error("获取频道信息失败", error);
-    loading.close()
-  });
-}
-
-nextTick(() => {
-  handleAllMyChannel();
-});
+// 对外暴露的方法 
+defineExpose({
+    handleGetWorkplaceItem
+})
 
 </script>
 
