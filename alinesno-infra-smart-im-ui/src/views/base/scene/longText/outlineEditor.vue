@@ -99,39 +99,31 @@
         </el-dialog>
 
         <!-- 生成流式内容 -->
-        <el-dialog title="由以下工程师生成目录" v-model="chaterDialogVisible" width="40%">
+        <el-dialog title="由以下工程师生成大纲" v-model="chaterDialogVisible" width="600px">
 
                 <el-card class="person-card" shadow="never">
-                    <el-row type="flex" justify="center" align="middle">
-                    <el-col :span="16" class="info-container">
-                        <h2>{{ person.roleName }}</h2>
-                        <el-row>
-                        <el-col :span="24">
-                            <div style="margin-bottom: 10px;">
-                            {{ person.responsibilities }}
-                            </div>
-                        </el-col>
-                        <!-- <el-col :span="24">
-                            <el-link :underline="false" :href="person.emailLink" target="_blank">
-                            <el-icon><Message /></el-icon> {{ person.email }}
-                            </el-link>
-                        </el-col> -->
-                        </el-row>
-                    </el-col>
-                    <el-col :span="8" class="avatar-container">
-                        <el-avatar :size="100" :src="imagePathByPath(person.roleAvatar)"></el-avatar>
-                    </el-col>
-                    </el-row>
+                    <div style="display: flex;gap: 20px;align-items: center;">
+                        <div>
+                            <el-avatar :size="60" :src="imagePathByPath(person.roleAvatar)"></el-avatar>
+                        </div>
+                        <div>
+                            <h2 style="font-weight: bold;">{{ person.roleName }}</h2>
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="margin-bottom: 10px;">
+                                    {{ person.responsibilities }}
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
                 </el-card>
 
                 <el-input size="large" v-model="message" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
 
-                <!-- <div class="chat-gen-container"></div> -->
-
             <div class="dialog-footer">
-                <el-button @click="chaterDialogVisible = false">取 消</el-button>
-                <!-- <el-button type="primary" @click="genStreamContent()">生成章节</el-button> -->
-                <el-button type="primary" @click="openChatBoxStreamContent()">生成章节</el-button>
+                <el-button size="large" @click="chaterDialogVisible = false">取 消</el-button>
+                <el-button size="large" type="primary" @click="openChatBoxStreamContent()">生成大纲</el-button>
             </div>
         </el-dialog>
 
@@ -409,6 +401,8 @@ function handleGetScene() {
         setTimeout(() => {
             emit('handleExecuteHandle' , currentSceneInfo.value)  
         }, 500);
+      }else{
+        selectChaterGenerator(currentSceneInfo.value.chapterEditors[0])
       }
 
     })
