@@ -274,7 +274,7 @@ $selected-bg-color: #262727;
 
     &.selected {
       border-color: $selected-border-color;
-      background-color: $selected-bg-color;
+      background-color: $selected-border-color;
     }
 
     .engineer-info {
