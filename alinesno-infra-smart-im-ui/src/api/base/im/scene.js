@@ -189,9 +189,9 @@ export function getScene(id) {
 export function createScene(data) {
   return request({
     url: managerUrl.createScene,
-    headers: {
-      isEncrypt: true
-    },
+    // headers: {
+    //   isEncrypt: true
+    // },
     method: 'post',
     data: data
   })
