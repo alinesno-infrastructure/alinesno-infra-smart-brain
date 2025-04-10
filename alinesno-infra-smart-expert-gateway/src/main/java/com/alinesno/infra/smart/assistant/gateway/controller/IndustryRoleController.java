@@ -28,7 +28,6 @@ import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.enums.PushOptions;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
@@ -183,12 +182,12 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @GetMapping("/listAllRole")
     public AjaxResult listAllRole(PermissionQuery query){
 
-        LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
-        wrapper.setEntityClass(IndustryRoleEntity.class);
-        query.toWrapper(wrapper);
-        wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
+//        LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
+//        wrapper.setEntityClass(IndustryRoleEntity.class);
+//        query.toWrapper(wrapper);
+//        wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
 
-        List<IndustryRoleEntity> roleEntityList = service.list(wrapper) ;
+        List<IndustryRoleEntity> roleEntityList = service.listOrgRoleAndPublicRole(query) ;
         return AjaxResult.success(roleEntityList) ;
     }
 
