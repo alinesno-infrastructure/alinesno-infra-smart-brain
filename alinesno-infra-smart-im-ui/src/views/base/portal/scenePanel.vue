@@ -2,37 +2,9 @@
 
     <div style="display: flex;margin-left: 0px;">
 
-        <!-- <SideTypePanel /> -->
-
-        <div style="width: calc(100% - 0px);margin-top: 0px;">
-
-            <!-- <div class="search-container-panel">
-                <el-row>
-                    <el-col :span="24">
-                        <div class="feature-header-xqbyQk feature-team-box">
-                            <div style="gap: 12px;">
-                                <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                                    我的场景
-                                </h1>
-                            </div>
-                            <div class="search-container-weDuEn">
-                                <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                                    :suffix-icon="Search" />
-                            </div>
-                            <div>
-                                <el-button type="primary" size="large" @click="handleAddScene">新建场景</el-button>
-                            </div>
-                        </div>
-                    </el-col>
-                </el-row>
-
-            </div>
-            <div class="header">
-                <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
-            </div> -->
+        <div style="width: calc(100% - 0px);margin-top: 0px;" v-loading="fullscreenLoading">
 
             <div class="channel-container-panel" style="margin-top:0px">
-                <!-- <el-scrollbar style="height:calc(100vh - 180px)"> -->
                     <el-row>
                         <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
                             <div class="scene-card-container" @click="enterScreen(item)">
@@ -52,10 +24,10 @@
                                             </div>
                                         </div>
                                         <div class="scene-author-info">
-                                            <img src="http://data.linesno.com/switch_header.png" alt="Author Avatar"
-                                                class="scene-avatar">
-                                            <span class="scene-name">罗小东</span>
-                                            <span class="scene-username">@Easton</span>
+                                                <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    {{ item.orgName }}
+                                                </span>
                                         </div>
                                         <div class="scene-description">
                                             {{ item.sceneDesc }}
@@ -73,7 +45,7 @@
                             </div>
                         </el-col>
 
-                        <el-col :span="24" v-if="sceneLists.length == 0">
+                        <el-col :span="24" v-if="sceneLists.length == 0 && !fullscreenLoading">
                             <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
                         </el-col>
 
@@ -88,17 +60,15 @@
 
 <script setup>
 
+
 import {
-    sceneList
-} from '@/api/base/im/scene';
+    getWorkplaceItem
+} from "@/api/base/im/workplace"
 
-// import SideTypePanel from './sideTypePanel'
-
-import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 
 const router = useRouter();
-
+const fullscreenLoading = ref(true);
 const sceneLists = ref([])
 
 /** 进入长文本编辑界面 */
@@ -108,42 +78,20 @@ function enterScreen(item) {
       path: path , 
       query: { 'sceneId': item.id }
   })
-
-    // // 跳转至详情页
-    // if (item.sceneType === 'leader_model') {  // 领导模型
-    //     router.push({
-    //         path: '/scene/leaderModel',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else if (item.sceneType === 'exam') {
-    //     router.push({
-    //         path: '/scene/exam',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else if (item.sceneType === 'video_clip') {
-    //     router.push({
-    //         path: '/scene/mediaClip',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else {  // 默认长文本模型
-    //     router.push({
-    //         path: '/scene/longText',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // }
-
 }
 
-/** 获取场景列表 */
-function handleScreenList() {
-    sceneList().then(res => {
-        sceneLists.value = res.data
+const handleGetWorkplaceItem = (workplaceId , type) => {
+    getWorkplaceItem(workplaceId , type).then(response => {
+        sceneLists.value = response.data || [];
+        fullscreenLoading.value = false;
     })
-}
+} 
 
-onMounted(() => {
-    handleScreenList()
+// 对外暴露的方法 
+defineExpose({
+    handleGetWorkplaceItem
 })
+
 
 </script>
 
