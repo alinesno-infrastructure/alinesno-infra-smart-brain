@@ -16,18 +16,16 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
+import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
-import com.alinesno.infra.smart.scene.dto.LeaderUpdateDto;
-import com.alinesno.infra.smart.scene.dto.SceneDto;
-import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.dtflys.forest.annotation.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -186,6 +184,27 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     }
 
     /**
+     * 获取公共场景列表
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/allPublicScene")
+    public AjaxResult allPublicScene(PermissionQuery query) {
+        List<SceneEntity> list = service.allPublicScene() ;
+        return AjaxResult.success("操作成功", list);
+    }
+
+    /**
+     * listAllScene 获取场景列表
+     */
+    @DataPermissionQuery
+    @GetMapping("/listAllScene")
+    public AjaxResult listAllScene(PermissionQuery query) {
+        List<SceneResponseDto> list = service.sceneListByPage(query , 0, 1000).getRecords() ;
+        return AjaxResult.success("操作成功", list);
+    }
+
+    /**
      * 获取场景列表sceneList
      */
     @DataPermissionQuery
@@ -259,33 +278,6 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         SceneDto dto = new SceneDto();
         BeanUtils.copyProperties(entity, dto);
 
-//        if(entity.getSceneType().equals(SceneTypeEnums.LARGE_TEXT.getKey())){
-//            // 查询出当前的章节编辑人员
-//            dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
-//
-//            // 查询出当前的内容编辑人员
-//            dto.setContentEditors(RoleUtils.getEditors(roleService, entity.getContentEditor()));
-//
-//            // 章节树信息
-//            dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
-//
-//        }else if(entity.getSceneType().equals(SceneTypeEnums.LEADER_MODEL.getKey())){
-//
-//            // 管理者角色
-//            if(entity.getLeaderRole() != null){
-//                IndustryRoleEntity role = roleService.getById(entity.getLeaderRole());
-//                IndustryRoleDto dto1 = new IndustryRoleDto();
-//                BeanUtils.copyProperties(role, dto1);
-//                dto.setLeader(dto1);
-//            }
-//
-//            if(entity.getWorkerRole() != null && !entity.getWorkerRole().isEmpty()){
-//                dto.setWorkers(RoleUtils.getEditors(roleService, entity.getWorkerRole()));
-//            }
-//        } else if(entity.getSceneType().equals(SceneTypeEnums.EXAM.getKey())){  // 考试场景
-//
-//        }
-
         return AjaxResult.success("操作成功.", dto);
     }
 
@@ -336,6 +328,19 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         FileUtils.forceDelete(tmpFile);
 
         return AjaxResult.success("上传成功") ;
+    }
+
+    /**
+     * 更新场景的Agents智能体工程师
+     * @return
+     */
+    @PostMapping("/updateSceneAgents")
+    public AjaxResult updateSceneAgents(@Validated @RequestBody UpdateSceneAgentDto dto){
+        log.debug("dto = {}" , dto);
+
+        service.updateSceneAgents(dto);
+
+        return AjaxResult.success();
     }
 
 
