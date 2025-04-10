@@ -50,16 +50,10 @@
                                                 </span>
                                             </span>
                                             <div class="semi-space container-center" style="gap: 6px;">
-                                                <div class="semi-image avatar-oDHtb3"
-                                                    style="width: 14px; height: 14px;">
-                                                    <img src="http://data.linesno.com/switch_header.png"
-                                                        class="semi-image-img" style="border-radius: 50%;">
-                                                </div>
-                                                <div class="semi-space semi-space-align-center semi-space-horizontal"
-                                                    style="gap: 2px;">
-                                                    <span class="semi-typography text"
-                                                        style="max-width: 150px;"><span>韦恩W</span></span>
-                                                </div>
+                                                <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    {{ item.orgName }}
+                                                </span>
                                             </div>
                                             <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;margin-bottom:0px">
                                                 <span>
@@ -133,16 +127,10 @@
                                                 </span>
                                             </span>
                                             <div class="semi-space container-center" style="gap: 6px;">
-                                                <div class="semi-image avatar-oDHtb3"
-                                                    style="width: 14px; height: 14px;">
-                                                    <img src="http://data.linesno.com/switch_header.png"
-                                                        class="semi-image-img" style="border-radius: 50%;">
-                                                </div>
-                                                <div class="semi-space semi-space-align-center semi-space-horizontal"
-                                                    style="gap: 2px;">
-                                                    <span class="semi-typography text"
-                                                        style="max-width: 150px;"><span>韦恩W</span></span>
-                                                </div>
+                                                <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    {{ item.orgName }}
+                                                </span>
                                             </div>
                                             <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;margin-bottom:0px">
                                                 <span>
