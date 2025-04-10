@@ -548,7 +548,7 @@ function submitForm() {
 const configAgent = async(row) => {
 
     const channelType = row.channelType ;
-    if(channelType == 'org'){
+    if(channelType == 'org' || channelType == 'private'){
       await handleListAllRole() ;
     }else if(channelType == 'public'){
       await handleListPublicRole();
