@@ -242,7 +242,7 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-$border-color: rgb(233, 235, 242) ; // #4c4d4f;
+$border-color: #c0c4cc ; // rgb(233, 235, 242) ; // #4c4d4f;
 $selected-border-color: #f5f5f5;
 $selected-bg-color: #262727;
 
@@ -274,7 +274,7 @@ $selected-bg-color: #262727;
 
     &.selected {
       border-color: $selected-border-color;
-      background-color: $selected-bg-color;
+      background-color: $selected-border-color;
     }
 
     .engineer-info {
