@@ -34,4 +34,26 @@ public enum WorkplaceItemTypeEnums {
         this.label = label;
     }
 
+    /**
+     * 判断给定的工作台类型是否是有效的
+     * @param workplaceType
+     * @return
+     */
+    public static boolean isValidate(String workplaceType) {
+        for (WorkplaceItemTypeEnums value : values()) {
+            if (value.getCode().equals(workplaceType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static WorkplaceItemTypeEnums getByCode(String type) {
+        for (WorkplaceItemTypeEnums value : values()) {
+            if (value.getCode().equals(type)) {
+                return value;
+            }
+        }
+        return null;
+    }
 }
