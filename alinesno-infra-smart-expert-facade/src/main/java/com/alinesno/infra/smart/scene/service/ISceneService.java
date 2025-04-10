@@ -4,6 +4,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -39,4 +40,16 @@ public interface ISceneService extends IBaseService<SceneEntity> {
      * @return
      */
     IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, int pageNow, int pageSize);
+
+    /**
+     * 查询所有公共场景
+     * @return
+     */
+    List<SceneEntity> allPublicScene();
+
+    /**
+     *  更新不同的场景Agent角色
+     * @param dto
+     */
+    void updateSceneAgents(UpdateSceneAgentDto dto);
 }
