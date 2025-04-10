@@ -25,12 +25,37 @@ var managerUrl = {
   updateSceneAgent: prefix + "updateSceneAgent" ,
   supportScene: prefix + "supportScene" ,
   getSceneScope: prefix + "getSceneScope" ,
-
+  getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
+  updateSceneAgents: prefix +"updateSceneAgents",
   listAllScene: prefix + "listAllScene" ,
   listPublicScene: prefix + "listPublicScene" ,
 
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+}
+
+// 更新场景Agent
+export function updateSceneAgents(sceneId , sceneTypeId , sceneTypeCode , data) {
+  const data2 = {
+    sceneId : sceneId ,
+    sceneTypeId : sceneTypeId ,
+    sceneTypeCode : sceneTypeCode ,
+    agents: data
+  }
+
+  return request({
+    url: managerUrl.updateSceneAgents , 
+    method: 'post',
+    data: data2
+  })
+}
+
+// 通过场景id和角色类型获取到角色列表
+export function getRoleBySceneIdAndAgentType(sceneId , agentTypeId) {
+  return request({
+    url: managerUrl.getRoleBySceneIdAndAgentType + "?sceneId=" + parseStrEmpty(sceneId) + "&agentTypeId=" + parseStrEmpty(agentTypeId),
+    method: 'get'
+  })
 }
 
 // 获取到所有场景列表
