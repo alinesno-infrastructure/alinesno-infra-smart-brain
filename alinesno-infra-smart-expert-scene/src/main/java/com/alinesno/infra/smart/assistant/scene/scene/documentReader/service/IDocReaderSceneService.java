@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReader.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.dto.DocReaderInitDto;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.DocReaderSceneEntity;
 
 /**
@@ -25,4 +26,9 @@ public interface IDocReaderSceneService extends IBaseService<DocReaderSceneEntit
      */
     void initAgents(DocReaderInitDto dto);
 
+    /**
+     * 更新场景代理
+     * @param dto
+     */
+    void updateSceneAgents(UpdateSceneAgentDto dto);
 }
