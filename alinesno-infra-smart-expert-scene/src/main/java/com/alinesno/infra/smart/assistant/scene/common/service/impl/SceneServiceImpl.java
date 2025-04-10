@@ -6,17 +6,21 @@ import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
-import com.alinesno.infra.smart.im.dto.ChannelResponseDto;
-import com.alinesno.infra.smart.im.entity.ChannelEntity;
-import com.alinesno.infra.smart.im.enums.ChannelType;
-import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
-import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
+import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
+import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -142,5 +146,35 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
 
             return dto ;
         });
+    }
+
+    @Override
+    public List<SceneEntity> allPublicScene() {
+        LambdaQueryWrapper<SceneEntity> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.eq(SceneEntity::getSceneScope, ChannelType.PUBLIC_CHANNEL.getValue());
+        queryWrapper.eq(SceneEntity::getHasDelete, HasDeleteEnums.LEGAL.value);
+        queryWrapper.orderByDesc(SceneEntity::getAddTime);
+
+        return this.list(queryWrapper);
+    }
+
+    @Override
+    public void updateSceneAgents(UpdateSceneAgentDto dto) {
+        String sceneTypeCode = dto.getSceneTypeCode() ;
+
+        if(sceneTypeCode.equals(SceneEnum.LONG_TEXT.getSceneInfo().getCode())){
+            chapterService.updateSceneAgents(dto);
+        } else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
+            IDocReviewSceneService docReviewSceneService = SpringUtils.getBean(IDocReviewSceneService.class) ;
+            docReviewSceneService.updateSceneAgents(dto);
+        }else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
+            IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
+            documentReaderSceneService.updateSceneAgents(dto);
+        }
+//        else if(sceneTypeCode.equals(SceneEnum.VIDEO_GENERATION.getSceneInfo().getCode())){
+//
+//        }
+
     }
 }
