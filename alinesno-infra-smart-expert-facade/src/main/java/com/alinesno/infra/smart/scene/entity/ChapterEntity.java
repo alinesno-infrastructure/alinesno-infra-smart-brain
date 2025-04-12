@@ -51,6 +51,10 @@ public class ChapterEntity extends InfraBaseEntity {
     @Column(name = "scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联的场景ID")
     private Long sceneId ; // 关联的场景ID
 
+    @TableField
+    @Column(name = "long_text_scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联的长文本场景ID")
+    private Long longTextSceneId; // 关联的长文本场景ID
+
     // 编写人员
     @TableField
     @Column(name = "chapter_editor", type = MySqlTypeConstant.BIGINT, length = 32, comment = "章节编辑人员")
