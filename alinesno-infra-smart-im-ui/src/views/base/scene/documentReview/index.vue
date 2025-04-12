@@ -1,14 +1,14 @@
 <template>
-    <div class="app-container document-review-container">
+    <div class="document-review-container">
         <el-row>
-            <el-col :span="20">
-                <div class="review-header-title">
+            <el-col :span="24">
+                <!-- <div class="review-header-title">
                     {{ currentSceneInfo.sceneName }} 
-                    <RoleSelectPanel 
-                        :currentSeneInfo="currentSceneInfo"
-                        @openExecuteHandle="openExecuteHandle"
-                        ref="roleSelectPanelRef" />
-                </div>
+                </div> -->
+                <RoleSelectPanel 
+                    :currentSeneInfo="currentSceneInfo"
+                    @openExecuteHandle="openExecuteHandle"
+                    ref="roleSelectPanelRef" />
                 <div class="review-main-content">
 
 
@@ -57,6 +57,8 @@
                     服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。
                 </div>
             </el-col>
+
+            <!--
             <el-col :span="4">
                 <div class="review-history-record-title">
                     <el-icon><Histogram /></el-icon>历史记录
@@ -71,6 +73,8 @@
                     </div>
                 </div>
             </el-col>
+            -->
+
         </el-row>
 
         <!-- 角色选择面板 -->
@@ -88,7 +92,11 @@ import { getRoleBySceneIdAndAgentType } from '@/api/base/im/scene';
 import { getToken } from "@/utils/auth";
 
 import ExecuteHandle from './executeHandle'
-import RoleSelectPanel from './roleSelectPanel'
+// import RoleSelectPanel from './roleSelectPanel'
+import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
 
 // 设置角色
 const roleSelectPanelRef = ref(null)
@@ -143,27 +151,10 @@ historyRecords.forEach(record => {
 
 /** 根据场景id和类型获取到角色信息 */
 const handleRoleBySceneIdAndAgentType = async () => {
-  console.log('sceneId = ' + currentSceneInfo.value.sceneId + ' , agents = ' + currentSceneInfo.value.agents);
-
-  if (currentSceneInfo.value.sceneId && currentSceneInfo.value.agents) {
-    for (let i = 0; i < currentSceneInfo.value.agents.length; i++) {
-      let item = currentSceneInfo.value.agents[i];
-
-      if (item.code === 'analysisAgent') {
-        const response = await getRoleBySceneIdAndAgentType(currentSceneInfo.value.sceneId, item.id);
-        analysisAgentEngineers.value = response.data;
-      } else if (item.code === 'logicReviewer') {
-        const response = await getRoleBySceneIdAndAgentType(currentSceneInfo.value.sceneId, item.id);
-        logicReviewerEngineers.value = response.data;
-      }
-
-    }
-  }
-
   if(currentSceneInfo.value.analysisAgentEngineer == 0 || currentSceneInfo.value.logicReviewerEngineer == 0){
-    openExecuteHandle();
+    // openExecuteHandle();
+    roleSelectPanelRef.value.configAgent();
   }
-
 };
 
 const openExecuteHandle = () => {
@@ -172,19 +163,15 @@ const openExecuteHandle = () => {
 
 /** 图片上传成功 */
 const handleAvatarSuccess = (response, uploadFile) => {
-  // imageUrl.value = URL.createObjectURL(uploadFile.raw);
   imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
-
-//   form.value.sceneBanner = response.data;
-//   console.log('form.icon = ' + form.value.sceneBanner);
-
-    uploadLoading.value.close();
+  uploadLoading.value.close();
 
   // 上传成功，进入分析界面
   router.push({
       path: '/scene/documentReview/documentParser',
       query: {
-          sceneId: sceneId.value
+          sceneId: sceneId.value , 
+          channelStreamId: snowflake.generate()
       }
   })
 
@@ -210,7 +197,8 @@ const handleOpenDataset = () => {
     proxy.$router.push({
         path: '/scene/documentReview/documentDataset',
         query: {
-            sceneId: sceneId.value
+            sceneId: sceneId.value,
+            channelStreamId: snowflake.generate() 
         }
     })
 }
@@ -218,6 +206,18 @@ const handleOpenDataset = () => {
 const handleGetScene = () => {
     getScene(sceneId.value).then(res => {
         currentSceneInfo.value = res.data;
+
+        if(currentSceneInfo.value.genStatus == 1){
+            router.push({
+                path: '/scene/documentReview/documentParser',
+                query: {
+                    sceneId: sceneId.value , 
+                    channelStreamId: snowflake.generate()
+                }
+            })
+            return ;
+        }
+
         handleRoleBySceneIdAndAgentType();
     })
 }
