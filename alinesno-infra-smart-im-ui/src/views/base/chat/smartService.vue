@@ -134,6 +134,10 @@ import { getChannel } from "@/api/base/im/channel";
 import { getParam } from '@/utils/ruoyi'
 import { formatMessage } from '@/utils/chat'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
+const channelStreamId = ref(snowflake.generate());
 
 const streamLoading = ref(null)
 
@@ -256,7 +260,7 @@ function handleSendUserMessage(message, type) {
     background: 'rgba(0, 0, 0, 0.2)',
   })
 
-  sendUserMessage(message, users, selectedBusinessId.value, channelId, type).then(response => {
+  sendUserMessage(message, users, selectedBusinessId.value, channelId, type , channelStreamId.value).then(response => {
     console.log("发送消息", response.data);
     response.data.forEach(item => {
       chatListRef.value.pushResponseMessageList(item);
@@ -329,7 +333,8 @@ function handleChatMessage(channelId) {
       chatListRef.value.currentResponseMessageList(data);
 
       // 处理sse消息内容
-      handleSseConnect(channelId);
+      // handleSseConnect(channelId);
+      handleSseConnect(channelStreamId.value);
 
       loading.value = false;
     })
@@ -357,10 +362,12 @@ function handleGetChannel(channelId) {
 }
 
 /** 连接sse */
-function handleSseConnect(channelId) {
+function handleSseConnect(channelStreamId) {
   nextTick(() => {
-    if (channelId) {
-      let sseSource = openSseConnect(channelId);
+    if (channelStreamId) {
+      let sseSource = openSseConnect(channelStreamId);
+
+      console.log('channelStreamId = ' + channelStreamId + '连接成功..')
       // 接收到数据
       sseSource.onmessage = function (event) {
         if (!event.data.includes('[DONE]')) {
@@ -370,7 +377,6 @@ function handleSseConnect(channelId) {
 
           if (resData != 'ping') {  // 非心跳消息
             const data = JSON.parse(resData);
-            console.log('--->>> channelId = ' + channelId + ' , data = ' + JSON.stringify(data));
             handlePushResponseMessageList(data);
           }
         } else {
@@ -404,43 +410,6 @@ function keyDown(e) {
 
 }
 
-/** 播放生成内容 */
-// const handlePlayGenContent = (item) => {
-//   // getSpeechLoading.value = true ;
-
-//   if(!roleInfo.value.voicePlayStatus){
-//     ElMessage.error('未开启语音播放');
-//     return ;
-//   }
-
-//   item.getSpeechLoading = true ;
-
-//   playGenContent(item).then(res => {
-//     const audioBlob = new Blob([res], { type: 'audio/wav' }) // 这按照自己的数据类型来写type的内容
-//     const audioUrl = URL.createObjectURL(audioBlob) // 生成url
-//     const audio = new Audio(audioUrl);
-
-//     audio.addEventListener('ended', () => {
-//       console.log('音频播放完成');
-//       // isPlaySpeaking.value = false 
-//       item.isPlaySpeaking = false 
-//     });
-
-//     // getSpeechLoading.value = false ;
-//     // isPlaySpeaking.value = true 
-
-//     item.getSpeechLoading = false ;
-//     item.isPlaySpeaking = true 
-
-//     audio.play(); 
-//   }).catch(error => {
-//     // getSpeechLoading.value = false ;
-//     item.getSpeechLoading = false ;
-//     ElMessage.error('播放失败，请确认是否配置语音服务');
-//   });
-// }
-
-
 onMounted(() => {
   //绑定监听事件
   window.addEventListener('keydown', keyDown)
@@ -451,9 +420,9 @@ onBeforeUnmount(() => {
   window.removeEventListener('keydown', keyDown, false)
 
   // 关闭sse连接
-  let channelId = channelInfo.value.id;
-  handleCloseSse(channelId).then(res => {
-    console.log('关闭sse连接成功:' + channelId)
+  // let channelId = channelInfo.value.id;
+  handleCloseSse(channelStreamId.value).then(res => {
+    console.log('关闭sse连接成功:' + channelStreamId.value)
   })
 });
 
