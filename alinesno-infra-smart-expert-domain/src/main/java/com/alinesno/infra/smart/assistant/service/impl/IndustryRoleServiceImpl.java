@@ -152,14 +152,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         MessageEntity message = null;
 
         String preBusinessId = taskInfo.getPreBusinessId();  // 获取到前一个节点的业务ID
-        log.info("preBusinessId:{}", preBusinessId);
 
         if (StringUtils.hasLength(preBusinessId)) {
             IMessageService messageService = SpringUtils.getBean(IMessageService.class);
             message = messageService.getById(preBusinessId);
         }
 
-        log.debug("role.getChainId() = {}", role.getChainId());
         IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
 
         WorkflowExecutionDto dto = expertService.runRoleAgent(role, message, taskInfo);
@@ -176,19 +174,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             log.warn("传入的实体列表为空，无法创建角色");
             return;
         }
-
-        // 创建角色知识库
-//        for (IndustryRoleEntity role : allEntities) {
-//            // TODO 待集成批量添加知识库
-//            R<Long> result = baseSearchConsumer.datasetCreate(
-//                    role.getResponsibilities() ,
-//                    role.getRoleName() ,
-//                    role.getOrgId() + "" ,
-//                    role.getOperatorId() + "");
-//
-//            log.debug("创建知识库结果：" + result);
-//            role.setKnowledgeId(result.getData() + "");
-//        }
 
         // 先保存用户信息
         this.saveOrUpdateBatch(allEntities);
