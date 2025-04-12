@@ -5,15 +5,17 @@ import com.alinesno.infra.smart.assistant.workplace.dto.OrgWorkplaceDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.OrgWorkplaceEntity;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceEntity;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceItemEntity;
+import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceItemTypeEnums;
 import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceSourceEnums;
 import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceType;
 import com.alinesno.infra.smart.assistant.workplace.mapper.OrgWorkplaceMapper;
 import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
+import com.alinesno.infra.smart.im.service.IChannelService;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,12 @@ public class OrgWorkplaceServiceImpl extends IBaseServiceImpl<OrgWorkplaceEntity
 
     @Autowired
     private IWorkplaceItemService workplaceItemService ;
+
+    @Autowired
+    private ISceneService sceneService ;
+
+    @Autowired
+    private IChannelService channelService ;
 
     /**
      * 组织使用指定的工作台，处理过程
@@ -56,11 +64,17 @@ public class OrgWorkplaceServiceImpl extends IBaseServiceImpl<OrgWorkplaceEntity
 
         workplaceService.save(newWorkplace) ;
 
-        // 复制各个ID信息
+        // 复制Agent角色ID信息
         LambdaQueryWrapper<WorkplaceItemEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(WorkplaceItemEntity::getWorkplaceId, workplace.getId());
 
         List<WorkplaceItemEntity> list = workplaceItemService.list(lambdaQueryWrapper);
+
+        List<Long> oldSceneIds = list.stream()
+                .filter(item -> item.getItemType().equals(WorkplaceItemTypeEnums.SCENE.getCode()))
+                .map(WorkplaceItemEntity::getItemId)
+                .toList();
+
         if(!list.isEmpty()){
            for(WorkplaceItemEntity item : list) {
                item.setId(null);
@@ -69,11 +83,17 @@ public class OrgWorkplaceServiceImpl extends IBaseServiceImpl<OrgWorkplaceEntity
         }
         workplaceItemService.saveBatch(list) ;
 
+        List<Long> newSceneIds = list.stream()
+                .filter(item -> item.getItemType().equals(WorkplaceItemTypeEnums.SCENE.getCode()))
+                .map(WorkplaceItemEntity::getItemId)
+                .toList();
+
         // 然后保存到OrgWorkplace表中
         OrgWorkplaceEntity orgWorkplaceEntity = new OrgWorkplaceEntity() ;
         orgWorkplaceEntity.setWorkplaceId(newWorkplace.getId());
         orgWorkplaceEntity.setOrgId(dto.getOrgId());
         save(orgWorkplaceEntity) ;
+
     }
 
     @Override
