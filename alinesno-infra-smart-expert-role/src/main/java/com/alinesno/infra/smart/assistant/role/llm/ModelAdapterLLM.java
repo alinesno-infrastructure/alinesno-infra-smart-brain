@@ -74,7 +74,6 @@ public class ModelAdapterLLM extends BaseModelAdapter {
         MessageEntity entity = new MessageEntity();
 
         entity.setTraceBusId(taskInfo.getTraceBusId());
-//            entity.setId(workflowId) ;
         entity.setContent(message.getFullContent()) ;
         entity.setReasoningContent(message.getFullReasoningContent());
         entity.setFormatContent(message.getFullContent());
@@ -88,6 +87,12 @@ public class ModelAdapterLLM extends BaseModelAdapter {
 
         entity.setChannelId(taskInfo.getChannelId()) ;
         entity.setRoleId(role.getId()) ;
+
+        // 权限配置
+        entity.setOrgId(taskInfo.getOrgId());
+        entity.setDepartmentId(taskInfo.getDepartmentId());
+        entity.setOperatorId(taskInfo.getOperatorId());
+
         return entity;
     }
 
@@ -124,7 +129,13 @@ public class ModelAdapterLLM extends BaseModelAdapter {
         entity.setIcon(role.getRoleAvatar());
 
         entity.setChannelId(taskInfo.getChannelId()) ;
+        entity.setChannelStreamId(taskInfo.getChannelStreamId());
         entity.setRoleId(role.getId()) ;
+
+        // 权限配置
+        entity.setOrgId(taskInfo.getOrgId());
+        entity.setDepartmentId(taskInfo.getDepartmentId());
+        entity.setOperatorId(taskInfo.getOperatorId());
 
         messageService.save(entity);
 
