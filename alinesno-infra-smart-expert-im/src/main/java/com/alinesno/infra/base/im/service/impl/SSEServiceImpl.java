@@ -102,7 +102,10 @@ public class SSEServiceImpl implements ISSEService {
     @Override
     public void sendDone(String clientId) throws IOException {
         final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
-        Assert.notNull(emitter, "客户端不存在，clientId = " + clientId);
+        if(emitter == null){
+            log.warn("客户端：【{}】 断开成功，当前剩余客户端总数为【{}】",clientId,SSE_CACHE.size());
+            return ;
+        }
         emitter.send("[DONE]");
     }
 
