@@ -80,7 +80,7 @@
                 <div class="semi-space container-center" style="gap: 6px;">
                   <div class="semi-space semi-space-align-center semi-space-horizontal" style="display: flex;flex-direction: row;align-items: center;gap: 5px;">
                     <span class="semi-typography text" >
-                      <i class="fa-solid fa-paper-plane"></i>
+                      <i class="fa-solid fa-ribbon"></i>
                       {{ item.orgName }}
                     </span>
                   </div>
@@ -134,7 +134,6 @@ import {
   allMyChannel,
 } from '@/api/base/im/channel'
 import { nextTick, ref } from 'vue';
-
 import SnowflakeId from "snowflake-id";
 
 const snowflake = new SnowflakeId();
