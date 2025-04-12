@@ -78,6 +78,10 @@ public class ImChatController extends SuperController {
         entity.setChannelId(channelId) ;
         entity.setRoleId(role.getId()) ;
 
+        entity.setOrgId(role.getOrgId());
+        entity.setDepartmentId(role.getDepartmentId());
+        entity.setOperatorId(role.getOperatorId());
+
         messageService.save(entity);
 
         return AjaxResult.success();
@@ -87,6 +91,7 @@ public class ImChatController extends SuperController {
      * 前端用户发送消息
      * @return
      */
+    @DataPermissionSave
     @PostMapping("/sendUserMessage")
     public AjaxResult sendUserMessage(@RequestBody ChatSendMessageDto message){
 
@@ -112,7 +117,6 @@ public class ImChatController extends SuperController {
 
         messageService.sendUserMessage(message , roleList , personDto);
 
-//        return AjaxResult.success("操作成功." , personDto) ;
         return AjaxResult.success("操作成功.") ;
     }
 
@@ -120,14 +124,14 @@ public class ImChatController extends SuperController {
      * 获取到消息信息
      * @return
      */
+    @DataPermissionSave
     @GetMapping("/chatMessage")
-    public AjaxResult chatMessage(String channelId){
+    public AjaxResult chatMessage(ChatSendMessageDto chatMessage , @RequestParam Long channelId){
 
-        long currentAccountId = CurrentAccountJwt.getUserId();
+        chatMessage.setChannelId(channelId);
+        messageService.initChannelHelp(chatMessage) ;
 
-        messageService.initChannelHelp(channelId , currentAccountId) ;
-        List<ChatMessageDto> chatMessageDtos = messageService.listByChannelId(channelId) ;
-
+        List<ChatMessageDto> chatMessageDtos = messageService.listByChannel(chatMessage) ;
         return AjaxResult.success(chatMessageDtos) ;
     }
 
