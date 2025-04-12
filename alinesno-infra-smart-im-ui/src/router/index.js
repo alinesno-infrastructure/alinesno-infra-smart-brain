@@ -33,6 +33,12 @@ const screenRoutes = [
     name: '/scene/longText/index',
     meta: { title: '长文本场景', icon: 'dashboard', affix: true }
   },
+  {
+    path: '/scene/longText/textParser',
+    component: () => import('@/views/base/scene/longText/textParser'),
+    name: '/scene/longText/textParser',
+    meta: { title: '长文本场景', icon: 'dashboard', affix: true }
+  },
   // -->>>>>>>>>>>> 长文本场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 文档审核场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
