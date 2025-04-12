@@ -25,7 +25,7 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @param channelId
      * @return
      */
-    List<ChatMessageDto> listByChannelId(String channelId);
+    List<ChatMessageDto> listByChannelId(long channelId);
 
     /**
      * 保存用户的返回信息
@@ -59,6 +59,7 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * 每个频道最开始的Hello World信息
      * @param channelId
      */
+    @Deprecated
     void initChannelHelp(String channelId , long accountId);
 
     /**
@@ -83,4 +84,17 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @return
      */
     MessageEntity selectByTraceBusId(Long traceBusId);
+
+    /**
+     * 每个频道最开始的Hello World信息
+     * @param chatMessage
+     */
+    void initChannelHelp(ChatSendMessageDto chatMessage);
+
+    /**
+     * 查询出最近组织所在频道的消息
+     * @param chatMessage
+     * @return
+     */
+    List<ChatMessageDto> listByChannel(ChatSendMessageDto chatMessage);
 }
