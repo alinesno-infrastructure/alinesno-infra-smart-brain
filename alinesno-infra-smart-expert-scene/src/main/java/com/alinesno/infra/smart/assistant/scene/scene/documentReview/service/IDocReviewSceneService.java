@@ -1,9 +1,13 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
+import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+
+import java.util.List;
 
 /**
  *
@@ -31,4 +35,12 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
      * @param dto
      */
     void updateSceneAgents(UpdateSceneAgentDto dto);
+
+    /**
+     * 获取场景下的智能助手角色列表
+     * @param dto
+     * @return
+     */
+    List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto);
+
 }
