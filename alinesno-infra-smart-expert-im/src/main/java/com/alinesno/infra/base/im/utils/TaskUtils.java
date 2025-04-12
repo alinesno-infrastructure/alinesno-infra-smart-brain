@@ -22,6 +22,7 @@ public class TaskUtils {
         MessageTaskInfo msg = new MessageTaskInfo();
 
         msg.setChannelId(message.getChannelId());
+        msg.setChannelStreamId(message.getChannelStreamId());
         msg.setBusinessId(String.valueOf(0));
         msg.setRoleId(role.getId());
         msg.setText(chatText);
@@ -33,6 +34,11 @@ public class TaskUtils {
         msg.setAccountName(message.getAccountName());
         msg.setAccountIcon(message.getAccountIcon());
         msg.setAccountEmail(message.getAccountEmail()) ;
+
+        // 权限设置
+        msg.setOrgId(message.getOrgId());
+        msg.setOperatorId(message.getOperatorId());
+        msg.setDepartmentId(message.getDepartmentId());
 
         return msg ;
 
