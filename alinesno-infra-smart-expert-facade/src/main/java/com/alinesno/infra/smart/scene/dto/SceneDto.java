@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.scene.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
+import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -77,16 +80,6 @@ public class SceneDto extends BaseDto {
      * 智能助手，包含多个智能助手，用于处理场景的智能操作
      */
    private List<SceneAgent>  agents = new ArrayList<>();
-
-//    /**
-//     * 管理人员
-//     */
-//    private IndustryRoleDto leader = new IndustryRoleDto();
-//
-//    /**
-//     * 工作人员
-//     */
-//    private List<IndustryRoleDto> workers = new ArrayList<>();
 
 }
 
