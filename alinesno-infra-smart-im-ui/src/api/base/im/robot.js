@@ -51,18 +51,16 @@ export function getTaskNotice(){
 }
 
 // 客户端发送消息 
-export function sendUserMessage(message, users , businessId, channelId , type) {
+export function sendUserMessage(message, users , businessId, channelId , type , channelStreamId) {
   return request({
-    url: managerUrl.sendUserMessage , //  + "?channelId=" + parseStrEmpty(channelId) + '&type=' + type , 
-    headers: {
-      isEncrypt: true
-    },
+    url: managerUrl.sendUserMessage , 
     data: {
       message: message, 
       users: users,
       businessIds: businessId,
       channelId: channelId,
-      type: type
+      type: type , 
+      channelStreamId: channelStreamId
     },
     method: 'post'
   })
