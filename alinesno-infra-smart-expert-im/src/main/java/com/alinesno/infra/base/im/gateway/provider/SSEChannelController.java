@@ -51,6 +51,7 @@ public class SSEChannelController {
         MessageTaskInfo info = event.getTaskInfo() ;
 
         long channelId = info.getChannelId() ;
+        String channelStreamId = info.getChannelStreamId() ;
         String msg = event.getMessage() == null ? "" : event.getMessage() ;
 
         String reasoningText = MessageFormatter.getSafeString(info.getReasoningText()) ;
@@ -58,7 +59,7 @@ public class SSEChannelController {
 
         long bId = event.getBId() ;
 
-        final SseEmitter emitter = service.getConn(channelId + "");
+        final SseEmitter emitter = service.getConn(channelStreamId);
 
         ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, bId) ;
         msgDto.setLoading(false);
