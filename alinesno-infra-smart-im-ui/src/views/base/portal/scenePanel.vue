@@ -25,7 +25,7 @@
                                         </div>
                                         <div class="scene-author-info">
                                                 <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
-                                                    <i class="fa-solid fa-paper-plane"></i>
+                                                    <i class="fa-solid fa-ribbon"></i>
                                                     {{ item.orgName }}
                                                 </span>
                                         </div>
@@ -34,7 +34,11 @@
                                         </div>
                                         <div class="semi-divider semi-divider-horizontal"></div>
                                         <div class="scene-footer">
-                                            <div class="scene-price">免费{{ item.usage_count }}</div>
+                                            <div class="scene-price">
+                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" /> 私有</el-tag>
+                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i class="fa-solid fa-globe" /> 公开</el-tag>
+                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" /> 组织</el-tag>
+                                            </div>
                                             <div class="scene-stats">
                                                 <span>{{ item.usage_count }}</span>
                                                 <span>使用</span>
@@ -66,6 +70,10 @@ import {
 } from "@/api/base/im/workplace"
 
 import learnLogo from '@/assets/icons/tech_01.svg';
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
+const channelStreamId = ref(snowflake.generate());
 
 const router = useRouter();
 const fullscreenLoading = ref(true);
@@ -76,7 +84,7 @@ function enterScreen(item) {
   const path = '/scene/'+ item.sceneType +'/index';
   router.push({
       path: path , 
-      query: { 'sceneId': item.id }
+      query: { 'sceneId': item.id , 'channelStreamId': channelStreamId.value }
   })
 }
 
@@ -238,7 +246,7 @@ defineExpose({
 
             .scene-price {
                 font-weight: 500;
-                font-size: 16px;
+                font-size: 14px;
                 line-height: 22px;
                 color: var(--coz-fg-primary);
             }
