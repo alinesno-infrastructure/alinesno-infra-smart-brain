@@ -2,6 +2,8 @@ package com.alinesno.infra.smart.scene.service;
 
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
@@ -52,4 +54,12 @@ public interface ISceneService extends IBaseService<SceneEntity> {
      * @param dto
      */
     void updateSceneAgents(UpdateSceneAgentDto dto);
+
+    /**
+     * 获取场景角色列表
+     * @param dto
+     * @return
+     */
+    List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto);
+
 }
