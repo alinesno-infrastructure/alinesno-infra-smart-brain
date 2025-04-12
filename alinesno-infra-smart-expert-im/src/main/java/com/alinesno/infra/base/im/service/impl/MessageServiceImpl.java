@@ -85,7 +85,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
     }
 
     @Override
-    public List<ChatMessageDto> listByChannelId(String channelId) {
+    public List<ChatMessageDto> listByChannelId(long channelId) {
 
         List<ChatMessageDto> list = new ArrayList<>();
 
@@ -164,6 +164,10 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setRoleId(personDto.getRoleId());
         entity.setAccountId(personDto.getAccountId());
 
+//        entity.setOrgId(message.getOrgId());
+//        entity.setDepartmentId(message.getDepartmentId());
+//        entity.setOperatorId(message.getOperatorId());
+
         save(entity);
 
         return entity.getId() ;
@@ -182,15 +186,10 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         ITaskService taskService = SpringContext.getBean(ITaskService.class) ;
 
-        // 处理解析后的消息对象
-        String ids = message.getUsers().stream().map(String::valueOf).collect(Collectors.joining(","));
-
         MessageEntity msg = getMessageEntity(
-                message.getChannelId(),
                 MessageFormatter.clearMessage(message.getMessage()), // 只纯为消息内容
                 MessageFormatter.getMessage(message.getMessage()),  // 格式化的消息内容
-                ids ,
-                message.getAccountName()
+                message
         );
 
         if(!message.getBusinessIds().isEmpty()){
@@ -203,13 +202,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
             msg.setFileIds(fileIds);  // 配置消息里面的文件id
         }
 
-        msg.setAccountId(message.getAccountId());
         save(msg);
-
-        // 保存返回消息
-        for (ChatMessageDto dto : personDto) {
-            saveChatMessage(dto, message.getChannelId());
-        }
 
         // 触发执行任务
         for (IndustryRoleEntity role : roleList) {
@@ -238,6 +231,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
     }
 
+    @Deprecated
     @Override
     public void initChannelHelp(String channelId , long accountId) {
 
@@ -316,16 +310,124 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         return getOne(new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getTraceBusId, traceBusId));
     }
 
-    private static MessageEntity getMessageEntity(Long channelId, String content, String chatText, String receiverId , String accountName) {
-        MessageEntity msg = new MessageEntity();
+    @Override
+    public void initChannelHelp(ChatSendMessageDto chatMessage) {
 
-        msg.setChannelId(channelId);
+        long channelId = chatMessage.getChannelId();
+        long accountId = chatMessage.getOperatorId();
 
-        msg.setIcon("1808349839242747906");
+        LambdaQueryWrapper<MessageEntity> queryWrapper = new LambdaQueryWrapper<MessageEntity>().eq(MessageEntity::getChannelId, channelId);
+        queryWrapper.eq(MessageEntity::getOrgId, chatMessage.getOrgId());
+
+        long count = count(queryWrapper);
+        if (count == 0) {
+            // 完成之后发送消息给前端
+            MessageEntity agentInfo = chatMessage.toPowerMessageEntity() ; //  new MessageEntity();
+
+            IndustryRoleEntity defaultHelpAgent = industryRoleService.getDefaultHelpAgent();
+
+            agentInfo.setFormatContent("你好，你可以查看一下使用教程<a target='_blank' href='http://portal.infra.linesno.com'>教程</a>或者@你想咨询的Agent.");
+
+            agentInfo.setName(defaultHelpAgent.getRoleName());
+            agentInfo.setIcon(defaultHelpAgent.getRoleAvatar());
+            agentInfo.setRoleId(defaultHelpAgent.getId());
+
+            agentInfo.setRoleType("agent");
+            agentInfo.setReaderType("html");
+            agentInfo.setSendTime(new Date());
+            agentInfo.setAccountId(accountId) ;
+            agentInfo.setAddTime(new Date());
+
+            agentInfo.setChannelId(channelId);
+
+            save(agentInfo);
+        }
+    }
+
+    @Override
+    public List<ChatMessageDto> listByChannel(ChatSendMessageDto chatMessage) {
+
+        List<ChatMessageDto> list = new ArrayList<>();
+
+        long channelId = chatMessage.getChannelId();
+        long orgId = chatMessage.getOrgId();
+
+        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(MessageEntity::getChannelId, channelId)
+                .eq(MessageEntity::getOrgId, orgId)
+                .orderByDesc(MessageEntity::getAddTime)
+                .last("limit 50");  // 查询出最近的50条数据
+
+        List<MessageEntity> entityList = list(wrapper);
+
+        List<IndustryRoleEntity> roleList = null ;
+        if (!entityList.isEmpty()) {
+            List<Long> roleIds = entityList.stream()
+                    .map(MessageEntity::getRoleId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            roleList = industryRoleService.listByIds(roleIds);
+        }
+
+        if (!entityList.isEmpty()) {
+            int size = entityList.size();
+
+            for(int i = size -1 ; i >= 0; i--){
+
+                MessageEntity e = entityList.get(i);
+                ChatMessageDto dto = new ChatMessageDto();
+
+                dto.setChatText(StringUtils.isBlank(e.getFormatContent()) ? e.getContent() : e.getFormatContent());
+                dto.setReasoningText(e.getReasoningContent());
+
+                dto.setName(e.getName());
+                dto.setIcon(e.getIcon());
+                dto.setRoleId(e.getRoleId() == null ? 0L : e.getRoleId());
+
+                dto.setRoleType(e.getRoleType());
+                dto.setReaderType(e.getReaderType());
+                dto.setBusinessId(e.getId());
+                dto.setDateTime(DateUtil.formatDateTime(e.getAddTime()));
+
+                IndustryRoleEntity role = roleList.stream()
+                        .filter(r -> r.getId().equals(e.getRoleId()))
+                        .findFirst()
+                        .orElse(null);
+                if (role != null) {
+                    dto.setHasExecuteTool(StringUtils.isNoneBlank(role.getFunctionCallbackScript()));
+                    dto.setVoicePlayStatus(role.isVoicePlayStatus());
+                }
+
+                list.add(dto);
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * 获取消息实体
+     * @param content
+     * @param chatText
+     * @param message
+     * @return
+     */
+    private MessageEntity getMessageEntity(String content,
+                                           String chatText,
+                                           ChatSendMessageDto message) {
+        MessageEntity msg = message.toPowerMessageEntity() ;
+
+        msg.setChannelId(message.getChannelId());
+        msg.setChannelStreamId(message.getChannelStreamId());
+
         msg.setReaderType("html");
         msg.setRoleType("person");
         msg.setAddTime(new Date());
-        msg.setName(accountName);
+
+        msg.setAccountId(message.getAccountId());
+        msg.setIcon("1830185154541305857");
+        msg.setName(message.getAccountName());
+
         msg.setContent(content);
         msg.setFormatContent(chatText);
 
