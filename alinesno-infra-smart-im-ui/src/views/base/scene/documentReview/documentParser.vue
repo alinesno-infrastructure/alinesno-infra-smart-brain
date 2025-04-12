@@ -16,7 +16,7 @@
                     </el-scrollbar>
                 </div>
             </el-col>
-            <el-col :span="12" style="padding-left: 20px;border-left: 1px solid #262727;">
+            <el-col :span="12" style="padding-left: 20px;border-left: 1px solid #e5e5e5;">
                 <div>
                     <el-steps class="mb-4" style="width: 100%;cursor: pointer;" :space="200" :active="currentActive" simple >
                         <el-step @click="handleStepClick(1)" title="合同概览" :icon="Edit" />
@@ -26,13 +26,26 @@
                 </div>
                 <div>
                     <el-collapse-transition>
-                        <DocumentOverview v-if="currentActive == 1" />
-                        <ReviewCheckList v-if="currentActive == 2" />
-                        <ReviewResult v-if="currentActive == 3" />
+                        <DocumentOverview v-if="currentActive == 1" 
+                            @handleStepClick="handleStepClick"
+                            @genSingleChapterContent="genSingleChapterContent" />
+
+                        <ReviewCheckList v-if="currentActive == 2" @genSingleChapterContent="genSingleChapterContent" />
+                        <ReviewResult v-if="currentActive == 3" @genSingleChapterContent="genSingleChapterContent" />
                     </el-collapse-transition>
                 </div>
             </el-col>
         </el-row>
+
+         <!-- 运行抽屉 -->
+        <div class="aip-flow-drawer">
+            <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+                :with-header="true">
+                <div style="margin-top: 0px;">
+                    <RoleChatPanel ref="roleChatPanelRef" />
+                </div>
+            </el-drawer>
+        </div>
     </div>
 </template>
 
@@ -45,6 +58,7 @@ const route = useRoute()
 import DocumentOverview from '@/views/base/scene/documentReview/documentOverview.vue'
 import ReviewCheckList  from '@/views/base/scene/documentReview/reviewChecklist.vue'
 import ReviewResult  from '@/views/base/scene/documentReview/reviewResult.vue'
+import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 
 import axios from "axios";
 import { getScene } from '@/api/base/im/scene/documentReview';
@@ -57,9 +71,14 @@ const loadingDocument = ref(true)
 const contentRef = ref(null)
 const currentActive = ref(1)
 
+// 执行面板
+const showDebugRunDialog = ref(false);
+const roleChatPanelRef = ref(null)
+
 const handleStepClick = (index) => {
     console.log('index = ' + index);
     currentActive.value = index
+    showDebugRunDialog.value = false;
 }
 
 const getDocxContent = async() => {
@@ -80,7 +99,15 @@ const getDocxContent = async() => {
         console.error('获取或渲染文档失败', error);
     }
 }
- 
+
+// 生成单章
+const genSingleChapterContent = (editorRoleId) => {
+    showDebugRunDialog.value = true ;
+    nextTick(() => {
+        roleChatPanelRef.value.openChatBox(editorRoleId) ; 
+    })
+}
+
 const onClickLeft = () => {
   // 判断历史记录中是否有回退
   if (history.state?.back) {
@@ -110,4 +137,23 @@ nextTick(() => {
 
 <style lang="scss" scoped>
 @import '@/assets/styles/document-review.scss';
+</style>
+
+<style>
+.flow-control-panel .el-card__body {
+    padding: 13px !important
+}
+
+.aip-flow-drawer .el-drawer.ltr,
+.aip-flow-drawer .el-drawer.rtl {
+    height: 93%;
+    bottom: 10px;
+    top: auto;
+    right: 10px;
+    border-radius: 8px;
+}
+
+.aip-flow-drawer .el-drawer__header {
+    margin-bottom: 0px;
+}
 </style>
