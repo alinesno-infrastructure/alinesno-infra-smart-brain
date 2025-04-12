@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.scene.dto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.ToString;
 
@@ -19,6 +20,9 @@ public class ChapterGenFormDto {
      */
     @Min(value = 1, message = "场景ID不能小于0")
     private long sceneId;
+
+    @NotNull(message = "渠道流ID不能为空")
+    private Long channelStreamId ;
 
     /**
      * 章节标题，用于展示章节的名称
