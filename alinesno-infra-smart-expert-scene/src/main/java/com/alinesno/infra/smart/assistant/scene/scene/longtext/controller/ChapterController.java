@@ -4,7 +4,10 @@ import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -12,12 +15,15 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
@@ -51,6 +57,9 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     private IChapterService service;
 
     @Autowired
+    private ILongTextSceneService longTextSceneService ;
+
+    @Autowired
     private IIndustryRoleService roleService ;
 
     @Autowired
@@ -61,6 +70,9 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
 
     @Autowired
     private FormatMessageTool formatMessageTool ;
+
+    @Autowired
+    private ISceneService sceneService ;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -87,14 +99,16 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
      * @param nodes JSON格式的章节列表
      * @return 操作结果
      */
+    @DataPermissionQuery
     @PostMapping("/saveChapters")
-    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes, @RequestParam("sceneId") long sceneId) {
+    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes, @RequestParam("sceneId") long sceneId , PermissionQuery query) {
 
         if(nodes == null || nodes.isEmpty()){
             return error("参数错误") ;
         }
 
-        service.saveChaptersWithHierarchy(nodes, null, 1 , sceneId);
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
+        service.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , longTextSceneEntity.getId());
         return ok() ;
     }
 
@@ -115,6 +129,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         if(roleId != null){
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
+            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
             taskInfo.setRoleId(roleId);
             taskInfo.setChannelId(dto.getSceneId());
             taskInfo.setSceneId(dto.getSceneId());
@@ -185,13 +200,15 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     /**
      * 与角色交互，获取到内容结果
      */
+    @DataPermissionSave
     @SneakyThrows
     @PostMapping("/chatRole")
     public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
 
-        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
 
         taskInfo.setRoleId(chatRole.getRoleId());
+        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
         taskInfo.setChannelId(chatRole.getSceneId());
         taskInfo.setSceneId(chatRole.getSceneId());
         taskInfo.setText(chatRole.getMessage());
@@ -226,9 +243,11 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
      * @return 章节的树结构
      */
     @SneakyThrows
+    @DataPermissionQuery
     @GetMapping("/getChapterTree")
-    public AjaxResult getChapterTree(@RequestParam("sceneId") long sceneId) {
-        List<TreeNodeDto> tree = service.getChapterTree(sceneId);
+    public AjaxResult getChapterTree(@RequestParam("sceneId") long sceneId , PermissionQuery query) {
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
+        List<TreeNodeDto> tree = service.getChapterTree(sceneId ,longTextSceneEntity.getId());
         return AjaxResult.success(tree);
 
     }
