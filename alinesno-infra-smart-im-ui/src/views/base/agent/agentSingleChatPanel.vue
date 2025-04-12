@@ -1,4 +1,4 @@
-<!-- 意见审批  -->
+意见审批 
 <template>
   <div class="acp-dashboard aip-chat-dashboard-panel" v-loading="loading" element-loading-text="Loading..."
     :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50" style="padding:0px !important;">
@@ -215,7 +215,10 @@ import { nextTick, onMounted } from "vue";
 import speakingIcon from '@/assets/icons/speaking.gif';
 
 import ChatMessageEditor from '@/views/base/chat/chatMessageEditor.vue'
+import SnowflakeId from "snowflake-id";
 
+const snowflake = new SnowflakeId();
+const channelStreamId = ref(snowflake.generate());
 const { proxy } = getCurrentInstance();
 
 const agentSingleRightPanelRef = ref(null)
@@ -235,7 +238,6 @@ const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 const messageList = ref([]);
 const currentBusinessId = ref(null)
-
 const streamLoading = ref(null)
 const chatStreamLoading = ref(false); // 聊天加载
 
@@ -401,11 +403,11 @@ const handleShowDebuggerContent = (messageIndex, stepIndex) => {
 }
 
 /** 连接sse */
-function handleSseConnect(channelId) {
+function handleSseConnect(channelStreamId) {
   nextTick(() => {
-    if (channelId) {
+    if (channelStreamId) {
 
-      let sseSource = openSseConnect(channelId);
+      let sseSource = openSseConnect(channelStreamId);
       // 接收到数据
       sseSource.onmessage = function (event) {
 
@@ -415,17 +417,8 @@ function handleSseConnect(channelId) {
             const data = JSON.parse(resData);
             pushResponseMessageList(data);
           }
-        // } else {
-        //   console.log('消息接收结束.')
-        //   if (streamLoading.value) {
-        //     streamLoading.value.close();
-        //   }
-        // }
       } else if(event.data.includes('[DONE]')) {
           console.log('消息接收结束.')
-          // if (streamLoading.value) {
-          //   streamLoading.value.close();
-          // }
           chatStreamLoading.value = false ; // 关闭流式结束
         }
 
@@ -543,6 +536,7 @@ const sendMessage = (type) => {
 
   let formData = {
     channelId: channelId.value,
+    channelStreamId: channelStreamId.value,
     message: message.value,
     businessIds: [businessId.value],
     type: type , 
@@ -601,14 +595,15 @@ onMounted(() => {
   roleId.value = getParam('roleId')
   channelId.value = getParam('channelId')
 
-  handleSseConnect(channelId.value)
+  // handleSseConnect(channelId.value)
+  handleSseConnect(channelStreamId.value)
   handleGetInfo(roleId.value);
 })
 
 
 // 销毁信息
 onBeforeUnmount(() => {
-  handleCloseSse(channelId.value).then(res => {
+  handleCloseSse(channelStreamId.value).then(res => {
     console.log('关闭sse连接成功:' + channelId)
   })
 });
