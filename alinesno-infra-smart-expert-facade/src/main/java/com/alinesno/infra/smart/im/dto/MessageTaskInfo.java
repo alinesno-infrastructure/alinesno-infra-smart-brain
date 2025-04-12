@@ -21,6 +21,9 @@ public class MessageTaskInfo implements Serializable {
     // 消息渠道的唯一标识
     private long channelId ;
 
+    // 消息渠道的流ID
+    private String channelStreamId ;
+
     // 场景的唯一标识
     private long sceneId ;
 
@@ -109,6 +112,15 @@ public class MessageTaskInfo implements Serializable {
 
     // 附件列表
     private List<FileAttachmentDto> attachments ;
+
+    // 所属机构ID
+    private Long orgId ;
+
+    // 所属部门ID
+    private Long departmentId ;
+
+    // 所属操作员ID
+    private Long operatorId ;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
