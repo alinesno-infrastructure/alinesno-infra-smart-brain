@@ -37,6 +37,7 @@ public class DocReviewSceneInfoDto extends SceneInfoDto {
     private List<DocReviewRulesDto> reviewListDtos ;  // 审核列表
     private String reviewListKnowledgeBase;  // 审核列表知识库
     private String contractOverview;  // 合同概述
+    private Integer genStatus ; // 生成状态
 
     private List<Map<String , String>> contractTypes ;   // 合同类型列表，每项包含合同类型的有关信息
 }
