@@ -241,7 +241,9 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 // import { v4 as uuidv4 } from 'uuid'
 
 import SnowflakeId from "snowflake-id";
+
 const snowflake = new SnowflakeId();
+const channelStreamId = ref(snowflake.generate());
 const { proxy } = getCurrentInstance();
 
 // const openDebuggerDialog = ref(true)
@@ -590,11 +592,11 @@ const handlePlayGenContent = (item) => {
 }
 
 /** 连接sse */
-function handleSseConnect(channelId) {
+function handleSseConnect(channelStreamId) {
   nextTick(() => {
-    if (channelId) {
+    if (channelStreamId) {
 
-      let sseSource = openSseConnect(channelId);
+      let sseSource = openSseConnect(channelStreamId);
       // 接收到数据
       sseSource.onmessage = function (event) {
 
@@ -606,9 +608,6 @@ function handleSseConnect(channelId) {
           }
         } else if(event.data.includes('[DONE]')) {
           console.log('消息接收结束.')
-          // if (streamLoading.value) {
-          //   streamLoading.value.close();
-          // }
           chatStreamLoading.value = false ; // 关闭流式结束
         }
 
@@ -679,6 +678,7 @@ const sendMessage = (type) => {
 
   let formData = {
     channelId: channelId.value,
+    channelStreamId: channelStreamId.value,
     message: message.value,
     businessIds: [businessId.value],
     type: type , 
@@ -719,7 +719,8 @@ onMounted(() => {
   shareId.value = getParam('shareId')
   channelId.value = snowflake.generate()
 
-  handleSseConnect(channelId.value)
+  // handleSseConnect(channelId.value)
+  handleSseConnect(channelStreamId.value)
   handleGetInfo(shareId.value);
 })
 
