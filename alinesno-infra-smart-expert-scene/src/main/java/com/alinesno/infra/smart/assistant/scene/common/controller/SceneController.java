@@ -16,6 +16,7 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
 import com.alinesno.infra.smart.scene.service.ISceneService;
@@ -25,7 +26,6 @@ import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.dtflys.forest.annotation.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -334,6 +334,7 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
      * 更新场景的Agents智能体工程师
      * @return
      */
+    @DataPermissionSave
     @PostMapping("/updateSceneAgents")
     public AjaxResult updateSceneAgents(@Validated @RequestBody UpdateSceneAgentDto dto){
         log.debug("dto = {}" , dto);
@@ -343,6 +344,16 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         return AjaxResult.success();
     }
 
+    /**
+     * 获取场景的Agents智能体工程师
+     * @return
+     */
+    @DataPermissionSave
+    @PostMapping("/getRoleList")
+    public AjaxResult getRoleList(@Validated @RequestBody RoleListRequestDto dto){
+        log.debug("dto = {}" , dto);
+        return AjaxResult.success(service.getRoleList(dto));
+    }
 
     @Override
     public ISceneService getFeign() {
