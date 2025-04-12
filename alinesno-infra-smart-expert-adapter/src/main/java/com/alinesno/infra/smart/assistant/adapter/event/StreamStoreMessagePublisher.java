@@ -40,6 +40,10 @@ public class StreamStoreMessagePublisher {
         entity.setChannelId(taskInfo.getChannelId());
         entity.setRoleId(role.getId()) ;
 
+        entity.setOrgId(taskInfo.getOrgId());
+        entity.setDepartmentId(taskInfo.getDepartmentId());
+        entity.setOperatorId(taskInfo.getOperatorId());
+
         messageService.save(entity);
 
         long messageId = entity.getId() ;
