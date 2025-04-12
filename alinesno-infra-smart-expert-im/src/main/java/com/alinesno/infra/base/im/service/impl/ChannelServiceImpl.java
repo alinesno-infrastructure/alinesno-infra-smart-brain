@@ -298,15 +298,25 @@ public class ChannelServiceImpl extends IBaseServiceImpl<ChannelEntity, ChannelM
 
         log.debug("orgIds = {}" , orgIds);
 
+        List<OrganizationDto> orgList = organizationConsumer.findOrgByIds(orgIds).getData();
+
         return page.convert(entity -> {
 
             ChannelResponseDto dto = new ChannelResponseDto() ;
             BeanUtils.copyProperties(entity, dto);
 
-            OrganizationDto org = organizationConsumer.findOrg(entity.getOrgId()).getData();
-            if(org != null){
-                dto.setOrgName(org.getOrgName());
+            if(orgList != null){
+                dto.setOrgName(orgList.stream()
+                        .filter(org -> org.getId().equals(entity.getOrgId()))
+                        .findFirst()
+                        .map(OrganizationDto::getOrgName)
+                        .orElse("未知组织"));
             }
+
+//            OrganizationDto org = organizationConsumer.findOrg(entity.getOrgId()).getData();
+//            if(org != null){
+//                dto.setOrgName(org.getOrgName());
+//            }
 
             return dto ;
         });
