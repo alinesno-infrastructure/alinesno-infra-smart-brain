@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.im.entity;// 用户频道
 
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
@@ -38,6 +39,10 @@ public class MessageEntity extends InfraBaseEntity {
 
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true, comment = "所属频道ID")
     private Long channelId;
+
+    @TableField
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = true, comment = "所属频道流ID")
+    private String channelStreamId ;
 
     @Column(type = MySqlTypeConstant.LONGTEXT, comment = "消息内容")
     private String content;
