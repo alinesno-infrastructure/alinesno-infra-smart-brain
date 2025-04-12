@@ -18,7 +18,26 @@ var managerUrl = {
   uploadOss: prefix +"uploadOss",
   updateChapterContent: prefix +"updateChapterContent",
   dispatchAgent: prefix +"dispatchAgent",
+  updateChapterPromptContent: prefix +"updateChapterPromptContent",
+  updateSceneGenStatus: prefix +"updateSceneGenStatus",
   initAgents: prefix + "initAgents"
+}
+
+// 更新场景状态
+export function updateSceneGenStatus(sceneId , genStatus) {
+  return request({
+    url: managerUrl.updateSceneGenStatus + '?sceneId=' + parseStrEmpty(sceneId) + "&genStatus=" + genStatus , 
+    method: 'get'
+  })
+}
+
+// 更新prompt内容
+export function updateChapterPromptContent(data) {
+  return request({
+    url: managerUrl.updateChapterPromptContent , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 分配Agent角色到每个章节
