@@ -9,8 +9,9 @@ public interface IOrgWorkplaceService extends IBaseService<OrgWorkplaceEntity> {
 
     /**
      * 组织使用指定的工作台，处理过程
-     * 1. 通过workplaceId复制工作台和工作台关联的Item到当前组织下面，然后修改名称
-     * 2. 在OrgWorkplace表中添加一条记录，表示当前组织已经有使用的工作台
+     * 1. 通过workplaceId复制工作台和工作台关联的Item到当前组织下面，然后修改名称，
+     * 2. 如果是channel频道和scene场景的话，则复制该频道和场景到当前组织下面，然后指向Agent对象信息。
+     * 3. 在OrgWorkplace表中添加一条记录，表示当前组织已经有使用的工作台
      */
     void useWorkplace(OrgWorkplaceDto dto);
 
