@@ -73,17 +73,20 @@
 
 <script setup>
 import { ref, reactive } from 'vue';
-
+import { ElLoading } from 'element-plus';
 import { getScene } from '@/api/base/im/scene/documentReview';
 import { genReviewList } from '@/api/base/im/scene/documentReviewSceneInfo';
 
 const route = useRoute();
+
+const channelStreamId = ref(route.query.channelStreamId);
 const currentSceneInfo = ref({});
 // const formSize = ref('default');
 const ruleFormRef = ref();
 const sceneId = ref(route.query.sceneId)
+const streamLoading = ref(null)
 
-const emit = defineEmits(['handleStepClick'])
+const emit = defineEmits(['handleStepClick' , 'genSingleChapterContent'])
 
 // 定义表单数据
 const ruleForm = reactive({
@@ -147,11 +150,29 @@ const submitForm = async () => {
     await formEl.validate((valid) => {
         if (valid) {
             console.log('submit!', ruleForm);
+
             ruleForm.sceneId = currentSceneInfo.value.id ;
+            ruleForm.channelStreamId = channelStreamId.value ;
+
+            // 开始生成
+            streamLoading.value = ElLoading.service({
+                lock: true,
+                background: 'rgba(255, 255, 255, 0.4)',
+                customClass: 'custom-loading'
+            });
+
+            if(ruleForm.reviewListOption == 'aigen'){
+                let text = '正在使用AI生成校验规则内容，请稍等.';
+                streamLoading.value.setText(text)
+                emit('genSingleChapterContent', currentSceneInfo.value.analysisAgentEngineer) ; 
+            }
+
             genReviewList(ruleForm).then(res => {
                 console.log('res = ' + res);
                 emit('handleStepClick', 2);
+                streamLoading.value.close();
             })
+
         } else {
             console.log('error submit!');
         }
@@ -182,12 +203,12 @@ onMounted(() => {
     .contract-review-container {
         .review-methods-container {
             padding: 10px;
-            background: #262727;
+            background: #fff;
             border-radius: 5px;
             margin-top: 10px;
             .review-methods-title {
                 font-size: 14px;
-                background: #1d1e1f;
+                background: #f5f5f5;
                 border-radius: 5px;
                 padding: 10px;
             }
@@ -198,12 +219,12 @@ onMounted(() => {
         }
         .contract-overview-container {
             padding: 10px;
-            background: #262727;
+            background: #fff;
             border-radius: 5px;
             margin-top: 10px;
             .contract-overview-title {
                 font-size: 14px;
-                background: #1d1e1f;
+                background: #f5f5f5;
                 border-radius: 5px;
                 padding: 10px;
             }
