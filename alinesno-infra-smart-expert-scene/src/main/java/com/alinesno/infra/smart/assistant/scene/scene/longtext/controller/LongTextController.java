@@ -2,24 +2,23 @@ package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChapterEditorDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
-import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
-import com.alinesno.infra.smart.scene.enums.SceneEnum;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -50,40 +49,8 @@ public class LongTextController extends SuperController {
     @Autowired
     private IIndustryRoleService roleService ;
 
-    /**
-     * 通过Id获取到场景
-     *
-     * @return
-     */
-    @GetMapping("/getScene")
-    public AjaxResult getScene(@RequestParam("id") long id) {
-
-        Assert.isTrue(id > 0, "参数不能为空");
-
-        SceneEntity entity = service.getById(id);
-        if (entity == null) {
-            return AjaxResult.error("未找到对应的场景实体");
-        }
-
-        LongTextSceneDto dto = new LongTextSceneDto();
-        BeanUtils.copyProperties(entity, dto);
-
-        SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoByCode(entity.getSceneType());
-
-        dto.setAgents(sceneInfoDto.getAgents());
-        dto.setSceneId(sceneInfoDto.getId());
-
-        // 查询出当前的章节编辑人员
-        dto.setChapterEditors(RoleUtils.getEditors(roleService , entity.getChapterEditor()));
-
-        // 查询出当前的内容编辑人员
-        dto.setContentEditors(RoleUtils.getEditors(roleService, entity.getContentEditor()));
-
-        // 章节树信息
-        dto.setChapterTree(chapterService.getChapterTree(entity.getId()));
-
-        return AjaxResult.success("操作成功.", dto);
-    }
+    @Autowired
+    private ILongTextSceneService longTextSceneService ;
 
     /**
      * 更新章节编辑人员
@@ -109,11 +76,11 @@ public class LongTextController extends SuperController {
 
         SceneEntity entity = service.getById(id);
 
-        if(type.equals("chapter")){
-            entity.setChapterEditor(editors);
-        }else {
-            entity.setContentEditor(editors);
-        }
+//        if(type.equals("chapter")){
+//            entity.setChapterEditor(editors);
+//        }else {
+//            entity.setContentEditor(editors);
+//        }
 
         service.updateById(entity);
         return ok();
@@ -132,32 +99,34 @@ public class LongTextController extends SuperController {
             return error("参数不能为空");
         }
 
-        SceneEntity entity = service.getById(id);
-        entity.setContentEditor(editors);
-
-        service.updateById(entity);
+//        SceneEntity entity = service.getById(id);
+//        entity.setContentEditor(editors);
+//
+//        service.updateById(entity);
         return ok();
     }
 
-    /**
-     * 设置Agent的任务
-     * @return
-     */
-    @PostMapping("/initAgents")
-    public AjaxResult initAgents(@RequestBody @Validated InitAgentsDto dto){
-        log.debug("dto = {}" , dto) ;
-
-        chapterService.initAgents(dto) ;
-
-        return AjaxResult.success("操作成功.") ;
-    }
+//    /**
+//     * 设置Agent的任务
+//     * @return
+//     */
+//    @PostMapping("/initAgents")
+//    public AjaxResult initAgents(@RequestBody @Validated InitAgentsDto dto){
+//        log.debug("dto = {}" , dto) ;
+//
+//        chapterService.initAgents(dto) ;
+//
+//        return AjaxResult.success("操作成功.") ;
+//    }
 
     /**
      * 更新用户编辑章节，即每个章节需要指定编辑人员
      */
+    @DataPermissionQuery
     @PostMapping("/updateChapterContentEditor")
-    public AjaxResult updateChapterContentEditor(@RequestBody @Validated ChatContentEditDto dto) {
-        chapterService.updateChapterEditor(dto);
+    public AjaxResult updateChapterContentEditor(@RequestBody @Validated ChatContentEditDto dto , PermissionQuery query) {
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(dto.getSceneId() , query) ;
+        chapterService.updateChapterEditor(dto , longTextSceneEntity.getId());
         return ok() ;
     }
 
@@ -165,16 +134,22 @@ public class LongTextController extends SuperController {
      * 分配智能助手到每个章节内容
      * @return
      */
+    @DataPermissionQuery
     @GetMapping("/dispatchAgent")
-    public AjaxResult dispatchAgent(@RequestParam long sceneId) {
+    public AjaxResult dispatchAgent(@RequestParam long sceneId , PermissionQuery query) {
 
         SceneEntity entity = service.getById(sceneId) ;
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
 
         ChatContentEditDto dto = new ChatContentEditDto() ;
         dto.setSceneId(sceneId);
-        dto.setRoleId(Long.parseLong(entity.getContentEditor()));
+        dto.setRoleId(Long.parseLong(longTextSceneEntity.getContentEditor().split(",")[0]));
 
-        List<ChapterEntity> chapters = chapterService.list(new LambdaQueryWrapper<ChapterEntity>().eq(ChapterEntity::getSceneId, sceneId)) ;
+        LambdaQueryWrapper<ChapterEntity> lambdaQueryWrapper =  new LambdaQueryWrapper<ChapterEntity>()
+                .eq(ChapterEntity::getSceneId, sceneId)
+                .eq(ChapterEntity::getLongTextSceneId, longTextSceneEntity.getId());
+
+        List<ChapterEntity> chapters = chapterService.list(lambdaQueryWrapper) ;
         List<Long> chapterIds = chapters.stream()
                 .map(ChapterEntity::getId)
                 .toList();
@@ -184,7 +159,7 @@ public class LongTextController extends SuperController {
                 .toList();
 
         dto.setChapters(chapterIdsStr);
-        chapterService.updateChapterEditor(dto);
+        chapterService.updateChapterEditor(dto, longTextSceneEntity.getId());
 
         SceneDto sceneEntity = new SceneDto();
         BeanUtils.copyProperties(entity, sceneEntity);
