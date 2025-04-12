@@ -12,7 +12,34 @@ var managerUrl = {
   uploadOss: prefix +"uploadOss",
   updateLeaderRole: prefix +"updateLeaderRole",
   supportScene: prefix +"supportScene",
+  updateSceneAgents: prefix +"updateSceneAgents",
   getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
+  getRoleList: prefix +"getRoleList",
+}
+
+// 获取角色
+export function getRoleList(data) {
+  return request({
+    url: managerUrl.getRoleList,
+    method: 'post' , 
+    data: data
+  })
+}
+
+// 更新场景Agent
+export function updateSceneAgents(sceneId , sceneTypeId , sceneTypeCode , data) {
+  const data2 = {
+    sceneId : sceneId ,
+    sceneTypeId : sceneTypeId ,
+    sceneTypeCode : sceneTypeCode ,
+    agents: data
+  }
+
+  return request({
+    url: managerUrl.updateSceneAgents , 
+    method: 'post',
+    data: data2
+  })
 }
 
 // 通过场景id和角色类型获取到角色列表
