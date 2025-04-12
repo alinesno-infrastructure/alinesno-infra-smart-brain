@@ -89,9 +89,6 @@ export function getInfo(roleId) {
 export function chatRole(data , roleId) {
   return request({
     url: managerUrl.chatRole + '?roleId=' + parseStrEmpty(roleId),
-    headers: {
-      isEncrypt: true
-    },
     method: 'post',
     data: data
   })
