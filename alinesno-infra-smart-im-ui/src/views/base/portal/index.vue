@@ -62,14 +62,6 @@
                 <BusinessAgentPanel v-if="activeCode === 'agent'" ref="businessAgentPanelRef" />
                 <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
                 <ScenePanel v-if="activeCode === 'scene'" ref="scenePanelRef" />
-                <!-- <el-collapse-transition> -->
-                <!-- <transition name="el-fade-in-linear">
-                </transition>
-                <transition name="el-fade-in-linear">
-                </transition>
-                <transition name="el-fade-in-linear">
-                </transition> -->
-                <!-- </el-collapse-transition> -->
             </div>
 
         </el-scrollbar>
@@ -96,7 +88,7 @@ const businessAgentPanelRef = ref(null);
 const channelPanelRef = ref(null);
 
 const setupConst = [
-    { code: 'agent', label: '单聊智能体', icon: 'fa-solid fa-user-tag' },
+    { code: 'agent', label: '智能体', icon: 'fa-solid fa-user-tag' },
     { code: 'channel', label: '频道库', icon: 'fa-solid fa-box' },
     { code: 'scene', label: '应用场景', icon: 'fa-solid fa-sailboat' }
 ];
