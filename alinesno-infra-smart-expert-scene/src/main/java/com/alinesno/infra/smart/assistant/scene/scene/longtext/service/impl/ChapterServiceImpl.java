@@ -4,6 +4,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
@@ -32,7 +33,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
 //    private ISceneService sceneService;
 
     @Override
-    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId) {
+    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId) {
 
         // 先删除当前场景下的所有章节
 //        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
@@ -48,10 +49,10 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             levelNumbers.put(i, 0); // 初始化每个层级的编号为0
         }
 
-        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, levelNumbers);
+        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, longTextSceneId , levelNumbers);
     }
 
-    private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId, Map<Integer, Integer> levelNumbers) {
+    private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId, long longTextSceneId , Map<Integer, Integer> levelNumbers) {
         if (chapters == null || chapters.isEmpty()) {
             return;
         }
@@ -64,6 +65,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             entity.setParentChapterId(parentId);
             entity.setChapterLevel(level);
             entity.setSceneId(sceneId);
+            entity.setLongTextSceneId(longTextSceneId);
             entity.setIsLeaf(chapter.getChildren() == null || chapter.getChildren().isEmpty());
 
             // 生成标题
@@ -76,7 +78,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             // 递归保存子章节
             if (chapter.getChildren() != null && !chapter.getChildren().isEmpty()) {
                 levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
-                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, levelNumbers);
+                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, longTextSceneId , levelNumbers);
             }
 
             levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
@@ -100,11 +102,12 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     }
 
     @Override
-    public List<TreeNodeDto> getChapterTree(long sceneId) {
+    public List<TreeNodeDto> getChapterTree(long sceneId , long longTextSceneId) {
         log.info("getChapterTree sceneId:{}", sceneId);
 
         LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(ChapterEntity::getSceneId, sceneId);
+        wrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId);
 
         List<ChapterEntity> allChapters = this.list(wrapper);
         List<TreeNodeDto> treeNodes = new ArrayList<>();
@@ -115,12 +118,13 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     }
 
     @Override
-    public void updateChapterEditor(ChatContentEditDto dto) {
+    public void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId) {
 
         // 删除旧的编辑记录，重新添加新的编辑记录
         LambdaUpdateWrapper<ChapterEntity> updateWrapper = new LambdaUpdateWrapper<>();
 
         updateWrapper.eq(ChapterEntity::getSceneId, dto.getSceneId());
+        updateWrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId);
         updateWrapper.eq(ChapterEntity::getChapterEditor, dto.getRoleId());
         updateWrapper.set(ChapterEntity::getChapterEditor, null) ;
         update(updateWrapper) ;
@@ -144,8 +148,8 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         long id = Long.parseLong(dto.getSceneId());
         SceneEntity entity = sceneService.getById(id);
 
-        entity.setChapterEditor(dto.getOutlineEngineer());  // 大纲内容工程师
-        entity.setContentEditor(dto.getChapterEngineer());  // 章节内容工程师
+//        entity.setChapterEditor(dto.getOutlineEngineer());  // 大纲内容工程师
+//        entity.setContentEditor(dto.getChapterEngineer());  // 章节内容工程师
 
         sceneService.updateById(entity);
     }
@@ -160,10 +164,28 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         long outlineEngineer = RoleUtils.findSelectAgentIdByCode(dto , "chapterEditor") ;
         long chapterEngineer = RoleUtils.findSelectAgentIdByCode(dto , "contentEditor") ;
 
-        entity.setChapterEditor(String.valueOf(outlineEngineer));  // 大纲内容工程师
-        entity.setContentEditor(String.valueOf(chapterEngineer));  // 章节内容工程师
+//        entity.setChapterEditor(String.valueOf(outlineEngineer));  // 大纲内容工程师
+//        entity.setContentEditor(String.valueOf(chapterEngineer));  // 章节内容工程师
 
         sceneService.updateById(entity);
+    }
+
+    @Override
+    public List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto) {
+        ISceneService sceneService = SpringUtils.getBean(ISceneService.class) ;
+
+        long id = dto.getSceneId();
+        SceneEntity entity = sceneService.getById(id);
+
+        String agentTypeCode = dto.getAgentTypeCode() ;
+
+//        if("chapterEditor".equals(agentTypeCode) && entity.getChapterEditor() != null){
+//            return roleService.listByIds(Arrays.asList(entity.getChapterEditor().split(",")));
+//        }else if("contentEditor".equals(agentTypeCode) && entity.getContentEditor() != null){
+//            return roleService.listByIds(Arrays.asList(entity.getContentEditor().split(",")));
+//        }
+
+        return Collections.emptyList() ;
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
