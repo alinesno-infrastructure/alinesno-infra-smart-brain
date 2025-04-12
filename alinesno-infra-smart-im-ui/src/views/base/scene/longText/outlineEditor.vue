@@ -137,13 +137,14 @@
 <script setup>
 
 import { ref, reactive, nextTick } from 'vue';
-import { ElMessage , ElLoading } from 'element-plus';
+import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
 
 import { getParam } from '@/utils/ruoyi'
 import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
 
 import {
     updateChapterEditor, 
+    updateSceneGenStatus ,
     getScene,
     saveChapter,
     chatRole,
@@ -152,9 +153,13 @@ import {
 const route = useRoute();
 const { proxy } = getCurrentInstance();
 
+// const route = useRoute();
+const channelStreamId = ref(route.query.channelStreamId);
+
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
 const emit = defineEmits([
     'setCurrentSceneInfo' , 
+    'getChannelStreamId',
     'openChatBox' ,
     'closeShowDebugRunDialog',
     'genChapterContentByAgent',
@@ -193,6 +198,7 @@ const currentSceneInfo = ref({
     contentEditors: [] 
 })
 const currentSceneId = ref(route.query.sceneId)
+const isCheckGenStatus = ref(route.query.genStatus)
 
 const agentList = ref([])
 const chaterDialogVisible = ref(false);
@@ -280,14 +286,24 @@ const genStreamContent = async() => {
     return;
   }
 
+//   const channelStreamId = emit('getChannelStreamId');
+  console.log('channelStreamId = ' + channelStreamId.value);
+
+  if(!channelStreamId.value){
+    proxy.$modal.msgError("请先创建场景.");
+    return;
+  }
+
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '任务执行中，请勿操作其它界面 ...',
     background: 'rgba(0, 0, 0, 0.2)',
   })
 
+
   let formData = {
     sceneId: currentSceneId.value,
+    channelStreamId: channelStreamId.value ,
     message: message.value,
     roleId: person.value.id ,
   }
@@ -306,20 +322,6 @@ const genStreamContent = async() => {
   // 自动保存章节
   getOutlineJson();
 
-//   chatRole(formData).then(res => {
-//     proxy.$modal.msgSuccess("发送成功");
-//     chaterDialogVisible.value = false ;
-//     message.value = '';
-
-//     // 合并数组
-//     Array.prototype.push.apply(outline.value, res.data);
-
-//     closeStreamDialog();
-
-//   }).catch(err => {
-//     closeStreamDialog();
-//   })
-
 };
 
 const addChapter = () => {
@@ -336,22 +338,6 @@ function selectChaterGenerator(item) {
     person.value.email =  'zhangsan@example.com';
 }
 
-// /** 获取到所有的角色信息 */
-// function handleListAllRole(){
-//   listAll().then(res => {
-//     for (let i = 0; i < res.data.length ; i++) {
-//         let item = res.data[i]
-
-//         agentList.value.push({
-//           key: item.id ,
-//           avatar: item.roleAvatar ,
-//           label: item.roleName , 
-//           disabled: false ,
-//       })
-//     }
-//   })
-// }
-
 /** 配置成员 */
 function configAgent(type){
 
@@ -364,10 +350,8 @@ function configAgent(type){
     const title = type == 'chapter'?'选择大纲生成专员':'选择内容生成专员' ; 
 
     if(type === 'chapter'){
-        console.log('currentSceneInfo.value.chapterEditors= ' + currentSceneInfo.value.chapterEditors);
         channelAgentList.value = currentSceneInfo.value.chapterEditors.map(item => item.id); 
     }else if(type === 'content'){
-        console.log('currentSceneInfo.value.contentEditors= ' + currentSceneInfo.value.contentEditors);
         channelAgentList.value = currentSceneInfo.value.contentEditors.map(item => item.id); 
     }
 
@@ -393,18 +377,25 @@ function handleGetScene() {
       outline.value = res.data.chapterTree
       emit('setCurrentSceneInfo' , res.data)
 
-      // 未配置用户角色
-      if(currentSceneInfo.value.chapterEditors.length == 0){
-        // setTimeout(() => {
-        //     executeHandleRef.value.handleOpen(currentSceneInfo.value);
-        // }, 500);
-        setTimeout(() => {
-            emit('handleExecuteHandle' , currentSceneInfo.value)  
-        }, 500);
-      }else{
-        selectChaterGenerator(currentSceneInfo.value.chapterEditors[0])
-      }
+      const genStatus = currentSceneInfo.value.genStatus ;
 
+      if(genStatus == 0 && isCheckGenStatus.value){ // 未生成章节
+        ElMessageBox.confirm( '检测到生成指令['+ currentSceneInfo.value.chapterPromptContent +']是否要生成章节大纲？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        })
+        .then(() => {
+            updateSceneGenStatus(currentSceneId.value , 1).then(res => {
+                person.value = currentSceneInfo.value.chapterEditors[0];
+                message.value = currentSceneInfo.value.chapterPromptContent;
+                openChatBoxStreamContent();
+            })
+        })
+        .catch(() => {
+            console.log('用户取消了生成章节操作');
+        });
+      }
     })
 }
 
