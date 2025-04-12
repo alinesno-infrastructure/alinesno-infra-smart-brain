@@ -64,13 +64,21 @@ public class SceneEntity extends InfraBaseEntity {
     // TODO 待优化，以宽表思路处理
     // 大文本场景
     // --->>>>>>>>>>>>>>> 章节编辑人员、内容编辑人员，都以|号进行分割_start ---->>>>>>>>>>>>>
-    @TableField
-    @Column(name = "chapter_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "章节编辑人员")
-    private String chapterEditor;
-
-    @TableField
-    @Column(name = "content_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "内容编辑人员")
-    private String contentEditor;
+//    @TableField
+//    @Column(name = "chapter_prompt_content", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "Prompt内容生成")
+//    private String chapterPromptContent ;
+//
+//    @TableField
+//    @Column(name = "chapter_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "章节编辑人员")
+//    private String chapterEditor;
+//
+//    @TableField
+//    @Column(name = "content_editor", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "内容编辑人员")
+//    private String contentEditor;
+//
+//    @TableField
+//    @Column(name = "gen_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "生成状态(1生成菜单|0未生成)")
+//    private Integer genStatus = 0 ;
     // --->>>>>>>>>>>>>>> 章节编辑人员、内容编辑人员，都以|号进行分割_end ---->>>>>>>>>>>>>
 
     // 管理者场景
