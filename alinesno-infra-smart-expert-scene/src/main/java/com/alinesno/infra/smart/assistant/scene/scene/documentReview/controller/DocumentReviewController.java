@@ -124,6 +124,7 @@ public class DocumentReviewController extends SuperController {
             docSceneInfoDto.setReviewList(docReviewSceneEntity.getReviewList());
             docSceneInfoDto.setDocumentName(docReviewSceneEntity.getDocumentName());
             docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(docReviewSceneEntity.getReviewList(), DocReviewRulesDto.class));
+            docSceneInfoDto.setGenStatus(docReviewSceneEntity.getGenStatus());
         }
 
         docSceneInfoDto.setContractTypes(ContractTypeEnum.getList());
@@ -189,7 +190,7 @@ public class DocumentReviewController extends SuperController {
         DocReviewSceneEntity docReviewSceneEntity = docReviewSceneService.getBySceneId(sceneId) ;
 
         // 获取到文档的基础内容
-        String content =  analysisTool.analysisDocumentBaseContent(targetFile) ;
+        String content = analysisTool.analysisDocumentBaseContent(targetFile) ;
 
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
         taskInfo.setRoleId(docReviewSceneEntity.getAnalysisAgentEngineer());
@@ -199,7 +200,7 @@ public class DocumentReviewController extends SuperController {
 
         // 优先获取到结果内容
         WorkflowExecutionDto genContent  = new WorkflowExecutionDto() ;
-        analysisTool.handleChapterMessage(genContent , taskInfo);
+        // analysisTool.handleChapterMessage(genContent , taskInfo);
 
         // 更新Entity数据
         docReviewSceneEntity.setContractOverview(genContent.getGenContent());
