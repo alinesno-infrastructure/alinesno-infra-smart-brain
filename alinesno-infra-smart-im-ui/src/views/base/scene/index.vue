@@ -1,10 +1,11 @@
 <template>
 
+                <el-scrollbar style="height:calc(100vh - 60px)">
     <div class="tpl-app" style="display: flex;margin-left: 0px;">
 
         <SideTypePanel />
 
-        <div style="width: calc(100% - 220px);margin-top: 10px;">
+        <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
 
             <div class="search-container-panel">
                 <el-row>
@@ -34,7 +35,6 @@
             </div>
 
             <div class="channel-container-panel" style="margin-top:20px">
-                <el-scrollbar style="height:calc(100vh - 180px)">
                     <el-row>
                         <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
                             <div class="scene-card-container" @click="enterScreen(item)">
@@ -55,7 +55,7 @@
                                         </div>
                                         <div class="scene-author-info">
                                             <span class="scene-name">
-                                                <i class="fa-solid fa-paper-plane"></i>
+                                                <i class="fa-solid fa-ribbon"></i>
                                                 {{ item.orgName }}
                                             </span>
                                         </div>
@@ -64,7 +64,11 @@
                                         </div>
                                         <div class="semi-divider semi-divider-horizontal"></div>
                                         <div class="scene-footer">
-                                            <div class="scene-price">免费{{ item.usage_count }}</div>
+                                            <div class="scene-price">
+                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" /> 私有</el-tag>
+                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i class="fa-solid fa-globe" /> 公开</el-tag>
+                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" /> 组织</el-tag>
+                                            </div>
                                             <div class="scene-stats">
                                                 <span>{{ item.usage_count }}</span>
                                                 <span>使用</span>
@@ -80,11 +84,11 @@
                         </el-col>
 
                     </el-row>
-                </el-scrollbar>
             </div>
         </div>
 
     </div>
+                </el-scrollbar>
 
 </template>
 
@@ -102,6 +106,7 @@ import learnLogo from '@/assets/icons/tech_01.svg';
 
 const router = useRouter();
 
+const sceneLoading = ref(true)
 const sceneLists = ref([])
 
 /** 进入长文本编辑界面 */
@@ -111,36 +116,13 @@ function enterScreen(item) {
       path: path , 
       query: { 'sceneId': item.id }
   })
-
-    // // 跳转至详情页
-    // if (item.sceneType === 'leader_model') {  // 领导模型
-    //     router.push({
-    //         path: '/scene/leaderModel',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else if (item.sceneType === 'exam') {
-    //     router.push({
-    //         path: '/scene/exam',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else if (item.sceneType === 'video_clip') {
-    //     router.push({
-    //         path: '/scene/mediaClip',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // } else {  // 默认长文本模型
-    //     router.push({
-    //         path: '/scene/longText',
-    //         query: { 'sceneId': item.id }
-    //     })
-    // }
-
 }
 
 /** 获取场景列表 */
 function handleScreenList() {
     sceneListByPage().then(res => {
         sceneLists.value = res.data
+        sceneLoading.value = false
     })
 }
 
@@ -293,7 +275,7 @@ onMounted(() => {
 
             .scene-price {
                 font-weight: 500;
-                font-size: 16px;
+                font-size: 14px;
                 line-height: 22px;
                 color: var(--coz-fg-primary);
             }
