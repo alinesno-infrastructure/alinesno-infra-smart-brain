@@ -8,15 +8,13 @@ import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import java.io.Serializable;
-
 /**
  * 文档审核场景信息实体类
  */
 @EqualsAndHashCode(callSuper = true)
 @TableName("document_review_scene")
 @Data
-public class DocReviewSceneEntity extends InfraBaseEntity implements Serializable {
+public class DocReviewSceneEntity extends InfraBaseEntity {
 
     @TableField
     @Column(name = "scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "场景ID")
@@ -72,4 +70,9 @@ public class DocReviewSceneEntity extends InfraBaseEntity implements Serializabl
     @TableField
     @Column(name = "contract_overview", type = MySqlTypeConstant.TEXT, comment = "合同概览")
     private String contractOverview;
+
+    @TableField
+    @Column(name = "gen_status", type = MySqlTypeConstant.INT, length = 1, comment = "生成状态")
+    private Integer genStatus = 0 ;
+
 }
