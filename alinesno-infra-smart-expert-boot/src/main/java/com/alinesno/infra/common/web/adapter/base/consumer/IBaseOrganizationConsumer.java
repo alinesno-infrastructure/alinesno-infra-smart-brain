@@ -4,6 +4,8 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.dtflys.forest.annotation.*;
 
+import java.util.List;
+
 /**
  * 组织信息接口
  * @author luoxiaodong
@@ -11,6 +13,14 @@ import com.dtflys.forest.annotation.*;
  */
 @BaseRequest(baseURL = "#{alinesno.infra.gateway.host}" , connectTimeout = 30*1000)
 public interface IBaseOrganizationConsumer {
+
+    /**
+     * 通过ID查询组织号
+     * @param ids 组织ID号
+     * @return 代码列表
+     */
+    @Post("/v1/api/base/authority/organize/findOrgByIds")
+    R<List<OrganizationDto>> findOrgByIds(@JSONBody List<Long> ids) ;
 
     /**
      * 通过ID查询组织号
