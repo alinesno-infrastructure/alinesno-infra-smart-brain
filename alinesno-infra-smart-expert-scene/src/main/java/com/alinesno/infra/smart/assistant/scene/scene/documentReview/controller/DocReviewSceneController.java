@@ -81,6 +81,8 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
         List<DocReviewRulesDto> rules = new ArrayList<DocReviewRulesDto>() ;
 
         DocReviewSceneEntity entity = service.getBySceneId(sceneId) ;
+        entity.setGenStatus(1) ;
+        service.update(entity);
 
         entity.setContractType(dto.getContractType());
         entity.setReviewPosition(dto.getReviewPosition());
@@ -91,6 +93,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
 
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
+            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
             taskInfo.setRoleId(entity.getAnalysisAgentEngineer());
             taskInfo.setChannelId(sceneId);
             taskInfo.setSceneId(sceneId) ;
