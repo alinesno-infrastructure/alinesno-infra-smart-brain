@@ -196,8 +196,11 @@ import { nextTick, onMounted } from "vue";
 
 // import { v4 as uuidv4 } from 'uuid'
 
-import SnowflakeId from "snowflake-id";
-const snowflake = new SnowflakeId();
+// import SnowflakeId from "snowflake-id";
+// const snowflake = new SnowflakeId();
+
+const route = useRoute();
+const channelStreamId = ref(route.query.channelStreamId);
 
 const openDebuggerDialog = ref(true)
 
@@ -217,7 +220,7 @@ const audioUrl = ref('');
 const transcription = ref('');
 
 // 记录当前的高度差值
-const heightDiff = ref(260);
+const heightDiff = ref(280);
 
 const { proxy } = getCurrentInstance();
 
@@ -482,7 +485,7 @@ const updateChatWindowHeight = (heightVal) => {
   if(heightVal > 0){
     heightDiff.value = heightVal + 20;
   }else {
-    heightDiff.value = 260;
+    heightDiff.value = 280;
   }
 };
 
@@ -497,11 +500,11 @@ function handleExecutorMessage(item) {
 }
 
 /** 连接sse */
-function handleSseConnect(channelId) {
+function handleSseConnect(channelStreamId) {
   nextTick(() => {
-    if (channelId) {
+    if (channelStreamId) {
 
-      let sseSource = openSseConnect(channelId);
+      let sseSource = openSseConnect(channelStreamId);
       // 接收到数据
       sseSource.onmessage = function (event) {
 
@@ -513,13 +516,7 @@ function handleSseConnect(channelId) {
           }
         } else if(event.data.includes('[DONE]')) {
           console.log('消息接收结束.')
-          // if (streamLoading.value) {
-          //   streamLoading.value.close();
-          // }
           chatStreamLoading.value = false ; // 关闭流式结束
-
-          // 获取推荐问题
-          // getUserQuestionSuggestions();
         }
 
       }
@@ -527,20 +524,8 @@ function handleSseConnect(channelId) {
   })
 }
 
-/** 获取推荐问题 */
-// function getUserQuestionSuggestions() {
-//   nextTick(() => {
-//     console.log('getUserQuestionSuggestions = ' + userQuestionSuggestionsRef.value.handleGetUserQuestionSuggestions());
-//     userQuestionSuggestionsRef.vlaue.handleGetUserQuestionSuggestions();
-//   })
-// }
-
 // 获取businessId并放到提问框架里面
 function handleBusinessIdToMessageBox(item) {
-  // const businessIdMessage = ' #' + item.businessId + ' ';
-  // businessId.value = item.businessId;
-  // message.value += businessIdMessage;
-
   const businessIdMessage = ' #' + item.messageId + ' ';
   businessId.value = item.messageId;
   message.value += businessIdMessage;
@@ -548,12 +533,6 @@ function handleBusinessIdToMessageBox(item) {
 
 /** 文件引用 */
 function handleFileIdToMessageBox(file) {
-
-  // const businessIdMessage = ' #doc' + fileId + ' ';
-  // businessId.value = fileId;
-  // message.value += businessIdMessage;
-  // refreshFieldId.value.push(fileId);
-
   const attFile = {
     id: file.fileId,
     name: file.fileName ,
@@ -572,15 +551,7 @@ function handleGetInfo(roleId) {
     pushResponseMessageList(msg);
 
     loading.value = false;
-
-    // getUserQuestionSuggestions();
-
-    // nextTick(() => {
-    //   agentSingleRightPanelRef.value.setRoleInfo(role);
-    // })
-
   }).catch(error => {
-    // streamLoading.value.close();
     loading.value = false
   })
 }
@@ -590,23 +561,16 @@ const sendMessage = (type) => {
 
   // 获取到上传的文件列表
   const uploadFiles = [] ; // attachmentPanelRef.value.handleGetUploadFiles();
-  // console.log('handleGetUploadFiles = ' + uploadFiles);
 
   if (!message.value) {
     proxy.$modal.msgError("请输入消息内容.");
     return;
   }
-
-  // streamLoading.value = ElLoading.service({
-  //   lock: true,
-  //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.2)',
-  // })
-
   chatStreamLoading.value = true ;
 
   let formData = {
     channelId: channelId.value,
+    channelStreamId: channelStreamId.value,
     message: message.value,
     businessIds: [businessId.value],
     type: type ,
@@ -617,7 +581,6 @@ const sendMessage = (type) => {
     proxy.$modal.msgSuccess("发送成功");
     pushResponseMessageList(res.data);
   }).catch(error => {
-    // streamLoading.value.close();
     chatStreamLoading.value = false
   })
 
@@ -643,17 +606,6 @@ function setRoleInfo(newRoleInfo) {
   roleInfo.value = newRoleInfo
 }
 
-// onMounted(() => {
-//   initChatBoxScroll();
-
-//   roleId.value = getParam('roleId')
-//   channelId.value = snowflake.generate()
-//   // channelId.value = getParam('channelId')
-
-//   handleSseConnect(channelId.value)
-//   handleGetInfo(roleId.value);
-// })
-
 /** 打开运行聊天界面 */
 function openChatBox(roleIdVal , messageVal){
   initChatBoxScroll();
@@ -674,18 +626,24 @@ function openChatBoxWithRole(roleIdVal){
 
 onMounted(() => {
   channelId.value = getParam('sceneId') ; // snowflake.generate()
-  handleSseConnect(channelId.value)
+  // handleSseConnect(channelId.value)
+  handleSseConnect(channelStreamId.value)
 })
 
 // 销毁信息
 onBeforeUnmount(() => {
-  handleCloseSse(channelId.value).then(res => {
+  handleCloseSse(channelStreamId.value).then(res => {
     console.log('关闭sse连接成功:' + channelId)
   })
 });
 
+const getChannelStreamId = () => {
+  return channelStreamId.value ;
+}
+
 defineExpose({
   setRoleInfo, 
+  getChannelStreamId ,
   openChatBox,
   openChatBoxWithRole
 })
