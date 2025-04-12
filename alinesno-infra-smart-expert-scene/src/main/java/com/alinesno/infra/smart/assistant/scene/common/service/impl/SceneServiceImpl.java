@@ -8,12 +8,14 @@ import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationCons
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
+import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
+import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
@@ -134,14 +136,19 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
 
         log.debug("orgIds = {}" , orgIds);
 
+        List<OrganizationDto> orgList = organizationConsumer.findOrgByIds(orgIds).getData();
+
         return page.convert(entity -> {
 
             SceneResponseDto dto = new SceneResponseDto() ;
             BeanUtils.copyProperties(entity, dto);
 
-            OrganizationDto org = organizationConsumer.findOrg(entity.getOrgId()).getData();
-            if(org != null){
-                dto.setOrgName(org.getOrgName());
+            if(orgList != null){
+                dto.setOrgName(orgList.stream()
+                        .filter(org -> org.getId().equals(entity.getOrgId()))
+                        .findFirst()
+                        .map(OrganizationDto::getOrgName)
+                        .orElse("未知组织"));
             }
 
             return dto ;
@@ -164,7 +171,8 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         String sceneTypeCode = dto.getSceneTypeCode() ;
 
         if(sceneTypeCode.equals(SceneEnum.LONG_TEXT.getSceneInfo().getCode())){
-            chapterService.updateSceneAgents(dto);
+            ILongTextSceneService longTextSceneService =  SpringUtils.getBean(ILongTextSceneService.class) ;
+            longTextSceneService.updateSceneAgents(dto);
         } else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
             IDocReviewSceneService docReviewSceneService = SpringUtils.getBean(IDocReviewSceneService.class) ;
             docReviewSceneService.updateSceneAgents(dto);
@@ -172,9 +180,29 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             documentReaderSceneService.updateSceneAgents(dto);
         }
+
 //        else if(sceneTypeCode.equals(SceneEnum.VIDEO_GENERATION.getSceneInfo().getCode())){
 //
 //        }
 
     }
+
+    @Override
+    public List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto) {
+        String sceneTypeCode = dto.getSceneTypeCode() ;
+
+        if(sceneTypeCode.equals(SceneEnum.LONG_TEXT.getSceneInfo().getCode())){
+            ILongTextSceneService longTextSceneService =  SpringUtils.getBean(ILongTextSceneService.class) ;
+            return longTextSceneService.getRoleList(dto);
+        } else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
+            IDocReviewSceneService docReviewSceneService = SpringUtils.getBean(IDocReviewSceneService.class) ;
+            return docReviewSceneService.getRoleList(dto);
+        }else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
+            IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
+            return documentReaderSceneService.getRoleList(dto);
+        }
+
+        return null;
+    }
+
 }
