@@ -121,6 +121,28 @@
                     </el-select>
                 </el-form-item>
 
+                <el-form-item label="发布范围" prop="sceneScope" label-width="100px">
+                    <el-radio-group v-model="configForm.sceneScope">
+                        <el-radio v-for="item in sceneScopeList" 
+                        style="margin-top: 10px;margin-bottom: 10px;" 
+                        :key="item.value" 
+                        :value="item.value"
+                        :label="item.value" 
+                        size="large">
+
+                        <div style="padding:10px; display: flex;flex-direction: column;line-height: 1.5rem;">
+                            <span style="font-size:15px;font-weight: bold;">
+                            <i :class="item.icon"></i> {{ item.label }}
+                            </span>
+                            <span style="color:#a5a5a5">
+                            {{  item.desc }}
+                            </span>
+                        </div>
+
+                        </el-radio>
+                    </el-radio-group>
+                </el-form-item> 
+
                 <el-form-item v-if="currentScreenAgent.needDataModel" label="数据处理模型" props="lllmModelId">
                     <LLMSelector :modelType="'large_language_model'" v-model="configForm.llmModelId" />
                 </el-form-item>
@@ -227,6 +249,10 @@
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
+import {
+  getSceneScope
+} from "@/api/smart/assistant/scene";
+
 import ChannelDialog from './publishChannelDialog.vue';
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
@@ -238,6 +264,20 @@ const { proxy } = getCurrentInstance();
 
 const showStartUsingDialog = ref(false);
 const currentStartUsingChannel = ref({});
+const sceneScopeList = ref([
+    {
+        "value": "org",
+        "label": "组织场景",
+        "icon": "fa-solid fa-truck-plane",
+        "desc": "组织场景可以选择公共和组织内的智能体加入场景"
+    },
+    {
+        "value": "public",
+        "label": "公开场景",
+        "icon": "fa-solid fa-globe",
+        "desc": "公开场景只能选择公开的智能体加入场景"
+    }
+])
 
 const currentRole = ref({
     roleName: ''
@@ -257,6 +297,7 @@ const configForm = ref({
     expireType: 0, // 默认无限
     expireTime: '',
     qpm: '100',
+    sceneScope: 'org',
     appId: '',
     secret: '',
     token: '',
@@ -302,6 +343,9 @@ const formRules = {
     sceneId: [
         { required: true, message: '场景ID不能为空', trigger: 'blur' }
     ] , 
+    sceneScope: [
+        { required: true, message: '场景范围不能为空', trigger: 'blur' }
+    ],
     agentTypeId: [
         { required: true, message: '场景Agent类型ID不能为空', trigger: 'blur' }
     ] 
@@ -336,6 +380,13 @@ const copyCode = () => {
 function goBack() {
     router.go(-1);
 }
+
+/** 场景数据权限 */
+// const handleGetSceneScope = () => {
+//   getSceneScope().then(res => {
+//     sceneScopeList.value = res.data ;
+//   })
+// }
 
 const startUsing = (channel) => {
 
@@ -530,6 +581,7 @@ onMounted(() => {
 
     getRoleInfo();
     handleGetChannels();
+    // handleGetSceneScope();
 });
 </script>
 
