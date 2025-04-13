@@ -15,8 +15,10 @@ public interface IAgentStoreService extends IBaseService<AgentStoreEntity> {
      *
      * @param roleId
      * @param agentStoreTypeId
+     * @param sceneScope
+     * @param orgId
      */
-    void addRoleToStore(Long roleId , Long agentStoreTypeId);
+    void addRoleToStore(Long roleId , Long agentStoreTypeId, String sceneScope, Long orgId);
 
     /**
      * 从商店中查询角色信息
