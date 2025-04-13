@@ -193,7 +193,7 @@ const handleMouseLeave = () => {
 const handleItemClick = (item) => {
 
   if(item.isMature === '0'){
-    proxy.$modal.msgError("该场景为还在研究测试中，暂不支持使用");
+    proxy.$modal.msgError("该场景为还在开发测试中，暂不支持使用");
     return;
   }
 
