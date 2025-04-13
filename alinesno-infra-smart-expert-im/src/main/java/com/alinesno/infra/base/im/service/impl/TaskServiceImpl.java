@@ -101,10 +101,11 @@ public class TaskServiceImpl implements ITaskService {
     public void handleWorkflowMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
 
         String channelId = String.valueOf(taskInfo.getChannelId()) ;
+        String chatStreamId = taskInfo.getChannelStreamId() ;
 
         // 如果是过滤结果词，则不做输出
         if(FilterWordUtils.contains(genContent.getGenContent())){
-            sseService.sendDone(channelId);
+            sseService.sendDone(chatStreamId);
             return ;
         }
 
@@ -127,7 +128,7 @@ public class TaskServiceImpl implements ITaskService {
         queMessage.setBusinessId(messageId);
 
         // 发送到前端
-        sseService.send(channelId, queMessage);
+        sseService.send(chatStreamId, queMessage);
     }
 
     @Override
