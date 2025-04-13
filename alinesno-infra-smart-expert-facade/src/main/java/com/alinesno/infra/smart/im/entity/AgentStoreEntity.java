@@ -31,4 +31,8 @@ public class AgentStoreEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.BIGINT, isNull = false, comment = "角色所属组织")
     private Long roleOrganizationId;
 
+    @TableField("scene_scope")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = false, comment = "场景范围")
+    private String sceneScope ;
+
 }
