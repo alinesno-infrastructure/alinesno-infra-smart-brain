@@ -55,4 +55,9 @@ public class AgentSceneEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.BIGINT, isNull = false, comment = "LLM模型ID")
     private long llmModelId ;
 
+    // 场景范围
+    @TableField("scene_scope")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, isNull = false, comment = "场景范围")
+    private String sceneScope ;
+
 }
