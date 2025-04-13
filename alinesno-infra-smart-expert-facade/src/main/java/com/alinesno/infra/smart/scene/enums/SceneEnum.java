@@ -24,19 +24,23 @@ public enum SceneEnum {
                     new SceneAgent(20000101L, "文档分析助手", "analysisAgent", "对合同类文档的审核，审核清单生成，还有分析合同目录内容等。" , true),
                     new SceneAgent(20000202L, "文档审核助手", "logicReviewer", "审核文档内容的逻辑是否合理，有无矛盾或不合理之处。")
             ))),
-    VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "1", "", "fa-solid fa-video",
+    VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "0", "", "fa-solid fa-video",
             List.of(
                     new SceneAgent(70000701L, "视频脚本生成助手", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
                     new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
             ))),
-    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "1", "", "fa-solid fa-book-open-reader",
+    // 增加数据分析场景
+    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
+            List.of(
+                    new SceneAgent(50000501L, "数据分析规划助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础"),
+                    new SceneAgent(50000502L, "企业数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式"),
+                    new SceneAgent(50000503L, "数据报表生成助手", "dataReportGenerator", "根据解析提取到的数据信息，自动生成格式规范、内容清晰的数据报表")
+            )
+    )) ,
+    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "0", "", "fa-solid fa-book-open-reader",
             List.of(
                     new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
-            ))),
-    EXAM_PAPER_GENERATION(new SceneInfoDto(60000000L, "生成试卷", "examPaperGeneration", "根据培训情况，自动生成试卷内容，并导出 Word 内容", "已集成", "1", "", "fa-solid fa-file-invoice",
-            List.of(
-                    new SceneAgent(40000401L, "题目生成助手", "questionGenerator", "根据培训内容和要求，自动生成试卷题目。")
             ))),
     MEETING_MINUTES(new SceneInfoDto(80000000L, "会议纪要", "meetingMinutes", "自动生成会议纪要，生成专业报告并优化排版，根据上传的模板生成会议纪要", "已集成", "0", "", "fa-solid fa-calendar-check",
             Arrays.asList(
@@ -44,7 +48,7 @@ public enum SceneEnum {
                     new SceneAgent(60000602L, "纪要生成助手", "minutesGenerator", "根据语音识别的文字内容，生成会议纪要。"),
                     new SceneAgent(60000603L, "模板应用助手", "templateApplier", "将生成的会议纪要应用到指定的模板中，优化排版。")
             ))),
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "产品进度", "productResearch", "自动接入 Git 或者禅道等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "研发进度", "productResearch", "自动接入 Git 或者禅道等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "禅道进度提取助手", "progressExtractor", "从禅道系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "Git进度提取助手", "progressExtractor", "从 Git 仓库中提取产品的开发进度信息。"),
