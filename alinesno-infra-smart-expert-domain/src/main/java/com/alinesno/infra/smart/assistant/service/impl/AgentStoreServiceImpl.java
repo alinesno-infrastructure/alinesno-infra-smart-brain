@@ -27,7 +27,7 @@ public class AgentStoreServiceImpl extends IBaseServiceImpl<AgentStoreEntity, Ag
     private IIndustryRoleService industryRoleService ;
 
     @Override
-    public void addRoleToStore(Long roleId , Long agentStoreTypeId) {
+    public void addRoleToStore(Long roleId , Long agentStoreTypeId, String sceneScope, Long orgId) {
 
         // 判断角色是否已经在商店里面
         if(roleId != null){
@@ -40,11 +40,16 @@ public class AgentStoreServiceImpl extends IBaseServiceImpl<AgentStoreEntity, Ag
                 agentStoreEntity.setAgentType(agentStoreTypeId);
                 update(agentStoreEntity) ;
             }else{
+
                 AgentStoreEntity agentStoreEntity = new AgentStoreEntity();
+
                 agentStoreEntity.setSortOrder((int) count);
                 agentStoreEntity.setAgentId(roleId);
                 agentStoreEntity.setRoleOrganizationId(AgentConstants.STORE_EMPTY_ORG_ID);
                 agentStoreEntity.setAgentType(agentStoreTypeId);
+                agentStoreEntity.setSceneScope(sceneScope);
+                agentStoreEntity.setOrgId(orgId);
+
                 save(agentStoreEntity) ;
             }
         }
