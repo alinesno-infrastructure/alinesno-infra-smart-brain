@@ -51,6 +51,7 @@ public class ChannelPublishDTO extends BaseDto {
     private long llmModelId; // 场景的LLM 模型的智能体ID
     private long sceneId; // 场景的智能体ID
     private long agentTypeId; // 场景的智能体类型ID
+    private String sceneScope ; // 场景的智能体商店类型
 
     /**
      * 转换为实体对象
@@ -86,6 +87,7 @@ public class ChannelPublishDTO extends BaseDto {
     @SneakyThrows
     public static ChannelPublishDTO toDto(ChannelPublishEntity entity) {
         ChannelPublishDTO dto = new ChannelPublishDTO();
+
         dto.setRoleId(entity.getRoleId());
         dto.setShareName(entity.getName());
         dto.setDescription(entity.getDescription());
@@ -131,6 +133,7 @@ public class ChannelPublishDTO extends BaseDto {
             configMap.put("sceneId", configMap.get("sceneId"));
             configMap.put("agentTypeId", configMap.get("agentTypeId"));
             configMap.put("llmModelId", configMap.get("llmModelId"));
+            configMap.put("sceneScope", configMap.get("sceneScope"));
         }
 
         return configMap;
@@ -164,6 +167,7 @@ public class ChannelPublishDTO extends BaseDto {
             config.put("llmModelId", llmModelId);
             config.put("sceneId", sceneId);
             config.put("agentTypeId", agentTypeId);
+            config.put("sceneScope", sceneScope);
         }
 
         return config;
@@ -203,6 +207,7 @@ public class ChannelPublishDTO extends BaseDto {
             dto.setSceneId((Long) configMap.get("sceneId"));
             dto.setAgentTypeId((Long) configMap.get("agentTypeId"));
             dto.setLlmModelId((Long) configMap.get("llmModelId"));
+            dto.setSceneScope((String) configMap.get("sceneScope"));
         }
     }
 
