@@ -81,6 +81,7 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
         MessageTaskInfo taskInfo = new MessageTaskInfo();
         taskInfo.setChannelId(dto.getTestChannelId());
+        taskInfo.setChannelStreamId(String.valueOf(dto.getTestChannelId()));
         long workflowId = IdUtil.getSnowflakeNextId() ;
 
         IndustryRoleEntity role = new IndustryRoleEntity();
