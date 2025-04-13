@@ -37,7 +37,7 @@
                     </el-card>
                     <!-- AI配置界面 -->
                     <el-card class="box-card" shadow="never">
-                        <el-form ref="agentModelConfigFormRef" :model="agentModelConfigForm"
+                        <el-form ref="agentModelConfigFormRef" size="large" :model="agentModelConfigForm"
                             :rules="agentModelConfigRules">
 
 
