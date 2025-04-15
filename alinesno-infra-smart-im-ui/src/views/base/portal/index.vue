@@ -46,7 +46,16 @@
                     @click="handleClick(item.code)" 
                     @mouseenter="handleMouseEnter(item.code)"
                     @mouseleave="handleMouseLeave(item.code)">
-                    <i :class="item.icon" /> {{ item.label }}
+                    <el-tooltip
+                            class="box-item"
+                            effect="dark"
+                            :content="item.desc"
+                            placement="top"
+                        >
+                        <span>
+                            <i :class="item.icon" /> {{ item.label }}
+                        </span>
+                    </el-tooltip>
                 </span>
             </div>
 
@@ -54,14 +63,14 @@
 
 
                 <h2 class="section-title" style="margin-top: 5px;margin-left: 10px;font-size: 20px;">
-                    <i class="type.banner" /> {{ getNameByCode(activeCode) }}
-                    <span style="font-size: 13px;color: #777;margin-left:10px;">由组织提供出来公共可用的智能体商店.</span>
+                    <i class="type.banner" /> {{ getNameByCode(activeCode)?.label }}
+                    <span style="font-size: 13px;color: #777;margin-left:10px;"> {{ getNameByCode(activeCode)?.desc }} </span>
                 </h2>
 
                 <!-- 解决方案 -->
                 <BusinessAgentPanel v-if="activeCode === 'agent'" ref="businessAgentPanelRef" />
-                <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
                 <ScenePanel v-if="activeCode === 'scene'" ref="scenePanelRef" />
+                <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
             </div>
 
         </el-scrollbar>
@@ -88,9 +97,9 @@ const businessAgentPanelRef = ref(null);
 const channelPanelRef = ref(null);
 
 const setupConst = [
-    { code: 'agent', label: '智能体', icon: 'fa-solid fa-user-tag' },
-    { code: 'channel', label: '频道库', icon: 'fa-solid fa-box' },
-    { code: 'scene', label: '应用场景', icon: 'fa-solid fa-sailboat' }
+    { code: 'agent', label: '智能体', icon: 'fa-solid fa-user-tag' , desc: '单个智能体交互聊天' },
+    { code: 'scene', label: '应用场景', icon: 'fa-solid fa-sailboat'  , desc: '多智能体处理具体业务场景应用场景' },
+    { code: 'channel', label: '频道库', icon: 'fa-solid fa-box' , desc: '多个智能体业务结合放到同一个群里' },
 ];
 
 const defaultDesc = ref('AI工作台是融合多种先进技术的综合性工作平台，具备知识管理、内容生成、创作辅助等多种功能，功能包括多模型接入、知识管理、智能创作等功能，能够极大提升工作效率与创新能力，助力企业和个人在数字化时代实现高效、智能的工作模式 。')
@@ -136,7 +145,7 @@ const handleMouseEnter = (code) => {
 
 const getNameByCode = (code) => {
     const item = setupConst.find((item) => item.code === code);
-    return item ? item.label : '';
+    return item
 }
 
 const handleMouseLeave = () => {
