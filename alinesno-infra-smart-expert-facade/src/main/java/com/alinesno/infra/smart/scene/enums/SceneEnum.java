@@ -30,11 +30,10 @@ public enum SceneEnum {
                     new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
             ))),
     // 增加数据分析场景
-    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
+    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "1", "", "fa-solid fa-chart-bar",
             List.of(
-                    new SceneAgent(50000501L, "数据分析规划助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础"),
-                    new SceneAgent(50000502L, "企业数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式"),
-                    new SceneAgent(50000503L, "数据报表生成助手", "dataReportGenerator", "根据解析提取到的数据信息，自动生成格式规范、内容清晰的数据报表")
+                    new SceneAgent(50000501L, "数据分析助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础" , true),
+                    new SceneAgent(50000502L, "数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式")
             )
     )) ,
     DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "0", "", "fa-solid fa-book-open-reader",
@@ -48,6 +47,12 @@ public enum SceneEnum {
                     new SceneAgent(60000602L, "纪要生成助手", "minutesGenerator", "根据语音识别的文字内容，生成会议纪要。"),
                     new SceneAgent(60000603L, "模板应用助手", "templateApplier", "将生成的会议纪要应用到指定的模板中，优化排版。")
             ))),
+    // 增加内容格式化场景，输入不规则内容，针对给定的模板生成结果内容
+    CONTENT_FORMATTER(new SceneInfoDto(70000000L, "内容排版", "contentFormatter", "根据给定的模板，自动生成内容，并优化排版", "已集成", "1", "", "fa-solid fa-file-lines",
+            List.of(
+                    new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。", true)
+            )
+    )),
     PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "研发进度", "productResearch", "自动接入 Git 或者禅道等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "禅道进度提取助手", "progressExtractor", "从禅道系统中提取产品的进度信息。"),
