@@ -17,7 +17,7 @@
 
       <!--角色数据-->
       <el-col :span="20" :xs="20">
-        <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+        <el-form :model="queryParams" ref="queryRef"  :inline="true" v-show="showSearch" label-width="68px">
 
           <div style="display: flex;align-items: flex-start;justify-content: space-between;width: 100%;">
 
@@ -138,7 +138,7 @@
 
     <!-- 添加或修改角色配置对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="RoleRef" label-width="80px">
+      <el-form :model="form" :rules="rules" size="large" ref="RoleRef" label-width="80px">
 
         <el-row>
           <el-col :span="24" class="editor-after-div">
