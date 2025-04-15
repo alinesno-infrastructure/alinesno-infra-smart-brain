@@ -1,5 +1,5 @@
 <template>
-  <div class="row">
+  <div class="app-container">
   </div>
 </template>
 
