@@ -85,6 +85,13 @@ public class WorkplaceController extends BaseController<WorkplaceEntity, IWorkpl
         return tableDataInfo;
     }
 
+    @ResponseBody
+    @DeleteMapping("deleteWorkplace/{ids}")
+    public AjaxResult deleteWorkplace(@PathVariable String ids) {
+        service.deleteWorkplace(ids);
+        return AjaxResult.success("删除成功");
+    }
+
     /**
      * createChannel
      * @return
