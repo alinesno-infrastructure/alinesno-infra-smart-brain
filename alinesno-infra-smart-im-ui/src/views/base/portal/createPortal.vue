@@ -133,6 +133,9 @@ const selectTemplate = (id) => {
 
   selectedTemplateId.value = id;
   ruleForm.value.template = id;
+
+  // 获取到item的名称
+  ruleForm.value.name = workbenches.value.find(item => item.id === id).name;
 };
 
 const handleSubmit = () => {
