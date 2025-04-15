@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.enums.AgentStoreTypeEnum;
@@ -57,6 +58,10 @@ public class RoleStoreController {
 
         List<IndustryRoleEntity> publicRole = agentStoreService.findRoleFromStore(page);
         List<IndustryRoleEntity> orgRole = agentStoreService.findRoleFromStoreByOrgId(page , CurrentAccountJwt.get().getOrgId());
+
+        // TODO 获取到组织信息，将两个角色进行合并
+        List<Long> publicIds = publicRole.stream().map(IndustryRoleEntity::getOrgId).distinct().toList();
+        List<Long> orgIds = orgRole.stream().map(IndustryRoleEntity::getOrgId).distinct().toList();
 
         Map<String , Object> hashMap = new HashMap<>();
         hashMap.put("publicRoleList", publicRole);
