@@ -1,7 +1,7 @@
 <template>
   <div class="config-agent-container">
     <div class="description">
-      配置场景智能体，将场景能力进一步结合到场景中，实现场景智能体的功能。 
+      配置场景智能体，将场景能力进一步结合到场景中，实现场景智能体的功能。
     </div>
     <div v-for="parentItem in currentSupportSceneAgents" :key="parentItem.id" class="agent-item">
       <div class="agent-info">
@@ -33,7 +33,7 @@
 
 <script setup name="Index">
 import {
-  getRoleBySceneIdAndAgentType , 
+  getRoleBySceneIdAndAgentType ,
   updateSceneAgents
 } from '@/api/smart/assistant/scene'
 
@@ -74,15 +74,15 @@ const saveRole = () => {
   console.log('saveRole = ' + JSON.stringify(currentSupportSceneAgents.value))
 
   const sceneTypeId = currentSupportScene.value.id
-  const sceneTypeCode = currentSupportScene.value.code 
+  const sceneTypeCode = currentSupportScene.value.code
 
-  let selectArr = [] ; 
+  let selectArr = [] ;
   for (const item of currentSupportSceneAgents.value) {
       // selectArr.push(item.id)
       const i = {
-        id: item.id , 
-        code: item.code , 
-        selectAgentId: item.selectAgentId 
+        id: item.id ,
+        code: item.code ,
+        selectAgentId: item.selectAgentId
       }
       selectArr.push(i)
   }
