@@ -56,10 +56,17 @@
 
     <!-- 公共包依赖 -->
     <dependencies>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
             <version>${commons-text.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>e-iceblue</groupId>
+            <artifactId>spire.doc.free</artifactId>
+            <version>5.2.0</version>
         </dependency>
 
     </dependencies>
@@ -144,6 +151,19 @@
 
         </dependencies>
     </dependencyManagement>
+
+    <repositories>
+        <repository>
+            <id>iceblue-repos</id>
+            <url>https://repo.e-iceblue.cn/repository/maven-public/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
 </project>
 
