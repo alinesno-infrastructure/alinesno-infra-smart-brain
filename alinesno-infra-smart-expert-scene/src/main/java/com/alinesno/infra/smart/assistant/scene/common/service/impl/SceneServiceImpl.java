@@ -3,13 +3,14 @@ package com.alinesno.infra.smart.assistant.scene.common.service.impl;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.enums.HasDeleteEnums;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.service.IDataAnalysisSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
@@ -52,14 +53,14 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         SceneEntity sceneEntity = new SceneEntity();
         BeanUtils.copyProperties(sceneDto, sceneEntity);
 
-        // 创建频道知识库
-        R<Long> createDataset = baseSearchConsumer.datasetCreate(
-                sceneEntity.getSceneDesc() ,
-                sceneEntity.getSceneName() ,
-                sceneDto.getOrgId() + "" ,
-                sceneDto.getOperatorId() + "") ;
+//        // 创建频道知识库
+//        R<Long> createDataset = baseSearchConsumer.datasetCreate(
+//                sceneEntity.getSceneDesc() ,
+//                sceneEntity.getSceneName() ,
+//                sceneDto.getOrgId() + "" ,
+//                sceneDto.getOperatorId() + "") ;
+//        sceneEntity.setKnowledgeId(createDataset.getData()+"");
 
-        sceneEntity.setKnowledgeId(createDataset.getData()+"");
         save(sceneEntity);
 
         return sceneEntity ;
@@ -170,20 +171,32 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
     public void updateSceneAgents(UpdateSceneAgentDto dto) {
         String sceneTypeCode = dto.getSceneTypeCode() ;
 
+        // 文本审核
         if(sceneTypeCode.equals(SceneEnum.LONG_TEXT.getSceneInfo().getCode())){
             ILongTextSceneService longTextSceneService =  SpringUtils.getBean(ILongTextSceneService.class) ;
             longTextSceneService.updateSceneAgents(dto);
-        } else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
+        }
+        // 文档审核
+        else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
             IDocReviewSceneService docReviewSceneService = SpringUtils.getBean(IDocReviewSceneService.class) ;
             docReviewSceneService.updateSceneAgents(dto);
-        }else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
+        }
+        // 文本阅读
+        else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             documentReaderSceneService.updateSceneAgents(dto);
         }
+        // 数据分析
+        else if(sceneTypeCode.equals(SceneEnum.DATA_ANALYSIS.getSceneInfo().getCode())){
+            IDataAnalysisSceneService dataAnalysisSceneService = SpringUtils.getBean(IDataAnalysisSceneService.class) ;
+            dataAnalysisSceneService.updateSceneAgents(dto);
+        }
+        // 内容排版
+        else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
+            IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
+            contentFormatterSceneService.updateSceneAgents(dto);
+        }
 
-//        else if(sceneTypeCode.equals(SceneEnum.VIDEO_GENERATION.getSceneInfo().getCode())){
-//
-//        }
 
     }
 
@@ -191,16 +204,32 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
     public List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto) {
         String sceneTypeCode = dto.getSceneTypeCode() ;
 
+        // 长文本
         if(sceneTypeCode.equals(SceneEnum.LONG_TEXT.getSceneInfo().getCode())){
             ILongTextSceneService longTextSceneService =  SpringUtils.getBean(ILongTextSceneService.class) ;
             return longTextSceneService.getRoleList(dto);
-        } else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
+        }
+        // 文档审核
+        else if (sceneTypeCode.equals(SceneEnum.DOCUMENT_REVIEW.getSceneInfo().getCode())) {
             IDocReviewSceneService docReviewSceneService = SpringUtils.getBean(IDocReviewSceneService.class) ;
             return docReviewSceneService.getRoleList(dto);
-        }else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
+        }
+        // 文本阅读
+        else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             return documentReaderSceneService.getRoleList(dto);
         }
+        // 数据分析
+        else if(sceneTypeCode.equals(SceneEnum.DATA_ANALYSIS.getSceneInfo().getCode())){
+            IDataAnalysisSceneService dataAnalysisSceneService = SpringUtils.getBean(IDataAnalysisSceneService.class) ;
+            return dataAnalysisSceneService.getRoleList(dto);
+        }
+        // 内容排版
+        else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
+            IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
+            return contentFormatterSceneService.getRoleList(dto);
+        }
+
 
         return null;
     }
