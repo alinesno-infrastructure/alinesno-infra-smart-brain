@@ -122,7 +122,7 @@ const getDocxContent = async() => {
 
         const response = await getPreviewDocx(sceneId.value);
 
-        console.log('response.data:' + response); // 打印数据内容
+        console.log('response.data: ' + response); // 打印数据内容
         renderAsync(response, contentRef.value , null  , {
             inWrapper: true 
         });
