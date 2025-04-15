@@ -86,6 +86,36 @@ const screenRoutes = [
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+  // -->>>>>>>>>>> 数据分析生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/dataAnalysis/index',
+    component: () => import('@/views/base/scene/dataAnalysis/index'),
+    name: '/scene/dataAnalysis/index',
+    meta: { title: '数据分析生成场景', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/dataAnalysis/dataParser',
+    component: () => import('@/views/base/scene/dataAnalysis/dataParser'),
+    name: '/scene/dataAnalysis/dataParser',
+    meta: { title: '数据规划分析面板', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>> 数据分析生成场景_end>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 内容排版_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/contentFormatter/index',
+    component: () => import('@/views/base/scene/contentFormatter/index'),
+    name: '/scene/contentFormatter/index',
+    meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/contentFormatter/contentParser',
+    component: () => import('@/views/base/scene/contentFormatter/contentParser'),
+    name: '/scene/contentFormatter/contentParser',
+    meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>> 内容排版_end>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   // -->>>>>>>>>>>> 短视频生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
     path: '/scene/videoGeneration/index',
