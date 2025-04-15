@@ -1,18 +1,22 @@
 package com.alinesno.infra.smart.assistant.template.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.enums.FileTypeEnums;
+import com.alinesno.infra.smart.assistant.template.dto.TemplateParamJsonRequestDto;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -93,8 +97,17 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
     @PostMapping("/importData")
     public AjaxResult importData(@RequestPart("file") MultipartFile file, TemplateEntity templateEntity){
 
+        String originalFilename = file.getOriginalFilename();
+
+        // 判断数据库中是否有同名的模板
+        boolean isExist = service.lambdaQuery()
+                .eq(TemplateEntity::getTemplateName, originalFilename)
+                .eq(TemplateEntity::getOrgId, CurrentAccountJwt.get().getOrgId())
+                .exists();
+        Assert.isFalse(isExist, "模板上传失败，模板名称已存在");
+
         // 新生成的文件名称
-        String fileSuffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")+1);
+        String fileSuffix = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".")+1);
         String newFileName = IdUtil.getSnowflakeNextId() + "." + fileSuffix;
 
         // 复制文件
@@ -106,13 +119,15 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
         assert constants != null;
 
         log.debug("fileType = {} , constants = {}" , fileType , constants);
-
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
         R<String> r = storageConsumer.upload(targetFile) ;
 
         // 保存模板信息到数据库
-        templateEntity.setTemplateName(file.getOriginalFilename());
+        if(StringUtils.isBlank(templateEntity.getTemplateName())){
+            templateEntity.setTemplateName(file.getOriginalFilename());
+        }
+
         templateEntity.setTemplateDesc("模板描述");
         templateEntity.setTemplateKey(IdUtil.nanoId(8));
         templateEntity.setCallCount(0);
@@ -125,6 +140,13 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
         log.debug("ajaxResult= {}" , r);
         return AjaxResult.success("上传成功." , r.getData()) ;
 
+    }
+
+    @DataPermissionSave
+    @PostMapping("/updateTemplateParamFormat")
+    public AjaxResult updateTemplateParamFormat(@RequestBody TemplateParamJsonRequestDto dto){
+        service.updateTemplateParamFormat(dto);
+        return AjaxResult.success("更新成功") ;
     }
 
 
