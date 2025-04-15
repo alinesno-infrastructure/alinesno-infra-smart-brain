@@ -21,8 +21,18 @@ var managerUrl = {
     removeUrl: prefix + "delete" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
+    updateTemplateParamFormat: prefix + "updateTemplateParamFormat",
     catalogTreeSelect: prefix + "catalogTreeSelect",
     downloadfile: prefix + "downloadfile"
+}
+
+// 更新模板参数
+export function updateTemplateParamFormat(data) {
+    return request({
+        url: managerUrl.updateTemplateParamFormat ,
+        method: 'post',
+        data: data
+    })
 }
 
 // 查询部门下拉树结构
