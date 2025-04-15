@@ -387,7 +387,6 @@ const getWorkplaceNameByType = (type) => {
   return null ;
 };
 
-
 /** 查询应用列表 */
 function getList() {
   loading.value = true;
