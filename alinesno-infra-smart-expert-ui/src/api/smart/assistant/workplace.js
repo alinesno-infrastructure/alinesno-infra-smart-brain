@@ -12,7 +12,7 @@ var managerUrl = {
   statusUrl: prefix +"changeStatus" ,
   cleanUrl: prefix + "clean",
   detailUrl: prefix +"detail",
-  removeUrl: prefix + "delete" ,
+  removeUrl: prefix + "deleteWorkplace" ,
   removeWorkplace: prefix + "removeWorkplace" ,
   exportUrl: prefix + "exportExcel",
   changeField: prefix + "changeField",
