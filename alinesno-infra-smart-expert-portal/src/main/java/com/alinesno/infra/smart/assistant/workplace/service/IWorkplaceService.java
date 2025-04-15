@@ -22,4 +22,10 @@ public interface IWorkplaceService extends IBaseService<WorkplaceEntity> {
      */
     List<WorkplaceEntity> listOrgWorkplace(Long orgId);
 
+    /**
+     * 删除工作台
+     * @param ids
+     * @return
+     */
+    void deleteWorkplace(String ids);
 }
