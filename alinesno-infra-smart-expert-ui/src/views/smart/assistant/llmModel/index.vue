@@ -122,7 +122,7 @@
     <!-- 添加或修改应用配置对话框 -->
     <el-dialog :title="title" v-model="open" width="800px" append-to-body :before-close="handleClose">
 
-      <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px" style="padding:20px;">
+      <el-form :model="form" :rules="rules" ref="LlmModelRef" label-width="80px" style="padding:20px;" size="large">
         <el-row>
           <el-col :span="24">
             <el-form-item label="模型名称" prop="modelName">
