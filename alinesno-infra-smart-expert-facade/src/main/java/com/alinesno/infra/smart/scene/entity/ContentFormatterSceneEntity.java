@@ -34,8 +34,15 @@ public class ContentFormatterSceneEntity extends InfraBaseEntity {
      * 记录负责模板提取的工程师姓名或标识，方便追溯责任人
      */
     @TableField
-    @Column(name = "template_extractor_engineer", type = MySqlTypeConstant.BIGINT, length = 32, comment = "记录负责模板提取的工程师姓名或标识，方便追溯责任人")
+    @Column(name = "template_extractor_engineer", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "记录负责模板提取的工程师姓名或标识，方便追溯责任人")
     private String templateExtractorEngineer;
+
+    /**
+     * 记录负责内容审核的工程师姓名或标识，方便追溯责任人
+     */
+    @TableField
+    @Column(name = "content_reviewer_engineer", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "记录负责内容审核的工程师姓名或标识，方便追溯责任人")
+    private String contentReviewerEngineer;
 
     /**
      * 生成状态(1生成菜单|0未生成)，默认未生成
