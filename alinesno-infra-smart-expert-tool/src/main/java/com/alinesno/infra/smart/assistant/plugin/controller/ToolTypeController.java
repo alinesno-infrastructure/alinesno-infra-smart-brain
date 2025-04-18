@@ -72,6 +72,10 @@ public class ToolTypeController extends BaseController<ToolTypeEntity, IToolType
     @DataPermissionQuery
     @GetMapping("/getAllToolType")
     public AjaxResult getAllToolType(PermissionQuery query) {
+
+        // 如果用户所在组织工具类型为空，则默认初始化工具
+        service.initToolType(CurrentAccountJwt.get().getOrgId());
+
         LambdaQueryWrapper<ToolTypeEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.setEntityClass(ToolTypeEntity.class);
         query.toWrapper(queryWrapper);
