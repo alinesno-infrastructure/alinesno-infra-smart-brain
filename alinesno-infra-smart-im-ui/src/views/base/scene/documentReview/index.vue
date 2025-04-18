@@ -196,6 +196,7 @@ const beforeAvatarUpload = (rawFile) => {
 };
 
 const handleOpenDataset = () => {
+    /*
     proxy.$router.push({
         path: '/scene/documentReview/documentDataset',
         query: {
@@ -203,6 +204,7 @@ const handleOpenDataset = () => {
             channelStreamId: snowflake.generate() 
         }
     })
+    */
 }
 
 const handleGetScene = () => {
