@@ -2,29 +2,33 @@
   <div class="siderbar">
     <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
 
-      <el-tooltip effect="dark" :content="item.desc" v-for="item in menuItems" :key="item.id" placement="right">
-        <el-menu-item :index="item.id" @click="openServiceList(item.link)">
+        <el-menu-item :index="item.id" @click="openServiceList(item.link)" v-for="item in menuItems" :key="item.id"  class="aip-menu-item">
           <i :class="item.icon"></i>
+          <span>
+            {{ item.desc }}
+          </span>
         </el-menu-item>
-      </el-tooltip>
     </el-menu>
 
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
-      <el-tooltip effect="dark" content="创建频道" placement="right">
-        <el-menu-item index="9" @click="addChannel()">
+        <el-menu-item index="9" @click="addChannel()" class="aip-menu-item">
           <i class="fa-solid fa-marker"></i>
+          <span>
+            创建频道
+          </span>
       </el-menu-item>
-      </el-tooltip>
-      <el-tooltip effect="dark" content="创建场景" placement="right">
-        <el-menu-item index="11" @click="addScreen()">
+        <el-menu-item index="11" @click="addScreen()" class="aip-menu-item">
           <i class="fa-solid fa-paper-plane"></i>
+          <span>
+            创建场景
+          </span>
       </el-menu-item>
-      </el-tooltip>
-      <el-tooltip effect="dark" content="优化建议" placement="right">
-        <el-menu-item index="12" @click="dialogVisible = true">
+        <el-menu-item index="12" @click="dialogVisible = true" class="aip-menu-item">
           <i class="fa-solid fa-message"></i>
+          <span>
+            建议
+          </span>
         </el-menu-item>
-      </el-tooltip>
     </el-menu>
 
     <!-- 建议和反馈 -->
@@ -71,12 +75,12 @@ const router = useRouter();
 
 // 菜单列表
 const menuItems = ref([
-  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '我的工作台' },
-  { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道市场' },
-  { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景市场' },
-  { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体商店' },
-  { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织智能体' },
-  { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '模板市场' },
+  { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '工作台' },
+  { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道' },
+  { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景' },
+  { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体' },
+  { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织' },
+  { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '市场' },
 ]);
 
 // 打开服务市场
@@ -113,7 +117,7 @@ function openSmartService() {
 
 <style lang="scss" scoped>
 .el-menu-vertical:not(.el-menu--collapse) {
-  width: 65px;
+  width: 70px;
 }
 
 .acp-suggest {
@@ -124,11 +128,30 @@ function openSmartService() {
 .siderbar {
   float: left;
   height: 100%;
-  width: 64px;
+  width: 70px;
   border-right: 1px solid #e6e6e6;
   padding-top: 40px;
   overflow: hidden;
   background-color: #fff;
   position: fixed;
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.aip-menu-item {
+
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1.2rem;
+  padding-top: 0px;
+  margin: 5px;
+  border-radius: 10px;
+  justify-content: center;
+
+  span{
+    font-size:12px;
+    color: #888;
+  }
 }
 </style>
