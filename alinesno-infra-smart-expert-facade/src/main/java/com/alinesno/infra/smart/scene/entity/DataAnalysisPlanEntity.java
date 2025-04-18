@@ -41,7 +41,7 @@ public class DataAnalysisPlanEntity extends InfraBaseEntity {
 
     @TableField
     @Column(name = "parent_plan_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "父数据分析规划ID")
-    private Long parentChapterId;
+    private Long parentPlanId;
 
     @TableField
     @Column(name = "is_leaf", type = MySqlTypeConstant.TINYINT, length = 1, comment = "是否为叶子节点")
