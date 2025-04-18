@@ -9,10 +9,48 @@ var managerUrl = {
   updateSceneGenStatus: prefix +"updateSceneGenStatus",
   updateChapterPromptContent: prefix +"updateChapterPromptContent",
   getTemplates: prefix + "getTemplates" , 
+  reviewChatRoleSync: prefix +"reviewChatRoleSync",
+  reviewChatRoleSingleSync: prefix +"reviewChatRoleSingleSync",
   chatRoleSync: prefix +"chatRoleSync",
-  // getPreviewDocx: prefix +"getPreviewDocx",
   getPreviewDocxPreviewUrl: prefix +"getPreviewDocxPreviewUrl",
   getPreviewDocx: prefix +"getPreviewDocxByPdf",
+  getReviewRules: prefix + 'getReviewRules' , 
+  reviewCheckExpert: prefix +"reviewCheckExpert"
+}
+
+export function reviewCheckExpert(data) {
+  return request({
+    url: managerUrl.reviewCheckExpert , 
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取检查列表
+export function getReviewRules() {
+  return request({
+    url: managerUrl.getReviewRules, 
+    method: 'get'
+  })
+}
+
+// 单条内容检查 
+export function reviewChatRoleSingleSync(data) {
+  return request({
+    url: managerUrl.reviewChatRoleSingleSync, 
+    method: 'post',
+    data: data
+  })
+}
+
+
+// 内容检查
+export function reviewChatRoleSync(data) {
+  return request({
+    url: managerUrl.reviewChatRoleSync , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 获取预览下载地址 
