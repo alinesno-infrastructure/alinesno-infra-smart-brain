@@ -73,6 +73,12 @@ export const constantRoutes = [
         meta: { title: '全局配置', icon: 'dashboard', affix: true }
       },
       {
+        path: '/smart/assistant/config/globalConfig',
+        component: () => import('@/views/smart/assistant/config/globalConfig'),
+        name: '/smart/assistant/config/globalConfig',
+        meta: { title: '团队配置', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/dashboard/smartService',
         component: () => import('@/views/smartService'),
         name: '/dashboard/smartService',
@@ -187,6 +193,24 @@ export const constantRoutes = [
         component: () => import('@/views/smart/assistant/publishChannel/index'),
         name: '/expert/smart/assistant/role/publishChannel' , 
         meta: { title: '推送渠道', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/reviews/index' , 
+        component: () => import('@/views/smart/assistant/reviews/index'),
+        name: '/expert/smart/assistant/reviews/index' , 
+        meta: { title: '审核清单配置', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/reviews/addAudit' , 
+        component: () => import('@/views/smart/assistant/reviews/addAudit'),
+        name: '/expert/smart/assistant/reviews/addAudit' , 
+        meta: { title: '添加审核清单', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/expert/smart/assistant/reviews/ruleList' , 
+        component: () => import('@/views/smart/assistant/reviews/ruleList'),
+        name: '/expert/smart/assistant/reviews/ruleList' , 
+        meta: { title: '添加审核规则清单', icon: 'dashboard', affix: true }
       },
     ]
   },
