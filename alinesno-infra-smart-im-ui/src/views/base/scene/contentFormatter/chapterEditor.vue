@@ -1,14 +1,11 @@
 <template>
   <div style="width:100%" @click="handleDocumentClick">
-    <div class="cm-container content-formater-box">
+    <div class="cm-container content-formater-box " :class="locateAfterTextStatus?'find-text-locate':''">
       <code-mirror ref="editorRef" basic :lang="lang" v-model="data" @change="handleEditorChange"
         :extensions="extensions" style="height: calc( 100vh - 120px);" :theme="theme" @contextmenu.prevent="showContextMenu" />
     </div>
     <!-- 自定义上下文菜单 -->
     <div id="custom-context-menu" class="hidden" @click.stop>
-      <!-- <div style="position: absolute;top: 10px;right: 10px;" @click="hideContextMenu()">
-        <el-button type="danger" text bg size="small">关闭</el-button>
-      </div> -->
       <p>请输入您的要求：</p>
       <el-form style="width:100%" :model="formData" :rules="rules" ref="formRef">
         <el-form-item prop="userRequirement">
@@ -20,8 +17,6 @@
           ></el-input>
         </el-form-item>
       </el-form>
-
-      <!-- <el-input v-model="userRequirement" placeholder="请输入要求 ..." clearable @keyup.enter="handleMenuClick(currentAction)"></el-input> -->
 
       <ul>
         <li @click="currentAction = 'rewrite'; submitForm('rewrite')">
@@ -50,26 +45,12 @@
       </div>
     </div>
 
-    <!-- 确认对话框 
-    <el-dialog
-      title="确认替换"
-      v-model="dialogVisible"
-      width="50%"
-      :before-close="handleCloseDialog"
-    >
-      <p>{{ confirmationText }}</p>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="confirmReplacement">确 认 替 换</el-button>
-      </span>
-    </el-dialog>
-     -->
-
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, defineExpose } from 'vue';
+import { ElMessage } from 'element-plus';
 import CodeMirror from 'vue-codemirror6';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { markdown } from '@codemirror/lang-markdown';
@@ -153,6 +134,8 @@ let currentSelection = null;
 const dialogVisible = ref(false);
 const confirmationText = ref('');
 
+const locateAfterTextStatus = ref(null)
+
 // 显示确认对话框，带多个选项
 const showConfirmation = async ({ text, from, to, viewUpdate }, selectedAction, requirement) => {
   try {
@@ -194,33 +177,6 @@ const handleAIRequest = async (text, viewUpdate, action, from, to, requirement) 
 
   return result ;
 };
-
-// AI处理过程
-// const simulateAIProcess = async (text, action, requirement) => {
-//   const loading = ElLoading.service({
-//     lock: true,
-//     text: '正在重写中...',
-//     background: 'rgba(0, 0, 0, 0.2)',
-//   });
-
-//   let requestData = {
-//     roleId: roleId,
-//     sceneId: roleId,
-//     modifyContent: text , 
-//     action: action ,
-//     requirement: requirement ,
-//   }
-
-//   let result = null ;
-
-//   await processParagraph(requestData).then(res => {
-//       result = res.data.content;
-//     loading.close();
-//   }).catch(err => {
-//     loading.close();
-//   })
-
-// };
 
 // 替换选择的文本
 const replaceSelectedText = (newText, editorView, from, to) => {
@@ -313,30 +269,6 @@ const handleDocumentClick = (event) => {
   }
 };
 
-/** 连接sse */
-// function handleSseConnect(sceneId) {
-//   nextTick(() => {
-//     if (sceneId) {
-
-//       let sseSource = openSseConnect(sceneId);
-//       // 接收到数据
-//       sseSource.onmessage = function (event) {
-
-//         if (!event.data.includes('[DONE]')) {
-//           let resData = event.data;
-//           if (resData != 'ping') {  // 非心跳消息
-//             const data = JSON.parse(resData);
-//             pushResponseMessageList(data);
-//           }
-//         } else {
-//           console.log('消息接收结束.')
-//         }
-
-//       }
-//     }
-//   })
-// }
-
 // 提交表单的方法
 const submitForm = (currentAction) => {
   formRef.value.validate((valid) => {
@@ -395,35 +327,33 @@ const confirmReplacement = () => {
   hideContextMenu();
 };
 
-// 关闭对话框
-// const handleCloseDialog = (done) => {
-//   done();
-// };
+// 新增定位方法
+const locateAfterText = (targetText) => {
 
+  locateAfterTextStatus.value = true ;
 
-// onMounted(() => {
-//   // 监听全局点击事件以隐藏上下文菜单
-//   // 使用事件委托方式来处理点击事件
-// });
-
-// 清除事件监听器
-// onUnmounted(() => {
-//   // 不需要在此处清除事件监听器，因为我们在模板中使用了@click指令
-// });
+  const editorView = editorRef.value?.view;
+  if (editorView) {
+    const doc = editorView.state.doc.toString();
+    const index = doc.indexOf(targetText);
+    if (index !== -1) {
+      const position = index + targetText.length;
+      console.log('position = ' + position) 
+      editorView.dispatch({
+        selection: { anchor: position },
+        scrollIntoView: true
+      });
+    } else {
+      console.log('未找到指定字符');
+      locateAfterTextStatus.value = null ; 
+      ElMessage.warning('未找到指定字符');
+    }
+  }
+};
 
 onMounted(() => {
   sceneId.value = getParam('sceneId')
-  // handleSseConnect(sceneId.value)
-  // handleSceneMessage()
 })
-
-
-// 销毁信息
-// onBeforeUnmount(() => {
-//   handleCloseSse(sceneId.value).then(res => {
-//     console.log('关闭sse连接成功:' + sceneId)
-//   })
-// });
 
 const extensions = [
   oneDark,
@@ -432,7 +362,8 @@ const extensions = [
 
 defineExpose({
   setData,
-  getData
+  getData,
+  locateAfterText
 });
 </script>
 
@@ -448,5 +379,11 @@ defineExpose({
 <style lang="css">
 .content-formater-box .cm-editor{
     border-radius: 10px;
+}
+
+.find-text-locate .cm-activeLine.cm-line{
+  background-color: #373332;
+  border: 2px solid #ff875a;
+  border-radius: 4px;
 }
 </style>
