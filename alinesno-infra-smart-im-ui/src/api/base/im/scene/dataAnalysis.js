@@ -6,7 +6,7 @@ var prefix = '/api/infra/smart/assistant/scene/dataAnalysisScene/' ;
 
 var managerUrl = {
   // 大文本
-  saveChapter: prefix +"saveChapters",
+  saveDataPlan: prefix +"saveDataPlan",
   processParagraph: prefix +"processParagraph",
   chatRole: prefix +"chatRole",
   getScene: prefix +"getScene",
@@ -183,9 +183,9 @@ export function chatRole(data) {
 }
 
 // 保存章节
-export function saveChapter(data , sceneId) {
+export function saveDataPlan(data , sceneId) {
   return request({
-    url: managerUrl.saveChapter + "?sceneId=" + parseStrEmpty(sceneId) ,
+    url: managerUrl.saveDataPlan + "?sceneId=" + parseStrEmpty(sceneId) ,
     method: 'post',
     data: data
   })
