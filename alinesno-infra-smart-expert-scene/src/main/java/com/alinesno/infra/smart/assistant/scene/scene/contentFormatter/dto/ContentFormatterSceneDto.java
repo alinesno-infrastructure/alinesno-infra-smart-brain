@@ -37,6 +37,16 @@ public class ContentFormatterSceneDto extends SceneDto {
     private List<IndustryRoleDto> templateExtractorEngineers;
 
     /**
+     * 记录负责内容审核的工程师姓名或标识，方便追溯责任人
+     */
+    private String contentReviewerEngineer;
+
+    /**
+     * 记录负责内容审核的工程师信息，方便追溯责任人
+     */
+    private List<IndustryRoleDto> contentReviewerEngineers;
+
+    /**
      * 生成状态(1 生成菜单|0 未生成)，默认未生成
      */
     private Integer genStatus = 0;
