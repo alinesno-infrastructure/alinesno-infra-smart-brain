@@ -45,8 +45,10 @@ public class ContentFormatterSceneServiceImpl extends IBaseServiceImpl<ContentFo
         }
 
         long templateExtractorEngineer = RoleUtils.findSelectAgentIdByCode(dto , "templateExtractor") ;
+        long contentReviewerEngineer = RoleUtils.findSelectAgentIdByCode(dto , "contentReviewer") ;
 
         entity.setTemplateExtractorEngineer(String.valueOf(templateExtractorEngineer)); ;
+        entity.setContentReviewerEngineer(String.valueOf(contentReviewerEngineer)) ;
         entity.setSceneId(sceneId);
 
         entity.setDepartmentId(dto.getDepartmentId());
@@ -72,8 +74,10 @@ public class ContentFormatterSceneServiceImpl extends IBaseServiceImpl<ContentFo
 
         String agentTypeCode = dto.getAgentTypeCode() ;
 
-        if("templateExtractor".equals(agentTypeCode) && entity.getTemplateExtractorEngineer() != null){
+        if("templateExtractor".equals(agentTypeCode) && entity.getTemplateExtractorEngineer() != null) {
             return roleService.listByIds(Arrays.asList(entity.getTemplateExtractorEngineer().split(",")));
+        }else if("contentReviewer".equals(agentTypeCode) && entity.getContentReviewerEngineer() != null){
+            return roleService.listByIds(Arrays.asList(entity.getContentReviewerEngineer().split(",")));
         }
 
         return Collections.emptyList() ;
@@ -111,8 +115,11 @@ public class ContentFormatterSceneServiceImpl extends IBaseServiceImpl<ContentFo
 
                 saveOrUpdate(entity) ;
             }else {
-                if(!entity.getTemplateExtractorEngineer().equals(orginContentFormatterSceneEntity.getTemplateExtractorEngineer())){
+                if(!entity.getTemplateExtractorEngineer().equals(orginContentFormatterSceneEntity.getTemplateExtractorEngineer()) ||
+                        !entity.getContentReviewerEngineer().equals(orginContentFormatterSceneEntity.getContentReviewerEngineer())){
+
                     entity.setTemplateExtractorEngineer(orginContentFormatterSceneEntity.getTemplateExtractorEngineer()); ;
+                    entity.setContentReviewerEngineer(orginContentFormatterSceneEntity.getContentReviewerEngineer());
                     saveOrUpdate(entity) ;
                 }
             }
