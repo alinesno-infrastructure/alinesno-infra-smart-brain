@@ -1,12 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.controller;
 
-import cn.hutool.core.util.IdUtil;
-import cn.hutool.extra.spring.SpringUtil;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.common.core.cache.RedisUtils;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -18,36 +14,36 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterRequestDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterSceneDto;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ReviewRequestDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ReviewContentRequestDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.CheckRulesEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxConvertPdf;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.dto.DataPromptContentRequestDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.scene.dto.ChapterGenFormDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
-import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterSceneEntity;
-import com.alinesno.infra.smart.scene.entity.DocReaderSceneEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
-import com.spire.doc.Document;
-import com.spire.doc.FileFormat;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -62,14 +58,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Files;
-import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 数据分析场景控制器
@@ -146,11 +140,13 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
         if(dataAnalysisSceneEntity != null){
 
             dto.setTemplateExtractorEngineer(dataAnalysisSceneEntity.getTemplateExtractorEngineer());
+            dto.setContentReviewerEngineer(dataAnalysisSceneEntity.getContentReviewerEngineer());
 
             dto.setGenStatus(dataAnalysisSceneEntity.getGenStatus());
             dto.setContentPromptContent(dataAnalysisSceneEntity.getContentPromptContent());
 
             dto.setTemplateExtractorEngineers(RoleUtils.getEditors(roleService , dataAnalysisSceneEntity.getTemplateExtractorEngineer())); // 查询出当前的数据分析编辑人员
+            dto.setContentReviewerEngineers(RoleUtils.getEditors(roleService, dataAnalysisSceneEntity.getContentReviewerEngineer()));
 
             dto.setChapterTree(contentFormatterParseService.getPlanTree(entity.getId() , dataAnalysisSceneEntity.getId())); // 数据分析树信息
         }
@@ -168,6 +164,7 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
         ContentFormatterSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
         sceneEntity.setContentPromptContent(dto.getPromptContent());
+        sceneEntity.setGenStatus(1);
 
         service.updateById(sceneEntity);
         return AjaxResult.success("操作成功") ;
@@ -203,13 +200,27 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
     }
 
     /**
+     * 获取检查项目检查
+     */
+    @DataPermissionQuery
+    @GetMapping("/getReviewRules")
+    public AjaxResult getReviewRules(PermissionQuery query) {
+        return AjaxResult.success("操作成功" , CheckRulesEnum.getAllRule()) ;
+    }
+
+    /**
      * 生成章节内容
      */
     @DataPermissionQuery
     @SneakyThrows
     @PostMapping("/chatRoleSync")
-    public AjaxResult chatRoleSync(@RequestBody @Validated ReviewRequestDTO dto , PermissionQuery query) {
+    public AjaxResult chatRoleSync(@RequestBody @Validated ContentFormatterRequestDTO dto , PermissionQuery query) {
         log.debug("dto = {}", dto);
+
+        ContentFormatterSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
+        sceneEntity.setGenStatus(1);
+        sceneEntity.setContentPromptContent(dto.getContentPromptContent());
+        service.updateById(sceneEntity);
 
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
@@ -244,14 +255,8 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
             // 与模板结合，生成返回的文件url路径
             String storageId = templateService.genTemplate(dataObject , dto.getTemplateId());
-
-//            String fileKey = IdUtil.getSnowflakeNextIdStr() ;
-//            RedisUtils.setCacheObject(fileKey , abcPath , Duration.ofMinutes(5));
-
-            // TODO 待处理路径问题
             return AjaxResult.success("操作成功" , storageId) ;
         }
-
 
         return AjaxResult.success("操作成功") ;
     }
@@ -265,11 +270,6 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
     @GetMapping("/getPreviewDocx")
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam String storageId) {
-
-//        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-//        log.debug("previewUrl= {}" , previewUrl);
-//        RestTemplate restTemplate = new RestTemplate();
-//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
 
         byte[] fileBytes = storageConsumer.download(storageId , (onProgress) -> {
             log.debug("onProgress = {}" , onProgress);
@@ -327,7 +327,7 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
             // 创建临时 pdf 文件
             pdfFile = File.createTempFile("temp-pdf", ".pdf");
-            DocxConvertPdf.convert(docFile, pdfFile);
+            WordToPdfConverter.convertToPdf(docFile, pdfFile);
 
             // 读取 PDF 文件内容
             byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
@@ -355,6 +355,201 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
         }
     }
 
+    @DataPermissionQuery
+    @SneakyThrows
+    @PostMapping("/reviewChatRoleSync")
+    public AjaxResult reviewChatRoleSync(@RequestBody @Validated ReviewContentRequestDTO dto , PermissionQuery query) {
+        log.debug("dto = {}", dto);
+
+        ContentFormatterSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
+        sceneEntity.setGenStatus(1);
+        sceneEntity.setContentPromptContent(dto.getContentPromptContent());
+        service.updateById(sceneEntity);
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+        Long roleId = dto.getRoleId() ;
+
+        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+        taskInfo.setRoleId(roleId);
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+
+        JSONArray checkOutput = new JSONArray() ;
+
+        List<Long> rules = dto.getRuleIds() ;
+
+        for (Long ruleId : rules) {
+
+            if(CheckRulesEnum.getById(ruleId).isEmpty()){
+               continue;
+            }
+
+            try{
+                CheckRulesEnum checkRulesEnum = CheckRulesEnum.getById(ruleId).get() ;
+                String prompt = FormatterPromptTools.buildReviewPromptByRule(checkRulesEnum ,dto ,
+                        service.getBySceneId(dto.getSceneId() , query) ,
+                        templateService.getById(dto.getTemplateId()) ,
+                        taskInfo) +
+                        FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT ;
+
+                taskInfo.setText(prompt);
+
+                WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+
+                log.debug("genContent = {}" ,genContent) ;
+                log.debug("fullContent = {}" , taskInfo.getFullContent());
+
+                genContent.setGenContent(taskInfo.getFullContent());
+                genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+
+                // 解析得到代码内容
+                if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+
+                    String codeContent = genContent.getCodeContent().get(0).getContent() ;
+                    JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+
+                    checkOutput.addAll(dataObject) ;
+                }
+            }catch(Exception e){
+                log.error("reviewChatRoleSync error" , e) ;
+            }
+        }
+
+        return AjaxResult.success("操作成功" , checkOutput) ;
+    }
+
+    @DataPermissionQuery
+    @SneakyThrows
+    @PostMapping("/reviewChatRoleSingleSync")
+    public AjaxResult reviewChatRoleSingleSync(@RequestBody @Validated ReviewContentRequestDTO dto , PermissionQuery query) {
+        log.debug("dto = {}", dto);
+
+        ContentFormatterSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
+        sceneEntity.setGenStatus(1);
+        sceneEntity.setContentPromptContent(dto.getContentPromptContent());
+        service.updateById(sceneEntity);
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+        Long roleId = dto.getRoleId() ;
+
+        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+        taskInfo.setRoleId(roleId);
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+
+        String prompt = FormatterPromptTools.buildReviewPrompt(dto ,
+                service.getBySceneId(dto.getSceneId() , query) ,
+                templateService.getById(dto.getTemplateId()) ,
+                taskInfo) + FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT ;
+
+        taskInfo.setText(prompt);
+
+        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+
+        log.debug("genContent = {}" ,genContent) ;
+        log.debug("fullContent = {}" , taskInfo.getFullContent());
+
+        genContent.setGenContent(taskInfo.getFullContent());
+        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+
+        // 解析得到代码内容
+        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+
+            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+
+            log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
+
+            return AjaxResult.success("操作成功" , dataObject) ;
+        }
+
+        return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 导出数据
+     * @param data
+     * @return
+     */
+    @PostMapping("/reviewCheckExpert")
+    public AjaxResult exportToExcel(@RequestBody List<Map<String, Object>> data) {
+        // 创建工作簿
+        Workbook workbook = new XSSFWorkbook();
+        // 创建工作表
+        Sheet sheet = workbook.createSheet("Data");
+
+        // 创建表头
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"riskLevel", "suggestedContent", "modificationReason", "id", "originalContent"};
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+        }
+
+        // 填充数据
+        for (int i = 0; i < data.size(); i++) {
+            Row row = sheet.createRow(i + 1);
+            Map<String, Object> item = data.get(i);
+            for (int j = 0; j < headers.length; j++) {
+                Cell cell = row.createCell(j);
+                Object value = item.get(headers[j]);
+                if (value != null) {
+                    cell.setCellValue(value.toString());
+                }
+            }
+        }
+
+        // 自动调整列宽
+        for (int i = 0; i < headers.length; i++) {
+            sheet.autoSizeColumn(i);
+        }
+
+        File tempFile = null;
+        try {
+            // 创建临时文件
+            tempFile = File.createTempFile("excel_export", ".xlsx");
+            // 将工作簿写入临时文件
+            FileOutputStream fileOut = new FileOutputStream(tempFile);
+            workbook.write(fileOut);
+            fileOut.close();
+        } catch (IOException e) {
+            // 处理异常
+            log.error("Failed to create and write temp file", e);
+            // 这里假设 AjaxResult 有合适的构造方法来表示失败，你可能需要根据实际情况调整
+            return AjaxResult.error("Failed to create and write temp file", null);
+        } finally {
+            try {
+                workbook.close();
+            } catch (IOException e) {
+                log.error("Failed to close workbook", e);
+            }
+        }
+
+        String storageId =  storageConsumer.upload(tempFile).getData() ;
+        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData() ;
+
+        return AjaxResult.success("Successfully created temp file", previewUrl) ;
+    }
+
+    /**
+     * 接收JSON数据并保存到数据库
+     * @param nodes JSON格式的章节列表
+     * @return 操作结果
+     */
+    @DataPermissionQuery
+    @PostMapping("/saveChapters")
+    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes, @RequestParam("sceneId") long sceneId , PermissionQuery query) {
+
+        if(nodes == null || nodes.isEmpty()){
+            return error("参数错误") ;
+        }
+
+        ContentFormatterSceneEntity longTextSceneEntity = service.getBySceneId(sceneId , query) ;
+        contentFormatterParseService.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , longTextSceneEntity.getId());
+        return ok() ;
+    }
 
 
     @Override
