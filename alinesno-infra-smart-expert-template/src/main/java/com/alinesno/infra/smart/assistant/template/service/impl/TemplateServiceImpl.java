@@ -33,6 +33,9 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
     @Autowired
     private CloudStorageConsumer storageConsumer ;
 
+    @Autowired
+    private TemplateProcessor templateProcessor ;
+
     @SneakyThrows
     @Override
     public String parseTemplate(String templateKey, Map<String, Object> params) {
@@ -118,7 +121,7 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
         TemplateEntity templateEntity = getById(templateId) ;
 
         String templateUrl = storageConsumer.getPreviewUrl(templateEntity.getStorageFileId()).getData() ;
-        String docAbcPath = TemplateProcessor.processTemplateFromUrl(templateUrl, dataObject);
+        String docAbcPath = templateProcessor.processTemplateFromUrl(templateUrl, dataObject);
 
         log.debug("docAbcPath = {}" , docAbcPath);
 
