@@ -1,9 +1,6 @@
 package com.alinesno.infra.smart.assistant.workplace.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.im.entity.ChannelEntity;
-import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
