@@ -128,7 +128,7 @@
                                     <span>{{ item.description }}</span>
                                 </div>
                                 <div>
-                                    <el-button type="danger" bg text icon="Remove" size="small" @click="removeRuleItem">删除规则</el-button>
+                                    <el-button type="danger" bg text icon="Remove" size="default" @click="removeRuleItem">删除规则</el-button>
                                 </div>
                             </div>
                         </div> 
@@ -140,9 +140,19 @@
             <template #footer>
                 <div class="dialog-footer">
                 <el-button size="large" @click="open = false">取消</el-button>
+                <el-button type="warning" size="large" @click="drawer = true">添加规则</el-button>
                 <el-button size="large" type="primary" @click="handleSubmit">确认</el-button>
                 </div>
             </template>
+        </el-dialog>
+
+        <el-dialog
+          v-model="drawer"
+          title="I am the title"
+          :direction="'left'"
+          append-to-body
+          :before-close="handleCloseDrawer">
+          <span>Hi, there!</span>
         </el-dialog>
 
    </div>
@@ -155,16 +165,19 @@ import {
   listMarketRole
 } from "@/api/base/im/role";
 
-
 import { ElLoading } from 'element-plus'
 import { reactive } from "vue";
 
+const route = useRoute();
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 const RoleList = ref([]);
 const PushOrgRoleList = ref([]);
 
+const drawer = ref(false);
+
+const sceneId = ref(route.query.sceneId)
 const loading = ref(true);
 const showSearch = ref(true);
 const total = ref(0);
@@ -368,9 +381,15 @@ function reset() {
 };
 
 const handleAdd = () => {
-  reset();
-  open.value = true;
-  title.value = "增加规则库";
+  // reset();
+  // open.value = true;
+  // title.value = "增加规则库";
+  router.push({
+      path: '/scene/documentReview/addDataset',
+      query: {
+          sceneId: sceneId.value
+      }
+  })
 };
 
 // /** 复制角色 */
