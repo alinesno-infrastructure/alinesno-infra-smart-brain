@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.workplace.enums;
 
 import lombok.Getter;
+
 import java.util.Objects;
 
 @Getter
