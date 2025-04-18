@@ -170,6 +170,9 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @PostMapping("/createRole")
     public AjaxResult createRole(@Validated @RequestBody IndustryRoleEntity e) {
         log.debug("save:{}", ToStringBuilder.reflectionToString(e));
+        if(StringUtils.isBlank(e.getGreeting())){
+            e.setGreeting(e.getResponsibilities());
+        }
         service.createRole(e) ;
         return ok();
     }
