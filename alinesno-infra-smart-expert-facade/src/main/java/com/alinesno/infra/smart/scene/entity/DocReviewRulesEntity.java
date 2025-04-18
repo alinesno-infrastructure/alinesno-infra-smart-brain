@@ -22,15 +22,21 @@ public class DocReviewRulesEntity extends InfraBaseEntity {
     private String ruleName;
 
     @TableField
-    @Column(name = "rule_level", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "规则级别")
-    private String ruleLevel;
+    @Column(name = "risk_level", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "风险级别")
+    private String riskLevel;
 
     @TableField
-    @Column(name = "rule_content", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "规则内容")
+    @Column(name = "rule_content", type = MySqlTypeConstant.TEXT, comment = "规则内容")
     private String ruleContent;
 
+    // 审核立场
     @TableField
-    @Column(name = "contract_type_id", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "所属合同类型")
-    private String contractTypeId;
+    @Column(name = "review_position", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "审核立场")
+    private String reviewPosition;
+
+    // 所属分组
+    @TableField
+    @Column(name = "group_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属分组")
+    private Long groupId;
 
 }
