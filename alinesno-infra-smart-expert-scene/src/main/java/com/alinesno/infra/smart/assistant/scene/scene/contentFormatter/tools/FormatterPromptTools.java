@@ -1,7 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools;
 
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ReviewRequestDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterRequestDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ReviewContentRequestDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.BusinessScenarioEnum;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.CheckRulesEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.DocumentTypeEnum;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -17,12 +19,29 @@ import java.util.Map;
 @Slf4j
 public class FormatterPromptTools {
 
-    public static String buildPrompt(ReviewRequestDTO dto, ContentFormatterSceneEntity entity , TemplateEntity templateEntity, MessageTaskInfo taskInfo) {
+    public static final String FORMAT_REVIEW_OUTPUT_PROMPT = """
+                ##列出格式
+                检查出来之后，请按一定的格式列出返回json结果，按如下:
+                ```json
+                [
+                    {
+                        "id": 0 ,
+                        "modificationReason": "为什么修改原因",
+                        "originalContent": "原内容",
+                        "riskLevel": "风险高中低,使用high/medium/low表示",
+                        "suggestedContent": "建议修改的内容"
+                    }
+                ]
+                ```
+                """;
+
+    public static String buildPrompt(ContentFormatterRequestDTO dto, ContentFormatterSceneEntity entity , TemplateEntity templateEntity, MessageTaskInfo taskInfo) {
 
         String paramFormat = templateEntity.getParamFormat() ;
         String contentPromptContent = dto.getContentPromptContent() ; // entity.getContentPromptContent() ;
         String contents = DocumentTypeEnum.getLabelByValues(dto.getDocumentType()) ;
         String scenes = BusinessScenarioEnum.getLabelByValues(dto.getBusinessScenario()) ;
+        String requirement = dto.getRequirement() ;
 
         String prompt = """
                 ## 任务
@@ -35,6 +54,7 @@ public class FormatterPromptTools {
                 ### 需要整理内容=%s
                 ### 内容文书类型=%s
                 ### 业务场景=%s
+                ### 生成要求=%s
                 
                 ## 限制
                 - 严格遵守业务场景和文书的内容，使得符合文书类型和业务场景
@@ -43,7 +63,7 @@ public class FormatterPromptTools {
                 - 不要改变原来的内容，也不需要加入其它的内容
                 """;
 
-        String formatPrompt = String.format(prompt , paramFormat , contentPromptContent , contents , scenes) ;
+        String formatPrompt = String.format(prompt , paramFormat , contentPromptContent , contents , scenes , requirement) ;
         log.debug(formatPrompt);
 
         // 设置参数到Agent中，使得Agent可以更灵活定制Prompt
@@ -53,10 +73,98 @@ public class FormatterPromptTools {
         params.put("contents" , contents) ;
         params.put("contentPromptContent" , contentPromptContent) ;
         params.put("scenes" , scenes) ;
+        params.put("requirement" , requirement) ;
 
         taskInfo.setParams(params);
 
         return formatPrompt ;
     }
 
+    /**
+     * 构建内容检查的Prompt
+     * @param dto
+     * @param bySceneId
+     * @param templateEntity
+     * @param taskInfo
+     * @return
+     */
+    public static String buildReviewPrompt(ReviewContentRequestDTO dto, ContentFormatterSceneEntity bySceneId, TemplateEntity templateEntity, MessageTaskInfo taskInfo) {
+
+        String contentPromptContent = dto.getContentPromptContent() ;
+        String contents = DocumentTypeEnum.getLabelByValues(dto.getDocumentType()) ;
+        String scenes = BusinessScenarioEnum.getLabelByValues(dto.getBusinessScenario()) ;
+        String requirement = dto.getRequirement() ;
+        String ruleText = CheckRulesEnum.getAllRules(dto.getRuleIds()) ;
+
+        String prompt = """
+                ## 任务
+                你是一名专业的内容检查专员，针对于指定的内容进行检查，主要检查项如下:
+                %s
+                
+                ## 需要检查的内容
+                ### 需要审查内容=%s
+                ### 内容文书类型=%s
+                ### 业务场景=%s
+                ### 检查要求=%s
+                """;
+
+
+        String formatPrompt = String.format(prompt , ruleText, contentPromptContent , contents , scenes , requirement) ;
+        log.debug(formatPrompt);
+
+        // 设置参数到Agent中，使得Agent可以更灵活定制Prompt
+        Map<String , Object> params = new HashMap<>() ;
+
+        params.put("ruleText" , ruleText) ;
+        params.put("contents" , contents) ;
+        params.put("contentPromptContent" , contentPromptContent) ;
+        params.put("scenes" , scenes) ;
+        params.put("requirement" , requirement) ;
+
+        taskInfo.setParams(params);
+
+        return formatPrompt ;
+    }
+
+    public static String buildReviewPromptByRule(CheckRulesEnum checkRulesEnum,
+                                                 ReviewContentRequestDTO dto,
+                                                 ContentFormatterSceneEntity bySceneId,
+                                                 TemplateEntity byId,
+                                                 MessageTaskInfo taskInfo) {
+
+        String contentPromptContent = dto.getContentPromptContent() ;
+        String contents = DocumentTypeEnum.getLabelByValues(dto.getDocumentType()) ;
+        String scenes = BusinessScenarioEnum.getLabelByValues(dto.getBusinessScenario()) ;
+        String requirement = dto.getRequirement() ;
+        String ruleText = checkRulesEnum.getRules() ;
+
+        String prompt = """
+                ## 任务
+                你是一名专业的内容检查专员，针对于指定的内容进行检查，主要检查项如下:
+                %s
+                
+                ## 需要检查的内容
+                ### 需要审查内容=%s
+                ### 内容文书类型=%s
+                ### 业务场景=%s
+                ### 检查要求=%s
+                """;
+
+
+        String formatPrompt = String.format(prompt , ruleText, contentPromptContent , contents , scenes , requirement) ;
+        log.debug(formatPrompt);
+
+        // 设置参数到Agent中，使得Agent可以更灵活定制Prompt
+        Map<String , Object> params = new HashMap<>() ;
+
+        params.put("ruleText" , ruleText) ;
+        params.put("contents" , contents) ;
+        params.put("contentPromptContent" , contentPromptContent) ;
+        params.put("scenes" , scenes) ;
+        params.put("requirement" , requirement) ;
+
+        taskInfo.setParams(params);
+
+        return formatPrompt ;
+    }
 }
