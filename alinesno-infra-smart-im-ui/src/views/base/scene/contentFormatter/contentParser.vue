@@ -24,12 +24,23 @@
                 <div style="padding: 20px;padding-top: 0px;">
                     <el-steps class="mb-4" style="width: 100%;cursor: pointer;" :space="200" :active="currentActive" simple >
                         <el-step @click="handleStepClick(1)" title="文本概览" :icon="Edit" />
-                    </el-steps>
+                        <el-step @click="handleStepClick(2)" title="内容检查" :icon="Edit" />
+                    </el-steps> 
 
                     <DocumentOverview 
                         v-if="currentActive == 1" 
                         :currentSceneInfo="currentSceneInfo"
                         @getContentPromptContent="getContentPromptContent"
+                        @handleStepClick="handleStepClick"
+                        @displayDocumentReviewList="displayDocumentReviewList"
+                        @genSingleChapterContent="genSingleChapterContent" />
+
+                    <ResultResult 
+                        v-if="currentActive == 2" 
+                        ref="resultResultRef"
+                        :currentSceneInfo="currentSceneInfo"
+                        @getContentPromptContent="getContentPromptContent"
+                        @handlePointTo="handlePointTo"
                         @handleStepClick="handleStepClick"
                         @genSingleChapterContent="genSingleChapterContent" />
 
@@ -64,9 +75,11 @@ import { getScene } from '@/api/base/im/scene/contentFormatter';
 
 import ChapterEditor from './chapterEditor'
 import DocumentOverview from './overview.vue'
+import ResultResult from './reviewResult.vue'
 
 const currentActive = ref(1)
 const chapterEditorRef = ref(null)
+const resultResultRef = ref(null)
 const showDebugRunDialog = ref(false);
 
 // 执行面板
@@ -83,6 +96,16 @@ const handleStepClick = (index) => {
     console.log('index = ' + index);
     currentActive.value = index
     showDebugRunDialog.value = false;
+}
+
+const displayDocumentReviewList = (reviewList ) => {
+    currentActive.value = 2  
+    showDebugRunDialog.value = false;
+    nextTick(() => {
+        console.log('reviewList = ' + reviewList);
+        console.log('resultResultRef = ' + resultResultRef.value);
+        resultResultRef.value.setRuleContent(reviewList);
+    })
 }
 
 const handleGetScene = () => {
@@ -110,6 +133,15 @@ const getContentPromptContent = (callback) => {
   const response = chapterEditorRef.value.getData() ;
   callback(response);
 };
+
+const handlePointTo = (item) => {
+    console.log('originalContent = ' + item.originalContent)
+    chapterEditorRef.value.locateAfterText(item.originalContent);
+}
+
+const onClickLeft = () => {
+    router.back();
+}
 
 onMounted(() => {
     console.log('chapterEditorRef = ', chapterEditorRef.value)
