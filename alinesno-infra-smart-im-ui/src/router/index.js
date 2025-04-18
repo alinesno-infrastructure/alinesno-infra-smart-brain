@@ -60,6 +60,12 @@ const screenRoutes = [
     name: '/scene/documentReview/documentDataset',
     meta: { title: '文档审核知识库', icon: 'fa-solid fa-file-pen', affix: true }
   },
+  {
+    path: '/scene/documentReview/addDataset',
+    component: () => import('@/views/base/scene/documentReview/addDataset'),
+    name: '/scene/documentReview/addDataset',
+    meta: { title: '添加审核清单', icon: 'fa-solid fa-file-pen', affix: true }
+  },
   // -->>>>>>>>>>>> 文档审核场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   
   // -->>>>>>>>>>>> 文档阅读场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
