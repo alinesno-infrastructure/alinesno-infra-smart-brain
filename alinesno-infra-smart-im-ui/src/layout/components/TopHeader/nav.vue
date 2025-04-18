@@ -8,11 +8,15 @@
         </div>
       </div>
     </div> 
+    
+    <!-- 
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/index">
         <i class="fa-solid fa-screwdriver-wrench"></i> 工作台
       </router-link>
-    </div>
+    </div> 
+    -->
+
     <div class="acp-header-item ">
       <router-link class="header-label-text" to="/dashboard/learnPanel">
         <i class="fa-regular fa-file-word"></i> 手册
