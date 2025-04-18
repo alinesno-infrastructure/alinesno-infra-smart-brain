@@ -1,9 +1,6 @@
 package com.alinesno.infra.smart.scene.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
