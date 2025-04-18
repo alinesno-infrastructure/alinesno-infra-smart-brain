@@ -273,6 +273,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             case "script" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
             case "react" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
             case "flow" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+            case "simple" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SIMPLE);
         }
 
         List<IndustryRoleEntity> allEntities = new ArrayList<>();
