@@ -8,6 +8,8 @@
                         <el-select
                             v-model="ruleForm.documentType"
                             multiple
+                            collapse-tags 
+                            collapse-tags-tooltip 
                             placeholder="请选择文书类型"
                             style="width: 100%"
                             >
@@ -24,6 +26,8 @@
                         <el-select
                             v-model="ruleForm.businessScenario"
                             multiple
+                            collapse-tags 
+                            collapse-tags-tooltip 
                             placeholder="请选择业务场景"
                             style="width: 100%"
                             >
@@ -57,41 +61,78 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
+
+                    <!-- 生成要求 -->
+                     <el-form-item :label=" ruleForm.isCheckRule?'检查要求':'生成要求'" prop="requirement">
+                        <el-input v-model="ruleForm.requirement" type="input" placeholder="请输入要求，比如内容描述丰富一些"></el-input>
+                    </el-form-item>
+
+                    <el-row>
+                        <el-col :span="4">
+                    <!-- 检查要求 -->
+                     <el-form-item label="内容检查" prop="isCheckRule">
+                         <!-- 使用el-check -->
+                          <el-checkbox v-model="ruleForm.isCheckRule" border>
+                            <span style="font-size: 13px;">内容检查</span>
+                          </el-checkbox>
+                    </el-form-item>
+                        </el-col>
+                        <el-col :span="20">
+                    <!-- 检查要求 -->
+                    <el-form-item label="选择检查要求" prop="checkRules" v-if="ruleForm.isCheckRule">
+                        <el-select
+                            v-model="ruleForm.checkRules"
+                            multiple
+                            collapse-tags 
+                            collapse-tags-tooltip 
+                            placeholder="请选择检查要求"
+                            style="width: 100%"
+                            >
+                            <el-option
+                                v-for="option in checkRules" 
+                                :key="option.id" 
+                                :border="false" 
+                                :value="option.id" 
+                                :label="option.checkItem"
+                            />
+                        </el-select>
+                    </el-form-item>
+
+                        </el-col>
+                    </el-row>
+
                 </el-form>
             </div>
         </div>
 
-        <div class="gen-overview-container" style="margin-top: 10px;">
-            <el-button style="width:100%" 
+        <div class="gen-overview-container" style="margin-top: 10px;display: flex;justify-content: space-between;margin-right: 10px;margin-left: 10px;">
+            <el-button style="width:50%" 
+                type="danger" 
+                size="large" 
+                @click="submitApplyForm">
+                <i class="fa-solid fa-hands-clapping"></i> &nbsp; 内容检查 
+            </el-button>
+            <el-button style="width:50%" 
                 type="primary" 
                 size="large" 
                 @click="submitForm">
-                <i class="fa-solid fa-paper-plane"></i> &nbsp; 开始内容解析 
+                <i class="fa-solid fa-paper-plane"></i> &nbsp; 内容排版
             </el-button>
-        </div>
-
-        <div class="contract-overview-container">
-            <div class="contract-overview-title">文档概览</div>
-            <div class="contract-info-container">
-                <div class="contract-info-item">
-                    <div class="contract-info-label">内容概览</div>
-                    <div class="contract-info-value">
-                        {{ currentSceneInfo.contractOverview }}
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- 显示生成的word文档内容 -->
         <el-dialog v-model="showWordDialog" title="文档预览" width="60%" destroy-on-close append-to-body>
                 <div class="document-wrapper" v-loading="loadingDocument" >
                     <el-scrollbar class="scrollable-area" style="height: calc(75vh);margin-top:0px; padding-right:0px">
-                        <iframe :src="iframeUrl" style="position:absolute;width:100%;height:100%;border:0px;"></iframe>
+                        <iframe 
+                            :src="iframeUrl" 
+                            style="position: absolute;width: 100%;height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
+                        </iframe>
                     </el-scrollbar>
                 </div>
                 <div class="document-footer">
                     <el-button type="primary" size="large" @click="handleDownloadDocx()">
-                       <i class="fa-solid fa-sailboat"></i> 下载
+                       <i class="fa-solid fa-sailboat"></i> 下载生成Word内容
                     </el-button>
                 </div>
         </el-dialog>
@@ -101,15 +142,22 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue';
-import { ElLoading } from 'element-plus';
+import { ElLoading, ElMessage } from 'element-plus';
 import { renderAsync } from 'docx-preview';
+
+// import ReviewRulePanel from './reviewRulePanel.vue';
 
 // import VueOfficeDocx from '@vue-office/docx'
 
+const emit = defineEmits(['handleStepClick' , 'displayDocumentReviewList' , 'getContentPromptContent' , 'genSingleChapterContent'])
+
 import { 
     getTemplates , 
+    getReviewRules,
     getPreviewDocxPreviewUrl, 
     getPreviewDocx , 
+    reviewChatRoleSync,
+    reviewChatRoleSingleSync ,
     chatRoleSync 
 } from '@/api/base/im/scene/contentFormatter';
 
@@ -129,10 +177,14 @@ const ruleFormRef = ref();
 const streamLoading = ref(null)
 const docxFile = ref(null);
 
+// 内容检查
+const showReviewDialog = ref(false);
+
 // 生成文档预览
 const iframeUrl = ref(null);
 const showWordDialog = ref(false);
 
+// 场景列表
 const businessOptions = ref([
   { value: 'government', label: '政务' },
   { value: 'commerce', label: '商务' },
@@ -151,6 +203,9 @@ const businessOptions = ref([
   { value: 'tourism', label: '旅游' },
   { value: 'service', label: '服务' }
 ]);
+
+// 检查要求
+const checkRules = ref([]);
 
 // 文书类型
 const documentOptions = ref([
@@ -174,8 +229,6 @@ const loadingDocument = ref(true)
 const contentRef = ref(null)
 const storageId = ref(null)
 
-const emit = defineEmits(['handleStepClick' , 'getContentPromptContent' , 'genSingleChapterContent'])
-
 // 定义表单数据
 const ruleForm = reactive({
     reviewListOption: 'dataset',
@@ -194,6 +247,9 @@ const rules = reactive({
     businessScenario: [
         { required: true, message: '请选择业务场景', trigger: 'change' }
     ], 
+    checkRules: [
+        { required: true, message: '请选择内容检查', trigger: 'change' }
+    ],
     templateId: [
         { required: true, message: '请选择排版模板', trigger: 'change' }
     ],
@@ -211,6 +267,69 @@ const rules = reactive({
         }
     ]
 });
+
+const submitApplyForm = async () => {
+
+    // 选中复选框
+    ruleForm.isCheckRule = true;
+
+    const formEl = ruleFormRef.value;
+    if (!formEl) {
+        return;
+    }
+
+    formEl.validate((valid) => {
+        if (valid) {
+
+            ruleForm.sceneId = props.currentSceneInfo.id ;
+            ruleForm.channelStreamId = channelStreamId.value ;
+
+            // 开始生成
+            streamLoading.value = ElLoading.service({
+                lock: true,
+                background: 'rgba(255, 255, 255, 0.4)',
+                customClass: 'custom-loading'
+            });
+
+            let text = '正在对内容进行检查，请稍等.';
+            streamLoading.value.setText(text)
+
+            emit('getContentPromptContent',async (result) => {
+
+                const roleId = props.currentSceneInfo.contentReviewerEngineer;
+                emit('genSingleChapterContent', roleId) ; 
+
+                ruleForm.roleId = roleId ; 
+                ruleForm.contentPromptContent = result ; 
+
+                let allCheckRuleOutput = [] ;
+
+                //  for循环列出规则
+                const checkRulesList = ruleForm.checkRules ;
+                for(let i = 0; i < checkRulesList.length; i++){
+
+                    const currentRuleId = checkRulesList[i]
+                    const currentRule = checkRules.value.filter(item => item.id == currentRuleId)[0]
+
+                    text = '正在对内容进行['+currentRule.checkItem+']检查，请稍等.';
+                    streamLoading.value.setText(text)
+
+                    ruleForm.ruleIds = [currentRuleId] ;
+                    const res = await reviewChatRoleSingleSync(ruleForm);
+                    console.log('res = ' + res.data);
+
+                    allCheckRuleOutput.push(...res.data);
+                }
+
+                streamLoading.value.close();
+                emit('displayDocumentReviewList', allCheckRuleOutput);
+
+            }) ; 
+
+        }
+    })
+
+}
 
 // 提交表单方法
 const submitForm = async () => {
@@ -277,14 +396,7 @@ const getDocxContent = async(storageId) => {
 
                 console.log('response.data:' + response); // 打印数据内容
 
-                // renderAsync(response, contentRef.value , null  , {
-                //     inWrapper: true 
-                // });
-
                 iframeUrl.value = window.URL.createObjectURL(response);
-
-                // iframeUrl.value = URL.createObjectURL(new Blob([resonse], { type: "application/pdf" }))+'#toolbar=0&view=FitH';
-
                 loadingDocument.value = false ;
 
                 console.log('文档渲染成功');
@@ -306,8 +418,13 @@ const resetForm = () => {
 
 const handleGetTemplates = () => {
     getTemplates().then(res => {
-        // contractTypeList.value = res.data;
         templateList.value = res.data;
+    })
+}
+
+const handleGetReviewRules = () => {
+    getReviewRules().then(res => {
+        checkRules.value = res.data;
     })
 }
 
@@ -317,7 +434,9 @@ const saveFormDataToLocalStorage = () => {
         documentType: ruleForm.documentType,
         businessScenario: ruleForm.businessScenario,
         templateId: ruleForm.templateId,
-        reviewListOption: ruleForm.reviewListOption
+        reviewListOption: ruleForm.reviewListOption , 
+        isCheckRule: ruleForm.isCheckRule , 
+        checkRules: ruleForm.checkRules 
     }));
 };
 
@@ -329,17 +448,20 @@ const loadFormDataFromLocalStorage = () => {
         ruleForm.documentType = data.documentType;
         ruleForm.businessScenario = data.businessScenario;
         ruleForm.templateId = data.templateId;
-        ruleForm.reviewListOption = data.reviewListOption;
+        ruleForm.reviewListOption = data.reviewListOption || 'dataset';
+        ruleForm.isCheckRule = data.isCheckRule || false ;
+        ruleForm.checkRules = data.checkRules || [] ;
     }
 };
 
-watch([() => ruleForm.documentType, () => ruleForm.businessScenario, () => ruleForm.templateId], () => {
+watch([ () => ruleForm.isCheckRule , () => ruleForm.checkRules ,  () => ruleForm.documentType, () => ruleForm.businessScenario, () => ruleForm.templateId], () => {
     saveFormDataToLocalStorage();
 });
 
 onMounted(() => {
-    handleGetTemplates() ;
     loadFormDataFromLocalStorage();
+    handleGetTemplates();
+    handleGetReviewRules();
 });
 
 </script>
