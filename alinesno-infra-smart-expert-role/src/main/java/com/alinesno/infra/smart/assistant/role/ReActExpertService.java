@@ -33,6 +33,7 @@ import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ public class ReActExpertService extends ExpertService {
     @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
+    @Getter
     @Autowired
     private IToolService toolService ;
 
@@ -245,7 +247,7 @@ public class ReActExpertService extends ExpertService {
      * @return
      */
     @NotNull
-    private String getDatasetKnowledgeDocument(String goal,
+    protected String getDatasetKnowledgeDocument(String goal,
                                                MessageEntity workflowMessage,
                                                MessageTaskInfo taskInfo,
                                                List<DocumentVectorBean> datasetKnowledgeDocumentList,
@@ -277,7 +279,7 @@ public class ReActExpertService extends ExpertService {
      * @param role
      * @return
      */
-    private Llm getLlm(IndustryRoleEntity role) {
+    protected Llm getLlm(IndustryRoleEntity role) {
 
         Assert.notNull(role.getModelId(), "角色模型未配置.");
         long modelId = role.getModelId(); ; // 模型ID
@@ -366,7 +368,7 @@ public class ReActExpertService extends ExpertService {
      * @param taskInfo
      * @param datasetKnowledgeDocument
      */
-    private void handleReferenceArticle(MessageTaskInfo taskInfo, List<DocumentVectorBean> datasetKnowledgeDocument) {
+    protected void handleReferenceArticle(MessageTaskInfo taskInfo, List<DocumentVectorBean> datasetKnowledgeDocument) {
         if(datasetKnowledgeDocument != null && !datasetKnowledgeDocument.isEmpty()){
             List<MessageReferenceDto> contentReferenceArticle = new ArrayList<>();
 
