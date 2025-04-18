@@ -16,9 +16,9 @@
                         <div class="review-title">
                             <!-- <img class="review-agent" :src="imagePathByPath('1866758271038771201')" /> -->
                             <i class="fa-brands fa-phoenix-framework" style="color:#409EFF"></i>
-                            合同审查，一键开启审查
+                            文档审查，一键开启审查
                         </div>
-                        <div class="review-description">快速识别合同潜在风险，提供专业的风险评估和修改建议</div>
+                        <div class="review-description">快速识别文档潜在风险，提供专业的风险评估和修改建议</div>
                     </div>
                     <div class="review-upload-container">
                         <el-upload 
@@ -40,7 +40,7 @@
 
                             <template #tip>
                                 <div class="el-upload__tip">
-                                    单个合同文件的字数不超过10万字，格式支持：doc/docx
+                                    单个合同文件的字数不超过10万字，格式支持：pdf/doc/docx
                                 </div>
                             </template>
 
@@ -50,7 +50,9 @@
                         <span>
                             <i class="fa-solid fa-file-signature"></i> 文档审查知识库
                         </span>
-                        <i class="fa-solid fa-right-long"></i>
+                        <span>
+                           提供自定义审核规则 <i class="fa-solid fa-right-long"></i>
+                        </span>
                     </div>
                 </div>
                 <div class="review-footer-message">
