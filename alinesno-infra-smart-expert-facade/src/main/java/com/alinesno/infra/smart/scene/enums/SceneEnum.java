@@ -30,7 +30,7 @@ public enum SceneEnum {
                     new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
             ))),
     // 增加数据分析场景
-    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "1", "", "fa-solid fa-chart-bar",
+    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
             List.of(
                     new SceneAgent(50000501L, "数据分析助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础" , true),
                     new SceneAgent(50000502L, "数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式")
@@ -41,16 +41,17 @@ public enum SceneEnum {
                     new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
             ))),
-    MEETING_MINUTES(new SceneInfoDto(80000000L, "会议纪要", "meetingMinutes", "自动生成会议纪要，生成专业报告并优化排版，根据上传的模板生成会议纪要", "已集成", "0", "", "fa-solid fa-calendar-check",
-            Arrays.asList(
-                    new SceneAgent(60000601L, "语音识别助手", "reportFormatter", "将会议中的语音内容转换为文字信息。"),
-                    new SceneAgent(60000602L, "纪要生成助手", "minutesGenerator", "根据语音识别的文字内容，生成会议纪要。"),
-                    new SceneAgent(60000603L, "模板应用助手", "templateApplier", "将生成的会议纪要应用到指定的模板中，优化排版。")
-            ))),
+//    MEETING_MINUTES(new SceneInfoDto(80000000L, "会议纪要", "meetingMinutes", "自动生成会议纪要，生成专业报告并优化排版，根据上传的模板生成会议纪要", "已集成", "0", "", "fa-solid fa-calendar-check",
+//            Arrays.asList(
+//                    new SceneAgent(60000601L, "语音识别助手", "reportFormatter", "将会议中的语音内容转换为文字信息。"),
+//                    new SceneAgent(60000602L, "纪要生成助手", "minutesGenerator", "根据语音识别的文字内容，生成会议纪要。"),
+//                    new SceneAgent(60000603L, "模板应用助手", "templateApplier", "将生成的会议纪要应用到指定的模板中，优化排版。")
+//            ))),
     // 增加内容格式化场景，输入不规则内容，针对给定的模板生成结果内容
     CONTENT_FORMATTER(new SceneInfoDto(70000000L, "内容排版", "contentFormatter", "根据给定的模板，自动生成内容，并优化排版", "已集成", "1", "", "fa-solid fa-file-lines",
             List.of(
-                    new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。", true)
+                    new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。") ,
+                    new SceneAgent(40000402L, "内容检查助手", "contentReviewer", "对提取的模块内容进行检查，确保模板的完整性和正确性。" , true)
             )
     )),
     PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "研发进度", "productResearch", "自动接入 Git 或者禅道等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
