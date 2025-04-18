@@ -109,24 +109,27 @@ public class DataAnalysisSceneServiceImpl extends IBaseServiceImpl<DataAnalysisS
             queryWrapper2.eq(DataAnalysisSceneEntity::getOrgId , sceneEntity.getOrgId()) ;
             DataAnalysisSceneEntity orginDataAnalysisSceneEntity = getOne(queryWrapper2) ;
 
-            if(entity == null) {
-                entity = new DataAnalysisSceneEntity() ;
-                entity.setTextParserEngineer(orginDataAnalysisSceneEntity.getTextParserEngineer()); ;
-                entity.setDataMinerEngineer(orginDataAnalysisSceneEntity.getDataMinerEngineer()); ;
-                entity.setSceneId(sceneId);
+            if(orginDataAnalysisSceneEntity != null){
+                if(entity == null) {
+                    entity = new DataAnalysisSceneEntity() ;
+                    entity.setTextParserEngineer(orginDataAnalysisSceneEntity.getTextParserEngineer()); ;
+                    entity.setDataMinerEngineer(orginDataAnalysisSceneEntity.getDataMinerEngineer()); ;
+                    entity.setSceneId(sceneId);
 
-                entity.setDepartmentId(query.getDepartmentId());
-                entity.setOrgId(query.getOrgId());
-                entity.setOperatorId(query.getOperatorId());
+                    entity.setDepartmentId(query.getDepartmentId());
+                    entity.setOrgId(query.getOrgId());
+                    entity.setOperatorId(query.getOperatorId());
 
-                saveOrUpdate(entity) ;
-            }else {
-                if(!entity.getTextParserEngineer().equals(orginDataAnalysisSceneEntity.getTextParserEngineer())  || !entity.getDataMinerEngineer().equals(orginDataAnalysisSceneEntity.getDataMinerEngineer())){
-                    entity.setTextParserEngineer(orginDataAnalysisSceneEntity.getTextParserEngineer()) ;
-                    entity.setDataMinerEngineer(orginDataAnalysisSceneEntity.getDataMinerEngineer()) ;
                     saveOrUpdate(entity) ;
+                }else {
+                    if(!entity.getTextParserEngineer().equals(orginDataAnalysisSceneEntity.getTextParserEngineer())  || !entity.getDataMinerEngineer().equals(orginDataAnalysisSceneEntity.getDataMinerEngineer())){
+                        entity.setTextParserEngineer(orginDataAnalysisSceneEntity.getTextParserEngineer()) ;
+                        entity.setDataMinerEngineer(orginDataAnalysisSceneEntity.getDataMinerEngineer()) ;
+                        saveOrUpdate(entity) ;
+                    }
                 }
             }
+
         }
 
         return entity ;
