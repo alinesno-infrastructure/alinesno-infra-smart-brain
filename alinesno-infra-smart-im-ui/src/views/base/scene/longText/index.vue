@@ -39,7 +39,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 
-import { getScene , updateChapterPromptContent } from '@/api/base/im/scene/dataAnalysis';
+import { getScene , updateChapterPromptContent } from '@/api/base/im/scene/longText';
 import SnowflakeId from "snowflake-id";
 
 const roleSelectPanelRef = ref(null)
@@ -96,7 +96,7 @@ const generaterText = () => {
         promptContent: promptText.value
     }).then(res => {
         router.push({
-            path: '/scene/dataAnalysis/dataParser',
+            path: '/scene/longText/textParser',
             query: {
                 sceneId: sceneId.value,
                 genStatus: true ,
