@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.im.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
