@@ -35,8 +35,7 @@
                                     <div class="semi-space cart-head-continer" style="gap: 16px;flex-direction: row;display: flex;">
                                         <div class="cart-head-content">
                                             <div class="cart-head-content">
-                                                <span class="semi-avatar semi-avatar-square"
-                                                    style="border-radius: 8px;">
+                                                <span class="semi-avatar semi-avatar-square" style="border-radius: 8px;">
                                                     <img :src="imagePathByPath(item.roleAvatar)">
                                                 </span>
                                             </div>
