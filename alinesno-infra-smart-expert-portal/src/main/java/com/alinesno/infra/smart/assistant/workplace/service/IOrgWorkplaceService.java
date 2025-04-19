@@ -4,6 +4,7 @@ import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.workplace.dto.OrgWorkplaceDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.OrgWorkplaceEntity;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceEntity;
+import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
 
 public interface IOrgWorkplaceService extends IBaseService<OrgWorkplaceEntity> {
 
@@ -28,4 +29,10 @@ public interface IOrgWorkplaceService extends IBaseService<OrgWorkplaceEntity> {
      * @return
      */
     WorkplaceEntity getCurrentWorkplace(Long orgId);
+
+    /**
+     * 组织自定义工作台
+     * @param dto
+     */
+    void customizeWorkbench(CustomizeWorkbenchDTO dto);
 }
