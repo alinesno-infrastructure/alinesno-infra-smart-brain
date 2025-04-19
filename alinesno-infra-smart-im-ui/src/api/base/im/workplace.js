@@ -11,7 +11,17 @@ var managerUrl = {
   listOrgWorkplace: prefix + "listOrgWorkplace",
   getCurrentWorkplace: prefix + "getCurrentWorkplace",
   getWorkplaceItem: prefix + "getWorkplaceItem",
-  useWorkplace: prefix + "useWorkplace"
+  useWorkplace: prefix + "useWorkplace",
+  customWorkplace: prefix + "customWorkplace"
+}
+
+// 自定义工作台
+export function customWorkplace(data) {
+  return request({
+    url: managerUrl.customWorkplace,
+    method: 'post',
+    data: data 
+  });
 }
 
 export function getWorkplaceItem(workplaceId , type) {
