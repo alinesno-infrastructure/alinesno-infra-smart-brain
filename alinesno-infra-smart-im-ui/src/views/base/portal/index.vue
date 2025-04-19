@@ -1,8 +1,6 @@
 <template>
     <div>
-
         <el-scrollbar style="height:calc(100vh - 50px)">
-
             <div class="aip-appinfo-header">
                 <div class="header-icon-banner">
                     <i class="fa-brands fa-slack"></i>
@@ -13,12 +11,9 @@
                     </div>
                 </div>
             </div>
-
-
             <div class="banner-container-panel" style="margin-top:0px;margin-bottom:10px;">
                 <el-row>
                     <el-col :span="18">
-
                         <div class="card-container" style="margin-right: 4rem;margin-left: 1rem;">
                             <div>
                                 <p>
@@ -28,18 +23,14 @@
                                 </p>
                             </div>
                         </div>
-
                     </el-col>
                     <el-col :span="6">
-
                         <div class="right-container" style="text-align: right;margin-right: 40px;">
                             <img src="http://data.linesno.com/banner/agent_bg2.png" class="bot-banner-bg" style="width: 300px;border-radius: 8px;" alt="Banner Background Image">
                         </div>
-
                     </el-col>
                 </el-row>
             </div>
-
             <div style="padding: 0px 10px;display: flex;gap: 20px;">
                 <span v-for="item in setupConst" :key="item.code" style="background: #f2f3f8;padding: 10px;border-radius: 5px;cursor: pointer;font-size: 14px;color: #444;"  
                     :class="{ 'active': isActive(item.code), 'hovered': isHovered(item.code) }"
@@ -58,39 +49,31 @@
                     </el-tooltip>
                 </span>
             </div>
-
             <div style="margin-top:20px;">
-
-
                 <h2 class="section-title" style="margin-top: 5px;margin-left: 10px;font-size: 20px;">
                     <i class="type.banner" /> {{ getNameByCode(activeCode)?.label }}
                     <span style="font-size: 13px;color: #777;margin-left:10px;"> {{ getNameByCode(activeCode)?.desc }} </span>
                 </h2>
-
                 <!-- 解决方案 -->
                 <BusinessAgentPanel v-if="activeCode === 'agent'" ref="businessAgentPanelRef" />
                 <ScenePanel v-if="activeCode === 'scene'" ref="scenePanelRef" />
                 <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
             </div>
-
         </el-scrollbar>
-
         <CreatePortal ref="createPortalRef" @handleHasWorkplace="handleHasWorkplace" />
-
     </div>
 </template>
 
 <script setup name="Index">
-
 import {
-    isHasWorkplace , 
+    isHasWorkplace, 
     getCurrentWorkplace 
 } from "@/api/base/im/workplace"
-
 import BusinessAgentPanel from './businessAgentPanel.vue'
 import CreatePortal from './createPortal.vue'
 import ChannelPanel from './channelPanel.vue'
 import ScenePanel from './scenePanel.vue'
+import { ref, onMounted, nextTick } from 'vue';
 
 const scenePanelRef = ref(null);
 const businessAgentPanelRef = ref(null);
@@ -108,7 +91,8 @@ const currentWorkplace = ref({
     description: defaultDesc.value , 
 })
 
-const activeCode = ref('agent');
+// 从 localStorage 中读取存储的选项，如果没有则默认 'agent'
+const activeCode = ref(localStorage.getItem('activeCode') || 'agent');
 const hoveredCode = ref('');
 const workplaceId = ref(''); 
 const createPortalRef = ref(null);
@@ -118,25 +102,19 @@ const isHovered = (code) => code === hoveredCode.value;
 
 const handleClick = (code) => {
     activeCode.value = code;
-    console.log('code = ' + code);
+    // 将选中的选项存储到 localStorage 中
+    localStorage.setItem('activeCode', code);
+    console.log('code ='+ code);
 
     nextTick(() => {
         if(activeCode.value === 'agent'){
-            businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
+            businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value);
         }else if(activeCode.value === 'channel'){
-            channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
-        }else if(activeCode.value === 'scene'){
+            channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value);
+        }else if(activeCode.value ==='scene'){
             scenePanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value)
         }
     })
-
-    // if(activeCode.value === 'agent'){
-    //     businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
-    // }else if(activeCode.value === 'channel'){
-    //     channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
-    // }else if(activeCode.value === 'scene'){
-    //     scenePanelRef.value.handleGetWorkplaceItem(workplaceId.value , activeCode.value);
-    // }
 }
 
 const handleMouseEnter = (code) => {
@@ -159,7 +137,7 @@ const handleHasWorkplace = () => {
         }else{
             workplaceId.value = res.data;
             getCurrentWorkplace(workplaceId.value).then(ress => {
-                console.log('ress = ' + ress);
+                console.log('ress ='+ ress);
                 currentWorkplace.value = ress.data;
                 handleClick(activeCode.value)
             })
@@ -167,13 +145,12 @@ const handleHasWorkplace = () => {
     })
 }
 
-
-nextTick(() => {
-    handleHasWorkplace();
+onMounted(() => {
+    nextTick(() => {
+        handleHasWorkplace();
+    });
 });
-
 </script>
-
 
 <style lang="scss" scoped>
 .aip-appinfo-header {
