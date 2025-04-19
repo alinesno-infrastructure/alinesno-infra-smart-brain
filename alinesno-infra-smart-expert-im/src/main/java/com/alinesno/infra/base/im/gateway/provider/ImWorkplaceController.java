@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceItemTypeEnums
 import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
+import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
 import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -88,6 +89,15 @@ public class ImWorkplaceController {
         return AjaxResult.success();
     }
 
+    /**
+     * 自定义工作台constomWorkplace
+     */
+    @DataPermissionSave
+    @PostMapping("/customWorkplace")
+    public AjaxResult customWorkplace(@RequestBody CustomizeWorkbenchDTO dto) {
+        orgWorkplaceService.customizeWorkbench(dto) ;
+        return AjaxResult.success();
+    }
 
     /**
      * 获取到当前工作区的智能体、频道、场景
