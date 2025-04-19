@@ -1,40 +1,36 @@
 <template>
 
-                <el-scrollbar style="height:calc(100vh - 60px)">
-    <div class="tpl-app" style="display: flex;margin-left: 0px;">
+    <el-scrollbar style="height:calc(100vh - 60px)">
+        <div class="tpl-app" style="display: flex;margin-left: 0px;">
 
-        <SideTypePanel />
+            <SideTypePanel />
 
-        <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
+            <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
 
-            <div class="search-container-panel">
-                <el-row>
-                    <el-col :span="24">
-                        <div class="feature-header-xqbyQk feature-team-box">
-                            <div style="gap: 12px;">
-                                <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                                    场景市场
-                                </h1>
+                <div class="search-container-panel">
+                    <el-row>
+                        <el-col :span="24">
+                            <div class="feature-header-xqbyQk feature-team-box">
+                                <div style="gap: 12px;">
+                                    <h1
+                                        style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+                                        场景市场
+                                    </h1>
+                                </div>
+                                <div class="search-container-weDuEn">
+                                    <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
+                                        :suffix-icon="Search" />
+                                </div>
                             </div>
-                            <div class="search-container-weDuEn">
-                                <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                                    :suffix-icon="Search" />
-                            </div>
-                            <!--
-                            <div>
-                                <el-button type="primary" size="large" @click="handleAddScene">新建场景</el-button>
-                            </div>
-                            -->
-                        </div>
-                    </el-col>
-                </el-row>
+                        </el-col>
+                    </el-row>
 
-            </div>
-            <div class="header">
-                <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
-            </div>
+                </div>
+                <div class="header">
+                    <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
+                </div>
 
-            <div class="channel-container-panel" style="margin-top:20px">
+                <div class="channel-container-panel" style="margin-top:20px">
                     <el-row>
                         <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
                             <div class="scene-card-container" @click="enterScreen(item)">
@@ -47,8 +43,9 @@
                                             <span class="scene-title">{{ item.sceneName }}</span>
                                             <div class="scene-tag">
                                                 <!-- <span class="scene-tag-icon"></span> -->
-                                                 <el-button type="primary" size="default" text bg>
-                                                   <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
+                                                <el-button type="primary" size="default" text bg>
+                                                    <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
+                                                    JSON.parse(item.fieldProp)?.sceneName }}
                                                 </el-button>
                                                 <!-- <span>{{ item.fieldProp }}</span> -->
                                             </div>
@@ -65,9 +62,12 @@
                                         <div class="semi-divider semi-divider-horizontal"></div>
                                         <div class="scene-footer">
                                             <div class="scene-price">
-                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" /> 私有</el-tag>
-                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i class="fa-solid fa-globe" /> 公开</el-tag>
-                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" /> 组织</el-tag>
+                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i
+                                                        class="fa-solid fa-lock" /> 私有</el-tag>
+                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
+                                                        class="fa-solid fa-globe" /> 公开</el-tag>
+                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
+                                                    组织</el-tag>
                                             </div>
                                             <div class="scene-stats">
                                                 <span>{{ item.usage_count }}</span>
@@ -80,22 +80,23 @@
                         </el-col>
 
                         <el-col :span="24" v-if="sceneLists.length == 0">
-                            <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
+                            <el-empty :image-size="400" :image="learnLogo"
+                                description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
                         </el-col>
 
                     </el-row>
+                </div>
             </div>
-        </div>
 
-    </div>
-                </el-scrollbar>
+        </div>
+    </el-scrollbar>
 
 </template>
 
 <script setup>
 
 import {
-    sceneList , 
+    sceneList,
     sceneListByPage
 } from '@/api/base/im/scene';
 
@@ -111,11 +112,11 @@ const sceneLists = ref([])
 
 /** 进入长文本编辑界面 */
 function enterScreen(item) {
-  const path = '/scene/'+ item.sceneType +'/index';
-  router.push({
-      path: path , 
-      query: { 'sceneId': item.id }
-  })
+    const path = '/scene/' + item.sceneType + '/index';
+    router.push({
+        path: path,
+        query: { 'sceneId': item.id }
+    })
 }
 
 /** 获取场景列表 */
