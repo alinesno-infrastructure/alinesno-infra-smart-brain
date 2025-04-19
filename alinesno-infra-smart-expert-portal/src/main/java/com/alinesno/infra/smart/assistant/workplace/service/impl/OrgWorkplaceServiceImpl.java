@@ -12,6 +12,7 @@ import com.alinesno.infra.smart.assistant.workplace.mapper.OrgWorkplaceMapper;
 import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
+import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -21,6 +22,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -119,5 +121,53 @@ public class OrgWorkplaceServiceImpl extends IBaseServiceImpl<OrgWorkplaceEntity
         }
 
         return null ;
+    }
+
+    /**
+     * 组织自定义工作台
+     * @param dto
+     */
+    @Override
+    public void customizeWorkbench(CustomizeWorkbenchDTO dto) {
+        // 保存新的用户工作台
+        WorkplaceEntity newWorkplace = new WorkplaceEntity() ;
+        BeanUtils.copyProperties(dto, newWorkplace);
+
+        newWorkplace.setName(dto.getName());
+        newWorkplace.setOrgId(dto.getOrgId());
+        newWorkplace.setOperatorId(dto.getOperatorId());
+        newWorkplace.setWorkplaceType(WorkplaceType.ORG.getId());
+
+        newWorkplace.setWorkplaceSource(WorkplaceSourceEnums.BACKEND.getCode());
+
+        workplaceService.save(newWorkplace) ;
+
+        long workspaceId = newWorkplace.getId() ;
+
+        List<WorkplaceItemEntity> list = new ArrayList<>() ;
+
+        for(String sceneId : dto.getSelectSceneId()) {
+            WorkplaceItemEntity item = new WorkplaceItemEntity() ;
+            item.setWorkplaceId(workspaceId);
+            item.setItemId(Long.parseLong(sceneId));
+            item.setItemType(WorkplaceItemTypeEnums.SCENE.getCode());
+            list.add(item) ;
+        }
+
+        for(String agentId : dto.getSelectAgentId()) {
+            WorkplaceItemEntity item = new WorkplaceItemEntity() ;
+            item.setWorkplaceId(workspaceId);
+            item.setItemId(Long.parseLong(agentId));
+            item.setItemType(WorkplaceItemTypeEnums.AGENT.getCode());
+            list.add(item) ;
+        }
+
+        workplaceItemService.saveBatch(list) ;
+
+        // 然后保存到OrgWorkplace表中
+        OrgWorkplaceEntity orgWorkplaceEntity = new OrgWorkplaceEntity() ;
+        orgWorkplaceEntity.setWorkplaceId(newWorkplace.getId());
+        orgWorkplaceEntity.setOrgId(dto.getOrgId());
+        save(orgWorkplaceEntity) ;
     }
 }
