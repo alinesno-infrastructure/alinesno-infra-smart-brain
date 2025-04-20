@@ -6,14 +6,43 @@ var prefix = '/api/infra/smart/assistant/scene/documentReview/' ;
 
 var managerUrl = {
   getScene: prefix +"getScene",
+  getSceneResultList: prefix +"getSceneResultList",
+  getAuditResultByRuleId: prefix +"getAuditResultByRuleId",
   getPreviewDocx: prefix +"getPreviewDocx",
+  genAuditResult: prefix +"genAuditResult",
+}
+
+// 通过规则ID获取审核结果
+export function getAuditResultByRuleId(ruleId , sceneId) {
+  return request({
+    url: managerUrl.getAuditResultByRuleId + '?ruleId=' + parseStrEmpty(ruleId) + '&sceneId=' + parseStrEmpty(sceneId),
+    method: 'get'
+  })
+}
+
+// 生成文档审核场景信息
+export function genAuditResult(data) {
+  return request({
+    url: managerUrl.genAuditResult , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 获取预览文档
 export function getPreviewDocx(sceneId) {
   return request({
     url: managerUrl.getPreviewDocx + '?sceneId=' + parseStrEmpty(sceneId),
-    responseType: 'arraybuffer', // 显式声明返回二进制流
+    // responseType: 'arraybuffer', // 显式声明返回二进制流
+    responseType: 'blob', // 显式声明返回二进制流
+    method: 'get'
+  })
+}
+
+// 查询场景详细
+export function getSceneResultList(id) {
+  return request({
+    url: managerUrl.getSceneResultList+ '?id=' + parseStrEmpty(id),
     method: 'get'
   })
 }
