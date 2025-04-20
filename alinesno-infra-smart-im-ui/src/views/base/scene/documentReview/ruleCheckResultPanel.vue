@@ -1,16 +1,16 @@
 <template>
-    <el-drawer v-model="drawer" :direction="direction" :with-header="false" :before-close="handleClose">
+    <el-drawer v-model="drawer" :direction="direction" size="40%" :with-header="false" :before-close="handleClose">
         <div class="drawer-content">
             <div class="drawer-header">
-                <el-button :type="getTagType()" text size="default">
-                    规则【{{ ruleItem.ruleTitle }}】检查结果
-                </el-button>
-                <el-button type="primary" text bg size="default" @click="closeDrawer(ruleItem)">关闭</el-button>
+                <!-- <el-button :type="getTagType()" text size="large">
+                </el-button> -->
+                规则【{{ ruleItem.ruleName || '未命名' }}】检查结果
+                <el-button type="text" size="large" @click="closeDrawer(ruleItem)">关闭</el-button>
             </div>
 
             <div class="drawer-body">
                 <el-scrollbar class="scrollable-area">
-                    <div class="rule-result-item" v-for="(item, index) in ruleItem.checkRuleResult">
+                    <!-- <div class="rule-result-item" v-for="(item, index) in checkRuleResult" :key="index">
                         <div class="risk-point">
                             <span>风险点{{ index + 1 }}: {{ item.reason }}</span>
                             <span>
@@ -25,22 +25,67 @@
                         </div>
                         <div class="modify-suggestion">
                             <div class="modify-suggestion-title"> 修改建议 </div>
-                            <!-- <div> {{ item.suggestedTexts }} </div> -->
                             <div>
-                                <div v-for="(i , ix ) in item.suggestedTexts" style="display: flex;justify-content: space-between;align-items: center;margin-bottom: 5px;" >
+                                <div v-for="(i , ix ) in item.suggestedTexts" :key="ix" style="display: flex;justify-content: space-between;align-items: center;margin-bottom: 5px;" >
                                     <span>
                                        {{ ix +1 }}:{{ i.text }}
                                     </span>
                                     <el-button type="primary" text bg size="small">接受</el-button>
                                 </div>
                             </div>
-                        </div>
+                        </div> -->
                         <!-- 
                         <div class="accept-suggestion">
                             <el-button type="primary" size="default">接受建议并确认(会添加到批注里面)</el-button>
                         </div> 
                         -->
-                    </div>
+                    <!-- </div> -->
+                    <div v-for="(item, index) in auditResultList" :key="index">
+                            <div class="check-result-item" :class="'item-alert-' + item.riskLevel"
+                                @click="handleCheckItemClick(item)">
+                                <div class="check-result-box" style="display: flex;gap: 5px;align-items: center;">
+                                    <span>
+                                        <el-button type="text" size="small" style="width:35px;">
+                                            <i class="fa-solid fa-chevron-down" v-if="item.showItemContent"></i>
+                                            <i class="fa-solid fa-chevron-right" v-if="!item.showItemContent" ></i>
+                                        </el-button>
+                                    </span>
+                                    <span>
+                                        <strong>
+                                           {{ item.modificationReason }}
+                                        </strong>
+                                    </span>
+                                    <el-tag :type="getTagType(item)" effect="dark">
+                                        {{ item.riskLevel === 'high' ? '高危' : item.riskLevel === 'medium' ? '中危' : '低危' }}
+                                    </el-tag>
+                                </div>
+
+
+                            </div>
+
+                                <div class="check-result-item-content" v-if="item.showItemContent">
+                                    <div class="content-panel">
+                                        <div>
+                                           <b>原文内容:</b> 
+                                           <p>
+                                            {{ item.originalContent }}
+                                           </p> 
+                                        </div>
+                                        <div>
+                                            <b>建议内容:</b> 
+                                            <p>
+                                            {{ item.suggestedContent }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <el-button type="primary" text bg size="default" @click="handlePointTo(item)">
+                                            <i class="fa-solid fa-hand-pointer"></i>&nbsp;定位
+                                        </el-button>
+                                    </div>
+                                </div>
+
+                        </div>
                 </el-scrollbar>
             </div>
         </div>
@@ -50,10 +95,13 @@
 <script setup>
 import { ref } from 'vue';
 
+import { getAuditResultByRuleId } from '@/api/base/im/scene/documentReview';
+
 const drawer = ref(false);
 const direction = ref('rtl');
 const ruleItem = ref(null);
-
+const checkRuleResult = ref([]);
+const auditResultList = ref([]);
 const closeDrawer = (item) => {
     console.log('closeDrawer', item);
     drawer.value = false;
@@ -68,7 +116,29 @@ const openDrawerAndSettings = (item) => {
     console.log('openDrawerAndSettings', item);
     drawer.value = true;
     ruleItem.value = item;
+
+    getAuditResultByRuleId(item.ruleId, item.sceneId).then((res) => {
+        console.log('getAuditResultByRuleId', res);
+        auditResultList.value = res.data;
+    });
+
 };
+
+// 点击规则
+const handleCheckItemClick = (item) => {
+
+let toggleShow = item.showItemContent
+
+if (!item.showItemContent) {
+    item.showItemContent = true;
+    return;
+} else {
+    toggleShow = !toggleShow;
+}
+
+item.showItemContent = toggleShow;
+
+}
 
 // 获取标签颜色
 const getTagType = () => {
@@ -90,15 +160,61 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+
+@import '@/assets/styles/document-review.scss';
+
+.check-result-item {
+    padding: 15px;
+    background: #fafafa;
+    border-radius: 5px;
+    margin-top: 10px;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+    border: 1px solid #e6e6e6;
+    align-items: center;
+}
+
+.check-result-item-content {
+
+    padding: 10px 15px;
+    font-size: 14px;
+    background: #f5f5f5;
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .content-panel {
+        display: flex;
+        gap: 5px;
+        flex-direction: column;
+    }
+}
+
+.check-result-item {
+    cursor: pointer;
+
+    &:hover {
+        background: #f5f5f5;
+    }
+
+}
+
 .drawer-content {
     // padding: 10px;
+    height: calc(90vh);
 
    .drawer-header {
-        font-size: 14px;
+        font-size: 15px;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
+        padding-bottom: 10px;
+        font-weight: bold;
+        background-color: #fafafa ; 
+        border-radius: 5px;;
+        padding: 5px 10px;
     }
    .drawer-body {
        .scrollable-area {
