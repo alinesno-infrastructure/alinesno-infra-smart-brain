@@ -27,7 +27,7 @@
                             :file-list="imageUrl"
                             :action="upload.url + '?sceneId=' + currentSceneInfo.id" 
                             :auto-upload="true" 
-                            accept=".doc,.docx" 
+                            accept=".doc,.docx,.pdf" 
                             :on-success="handleAvatarSuccess" 
                             :before-upload="beforeAvatarUpload"
                             :headers="upload.headers" 
@@ -96,6 +96,8 @@ import { getToken } from "@/utils/auth";
 import ExecuteHandle from './executeHandle'
 // import RoleSelectPanel from './roleSelectPanel'
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+
+import { getScene } from '@/api/base/im/scene/documentReview';
 import SnowflakeId from "snowflake-id";
 
 const snowflake = new SnowflakeId();
@@ -111,11 +113,10 @@ const logicReviewerEngineers = ref([]);
 
 const currentSceneInfo = ref({});
 
-const route = useRoute();
 const router = useRouter();
 const { proxy } = getCurrentInstance();
-
-import { getScene } from '@/api/base/im/scene/documentReview';
+const route = useRoute();
+const isBack = ref(route.query.back || false)
 
 const imageUrl = ref([])
 
@@ -181,8 +182,8 @@ const handleAvatarSuccess = (response, uploadFile) => {
 
 /** 图片上传之前 */
 const beforeAvatarUpload = (rawFile) => {
-  if (rawFile.size / 1024 / 1024 > 2) {
-    ElMessage.error('Avatar picture size can not exceed 2MB!');
+  if (rawFile.size / 1024 / 1024 > 20) {
+    ElMessage.error('Avatar picture size can not exceed 20MB!');
     return false;
   }
 
@@ -196,6 +197,7 @@ const beforeAvatarUpload = (rawFile) => {
 };
 
 const handleOpenDataset = () => {
+    ElMessage.warning('请从智能体平台后台，全局配置自定义审核清单.');
     /*
     proxy.$router.push({
         path: '/scene/documentReview/documentDataset',
@@ -211,7 +213,7 @@ const handleGetScene = () => {
     getScene(sceneId.value).then(res => {
         currentSceneInfo.value = res.data;
 
-        if(currentSceneInfo.value.genStatus == 1){
+        if(currentSceneInfo.value.genStatus == 1 && !isBack.value){
             router.push({
                 path: '/scene/documentReview/documentParser',
                 query: {
