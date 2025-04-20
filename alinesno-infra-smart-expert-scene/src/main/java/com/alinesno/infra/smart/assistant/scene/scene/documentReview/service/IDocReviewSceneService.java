@@ -1,11 +1,14 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 
 import java.util.List;
 
@@ -25,10 +28,12 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
 
     /**
      * 根据场景ID获取场景信息
+     *
      * @param sceneId
+     * @param query
      * @return
      */
-    DocReviewSceneEntity getBySceneId(long sceneId);
+    DocReviewSceneEntity getBySceneId(long sceneId, PermissionQuery query);
 
     /**
      * 更新场景的智能助手
@@ -43,4 +48,19 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
      */
     List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto);
 
+    /**
+     * 获取场景信息
+     * @param id
+     * @param entity
+     * @return
+     */
+    DocReviewSceneInfoDto getDocReviewSceneInfoDto(long id, SceneEntity entity);
+
+    /**
+     * 获取场景信息，并统计审核结果数量
+     * @param id
+     * @param entity
+     * @return
+     */
+    DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long id, SceneEntity entity);
 }
