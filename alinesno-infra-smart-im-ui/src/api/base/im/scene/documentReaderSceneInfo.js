@@ -6,17 +6,16 @@ var prefix = '/api/infra/smart/assistant/scene/documentReader/sceneInfo/' ;
 
 var managerUrl = {
   initAgents: prefix +"initAgents",
-  // genReviewList: prefix +"genReviewList"
+  getContractType: prefix +"getContractType",
 }
 
-// 生成文档审核场景信息
-// export function genReviewList(data) {
-//   return request({
-//     url: managerUrl.genReviewList , 
-//     method: 'post' , 
-//     data: data
-//   })
-// }
+// 获取合同类型
+export function getContractType() {
+  return request({
+    url: managerUrl.getContractType , 
+    method: 'get' , 
+  })
+}
 
 // 初始化Agent角色
 export function initAgents(data) {
