@@ -8,5 +8,8 @@ RUN sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
 RUN apt-get update && \
     apt-get install -y pandoc
 
+# 安装中文字体
+RUN apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei
+
 # 验证是否安装成功
 RUN pandoc --version
