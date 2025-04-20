@@ -1,15 +1,18 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto;
 
+import com.alinesno.infra.common.facade.base.BaseDto;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * 生成审查清单
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class DocReviewGenReviewDto {
+public class DocReviewGenReviewDto extends BaseDto {
 
     @Min(value = 1, message = "场景ID不能为空")
     private long sceneId ;
