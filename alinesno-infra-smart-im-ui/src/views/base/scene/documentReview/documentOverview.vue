@@ -18,19 +18,22 @@
                         </el-radio-group>
                     </el-form-item>
                     <el-form-item label="选择审查清单">
-                        <el-radio-group v-model="ruleForm.reviewListOption">
+                        <el-radio-group v-model="ruleForm.reviewListOption" @change="handleReviewListOptionChange">
                             <el-radio value="aigen" label="AI智能生成" border>
                               <i class="fa-solid fa-rocket"></i> &nbsp; AI智能生成
                             </el-radio>
-                            <el-radio value="knowledgeBase" label="从知识库选择" border>
+                            <el-radio value="dataset" label="从知识库选择" border>
                                <i class="fa-solid fa-train-subway"></i> &nbsp; 从知识库选择
                             </el-radio>
                         </el-radio-group>
                     </el-form-item>
                     <el-form-item label="选择审查清单" prop="reviewListOption" >
-                        <el-select placeholder="选择审查清单" v-model="ruleForm.reviewListKnowledgeBase" :disabled="ruleForm.reviewListOption!== 'dataset'">
-                            <el-option v-for="item in scenarioList" :key="item.scenarioId" :label="item.title"
-                                :value="item.scenarioId"></el-option>
+                        <el-select placeholder="选择审查清单" v-model="ruleForm.auditId" :disabled="ruleForm.reviewListOption!== 'dataset'">
+                            <el-option v-for="item in scenarioList" 
+                                :key="item.id" 
+                                :label="item.auditName"
+                                :value="item.id">
+                            </el-option>
                         </el-select>
                     </el-form-item>
                 </el-form>
@@ -47,7 +50,7 @@
             </el-button>
 
             <el-button style="width:100%" 
-                v-if="ruleForm.reviewListOption == 'knowledgeBase'" 
+                v-if="ruleForm.reviewListOption == 'dataset'" 
                 type="primary" 
                 size="large" 
                 @click="submitForm">
@@ -72,10 +75,15 @@
 </template>
 
 <script setup>
+
 import { ref, reactive } from 'vue';
 import { ElLoading } from 'element-plus';
 import { getScene } from '@/api/base/im/scene/documentReview';
-import { genReviewList } from '@/api/base/im/scene/documentReviewSceneInfo';
+import { 
+    genReviewList , 
+    genReviewListByDataset,
+    getAuditList 
+} from '@/api/base/im/scene/documentReviewSceneInfo';
 
 const route = useRoute();
 
@@ -100,13 +108,7 @@ const ruleForm = reactive({
 const contractTypeList = ref([]);
 
 // 知识库选择列表数据，优化场景名称
-const scenarioList = ref([
-    { "scenarioId": "-1", "title": "自定义标书合同审核场景" },
-    { "scenarioId": "37", "title": "常规销售标书合同审核知识库" },
-    { "scenarioId": "40", "title": "能源供应标书合同审核知识库" },
-    { "scenarioId": "1", "title": "赠与类标书合同审核知识库" },
-    { "scenarioId": "2", "title": "借款标书合同审核知识库" },
-]);
+const scenarioList = ref([]);
 
 // 定义表单验证规则
 const rules = reactive({
@@ -140,6 +142,9 @@ const rules = reactive({
             },
             trigger: 'change'
         }
+    ] , 
+    auditId: [
+        { required: true, message: '请选择知识库', trigger: 'change' }
     ]
 });
 
@@ -151,27 +156,39 @@ const submitForm = async () => {
         if (valid) {
             console.log('submit!', ruleForm);
 
-            ruleForm.sceneId = currentSceneInfo.value.id ;
-            ruleForm.channelStreamId = channelStreamId.value ;
+            // 如果是数据集
+            if(ruleForm.reviewListOption == 'dataset'){
 
-            // 开始生成
-            streamLoading.value = ElLoading.service({
-                lock: true,
-                background: 'rgba(255, 255, 255, 0.4)',
-                customClass: 'custom-loading'
-            });
+                ruleForm.sceneId = currentSceneInfo.value.id ;
+                ruleForm.channelStreamId = channelStreamId.value ;
 
-            if(ruleForm.reviewListOption == 'aigen'){
-                let text = '正在使用AI生成校验规则内容，请稍等.';
-                streamLoading.value.setText(text)
-                emit('genSingleChapterContent', currentSceneInfo.value.analysisAgentEngineer) ; 
+                genReviewListByDataset(ruleForm).then(res => {
+                    emit('handleStepClick', 2);
+                })
+
+            }else if(ruleForm.reviewListOption == 'aigen'){
+
+                ruleForm.sceneId = currentSceneInfo.value.id ;
+                ruleForm.channelStreamId = channelStreamId.value ;
+
+                streamLoading.value = ElLoading.service({
+                    lock: true,
+                    background: 'rgba(255, 255, 255, 0.4)',
+                    customClass: 'custom-loading'
+                });
+
+                if(ruleForm.reviewListOption == 'aigen'){
+                    let text = '正在使用AI生成校验规则内容，请稍等.';
+                    streamLoading.value.setText(text)
+                    emit('genSingleChapterContent', currentSceneInfo.value.analysisAgentEngineer) ; 
+                }
+
+                genReviewList(ruleForm).then(res => {
+                    console.log('res = ' + res);
+                    emit('handleStepClick', 2);
+                    streamLoading.value.close();
+                })
             }
-
-            genReviewList(ruleForm).then(res => {
-                console.log('res = ' + res);
-                emit('handleStepClick', 2);
-                streamLoading.value.close();
-            })
 
         } else {
             console.log('error submit!');
@@ -190,7 +207,42 @@ const handleGetScene = () => {
     getScene(sceneId.value).then(res => {
         currentSceneInfo.value = res.data;
         contractTypeList.value = res.data.contractTypes;
+
+        if(currentSceneInfo.value){
+
+            if(currentSceneInfo.value.contractType){
+                ruleForm.contractType = currentSceneInfo.value.contractType ; 
+            }
+
+            if(currentSceneInfo.value.reviewPosition){
+                ruleForm.reviewPosition = currentSceneInfo.value.reviewPosition ;
+            }
+
+            if(currentSceneInfo.value.reviewListOption){
+                ruleForm.reviewListOption = currentSceneInfo.value.reviewListOption ;
+            }
+
+            if(currentSceneInfo.value.auditId){
+                ruleForm.auditId = currentSceneInfo.value.auditId ;
+            }
+
+            handleReviewListOptionChange();
+        }
+
     })
+}
+
+const handleGetAuditList = () => {
+    getAuditList(sceneId.value).then(res => {
+        console.log('res = ' + res);
+        scenarioList.value = res.data;
+    })
+}
+
+const handleReviewListOptionChange = () => {
+    if (ruleForm.reviewListOption === 'dataset') {
+        handleGetAuditList();
+    }
 }
 
 onMounted(() => {
