@@ -1,17 +1,30 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.mapper.DocReviewSceneMapper;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
+import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
+import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +37,9 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private IDocReviewAuditResultService docReviewAuditResultService ;
 
     @Override
     public void initAgents(DocReviewInitDto dto) {
@@ -48,10 +64,13 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     }
 
     @Override
-    public DocReviewSceneEntity getBySceneId(long sceneId) {
+    public DocReviewSceneEntity getBySceneId(long sceneId, PermissionQuery query) {
 
         LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocReviewSceneEntity::getSceneId, sceneId) ;
+
+        // TODO fix:处理组织过滤的问题
+//        wrapper.eq(DocReviewSceneEntity::getOrgId, query.getOrgId());
 
         return getOne(wrapper) ;
     }
@@ -82,7 +101,10 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     @Override
     public List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto) {
 
-        DocReviewSceneEntity entity = getBySceneId(dto.getSceneId());
+        PermissionQuery query = new PermissionQuery() ;
+        BeanUtils.copyProperties(dto , query) ;
+
+        DocReviewSceneEntity entity = getBySceneId(dto.getSceneId(), query);
         if(entity == null){
             return Collections.emptyList() ;
         }
@@ -97,5 +119,82 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
         return Collections.emptyList() ;
     }
+
+    @Override
+    @NotNull
+    public DocReviewSceneInfoDto getDocReviewSceneInfoDto(long id, SceneEntity entity) {
+        LongTextSceneDto dto = new LongTextSceneDto();
+        BeanUtils.copyProperties(entity, dto);
+
+        SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoByCode(entity.getSceneType());
+
+        dto.setAgents(sceneInfoDto.getAgents());
+        dto.setSceneId(sceneInfoDto.getId());
+
+        DocReviewSceneInfoDto docSceneInfoDto = new DocReviewSceneInfoDto();
+        BeanUtils.copyProperties(dto, docSceneInfoDto);
+
+        // 查询出Entity信息
+        PermissionQuery query = new PermissionQuery() ;
+        BeanUtils.copyProperties(dto , query) ;
+        DocReviewSceneEntity docReviewSceneEntity = getBySceneId(id , query);
+
+        if(docReviewSceneEntity != null){
+
+            docSceneInfoDto.setAnalysisAgentEngineer(docReviewSceneEntity.getAnalysisAgentEngineer());
+            docSceneInfoDto.setAnalysisAgentEngineerEntity(roleService.getById(docReviewSceneEntity.getAnalysisAgentEngineer()));
+
+            docSceneInfoDto.setLogicReviewerEngineer(docReviewSceneEntity.getLogicReviewerEngineer());
+            docSceneInfoDto.setLogicReviewerEngineerEntity(roleService.getById(docReviewSceneEntity.getLogicReviewerEngineer()));
+
+            docSceneInfoDto.setAuditId(docReviewSceneEntity.getAuditId());
+            docSceneInfoDto.setContractType(docReviewSceneEntity.getContractType());
+            docSceneInfoDto.setReviewPosition(docReviewSceneEntity.getReviewPosition()) ;
+            docSceneInfoDto.setReviewListKnowledgeBase(docReviewSceneEntity.getReviewListKnowledgeBase());
+            docSceneInfoDto.setContractOverview(docReviewSceneEntity.getContractOverview());
+            docSceneInfoDto.setDocumentId(docReviewSceneEntity.getDocumentId());
+            docSceneInfoDto.setReviewListOption(docReviewSceneEntity.getReviewListOption());
+
+            docSceneInfoDto.setReviewList(docReviewSceneEntity.getReviewList());
+            docSceneInfoDto.setDocumentName(docReviewSceneEntity.getDocumentName());
+            docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(docReviewSceneEntity.getReviewList(), DocReviewRulesDto.class));
+            docSceneInfoDto.setGenStatus(docReviewSceneEntity.getGenStatus());
+        }
+
+        docSceneInfoDto.setContractTypes(ContractTypeEnum.getContractScenarioList());
+        return docSceneInfoDto;
+    }
+
+    @Override
+    public DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long id, SceneEntity entity) {
+        DocReviewSceneInfoDto docSceneInfoDto = getDocReviewSceneInfoDto(id , entity) ;
+
+        List<DocReviewAuditResultEntity> auditResultList = docReviewAuditResultService.list(
+                new LambdaQueryWrapper<DocReviewAuditResultEntity>()
+                        .eq(DocReviewAuditResultEntity::getSceneId, id)
+        );
+
+        if(docSceneInfoDto.getReviewListDtos() != null){
+            for (DocReviewRulesDto reviewListDto : docSceneInfoDto.getReviewListDtos()) {
+                int count = getAuditResultCount(auditResultList , reviewListDto.getId()) ;
+                reviewListDto.setAuditResultCount(count); ;
+            }
+        }
+
+        return docSceneInfoDto ;
+    }
+
+    private int getAuditResultCount(List<DocReviewAuditResultEntity> auditResultList, Long id) {
+        int count = 0 ;
+
+        for (DocReviewAuditResultEntity auditResult : auditResultList) {
+            if(auditResult.getRuleId().equals(id)){
+                count ++ ;
+            }
+        }
+
+        return count ;
+    }
+
 
 }
