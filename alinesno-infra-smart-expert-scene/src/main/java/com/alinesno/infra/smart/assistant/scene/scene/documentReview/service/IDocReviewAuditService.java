@@ -1,8 +1,12 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewAuditDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditEntity;
+import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
+
+import java.util.List;
 
 /**
  *
@@ -24,4 +28,19 @@ public interface IDocReviewAuditService extends IBaseService<DocReviewAuditEntit
      * @param dto
      */
     Long saveOrUpdateAudit(DocReviewAuditDto dto);
+
+    /**
+     * 查询审核清单
+     * @param query
+     * @return
+     */
+    List<DocReviewAuditDto> getAuditList(PermissionQuery query);
+
+    /**
+     * 根据审核清单ID查询规则
+     * @param auditId
+     * @return
+     */
+    List<DocReviewRulesEntity> getRulesByAuditId(long auditId);
+
 }
