@@ -1,15 +1,16 @@
 package com.alinesno.infra.smart.assistant.template.utils;
 
-import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
@@ -21,10 +22,6 @@ import java.util.Map;
 @Component
 @Slf4j
 public class TemplateProcessor {
-
-
-    @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
-    private String localPath  ;
 
     public String processTemplateFromUrl(String templateUrl, JSONObject jsonObject) {
         try {
@@ -52,8 +49,7 @@ public class TemplateProcessor {
             String processedText = writer.toString();
 
             // 保存处理后的文本到临时文件
-            File tempFile = new File(localPath , IdUtil.getSnowflakeNextIdStr() + ".docx") ;
-            Path tempDocxPath = Path.of(tempFile.getAbsolutePath()) ; // Files.createTempFile("output_", ".docx");
+            Path tempDocxPath = Files.createTempFile("output_", ".docx");
             try (BufferedWriter out = Files.newBufferedWriter(tempDocxPath)) {
                 out.write(processedText);
             }
