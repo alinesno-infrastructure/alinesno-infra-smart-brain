@@ -33,6 +33,7 @@ public class DocReviewSceneInfoDto extends SceneInfoDto {
     private String contractType;  // 合同类型
     private String reviewPosition;  // 审查立场
     private String reviewListOption ;  // 审核列表选项
+    private Long auditId ; // 审核ID
     private String reviewList;  // 审核列表
     private List<DocReviewRulesDto> reviewListDtos ;  // 审核列表
     private String reviewListKnowledgeBase;  // 审核列表知识库
