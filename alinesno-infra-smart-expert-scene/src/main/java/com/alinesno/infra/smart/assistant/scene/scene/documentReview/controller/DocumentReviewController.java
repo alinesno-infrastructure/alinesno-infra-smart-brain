@@ -1,29 +1,38 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.WordToPdfConverter;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewRulesService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewPromptTools;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.ParserDocumentTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
+import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
-import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
-import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,11 +44,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -50,6 +64,8 @@ import java.util.Objects;
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/smart/assistant/scene/documentReview/")
 public class DocumentReviewController extends SuperController {
+
+    private final RestTemplate restTemplate = new RestTemplate();
 
     @Autowired
     private ISceneService service;
@@ -64,18 +80,19 @@ public class DocumentReviewController extends SuperController {
     private CloudStorageConsumer storageConsumer ;
 
     @Autowired
+    private IDocReviewAuditResultService auditResultService ;
+
+    @Autowired
+    private IDocReviewRulesService ruleService; ;
+
+    @Autowired
     private AnalysisTool analysisTool;
+
+    @Autowired
+    private ParserDocumentTool parserDocumentTool ;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
-
-    /**
-     * 获取合同类型列表
-     */
-    @GetMapping("/getContractType")
-    public AjaxResult getContractType() {
-        return AjaxResult.success("操作成功", ContractTypeEnum.getList());
-    }
 
     /**
      * 通过Id获取到场景
@@ -92,55 +109,55 @@ public class DocumentReviewController extends SuperController {
             return AjaxResult.error("未找到对应的场景实体");
         }
 
-        LongTextSceneDto dto = new LongTextSceneDto();
-        BeanUtils.copyProperties(entity, dto);
-
-        SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoByCode(entity.getSceneType());
-
-        dto.setAgents(sceneInfoDto.getAgents());
-        dto.setSceneId(sceneInfoDto.getId());
-
-        DocReviewSceneInfoDto docSceneInfoDto = new DocReviewSceneInfoDto();
-        BeanUtils.copyProperties(dto, docSceneInfoDto);
-
-        // 查询出Entity信息
-        LambdaQueryWrapper<DocReviewSceneEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(DocReviewSceneEntity::getSceneId, id);
-        DocReviewSceneEntity docReviewSceneEntity = docReviewSceneService.getOne(wrapper);
-
-        if(docReviewSceneEntity != null){
-            docSceneInfoDto.setAnalysisAgentEngineer(docReviewSceneEntity.getAnalysisAgentEngineer());
-            docSceneInfoDto.setAnalysisAgentEngineerEntity(industryRoleService.getById(docReviewSceneEntity.getAnalysisAgentEngineer()));
-
-            docSceneInfoDto.setLogicReviewerEngineer(docReviewSceneEntity.getLogicReviewerEngineer());
-            docSceneInfoDto.setLogicReviewerEngineerEntity(industryRoleService.getById(docReviewSceneEntity.getLogicReviewerEngineer()));
-
-            docSceneInfoDto.setContractType(docReviewSceneEntity.getContractType());
-            docSceneInfoDto.setReviewPosition(docReviewSceneEntity.getReviewPosition()) ;
-            docSceneInfoDto.setReviewListKnowledgeBase(docReviewSceneEntity.getReviewListKnowledgeBase());
-            docSceneInfoDto.setContractOverview(docReviewSceneEntity.getContractOverview());
-            docSceneInfoDto.setDocumentId(docReviewSceneEntity.getDocumentId());
-
-            docSceneInfoDto.setReviewList(docReviewSceneEntity.getReviewList());
-            docSceneInfoDto.setDocumentName(docReviewSceneEntity.getDocumentName());
-            docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(docReviewSceneEntity.getReviewList(), DocReviewRulesDto.class));
-            docSceneInfoDto.setGenStatus(docReviewSceneEntity.getGenStatus());
-        }
-
-        docSceneInfoDto.setContractTypes(ContractTypeEnum.getList());
-
-        return AjaxResult.success("操作成功.", docSceneInfoDto);
+        return AjaxResult.success("操作成功.", docReviewSceneService.getDocReviewSceneInfoDto(id, entity));
     }
 
-    @GetMapping("/getPreviewDocx")
-    public ResponseEntity<Resource> getPreviewDocx(@RequestParam long sceneId) {
+    /**
+     * 通过Id获取到场景审核结果列表
+     * @param id
+     * @return
+     */
+    @GetMapping("/getSceneResultList")
+    public AjaxResult getSceneResultList(@RequestParam("id") long id) {
 
-        DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId);
+        SceneEntity entity = service.getById(id);
+        if (entity == null) {
+            return AjaxResult.error("未找到对应的场景实体");
+        }
+
+        DocReviewSceneInfoDto docSceneInfoDto = docReviewSceneService.getDocReviewSceneInfoDtoWithResultCount(id, entity);
+
+        return AjaxResult.success("操作成功." , docSceneInfoDto)  ;
+    }
+
+    /**
+     * 通过审核规则id和场景获取到审核结果
+     * @param ruleId
+     * @param sceneId
+     * @param query
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/getAuditResultByRuleId")
+    public AjaxResult getAuditResultByRuleId(@RequestParam("ruleId") long ruleId ,
+                                             @RequestParam("sceneId") long sceneId,
+                                             PermissionQuery query) {
+        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getAuditResultByRuleId(ruleId, sceneId);
+        return AjaxResult.success("操作成功." , auditResultList)  ;
+    }
+
+
+    @DataPermissionQuery
+    @GetMapping("/getPreviewDocx")
+    public ResponseEntity<Resource> getPreviewDocx(@RequestParam long sceneId , PermissionQuery query) {
+
+        DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId, query);
         String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
 
-        log.debug("previewUrl= {}" , previewUrl);
+        String fileName = entity.getDocumentName();
 
-        RestTemplate restTemplate = new RestTemplate();
+        log.debug("previewUrl= {}", previewUrl);
+
         byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
 
         if (fileBytes == null) {
@@ -153,15 +170,61 @@ public class DocumentReviewController extends SuperController {
             return ResponseEntity.badRequest().build();
         }
 
-        HttpHeaders headers = new HttpHeaders();
-        // 设置正确的 MIME 类型
-        headers.setContentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.wordprocessingml.document"));
-        headers.add("Content-Disposition", "inline; filename=demo.docx");
+        boolean isPdf = fileName.toLowerCase().endsWith(".pdf");
 
-        ByteArrayResource resource = new ByteArrayResource(fileBytes);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource);
+        File docFile = null;
+        File pdfFile = null;
+        try {
+            if (isPdf) {
+
+                pdfFile = File.createTempFile("temp-pdf", ".pdf");
+                Files.write(pdfFile.toPath(), fileBytes);
+
+                byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
+
+                HttpHeaders headers = new HttpHeaders();
+                // 设置正确的 MIME 类型
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.add("Content-Disposition", "inline; filename=preview.pdf");
+
+                ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(resource);
+            } else {
+                // 创建临时 docx 文件
+                docFile = File.createTempFile("temp-docx", ".docx");
+                Files.write(docFile.toPath(), fileBytes);
+
+                // 创建临时 pdf 文件
+                pdfFile = File.createTempFile("temp-pdf", ".pdf");
+                WordToPdfConverter.convertToPdf(docFile, pdfFile);
+
+                // 读取 PDF 文件内容
+                byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
+
+                HttpHeaders headers = new HttpHeaders();
+                // 设置正确的 MIME 类型
+                headers.setContentType(MediaType.APPLICATION_PDF);
+                headers.add("Content-Disposition", "inline; filename=preview.pdf");
+
+                ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+                return ResponseEntity.ok()
+                        .headers(headers)
+                        .body(resource);
+            }
+        } catch (IOException e) {
+            log.error("文件处理出错", e);
+            return ResponseEntity.status(500).build();
+        } finally {
+            // 删除临时文件
+            if (docFile != null) {
+                docFile.delete();
+            }
+            if (pdfFile != null) {
+                pdfFile.delete();
+            }
+        }
     }
 
     /**
@@ -170,7 +233,7 @@ public class DocumentReviewController extends SuperController {
      */
     @SneakyThrows
     @PostMapping("/importData")
-    public AjaxResult importData(@RequestPart("file") MultipartFile file, long sceneId){
+    public AjaxResult importData(@RequestPart("file") MultipartFile file, long sceneId , PermissionQuery query){
 
         log.debug("sceneId = {}" , sceneId);
 
@@ -187,7 +250,7 @@ public class DocumentReviewController extends SuperController {
 
         R<String> r = storageConsumer.upload(targetFile) ;
 
-        DocReviewSceneEntity docReviewSceneEntity = docReviewSceneService.getBySceneId(sceneId) ;
+        DocReviewSceneEntity docReviewSceneEntity = docReviewSceneService.getBySceneId(sceneId, query) ;
 
         // 获取到文档的基础内容
         String content = analysisTool.analysisDocumentBaseContent(targetFile) ;
@@ -200,7 +263,6 @@ public class DocumentReviewController extends SuperController {
 
         // 优先获取到结果内容
         WorkflowExecutionDto genContent  = new WorkflowExecutionDto() ;
-        // analysisTool.handleChapterMessage(genContent , taskInfo);
 
         // 更新Entity数据
         docReviewSceneEntity.setContractOverview(genContent.getGenContent());
@@ -211,6 +273,125 @@ public class DocumentReviewController extends SuperController {
 
         log.debug("ajaxResult= {}" , r);
         return AjaxResult.success("上传成功." , r.getData()) ;
+    }
+
+    /**
+     * 文档进行内容审核
+     */
+    @DataPermissionQuery
+    @PostMapping("/genAuditResult")
+    public AjaxResult genAuditResult(@RequestBody @Validated GenAuditResultDto dto , PermissionQuery query){
+
+        DocReviewSceneEntity sceneEntity = docReviewSceneService.getBySceneId(dto.getSceneId() , query) ;
+        List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(sceneEntity) ;
+
+        List<DocReviewAuditResultEntity> auditResultList = new ArrayList<>() ;
+
+        if(contentList == null){
+            return AjaxResult.error("解析文档内容失败.") ;
+        }
+
+        log.debug("contentList = {}" , contentList.size());
+        int count = 0 ;
+
+        // 如果是aigen处理的审核
+        if(sceneEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){
+
+            // 解析获取得到审核内容
+            List<DocReviewRulesEntity> rules = JSONArray.parseArray(sceneEntity.getReviewList(), DocReviewRulesEntity.class) ;
+
+            for(DocumentInfoBean bean : contentList){
+                String contentPromptContent = bean.getContent() ;
+
+                // 从rules中找到
+                DocReviewRulesEntity rule = getRule(rules , dto.getRuleId()) ;
+                if(rule != null){
+                    generateTask(contentPromptContent , dto, query , rule , auditResultList);
+                }
+            }
+        }else if(sceneEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())){
+            for(DocumentInfoBean bean : contentList){
+                String contentPromptContent = bean.getContent() ;
+                DocReviewRulesEntity rule = ruleService.getById(dto.getRuleId()) ;
+                generateTask(contentPromptContent , dto, query , rule , auditResultList);
+            }
+        }
+
+
+        if(!CollectionUtils.isEmpty(auditResultList)){
+
+            for(DocReviewAuditResultEntity entity : auditResultList){
+                log.debug("entity = {}" , entity);
+                entity.setAuditId(dto.getRuleId());
+                entity.setRuleId(dto.getRuleId());
+                entity.setSceneId(dto.getSceneId());
+                BeanUtils.copyProperties(query , entity);
+            }
+            log.debug("文档解析完成，审核意见为:{}" , auditResultList.size());
+            auditResultService.saveAuditResult(auditResultList , dto);
+        }
+
+        return AjaxResult.success() ;
+    }
+
+    /**
+     * 获取规则
+     * @param rules
+     * @param ruleId
+     * @return
+     */
+    private DocReviewRulesEntity getRule(List<DocReviewRulesEntity> rules, Long ruleId) {
+        for (DocReviewRulesEntity rule : rules) {
+            if (rule.getId().equals(ruleId)) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    private void generateTask(String contentPromptContent ,
+                              GenAuditResultDto dto,
+                              PermissionQuery query,
+                              DocReviewRulesEntity rule ,
+                              List<DocReviewAuditResultEntity> auditResultList) {
+
+        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+        Long roleId = dto.getRoleId() ;
+
+        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+        taskInfo.setRoleId(roleId);
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+
+        String prompt = DocReviewPromptTools.buildReviewPrompt(
+                contentPromptContent ,
+                dto,
+                docReviewSceneService.getBySceneId(dto.getSceneId() , query) ,
+                rule ,
+                taskInfo) +
+                FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT ;
+
+        taskInfo.setText(prompt);
+
+        WorkflowExecutionDto genContent  = industryRoleService.runRoleAgent(taskInfo) ;
+
+        genContent.setGenContent(taskInfo.getFullContent());
+        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+
+        // 解析得到代码内容
+        try{
+            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+
+                String codeContent = genContent.getCodeContent().get(0).getContent() ;
+                List<DocReviewAuditResultEntity> dataObject = JSONArray.parseArray(codeContent , DocReviewAuditResultEntity.class) ;
+
+                log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
+                auditResultList.addAll(dataObject);
+            }
+        }catch (Exception e){
+            log.warn("解析代码块出错:{}", e.getMessage());
+        }
     }
 
 }
