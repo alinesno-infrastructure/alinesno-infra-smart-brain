@@ -45,4 +45,9 @@ public class DocReviewRulesDto extends BaseDto {
      */
     @NotBlank(message = "审核立场不能为空")
     private String reviewPosition ;
+
+    /**
+     * 审核结果数量
+     */
+    private int auditResultCount ;
 }
