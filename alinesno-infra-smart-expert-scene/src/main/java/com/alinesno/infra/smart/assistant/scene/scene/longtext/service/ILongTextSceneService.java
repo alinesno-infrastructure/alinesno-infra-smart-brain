@@ -38,4 +38,5 @@ public interface ILongTextSceneService extends IBaseService<LongTextSceneEntity>
      * @return
      */
     List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto);
+
 }
