@@ -98,6 +98,7 @@ public class LongTextSceneController {
     public AjaxResult updateChapterPromptContent(@RequestBody @Validated ChapterPromptContentRequestDto dto , PermissionQuery query) {
 
         LongTextSceneEntity sceneEntity = longTextSceneService.getBySceneId(dto.getSceneId() , query) ;
+        Assert.notNull(sceneEntity, "未找到对应的场景实体");
         sceneEntity.setChapterPromptContent(dto.getPromptContent());
 
         longTextSceneService.updateById(sceneEntity);
