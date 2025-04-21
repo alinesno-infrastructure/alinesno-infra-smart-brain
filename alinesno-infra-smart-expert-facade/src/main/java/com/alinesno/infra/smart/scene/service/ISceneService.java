@@ -29,10 +29,13 @@ public interface ISceneService extends IBaseService<SceneEntity> {
 
     /**
      * 生成markdown内容
+     *
      * @param sceneId
+     * @param query
+     * @param id
      * @return
      */
-    String genMarkdownContent(long sceneId);
+    String genMarkdownContent(long sceneId, PermissionQuery query, Long id);
 
     /**
      * 分页查询场景列表
