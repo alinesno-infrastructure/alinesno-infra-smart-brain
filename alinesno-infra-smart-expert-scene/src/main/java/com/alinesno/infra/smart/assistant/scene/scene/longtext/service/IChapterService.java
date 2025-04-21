@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
@@ -26,8 +27,9 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      * @param parentId 父章节的ID，用于建立章节间的层级关系
      * @param level    章节的层级，表示章节在层级结构中的深度
      * @param sceneId
+     * @param query
      */
-    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId);
+    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId, PermissionQuery query);
 
     /**
      * 获取章节的树形结构
@@ -64,4 +66,11 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      */
     @Deprecated
     List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto);
+
+    /**
+     * 获取所有章节内容
+     * @param sceneId
+     * @return
+     */
+    String getAllChapterContent(long sceneId);
 }
