@@ -121,7 +121,7 @@
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label="发布范围" prop="sceneScope" label-width="100px">
+                <el-form-item label="发布范围" prop="sceneScope" label-width="100px" v-if="currentConfigChannel.paramKey === 'aip_agent_scene'">
                     <el-radio-group v-model="configForm.sceneScope">
                         <el-radio v-for="item in sceneScopeList" 
                         style="margin-top: 10px;margin-bottom: 10px;" 
