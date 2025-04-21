@@ -32,7 +32,10 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -66,38 +69,60 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         return sceneEntity ;
     }
 
-    @Override
-    public String genMarkdownContent(long sceneId) {
+    public String genMarkdownContent(long sceneId, PermissionQuery query, Long longTextSceneId) {
+
         LambdaQueryWrapper<ChapterEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ChapterEntity::getSceneId, sceneId);
+        lambdaQueryWrapper.eq(ChapterEntity::getOrgId, query.getOrgId()) ;
+        lambdaQueryWrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId) ;
         lambdaQueryWrapper.orderByAsc(ChapterEntity::getChapterSort); // 按照排序字段升序排列
 
-        List<ChapterEntity> topChapters = chapterService.list(lambdaQueryWrapper);
+        List<ChapterEntity> allChapters = chapterService.list(lambdaQueryWrapper);
+
+        // 构建树结构
+        Map<Long, ChapterEntity> chapterMap = new HashMap<>();
+        List<ChapterEntity> topChapters = new ArrayList<>();
+
+        for (ChapterEntity chapter : allChapters) {
+            chapterMap.put(chapter.getId(), chapter);
+        }
+
+        for (ChapterEntity chapter : allChapters) {
+            Long parentId = chapter.getParentChapterId();
+            if (parentId == null) {
+                topChapters.add(chapter);
+            } else {
+                ChapterEntity parent = chapterMap.get(parentId);
+                if (parent != null) {
+                    if (parent.getSubtitles() == null) {
+                        parent.setSubtitles(new ArrayList<>());
+                    }
+                    parent.getSubtitles().add(chapter);
+                }
+            }
+        }
 
         StringBuilder markdownBuilder = new StringBuilder();
 
         for (ChapterEntity chapter : topChapters) {
-            buildMarkdownForChapter(chapter, markdownBuilder);
+            buildMarkdownForChapter(chapter, markdownBuilder, 1);
         }
 
         return markdownBuilder.toString();
+
     }
 
-    private void buildMarkdownForChapter(ChapterEntity chapter, StringBuilder markdownBuilder) {
-        // 根据章节层级生成对应的Markdown标题前缀
-        String markdownHeaderPrefix = "#".repeat(chapter.getChapterLevel());
-        // 拼接章节名称
-        markdownBuilder.append(markdownHeaderPrefix).append(" ").append(chapter.getChapterName()).append("\n\n");
-        // 如果有内容，则添加内容
-        if (chapter.getContent() != null && !chapter.getContent().isEmpty()) {
+    private void buildMarkdownForChapter(ChapterEntity chapter, StringBuilder markdownBuilder, int level) {
+        // 根据层级添加标题符号
+        markdownBuilder.append("#".repeat(Math.max(0, level)));
+        markdownBuilder.append(" ").append(chapter.getChapterName()).append("\n\n");
+        if (chapter.getContent() != null) {
             markdownBuilder.append(chapter.getContent()).append("\n\n");
         }
 
-        // 递归处理子章节
-        List<ChapterEntity> subtitles = chapter.getSubtitles();
-        if (subtitles != null && !subtitles.isEmpty()) {
-            for (ChapterEntity subtitle : subtitles) {
-                buildMarkdownForChapter(subtitle, markdownBuilder);
+        if (chapter.getSubtitles() != null) {
+            for (ChapterEntity subChapter : chapter.getSubtitles()) {
+                buildMarkdownForChapter(subChapter, markdownBuilder, level + 1);
             }
         }
     }
