@@ -117,3 +117,10 @@ AIP Multi-Agent平台是一种综合性的能力，旨在将各种业务流程�
 - 前端部分集成了 [chatgpt-web](https://github.com/Chanzhaoyu/chatgpt-web)。
 - 头像地址从[userpics](https://userpics.craftwork.design/) , 注:此不可商用
 - 部分逻辑设计参考[FastGPT](https://github.com/labring/FastGPT)
+
+## 注意
+
+> 项目后期才会进一步剔除
+
+- 当前项目包含有aspose-words开源的代码，商业使用请注意剔除。
+- 当前项目包含有spire.doc.free引入依赖，商业使用请注意剔除。
