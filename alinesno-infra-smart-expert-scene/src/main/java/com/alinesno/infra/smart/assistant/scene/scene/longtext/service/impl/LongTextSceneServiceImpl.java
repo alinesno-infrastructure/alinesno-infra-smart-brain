@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -48,6 +49,11 @@ public class LongTextSceneServiceImpl extends IBaseServiceImpl<LongTextSceneEnti
         LongTextSceneEntity entity = getOne(queryWrapper);
 
         // TODO 待优化逻辑
+
+       if(sceneEntity.getSceneScope() == null) {
+           sceneEntity.setSceneScope(SceneScopeType.ORG_SCENE.getValue()) ;
+       }
+
         // 如果是公共，通过源信息配置，做拦截数据修改更新处理，修改编辑角色信息。
         if(sceneEntity.getSceneScope().equals(SceneScopeType.PUBLIC_SCENE.getValue())){
 
@@ -55,6 +61,8 @@ public class LongTextSceneServiceImpl extends IBaseServiceImpl<LongTextSceneEnti
             queryWrapper2.eq(LongTextSceneEntity::getSceneId, sceneId);
             queryWrapper2.eq(LongTextSceneEntity::getOrgId , sceneEntity.getOrgId()) ;
             LongTextSceneEntity orginLongTextSceneEntity = getOne(queryWrapper2) ;
+
+            Assert.notNull(orginLongTextSceneEntity , "场景信息不存在");
 
             if(entity == null) {
                 entity = new LongTextSceneEntity() ;
