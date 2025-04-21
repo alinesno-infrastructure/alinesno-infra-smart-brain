@@ -14,6 +14,7 @@ import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
+import com.alinesno.infra.smart.scene.dto.ChapterGenFormDto;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.SneakyThrows;
@@ -21,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -41,6 +44,49 @@ public class FormatMessageTool {
 
     @Autowired
     private IAgentSceneService agentSceneService ;
+
+    /**
+     * 获取章节的提示
+     *
+     * @param allChapterContent
+     * @param dto
+     * @param chapterPromptContent
+     * @param taskInfo
+     * @return
+     */
+    public static String getChapterPrompt(String allChapterContent,
+                                          ChapterGenFormDto dto,
+                                          String chapterPromptContent,
+                                          MessageTaskInfo taskInfo) {
+        String formatContent = """
+         ##目标=%s
+        
+         ##任务
+         你要编写以下章节当中的指定内容，请联系上下文进行编写:
+         
+         ## 所有章节
+         %s
+         
+         ## 需要编写的章节
+         %s:%s
+         """ ;
+
+        // 设置聊天参数
+        Map<String , Object> params = new HashMap<>() ;
+
+        params.put("chapterPromptContent" , chapterPromptContent) ;
+        params.put("allChapterContent" , allChapterContent) ;
+        params.put("chapterTitle" , dto.getChapterTitle()) ;
+        params.put("chapterDescription" , dto.getChapterDescription()) ;
+
+        taskInfo.setParams(params);
+
+        return String.format(formatContent ,
+                chapterPromptContent ,
+                allChapterContent ,
+                dto.getChapterTitle() ,
+                dto.getChapterDescription());
+    }
 
     @SneakyThrows
     public void handleChapterMessage(WorkflowExecutionDto genContent, MessageTaskInfo taskInfo) {
