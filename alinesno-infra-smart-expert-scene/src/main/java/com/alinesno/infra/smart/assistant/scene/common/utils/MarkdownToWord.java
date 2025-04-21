@@ -34,7 +34,9 @@ public class MarkdownToWord {
                     "pandoc", 
                     tempMdFile.getAbsolutePath(), 
                     "-o", 
-                    outputDocxFile.getAbsolutePath());
+                    outputDocxFile.getAbsolutePath() ,
+                    "--from" ,
+                    "markdown-yaml_metadata_block");
 
             // 设置工作目录
             processBuilder.directory(tempMdFile.getParentFile());
