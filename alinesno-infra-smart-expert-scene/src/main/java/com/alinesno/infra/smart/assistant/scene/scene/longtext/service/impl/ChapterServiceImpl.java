@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
@@ -15,6 +16,7 @@ import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,12 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
 //    private ISceneService sceneService;
 
     @Override
-    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId) {
+    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters,
+                                          Long parentId,
+                                          int level,
+                                          long sceneId ,
+                                          long longTextSceneId,
+                                          PermissionQuery query) {
 
         // 先删除当前场景下的所有章节
 //        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
@@ -49,10 +56,16 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             levelNumbers.put(i, 0); // 初始化每个层级的编号为0
         }
 
-        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, longTextSceneId , levelNumbers);
+        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, longTextSceneId , levelNumbers , query) ;
     }
 
-    private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId, long longTextSceneId , Map<Integer, Integer> levelNumbers) {
+    private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters,
+                                                 Long parentId,
+                                                 int level,
+                                                 long sceneId,
+                                                 long longTextSceneId ,
+                                                 Map<Integer, Integer> levelNumbers,
+                                                 PermissionQuery query) {
         if (chapters == null || chapters.isEmpty()) {
             return;
         }
@@ -73,12 +86,17 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             entity.setChapterName(title);
             entity.setChapterRequire(chapter.getDescription());
 
+            // 设置权限
+            entity.setOrgId(query.getOrgId());
+            entity.setDepartmentId(query.getDepartmentId());
+            entity.setOperatorId(query.getOperatorId());
+
             this.saveOrUpdate(entity);
 
             // 递归保存子章节
             if (chapter.getChildren() != null && !chapter.getChildren().isEmpty()) {
                 levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
-                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, longTextSceneId , levelNumbers);
+                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, longTextSceneId , levelNumbers, query);
             }
 
             levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
@@ -186,6 +204,65 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
 //        }
 
         return Collections.emptyList() ;
+    }
+
+    @Override
+    public String getAllChapterContent(long sceneId) {
+        LambdaQueryWrapper<ChapterEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(ChapterEntity::getSceneId, sceneId);
+        lambdaQueryWrapper.orderByAsc(ChapterEntity::getChapterSort); // 按照排序字段升序排列
+
+        List<ChapterEntity> allChapters = list(lambdaQueryWrapper);
+
+        // 构建树结构
+        Map<Long, ChapterEntity> chapterMap = new HashMap<>();
+        List<ChapterEntity> topChapters = new ArrayList<>();
+
+        for (ChapterEntity chapter : allChapters) {
+            chapterMap.put(chapter.getId(), chapter);
+        }
+
+        for (ChapterEntity chapter : allChapters) {
+            Long parentId = chapter.getParentChapterId();
+            if (parentId == null) {
+                topChapters.add(chapter);
+            } else {
+                ChapterEntity parent = chapterMap.get(parentId);
+                if (parent != null) {
+                    if (parent.getSubtitles() == null) {
+                        parent.setSubtitles(new ArrayList<>());
+                    }
+                    parent.getSubtitles().add(chapter);
+                }
+            }
+        }
+
+        StringBuilder contentBuilder = new StringBuilder();
+
+        for (ChapterEntity chapter : topChapters) {
+            buildChapterContent(chapter, contentBuilder, 0);
+        }
+
+        return contentBuilder.toString();
+    }
+
+    private void buildChapterContent(ChapterEntity chapter, StringBuilder contentBuilder, int level) {
+        // 根据层级添加缩进
+        String indent = "  ".repeat(level);
+        contentBuilder.append(indent).append("章节名称: ").append(chapter.getChapterName()).append("\n");
+        if (chapter.getChapterRequire() != null) {
+            contentBuilder.append(indent).append("编写要求: ").append(chapter.getChapterRequire()).append("\n");
+        }
+        if (chapter.getChapterAdditionalRequire() != null) {
+            contentBuilder.append(indent).append("附加要求: ").append(chapter.getChapterAdditionalRequire()).append("\n");
+        }
+        contentBuilder.append("\n");
+
+        if (chapter.getSubtitles() != null) {
+            for (ChapterEntity subChapter : chapter.getSubtitles()) {
+                buildChapterContent(subChapter, contentBuilder, level + 1);
+            }
+        }
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
