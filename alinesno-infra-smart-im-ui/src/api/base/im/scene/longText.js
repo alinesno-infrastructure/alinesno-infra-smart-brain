@@ -20,7 +20,27 @@ var managerUrl = {
   dispatchAgent: prefix +"dispatchAgent",
   updateChapterPromptContent: prefix +"updateChapterPromptContent",
   updateSceneGenStatus: prefix +"updateSceneGenStatus",
-  initAgents: prefix + "initAgents"
+  initAgents: prefix + "initAgents",
+  getPreviewDocx: prefix +"getPreviewDocx",
+  getPreviewUrl: prefix + "getPreviewUrl",
+}
+
+// 获取预览文档地址
+export function getPreviewUrl(storageId) {
+  return request({
+    url: managerUrl.getPreviewUrl + '?storageId=' + parseStrEmpty(storageId),
+    method: 'get'
+  })
+}
+
+// 获取预览文档
+export function getPreviewDocx(storageId) {
+  return request({
+    url: managerUrl.getPreviewDocx + '?storageId=' + parseStrEmpty(storageId),
+    // responseType: 'arraybuffer', // 显式声明返回二进制流
+    responseType: 'blob', // 显式声明返回二进制流
+    method: 'get'
+  })
 }
 
 // 更新场景状态
