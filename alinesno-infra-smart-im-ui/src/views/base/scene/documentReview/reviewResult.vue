@@ -2,17 +2,19 @@
     <div class="review-result-container">
         <div style="display: flex;flex-direction: row;justify-content: space-between;">
             <div>
-                <el-button type="primary" text bg>
+                <el-button type="primary" text bg @click="handleGenDocxReport">
                     <i class="fa-solid fa-download"></i> &nbsp; 导出审核报告
                 </el-button>
-                <el-button type="primary" text bg>
+                <el-button type="primary" text bg @click="handleGenMarkDocxReport">
                     <i class="fa-solid fa-file-word"></i> &nbsp; 导出标注文档
                 </el-button>
             </div>
             <div>
+                <!--
                 <el-checkbox-group v-model="checkList">
                     <el-checkbox type="danger" v-for="item in checkboxOptions" :key="item.value" :label="item.label" :value="item.value" />
                 </el-checkbox-group>
+                -->
             </div>
         </div>
         <div>
@@ -42,12 +44,41 @@
         <!-- 规则检查结果列表并操作面板 -->
         <RuleCheckResultPanel ref="ruleCheckResultPanelRef" />
 
+        <!-- 显示pdf文件 -->
+        <el-dialog v-model="showPdfDialog" :title="pdfTitle" width="1300px" :before-close="handleClosePdfDialog" :show-close="true">
+                <div class="document-wrapper" v-loading="loadingDocument" >
+            <el-scrollbar class="scrollable-area" style="height: calc(70vh);margin-top:20px; padding-right:0px">
+                <iframe 
+                    :src="iframeUrl" 
+                    style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
+                </iframe>
+            </el-scrollbar>
+                </div>
+                <!-- 显示下载word文档按钮 -->
+                 <div class="word-download-button">
+                    <el-button type="primary" size="large" :loading="loadingDocument" @click="downloadWordDocument">
+                        <i class="el-icon-download"></i> 下载Word文档
+                    </el-button>
+                </div>
+        </el-dialog>
+
     </div>
 </template>
 
 <script setup>
 
-import { getSceneResultList } from '@/api/base/im/scene/documentReview';
+import { saveAs } from 'file-saver'
+import { ElMessage }  from 'element-plus'
+import { 
+    getSceneResultList , 
+    downloadMarkDocx
+} from '@/api/base/im/scene/documentReview';
+
+import { 
+    genDocxReport, 
+    getPreviewReportDocx,
+    getPreviewUrl
+} from '@/api/base/im/scene/documentReviewSceneInfo';
 
 const route = useRoute();
 const currentSceneInfo = ref(null);
@@ -59,6 +90,12 @@ const ruleTitle = ref('');
 
 const contractReviewList = ref([]);
 const ruleCheckResultPanelRef = ref(null);
+
+const showPdfDialog = ref(false);
+const pdfTitle = ref('')
+const iframeUrl = ref('')
+const loadingDocument = ref(false);
+const currentStoreId = ref(null)
 
 const checkboxOptions = [
     { "label": "高风险", "value": "high" },
@@ -123,6 +160,41 @@ const handleGetScene = () => {
     })
 }
 
+// 导出审核报告
+const handleGenDocxReport = () => {
+
+    pdfTitle.value = '审核报告预览'
+    showPdfDialog.value = true;
+    loadingDocument.value = true;
+
+    genDocxReport(sceneId.value).then(res => {
+        // window.open(res.data)
+        const storegeId = res.data ;
+        currentStoreId.value = storegeId ;
+
+        nextTick(async () => {
+            const response = await getPreviewReportDocx(storegeId);
+            console.log('response.data:' + response); // 打印数据内容
+            iframeUrl.value = window.URL.createObjectURL(response);
+            loadingDocument.value = false;
+        })
+    })
+}
+
+const downloadWordDocument = () => {
+    getPreviewUrl(currentStoreId.value).then(res => {
+        window.open(res.data);
+    }) 
+}
+
+// 导出标注文档
+const handleGenMarkDocxReport = () => {
+    downloadMarkDocx(sceneId.value).then(blob => {
+        const filename = '标注文档.docx';
+        saveAs(blob, filename)
+    })
+}
+
 onMounted(() => {
     handleGetScene();
 })
@@ -146,12 +218,20 @@ onMounted(() => {
     }
 
 }
-    .check-result-item{
-        cursor: pointer;
 
-        &:hover{
-            background: #e5e5e5;
-            font-weight: bold;
-        }
+.check-result-item{
+    cursor: pointer;
+
+    &:hover{
+        background: #e5e5e5;
+        font-weight: bold;
     }
+}
+
+.word-download-button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
 </style>
