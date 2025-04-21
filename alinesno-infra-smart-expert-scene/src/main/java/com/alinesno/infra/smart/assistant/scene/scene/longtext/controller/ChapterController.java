@@ -108,7 +108,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         }
 
         LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
-        service.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , longTextSceneEntity.getId());
+        service.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , longTextSceneEntity.getId() , query);
         return ok() ;
     }
 
@@ -116,15 +116,18 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     /**
      * 生成章节内容
      */
+    @DataPermissionQuery
     @SneakyThrows
     @PostMapping("/chatRoleSync")
-    public AjaxResult chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto) {
+    public AjaxResult chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto , PermissionQuery query) {
 
         log.debug("dto = {}", dto);
 
         long chapterId = dto.getChapterId() ;
         ChapterEntity chapterEntity = service.getById(chapterId) ;
         Long roleId = chapterEntity.getChapterEditor() ;
+
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(dto.getSceneId() , query) ;
 
         if(roleId != null){
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
@@ -133,7 +136,16 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
             taskInfo.setRoleId(roleId);
             taskInfo.setChannelId(dto.getSceneId());
             taskInfo.setSceneId(dto.getSceneId());
-            taskInfo.setText("章节标题:"+dto.getChapterTitle() + ",要求:" + dto.getChapterDescription());
+
+            String allChapterContent = service.getAllChapterContent(dto.getSceneId()) ;
+            String chapterPromptContent = longTextSceneEntity.getChapterPromptContent() ;
+
+            taskInfo.setText(FormatMessageTool.getChapterPrompt(
+                    allChapterContent ,
+                    dto ,
+                    chapterPromptContent ,
+                    taskInfo
+            )) ;
 
             WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
             log.debug("chatRole = {}" , genContent);
