@@ -16,23 +16,25 @@
                             </span>
                         </el-tooltip>
 
+                        <!-- 
                         <el-tooltip class="box-item" effect="dark" content="添加章节编写人员" placement="top">
                             <span class="edit-header-avatar"  @click="configAgent('chapter')">
                                 <i class="fa-solid fa-user-plus"></i>
                             </span>
-                        </el-tooltip>
+                        </el-tooltip> 
+                        -->
                     </div>
                     <span>
 
                         <el-tooltip class="box-item" effect="dark" content="添加章节" placement="top">
                             <el-button type="primary" text bg size="large" @click="addChapter">
-                                <i class="fa-solid fa-feather icon-btn"></i>
+                                <i class="fa-solid fa-plus-minus"></i>  &nbsp; 添加
                             </el-button>
                         </el-tooltip>
 
                         <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
-                            <el-button type="success" text bg size="large" @click="getOutlineJson">
-                                <i class="fa-solid fa-file-shield"></i>
+                            <el-button type="success" text bg size="large" @click="getOutlineJsonSingle">
+                                <i class="fa-solid fa-file-shield"></i> &nbsp; 保存
                             </el-button>
                         </el-tooltip>
 
@@ -401,8 +403,6 @@ function handleGetScene() {
 
 const getOutlineJson = () => {
     const jsonResult = JSON.stringify(outline.value, null, 2);
-    console.log(jsonResult);
-    // 可以在这里处理 JSON 数据，例如发送到服务器或显示在页面上
 
     saveChapter(jsonResult , route.query.sceneId).then(res => {
         proxy.$modal.msgSuccess("保存成功");
@@ -412,6 +412,15 @@ const getOutlineJson = () => {
         emit('genChapterContentByAgent')
     })
 };
+
+const getOutlineJsonSingle = () => {
+    const jsonResult = JSON.stringify(outline.value, null, 2);
+
+    saveChapter(jsonResult , route.query.sceneId).then(res => {
+        proxy.$modal.msgSuccess("保存成功");
+        handleGetScene()
+    })
+}
 
 const closeStreamDialog = () => {
   console.log('child method. ' + streamLoading.value)
