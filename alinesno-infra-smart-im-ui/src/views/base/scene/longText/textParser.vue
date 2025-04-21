@@ -32,41 +32,46 @@
                                         </span>
                                     </el-tooltip>
 
+                                    <!-- 
                                     <el-tooltip class="box-item" effect="dark" content="添加内容编写人员" placement="top">
                                         <span class="edit-header-avatar" @click="configAgent()">
                                             <i class="fa-solid fa-user-plus"></i>
                                         </span>
-                                    </el-tooltip>
+                                    </el-tooltip> 
+                                    -->
                                 </div>
 
                                 <!-- 执行按钮_start -->
                                 <div>
                                     <el-tooltip class="box-item" effect="dark" content="执行文档生成" placement="top">
                                         <el-button type="primary" text bg size="large" @click="genChapterContent()">
-                                            <i class="fa-solid fa-ferry"></i>
+                                            <i class="fa-solid fa-ferry"></i>&nbsp; 生成文档
                                         </el-button>
                                     </el-tooltip>
 
                                     <el-tooltip class="box-item" effect="dark" content="重新生成章节" placement="top">
                                         <el-button type="primary" text bg size="large" @click="genSingleChapterContent()">
-                                            <i class="fa-brands fa-firefox-browser"></i>
+                                            <i class="fa-brands fa-firefox-browser"></i>&nbsp; 重新生成 
                                         </el-button>
                                     </el-tooltip>
 
+                                    <!-- 
                                     <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top">
                                         <el-button type="danger" text bg size="large" @click="handleUploadFile">
-                                            <i class="fa-solid fa-file-word icon-btn"></i>
+                                            <i class="fa-solid fa-file-word icon-btn"></i> 
                                         </el-button>
-                                    </el-tooltip>
+                                    </el-tooltip> 
+                                    -->
+
                                     <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
                                         <el-button type="primary" text bg size="large" @click="onSubmitChapter">
-                                            <i class="fa-solid fa-floppy-disk"></i>
+                                            <i class="fa-solid fa-floppy-disk"></i>&nbsp; 保存
                                         </el-button>
                                     </el-tooltip>
 
-                                    <el-tooltip class="box-item" effect="dark" content="导出文档" placement="top">
+                                    <el-tooltip class="box-item" effect="dark" content="预览导出文档" placement="top">
                                         <el-button type="primary" text bg size="large" @click="expertScene">
-                                            <i class="fa-solid fa-download"></i>
+                                            <i class="fa-solid fa-display"></i>&nbsp; 预览 
                                         </el-button>
                                     </el-tooltip>
 
@@ -152,6 +157,24 @@
             </el-drawer>
         </div>
 
+        <!-- 显示pdf文件 -->
+         <el-dialog v-model="showPdfDialog" :title="pdfTitle" width="1300px" :before-close="handleClosePdfDialog" :show-close="true">
+                <div class="document-wrapper" v-loading="loadingDocument" >
+            <el-scrollbar class="scrollable-area" style="height: calc(70vh);margin-top:20px; padding-right:0px">
+                <iframe 
+                    :src="iframeUrl" 
+                    style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
+                </iframe>
+            </el-scrollbar>
+                </div>
+                <!-- 显示下载word文档按钮 -->
+                 <div class="word-download-button">
+                    <el-button type="primary" size="large" :loading="loadingDocument" @click="downloadWordDocument">
+                        <i class="el-icon-download"></i> 下载Word文档
+                    </el-button>
+                </div>
+        </el-dialog>
+
     </div>
 </template>
 
@@ -172,8 +195,10 @@ import {
     updateChapterContent,
     chatRoleSync,
     getScene,
+    getPreviewDocx , 
     dispatchAgent , 
-    uploadOss 
+    uploadOss , 
+    getPreviewUrl , 
 } from '@/api/base/im/scene/longText'
 
 import { ElMessage } from 'element-plus';
@@ -207,6 +232,25 @@ const streamLoading = ref(null)
 const sceneId = ref(route.query.sceneId)
 
 const totalNodes = ref(0);
+
+const showPdfDialog = ref(false);
+const pdfTitle = ref('')
+const iframeUrl = ref('')
+const loadingDocument = ref(false);
+const currentStoreId = ref(null)
+
+const handleClosePdfDialog = () => {
+
+    // 如果下载中，则允许关闭
+    if (loadingDocument.value) {
+        ElMessage.warning('正在下载中，请稍后...');
+        return;
+    }
+
+    showPdfDialog.value = false;
+    pdfTitle.value = ''
+    iframeUrl.value = ''
+}
 
 // 定义人物信息
 const person = ref({
@@ -244,8 +288,22 @@ const onSubmitChapter = () => {
 
 /** 导出word文档 */
 function expertScene(){
+
+    pdfTitle.value = '显示文档列表'
+    showPdfDialog.value = true;
+    loadingDocument.value = true;
+
     uploadOss(sceneId.value).then(res => {
-        window.open(res.data)
+        // window.open(res.data)
+        const storegeId = res.data ;
+        currentStoreId.value = storegeId ;
+
+        nextTick(async () => {
+            const response = await getPreviewDocx(storegeId);
+            console.log('response.data:' + response); // 打印数据内容
+            iframeUrl.value = window.URL.createObjectURL(response);
+            loadingDocument.value = false;
+        })
     })
 }
 
@@ -425,6 +483,10 @@ const genChapterContent = async () => {
   }
 
     streamLoading.value.close();
+    showDebugRunDialog.value = false;
+    // 编写完成之后，直接可以预览
+    expertScene() ; 
+
 };
 
 // 计算总节点数
@@ -532,6 +594,12 @@ const openChatBox = (roleId , message) => {
         console.log('-->>> 编写任务完成');
     })
 
+}
+
+const downloadWordDocument = () => {
+    getPreviewUrl(currentStoreId.value).then(res => {
+        window.open(res.data);
+    }) 
 }
 
 const closeShowDebugRunDialog = () => {
@@ -702,6 +770,12 @@ $avatar-size: 30px;
     margin-bottom:20px;
 }
 
+.word-download-button {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: right;
+}
+
 </style>
 
 <style>
@@ -721,4 +795,6 @@ $avatar-size: 30px;
 .aip-flow-drawer .el-drawer__header {
     margin-bottom: 0px;
 }
+
+
 </style>
