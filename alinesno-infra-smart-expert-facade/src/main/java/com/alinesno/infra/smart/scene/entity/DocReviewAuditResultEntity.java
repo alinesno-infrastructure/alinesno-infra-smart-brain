@@ -29,6 +29,10 @@ public class DocReviewAuditResultEntity extends InfraBaseEntity {
     private Long sceneId;
 
     @TableField
+    @Column(name = "doc_review_scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "文档审核场景ID")
+    private Long docReviewSceneId ;
+
+    @TableField
     @Column(name = "audit_result", type = MySqlTypeConstant.VARCHAR, length = 255, comment = "审核结果")
     private String auditResult;
 
