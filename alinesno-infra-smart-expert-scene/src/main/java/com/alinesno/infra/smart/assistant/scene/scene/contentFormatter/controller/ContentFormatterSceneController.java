@@ -21,7 +21,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.Che
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.WordToPdfConverter;
+import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.dto.DataPromptContentRequestDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
@@ -29,7 +29,6 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterSceneEntity;
-import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
