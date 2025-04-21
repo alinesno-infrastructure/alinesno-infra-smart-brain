@@ -1,15 +1,29 @@
-FROM registry.cn-shenzhen.aliyuncs.com/alinesno-infra-base/openjdk:17-slim
+FROM ubuntu:24.04
 
-# 设置为中国国内源
-RUN sed -i 's/deb.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
-RUN sed -i 's/security.debian.org/mirrors.ustc.edu.cn/g' /etc/apt/sources.list
+RUN sed -i 's@//.*archive.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list.d/ubuntu.sources &&\
+    sed -i 's@//security.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list.d/ubuntu.sources &&\
+    sed -i 's@//ports.ubuntu.com@//mirrors.aliyun.com@g' /etc/apt/sources.list.d/ubuntu.sources &&\
+    apt-get update &&\
+    export DEBIAN_FRONTEND=noninteractive &&\
+    apt-get install -y --no-install-recommends apt-utils openjdk-21-jre tzdata locales xfonts-utils fontconfig libreoffice-nogui pandoc &&\
+    echo 'Asia/Shanghai' > /etc/timezone &&\
+    ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &&\
+    localedef -i zh_CN -c -f UTF-8 -A /usr/share/locale/locale.alias zh_CN.UTF-8 &&\
+    locale-gen zh_CN.UTF-8 &&\
+    apt-get install -y --no-install-recommends ttf-mscorefonts-installer &&\
+    apt-get install -y --no-install-recommends ttf-wqy-microhei ttf-wqy-zenhei xfonts-wqy &&\
+	apt-get autoremove -y &&\
+    apt-get clean &&\
+    rm -rf /var/lib/apt/lists/*
 
-# 更新apt源并安装Python3和pip
-RUN apt-get update && \
-    apt-get install -y pandoc
+# 内置一些常用的中文字体，避免普遍性乱码
+RUN mkdir /usr/share/fonts/chinese
+# ADD fonts/* /usr/share/fonts/chinese/
 
-# 安装中文字体
-RUN apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei
+RUN cd /usr/share/fonts/chinese &&\
+    # 安装字体
+    mkfontscale &&\
+    mkfontdir &&\
+    fc-cache -fv
 
-# 验证是否安装成功
-RUN pandoc --version
+ENV LANG=zh_CN.UTF-8 LC_ALL=zh_CN.UTF-8
