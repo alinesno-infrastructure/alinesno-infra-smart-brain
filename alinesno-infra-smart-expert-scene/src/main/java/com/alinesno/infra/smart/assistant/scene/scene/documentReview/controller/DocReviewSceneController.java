@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller;
 
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
@@ -10,8 +11,13 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.common.utils.GenPdfTool;
+import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
+import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
@@ -20,17 +26,30 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
+import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.lang.exception.RpcServiceRuntimeException;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +65,11 @@ import java.util.List;
 @Scope(SpringInstanceScope.PROTOTYPE)
 @RequestMapping("/api/infra/smart/assistant/scene/documentReview/sceneInfo")
 public class DocReviewSceneController extends BaseController<DocReviewSceneEntity, IDocReviewSceneService> {
+
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     @Autowired
     private IDocReviewSceneService service;
@@ -218,6 +242,57 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
     public AjaxResult getAuditList(PermissionQuery query){
         List<DocReviewAuditDto> list = reviewAuditService.getAuditList(query) ;
         return AjaxResult.success("操作成功", list);
+    }
+
+    /**
+     * 生成审核报告信息
+     * @param sceneId
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/genDocxReport")
+    public AjaxResult genDocxReport(@RequestParam("sceneId") long sceneId , PermissionQuery query) {
+
+        DocReviewSceneEntity longTextSceneEntity = service.getBySceneId(sceneId , query) ;
+        String markdownContent = service.genMarkdownReport(sceneId ,query , longTextSceneEntity.getId()) ;
+        String filename = IdUtil.fastSimpleUUID() ;
+
+        log.debug("markdownContent = {}", markdownContent);
+        Assert.notNull(markdownContent, "markdownContent为空") ;
+
+        String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
+        Assert.notNull(filePath, "文件路径为空") ;
+
+        R<String> r = storageConsumer.upload(new File(filePath)) ;
+        String storageId = r.getData() ;
+
+        // 删除文件
+        FileUtil.del(filePath);
+
+        return AjaxResult.success("操作成功" , storageId);
+    }
+
+    /**
+     * 获取预览地址
+     * @param storageId
+     * @return
+     */
+    @GetMapping("/getPreviewUrl")
+    public AjaxResult getPreviewUrl(@RequestParam String storageId) {
+        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+        return AjaxResult.success("操作成功" , previewUrl);
+    }
+
+    /**
+     * 获取预览文件
+     * @param storageId
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/getPreviewReportDocx")
+    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId) {
+        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl);
     }
 
     @Override
