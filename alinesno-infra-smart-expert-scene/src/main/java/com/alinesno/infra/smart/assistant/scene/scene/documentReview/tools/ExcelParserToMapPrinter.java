@@ -8,6 +8,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * ExcelParserToMapPrinter 解析Excel文件为Map的工具类
+ */
 public class ExcelParserToMapPrinter {
 
     public static Map<String, List<Map<String, Object>>> parseExcelToMap(String filePath) throws IOException {
