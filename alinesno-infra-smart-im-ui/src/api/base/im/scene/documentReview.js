@@ -10,6 +10,16 @@ var managerUrl = {
   getAuditResultByRuleId: prefix +"getAuditResultByRuleId",
   getPreviewDocx: prefix +"getPreviewDocx",
   genAuditResult: prefix +"genAuditResult",
+  downloadMarkDocx: prefix +"downloadMarkDocx",
+}
+
+// 下载文档
+export function downloadMarkDocx(sceneId) {
+  return request({
+    url: managerUrl.downloadMarkDocx + '?sceneId=' + parseStrEmpty(sceneId),
+    responseType: 'blob', // 显式声明返回二进制流
+    method: 'get'
+  })
 }
 
 // 通过规则ID获取审核结果
