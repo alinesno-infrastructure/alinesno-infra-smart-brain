@@ -63,4 +63,13 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
      * @return
      */
     DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long id, SceneEntity entity);
+
+    /**
+     * 生成Markdown的审核报告格式
+     * @param sceneId
+     * @param query
+     * @param id
+     * @return
+     */
+    String genMarkdownReport(long sceneId, PermissionQuery query, Long id);
 }
