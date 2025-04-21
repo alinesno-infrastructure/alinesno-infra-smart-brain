@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
@@ -11,8 +13,10 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.common.utils.AddCommentToCharacters;
+import com.alinesno.infra.smart.assistant.scene.common.utils.Revision;
+import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
@@ -34,7 +38,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -126,7 +129,6 @@ public class DocumentReviewController extends SuperController {
         }
 
         DocReviewSceneInfoDto docSceneInfoDto = docReviewSceneService.getDocReviewSceneInfoDtoWithResultCount(id, entity);
-
         return AjaxResult.success("操作成功." , docSceneInfoDto)  ;
     }
 
@@ -144,6 +146,62 @@ public class DocumentReviewController extends SuperController {
                                              PermissionQuery query) {
         List<DocReviewAuditResultEntity> auditResultList = auditResultService.getAuditResultByRuleId(ruleId, sceneId);
         return AjaxResult.success("操作成功." , auditResultList)  ;
+    }
+
+    /**
+     * 生成标注文档然后提供下载
+     * @param sceneId
+     * @param query
+     * @return
+     */
+    @SneakyThrows
+    @GetMapping("/downloadMarkDocx")
+    public ResponseEntity<Resource> downloadMarkDocx(@RequestParam long sceneId , PermissionQuery query) {
+
+        DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId, query);
+        String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
+
+        String fileName = entity.getDocumentName();
+
+        boolean isPdf = fileName.toLowerCase().endsWith(".pdf");
+        Assert.isTrue(!isPdf, "当前文件不支持PDF批注.");
+
+        log.debug("previewUrl= {}", previewUrl);
+
+        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+        if (fileBytes == null) {
+            // 文件下载失败，返回合适的错误信息
+            return ResponseEntity.notFound().build();
+        }
+
+        File docFile = File.createTempFile("temp-docx", ".docx");
+        Files.write(docFile.toPath(), fileBytes);
+
+        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getBySceneIdAndDocReviewSceneId(sceneId, entity.getId()) ;
+        Assert.isTrue(CollectionUtils.isNotEmpty(auditResultList), "未找到对应的审核结果");
+
+        List<Revision> combinedJson = new ArrayList<>();
+
+        for (DocReviewAuditResultEntity auditResult : auditResultList) {
+            Revision revision = new Revision(auditResult.getOriginalContent(), auditResult.getSuggestedContent() , auditResult.getModificationReason());
+            combinedJson.add(revision);
+        }
+
+        String tempFilePath = AddCommentToCharacters.addCommentToCharacters(docFile.getAbsolutePath(), combinedJson) ;
+
+        // 读取 PDF 文件内容
+        assert tempFilePath != null;
+        byte[] pdfBytes = FileUtils.readFileToByteArray(new File(tempFilePath)) ;
+
+        HttpHeaders headers = new HttpHeaders();
+        // 设置正确的 MIME 类型
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.set("Content-Disposition", "inline; filename=批注版_"+entity.getDocumentName());
+
+        ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 
 
@@ -317,15 +375,22 @@ public class DocumentReviewController extends SuperController {
             }
         }
 
-
         if(!CollectionUtils.isEmpty(auditResultList)){
+
+            CopyOptions options = CopyOptions.create()
+                    .setIgnoreNullValue(true)  // 忽略源对象属性为空的情况
+                    .setIgnoreError(true);     // 忽略复制过程中出现的错误
 
             for(DocReviewAuditResultEntity entity : auditResultList){
                 log.debug("entity = {}" , entity);
+
+                entity.setId(null);
                 entity.setAuditId(dto.getRuleId());
                 entity.setRuleId(dto.getRuleId());
                 entity.setSceneId(dto.getSceneId());
-                BeanUtils.copyProperties(query , entity);
+                entity.setDocReviewSceneId(sceneEntity.getId());
+
+                BeanUtil.copyProperties(query , entity , options);
             }
             log.debug("文档解析完成，审核意见为:{}" , auditResultList.size());
             auditResultService.saveAuditResult(auditResultList , dto);
