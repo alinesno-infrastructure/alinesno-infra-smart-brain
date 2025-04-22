@@ -21,7 +21,7 @@
             <div class="example-section">
                 <div class="example-title">你可以这样说</div>
                 <div class="example-list">
-                   <div v-for="(item, index) in list" :key="index" class="example-item" @click="handleExampleClick(item)">
+                   <div v-for="(item, index) in greetingQuestionList" :key="index" class="example-item" @click="handleExampleClick(item)">
                         <span class="example-text">{{ item.text }}</span>
                         <i class="fa-solid fa-paper-plane example-icon"></i>
                     </div> 
@@ -50,12 +50,12 @@ const router = useRouter();
 const sceneId = ref(route.query.sceneId)
 const promptText = ref('');
 
-const list = [
+const greetingQuestionList = ref([
   { text: "编写一篇校园爱情小说" },
   { text: "撰写一份项目管理文档" },
   { text: "起草一份劳动仲裁申请书" },
   { text: "制定一份技术标书文案" }
-];
+]);
 
 const currentSceneInfo = ref({
     sceneName: '文书生成',
@@ -65,6 +65,15 @@ const handleGetScene = () => {
     getScene(sceneId.value).then(res => {
         currentSceneInfo.value = res.data;
         // handleRoleBySceneIdAndAgentType();
+
+        if(res.data.greetingQuestion){
+            greetingQuestionList.value = [] ; 
+            res.data.greetingQuestion.forEach(item => {
+                greetingQuestionList.value.push({
+                    text: item
+                });
+            });
+        }
 
         if(!currentSceneInfo.value.chapterEditor || !currentSceneInfo.value.contentEditor){ // 选择配置角色
             roleSelectPanelRef.value.configAgent();
