@@ -18,10 +18,20 @@ import lombok.EqualsAndHashCode;
 @Data
 public class TemplateEntity extends InfraBaseEntity {
 
+    // 模板图片
+    @TableField
+    @Column(name = "template_image", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "模板图片")
+    private Long templateImage ;
+
     // 模板名称
     @TableField
     @Column(name = "template_name", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "模板名称")
     private String templateName;
+
+    // 模板文件名称
+    @TableField
+    @Column(name = "template_file_name", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "模板文件名称")
+    private String templateFileName;
 
     // 模板描述
     @TableField
@@ -48,6 +58,11 @@ public class TemplateEntity extends InfraBaseEntity {
     @Column(name = "template_params", type = MySqlTypeConstant.TEXT, comment = "json参数")
     private String templateParams;
 
+    // 模板引擎
+    @TableField
+    @Column(name = "template_engine", type = MySqlTypeConstant.VARCHAR, length = 16, comment = "模板引擎")
+    private String templateEngine ;
+
     // 参数格式
     @TableField
     @Column(name = "param_format", type = MySqlTypeConstant.TEXT, comment = "参数格式，用于指定参数格式，便于进一步的按参数生成")
@@ -59,6 +74,10 @@ public class TemplateEntity extends InfraBaseEntity {
     private String storageFileId;
 
     // 模板文件类型
+    @TableField
+    @Column(name = "file_type", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "模板文件类型")
+    private String fileType;
+
     @TableField
     @Column(name = "template_type", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "模板类型")
     private String templateType;
