@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
@@ -22,6 +24,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -66,6 +70,14 @@ public class LongTextSceneController {
 
         LongTextSceneDto dto = new LongTextSceneDto();
         BeanUtils.copyProperties(entity, dto);
+
+        if(StringUtils.isNotEmpty(entity.getGreetingQuestion())){
+            try{
+                dto.setGreetingQuestion(JSONArray.parseArray(entity.getGreetingQuestion(), String.class));
+            }catch (Exception e){
+                dto.setGreetingQuestion(new ArrayList<>());
+            }
+        }
 
         SceneInfoDto sceneInfoDto = SceneEnum.getSceneInfoByCode(entity.getSceneType());
 
