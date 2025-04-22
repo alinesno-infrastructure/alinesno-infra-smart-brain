@@ -37,6 +37,19 @@
           </el-row>
         </div>
 
+      <el-row :gutter="10" class="mb8">
+         <el-col :span="24">
+            <div class="aip-template-type" style="padding:0px" >
+               <span class="template-type-title" >类型</span>
+               <div class="template-type-list" >
+                  <span v-for="(item , index) in modelTypeOptions" :key="index" class="template-type-item">
+                     {{ item.displayName }}
+                  </span>
+               </div>
+            </div>
+         </el-col>
+      </el-row>
+
         <div class="gen-template-box" v-if="LlmModelList.length == 0">
           <el-col :sm="24">
             <el-empty description="还没有创建模型,可以根据提示链接创建链接自己的模型">
@@ -45,8 +58,10 @@
           </el-col>
         </div>
 
+
         <!-- 模板内容 -->
         <div class="vc-div div_l14lqa1k tpl-container" v-loading="loading || loadingFilter">
+
 
           <div class="vc-div div_l14lqa1j tpl-item" v-for="(item, index) in LlmModelList" :key="index">
             <div class="vc-div div_l14lqa1i">
