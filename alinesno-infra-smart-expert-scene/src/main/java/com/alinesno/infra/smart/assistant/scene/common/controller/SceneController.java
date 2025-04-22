@@ -2,7 +2,9 @@ package com.alinesno.infra.smart.assistant.scene.common.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -42,6 +44,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -277,7 +280,34 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         SceneDto dto = new SceneDto();
         BeanUtils.copyProperties(entity, dto);
 
+        if(StringUtils.isNotEmpty(entity.getGreetingQuestion())){
+            try{
+                dto.setGreetingQuestion(JSONArray.parseArray(entity.getGreetingQuestion(), String.class));
+            }catch (Exception e){
+                dto.setGreetingQuestion(new ArrayList<>());
+            }
+        }
+
         return AjaxResult.success("操作成功.", dto);
+    }
+
+
+    /**
+     * 更新场景开场白
+     */
+    @DataPermissionSave
+    @PostMapping("/updateGreetingQuestion")
+    public AjaxResult updateGreetingQuestion(@RequestBody @Validated SceneGreetingQuestionDto dto) {
+
+        SceneEntity entity = service.getById(dto.getSceneId());
+        if (entity == null) {
+            return AjaxResult.error("未找到对应的场景实体");
+        }
+
+        entity.setGreetingQuestion(JSONArray.toJSONString(dto.getGreetingQuestion()));
+        service.update(entity);
+
+        return AjaxResult.success("操作成功.");
     }
 
 
