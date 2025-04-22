@@ -47,8 +47,11 @@ const getFinalJson = () => {
 };
 
 const initialTemplateJson = (row) => {
-  initialJson.value = row.paramFormat || {};
   console.log('row = ' + row.paramFormat) ;
+  if(!row.paramFormat){
+    row.paramFormat = {};
+  }
+
   initialJson.value = JSON.parse(row.paramFormat);
   templateId.value = row.id;
   // 更新 jsonData 的值
