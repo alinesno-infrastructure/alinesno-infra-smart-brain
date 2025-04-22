@@ -296,7 +296,7 @@
     </el-dialog>
 
     <!-- 开场白预置问题 -->
-     <el-dialog title="开场白预置问题" v-model="openingPhraseStatusVisible" width="500px">
+     <el-dialog title="开场白预置问题" v-model="openingPhraseStatusVisible" width="700px">
         <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
     </el-dialog>
 
