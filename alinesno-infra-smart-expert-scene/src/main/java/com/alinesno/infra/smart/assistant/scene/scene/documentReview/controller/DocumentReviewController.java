@@ -150,13 +150,14 @@ public class DocumentReviewController extends SuperController {
 
     /**
      * 生成标注文档然后提供下载
+     *
      * @param sceneId
      * @param query
      * @return
      */
     @SneakyThrows
     @GetMapping("/downloadMarkDocx")
-    public ResponseEntity<Resource> downloadMarkDocx(@RequestParam long sceneId , PermissionQuery query) {
+    public AjaxResult downloadMarkDocx(@RequestParam long sceneId , PermissionQuery query) {
 
         DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId, query);
         String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
@@ -171,7 +172,7 @@ public class DocumentReviewController extends SuperController {
         byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
-            return ResponseEntity.notFound().build();
+            return AjaxResult.error() ;
         }
 
         File docFile = File.createTempFile("temp-docx", ".docx");
@@ -188,20 +189,24 @@ public class DocumentReviewController extends SuperController {
         }
 
         String tempFilePath = AddCommentToCharacters.addCommentToCharacters(docFile.getAbsolutePath(), combinedJson) ;
-
-        // 读取 PDF 文件内容
         assert tempFilePath != null;
-        byte[] pdfBytes = FileUtils.readFileToByteArray(new File(tempFilePath)) ;
 
-        HttpHeaders headers = new HttpHeaders();
-        // 设置正确的 MIME 类型
-        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.set("Content-Disposition", "inline; filename=批注版_"+entity.getDocumentName());
+//        // 读取 PDF 文件内容
+//        byte[] pdfBytes = FileUtils.readFileToByteArray(new File(tempFilePath)) ;
+//
+//        HttpHeaders headers = new HttpHeaders();
+//        // 设置正确的 MIME 类型
+//        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+//        headers.set("Content-Disposition", "inline; filename=批注版_"+entity.getDocumentName());
+//
+//        ByteArrayResource resource = new ByteArrayResource(pdfBytes);
+//        return ResponseEntity.ok()
+//                .headers(headers)
+//                .body(resource);
 
-        ByteArrayResource resource = new ByteArrayResource(pdfBytes);
-        return ResponseEntity.ok()
-                .headers(headers)
-                .body(resource);
+        String storageId = storageConsumer.upload(new File(tempFilePath)).getData()  ;
+
+        return AjaxResult.success("操作成功." ,  storageConsumer.getPreviewUrl(storageId).getData()) ;
     }
 
 
