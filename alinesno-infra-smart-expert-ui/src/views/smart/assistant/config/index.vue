@@ -16,9 +16,11 @@
                   <i :class="item.icon" />
                 </div>
                 <div class="config-info">
-                  <span class="config-name">{{ item.configName }}</span>
+                  <span class="config-name">
+                    {{ item.configName }}  
+                    <el-tag type="danger" size="small" v-if="item.status">集成中</el-tag>
+                  </span>
                   <span class="config-desc">{{ item.configDesc }}</span>
-                  <!-- <el-link :href="item.link" target="_blank" class="config-link">进入配置</el-link> -->
                 </div>
               </div>
             </router-link>
@@ -39,9 +41,11 @@
                   <i :class="item.icon" />
                 </div>
                 <div class="config-info">
-                  <span class="config-name">{{ item.configName }}</span>
+                  <span class="config-name">
+                    {{ item.configName }}  
+                    <el-tag type="danger" size="small" v-if="item.status">集成中</el-tag>
+                  </span>
                   <span class="config-desc">{{ item.configDesc }}</span>
-                  <!-- <el-link :href="item.link" target="_blank" class="config-link">进入配置</el-link> -->
                 </div>
               </div>
             </router-link>
@@ -76,11 +80,19 @@ const globalConfigs = [
     link: "/template/smart/assistant/secret/index"
   },
   {
-    id: 1,
+    id: 4,
     configName: "运行监控查看",
     configDesc: "系统可能会集成多个厂家的大模型以满足不同的业务需求" , 
     icon: "fa-solid fa-tv",
     link: "/monitor/smart/assistant/analyse/index"
+  },
+  {
+    "id": 5,
+    "configName": "数据私有化",
+    "configDesc": "此配置项可用于设置数据存储的私有化方案，确保数据的安全性和隔离性，防止数据泄露和非法访问。",
+    "icon": "fa-solid fa-lock",
+    "status": 1,
+    "link": "" 
   }
 ];
 
@@ -105,6 +117,14 @@ const modelConfigs = [
     configDesc: "为了保证审核工作你可以在这个配置项中对审核规则进行管理" , 
     icon: "fa-solid fa-ruler-combined",
     link: "/expert/smart/assistant/reviews/ruleList"
+  },
+  {
+    id: 6,
+    configName: "MCP服务配置",
+    configDesc: "此配置项用于对MCP服务相关的参数和选项进行设置，以确保MCP服务的正常运行和优化使用。",
+    icon: "fa-solid fa-server",
+    status:1 ,
+    link: ""
   }
 ];
 </script>
