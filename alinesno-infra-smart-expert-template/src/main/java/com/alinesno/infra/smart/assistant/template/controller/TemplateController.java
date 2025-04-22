@@ -1,11 +1,14 @@
 package com.alinesno.infra.smart.assistant.template.controller;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.core.utils.StringUtils;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -17,7 +20,9 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.enums.FileTypeEnums;
 import com.alinesno.infra.smart.assistant.template.dto.TemplateParamJsonRequestDto;
+import com.alinesno.infra.smart.assistant.template.dto.TemplateRequestDto;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
+import com.alinesno.infra.smart.assistant.template.enums.WordTemplateType;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
@@ -28,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -95,16 +101,18 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
     @DataPermissionSave
     @SneakyThrows
     @PostMapping("/importData")
-    public AjaxResult importData(@RequestPart("file") MultipartFile file, TemplateEntity templateEntity){
+    public AjaxResult importData(@RequestPart("file") MultipartFile file , String type){
 
         String originalFilename = file.getOriginalFilename();
 
-        // 判断数据库中是否有同名的模板
-        boolean isExist = service.lambdaQuery()
-                .eq(TemplateEntity::getTemplateName, originalFilename)
-                .eq(TemplateEntity::getOrgId, CurrentAccountJwt.get().getOrgId())
-                .exists();
-        Assert.isFalse(isExist, "模板上传失败，模板名称已存在");
+        if(!"image".equals(type)){
+            // 判断数据库中是否有同名的模板
+            boolean isExist = service.lambdaQuery()
+                    .eq(TemplateEntity::getTemplateName, originalFilename)
+                    .eq(TemplateEntity::getOrgId, CurrentAccountJwt.get().getOrgId())
+                    .exists();
+            Assert.isFalse(isExist, "模板上传失败，模板名称已存在");
+        }
 
         // 新生成的文件名称
         String fileSuffix = Objects.requireNonNull(originalFilename).substring(originalFilename.lastIndexOf(".")+1);
@@ -116,31 +124,60 @@ public class TemplateController extends BaseController<TemplateEntity, ITemplate
 
         String fileType = FileTypeUtil.getType(targetFile);
         FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
-        assert constants != null;
 
         log.debug("fileType = {} , constants = {}" , fileType , constants);
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
         R<String> r = storageConsumer.upload(targetFile) ;
 
-        // 保存模板信息到数据库
-        if(StringUtils.isBlank(templateEntity.getTemplateName())){
-            templateEntity.setTemplateName(file.getOriginalFilename());
+        log.debug("ajaxResult= {}" , r);
+        AjaxResult result =  AjaxResult.success("上传成功." , r.getData()) ;
+        result.put("type" , type) ;
+        if(constants != null){
+            result.put("fileType" , constants.getValue()) ;
         }
+        result.put("originalFilename" , file.getOriginalFilename()) ;
 
-        templateEntity.setTemplateDesc("模板描述");
+        return result ;
+    }
+
+    /**
+     * 保存或者更新模板
+     * @return
+     */
+    @DataPermissionSave
+    @PostMapping("/saveOrUpdateTemplate")
+    public AjaxResult saveOrUpdateTemplate(@RequestBody @Validated TemplateRequestDto dto){
+
+        TemplateEntity templateEntity = new TemplateEntity();
+        CopyOptions copyOptions = new CopyOptions();
+        BeanUtil.copyProperties(dto , templateEntity , copyOptions) ;
+
+        templateEntity.setTemplateName(dto.getTemplateName());
+        templateEntity.setTemplateFileName(dto.getOriginalFilename());
         templateEntity.setTemplateKey(IdUtil.nanoId(8));
         templateEntity.setCallCount(0);
+        templateEntity.setTemplateDataScope(dto.getTemplateDataScope());
+        templateEntity.setTemplateEngine(dto.getTemplateEngine());
         templateEntity.setTemplateParams("{}");
-        templateEntity.setStorageFileId(r.getData());
-        templateEntity.setTemplateType(constants.getValue());
+        templateEntity.setStorageFileId(dto.getStorageFileId());
+        templateEntity.setFileType(dto.getFileType());
 
-        service.save(templateEntity);
+        service.saveOrUpdate(templateEntity);
 
-        log.debug("ajaxResult= {}" , r);
-        return AjaxResult.success("上传成功." , r.getData()) ;
-
+        return AjaxResult.success("保存成功.") ;
     }
+
+    /**
+     * 获取到模型类型
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/getTemplateType")
+    public AjaxResult getTemplateType(){
+        return AjaxResult.success("获取成功" , WordTemplateType.getAllTemplateType()) ;
+    }
+
 
     @DataPermissionSave
     @PostMapping("/updateTemplateParamFormat")
