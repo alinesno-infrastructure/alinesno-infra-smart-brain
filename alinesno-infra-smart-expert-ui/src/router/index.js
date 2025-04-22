@@ -122,16 +122,16 @@ export const constantRoutes = [
       },
       {
         path: '/smart/assistant/llmModel/index',
-        name: '/smart/assistant/llmModel/index',
         hidden: false,
         component: () => import('@/views/smart/assistant/llmModel/index'),
+        name: '/smart/assistant/llmModel/index',
         meta: { title: '模型管理', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
       {
         path: '/smart/assistant/roleTemplate/add',
-        name: '/smart/assistant/roleTemplate/add',
         hidden: false,
         component: () => import('@/views/smart/assistant/roleTemplate/add'),
+        name: '/smart/assistant/roleTemplate/add',
         meta: { title: '添加角色模板', icon: 'fa-solid fa-code-pull-request', affix: false }
       },
       {
@@ -212,6 +212,12 @@ export const constantRoutes = [
         name: '/expert/smart/assistant/reviews/ruleList' , 
         meta: { title: '添加审核规则清单', icon: 'dashboard', affix: true }
       },
+      {
+        path: '/template/smart/assistant/template/addTemplate' , 
+        component: () => import('@/views/smart/assistant/template/addTemplate'),
+        name: '/template/smart/assistant/template/addTemplate' , 
+        meta: { title: '添加模板', icon: 'dashboard', affix: true }
+      },
     ]
   },
   {
@@ -222,8 +228,8 @@ export const constantRoutes = [
     children: [
       {
         path: '/smart/assistant/role/createDefinition',
-        name: '/smart/assistant/role/createDefinition',
         component: () => import('@/views/smart/assistant/workflow/index'),
+        name: '/smart/assistant/role/createDefinition',
         meta: { title: '添加流程任务', icon: 'fa-solid fa-code-pull-request', affix: false }
       }
     ]
