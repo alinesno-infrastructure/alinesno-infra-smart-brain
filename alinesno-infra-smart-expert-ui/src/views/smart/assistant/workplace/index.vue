@@ -73,7 +73,7 @@
           <el-table-column type="selection" width="50" align="center"/>
           <el-table-column label="图标" align="center" width="130px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
-              <div class="role-icon">
+              <div v-if="scope.row.backgroundImage != null" class="role-icon">
                 <img :src="imagePath(scope.row.backgroundImage)" />
               </div>
             </template>
