@@ -627,6 +627,8 @@ const handleListAllLlmModel = async () => {
         llmModelOptions.value = res.data.filter(item => item.modelType === 'large_language_model');
         voiceModelOptions.value = res.data.filter(item => item.modelType === 'speech_synthesis');
         voiceRecoModelOptions.value = res.data.filter(item => item.modelType === 'speech_recognition');
+        multiModelOptions.value = res.data.filter(item => item.modelType === 'vision_model');
+        ocrModelOptions.value = res.data.filter(item => item.modelType === 'ocr_model');
 
         console.log('voiceModelOptions = ' + JSON.stringify(voiceModelOptions.value))
 
