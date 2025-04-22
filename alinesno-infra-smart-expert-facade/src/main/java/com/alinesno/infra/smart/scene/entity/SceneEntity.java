@@ -4,6 +4,8 @@ import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -60,6 +62,11 @@ public class SceneEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "is_recommend", type = MySqlTypeConstant.TINYINT, length = 1, comment = "是否为推荐")
     private Boolean isRecommend;
+
+    @TableField("greeting_question")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 512)
+    @ColumnComment("开场白问题")
+    private String greetingQuestion ; // 开场白问题
 
     // TODO 待优化，以宽表思路处理
     // 大文本场景
