@@ -29,9 +29,23 @@ var managerUrl = {
   updateSceneAgents: prefix +"updateSceneAgents",
   listAllScene: prefix + "listAllScene" ,
   listPublicScene: prefix + "listPublicScene" ,
+  updateGreetingQuestion: prefix + "updateGreetingQuestion" ,
 
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+}
+
+// 更新场景开场白
+export function updateGreetingQuestion(sceneId , greetingQuestion) {
+  const data = {
+    sceneId : sceneId ,
+    greetingQuestion : greetingQuestion
+  }
+  return request({
+    url: managerUrl.updateGreetingQuestion , 
+    method: 'post',
+    data: data
+  })
 }
 
 // 更新场景Agent
