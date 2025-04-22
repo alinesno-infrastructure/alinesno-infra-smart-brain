@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div class="app-container" style="width:2000px;width:90%;margin:auto">
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
          <el-form-item label="模板名称" prop="templateName">
             <el-input v-model="queryParams.templateName" placeholder="请输入模板名称" clearable style="width: 240px"
@@ -12,7 +12,6 @@
       </el-form>
 
       <el-row :gutter="10" class="mb8">
-
          <el-col :span="1.5">
             <el-button type="primary" plain icon="Plus" @click="handleImport">新增</el-button>
          </el-col>
@@ -23,155 +22,157 @@
          <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
       </el-row>
 
-      <el-table v-loading="loading" :data="TemplateList" @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="50" :align="'center'" />
-
-         <el-table-column label="图标" align="center" width="50" key="format" prop="format" v-if="columns[5].visible">
-            <template #default="scope">
-               <span style="font-size: 1.6rem;color:#3b5998">
-                  <i v-if="scope.row.templateType == 'pdf'" class="fa-solid fa-file-pdf"></i>
-                  <i v-if="scope.row.templateType == 'xml'" class="fa-regular fa-file-word"></i>
-                  <i v-if="scope.row.templateType == 'docx'" class="fa-solid fa-file-word"></i>
-                  <i v-if="scope.row.templateType == 'xlsx'" class="fa-solid fa-file-excel"></i>
-               </span>
-            </template>
-         </el-table-column>
-
-         <!-- 业务字段-->
-         <el-table-column label="文件名" align="left" key="templateName" prop="templateName"
-            v-if="columns[0].visible">
-            <template #default="scope">
-               <div style="font-size:14px">
-                  {{ scope.row.templateName }}
+      <el-row :gutter="10" class="mb8">
+         <el-col :span="24">
+            <div class="aip-template-type" >
+               <span class="template-type-title" >类型</span>
+               <div class="template-type-list" >
+                  <span v-for="(item , index) in templateTypeOptions" 
+                     :key="index"  
+                     class="template-type-item" 
+                     :class="item.code == selectTemplateType ? 'active' : ''"
+                     @click="handleTemplateTypeChange(item)">
+                     {{ item.name }}
+                  </span>
                </div>
-               <div style="font-size: 13px;color: #a5a5a5;cursor: pointer;" @click="copyClick(scope.row.templateKey)">
-                  标识: {{ scope.row.templateKey }} <el-icon>
-                     <CopyDocument />
-                  </el-icon>
-               </div> 
-            </template>
-         </el-table-column>
+            </div>
+         </el-col>
+      </el-row>
 
-         <el-table-column label="配置格式" align="center" key="size" width="200" prop="size" v-if="columns[2].visible"
-            :show-overflow-tooltip="true">
-            <template #default="scope">
-               <el-button v-if="scope.row.paramFormat" type="primary" text bg @click="configParamFormat(scope.row)">
-                  已配置
-               </el-button>
-               <el-button v-else type="warning" text bg @click="configParamFormat(scope.row)">
-                  未配置
-               </el-button>
-            </template>
-         </el-table-column>
+      <el-row :gutter="24" class="mb8" >
+         <el-col :span="4" v-for="(item , index) in templateList">
+            <TemplateCardPanel :templateItem="item" :index="index" @configParamFormat="configParamFormat" />
+         </el-col>
+      </el-row>
 
-         <el-table-column label="数据范围" align="center" key="size" width="200" prop="size" v-if="columns[2].visible"
-            :show-overflow-tooltip="true">
-            <template #default="scope">
-                <i :class="getWorkplaceNameByType(scope.row.templateDataScope)?.icon" ></i>
-                {{ getWorkplaceNameByType(scope.row.templateDataScope)?.name }}
-            </template>
-         </el-table-column>
+      <pagination v-show="total > 0" 
+         :total="total" 
+         v-model:page="queryParams.pageNum"
+         v-model:limit="queryParams.pageSize" 
+         @pagination="getList" />
 
-         <el-table-column label="上传时间" align="center" prop="createTime" v-if="columns[6].visible" width="160">
-            <template #default="scope">
-               <span>{{ parseTime(scope.row.addTime) }}</span>
-            </template>
-         </el-table-column>
-
-         <!-- 操作字段  -->
-         <el-table-column label="操作" align="right" width="250" class-name="small-padding fixed-width">
-            <template #default="scope">
-               <el-tooltip content="预览" placement="top" v-if="scope.row.TemplateId !== 1">
-                  <el-button link type="primary" icon="View" @click="handlePreviewTemplate(scope.row)" v-hasPermi="['system:Template:edit']">
-                     预览
-                  </el-button>
-               </el-tooltip> 
-
-               <el-tooltip content="下载" placement="top" v-if="scope.row.TemplateId !== 1">
-                  <el-button link type="primary" icon="Download" @click="handleDownload(scope.row)" v-hasPermi="['system:Template:edit']">
-                     下载
-                  </el-button>
-               </el-tooltip>
-
-
-               <el-tooltip content="删除" placement="top" v-if="scope.row.TemplateId !== 1">
-                  <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:Template:remove']">
-                     删除
-                  </el-button>
-               </el-tooltip>
-            </template>
-
-         </el-table-column>
-      </el-table>
-      <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
-         v-model:limit="queryParams.pageSize" @pagination="getList" />
-
-      <!-- 添加或修改模板配置对话框 
+      <!-- 添加或修改模板配置对话框 -->
       <el-dialog :title="promptTitle" v-model="promptOpen" width="1024" destroy-on-close append-to-body>
          <TemplateEditor :currentPostId="currentPostId" :currentTemplateContent="currentTemplateContent" />
       </el-dialog>
-       -->
 
       <!-- 添加或修改模板配置对话框 -->
        <!-- 应用导入对话框 -->
-    <el-dialog :title="upload.title" v-model="upload.open" width="800px"  :before-close="handleCloseUploadDialog" append-to-body>
+       <el-dialog :title="upload.title" v-model="upload.open" width="800px" style="padding:20px;"  :before-close="handleCloseUploadDialog" append-to-body>
 
       <el-form ref="databaseRef" :model="form" :rules="rules" :label-position="'top'" label-width="80px">
-         <el-form-item label="模板名称" prop="templateName">
-            <el-input type="input" v-model="form.templateName" size="large" placeholder="请输入模板名称" />
+          <el-row>
+            <el-col :span="13">
+               <el-form-item label="模板名称" prop="templateName">
+                  <el-input type="input" v-model="form.templateName" size="large" placeholder="请输入模板名称" />
+               </el-form-item>
+               </el-col>
+            <el-col :span="11">
+               <el-form-item label="模板图片" prop="templateImage" style="float:right;margin-right:30px">
+
+                  <el-upload 
+                  :file-list="imageUrl" 
+                  accept=".png,.jpeg,.jpg" 
+                  :action="upload.url + '?type=image'"
+                  list-type="picture-card" 
+                  :auto-upload="true" 
+                  :on-success="handleAvatarSuccess"
+                  :before-upload="beforeAvatarUpload" 
+                  :headers="upload.headers" 
+                  :disabled="upload.isUploading"
+                  :on-progress="handleFileUploadProgress">
+                  <el-icon class="avatar-uploader-icon">
+                     <Plus />
+                  </el-icon>
+               </el-upload>
+
+               </el-form-item>
+               </el-col>
+            </el-row>
+
+         <el-form-item label="模板类型" prop="templateType">
+            <el-radio-group v-model="form.templateType" size="large">
+                  <el-radio v-for="item in templateTypeOptions" 
+                     style="margin-top: 0px;margin-bottom: 0px;" 
+                     :key="item.code" 
+                     :value="item.code"
+                     :label="item.name" size="large">
+                     <div style="padding:0px; display: flex;flex-direction: column;line-height: 1.5rem;">
+                     <span style="font-size:15px;font-weight: bold;">
+                        <i :class="item.icon"></i> {{ item.name }}
+                     </span>
+                     <!-- <span style="color:#a5a5a5">
+                        {{ truncateString(item.desc , 10) }}
+                     </span> -->
+                     </div>
+                  </el-radio>
+            </el-radio-group>
          </el-form-item>
 
-          <el-row>
-          <el-col :span="24">
-            <el-form-item label="数据范围" prop="templateDataScope">
-              <el-radio-group v-model="form.templateDataScope" :disabled="form.id">
-                <el-radio v-for="item in templateDataScopesArr" 
-                  style="margin-top: 10px;margin-bottom: 10px;" 
-                  :key="item.id" 
-                  :value="item.id"
-                  :label="item.id" size="large">
-                  <div style="padding:10px; display: flex;flex-direction: column;line-height: 1.5rem;">
-                    <span style="font-size:15px;font-weight: bold;">
-                      <i :class="item.icon"></i> {{ item.name }}
-                    </span>
-                    <span style="color:#a5a5a5">
-                      {{ item.desc }}
-                    </span>
-                  </div>
-                </el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row> 
-           
-         <el-form-item label="模板内容" prop="templateContent">
-            <el-upload v-model="form.templateContent" ref="uploadRef" 
+         <el-form-item label="解析引擎" prop="templateEngine">
+            <el-radio-group v-model="form.templateEngine" size="large">
+               <el-radio v-for="(item, index) in templateEngineOptions" 
+                  :key="index"
+                  :value="item.key"
+                  :label="item.key">
+                  {{ item.label }}
+               </el-radio>
+            </el-radio-group>
+         </el-form-item>
+
+                <!-- + '&templateDataScope=' + form.templateDataScope + '&sceneId=' + sceneId + '&templateEngine=' + form.templateEngine + '&templaeType=' + form.templateType" -->
+
+         <el-form-item label="模板内容" prop="storageFileId">
+            <el-upload v-model="form.storageFileId" ref="uploadRef" 
                :limit="1" 
-               accept=".xlsx,.xls,.ppt,.docx,.doc,.xml,.pptx" 
-               style="width:100%" 
+               accept=".ppt,.docx,.doc,.xml" 
+               class="upload-file-box"
                :headers="upload.headers"
-               :action="upload.url + '?templateName=' + form.templateName + '&templateDataScope=' + form.templateDataScope + '&sceneId=' + sceneId" 
+               :action="upload.url + '?templateName=' + form.templateName" 
                :disabled="upload.isUploading" 
                :on-progress="handleFileUploadProgress" 
                :on-success="handleFileSuccess"
-               :auto-upload="false" 
-               drag>
+               :auto-upload="true" 
+               >
                <el-icon class="el-icon--upload">
                   <upload-filled />
                </el-icon>
-               <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+               <div class="el-upload__text">点击此处选择上传的模板</div>
                <template #tip>
                   <div class="el-upload__tip text-center">
-                     <span>支持 .xml, .doc, .docx, .excel , .md 文件，导入文件不能超过10M</span>
+                     <span>支持 .xml, .doc, .docx 文件，导入文件不能超过10M</span>
                   </div>
                </template>
             </el-upload>
          </el-form-item>
+          <el-row>
+            <el-col :span="24">
+               <el-form-item label="数据范围" prop="templateDataScope">
+               <el-radio-group v-model="form.templateDataScope" :disabled="form.id">
+                  <el-radio v-for="item in templateDataScopesArr" 
+                     style="margin-top: 10px;margin-bottom: 10px;" 
+                     :key="item.id" 
+                     :value="item.id"
+                     :label="item.id" size="large">
+                     <div style="padding:10px; display: flex;flex-direction: column;line-height: 1.5rem;">
+                     <span style="font-size:15px;font-weight: bold;">
+                        <i :class="item.icon"></i> {{ item.name }}
+                     </span>
+                     <span style="color:#a5a5a5">
+                        {{ item.desc }}
+                     </span>
+                     </div>
+                  </el-radio>
+               </el-radio-group>
+               </el-form-item>
+            </el-col>
+         </el-row> 
+           
 
       </el-form>
             <template #footer>
             <div class="dialog-footer">
-               <el-button type="primary" :loading="upload.isUploading" size="large" @click="submitFileForm">上 传</el-button>
+               <el-button type="primary" :loading="upload.isUploading" size="large" @click="submitFileForm">提 交</el-button>
                <el-button size="large" @click="upload.open = false">取 消</el-button>
             </div>
             </template>
@@ -180,51 +181,7 @@
 
     <el-dialog :title="configParamFormatTitle" v-model="configParamFormatVisible" width="900px" append-to-body>
       <ConfigParamFormatPanel ref="configParamFormatPanelRef" @getList="getList" />
-    </el-dialog>
-
-    <!-- 
-    <el-dialog :title="title" v-model="open" width="900px" append-to-body>
-         <el-form :model="form" :rules="rules" ref="databaseRef" label-width="100px">
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item style="width: 100%;" label="类型" prop="promptType">
-                     <el-tree-select v-model="form.promptType" :data="deptOptions"
-                        :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id"
-                        placeholder="请选择归属类型" check-strictly />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="名称" prop="templateName">
-                     <el-input v-model="form.templateName" placeholder="请输入模板名称" maxlength="50" />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="数据来源" prop="dataSourceApi">
-                     <el-input v-model="form.dataSourceApi" placeholder="请输入dataSourceApi数据来源" maxlength="128" />
-                  </el-form-item>
-               </el-col>
-            </el-row>
-
-            <el-row>
-               <el-col :span="24">
-                  <el-form-item label="备注" prop="promptDesc">
-                     <el-input v-model="form.promptDesc" placeholder="请输入模板备注"></el-input>
-                  </el-form-item>
-               </el-col>
-            </el-row>
-         </el-form>
-         <template #footer>
-            <div class="dialog-footer">
-               <el-button type="primary" @click="submitForm">确 定</el-button>
-               <el-button @click="cancel">取 消</el-button>
-            </div>
-         </template>
-      </el-dialog> 
-      -->
+    </el-dialog> 
 
    </div>
 </template>
@@ -237,11 +194,14 @@ import {
    getTemplate,
    updateTemplate,
    catalogTreeSelect,
+   getTemplateType,
    addTemplate
 } from "@/api/smart/assistant/template";
 
 import { copyClick } from '@/utils/clipboard.js'
 import { getToken } from "@/utils/auth";
+
+import TemplateCardPanel from './templateCardPanel.vue'
 
 import ConfigParamFormatPanel from './configParamFormat.vue'
 import { nextTick } from "vue";
@@ -250,12 +210,18 @@ const router = useRouter();
 const { proxy } = getCurrentInstance();
 
 // 定义变量
-const TemplateList = ref([]);
+const templateList = ref([]);
 const open = ref(false);
 
 const templateDataScopesArr = [
     { "id": "public", "name": "公开工作台", "icon": "fa-solid fa-globe" , "desc":"模板对外所有人可用" },
     { "id": "org", "name": "组织工作台", "icon": "fa-solid fa-truck-plane" , "desc":"只对组织内的成员可用" }
+];
+
+// 解析方式(简单/复杂)
+const templateEngineOptions = [
+   { key: "simple", label: "简单" },
+   { key: "complex", label: "复杂" }
 ];
 
 const promptTitle = ref("");
@@ -272,9 +238,13 @@ const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 const deptOptions = ref(undefined);
+const imageUrl = ref([])
 
 const postOptions = ref([]);
 const roleOptions = ref([]);
+
+const templateTypeOptions = ref([]);
+const selectTemplateType = ref(undefined);
 
 const configParamFormatTitle = ref("") ; 
 const configParamFormatPanelRef = ref(null)
@@ -291,6 +261,8 @@ const columns = ref([
    { key: 6, label: `更新时间`, visible: true }
 ]);
 
+const databaseRef = ref(null);
+
 /*** 应用导入参数 */
 const upload = reactive({
   // 是否显示弹出层（应用导入）
@@ -304,24 +276,26 @@ const upload = reactive({
   // 设置上传的请求头部
   headers: { Authorization: "Bearer " + getToken() },
   // 上传的地址
-  url:
-    import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/template/importData",
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/template/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
 });
 
 const data = reactive({
    form: {
-      templateDataScope: 'org'
+      templateDataScope: 'org' ,
+      templateEngine: 'simple'
    },
    queryParams: {
       pageNum: 1,
       pageSize: 10,
-      templateName: undefined,
-      promptDesc: undefined,
-      catalogId: undefined
    },
    rules: {
+      templateImage: [{ required: true, message: "图片不能为空", trigger: "blur" }],
       templateName: [{ required: true, message: "名称不能为空", trigger: "blur" }],
-      // templateContent: [{ required: true, message: "内容不能为空", trigger: "blur" }],
+      storageFileId: [{ required: true, message: "模板内容不能为空", trigger: "blur" }],
+      templateType: [{ required: true, message: "类型不能为空", trigger: "blur" }],
+      templateEngine: [{ required: true, message: "解析方式不能为空", trigger: "blur" }]
    }
 });
 
@@ -350,7 +324,7 @@ function getList() {
    loading.value = true;
    listTemplate(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
       loading.value = false;
-      TemplateList.value = res.rows;
+      templateList.value = res.rows;
       total.value = res.total;
    });
 };
@@ -374,7 +348,7 @@ const handleCloseUploadDialog = () => {
       proxy.$modal.msgError("正在上传中，请稍后再试");
       return ;
    }
-   uploadDialogVisible.value = false;
+   upload.open = false;
 };
 
 const getWorkplaceNameByType = (type) => {
@@ -387,13 +361,33 @@ const getWorkplaceNameByType = (type) => {
   return null ;
 };
 
+/** 图片上传成功 */
+const handleAvatarSuccess = (response, uploadFile) => {
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
+  form.value.templateImage = response.data;
+  upload.isUploading = false;
+  // console.log('form.roleAvatar = ' + form.roleAvatar);
+};
+
+/** 图片上传之前 */
+const beforeAvatarUpload = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!');
+    return false;
+  }
+  return true;
+};
+
+
 /** 重置按钮操作 */
 function resetQuery() {
    dateRange.value = [];
    proxy.resetForm("queryRef");
 
-   queryParams.value.catalogId = undefined;
-   proxy.$refs.deptTreeRef.setCurrentKey(null);
+   // queryParams.value.catalogId = undefined;
+   // proxy.$refs.deptTreeRef.setCurrentKey(null);
+
+   reset();
    handleQuery();
 };
 /** 删除按钮操作 */
@@ -444,6 +438,7 @@ function reset() {
       status: "0",
       remark: undefined,
    };
+   selectTemplateType.value = null;
    proxy.resetForm("databaseRef");
 };
 /** 取消按钮 */
@@ -474,17 +469,22 @@ const handleFileUploadProgress = (event, file, fileList) => {
 };
 /** 文件上传成功处理 */
 const handleFileSuccess = (response, file, fileList) => {
-  upload.open = false;
+  console.log('response = ' + response);
+//   upload.open = false;
   upload.isUploading = false;
-  proxy.$refs["uploadRef"].handleRemove(file);
-  proxy.$alert(
-    "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 0px 0;'>" +
-      response.msg +
-    "</div>",
-    "导入结果",
-    { dangerouslyUseHTMLString: true }
-  );
-  getList();
+  form.value.storageFileId = response.data ;
+  form.value.originalFilename = response.originalFilename;
+  form.value.fileType = response.fileType;
+
+//   proxy.$refs["uploadRef"].handleRemove(file);
+//   proxy.$alert(
+//     "<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 0px 0;'>" +
+//       response.msg +
+//     "</div>",
+//     "导入结果",
+//     { dangerouslyUseHTMLString: true }
+//   );
+//   getList();
 };
 /** 提交上传文件 */
 function submitFileForm() {
@@ -501,20 +501,20 @@ function submitFileForm() {
 
    proxy.$refs["databaseRef"].validate(valid => {
       if (valid) {
-         proxy.$refs["uploadRef"].submit();
-         // if (form.value.id != undefined) {
-            // updateTemplate(form.value).then(response => {
-            //    proxy.$modal.msgSuccess("修改成功");
-            //    open.value = false;
-            //    getList();
-            // });
-         // } else {
-            // addTemplate(form.value).then(response => {
-            //    proxy.$modal.msgSuccess("新增成功");
-            //    open.value = false;
-            //    getList();
-            // });
-         // }
+         // proxy.$refs["uploadRef"].submit();
+         if (form.value.id != undefined) {
+            updateTemplate(form.value).then(response => {
+               proxy.$modal.msgSuccess("修改成功");
+               upload.open = false;
+               getList();
+            });
+         } else {
+            addTemplate(form.value).then(response => {
+               proxy.$modal.msgSuccess("新增成功");
+               upload.open = false;
+               getList();
+            });
+         }
       }
    });
 }
@@ -566,7 +566,34 @@ function submitForm() {
    });
 };
 
+const handleGetTemplateType = () => {
+   getTemplateType().then(response => {
+      templateTypeOptions.value = response.data;
+   });
+};
+
+const handleTemplateTypeChange = (item) => {
+   console.log('value = ' + JSON.stringify(item) + ' code = ' + item.code)
+   queryParams.value.templateType = item.code;
+   selectTemplateType.value = item.code;
+   getList();
+};
+
 // getDeptTree();
 getList();
+handleGetTemplateType();
 
 </script>
+
+<style lang="scss" scoped>
+
+.upload-file-box{
+   width: 100%;
+   text-align: center;
+   color: #444;
+   border-radius: 8px;
+   background: #f5f5f5;
+   font-size: 15px;
+   padding-top: 15px;
+}
+</style>
