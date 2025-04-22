@@ -189,9 +189,10 @@ const downloadWordDocument = () => {
 
 // 导出标注文档
 const handleGenMarkDocxReport = () => {
-    downloadMarkDocx(sceneId.value).then(blob => {
-        const filename = '标注文档.docx';
-        saveAs(blob, filename)
+    downloadMarkDocx(sceneId.value).then(res => {
+        // const filename = '标注文档.docx';
+        // saveAs(blob, filename)
+        window.open(res.data);
     })
 }
 
