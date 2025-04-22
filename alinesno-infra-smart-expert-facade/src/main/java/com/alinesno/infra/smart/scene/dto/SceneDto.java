@@ -74,6 +74,11 @@ public class SceneDto extends BaseDto {
     private String sceneType;
 
     /**
+     * 开场白问题，用于引导用户与场景进行互动的开场白问题
+     */
+    private List<String> greetingQuestion = new ArrayList<>();
+
+    /**
      * 智能助手，包含多个智能助手，用于处理场景的智能操作
      */
    private List<SceneAgent>  agents = new ArrayList<>();
