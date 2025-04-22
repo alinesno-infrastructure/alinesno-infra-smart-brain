@@ -13,7 +13,8 @@ var prefix = '/api/infra/smart/assistant/template/' ;
 var managerUrl = {
     datatables : prefix +"datatables" ,
     createUrl: prefix + 'add' ,
-    saveUrl: prefix + 'save' ,
+    // saveUrl: prefix + 'save' ,
+    saveUrl: prefix + 'saveOrUpdateTemplate' ,
     updateUrl: prefix +"modify" ,
     statusUrl: prefix +"changeStatus" ,
     cleanUrl: prefix + "clean",
@@ -23,7 +24,16 @@ var managerUrl = {
     changeField: prefix + "changeField",
     updateTemplateParamFormat: prefix + "updateTemplateParamFormat",
     catalogTreeSelect: prefix + "catalogTreeSelect",
-    downloadfile: prefix + "downloadfile"
+    downloadfile: prefix + "downloadfile",
+    getTemplateType: prefix + "getTemplateType",
+}
+
+// 获取模板类型
+export function getTemplateType() {
+    return request({
+        url: managerUrl.getTemplateType ,
+        method: 'get'
+    })
 }
 
 // 更新模板参数
