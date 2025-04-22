@@ -96,10 +96,13 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="智能体" align="center" key="sceneType" width="220" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <el-table-column label="配置" align="center" key="sceneType" width="320" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
+              <el-button text bg type="warning" @click="openGreetingQuestionPanel(scope.row)">
+                <i class="fa-solid fa-envelope-open-text"></i> &nbsp;开场白
+              </el-button>
               <el-button text bg type="primary" @click="configAgent(scope.row)">
-                <i class="fa-solid fa-user-shield"></i>&nbsp;智能体配置
+                <i class="fa-solid fa-user-shield"></i>&nbsp;智能体
               </el-button>
             </template>
           </el-table-column>
@@ -239,6 +242,10 @@
      <ConfigSceneAgent ref="configSceneAgentRef" />
     </el-dialog>
 
+        <!-- 开场白预置问题 -->
+    <el-dialog title="开场白预置问题" v-model="openingPhraseStatusVisible" width="700px">
+        <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
+    </el-dialog>
 
   </div>
 </template>
@@ -253,6 +260,7 @@ import {
   getSceneScope,
   addScene,
   updateSceneAgent,
+  updateGreetingQuestion,
   supportScene
 } from "@/api/smart/assistant/scene";
 
@@ -263,11 +271,16 @@ import {
 import {nextTick, reactive} from "vue";
 
 import ConfigSceneAgent from "./configSceneAgent.vue"
+import OpeningPhraseStatusPanel from './openingPhraseStatusPanel'
 
 const router = useRouter();
 const {proxy} = getCurrentInstance();
 
 const configSceneAgentRef = ref(null)
+
+// 开场白预置问题
+const openingPhraseStatusVisible = ref(false)
+const openingPhraseStatusPanelRef  = ref(null)
 
 const SceneList = ref([]);
 const open = ref(false);
@@ -423,6 +436,29 @@ function reset() {
   };
   proxy.resetForm("SceneRef");
 };
+
+/** 打开开场白角色配置 */
+const openGreetingQuestionPanel = (item) => {
+    openingPhraseStatusVisible.value = true;
+    currentSceneId.value = item.id ;
+
+    console.log('greetingQuestion = ' + item.greetingQuestion)
+
+    nextTick(() => {
+       openingPhraseStatusPanelRef.value.setOpeningQuestions(JSON.parse(item.greetingQuestion)) 
+    });
+}
+
+const handleOpeningPhraseStatusPanelClose = (formData) => {
+    console.log('handleOpeningPhraseStatusPanelClose formData = ' + JSON.stringify(formData))
+    openingPhraseStatusVisible.value = false ;
+    if(formData){
+        // agentModelConfigForm.value.greetingQuestion = formData ;
+        updateGreetingQuestion(currentSceneId.value, formData).then(response => {
+            getList() ;
+        })
+    }
+}
 
 /** 取消按钮 */
 function cancel() {
