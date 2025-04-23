@@ -9,6 +9,7 @@ import com.alinesno.infra.smart.assistant.publish.mapper.ChannelPublishMapper;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
+import com.alinesno.infra.smart.scene.enums.SceneScopeType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,7 +40,7 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
         if(ChannelListEnums.AIP_AGENT_STORE.getParamKey().equals(entity.getParamKey())){
             agentStoreService.addRoleToStore(entity.getRoleId() ,
                     dto.getAgentStoreType() ,
-                    dto.getSceneScope() ,
+                    SceneScopeType.PUBLIC_SCENE.getValue() ,  // 商店是公开的角色
                     dto.getOrgId()) ;
         }
 
