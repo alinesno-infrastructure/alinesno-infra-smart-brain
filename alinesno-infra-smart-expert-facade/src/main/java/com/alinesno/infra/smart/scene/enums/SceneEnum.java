@@ -14,6 +14,14 @@ import java.util.stream.Collectors;
 @Getter
 public enum SceneEnum {
 
+    // 增加数据分析场景
+    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
+            List.of(
+                    new SceneAgent(50000501L, "数据分析助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础" , true),
+                    new SceneAgent(50000502L, "数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式"),
+                    new SceneAgent(50000503L, "数据展示专员", "dataPresenter", "将挖掘和分析后的数据以直观、易懂的方式展示出来，如制作图表、报告等", true)
+            )
+    )) ,
     LONG_TEXT(new SceneInfoDto(10000000L, "文档编写", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             List.of(
                     new SceneAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。" , true),
@@ -29,13 +37,6 @@ public enum SceneEnum {
                     new SceneAgent(70000701L, "视频脚本生成助手", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
                     new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
             ))),
-    // 增加数据分析场景
-    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
-            List.of(
-                    new SceneAgent(50000501L, "数据分析助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础" , true),
-                    new SceneAgent(50000502L, "数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式")
-            )
-    )) ,
     DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "0", "", "fa-solid fa-book-open-reader",
             List.of(
                     new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
