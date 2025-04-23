@@ -468,6 +468,7 @@ async function saveConfig() {
                 id: currentConfigChannel.value.id,
                 roleId: currentRoleId.value
             };
+
             updateChannelConfig(configData)
               .then(() => {
                     currentConfigChannel.value.isConfigured = true;
