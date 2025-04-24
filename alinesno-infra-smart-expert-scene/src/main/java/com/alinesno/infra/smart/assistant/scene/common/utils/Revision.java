@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.common.utils;
 
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 /**
