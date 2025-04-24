@@ -4,7 +4,6 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterParseMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
-import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterParseEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
