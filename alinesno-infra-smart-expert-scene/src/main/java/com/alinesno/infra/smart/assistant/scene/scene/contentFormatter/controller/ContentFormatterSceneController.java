@@ -14,6 +14,8 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterPromptRequestDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterRequestDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ReviewContentRequestDTO;
@@ -21,8 +23,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.Che
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
-import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
-import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.dto.DataPromptContentRequestDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -159,7 +159,7 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
      */
     @DataPermissionQuery
     @PostMapping("/updateChapterPromptContent")
-    public AjaxResult updateChapterPromptContent(@RequestBody @Validated DataPromptContentRequestDto dto , PermissionQuery query) {
+    public AjaxResult updateChapterPromptContent(@RequestBody @Validated ContentFormatterPromptRequestDto dto , PermissionQuery query) {
 
         ContentFormatterSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
         sceneEntity.setContentPromptContent(dto.getPromptContent());
