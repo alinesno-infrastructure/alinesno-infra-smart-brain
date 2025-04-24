@@ -5,8 +5,8 @@ import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScop
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.service.IDataAnalysisPlanService;
-import com.alinesno.infra.smart.scene.entity.DataAnalysisPlanEntity;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
+import com.alinesno.infra.smart.scene.entity.ContentFormatterParseEntity;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -27,10 +27,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/infra/smart/assistant/scene/contentFormatterParse/")
 @Scope(SpringInstanceScope.PROTOTYPE)
-public class ContentFormatterParseController extends BaseController<DataAnalysisPlanEntity, IDataAnalysisPlanService> {
+public class ContentFormatterParseController extends BaseController<ContentFormatterParseEntity, IContentFormatterParseService> {
 
     @Autowired
-    private IDataAnalysisPlanService service;
+    private IContentFormatterParseService service;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -50,8 +50,8 @@ public class ContentFormatterParseController extends BaseController<DataAnalysis
     }
 
     @Override
-    public IDataAnalysisPlanService getFeign() {
+    public IContentFormatterParseService getFeign() {
         return this.service;
     }
 
-}    
+}
