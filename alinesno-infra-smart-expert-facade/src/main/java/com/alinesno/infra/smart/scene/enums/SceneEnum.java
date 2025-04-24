@@ -14,14 +14,14 @@ import java.util.stream.Collectors;
 @Getter
 public enum SceneEnum {
 
-    // 增加数据分析场景
-    DATA_ANALYSIS(new SceneInfoDto(60000000L, "数据分析", "dataAnalysis", "根据企业数据的深度挖掘场景，自动生成数据报告分析和数据图表，并进行分析", "已集成", "0", "", "fa-solid fa-chart-bar",
+    // 新增通用Agent场景
+    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用智能体", "generalAgent", "类似于Manus一样的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
             List.of(
-                    new SceneAgent(50000501L, "数据分析助手", "textParser", "精准解析输入的文本内容，提取关键数据和分析目标相关的信息，为后续分析提供基础" , true),
-                    new SceneAgent(50000502L, "数据挖掘助手", "dataMiner", "运用专业算法和技术，从大量企业相关数据中挖掘有价值的信息和潜在模式"),
-                    new SceneAgent(50000503L, "数据展示专员", "dataPresenter", "将挖掘和分析后的数据以直观、易懂的方式展示出来，如制作图表、报告等", true)
+                    new SceneAgent(110000001L, "解决方案助手", "businessProcessor", "业务处理助手负责处理通用业务流程中的各类任务，为后续的结果展示提供准确的数据支持。" , true),
+                    new SceneAgent(110000002L, "业务执行助手", "businessExecute", "针对用于处理业务并执行业务指定的内容场景，包括分析业务内容。"),
+                    new SceneAgent(110000003L, "业务展示助手", "dataViewer", "业务展示助手专注于将业务处理助手处理后的数据和结果，以清晰、直观且用户友好的方式呈现出来。")
             )
-    )) ,
+    )),
     LONG_TEXT(new SceneInfoDto(10000000L, "文档编写", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             List.of(
                     new SceneAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。" , true),
@@ -42,13 +42,6 @@ public enum SceneEnum {
                     new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
             ))),
-//    MEETING_MINUTES(new SceneInfoDto(80000000L, "会议纪要", "meetingMinutes", "自动生成会议纪要，生成专业报告并优化排版，根据上传的模板生成会议纪要", "已集成", "0", "", "fa-solid fa-calendar-check",
-//            Arrays.asList(
-//                    new SceneAgent(60000601L, "语音识别助手", "reportFormatter", "将会议中的语音内容转换为文字信息。"),
-//                    new SceneAgent(60000602L, "纪要生成助手", "minutesGenerator", "根据语音识别的文字内容，生成会议纪要。"),
-//                    new SceneAgent(60000603L, "模板应用助手", "templateApplier", "将生成的会议纪要应用到指定的模板中，优化排版。")
-//            ))),
-    // 增加内容格式化场景，输入不规则内容，针对给定的模板生成结果内容
     CONTENT_FORMATTER(new SceneInfoDto(70000000L, "内容排版", "contentFormatter", "根据给定的模板，自动生成内容，并优化排版", "已集成", "1", "", "fa-solid fa-file-lines",
             List.of(
                     new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。") ,
@@ -59,7 +52,6 @@ public enum SceneEnum {
             Arrays.asList(
                     new SceneAgent(80000801L, "禅道进度提取助手", "progressExtractor", "从禅道系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "Git进度提取助手", "progressExtractor", "从 Git 仓库中提取产品的开发进度信息。"),
-                    new SceneAgent(80000803L, "进度咨询助手", "summarizer", "对提取的进度信息进行分析和咨询，给出相关的见解。"),
                     new SceneAgent(80000804L, "报表生成助手", "summarizer", "根据进度信息生成产品进度报表。")
             )));
 
