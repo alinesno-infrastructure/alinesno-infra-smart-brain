@@ -28,14 +28,11 @@ import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tools.ant.util.DateUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.print.Doc;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
