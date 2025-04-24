@@ -10,9 +10,9 @@ import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.dataAnalysis.service.IDataAnalysisSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
@@ -211,15 +211,15 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             documentReaderSceneService.updateSceneAgents(dto);
         }
-        // 数据分析
-        else if(sceneTypeCode.equals(SceneEnum.DATA_ANALYSIS.getSceneInfo().getCode())){
-            IDataAnalysisSceneService dataAnalysisSceneService = SpringUtils.getBean(IDataAnalysisSceneService.class) ;
-            dataAnalysisSceneService.updateSceneAgents(dto);
-        }
         // 内容排版
         else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
             IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
             contentFormatterSceneService.updateSceneAgents(dto);
+        }
+        // 通用智能体
+        else if(sceneTypeCode.equals(SceneEnum.GENERAL_AGENT.getSceneInfo().getCode())){
+            IGeneralAgentSceneService generalAgentSceneService = SpringUtils.getBean(IGeneralAgentSceneService.class) ;
+            generalAgentSceneService.updateSceneAgents(dto);
         }
 
 
@@ -244,15 +244,15 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             return documentReaderSceneService.getRoleList(dto);
         }
-        // 数据分析
-        else if(sceneTypeCode.equals(SceneEnum.DATA_ANALYSIS.getSceneInfo().getCode())){
-            IDataAnalysisSceneService dataAnalysisSceneService = SpringUtils.getBean(IDataAnalysisSceneService.class) ;
-            return dataAnalysisSceneService.getRoleList(dto);
-        }
         // 内容排版
         else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
             IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
             return contentFormatterSceneService.getRoleList(dto);
+        }
+        // 通用智能体
+        else if(sceneTypeCode.equals(SceneEnum.GENERAL_AGENT.getSceneInfo().getCode())){
+            IGeneralAgentSceneService generalAgentSceneService = SpringUtils.getBean(IGeneralAgentSceneService.class) ;
+            return generalAgentSceneService.getRoleList(dto);
         }
 
 
