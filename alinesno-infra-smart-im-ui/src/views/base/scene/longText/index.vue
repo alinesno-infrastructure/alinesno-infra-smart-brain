@@ -66,7 +66,7 @@ const handleGetScene = () => {
         currentSceneInfo.value = res.data;
         // handleRoleBySceneIdAndAgentType();
 
-        if(res.data.greetingQuestion){
+        if(res.data.greetingQuestion && res.data.greetingQuestion.length > 0){
             greetingQuestionList.value = [] ; 
             res.data.greetingQuestion.forEach(item => {
                 greetingQuestionList.value.push({
