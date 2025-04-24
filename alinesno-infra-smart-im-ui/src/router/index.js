@@ -92,21 +92,6 @@ const screenRoutes = [
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
-  // -->>>>>>>>>>> 数据分析生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  {
-    path: '/scene/dataAnalysis/index',
-    component: () => import('@/views/base/scene/dataAnalysis/index'),
-    name: '/scene/dataAnalysis/index',
-    meta: { title: '数据分析生成场景', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/dataAnalysis/dataParser',
-    component: () => import('@/views/base/scene/dataAnalysis/dataParser'),
-    name: '/scene/dataAnalysis/dataParser',
-    meta: { title: '数据规划分析面板', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  // -->>>>>>>>>>> 数据分析生成场景_end>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-
   // -->>>>>>>>>>>> 内容排版_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
     path: '/scene/contentFormatter/index',
@@ -148,6 +133,21 @@ const screenRoutes = [
     meta: { title: '产品进度汇总', icon: 'fa-solid fa-chart-line', affix: true }
   },
   // -->>>>>>>>>>>> 产品进度汇总场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> 通用智能体_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/generalAgent/index',
+    component: () => import('@/views/base/scene/generalAgent/index'),
+    name: '/scene/generalAgent/index',
+    meta: { title: '通用智能体', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/generalAgent/agentParser',
+    component: () => import('@/views/base/scene/generalAgent/agentParser'),
+    name: '/scene/generalAgent/agentParser',
+    meta: { title: '通用智能体', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  // -->>>>>>>>>>>> 通用智能体_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ];
 
 // 公共路由
