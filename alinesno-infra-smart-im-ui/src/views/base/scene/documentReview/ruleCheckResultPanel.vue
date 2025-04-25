@@ -2,44 +2,12 @@
     <el-drawer v-model="drawer" :direction="direction" size="40%" :with-header="false" :before-close="handleClose">
         <div class="drawer-content">
             <div class="drawer-header">
-                <!-- <el-button :type="getTagType()" text size="large">
-                </el-button> -->
                 规则【{{ ruleItem.ruleName || '未命名' }}】检查结果
                 <el-button type="text" size="large" @click="closeDrawer(ruleItem)">关闭</el-button>
             </div>
 
             <div class="drawer-body">
                 <el-scrollbar class="scrollable-area">
-                    <!-- <div class="rule-result-item" v-for="(item, index) in checkRuleResult" :key="index">
-                        <div class="risk-point">
-                            <span>风险点{{ index + 1 }}: {{ item.reason }}</span>
-                            <span>
-                                <el-button type="primary" text bg size="small">
-                                    <i class="fa-solid fa-map-location"></i> &nbsp; 定位到原文
-                                </el-button>
-                            </span>
-                        </div>
-                        <div class="contract-original">
-                            <div class="contract-original-title"> 文档原文 </div>
-                            <div> {{ item.originalText }} </div>
-                        </div>
-                        <div class="modify-suggestion">
-                            <div class="modify-suggestion-title"> 修改建议 </div>
-                            <div>
-                                <div v-for="(i , ix ) in item.suggestedTexts" :key="ix" style="display: flex;justify-content: space-between;align-items: center;margin-bottom: 5px;" >
-                                    <span>
-                                       {{ ix +1 }}:{{ i.text }}
-                                    </span>
-                                    <el-button type="primary" text bg size="small">接受</el-button>
-                                </div>
-                            </div>
-                        </div> -->
-                        <!-- 
-                        <div class="accept-suggestion">
-                            <el-button type="primary" size="default">接受建议并确认(会添加到批注里面)</el-button>
-                        </div> 
-                        -->
-                    <!-- </div> -->
                     <div v-for="(item, index) in auditResultList" :key="index">
                             <div class="check-result-item" :class="'item-alert-' + item.riskLevel"
                                 @click="handleCheckItemClick(item)">
