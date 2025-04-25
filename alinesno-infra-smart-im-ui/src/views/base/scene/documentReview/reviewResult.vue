@@ -5,7 +5,7 @@
                 <el-button type="primary" text bg @click="handleGenDocxReport">
                     <i class="fa-solid fa-download"></i> &nbsp; 导出审核报告
                 </el-button>
-                <el-button type="primary" text bg @click="handleGenMarkDocxReport">
+                <el-button type="primary" :loading="getMarkLoading" text bg @click="handleGenMarkDocxReport">
                     <i class="fa-solid fa-file-word"></i> &nbsp; 导出标注文档
                 </el-button>
             </div>
@@ -87,8 +87,8 @@ const sceneId = ref(route.query.sceneId)
 import RuleCheckResultPanel from './ruleCheckResultPanel.vue'
 
 const ruleTitle = ref('');
-
 const contractReviewList = ref([]);
+const getMarkLoading = ref(false);
 const ruleCheckResultPanelRef = ref(null);
 
 const showPdfDialog = ref(false);
@@ -189,10 +189,10 @@ const downloadWordDocument = () => {
 
 // 导出标注文档
 const handleGenMarkDocxReport = () => {
+    getMarkLoading.value = true;
     downloadMarkDocx(sceneId.value).then(res => {
-        // const filename = '标注文档.docx';
-        // saveAs(blob, filename)
         window.open(res.data);
+        getMarkLoading.value = false;
     })
 }
 
