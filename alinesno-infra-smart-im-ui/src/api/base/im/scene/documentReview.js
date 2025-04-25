@@ -17,7 +17,7 @@ var managerUrl = {
 export function downloadMarkDocx(sceneId) {
   return request({
     url: managerUrl.downloadMarkDocx + '?sceneId=' + parseStrEmpty(sceneId),
-    responseType: 'blob', // 显式声明返回二进制流
+    // responseType: 'blob', // 显式声明返回二进制流
     method: 'get'
   })
 }
