@@ -61,7 +61,7 @@
           <el-table-column label="图标" align="center" width="50px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
               <div class="role-icon">
-                <img :src="imagePath(scope.row.icon)" style="border-radius: 5px;" />
+                <img :src="imagePath(scope.row.icon)" style="border-radius: 50%;" />
               </div>
             </template>
           </el-table-column>
