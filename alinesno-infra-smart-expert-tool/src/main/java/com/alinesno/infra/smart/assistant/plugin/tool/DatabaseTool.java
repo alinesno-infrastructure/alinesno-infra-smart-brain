@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Field;
@@ -20,6 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 集成MCP工具服务能力
@@ -36,14 +38,63 @@ public abstract class DatabaseTool extends Tool {
     private String[] tables;
     private String tablePrefix;
     private String tableSuffix;
+    private int maxResultLength = 5000; // 添加字段用于配置最大结果长度
 
     protected DataSource getDataSource() {
+        if (jdbcUrl == null || username == null || password == null) {
+            log.error("数据库连接信息不完整，无法创建数据源。");
+            return null;
+        }
         DruidDataSource dataSource = new DruidDataSource();
         dataSource.setDriverClassName(driverName);
         dataSource.setUrl(jdbcUrl);
         dataSource.setUsername(username);
         dataSource.setPassword(password);
+
+        dataSource.setMaxWait(100);
+        dataSource.setBreakAfterAcquireFailure(true); // 连接失败后中断
+        dataSource.setConnectionErrorRetryAttempts(0); // 不重试
+        dataSource.setTestOnBorrow(true);
+        dataSource.setTestOnReturn(true);
+
         return dataSource;
+    }
+
+    /**
+     * 查询数据并将结果合并整理为字符串返回
+     * @param querySql 查询 SQL 语句
+     * @return 整理后的查询结果字符串
+     */
+    protected String queryData(String querySql) {
+        JdbcTemplate jdbcTemplate = new JdbcTemplate();
+        DataSource dataSource = getDataSource();
+        if (dataSource == null) {
+            log.error("数据源未成功创建，无法执行查询。");
+            return null;
+        }
+        jdbcTemplate.setDataSource(dataSource);
+        try {
+            List<Map<String, Object>> resultList = jdbcTemplate.queryForList(querySql);
+            StringBuilder resultString = new StringBuilder();
+            for (Map<String, Object> row : resultList) {
+                for (Map.Entry<String, Object> entry : row.entrySet()) {
+                    resultString.append(entry.getKey()).append(": ").append(entry.getValue()).append(", ");
+                }
+                if (!row.isEmpty()) {
+                    // 去掉最后一个逗号和空格
+                    resultString.delete(resultString.length() - 2, resultString.length());
+                }
+                resultString.append("\n");
+                if (resultString.length() > maxResultLength) {
+                    resultString.setLength(maxResultLength);
+                    break;
+                }
+            }
+            return resultString.toString();
+        } catch (Exception e) {
+            System.err.println("执行查询时发生错误: " + e.getMessage());
+            return "执行查询时发生错误: " + e.getMessage();
+        }
     }
 
     @SneakyThrows
@@ -54,13 +105,35 @@ public abstract class DatabaseTool extends Tool {
 
         JSONObject toolJson = new JSONObject();
         toolJson.put("name", toolName);
+        try {
+            toolJson.put("databaseInfo", getDatabaseInfo());
+            toolJson.put("table Structures", getAllTableStructures(getDataSource()));
+        } catch (SQLException e) {
+            log.error("获取数据库信息或表结构时发生错误: " + e.getMessage());
+            throw new SQLException("获取数据库信息或表结构时发生错误: " + e.getMessage());
+        }
         toolJson.put("description", toolInfo.description());
-        toolJson.put("table Structures", getAllTableStructures(getDataSource()));
 
         List<JSONObject> paramDescriptions = getJsonObjects();
 
         toolJson.put("paramDescription", paramDescriptions);
         return JSON.toJSONString(toolJson);
+    }
+
+    private JSONObject getDatabaseInfo() throws SQLException {
+        DataSource dataSource = getDataSource();
+
+        try {
+            Connection connection = dataSource.getConnection() ;
+            DatabaseMetaData metaData = connection.getMetaData();
+            JSONObject databaseInfo = new JSONObject();
+            databaseInfo.put("databaseProductName", metaData.getDatabaseProductName());
+            databaseInfo.put("databaseProductVersion", metaData.getDatabaseProductVersion());
+            return databaseInfo;
+        } catch (Exception e) {
+            log.error("获取数据库信息时发生错误: " + e.getMessage());
+            throw e;
+        }
     }
 
     @NotNull
@@ -142,6 +215,10 @@ public abstract class DatabaseTool extends Tool {
      * @throws SQLException 处理数据库操作时可能出现的异常
      */
     public JSONArray getAllTableStructures(DataSource dataSource) throws SQLException {
+        if (dataSource == null) {
+            log.error("数据源未成功创建，无法获取表结构信息。");
+            return new JSONArray();
+        }
         JSONArray allTablesArray = new JSONArray();
         try (Connection connection = dataSource.getConnection()) {
             DatabaseMetaData metaData = connection.getMetaData();
