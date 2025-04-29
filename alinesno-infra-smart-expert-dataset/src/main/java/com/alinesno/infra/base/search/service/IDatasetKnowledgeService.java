@@ -2,6 +2,7 @@ package com.alinesno.infra.base.search.service;
 
 import com.alinesno.infra.base.search.api.DataProcessingDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 
 import java.io.File;
@@ -44,9 +45,10 @@ public interface IDatasetKnowledgeService extends IBaseService<DatasetKnowledgeE
      * @param targetFile
      * @param fileType
      * @param fileSuffix
+     * @param query
      * @return
      */
-    void saveDatasetTmpFile(Long datasetId, String fileName, File targetFile, String fileType, String fileSuffix);
+    void saveDatasetTmpFile(Long datasetId, String fileName, File targetFile, String fileType, String fileSuffix, PermissionQuery query);
 
     /**
      * 查询临时文件
