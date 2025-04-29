@@ -1,5 +1,6 @@
 package com.alinesno.infra.base.search.api;
 
+import com.alinesno.infra.common.facade.base.BaseDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
@@ -9,7 +10,7 @@ import javax.validation.constraints.NotNull;
 
 @ToString
 @Data
-public class DataProcessingDto {
+public class DataProcessingDto extends BaseDto {
 
     /**
      * 数据集ID
