@@ -16,10 +16,10 @@ public interface AssistantConstants {
     // 流程脚本引擎
     String PREFIX_ASSISTANT_REACT = "Agent_ReActExpert" ;
 
-//    // 帮助角色引擎
-//    String AIP_HELP_AGENT =  "AIP_DEFAULT_HELP_AGENT";
-
     // 简单角色设定Prompt
     String PREFIX_ASSISTANT_SIMPLE = "Agent_SimpleExpert" ;
+
+    // 深度搜索引擎
+    String PREFIX_ASSISTANT_DEEP_SEARCH = "Agent_DeepSearchExpert" ;
 
 }
