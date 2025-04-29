@@ -8,6 +8,10 @@ import com.alinesno.infra.base.search.enums.FileTypeEnums;
 import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.base.search.service.IDocumentParserService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -62,14 +66,13 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
      * @param page DatatablesPageBean对象。
      * @return 包含DataTables数据的TableDataInfo对象。
      */
+    @DataPermissionScope
     @ResponseBody
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
 
-        String datasetId = request.getParameter("datasetId") ;
-
-        List<ConditionDto> conditionList = new ArrayList<>() ;
+        List<ConditionDto> conditionList = page.getConditionList() ; // new ArrayList<>() ;
 
         ConditionDto orderConditionDto = new ConditionDto() ;
         orderConditionDto.setType("orderBy");
@@ -107,8 +110,9 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
     /**
      * 上传文件
      */
+    @DataPermissionQuery
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public AjaxResult upload(@RequestPart("file") MultipartFile file, Long datasetId) throws Exception {
+    public AjaxResult upload(@RequestPart("file") MultipartFile file, Long datasetId , PermissionQuery query) throws Exception {
         String fileName = file.getOriginalFilename();
 
         // 新生成的文件名称
@@ -121,7 +125,7 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
 
         String fileType = FileTypeUtil.getType(targetFile);
 
-        service.saveDatasetTmpFile(datasetId, fileName, targetFile , fileType, fileSuffix) ;
+        service.saveDatasetTmpFile(datasetId, fileName, targetFile , fileType, fileSuffix , query) ;
 
         // 处理完成之后删除文件
         // FileUtils.forceDeleteOnExit(targetFile);
