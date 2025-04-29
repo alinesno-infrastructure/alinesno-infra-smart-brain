@@ -1,5 +1,7 @@
 package com.alinesno.infra.base.search.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import com.alinesno.infra.base.search.api.DataProcessingDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
@@ -10,9 +12,11 @@ import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.base.search.service.IDocumentParserService;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -85,9 +89,11 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
     }
 
     @Override
-    public void saveDatasetTmpFile(Long datasetId, String fileName, File targetFile, String fileType, String fileSuffix) {
+    public void saveDatasetTmpFile(Long datasetId, String fileName, File targetFile, String fileType, String fileSuffix, PermissionQuery query) {
 
         DatasetKnowledgeEntity e = new DatasetKnowledgeEntity() ;
+        CopyOptions copier = CopyOptions.create().ignoreNullValue();
+        BeanUtil.copyProperties(query , e ,copier);
 
         e.setDatasetId(datasetId);
         e.setDocumentName(fileName);
