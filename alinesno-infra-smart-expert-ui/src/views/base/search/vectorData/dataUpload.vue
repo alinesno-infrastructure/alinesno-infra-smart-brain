@@ -44,7 +44,7 @@
                     </el-table-column>
                     <el-table-column prop="uploadProgress" width="300px" align="center" label="文件上传进度">
                         <template #default="scope">
-                            <el-progress status="success" v-if="scope.row.hasUploaded === 'uploaded'" :percentage="100" :stroke-width="20" striped  :text-inside="true"
+                            <el-progress status="success" v-if="scope.row.hasUploaded === 'uploaded'" :percentage="100" :stroke-width="20" :text-inside="true"
                             striped-flow />
                             <el-progress v-else :percentage="scope.row.uploadProgress" striped striped-flow
                                 :stroke-width="10" status="primary" :duration="10" />
