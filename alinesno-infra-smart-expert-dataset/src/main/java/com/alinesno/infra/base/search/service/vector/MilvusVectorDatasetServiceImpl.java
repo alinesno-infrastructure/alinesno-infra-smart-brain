@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -36,12 +37,9 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
 
     private static final Gson gson = new Gson() ;
 
-//    @Autowired
-//    private EmbeddingConsumer embeddingConsumer ;
-
     @Async
     @Override
-    public void insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType) {
+    public List<Long> insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType) {
 
         VectorDatasetEntity vectorDatasetEntity = getById(datasetId) ;
 
@@ -70,17 +68,13 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
 
         milvusDataService.buildIndexByCollection(collectionName) ;
 
+        return Collections.emptyList();
     }
 
     @Override
     public List<DocumentVectorBean> search(VectorSearchDto dto) {
         return null;
     }
-
-//    @Override
-//    public void buildCreateCollectionParam(String collectionName, String description, int shardsNum) {
-//
-//    }
 
     @Override
     public String getVectorEngine() {
