@@ -16,10 +16,11 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.io.File;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 应用管理Service业务层处理
@@ -123,6 +125,8 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
         return list(lambdaQuery) ;
     }
 
+    // 此方法不需要开启事务
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
     public void dataUploadToVectorDataset(DataProcessingDto dto) {
 
@@ -143,38 +147,59 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
 
             String fileSuffix =  Objects.requireNonNull(entity.getFilePath()).substring(entity.getFilePath().lastIndexOf(".")+1);
             File targetFile = new File(entity.getFilePath()) ;
-            String fileName = targetFile.getName();
-            String documentName = entity.getDocumentName() ; //  targetFile.getName();
+            String documentName = entity.getDocumentName() ;
+            String documentContent = entity.getDocumentContent();
 
-            FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
-            assert constants != null;
+            entity.setStatus(DocumentStatusEnums.IMPORT_IN_PROGRESS.getCode()); // 设置为处理中
+            updateById(entity);
 
-            sentenceList = switch (constants) {
-                case PDF ->  documentParserService.parsePDF(targetFile);
-                case MD -> documentParserService.parseMD(targetFile);
-                case EXCEL, EXCEL_OLD -> documentParserService.parseExcel(targetFile);
-                case DOCX -> documentParserService.getContentDocx(targetFile);
-                case DOC -> documentParserService.getContentDoc(targetFile);
-                default -> sentenceList;
-            };
+            try{
+                FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
+                assert constants != null;
 
-            log.debug("sentenceList = {}" , new Gson().toJson(sentenceList));
+                sentenceList = switch (constants) {
+                    case PDF ->  documentParserService.parsePDF(targetFile);
+                    case MD -> documentParserService.parseMD(targetFile);
+                    case HTML -> documentParserService.parseHTML(targetFile);
+                    case TXT -> documentParserService.parseTxt(documentContent);
+                    case EXCEL, EXCEL_OLD -> documentParserService.parseExcel(targetFile);
+                    case DOCX -> documentParserService.getContentDocx(targetFile);
+                    case DOC -> documentParserService.getContentDoc(targetFile);
+                    default -> sentenceList;
+                };
 
-            sentenceList = documentParserService.documentParser(
-                    sentenceList.get(0) ,
-                    entity.getIdealChunk() == null ? maxSegmentLength : Integer.parseInt(entity.getIdealChunk())) ;
+                log.debug("sentenceList = {}" , new Gson().toJson(sentenceList));
 
-            if(!sentenceList.isEmpty()){
-                sentenceList.forEach(s -> log.debug("sentence = {}" , s));
-                // 保存到知识库中
-                vectorDatasetService.insertDatasetKnowledge(datasetId, sentenceList , documentName , entity.getFileType()) ;
+                sentenceList = documentParserService.documentParser(
+                        sentenceList.get(0) ,
+                        entity.getIdealChunk() == null ? maxSegmentLength : Integer.parseInt(entity.getIdealChunk())) ;
+
+                List<Long> vectorDataIds = new ArrayList<>();
+                if(!sentenceList.isEmpty()){
+                    sentenceList.forEach(s -> log.debug("sentence = {}" , s));
+                    // 保存到知识库中
+                    vectorDataIds = vectorDatasetService.insertDatasetKnowledge(datasetId, sentenceList , documentName , entity.getFileType()) ;
+                }
+
+                entity.setUpdateTime(new Date());
+                entity.setDocumentCount(sentenceList.size());
+                entity.setStatus(DocumentStatusEnums.IMPORT_COMPLETED.getCode());
+
+                // 如果vectorDataIds不为空，则以逗号为分割拼接成字符串
+                if (!vectorDataIds.isEmpty()) {
+                    entity.setVectorDataIds(vectorDataIds.stream().map(String::valueOf).collect(Collectors.joining(",")));
+                }
+
+                updateById(entity);
+            }catch(Exception e){
+
+                log.error("数据集导入失败：{}" , e.getMessage());
+
+                entity.setUpdateTime(new Date());
+                entity.setStatus(DocumentStatusEnums.IMPORT_FAILED.getCode());
+                updateById(entity);
             }
-
-            entity.setUpdateTime(new Date());
-            entity.setDocumentCount(sentenceList.size());
-            entity.setStatus(DocumentStatusEnums.IMPORT_COMPLETED.getCode());
         }
 
-        updateBatchById(list) ;
     }
 }
