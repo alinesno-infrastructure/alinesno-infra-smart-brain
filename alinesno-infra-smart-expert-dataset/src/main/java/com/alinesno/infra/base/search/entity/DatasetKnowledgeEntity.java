@@ -29,6 +29,11 @@ public class DatasetKnowledgeEntity extends InfraBaseEntity {
     @TableField
     private String documentName ; // 文档名称
 
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @ColumnComment("文档内容")
+    @TableField
+    private String documentContent ; // 文档内容
+
     @ColumnType(value = MySqlTypeConstant.VARCHAR , length = 256)
     @ColumnComment("文档描述")
     @TableField
@@ -44,9 +49,11 @@ public class DatasetKnowledgeEntity extends InfraBaseEntity {
     @TableField
     private String documentCloudId;
 
-    /**
-     * 文件本地存储路径
-     */
+    @ColumnType(value = MySqlTypeConstant.TEXT)
+    @ColumnComment("向量数据id(以逗号做为分割)")
+    @TableField
+    private String vectorDataIds ;
+
     @ColumnType(value = MySqlTypeConstant.VARCHAR , length = 256)
     @ColumnComment("文件本地存储路径")
     @TableField
@@ -87,4 +94,13 @@ public class DatasetKnowledgeEntity extends InfraBaseEntity {
     @TableField
     private String processingMethod;
 
+    @ColumnType(value = MySqlTypeConstant.VARCHAR , length = 64)
+    @ColumnComment("处理参数")
+    @TableField
+    private String processingParam ;
+
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 2)
+    @ColumnComment("是否自动导入(1自动导入|0手动导入)")
+    @TableField
+    private Integer hasAutoImport ;
 }
