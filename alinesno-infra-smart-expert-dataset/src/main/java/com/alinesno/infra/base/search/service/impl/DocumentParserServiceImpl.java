@@ -100,7 +100,13 @@ public class DocumentParserServiceImpl implements IDocumentParserService {
 
     @SneakyThrows
     @Override
-    public List<String> parseTxt(File targetFile) {
-        return Collections.singletonList(FileUtils.readFileToString(targetFile, Charset.defaultCharset()));
+    public List<String> parseTxt(String documentContent) {
+        return Collections.singletonList(documentContent);
     }
+
+    @Override
+    public List<String> parseHTML(File targetFile) {
+        return null;
+    }
+
 }
