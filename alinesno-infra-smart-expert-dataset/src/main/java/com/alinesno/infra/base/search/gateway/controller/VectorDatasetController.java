@@ -50,9 +50,6 @@ public class VectorDatasetController extends BaseController<VectorDatasetEntity,
     @Autowired
     private IAssetCatalogService catalogService ;
 
-//    @Resource
-//    private IVectorDatasetService vectorDatasetService;
-
     /**
      * 获取ApplicationEntity的DataTables数据
      * 
