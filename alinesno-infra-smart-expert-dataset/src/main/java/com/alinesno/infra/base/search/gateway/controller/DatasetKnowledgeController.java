@@ -2,14 +2,15 @@ package com.alinesno.infra.base.search.gateway.controller;
 
 import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.util.IdUtil;
+import com.alinesno.infra.base.search.api.CrawlerDto;
 import com.alinesno.infra.base.search.api.DataProcessingDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.enums.FileTypeEnums;
+import com.alinesno.infra.base.search.service.ICrawlerService;
 import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.base.search.service.IDocumentParserService;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
-import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.ConditionDto;
@@ -28,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -54,6 +56,9 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
 
     @Autowired
     private IDocumentParserService documentParserService ;
+
+    @Autowired
+    private ICrawlerService crawlerService ;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -181,6 +186,16 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
         return AjaxResult.success(fileName) ;
     }
 
+    /**
+     * 爬取数据
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/crawler")
+    public AjaxResult crawler(@RequestBody @Validated CrawlerDto dto , PermissionQuery query) {
+        crawlerService.parseWebsite(dto , query);
+        return ok() ;
+    }
 
 
     @Override
