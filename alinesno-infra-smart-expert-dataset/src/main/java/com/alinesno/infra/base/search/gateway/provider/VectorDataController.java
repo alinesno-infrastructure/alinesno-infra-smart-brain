@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -76,8 +77,13 @@ public class VectorDataController {
         FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
         assert constants != null;
 
+        String documentContent = "" ;
+        if(constants == FileTypeEnums.TXT){
+            documentContent = FileUtils.readFileToString(targetFile, Charset.defaultCharset()) ;
+        }
+
         sentenceList = switch (constants) {
-            case TXT ->  documentParserService.parseTxt(targetFile);
+            case TXT -> documentParserService.parseTxt(documentContent);
             case PDF ->  documentParserService.parsePDF(targetFile);
             case MD -> documentParserService.parseMD(targetFile);
             case EXCEL -> documentParserService.parseExcel(targetFile);
