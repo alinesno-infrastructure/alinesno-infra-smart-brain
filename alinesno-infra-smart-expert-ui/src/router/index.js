@@ -147,6 +147,12 @@ export const constantRoutes = [
         meta: { title: '解析向量库管理', icon: 'dashboard', affix: true }
       },
       {
+        path: '/base/search/vectorData/websiteImport' , 
+        component: () => import('@/views/base/search/vectorData/websiteImport'),
+        name: '/base/search/vectorData/websiteImport' , 
+        meta: { title: 'Web站点同步', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/base/search/vectorData/dataUpload' , 
         component: () => import('@/views/base/search/vectorData/dataUpload'),
         name: '/base/search/vectorData/dataUpload' , 
