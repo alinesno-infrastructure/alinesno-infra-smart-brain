@@ -103,6 +103,14 @@
 		</dependency>
 		<!-- word_end -->
 
+		<!-- xxl-crawler_start -->
+		<dependency>
+			<groupId>com.xuxueli</groupId>
+			<artifactId>xxl-crawler</artifactId>
+			<version>1.4.1</version>
+		</dependency>
+		<!-- xxl-crawler_end -->
+
 		<!-- jxl_start -->
 		<dependency>
 			<groupId>net.sourceforge.jexcelapi</groupId>
