@@ -9,6 +9,7 @@ public class DocumentVectorBean implements Serializable {
 
     private long id ; // 主键
     private long dataset_id ; // 所属数据集id
+    private long knowledge_id ;  // 所属知识库id
     private String indexName; // 索引名称
     private String document_title ; // 文本标题
     private String document_desc ; // 文本描述
