@@ -6,11 +6,13 @@ import lombok.Getter;
 @Getter
 public enum DocumentStatusEnums {
 
+    // 上传状态
     NOT_UPLOADED("not_uploaded", "未上传"),
     UPLOADING("uploading", "上传中"),
     UPLOADED("uploaded", "已上传"),
-    IMPORTING("importing", "导入中"),
-    // 未导入
+
+    // 导入状态
+    IMPORT_IN_PROGRESS("import_in_progress", "导入中"),
     IMPORT_NOT_COMPLETED("import_not_completed", "未导入"),
     IMPORT_COMPLETED("import_completed", "导入完成"),
     IMPORT_FAILED("import_failed", "导入失败");
