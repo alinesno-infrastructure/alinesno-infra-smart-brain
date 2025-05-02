@@ -66,8 +66,13 @@ public class BaseSearchAdapterServiceImpl implements BaseSearchConsumer {
         FileTypeEnums constants = FileTypeEnums.getByValue(fileSuffix.toLowerCase()) ;
         assert constants != null;
 
+        String documentContent = "" ;
+        if(constants == FileTypeEnums.TXT){
+            documentContent = FileUtils.readFileToString(targetFile, "UTF-8");
+        }
+
         sentenceList = switch (constants) {
-            case TXT ->  documentParserService.parseTxt(targetFile);
+            case TXT ->  documentParserService.parseTxt(documentContent);
             case PDF ->  documentParserService.parsePDF(targetFile);
             case MD -> documentParserService.parseMD(targetFile);
             case EXCEL -> documentParserService.parseExcel(targetFile);
