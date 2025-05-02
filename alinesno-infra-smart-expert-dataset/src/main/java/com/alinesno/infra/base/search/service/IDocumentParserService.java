@@ -49,8 +49,16 @@ public interface IDocumentParserService {
 
     /**
      * 解析txt文本
+     *
+     * @param documentContent
+     * @return
+     */
+    List<String> parseTxt(String documentContent);
+
+    /**
+     * 解析html文本
      * @param targetFile
      * @return
      */
-    List<String> parseTxt(File targetFile);
+    List<String> parseHTML(File targetFile);
 }
