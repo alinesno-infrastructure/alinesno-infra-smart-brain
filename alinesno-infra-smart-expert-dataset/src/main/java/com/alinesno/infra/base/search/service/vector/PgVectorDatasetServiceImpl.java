@@ -56,7 +56,7 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
     private static final Gson gson = new Gson() ;
 
     @Override
-    public void insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType) {
+    public List<Long> insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType) {
 
         VectorDatasetEntity vectorDatasetEntity = getById(datasetId) ;
 
@@ -68,24 +68,29 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
 
         String collectionName = vectorDatasetEntity.getCollectionName();
 
+        List<Long> ids = new ArrayList<>();
+
         int count = 1 ;
         for(String content : sentenceList){
 
             DocumentVectorBean embeddingBean = new DocumentVectorBean() ;
 
-            embeddingBean.setId(IdUtil.getSnowflakeNextId());
+            long id = IdUtil.getSnowflakeNextId();
+            embeddingBean.setId(id) ;
             embeddingBean.setIndexName(collectionName);
             embeddingBean.setDataset_id(datasetId);
             embeddingBean.setDocument_title(fileName);
             embeddingBean.setDocument_content(content);
             embeddingBean.setPage(count) ;
             embeddingBean.setSourceType(fileType);
+            ids.add(id) ;
 
             count ++ ;
 
             pgVectorService.insertVector(embeddingBean);
         }
 
+        return ids ;
     }
 
     @Override
@@ -118,11 +123,6 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         Assert.isTrue(list != null , "搜索结果为空");
         return list.stream().sorted((o1, o2) -> Float.compare(o2.getScore(), o1.getScore())).collect(Collectors.toList());
     }
-
-//    @Override
-//    public void buildCreateCollectionParam(String collectionName, String description, int shardsNum) {
-//        pgVectorService.createVectorIndex(collectionName);
-//    }
 
     @Override
     public String getVectorEngine() {
