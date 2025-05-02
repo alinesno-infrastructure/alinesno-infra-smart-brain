@@ -4,10 +4,12 @@ import com.alinesno.infra.common.facade.base.BaseDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import javax.validation.constraints.NotNull;
 
+@EqualsAndHashCode(callSuper = true)
 @ToString
 @Data
 public class DataProcessingDto extends BaseDto {
@@ -42,4 +44,5 @@ public class DataProcessingDto extends BaseDto {
      */
     @NotBlank(message = "自定义分割符号不能为空")
     private String customSplitSymbol;
+
 }
