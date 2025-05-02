@@ -61,4 +61,11 @@ public interface ISSEService {
      * @param clientId
      */
     void sendQueueMessage(@NotBlank String clientId, List<MessageTaskInfo> messageList);
+
+    /**
+     * 发送未完成的消息
+     * @param clientId
+     * @param message
+     */
+    void sendNotDone(String clientId, String message);
 }
