@@ -171,4 +171,15 @@ public class SSEServiceImpl implements ISSEService {
         emitter.send("[DONE]");
     }
 
+    @SneakyThrows
+    @Override
+    public void sendNotDone(String clientId, String message) {
+        final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
+
+        Assert.notNull(emitter, "客户端不存在，clientId = " + clientId);
+        Assert.notNull(message, "推送消息为空");
+
+        emitter.send(message) ;
+    }
+
 }
