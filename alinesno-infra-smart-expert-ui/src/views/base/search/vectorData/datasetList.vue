@@ -5,12 +5,8 @@
       <el-col :span="24" :xs="24">
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
           <el-form-item label="数据集名称" prop="name">
-            <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入应用名称" clearable style="width: 240px"
+            <el-input v-model="queryParams.documentName" placeholder="请输入应用名称" clearable style="width: 240px"
               @keyup.enter="handleQuery" />
-          </el-form-item>
-          <el-form-item label="所有者" prop="ownerId" label-width="100px">
-            <el-input v-model="queryParams['condition[ownerId|like]']" placeholder="请输入显示名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
           </el-form-item>
 
           <el-form-item>
@@ -21,11 +17,14 @@
 
         <el-row :gutter="10" class="mb8">
           <el-col :span="1.5">
-            <!-- <el-button type="primary" plain icon="Upload" @click="handleImport" v-hasPermi="['system:user:import']">数据集上传</el-button> -->
-
-                <router-link :to="'/base/search/vectorData/dataUpload?datasetId=' + currentDatasetId" >
-                  <el-button type="primary" plain icon="Upload">数据集上传</el-button>
-                </router-link>
+            <router-link :to="'/base/search/vectorData/dataUpload?datasetId=' + currentDatasetId" >
+              <el-button type="primary" plain icon="Upload">数据集上传</el-button>
+            </router-link>
+          </el-col>
+          <el-col :span="1.5">
+            <router-link :to="'/base/search/vectorData/websiteImport?datasetId=' + currentDatasetId" >
+              <el-button type="warning" plain icon="Link">Web站点同步</el-button>
+            </router-link>
           </el-col>
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
         </el-row>
@@ -71,8 +70,26 @@
           </el-table-column>
           <el-table-column label="状态" align="center" width="300" key="datasetStatus" prop="datasetStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <el-button type="primary" text bg icon="Link">{{scope.row.status}}</el-button>
-            </template>
+              <el-button v-if="scope.row.status === 'import_in_progress'" type="warning" text bg>
+                  <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                  <span class="status-text">导入中</span>
+              </el-button>
+              <el-button v-else-if="scope.row.status === 'import_not_completed'" type="info" text bg>
+                  <i class="fa-solid fa-circle-xmark" aria-hidden="true"></i>
+                  <span class="status-text">未导入</span>
+              </el-button>
+              <el-button v-else-if="scope.row.status === 'import_completed'" type="success" text bg>
+                  <i class="fa-solid fa-check-circle" aria-hidden="true"></i>
+                  <span class="status-text">导入完成</span>
+              </el-button>
+              <el-button v-else-if="scope.row.status === 'import_failed'" type="danger" text bg>
+                  <i class="fa-solid fa-exclamation-triangle" aria-hidden="true"></i>
+                  <span class="status-text">导入失败</span>
+              </el-button>
+              <el-button v-else type="default" text bg>
+                  <span class="status-text">{{ scope.row.status }}</span>
+              </el-button>
+          </template>
           </el-table-column>
 
           <el-table-column label="开启" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
@@ -527,5 +544,11 @@ getList();
     height: 45px;
     border-radius: 50%;
   }
+}
+
+.status-text {
+    display: inline-block;
+    width: 60px; /* 可按需调整宽度 */
+    text-align: center;
 }
 </style>
