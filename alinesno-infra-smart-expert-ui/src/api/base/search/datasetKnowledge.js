@@ -24,6 +24,16 @@ var managerUrl = {
     downloadfile: prefix + "downloadfile",
     queryTmpFileByDatasetId: prefix + "queryTmpFileByDatasetId",
     uploadTmpFileByDatasetId: prefix + "uploadTmpFileByDatasetId",
+    crawler: prefix + "crawler",
+}
+
+// 爬取数据
+export function crawler(data) {
+  return request({
+    url: managerUrl.crawler ,
+    method: 'post',
+    data: data
+  })
 }
 
 // 修改字段
