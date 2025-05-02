@@ -27,8 +27,9 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @param sentenceList
      * @param fileName
      * @param fileType
+     * @return
      */
-    void insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType);
+    List<Long> insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType);
 
     /**
      * 向量搜索
@@ -37,14 +38,6 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @return
      */
     List<DocumentVectorBean> search(VectorSearchDto dto);
-
-//    /**
-//     * 创建数据集
-//     * @param collectionName
-//     * @param description
-//     * @param shardsNum
-//     */
-//    void buildCreateCollectionParam(String collectionName, String description, int shardsNum);
 
     /**
      * 获取向量引擎
