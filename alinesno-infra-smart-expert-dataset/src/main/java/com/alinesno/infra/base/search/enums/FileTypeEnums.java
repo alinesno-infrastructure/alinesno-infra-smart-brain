@@ -9,6 +9,7 @@ import lombok.Getter;
 public enum FileTypeEnums {
 
     TXT("txt", "文本文件"),
+    HTML("html", "HTML文件"),
     PDF("pdf", "PDF文件"),
     DOCX("docx", "Word文档"),
     DOC("doc", "旧版Word文档"),
