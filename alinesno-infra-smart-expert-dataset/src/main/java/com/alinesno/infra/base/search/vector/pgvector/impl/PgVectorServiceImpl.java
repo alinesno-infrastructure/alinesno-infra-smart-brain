@@ -163,7 +163,8 @@ public class PgVectorServiceImpl implements IPgVectorService {
                 "    source_file VARCHAR(255),\n" +
                 "    source_url TEXT,\n" +
                 "    source_type VARCHAR(50),\n" +
-                "    author VARCHAR(255)\n" +
+                "    author VARCHAR(255),\n" +
+                "    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP\n" +
                 ");";
 
         jdbcTemplate.execute(ddl);
