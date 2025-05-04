@@ -51,7 +51,7 @@ public abstract class DatabaseTool extends Tool {
         dataSource.setUsername(username);
         dataSource.setPassword(password);
 
-        dataSource.setMaxWait(100);
+        dataSource.setMaxWait(2000);
         dataSource.setBreakAfterAcquireFailure(true); // 连接失败后中断
         dataSource.setConnectionErrorRetryAttempts(0); // 不重试
         dataSource.setTestOnBorrow(true);
