@@ -199,19 +199,13 @@ public class ReActExpertService extends ExpertService {
                         }
                     }
 
-                }
-
-                if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
+                }else if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
                     answer = reactResponse.getFinalAnswer();
                     isCompleted = true;
                 }
 
             } catch (Exception e) {
                 log.error(e.getMessage(), e);
-//                streamMessagePublisher.doStuffAndPublishAnEvent("调用失败:" + e.getMessage(),
-//                        role,
-//                        taskInfo,
-//                        taskInfo.getTraceBusId()) ;
                 log.error("调用失败" , e) ;
                 if(!StringUtils.hasText(answer)){
                     answer = "角色调用失败，请根据异常处理" ;
@@ -221,7 +215,7 @@ public class ReActExpertService extends ExpertService {
 
             if(loop >= maxLoop){
                 isCompleted = true ;
-                answer = AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
+                answer = StringUtils.hasText(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
             }
         } while (!isCompleted);
 
