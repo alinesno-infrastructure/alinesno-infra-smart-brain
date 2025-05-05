@@ -3,8 +3,8 @@ package com.alinesno.infra.base.search.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.alinesno.infra.base.search.api.CrawlerDto;
+import com.alinesno.infra.base.search.crew.DatasetWebCrawler;
 import com.alinesno.infra.base.search.crew.WebContentInfo;
-import com.alinesno.infra.base.search.crew.WebCrawler;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.enums.AutoImportStatusEnums;
 import com.alinesno.infra.base.search.enums.DocumentStatusEnums;
@@ -13,6 +13,7 @@ import com.alinesno.infra.base.search.service.ICrawlerService;
 import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.common.core.cache.RedisUtils;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.smart.im.service.ISSEService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,13 +28,16 @@ public class CrawlerServiceImpl implements ICrawlerService {
     @Autowired
     private IDatasetKnowledgeService datasetKnowledgeService;
 
+    @Autowired
+    private ISSEService sseService ;
+
     private static final String REDIS_PREFIX = "aip:crawler:";
 
     @Override
     public void parseWebsite(CrawlerDto dto, PermissionQuery query) {
-        String url = dto.getUrl();
+        String baseUrl = dto.getBaseUrl();
         // 构建带有前缀的缓存键
-        String cacheKey = REDIS_PREFIX + url;
+        String cacheKey = REDIS_PREFIX + baseUrl;
         // 检查URL是否在缓存中，表示正在爬取
         if (RedisUtils.hasKey(cacheKey)) {
             throw new RuntimeException("当前URL正在爬取中，不能重复添加");
@@ -43,7 +47,7 @@ public class CrawlerServiceImpl implements ICrawlerService {
 
         try {
             String cssSelector = dto.getCssSelector();
-            List<WebContentInfo> webContentInfoList = WebCrawler.parseWebsite(url, cssSelector , dto);
+            List<WebContentInfo> webContentInfoList = new DatasetWebCrawler().parseWebsite(baseUrl, cssSelector , dto , sseService);
 
             log.debug("webContentInfoList = {}" , webContentInfoList.size()) ;
 
