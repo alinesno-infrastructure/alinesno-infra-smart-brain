@@ -14,8 +14,8 @@ public class TestDatasetWebCrawler {
 
         dto.setChannelStreamId("123");
         dto.setAllowSpread(false);
-        dto.setMaxPage(10000);
-        dto.setBaseUrl("https://gjj.nanning.gov.cn");
+        dto.setMaxPage(20);
+        dto.setBaseUrl("http://portal.infra.linesno.com");
         dto.setCssSelector(cssSelector);
 
         List<WebContentInfo> result = new DatasetWebCrawler().parseWebsite(dto.getBaseUrl(), dto.getCssSelector(), dto  , null);
