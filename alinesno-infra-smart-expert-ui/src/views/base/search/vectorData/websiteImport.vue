@@ -40,6 +40,15 @@
               <el-form-item label="CSS内容选择器(可选)" prop="cssSelector">
                 <el-input v-model="formData.cssSelector" placeholder="请输入CSS内容选择器 body div.content"></el-input>
               </el-form-item>
+              <!-- 最大爬取页面数maxPage-->
+               <el-form-item label="最大爬取页面数(可选)" prop="maxPage">
+                <el-input-number 
+                    v-model="formData.maxPage" 
+                    max="50" 
+                    style="width:50%" 
+                    placeholder="请输入最大爬取页面数">
+                  </el-input-number>
+              </el-form-item>
               <el-form-item>
                 <el-button style="width: 100%;" 
                   :loading="webImportLoading"
@@ -89,7 +98,8 @@ const webImportLoading = ref(false);
 
 const formData = reactive({
   rootUrl: '',
-  cssSelector: ''
+  cssSelector: '' , 
+  maxPage: 10
 });
 
 const rules = {
@@ -127,8 +137,9 @@ const submitForm = () => {
 
       const data = {
         datasetId: proxy.$route.query.datasetId,
-        url: formData.rootUrl,
+        baseUrl: formData.rootUrl,
         channelStreamId: channelStreamId.value,
+        maxPage: formData.maxPage,
         cssSelector: formData.cssSelector
       };
 
