@@ -106,7 +106,7 @@ public class DatasetWebCrawler {
             }
 
             String title = getFileNameFromUrl(processedUrl);
-            sendMessage(sseService, dto.getChannelStreamId(), String.format("正在同步 %s 内容...", decodeUrl(processedUrl)));
+            sendMessage(sseService, dto.getChannelStreamId(), String.format("正在同步 %s 内容 , 当前已同步 %s 个页面", decodeUrl(processedUrl) , pageCount.get()));
             log.info("线程 [{}] 正在同步 {}（名称：{}） 内容，当前已同步 {} 个页面", Thread.currentThread().getName(), decodeUrl(processedUrl), title, pageCount.get());
 
             org.jsoup.nodes.Document doc = null;
@@ -150,7 +150,7 @@ public class DatasetWebCrawler {
             sendMessage(sseService, dto.getChannelStreamId(), String.format("正在同步 %s 内容", title));
             sendMessage(sseService, dto.getChannelStreamId(), String.format("正在同步的内容是:%s", contentBuilder));
 
-            sendMessage(sseService, dto.getChannelStreamId(), String.format("同步 %s 内容完成...", decodeUrl(processedUrl)));
+            sendMessage(sseService, dto.getChannelStreamId(), String.format("同步 %s 内容完成, 当前已同步 %s 个页面 ", decodeUrl(processedUrl) , pageCount.get()));
 
             String cleanContent = contentBuilder.toString();
             if (!cleanContent.trim().isEmpty()) {
