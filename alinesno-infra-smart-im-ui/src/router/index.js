@@ -150,6 +150,16 @@ const screenRoutes = [
   // -->>>>>>>>>>>> 通用智能体_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 ];
 
+// 深度搜索deepsearch
+const deepsearchRoutes = [
+  {
+    path: '/deepsearch/index',
+    component: () => import('@/views/base/deepsearch/index'),
+    name: '/deepsearch/index',
+    meta: { title: '深度搜索', icon: 'fa-solid fa-magnifying-glass', affix: true }
+  },
+]
+
 // 公共路由
 export const constantRoutes = [
   {
@@ -224,6 +234,8 @@ export const constantRoutes = [
       },
 
       ...screenRoutes ,
+
+      ...deepsearchRoutes ,
 
       {
         path: '/single/agentChat',
