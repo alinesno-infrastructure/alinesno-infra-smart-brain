@@ -20,6 +20,7 @@ public class CrawlerDto {
     /**
      * 爬虫的入口URL
      */
+    @NotBlank(message = "网站根地址不能为空")
     private String baseUrl;
 
     /**
