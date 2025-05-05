@@ -10,9 +10,9 @@ import com.alinesno.infra.base.search.enums.DocumentStatusEnums;
 import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.base.search.service.IDatasetParseLogService;
 import com.alinesno.infra.common.core.cache.RedisUtils;
-import com.alinesno.infra.common.core.utils.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -26,7 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.*;
 
 /**
  * 数据集任务解析类。
@@ -45,11 +45,26 @@ public class DatasetParseJob implements ApplicationListener<ApplicationReadyEven
     public static final String PROCESSING_PARAM = "自动";
     public static final String LOCK_KEY = "dataset_parse_batch_lock";
 
+    private static final int CORE_POOL_SIZE = 3;
+    private static final int MAX_POOL_SIZE = 3;
+    private static final long KEEP_ALIVE_TIME = 45*1000L;
+    private static final int QUEUE_CAPACITY = 200; // 队列容量
+
     private final IDatasetKnowledgeService datasetKnowledgeService;
     private final IDatasetParseLogService datasetParseLogService;
     @Autowired
     private TaskScheduler taskScheduler;
     private ExecutorService executorService;
+
+    // 创建线程池
+    ThreadPoolExecutor executor = new ThreadPoolExecutor(
+            CORE_POOL_SIZE,
+            MAX_POOL_SIZE,
+            KEEP_ALIVE_TIME,
+            TimeUnit.MILLISECONDS,
+            new LinkedBlockingQueue<>(QUEUE_CAPACITY)
+    );
+
 
     /**
      * 构造函数，注入数据集知识服务和数据集解析日志服务。
@@ -78,7 +93,7 @@ public class DatasetParseJob implements ApplicationListener<ApplicationReadyEven
     public void onApplicationEvent(@NotNull ApplicationReadyEvent event) {
         log.debug("搜索导入定时任务启动.");
         long initialDelay = 0;
-        long period = 30; // 每隔30秒执行一次
+        long period = 60; // 每隔x秒执行一次
         taskScheduler.scheduleAtFixedRate(this::parseDataset, Instant.now().plusMillis(initialDelay), Duration.ofSeconds(period));
     }
 
@@ -97,7 +112,6 @@ public class DatasetParseJob implements ApplicationListener<ApplicationReadyEven
             return;
         }
 
-        try {
             LambdaQueryWrapper<DatasetKnowledgeEntity> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(DatasetKnowledgeEntity::getStatus, DocumentStatusEnums.IMPORT_NOT_COMPLETED.getCode());
             queryWrapper.eq(DatasetKnowledgeEntity::getHasAutoImport, AutoImportStatusEnums.AUTO_IMPORT.getCode());
@@ -107,32 +121,37 @@ public class DatasetParseJob implements ApplicationListener<ApplicationReadyEven
 
             log.debug("搜索到未导入的数据集数量：{}", unimportedData.size());
 
-            for (DatasetKnowledgeEntity data : unimportedData) {
-                if (DocumentStatusEnums.IMPORT_NOT_COMPLETED.getCode().equals(data.getStatus())) {
-                    executorService.submit(() -> {
-                        DataProcessingDto dto = new DataProcessingDto();
-                        dto.setDatasetId(data.getDatasetId());
+            // 创建 CompletableFuture 列表
+            List<CompletableFuture<Void>> futures = unimportedData.stream()
+                    .map(data -> CompletableFuture.runAsync(() -> processData(data), executor))
+                    .toList();
 
-                        dto.setProcessingMethod(StringUtils.isNotBlank(data.getProcessingMethod()) ? data.getProcessingMethod() : PROCESSING_METHOD);
-                        dto.setProcessingParam(StringUtils.isNotBlank(data.getProcessingParam()) ? data.getProcessingParam() : PROCESSING_PARAM);
-                        dto.setIdealChunkLength(StringUtils.isNotBlank(data.getIdealChunk()) ? data.getIdealChunk() : String.valueOf(IDEAL_CHUNK_LENGTH));
-                        dto.setCustomSplitSymbol(StringUtils.isNotBlank(data.getCustomSeparator()) ? data.getCustomSeparator() : CUSTOM_SPLIT_SYMBOL);
+            // 当所有任务完成时触发通知
+            CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+            allFutures.thenRun(() -> {
+                log.info("所有未导入的数据集处理完成");
+                RedisUtils.deleteObject(LOCK_KEY);
+            });
 
-                        DatasetParseLogEntity logEntity = startLogging();
-                        try {
-                            log.info("正在线程 {} 上导入数据集: {}", Thread.currentThread().getName(), data.getDocumentName());
-                            datasetKnowledgeService.dataUploadToVectorDataset(dto);
-                            updateLogging(logEntity, DatasetParseStatusEnum.COMPLETED);
-                        } catch (Exception e) {
-                            log.error("导入数据集时发生错误: {}", data.getDocumentName(), e);
-                            updateLogging(logEntity, DatasetParseStatusEnum.FAILED, e.getMessage());
-                        }
-                    });
-                }
-            }
-        } finally {
-            // 处理完成后释放锁
-            RedisUtils.deleteObject(LOCK_KEY);
+    }
+
+    private void processData(DatasetKnowledgeEntity data) {
+        DataProcessingDto dto = new DataProcessingDto();
+        dto.setDatasetId(data.getDatasetId());
+
+        dto.setProcessingMethod(StringUtils.isNotBlank(data.getProcessingMethod()) ? data.getProcessingMethod() : PROCESSING_METHOD);
+        dto.setProcessingParam(StringUtils.isNotBlank(data.getProcessingParam()) ? data.getProcessingParam() : PROCESSING_PARAM);
+        dto.setIdealChunkLength(StringUtils.isNotBlank(data.getIdealChunk()) ? data.getIdealChunk() : String.valueOf(IDEAL_CHUNK_LENGTH));
+        dto.setCustomSplitSymbol(StringUtils.isNotBlank(data.getCustomSeparator()) ? data.getCustomSeparator() : CUSTOM_SPLIT_SYMBOL);
+
+        DatasetParseLogEntity logEntity = startLogging();
+        try {
+            log.info("正在线程 {} 上导入数据集: {}", Thread.currentThread().getName(), data.getDocumentName());
+            datasetKnowledgeService.dataUploadToVectorDataset(dto);
+            updateLogging(logEntity, DatasetParseStatusEnum.COMPLETED);
+        } catch (Exception e) {
+            log.error("导入数据集时发生错误: {}", data.getDocumentName(), e);
+            updateLogging(logEntity, DatasetParseStatusEnum.FAILED, e.getMessage());
         }
     }
 
