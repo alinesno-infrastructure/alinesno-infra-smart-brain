@@ -78,6 +78,13 @@
                       </div>
                       <!-- 流程输出调试信息_end -->
 
+                      <!-- 输出DeepSearch内容规划_start -->
+                      <ChatDeepSearchMessagePanel 
+                        :mdi="mdi"
+                        v-if="item.deepSearchFlow" 
+                        :deepSearchFlow="item.deepSearchFlow" />
+                      <!-- 输出DeepSearch内容规划_end -->
+
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
@@ -185,6 +192,7 @@ import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
 import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
 import ChatAttachmentMessagePanel from '@/views/smart/assistant/llmModel/chatAttachmentMessagePanel'
 import UserQuestionSuggestions from '@/views/smart/assistant/llmModel/userQuestionSuggestionsPanel'
+import ChatDeepSearchMessagePanel from './chatDeepSearchMessagePanel.vue'
 
 import { getInfo, chatRole, recognize , playGenContent} from '@/api/smart/assistant/roleChat'
 import { openSseConnect, handleCloseSse } from "@/api/smart/assistant/chatsse";
@@ -418,6 +426,8 @@ const pushResponseMessageList = (newMessage) => {
       }
       messageList.value[existingIndex].fileAttributeList = newMessage.fileAttributeList;
 
+      // 处理搜索结果
+      messageList.value[existingIndex].deepSearchFlow = newMessage.deepSearchFlow;
       const findMessage = messageList.value[existingIndex];
 
       if (newMessage.flowStep) {
