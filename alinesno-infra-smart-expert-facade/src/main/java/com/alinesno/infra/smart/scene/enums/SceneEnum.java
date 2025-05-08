@@ -14,8 +14,14 @@ import java.util.stream.Collectors;
 @Getter
 public enum SceneEnum {
 
-    // 新增通用Agent场景
-    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用智能体", "generalAgent", "类似于Manus一样的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
+    // 深度搜索场景(DeepSearch)
+    DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "1", "", "fa-solid fa-magnifying-glass", false ,
+            List.of(
+                    new SceneAgent(120000001L, "规划专员", "searchPlanner", "规划专员负责规划并确定问题的优先级，并确定问题的解决方式。"),
+                    new SceneAgent(120000002L, "执行专员", "searchExecutor", "执行专员负责执行规划专员规划的方案，并确保方案的执行进度。")
+            )
+    )),
+    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用智能体", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
             List.of(
                     new SceneAgent(110000001L, "解决方案助手", "businessProcessor", "业务处理助手负责处理通用业务流程中的各类任务，为后续的结果展示提供准确的数据支持。" , true),
                     new SceneAgent(110000002L, "业务执行助手", "businessExecute", "针对用于处理业务并执行业务指定的内容场景，包括分析业务内容。"),
@@ -48,7 +54,7 @@ public enum SceneEnum {
                     new SceneAgent(40000402L, "内容检查助手", "contentReviewer", "对提取的模块内容进行检查，确保模板的完整性和正确性。" , true)
             )
     )),
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "研发进度", "productResearch", "自动接入 Git 或者禅道等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git或者SVN等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "禅道进度提取助手", "progressExtractor", "从禅道系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "Git进度提取助手", "progressExtractor", "从 Git 仓库中提取产品的开发进度信息。"),
@@ -61,6 +67,7 @@ public enum SceneEnum {
     public static List<SceneInfoDto> getList() {
         return Arrays.stream(values())
                 .map(SceneEnum::getSceneInfo)
+                .filter(SceneInfoDto::isShow)
                 .collect(Collectors.toList());
     }
 
