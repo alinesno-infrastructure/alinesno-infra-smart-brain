@@ -3,7 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.impl
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.mapper.GeneralAgentSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
