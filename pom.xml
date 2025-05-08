@@ -37,20 +37,20 @@
         <module>alinesno-infra-smart-expert-adapter</module> <!-- 适配层 -->
         <module>alinesno-infra-smart-expert-tool</module>  <!-- 角色工具 -->
 
-        <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
-        <module>alinesno-infra-smart-expert-scene</module>  <!-- 场景管理 -->
-        <module>alinesno-infra-smart-expert-publish</module>  <!-- 角色分发 -->
-
         <module>alinesno-infra-smart-expert-dataset</module> <!-- 数据集(知识库)-->
         <module>alinesno-infra-smart-expert-memory</module> <!-- 记忆库 -->
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-workflow</module> <!-- 流程编排 -->
-        <module>alinesno-infra-smart-expert-deepsearch</module> <!-- 深度搜索 -->
         <module>alinesno-infra-smart-expert-task</module> <!-- 任务服务 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
         <module>alinesno-infra-smart-expert-portal</module>  <!-- 场景工作台门户 -->
+
+        <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
+        <module>alinesno-infra-smart-expert-deepsearch</module> <!-- 深度搜索 -->
+        <module>alinesno-infra-smart-expert-scene</module>  <!-- 场景管理 -->
+        <module>alinesno-infra-smart-expert-publish</module>  <!-- 角色分发 -->
 
         <module>alinesno-infra-smart-expert-boot</module>  <!-- 启动服务 -->
     </modules>
