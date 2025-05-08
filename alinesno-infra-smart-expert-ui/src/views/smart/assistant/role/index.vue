@@ -112,6 +112,11 @@
                     <el-button type="primary" v-if="item.scriptType === 'script'" text size="small" @click="configExecuteScript(item)">
                       <i class="fa-solid fa-code"></i> 脚本 
                     </el-button>
+                    <!-- deepsearch-->
+                     <el-button type="primary" v-if="item.scriptType === 'deepsearch'" text size="small" @click="configExecuteScript(item)">
+                      <i class="fa-solid fa-magnifying-glass"></i> 深度搜索
+                    </el-button>
+
                     <el-button type="primary" size="small" :disabled="item.saleFromRoleId" text  @click="pushOrg(item)">
                       <i class="fa-solid fa-truck-fast"></i> 推送
                     </el-button>
@@ -394,6 +399,12 @@ const executeTypes = ref([
     code: 'flow',
     title: '工作流角色',
     desc: '通过低代码流程化实现复杂逻辑，针对于较为通用和复杂场景，建议高级人员使用'
+  },
+  {
+    icon: 'fa-solid fa-search', // 这里假设的图标，你可以根据实际需求修改
+    code: 'deepsearch',
+    title: 'DeepSearch角色',
+    desc: '用于深度搜索的角色，能够处理复杂的搜索任务，适合专业搜索场景使用'
   }
 ]);
 
@@ -587,6 +598,9 @@ function configExecuteScript(row) {
     router.push({ path: '/expert/smart/assistant/role/workflowAgent', query: { roleId: row.id } });
   } else if (row.scriptType && row.scriptType == 'react') {  // 推荐
     router.push({ path: '/expert/smart/assistant/role/agentInference', query: { roleId: row.id } });
+  // 深度搜索
+  } else if (row.scriptType && row.scriptType == 'deepsearch') {  // 深度搜索
+    router.push({ path: '/expert/smart/assistant/role/deepSearch', query: { roleId: row.id } });
   } else {  // 脚本
     router.push({ path: '/expert/smart/assistant/role/constomScript', query: { roleId: row.id } });
   }
