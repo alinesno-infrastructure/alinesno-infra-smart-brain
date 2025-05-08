@@ -153,9 +153,9 @@ const screenRoutes = [
 // 深度搜索deepsearch
 const deepsearchRoutes = [
   {
-    path: '/deepsearch/index',
-    component: () => import('@/views/base/deepsearch/index'),
-    name: '/deepsearch/index',
+    path: '/scene/deepsearch/index',
+    component: () => import('@/views/base/scene/deepsearch/index'),
+    name: '/scene/deepsearch/index',
     meta: { title: '深度搜索', icon: 'fa-solid fa-magnifying-glass', affix: true }
   },
 ]
