@@ -34,6 +34,7 @@ var managerUrl = {
   findOrg: prefix + "findOrg",
   confirmPushOrg: prefix + "confirmPushOrg",
   saveRoleWithReActConfig: prefix + "saveRoleWithReActConfig",
+  saveRoleWithDeepSearchConfig: prefix + "saveRoleWithDeepSearchConfig",
   saveRoleWithWorkflowConfig: prefix + "saveRoleWithWorkflowConfig",
   saveRoleWithScriptConfig: prefix + "saveRoleWithScriptConfig",
   updateFlowConfig: prefix + "updateFlowConfig",
@@ -89,6 +90,15 @@ export function saveRoleWithWorkflowConfig(data) {
 export function saveRoleWithReActConfig(data) {
   return request({
     url: managerUrl.saveRoleWithReActConfig,
+    method: 'post',
+    data: data
+  })
+}
+
+// 保存DeepSearch角色配置
+export function saveRoleWithDeepSearchConfig(data) {
+  return request({
+    url: managerUrl.saveRoleWithDeepSearchConfig,
     method: 'post',
     data: data
   })
