@@ -78,7 +78,7 @@ const menuItems = ref([
   { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '工作台' },
   { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道' },
   { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景' },
-  { id: '7', icon: 'fa-solid fa-earth-americas', link: '/deepsearch/index', desc: '搜索' },
+  { id: '7', icon: 'fa-solid fa-earth-americas', link: '/scene/deepsearch/index', desc: '搜索' },
   { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体' },
   { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织' },
   { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '市场' },
