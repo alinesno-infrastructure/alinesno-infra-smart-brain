@@ -17,7 +17,7 @@ import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.utils.RoleTaskUtils;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service.IWorkerTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
