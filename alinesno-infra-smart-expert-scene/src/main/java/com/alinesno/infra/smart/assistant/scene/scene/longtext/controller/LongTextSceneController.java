@@ -6,7 +6,7 @@ import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.ChapterPromptContentRequestDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
