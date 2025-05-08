@@ -10,6 +10,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
@@ -221,7 +222,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IGeneralAgentSceneService generalAgentSceneService = SpringUtils.getBean(IGeneralAgentSceneService.class) ;
             generalAgentSceneService.updateSceneAgents(dto);
         }
-
+        // 深度检索
+        else if(sceneTypeCode.equals(SceneEnum.DEEP_SEARCH.getSceneInfo().getCode())){
+            IDeepSearchSceneService deepSearchSceneService = SpringUtils.getBean(IDeepSearchSceneService.class) ;
+            deepSearchSceneService.updateSceneAgents(dto);
+        }
 
     }
 
@@ -254,7 +259,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IGeneralAgentSceneService generalAgentSceneService = SpringUtils.getBean(IGeneralAgentSceneService.class) ;
             return generalAgentSceneService.getRoleList(dto);
         }
-
+        // 深度检索
+        else if(sceneTypeCode.equals(SceneEnum.DEEP_SEARCH.getSceneInfo().getCode())){
+            IDeepSearchSceneService deepSearchSceneService = SpringUtils.getBean(IDeepSearchSceneService.class) ;
+            return deepSearchSceneService.getRoleList(dto);
+        }
 
         return null;
     }
