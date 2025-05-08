@@ -88,9 +88,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     private IChannelService channelService ;
 
-//    @Autowired
-//    private ISceneService screenService ;
-
     @Autowired
     protected ISecretService secretService ;
 
@@ -646,6 +643,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      */
     protected void handleHistoryUserMessage(HistoriesPrompt historyPrompt, long channelId) {
 
+        // TODO 待处理消息过滤的问题
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MessageEntity::getChannelId, channelId)
                 .orderByDesc(MessageEntity::getAddTime)
