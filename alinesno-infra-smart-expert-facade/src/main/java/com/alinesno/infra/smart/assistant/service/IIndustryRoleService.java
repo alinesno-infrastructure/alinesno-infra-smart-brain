@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.RoleDeepSearchConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -161,4 +162,10 @@ public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
      * @return
      */
     List<IndustryRoleEntity> listOrgRoleAndPublicRole(PermissionQuery query);
+
+    /**
+     * 保存角色和深度搜索配置关联
+     * @param dto
+     */
+    void saveRoleWithDeepSearchConfig(RoleDeepSearchConfigDto dto);
 }
