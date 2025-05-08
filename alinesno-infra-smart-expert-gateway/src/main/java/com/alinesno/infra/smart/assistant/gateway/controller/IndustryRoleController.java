@@ -18,6 +18,7 @@ import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.*;
+import com.alinesno.infra.smart.assistant.api.config.RoleDeepSearchConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
@@ -353,6 +354,19 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
      * 保存ReActRole配置
      * @return
      */
+    @PostMapping("/saveRoleWithDeepSearchConfig")
+    public AjaxResult saveRoleWithDeepSearchConfig(@RequestBody @Validated RoleDeepSearchConfigDto dto){
+
+        log.debug("dto = {}", dto);
+        service.saveRoleWithDeepSearchConfig(dto) ;
+
+        return ok() ;
+    }
+
+    /**
+     * 保存ReActRole配置
+     * @return
+     */
     @PostMapping("/saveRoleWithReActConfig")
     public AjaxResult saveRoleWithReActConfig(@RequestBody @Validated RoleReActConfigDto dto){
 
@@ -383,17 +397,6 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
 
         return ok() ;
     }
-
-//    /**
-//     * 更新流程角色配置 updateFlowConfig
-//     * @return
-//     */
-//    @PostMapping("/updateFlowConfig")
-//    public AjaxResult updateFlowConfig(@RequestBody @Validated RoleFlowConfigDto flowConfigDto , @RequestParam Long roleId ) {
-//        log.debug("dto = {}", flowConfigDto);
-//        service.updateFlowConfig(flowConfigDto , roleId) ;
-//        return ok() ;
-//    }
 
     @Override
     public AjaxResult detail(@PathVariable String id) {
