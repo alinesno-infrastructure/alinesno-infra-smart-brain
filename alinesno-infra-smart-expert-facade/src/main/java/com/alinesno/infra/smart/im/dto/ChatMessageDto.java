@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.im.dto;
 
+import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
@@ -51,5 +52,7 @@ public class ChatMessageDto {
     private MessageUsageDto usage ;   // 角色消耗能力，包括消耗的token数，以及消耗的时长
 
     private boolean voicePlayStatus = false ; // 语音播放能力(默认为false)
+
+    private DeepSearchFlow deepSearchFlow ; // 深度搜索流程信息
 
 }
