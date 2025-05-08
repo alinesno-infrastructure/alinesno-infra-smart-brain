@@ -57,6 +57,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service(AssistantConstants.PREFIX_ASSISTANT_REACT)
 public class ReActExpertService extends ExpertService {
 
+    @Getter
     @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
