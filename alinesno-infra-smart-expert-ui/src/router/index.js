@@ -183,6 +183,12 @@ export const constantRoutes = [
         meta: { title: '自定义脚本', icon: 'dashboard', affix: true }
       },
       {
+        path: '/expert/smart/assistant/role/deepSearch',
+        component: () => import('@/views/smart/assistant/role/deepSearch'),
+        name: '/expert/smart/assistant/role/deepSearch',
+        meta: { title: '深度搜索', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/template/smart/assistant/plugin/type',
         component: () => import('@/views/smart/assistant/plugin/type'),
         name: '/template/smart/assistant/plugin/type',
