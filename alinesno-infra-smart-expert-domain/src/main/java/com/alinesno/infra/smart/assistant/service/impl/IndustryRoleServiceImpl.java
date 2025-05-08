@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
@@ -18,6 +20,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.*;
 import com.alinesno.infra.smart.assistant.api.config.GuessWhatYouAskData;
+import com.alinesno.infra.smart.assistant.api.config.RoleDeepSearchConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
@@ -274,6 +277,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             case "react" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
             case "flow" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
             case "simple" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SIMPLE);
+            case "deepsearch" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_DEEP_SEARCH); // 深度搜索
         }
 
         List<IndustryRoleEntity> allEntities = new ArrayList<>();
@@ -752,6 +756,21 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
         // 执行查询
         return list(queryWrapper);
+    }
+
+    @Override
+    public void saveRoleWithDeepSearchConfig(RoleDeepSearchConfigDto dto) {
+        IndustryRoleEntity role = getById(dto.getRoleId());
+
+        RoleReActConfigDto roleReActConfigDto = new RoleReActConfigDto();
+
+        CopyOptions copyOptions = CopyOptions.create()
+                .setIgnoreNullValue(true)
+                .setIgnoreError(true);
+        BeanUtil.copyProperties(dto, roleReActConfigDto , copyOptions) ;
+        setRoleConfigParams(roleReActConfigDto, role);
+
+        update(role);
     }
 
 }
