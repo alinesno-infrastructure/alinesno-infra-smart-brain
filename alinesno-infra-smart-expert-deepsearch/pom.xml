@@ -26,12 +26,32 @@
 			<version>${revision}</version>
 		</dependency>
 
-		<!-- 角色工具 -->
+		<!-- 引用公共门面服务 -->
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-role</artifactId>
 			<version>${revision}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-web-api</artifactId>
+			<version>${revision}</version>
+		</dependency>
+
+		<!-- 扩展引入_start -->
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-extend-datascope</artifactId>
+			<version>${revision}</version>
+		</dependency>
+		<!-- 扩展引入_end -->
 
 		<!-- 引入核心包 -->
         <dependency>
