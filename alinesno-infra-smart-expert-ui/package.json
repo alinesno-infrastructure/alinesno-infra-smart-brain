@@ -27,7 +27,7 @@
     "@vueuse/core": "9.5.0",
     "alinesno-infra-smart-expert-ui": "file:",
     "ant-design-vue": "4.2.3",
-    "axios": "0.27.2",
+    "axios": "1.8.2",
     "codemirror": "6.0.1",
     "codemirror-editor-vue3": "^2.4.1",
     "echarts": "5.4.0",
