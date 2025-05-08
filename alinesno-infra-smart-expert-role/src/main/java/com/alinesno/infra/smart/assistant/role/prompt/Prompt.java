@@ -56,7 +56,7 @@ public class Prompt {
      * @param tools
      * @return
      */
-    private static List<String> parsePlugins(List<ToolDto> tools , boolean askHumanHelp) {
+    public static List<String> parsePlugins(List<ToolDto> tools , boolean askHumanHelp) {
         List<String> toolList = new ArrayList<>() ;
 
         // 用户自定义的工具类
