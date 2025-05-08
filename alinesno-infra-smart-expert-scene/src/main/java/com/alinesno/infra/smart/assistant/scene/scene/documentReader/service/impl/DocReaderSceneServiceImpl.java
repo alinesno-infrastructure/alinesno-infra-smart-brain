@@ -2,7 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.im
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.dto.DocReaderInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.mapper.DocReaderSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
