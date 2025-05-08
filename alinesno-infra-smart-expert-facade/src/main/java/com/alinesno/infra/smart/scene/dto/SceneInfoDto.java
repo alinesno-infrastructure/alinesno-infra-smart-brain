@@ -13,8 +13,8 @@ import java.util.List;
  */
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class SceneInfoDto {
+
     // 场景的唯一标识符
     private long id;
     // 场景的名称，用于显示在界面上
@@ -33,4 +33,32 @@ public class SceneInfoDto {
     private String icon;
     // 场景关联的屏幕代理列表，表示该场景下支持的屏幕代理类型
     private List<SceneAgent> agents;
+    // 是否显示在场景选择上面
+    private boolean isShow ;
+
+    public SceneInfoDto(long id, String sceneName, String code, String sceneDescription, String integrationProgress, String isMature, String bannerLink, String icon, List<SceneAgent> agents) {
+        this.id = id;
+        this.sceneName = sceneName;
+        this.code = code;
+        this.sceneDescription = sceneDescription;
+        this.integrationProgress = integrationProgress;
+        this.isMature = isMature;
+        this.bannerLink = bannerLink;
+        this.icon = icon;
+        this.agents = agents;
+        this.isShow = true ;
+    }
+
+    public SceneInfoDto(long id, String sceneName, String code, String sceneDescription, String integrationProgress, String isMature, String bannerLink, String icon, boolean isShow, List<SceneAgent> agents ) {
+        this.id = id;
+        this.sceneName = sceneName;
+        this.code = code;
+        this.sceneDescription = sceneDescription;
+        this.integrationProgress = integrationProgress;
+        this.isMature = isMature;
+        this.bannerLink = bannerLink;
+        this.icon = icon;
+        this.agents = agents;
+        this.isShow = isShow ;
+    }
 }
