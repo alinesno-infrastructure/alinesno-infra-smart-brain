@@ -4,6 +4,7 @@ import com.alinesno.infra.base.im.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -43,14 +44,15 @@ public class SSEChannelController {
     /**
      * 监控流消息发送到前端
      * @param event
+     * @param event
      */
     @EventListener
     public void handleCustomEvent(StreamMessageEvent event) {
 
         IndustryRoleEntity role = event.getRole() ;
         MessageTaskInfo info = event.getTaskInfo() ;
+        DeepSearchFlow deepSearchFlow = info.getDeepSearchFlow() ;
 
-        long channelId = info.getChannelId() ;
         String channelStreamId = info.getChannelStreamId() ;
         String msg = event.getMessage() == null ? "" : event.getMessage() ;
 
@@ -76,6 +78,8 @@ public class SSEChannelController {
         msgDto.setUsage(info.getUsage());
         msgDto.setHasExecuteTool(info.isHasExecuteTool());
         msgDto.setMessageId(event.getMessageId());  // 设置消息ID
+
+        msgDto.setDeepSearchFlow(deepSearchFlow); // 深度搜索流程
 
         try {
             emitter.send(msgDto) ;
