@@ -58,6 +58,11 @@ function configAgent() {
 }
 
 const handleGetScene = async () => {
+
+  if(!sceneId.value){
+    return ;
+  }
+
   try {
     // 并行发起两个请求
     const [sceneRes, supportSceneRes] = await Promise.all([
@@ -129,7 +134,7 @@ defineExpose({
   align-items: center;
   gap: 10px;
   padding: 10px 20px 0px 20px;
-  justify-content: space-between;
+  justify-content: flex-end;
 }
 </style>
 
