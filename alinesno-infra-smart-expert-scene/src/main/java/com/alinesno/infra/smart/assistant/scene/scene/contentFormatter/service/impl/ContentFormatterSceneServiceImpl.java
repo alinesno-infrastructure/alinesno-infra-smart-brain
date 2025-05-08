@@ -4,7 +4,7 @@ import cn.hutool.extra.spring.SpringUtil;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
