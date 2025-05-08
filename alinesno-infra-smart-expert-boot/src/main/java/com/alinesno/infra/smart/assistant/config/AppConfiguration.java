@@ -6,6 +6,7 @@ import com.alinesno.infra.common.facade.enable.EnableActable;
 import com.alinesno.infra.common.security.api.enable.EnableInfraApiSecurity;
 import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
 import com.alinesno.infra.common.web.log.aspect.LogAspect;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.agent.DeepSearchService;
 import com.dtflys.forest.springboot.annotation.ForestScan;
 import jakarta.servlet.MultipartConfigElement;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +70,9 @@ public class AppConfiguration implements CommandLineRunner {
     @Autowired
     private BaseMemoryStore baseMemoryStore ;
 
+    @Autowired
+    private DeepSearchService deepSearchService;
+
     @Bean
     public MultipartConfigElement getMultipartConfig() {
         MultipartConfigFactory config = new MultipartConfigFactory() ;
@@ -85,6 +89,7 @@ public class AppConfiguration implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        log.debug("deepSearchService = {}" , deepSearchService);
         baseMemoryStore.createMemoryVectorIndex();
         log.info("当前向量存储引擎:{}" , vectorDatasetService.getVectorEngine());
         log.debug("项目启动完成");
