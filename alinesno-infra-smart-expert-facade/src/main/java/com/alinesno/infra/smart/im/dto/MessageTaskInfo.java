@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.im.dto;
 
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -112,6 +113,9 @@ public class MessageTaskInfo implements Serializable {
 
     // 附件列表
     private List<FileAttachmentDto> attachments ;
+
+    // 深度搜索流程
+    private DeepSearchFlow deepSearchFlow ;
 
     // 所属机构ID
     private Long orgId ;
