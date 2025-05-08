@@ -18,7 +18,7 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
-import com.alinesno.infra.smart.assistant.scene.common.utils.RoleUtils;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentContentRequestDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentSceneDto;
