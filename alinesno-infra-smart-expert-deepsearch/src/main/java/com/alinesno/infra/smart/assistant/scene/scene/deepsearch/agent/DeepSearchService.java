@@ -2,14 +2,12 @@ package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.agent;
 
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
-import com.agentsflex.core.message.HumanMessage;
 import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.ReActExpertService;
-import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
@@ -24,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -52,6 +49,9 @@ public class DeepSearchService extends ReActExpertService {
 
     @Autowired
     private WorkerHandler workerHandler ;
+
+    @Autowired
+    private OutputHandler deepSearchOutputHandler ;
 
     @Override
     protected String handleRole(IndustryRoleEntity role, MessageEntity workflowMessage, MessageTaskInfo taskInfo) {
@@ -96,6 +96,7 @@ public class DeepSearchService extends ReActExpertService {
 
                 DeepSearchFlow.Step step = new DeepSearchFlow.Step() ;
                 step.setName(task.getTaskName());
+                step.setDescription(task.getTaskDesc());
                 step.setId(task.getId());
 
                 workerHandler.setLlm(llm);
@@ -109,6 +110,10 @@ public class DeepSearchService extends ReActExpertService {
             throw new RuntimeException(e);
         }
         log.debug("output = {}" , output);
+
+        // 处理完成之后，进行output输出处理
+        DeepSearchFlow.Output deepSearchOutput = new DeepSearchFlow.Output() ;
+        deepSearchOutputHandler.handleOutput(answerOutput , deepSearchOutput) ;
 
         return StringUtils.hasLength(answerOutput.toString())? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
     }
@@ -138,9 +143,18 @@ public class DeepSearchService extends ReActExpertService {
         workerHandler.setDeepSearchFlow(deepSearchFlow) ;
         workerHandler.setToolService(getToolService()) ;
         workerHandler.setSecretKey(getSecretKey()) ;
-        workerHandler.setMaxLoopCount(getMaxLoop());
+        workerHandler.setMaxLoopCount(3);
         workerHandler.setTools(tools) ;
 
+        // outputHandler
+        deepSearchOutputHandler.setRole(getRole()) ;
+        deepSearchOutputHandler.setStreamMessagePublisher(getStreamMessagePublisher()) ;
+        deepSearchOutputHandler.setTaskInfo(getTaskInfo()) ;
+        deepSearchOutputHandler.setStepEventUtil(stepEventUtil) ;
+        deepSearchOutputHandler.setDeepSearchFlow(deepSearchFlow) ;
+        deepSearchOutputHandler.setToolService(getToolService()) ;
+        deepSearchOutputHandler.setSecretKey(getSecretKey()) ;
+        deepSearchOutputHandler.setTools(tools) ;
     }
 
 }
