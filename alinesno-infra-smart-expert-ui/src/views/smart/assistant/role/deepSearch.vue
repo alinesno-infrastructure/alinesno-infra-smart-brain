@@ -15,7 +15,7 @@
         </div>
         <el-row :gutter="20">
             <!--类型数据-->
-            <el-col :span="10" :xs="24">
+            <el-col :span="7" :xs="24">
                 <el-scrollbar class="scrollbar-style">
                     <el-card class="box-card" shadow="never">
                         <el-row>
@@ -226,10 +226,13 @@
                 </el-scrollbar>
             </el-col>
             <!--类型数据-->
-            <el-col :span="14" :xs="24">
+            <el-col :span="10" :xs="24">
                 <el-card shadow="never" class="agent-chat-box">
-                    <RoleChatPanel ref="roleChatPanelRef" />
+                    <RoleChatPanel ref="roleChatPanelRef" @pushDeepsearchFlowTracePanel="pushDeepsearchFlowTracePanel" />
                 </el-card>
+            </el-col>
+            <el-col :span="7" :xs="24">
+                <DeepSearchTracePanel ref="deepSearchTracePanelRef" />
             </el-col>
         </el-row>
     </div>
@@ -304,6 +307,7 @@ import {
 } from "@/api/smart/assistant/llmModel"
 
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+import DeepSearchTracePanel from './deepSearchTracePanel.vue'
 
 // import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
@@ -356,6 +360,9 @@ const voiceModelOptions = ref([])  // 语音播放模型
 const voiceRecoModelOptions = ref([])  // 语音播放模型
 const multiModelOptions = ref([])  // 多模态模型 
 const ocrModelOptions = ref([])  // ocr模型
+
+// DeepSearch
+const deepSearchTracePanelRef = ref(null)
 
 // 附件上传
 const uploadStatus = ref(false)
@@ -841,6 +848,11 @@ const initData = async () => {
   } catch (error) {
     console.error('handleListAllLlmModel 请求出错:', error);
   }
+}
+
+// 推送到deepsearchFlowTracePanel
+const pushDeepsearchFlowTracePanel = (item) =>{
+    deepSearchTracePanelRef.value.pushDeepsearchFlowTracePanel(item)
 }
 
 defineExpose({
