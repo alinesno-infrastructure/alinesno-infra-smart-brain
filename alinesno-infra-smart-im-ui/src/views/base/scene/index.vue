@@ -37,6 +37,7 @@
                                 <article class="scene-card">
                                     <div class="scene-image-container">
                                         <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
+                                        <!-- <img :src="'http://data.linesno.com/' + item.sceneBanner" class="scene-card-image"> -->
                                     </div>
                                     <div class="scene-card-content">
                                         <div class="scene-header">
