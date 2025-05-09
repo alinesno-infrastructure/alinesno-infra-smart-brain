@@ -30,14 +30,14 @@ public class DeepSearchSceneDto extends SceneDto {
      */
     private List<IndustryRoleDto> searchPlannerEngineers ;
 
-    /**
-     * 执行规划者ID
-     */
-    private Long searchExecutorEngineer ;
-
-    /**
-     * 执行规划者ID列表
-     */
-    private List<IndustryRoleDto> searchExecutorEngineers ;
+//    /**
+//     * 执行规划者ID
+//     */
+//    private Long searchExecutorEngineer ;
+//
+//    /**
+//     * 执行规划者ID列表
+//     */
+//    private List<IndustryRoleDto> searchExecutorEngineers ;
 
 }
