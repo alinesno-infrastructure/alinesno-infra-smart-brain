@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.Planning
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
+import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.Data;
@@ -104,8 +105,10 @@ public class PlannerHandler extends BaseHandler {
                 AiMessage message = response.getMessage();
 
                 stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
+                stepActionDto.setActionName(stepActionDto.getActionName() + " | " + goal);
                 stepActionDto.setResult(StringUtils.hasLength(message.getContent())?message.getContent():"");
                 stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent())?message.getReasoningContent():"");
+                stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
 
                 try {
                     boolean isEnd = false;
@@ -116,15 +119,16 @@ public class PlannerHandler extends BaseHandler {
                         }
                     }
 
+                    if (isEnd) {
+                        stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+                        future.complete(outputStr.get());
+                    }
+
                     DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan() ;
                     plan.addStepAction(stepActionDto);
                     getDeepSearchFlow().setPlan(plan);
 
                     getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
-
-                    if (isEnd) {
-                        future.complete(outputStr.get());
-                    }
                 } catch (Exception e) {
                     // 处理发布事件时的异常
                     log.error(e.getMessage());
@@ -159,7 +163,7 @@ public class PlannerHandler extends BaseHandler {
         params.put("plan_content", output);
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT_FORMATTED, params);
-        historyPrompt.addMessage(new HumanMessage(plannerPrompt));
+        // historyPrompt.addMessage(new HumanMessage(plannerPrompt));
 
         CompletableFuture<String> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
@@ -170,7 +174,7 @@ public class PlannerHandler extends BaseHandler {
         DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
         stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
 
-        llm.chatStream(historyPrompt, new StreamResponseListener() {
+        llm.chatStream(plannerPrompt, new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
 
@@ -179,6 +183,7 @@ public class PlannerHandler extends BaseHandler {
                 stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
                 stepActionDto.setResult(StringUtils.hasLength(message.getContent())?message.getContent():"");
                 stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent())?message.getReasoningContent():"");
+                stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
 
                 try {
                     boolean isEnd = false;
@@ -189,15 +194,16 @@ public class PlannerHandler extends BaseHandler {
                         }
                     }
 
+                    if (isEnd) {
+                        stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+                        future.complete(outputStr.get());
+                    }
+
                     DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan() ;
                     plan.addStepAction(stepActionDto);
                     getDeepSearchFlow().setPlan(plan);
 
                     getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
-
-                    if (isEnd) {
-                        future.complete(outputStr.get());
-                    }
                 } catch (Exception e) {
                     // 处理发布事件时的异常
                     log.error(e.getMessage());
