@@ -134,7 +134,7 @@ defineExpose({
   align-items: center;
   gap: 10px;
   padding: 10px 20px 0px 20px;
-  justify-content: flex-end;
+  justify-content: space-between;
 }
 </style>
 
