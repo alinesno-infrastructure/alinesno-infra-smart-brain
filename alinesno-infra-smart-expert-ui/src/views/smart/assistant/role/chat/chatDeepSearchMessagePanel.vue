@@ -1,19 +1,28 @@
 <template>
   <div class="deepsearch-app-container">
+
+
     <div class="deepsearch-message-item" v-if="deepSearchFlow.plan">
       <!-- 任务规划_start -->
       <div class="step-title">
-        <i class="fa-solid fa-compass-drafting"></i> {{ deepSearchFlow.plan.name }}
+        <i class="fa-solid fa-compass-drafting"></i> {{ deepSearchFlow.plan.name }} 
       </div>
       <div class="task-plan-panel">
-        <div class="think-panel" v-for="(item , index) in mergedActions" :key="index">
+
+        <div class="think-panel" v-for="(item , index) in mergedPlanActions" :key="index">
           <div class="think-title">
-            <i :class="item.icon"></i> {{ item.actionName + '('+ item.actionType +')'}}
+            <i :class="item.icon"></i> {{ item.actionName + '('+ item.actionType +')'}} 
           </div>
+          <div class="think-loading" v-if="item.status === 'doing'">
+            <el-button type="primary" text size="large" loading>正在生成中 ...</el-button>
+          </div>
+          <!-- 
           <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
-          <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerTraceHtml(item.result)"></div>
+          <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerHtml(item.result)"></div> 
+           -->
         </div>
-    </div>
+
+      </div>
       <!-- 任务规划_end -->
 
       <div v-if="deepSearchFlow.steps">
@@ -21,22 +30,31 @@
         <div class="step-title">
           <i class="fa-solid fa-signature"></i> 执行步骤
         </div>
+
         <div v-for="(item, index) in mergedSteps" :key="index" class="task-item">
           <div class="task-step-title">
-            <i class="fa-solid fa-arrow-right"></i> 当前步骤:
-            <span class="task-step-name"> Step{{ index + 1 }} </span> 任务名称:
+            <i class="fa-solid fa-arrow-right"></i> 当前步骤: 
+            <span class="task-step-name"> Step{{ index + 1 }} </span> 任务名称: 
             {{ item.name }}
           </div>
           <div>
+            <div class="step-desc">
+              {{ item.description }}
+            </div>
             <div class="think-loop">
               <div class="think-panel" v-for="(actionItem, actionIndex) in item.actions" :key="actionIndex">
                 <div class="think-title">
-                  <i :class="actionItem.icon"></i> {{ actionItem.actionName + '('+ actionItem.actionType +')'}}
+                  <i :class="actionItem.icon"></i> {{ actionItem.actionName + '('+ actionItem.actionType +')'}} 
                 </div>
-                <div class="say-message-body markdown-body think-content" v-if="actionItem.think" v-html="readerHtml(actionItem.think)"></div>
-                <div class="say-message-body markdown-body output-content" v-if="actionItem.result" v-html="readerHtml(actionItem.result)"></div>
+                <div class="think-loading" v-if="actionItem.status === 'doing'">
+                  <el-button type="primary" text size="large" loading>正在生成中 ...</el-button>
+                </div>
+                <!-- <div class="say-message-body markdown-body think-content" v-if="actionItem.think" v-html="readerHtml(actionItem.think)"></div>
+                <div class="say-message-body markdown-body output-content" v-if="actionItem.result" v-html="readerHtml(actionItem.result)"></div> -->
               </div>
+
             </div>
+
           </div>
         </div>
         <!-- 任务执行_end -->
@@ -48,6 +66,7 @@
           <i class="fa-solid fa-paper-plane"></i> 任务结果
         </div>
         <div class="task-result">
+
           <!-- 内容结果输出_start -->
           <div class="task-content-panel">
             <div class="think-title">
@@ -73,7 +92,7 @@
           <!-- 文件结果输出_start -->
           <div class="task-file-panel">
             <div class="think-title">
-              文件列表
+              <i class="fa-solid fa-file-word"></i> 文件列表
             </div>
             <div class="file-list-content">
               <div v-for="(item, index) in fileList" class="file-item" :key="index">
@@ -99,52 +118,71 @@
             </div>
           </div>
           <!-- 文件结果输出_end -->
+
         </div>
         <!-- 任务结果输出_start -->
       </div>
+
     </div>
 
-    <!-- 参数配置窗口 -->
+    <!-- 参数配置窗口 
     <div class="deepsearch-flow-drawer">
-      <el-drawer
-          v-model="showTracePanelDialog"
-          v-if="currentTraceContent"
-          :modal="false" size="50%"
-          style="max-width: 700px;"
-          title="运行任务动态追踪"
-          :with-header="true">
+        <el-drawer 
+            v-model="showTracePanelDialog" 
+            v-if="currentTraceContent"
+            :modal="false" size="50%" 
+            style="max-width: 700px;" 
+            title="运行任务动态追踪"
+            :with-header="true">
 
-        <div style="margin-top: 0;padding:0 !important" class="agent-chat-box  agent-inference-container">
-          <div class="say-message-body markdown-body output-content"
-               v-html="readerHtml(currentTraceContent)">
-          </div>
-        </div>
+            <div style="margin-top: 0px;padding:0px !important" class="agent-chat-box  agent-inference-container">
+                <div class="say-message-body markdown-body output-content" 
+                    v-html="readerHtml(currentTraceContent)">
+                </div>
+            </div> 
 
-      </el-drawer>
+        </el-drawer>
     </div>
+     -->
+
   </div>
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref, watch } from 'vue';
+import { defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
   deepSearchFlow: {
     type: Object,
-    required: true
+    required: true 
   },
   mdi: {
     type: Object,
-    required: true
+    required: true 
   }
 });
 
 const showTracePanelDialog = ref(true);
 const currentTraceContent = ref('');
+
+const thinkContent = ref(null)
+
 const emits = defineEmits(['update:message']);
 
-const mergedActions = ref([]);
-const mergedSteps = ref([]);
+/** 读取html文本 */
+const readerHtml = (chatText) => {
+  if (chatText) {
+    return props.mdi.render(chatText);
+  }
+}
+
+/** 读取html文本 */
+const readerTraceHtml = (chatText) => {
+  if (chatText) {
+    // return props.mdi.render(chatText);
+    currentTraceContent.value = chatText;
+  }
+}
 
 const fileList = ref([
   {
@@ -179,64 +217,83 @@ const fileList = ref([
   }
 ]);
 
-/** 读取html文本 */
-const readerHtml = (chatText) => {
-  if (chatText) {
-    return props.mdi.render(chatText);
-  }
-}
+// 计算属性：合并规划动作（按actionId拼接think和result）
+const mergedPlanActions = computed(() => {
+  const actionMap = new Map();
+  
+  (props.deepSearchFlow.plan?.actions || []).forEach(newAction => {
+    const actionId = newAction.actionId;
+    const existingAction = actionMap.get(actionId);
 
-/** 读取html文本 */
-const readerTraceHtml = (chatText) => {
-  if (chatText) {
-    currentTraceContent.value = props.mdi.render(chatText);
-  }
-}
+    if (existingAction) {
+      // 拼接think和result（保留历史内容+新增内容）
+      actionMap.set(actionId, {
+        ...existingAction,  // 保留历史属性（如icon、actionType等）
+        ...newAction,       // 用新动作覆盖非文本属性（如status、errorMsg）
+        think: `${existingAction.think || ''}${newAction.think || ''}`,  // 关键拼接逻辑
+        result: `${existingAction.result || ''}${newAction.result || ''}` // 关键拼接逻辑
+      });
+    } else {
+      // 新动作直接存入（初始化）
+      actionMap.set(actionId, { ...newAction });
+    }
+  });
 
-watch(() => props.deepSearchFlow, (newFlow) => {
-  if (!newFlow) return;
+  return Array.from(actionMap.values());
+});
 
-  if (newFlow?.plan?.actions) {
-    const actionIdMap = new Map(mergedActions.value.map(item => [item.actionId, item]));
-    newFlow.plan.actions.forEach(newAction => {
-      if (actionIdMap.has(newAction.actionId)) {
-        const existingAction = actionIdMap.get(newAction.actionId);
-        existingAction.think += newAction.think;
-        existingAction.result += newAction.result;
-      } else {
-        mergedActions.value.push({ ...newAction });
-      }
-    });
-  }
+// 计算属性：合并步骤（包含步骤内动作的think/result拼接）
+const mergedSteps = computed(() => {
+  const stepMap = new Map();
 
-  if (newFlow?.steps) {
-    const stepIdMap = new Map(mergedSteps.value.map(step => [step.id, step]));
-    newFlow.steps.forEach(newStep => {
-      let existingStep = stepIdMap.get(newStep.id);
-      if (existingStep) {
-        const actionIdMap = new Map(existingStep.actions.map(action => [action.actionId, action]));
-        newStep.actions.forEach(newAction => {
-          if (actionIdMap.has(newAction.actionId)) {
-            const existingAction = actionIdMap.get(newAction.actionId);
-            existingAction.think += newAction.think;
-            existingAction.result += newAction.result;
-          } else {
-            existingStep.actions.push({ ...newAction });
-          }
+  (props.deepSearchFlow.steps || []).forEach(newStep => {
+    const stepId = newStep.id;
+    const existingStep = stepMap.get(stepId);
+
+    // 1. 合并步骤内的动作（按actionId拼接think/result）
+    const mergedActions = newStep.actions.reduce((acc, newAction) => {
+      const actionId = newAction.actionId;
+      const existingAction = acc.get(actionId);
+
+      if (existingAction) {
+        acc.set(actionId, {
+          ...existingAction,
+          ...newAction,
+          think: `${existingAction.think || ''}${newAction.think || ''}`,
+          result: `${existingAction.result || ''}${newAction.result || ''}`
         });
       } else {
-        mergedSteps.value.push({
-          ...newStep,
-          actions: newStep.actions.map(action => ({ ...action }))
-        });
+        acc.set(actionId, { ...newAction });
       }
-    });
-  }
-}, { deep: false, immediate: true });
+      return acc;
+    }, new Map());
 
-const handleDownload = (item) => {
-  console.log('下载文件:', item.name);
+    // 2. 合并步骤本身（保留历史步骤数据+新增步骤数据）
+    if (existingStep) {
+      stepMap.set(stepId, {
+        ...existingStep,          // 保留历史步骤属性（如name、description）
+        ...newStep,               // 用新步骤覆盖状态类属性（如status）
+        actions: [                // 合并后的动作列表：历史动作+新增动作（去重）
+          ...existingStep.actions.filter(a => !mergedActions.has(a.actionId)), // 保留未重复的历史动作
+          ...Array.from(mergedActions.values())                               // 添加合并后的新动作
+        ]
+      });
+    } else {
+      stepMap.set(stepId, {
+        ...newStep,
+        actions: Array.from(mergedActions.values())
+      });
+    }
+  });
+
+  return Array.from(stepMap.values());
+});
+
+const updateDeepSearchFlow= () => {
+  const newDeepSearchFlow= { ...props.deepSearchFlow, text: '更新后的消息' };
+  emits('update:deepSearchFlow', newDeepSearchFlow);
 };
+
 </script>
 
 <style lang="scss" scoped>
@@ -247,7 +304,7 @@ const handleDownload = (item) => {
     background-color: #fafafa;
     font-weight: bold;
     margin-bottom: 10px;
-    padding: 7px;
+    padding: 10px;
     padding-left: 10px;
     border-radius: 5px;
     margin-top: 10px;
@@ -309,7 +366,7 @@ const handleDownload = (item) => {
     font-size: 14px;
     background-color: #fafafa;
     color: #444;
-    padding: 5px;
+    padding: 10px;
     margin-bottom: 10px;
     border-radius: 5px;
   }
@@ -347,6 +404,8 @@ const handleDownload = (item) => {
     gap: 8px;
     flex-direction: column;
   }
+
+
 
   .task-result{
 
@@ -423,9 +482,14 @@ const handleDownload = (item) => {
     }
   }
 
-  .agent-inference-container{
-    height: 90%;
-  }
+  .step-desc {
+    background: #fafafa;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #999;
+    padding: 10px;
+}
 
 }
 </style>
@@ -433,10 +497,10 @@ const handleDownload = (item) => {
 <style>
 .deepsearch-flow-drawer .el-drawer.ltr,
 .deepsearch-flow-drawer .el-drawer.rtl {
-    height: 90%;
-    bottom: 10px;
+    /* height: 80%;
+    bottom: 10px; */
     top: auto;
-    right: 10px;
+    /* right: 10px; */
     border-radius: 8px;
 }
 
