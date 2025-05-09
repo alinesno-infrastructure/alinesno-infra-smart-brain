@@ -46,7 +46,7 @@ public class DeepSearchSceneServiceImpl extends IBaseServiceImpl<DeepSearchScene
         Long searchExecutorEngineer = RoleUtils.findSelectAgentIdByCode(dto , "searchExecutor") ;
 
         entity.setSearchPlannerEngineer(searchPlannerEngineer); ;
-        entity.setSearchExecutorEngineer(searchExecutorEngineer); ;
+//        entity.setSearchExecutorEngineer(searchExecutorEngineer); ;
         entity.setSceneId(sceneId);
 
         entity.setOrgId(dto.getOrgId());
@@ -67,8 +67,8 @@ public class DeepSearchSceneServiceImpl extends IBaseServiceImpl<DeepSearchScene
 
             if("searchPlanner".equals(agentTypeCode)){
                 return roleService.listByIds(List.of(entity.getSearchPlannerEngineer())) ;
-            }else if("searchExecutor".equals(agentTypeCode)){
-                return roleService.listByIds(List.of(entity.getSearchExecutorEngineer())) ;
+//            }else if("searchExecutor".equals(agentTypeCode)){
+//                return roleService.listByIds(List.of(entity.getSearchExecutorEngineer())) ;
             }
         }
 
