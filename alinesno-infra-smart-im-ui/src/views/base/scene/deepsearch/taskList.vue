@@ -30,49 +30,19 @@
 <script setup>
 import { ref } from 'vue';
 
+import { 
+ listAllDeepsearchScene 
+} from '@/api/base/im/scene/deepSearch';
+
+const route = useRoute();
+const sceneId = ref(route.query.sceneId)
+
 const emits = defineEmits([
 'handleTaskClick',
 'handleNewTask'
 ])
 
-const taskList = ref([
-{
-  name: '为我推荐一款性价比较高的家庭',
-  status: 'loading',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-},
-{
-  name: '最新的AI技术学术研究情况',
-  status: 'done',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-},
-{
-  name: '请教我如何在火山引擎中实现实时搜索',
-  status: 'done',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-},
-{
-  name: '为我推荐一款性价比较高的家庭',
-  status: 'loading',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-},
-{
-  name: '最新的AI技术学术研究情况',
-  status: 'loading',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-},
-{
-  name: '请教我如何在火山引擎中实现实时搜索',
-  status: 'done',
-  log: '已执行完成，可继续对话',
-  isSelected: false
-}
-])
+const taskList = ref([])
 
 const handleTaskClick = (item) => {
   // 取消所有任务的选中状态
@@ -86,6 +56,23 @@ const addTask = () => {
   emits('handleNewTask')
   taskList.value.forEach(task => task.isSelected = false);
 }
+
+onMounted(() => {
+  listAllDeepsearchScene(sceneId.value).then(res => {
+    console.log(res)
+    taskList.value = res.data.map(item => {
+      return {
+        id: item.id,
+        name: item.taskName,
+        roleId: item.searchPlannerEngineer,
+        status: 'done',
+        log: '已执行完成，可继续对话',
+        isSelected: false
+      }
+    })
+  })
+})
+
 </script>
 
 <style lang="scss" scoped>
