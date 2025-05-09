@@ -49,6 +49,7 @@ target
 node
 dist
 node_modules
+_node_modules
 
 /.vertx/
 
