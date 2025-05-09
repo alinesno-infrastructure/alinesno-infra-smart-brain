@@ -15,10 +15,9 @@ import java.util.stream.Collectors;
 public enum SceneEnum {
 
     // 深度搜索场景(DeepSearch)
-    DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "1", "", "fa-solid fa-magnifying-glass", false ,
+    DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "1", "", "fa-solid fa-magnifying-glass", true,
             List.of(
-                    new SceneAgent(120000001L, "规划专员", "searchPlanner", "规划专员负责规划并确定问题的优先级，并确定问题的解决方式。"),
-                    new SceneAgent(120000002L, "执行专员", "searchExecutor", "执行专员负责执行规划专员规划的方案，并确保方案的执行进度。")
+                    new SceneAgent(120000001L, "深度检索专员", "searchPlanner", "规划专员负责规划并确定问题的优先级，并确定问题的解决方式。")
             )
     )),
     GENERAL_AGENT(new SceneInfoDto(110000000L, "通用智能体", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
