@@ -48,16 +48,16 @@
           :rules="rules"
         >
           <el-form-item label="场景横幅" prop="sceneBanner">
-              <el-scrollbar height="110px">
+              <el-scrollbar height="140px">
             <el-radio-group style="width:100%" v-model="saveSceneForm.sceneBanner">
 
               <el-radio
                 v-for="(image, index) in bannerImages"
-                style="height:60px"
+                style="height:70px"
                 :key="index"
                 :label="image"
               >
-                <img :src="image" alt="banner" width="90" style="border-radius: 3px;" />
+                <img :src="'http://data.linesno.com/' + image" alt="banner" width="100" style="border-radius: 3px;" />
               </el-radio>
             </el-radio-group>
               </el-scrollbar>
@@ -91,8 +91,10 @@ import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 
 import { 
   getScene, 
+  createScene,
   updateChapterPromptContent 
 } from '@/api/base/im/scene/deepSearch';
+
 import SnowflakeId from "snowflake-id";
 
 const roleSelectPanelRef = ref(null)
@@ -101,6 +103,7 @@ const route = useRoute();
 const router = useRouter();
 
 const sceneId = ref(route.query.sceneId)
+
 const isBack = ref(route.query.back || false)
 const promptText = ref('');
 
@@ -126,30 +129,30 @@ const rules = ref({
 
 // 横幅图片列表
 const bannerImages = ref([
-  'http://data.linesno.com/scene-bg/10.jpg',
-  'http://data.linesno.com/scene-bg/11.png',
-  'http://data.linesno.com/scene-bg/12.png',
-  'http://data.linesno.com/scene-bg/13.png',
-  'http://data.linesno.com/scene-bg/14.png',
-  'http://data.linesno.com/scene-bg/15.png',
-  'http://data.linesno.com/scene-bg/16.png',
-  'http://data.linesno.com/scene-bg/17.jpg',
-  'http://data.linesno.com/scene-bg/18.png',
-  'http://data.linesno.com/scene-bg/1.jpg',
-  'http://data.linesno.com/scene-bg/19.png',
-  'http://data.linesno.com/scene-bg/2.png',
-  'http://data.linesno.com/scene-bg/20.png',
-  'http://data.linesno.com/scene-bg/21.jpg',
-  'http://data.linesno.com/scene-bg/22.png',
-  'http://data.linesno.com/scene-bg/23.png',
-  'http://data.linesno.com/scene-bg/24.png',
-  'http://data.linesno.com/scene-bg/3.png',
-  'http://data.linesno.com/scene-bg/4.jpg',
-  'http://data.linesno.com/scene-bg/5.jpg',
-  'http://data.linesno.com/scene-bg/6.png',
-  'http://data.linesno.com/scene-bg/7.png',
-  'http://data.linesno.com/scene-bg/8.jpg',
-  'http://data.linesno.com/scene-bg/9.jpg'
+  'scene-bg/10.jpg',
+  'scene-bg/11.png',
+  'scene-bg/12.png',
+  'scene-bg/13.png',
+  'scene-bg/14.png',
+  'scene-bg/15.png',
+  'scene-bg/16.png',
+  'scene-bg/17.jpg',
+  'scene-bg/18.png',
+  'scene-bg/1.jpg',
+  'scene-bg/19.png',
+  'scene-bg/2.png',
+  'scene-bg/20.png',
+  'scene-bg/21.jpg',
+  'scene-bg/22.png',
+  'scene-bg/23.png',
+  'scene-bg/24.png',
+  'scene-bg/3.png',
+  'scene-bg/4.jpg',
+  'scene-bg/5.jpg',
+  'scene-bg/6.png',
+  'scene-bg/7.png',
+  'scene-bg/8.jpg',
+  'scene-bg/9.jpg'
 ]);
 
 const greetingQuestionList = ref([
@@ -175,10 +178,17 @@ const handleCloseSaveSceneDialog = () => {
 const submitForm = () => {
   saveSceneFormRef.value.validate((valid) => {
     if (valid) {
-      // 这里可以添加保存数据的逻辑，例如调用 API
+
+      saveSceneForm.value.sceneScope = 'org';
+      saveSceneForm.value.sceneType = 'deepSearch';
+
       console.log('表单数据：', saveSceneForm.value);
-      ElMessage.success('保存成功');
-      isShowSaveSceneDialog.value = false;
+
+      createScene(saveSceneForm.value).then(res => {
+        ElMessage.success('保存成功');
+        isShowSaveSceneDialog.value = false;
+      })
+
     } else {
       return false;
     }
@@ -200,14 +210,14 @@ const handleGetScene = () => {
       });
     }
 
-    if(!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer){ // 选择配置角色
+    if(!currentSceneInfo.value.searchPlannerEngineer){ // 选择配置角色
       roleSelectPanelRef.value.configAgent();
       return ;
     }
 
     if(res.data.genStatus == 1 && !isBack.value){
       router.push({
-        path: '/scene/generalAgent/agentParser',
+        path: '/scene/deepsearch/index',
         query: {
           sceneId: sceneId.value,
           genStatus: true ,
@@ -215,6 +225,7 @@ const handleGetScene = () => {
         }
       })
     }
+
   })
 }
 
@@ -229,14 +240,16 @@ const generaterText = () => {
     sceneId: sceneId.value,
     promptContent: promptText.value
   }).then(res => {
-    router.push({
-      path: '/scene/generalAgent/agentParser',
-      query: {
-        sceneId: sceneId.value,
-        genStatus: true ,
-        channelStreamId: snowflake.generate() 
-      }
-    })
+
+    // router.push({
+    //   path: '/scene/generalAgent/agentParser',
+    //   query: {
+    //     sceneId: sceneId.value,
+    //     genStatus: true ,
+    //     channelStreamId: snowflake.generate() 
+    //   }
+    // })
+
   })
 
 }
@@ -248,12 +261,14 @@ const handleExampleClick = (item) => {
 
 onMounted(() => {
 
-  if(!sceneId.value){
-    // 配置深度搜索场景
-    isShowSaveSceneDialog.value = true;
-  }else{
-    handleGetScene();
-  }
+  // if(!sceneId.value){
+  //   // 配置深度搜索场景
+  //   isShowSaveSceneDialog.value = true;
+  // }else{
+  //   handleGetScene();
+  // }
+
+  handleGetScene();
 })
 
 </script>
