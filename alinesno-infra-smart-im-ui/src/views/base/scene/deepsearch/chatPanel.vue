@@ -31,11 +31,6 @@
 
                 <div ref="innerRef">
 
-                  <!-- 输出DeepSearch内容规划_start -->
-                    <ChatDeepSearchMessagePanel />
-                  <!-- 输出DeepSearch内容规划_end -->
-
-
                   <div class="robot-chat-ai-say-box" v-for="(item, index) in messageList" @mouseover="showTools(item)" @mouseleave="hideTools(item)" :key="index">
 
                     <div class="chat-ai-header" :class="item.roleType == 'person' ? 'say-right-window' : ''">
@@ -61,7 +56,7 @@
 
                        <!-- 文件输出列表__start -->
                        <ChatAttachmentMessagePanel :message="item" @handleFileIdToMessageBox="handleFileIdToMessageBox" />
-                      <!-- 文件输出列表__end -->
+                       <!-- 文件输出列表__end -->
                       
                       <!-- 流程输出调试信息_start -->
                       <div class="chat-debugger-box" 
@@ -99,7 +94,10 @@
                       <!-- 流程输出调试信息_end -->
 
                       <!-- 输出DeepSearch内容规划_start -->
-                       <ChatDeepSearchMessagePanel :message="item" />
+                      <ChatDeepSearchMessagePanel 
+                        :mdi="mdi"
+                        v-if="item.deepSearchFlow" 
+                        :deepSearchFlow="item.deepSearchFlow" />
                       <!-- 输出DeepSearch内容规划_end -->
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
@@ -351,6 +349,10 @@ const pushResponseMessageList = (newMessage) => {
         messageList.value[existingIndex].usage = newMessage.usage;
       }
 
+      // DeepSearch 处理结果
+      messageList.value[existingIndex].deepSearchFlow = newMessage.deepSearchFlow;
+      pushDeepsearchFlowTracePanel(newMessage.deepSearchFlow) // 推送到消息跟踪面板
+
       const findMessage = messageList.value[existingIndex];
 
       if (newMessage.flowStep) {
@@ -383,6 +385,11 @@ const pushResponseMessageList = (newMessage) => {
   // 调用初始化滚动条的函数
   initChatBoxScroll();
 };
+
+// 推送到deepsearchFlowTracePanel
+const pushDeepsearchFlowTracePanel = (item) =>{
+    agentSingleRightPanelRef.value.pushDeepsearchFlowTracePanel(item)
+}
 
 function handleExecutorMessage(item){
 
@@ -611,16 +618,26 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
-onMounted(() => {
-  initChatBoxScroll();
+// watch taskItem传递过来的变化 
+watch(() => props.taskItem, (newVal, oldVal) => {
+  // 处理taskItem变化的逻辑
+  if (newVal) {
+    // 可以在这里添加任务项变化后的处理逻辑
+    console.log('Task item changed:', newVal);
 
-  roleId.value = getParam('roleId')
-  channelId.value = getParam('channelId')
+    messageList.value = [];
+    roleId.value = newVal.roleId
+    channelId.value = newVal.id ;
 
-  // handleSseConnect(channelId.value)
-  handleSseConnect(channelStreamId.value)
-  // handleGetInfo(roleId.value);
-})
+    handleSseConnect(channelStreamId.value)
+    handleGetInfo(roleId.value);
+    
+  }
+}, {
+  deep: true,  // 如果taskItem是嵌套对象，需要深度监听
+  immediate: true  // 初始化时立即执行一次
+});
+
 
 
 // 销毁信息
