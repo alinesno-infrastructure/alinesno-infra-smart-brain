@@ -25,6 +25,15 @@ var managerUrl = {
   getPreviewDocx: prefix +"getPreviewDocx",
   getPreviewUrl: prefix + "getPreviewUrl",
   createScene: prefix + "createScene" , 
+  listAllDeepsearchScene: prefix + "listAllDeepsearchScene" , 
+}
+
+// 列出所有的场景下的所有DeepSearch
+export function listAllDeepsearchScene(sceneId) {
+  return request({
+    url: managerUrl.listAllDeepsearchScene + '?sceneId=' + parseStrEmpty(sceneId) ,
+    method: 'get'
+  })
 }
 
 // 创建场景
