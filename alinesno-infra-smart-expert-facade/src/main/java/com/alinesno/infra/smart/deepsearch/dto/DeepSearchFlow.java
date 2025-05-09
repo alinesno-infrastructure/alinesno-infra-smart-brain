@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.deepsearch.dto;
 
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
+import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -106,13 +107,14 @@ public class DeepSearchFlow implements Serializable {
     @Data
     @NoArgsConstructor
     public static class StepAction {
+
         private String actionId ; // 动作ID
         private String icon ; // 动作图标
         private String actionType ; // 动作类型
         private String actionName ; // 动作名称
         private String think ; // 思考
         private String result ; // 结果
-        private boolean status; // 状态(done成功|fail失败|doing进行中)
+        private String status = StepActionStatusEnums.UNDO.getKey() ; // 状态(done成功|fail失败|doing进行中)
         private String errorMsg ; // 错误信息
 
         public void setActionType(String actionType) {
