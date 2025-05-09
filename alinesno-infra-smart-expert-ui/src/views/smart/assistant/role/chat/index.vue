@@ -212,6 +212,8 @@ import SnowflakeId from "snowflake-id";
 const snowflake = new SnowflakeId();
 const channelStreamId = ref(snowflake.generate());
 
+const emits = defineEmits(['pushDeepsearchFlowTracePanel'])
+
 const openDebuggerDialog = ref(true)
 
 const isSpeaking = ref(false)
@@ -426,8 +428,10 @@ const pushResponseMessageList = (newMessage) => {
       }
       messageList.value[existingIndex].fileAttributeList = newMessage.fileAttributeList;
 
-      // 处理搜索结果
+      // DeepSearch 处理结果
       messageList.value[existingIndex].deepSearchFlow = newMessage.deepSearchFlow;
+      emits('pushDeepsearchFlowTracePanel' , newMessage.deepSearchFlow) // 推送到消息跟踪面板
+
       const findMessage = messageList.value[existingIndex];
 
       if (newMessage.flowStep) {
