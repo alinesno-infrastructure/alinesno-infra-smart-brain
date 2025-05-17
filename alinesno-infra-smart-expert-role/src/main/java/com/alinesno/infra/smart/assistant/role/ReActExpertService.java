@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Agent推理模式
@@ -100,6 +101,7 @@ public class ReActExpertService extends ExpertService {
         int loop = 0 ;
 
         String answer = "" ; // 回答
+        String useToolName = "" ;  // 调用工具名称
         StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
 
         Llm llm = getLlm(role) ;
@@ -107,7 +109,8 @@ public class ReActExpertService extends ExpertService {
         do {
 
             oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-            eventStepMessage(loop == 0?"开始思考问题.":"第"+loop+"次思考", AgentConstants.STEP_START , oneChatId , taskInfo) ;
+
+            eventStepMessage(getStepMessage(loop , goal , useToolName), AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
             loop++;
 
@@ -137,6 +140,12 @@ public class ReActExpertService extends ExpertService {
 
                 if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
                     String observation = "" ;
+
+                    // 获取到工具名称，拼接名称起来
+                    useToolName = reactResponse.getTools().stream()
+                            .map(WorkerResponseJson.Tool::getName) // 假设Tool类中有getName()方法
+                            .collect(Collectors.joining(","));
+
                     for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
 
                         observation = reactResponse.getThought() ;
@@ -228,6 +237,14 @@ public class ReActExpertService extends ExpertService {
                 taskInfo.getTraceBusId()) ;
 
         return StringUtils.hasLength(answer)? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+    }
+
+    @NotNull
+    private static String getStepMessage(int loop, String goal , String useToolName) {
+        if(StringUtils.hasLength(useToolName)){
+            return "使用工具 | " + useToolName + " (第"+loop+"次)" ;
+        }
+        return loop == 0 ? "开始分析"+goal : "第" + loop + "次思考";
     }
 
     /**
