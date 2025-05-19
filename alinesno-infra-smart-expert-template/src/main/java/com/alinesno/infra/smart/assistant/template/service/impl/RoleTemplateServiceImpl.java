@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.enums.ToolTypeEnums;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.assistant.template.dto.RoleTemplateDto;
 import com.alinesno.infra.smart.assistant.template.dto.RoleToolInfo;
@@ -271,6 +272,9 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
     @NotNull
     private static List<ToolEntity> getToolRoleTools(List<RoleToolInfo> roleTools, IndustryRoleEntity roleEntity) {
         List<ToolEntity> toolEntityList = new ArrayList<>();
+
+        ISecretService secretService = SpringUtils.getBean(ISecretService.class);
+
         for (RoleToolInfo roleToolInfo : roleTools) {
             ToolEntity toolEntity = new ToolEntity();
 
@@ -285,7 +289,7 @@ public class RoleTemplateServiceImpl extends IBaseServiceImpl<RoleTemplateEntity
             toolEntity.setDepartmentId(roleEntity.getDepartmentId());
             toolEntity.setOperatorId(roleEntity.getOperatorId());
 
-            String toolInfo = ToolExecutor.getToolInfo(roleToolInfo.getScript());
+            String toolInfo = ToolExecutor.getToolInfo(roleToolInfo.getScript() , secretService.getByOrgId(roleEntity.getOrgId()));
             toolEntity.setToolInfo(toolInfo) ;
 
             toolEntityList.add(toolEntity);
