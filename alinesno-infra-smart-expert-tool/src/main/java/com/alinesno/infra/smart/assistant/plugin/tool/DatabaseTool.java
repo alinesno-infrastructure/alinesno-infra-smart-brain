@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.tool;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -41,15 +42,15 @@ public abstract class DatabaseTool extends Tool {
     private int maxResultLength = 5000; // 添加字段用于配置最大结果长度
 
     protected DataSource getDataSource() {
-        if (jdbcUrl == null || username == null || password == null) {
+        if (getJdbcUrl() == null || getUsername() == null || getPassword() == null) {
             log.error("数据库连接信息不完整，无法创建数据源。");
             return null;
         }
         DruidDataSource dataSource = new DruidDataSource();
         dataSource.setDriverClassName(driverName);
-        dataSource.setUrl(jdbcUrl);
-        dataSource.setUsername(username);
-        dataSource.setPassword(password);
+        dataSource.setUrl(getJdbcUrl());
+        dataSource.setUsername(getUsername());
+        dataSource.setPassword(getPassword());
 
         dataSource.setMaxWait(2000);
         dataSource.setBreakAfterAcquireFailure(true); // 连接失败后中断
@@ -105,6 +106,8 @@ public abstract class DatabaseTool extends Tool {
 
         JSONObject toolJson = new JSONObject();
         toolJson.put("name", toolName);
+        toolJson.put("id", IdUtil.nanoId(8));
+        toolJson.put("type", "stdio");  // 本地工具
         try {
             toolJson.put("databaseInfo", getDatabaseInfo());
             toolJson.put("table Structures", getAllTableStructures(getDataSource()));
