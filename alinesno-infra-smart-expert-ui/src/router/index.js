@@ -73,6 +73,12 @@ export const constantRoutes = [
         meta: { title: '全局配置', icon: 'dashboard', affix: true }
       },
       {
+        path: '/smart/assistant/config/mcpConfig',
+        component: () => import('@/views/smart/assistant/config/mcpConfig'),
+        name: '/smart/assistant/config/mcpConfig',
+        meta: { title: 'MCP配置界面', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/smart/assistant/config/globalConfig',
         component: () => import('@/views/smart/assistant/config/globalConfig'),
         name: '/smart/assistant/config/globalConfig',
