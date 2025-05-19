@@ -11,7 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
@@ -109,7 +109,7 @@ public class WorkerHandler extends BaseHandler {
 
                     ToolEntity toolEntity = getToolService().getToolScript(toolFullName , getRole().getSelectionToolsData()) ;
 
-                    Map<String, Object> argsList = tool.getArgsList();
+                    Map<String, String> argsList = tool.getArgsList();
 
                     ToolResult toolResult = null;
 
