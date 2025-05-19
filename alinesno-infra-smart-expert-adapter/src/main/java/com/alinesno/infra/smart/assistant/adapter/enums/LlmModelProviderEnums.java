@@ -4,6 +4,8 @@ import com.agentflex.ocr.aip.AipOcrModelEnums;
 import com.agentflex.vision.qwen.QwenVisionModelEnums;
 import com.agentsflex.image.doubao.DoubaoImageModelEnums;
 import com.agentsflex.image.qwen.QwenImageModelEnums;
+import com.agentsflex.llm.deepseek.DeepSeekModelEnums;
+import com.agentsflex.llm.deepseek.DeepseekLlm;
 import com.agentsflex.llm.ollama.OllamaLlmModelEnums;
 import com.agentsflex.llm.qwen.QwenLlmModelEnums;
 import com.agentsflex.llm.qwen.QwenVectorModelEnums;
@@ -39,6 +41,11 @@ public enum LlmModelProviderEnums {
             new ModelInfo(ModelTypeEnums.SPEECH_SYNTHESIS, "https://dashscope.aliyuncs.com" , QwenSpeechModelEnums.getAllModels() , 2) ,
             new ModelInfo(ModelTypeEnums.VISION_MODEL, "https://dashscope.aliyuncs.com" , QwenVisionModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.IMAGE_GENERATION, "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis" , QwenImageModelEnums.getAllModels())
+    )),
+
+    // 添加DeepSeek大模型
+    DEEPSEEK("深度求索", "deepseek", List.of(
+            new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://api.deepseek.com" , DeepSeekModelEnums.getAllModels())
     )),
 
     DOUBAO("云雀大模型", "doubao", List.of(
