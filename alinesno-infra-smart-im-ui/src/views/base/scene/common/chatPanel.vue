@@ -740,7 +740,7 @@ html pre code.hljs {
       cursor: pointer;
 
       .chat-debugger {
-        margin-bottom: 10px;
+        // margin-bottom: 10px;
         padding: 5px;
         border-radius: 6px;
         background: #fafafa;
