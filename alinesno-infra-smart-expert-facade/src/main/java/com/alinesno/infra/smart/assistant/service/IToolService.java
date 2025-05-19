@@ -6,9 +6,11 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 应用构建Service接口
@@ -46,7 +48,7 @@ public interface IToolService extends IBaseService<ToolEntity> {
      * @param selectionToolsData
      * @return
      */
-    List<ToolDto> getByToolIds(String selectionToolsData);
+    List<ToolDto> getByToolIds(String selectionToolsData, Long orgId);
 
     /**
      * 工具列表
@@ -55,4 +57,14 @@ public interface IToolService extends IBaseService<ToolEntity> {
      * @return
      */
     TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query);
+
+    /**
+     * 执行远程MCP工具
+     *
+     * @param id
+     * @param argsList
+     * @param orgId
+     * @return
+     */
+    ToolResult executeMcpTool(String id, Map<String, String> argsList, Long orgId);
 }
