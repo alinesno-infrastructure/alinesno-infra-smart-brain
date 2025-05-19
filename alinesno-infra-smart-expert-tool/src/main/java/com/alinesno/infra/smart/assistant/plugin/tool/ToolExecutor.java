@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.tool;
 
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import groovy.lang.GroovyClassLoader;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -11,7 +12,7 @@ import java.util.Map;
 @Slf4j
 public class ToolExecutor {
 
-    public static ToolResult executeGroovyScript(String script, Map<String, Object> params, Map<String, String> secretKey) throws Exception {
+    public static ToolResult executeGroovyScript(String script, Map<String, String> params, Map<String, String> secretKey) throws Exception {
        log.trace("执行脚本：{}", script);
 
         try (GroovyClassLoader loader = new GroovyClassLoader()) {
@@ -23,6 +24,7 @@ public class ToolExecutor {
 
             Tool toolInstance = (Tool) groovyClass.getDeclaredConstructor().newInstance();
             toolInstance.setSecretKey(secretKey);
+            toolInstance.initParams();
 
             String toolJson = toolInstance.toJson();
             log.debug("工具参数：{}", toolJson);
@@ -42,7 +44,7 @@ public class ToolExecutor {
     }
 
     @SneakyThrows
-    public static String getToolInfo(String script) {
+    public static String getToolInfo(String script , Map<String, String> secretKey) {
 
         log.trace("执行脚本：{}", script);
 
@@ -54,6 +56,8 @@ public class ToolExecutor {
             }
 
             Tool toolInstance = (Tool) groovyClass.getDeclaredConstructor().newInstance();
+            toolInstance.setSecretKey(secretKey);
+            toolInstance.initParams();
 
             String toolJson = toolInstance.toJson();
             log.debug("工具参数：{}", toolJson);
@@ -64,7 +68,7 @@ public class ToolExecutor {
         }
     }
 
-    private static void setParams(Tool tool, Map<String, Object> params) throws IllegalAccessException {
+    private static void setParams(Tool tool, Map<String, String> params) throws IllegalAccessException {
         Field[] fields = tool.getClass().getDeclaredFields();
         for (Field field : fields) {
             if (params.containsKey(field.getName())) {
