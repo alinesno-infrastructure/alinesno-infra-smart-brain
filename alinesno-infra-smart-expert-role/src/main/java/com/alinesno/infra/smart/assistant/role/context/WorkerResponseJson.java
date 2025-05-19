@@ -17,11 +17,18 @@ public class WorkerResponseJson {
 
     @Data // 内部类也使用Lombok的@Data注解
     public static class Tool {
+
+        @JSONField(name = "id")
+        private String id; // 对应JSON中的"id"字段
+
+        @JSONField(name = "type")
+        private String type; // 对应的工具类型,mcp或者stdio
+
         @JSONField(name = "name")
         private String name; // 对应JSON中的"name"字段
 
         @JSONField(name = "args_list")
-        private Map<String, Object> argsList; // 对应JSON中的"args_list"字段
+        private Map<String, String> argsList; // 对应JSON中的"args_list"字段
     }
 
     @JSONField(name = "tools")
