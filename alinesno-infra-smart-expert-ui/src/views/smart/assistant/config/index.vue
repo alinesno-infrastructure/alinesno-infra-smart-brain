@@ -34,7 +34,7 @@
       </div>
       <div>
         <el-row :gutter="20">
-          <el-col v-for="(item, index) in modelConfigs" :span="8">
+          <el-col v-for="(item, index) in modelConfigs" :span="8" :key="index">
             <router-link :to="item.link">
               <div :key="index" class="config-item">
                 <div class="config-icon">
@@ -123,8 +123,8 @@ const modelConfigs = [
     configName: "MCP服务配置",
     configDesc: "此配置项用于对MCP服务相关的参数和选项进行设置，以确保MCP服务的正常运行和优化使用。",
     icon: "fa-solid fa-server",
-    status:1 ,
-    link: ""
+    status: 0 ,
+    link: "/smart/assistant/config/mcpConfig"
   }
 ];
 </script>
