@@ -12,7 +12,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
@@ -44,7 +44,7 @@ public class SimpleExpertService extends ReActExpertService {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
-        List<ToolDto> tools = getToolService().getByToolIds(role.getSelectionToolsData()) ;
+        List<ToolDto> tools = getToolService().getByToolIds(role.getSelectionToolsData() , role.getOrgId()) ;
 
         HistoriesPrompt historyPrompt = new HistoriesPrompt();
         historyPrompt.setMaxAttachedMessageCount(maxHistory);
@@ -122,7 +122,7 @@ public class SimpleExpertService extends ReActExpertService {
                         log.debug("正在执行工具名称：{}" , toolFullName);
                         ToolEntity toolEntity = getToolService().getToolScript(toolFullName , role.getSelectionToolsData()) ;
 
-                        Map<String, Object> argsList = tool.getArgsList();
+                        Map<String, String> argsList = tool.getArgsList();
 
                         try {
                             ToolResult toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
