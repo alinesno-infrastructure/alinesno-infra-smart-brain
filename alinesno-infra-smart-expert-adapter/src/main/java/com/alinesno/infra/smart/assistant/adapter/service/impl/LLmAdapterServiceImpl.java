@@ -22,6 +22,8 @@ import com.agentsflex.image.qwen.QwenImageModel;
 import com.agentsflex.image.qwen.QwenImageModelConfig;
 import com.agentsflex.image.siliconflow.SiliconImageModel;
 import com.agentsflex.image.siliconflow.SiliconflowImageModelConfig;
+import com.agentsflex.llm.deepseek.DeepseekLlm;
+import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.agentsflex.llm.doubao.DoubaoLlm;
 import com.agentsflex.llm.doubao.DoubaoLlmConfig;
 import com.agentsflex.llm.ollama.OllamaLlm;
@@ -64,6 +66,7 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
         Map<String, Function<LlmConfig, Llm>> llmFactoryMap = Map.of(
                 LlmModelProviderEnums.QWEN.getCode(), qwenConfig -> createLlm(new QwenLlmConfig(), qwenConfig, QwenLlm::new),
                 LlmModelProviderEnums.DOUBAO.getCode(), doubaoAiConfig -> createLlm(new DoubaoLlmConfig(), doubaoAiConfig, DoubaoLlm::new),
+                LlmModelProviderEnums.DEEPSEEK.getCode(), deepseekAiConfig -> createLlm(new DeepseekLlmConfig(), deepseekAiConfig, DeepseekLlm::new),
                 LlmModelProviderEnums.OLLAMA.getCode(), ollamaAiConfig -> createLlm(new OllamaLlmConfig(), ollamaAiConfig, OllamaLlm::new),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), siliconAiConfig -> createLlm(new SiliconflowLlmConfig(), siliconAiConfig, SiliconflowLlm::new),
                 LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new)
