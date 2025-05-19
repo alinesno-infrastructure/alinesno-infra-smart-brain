@@ -22,7 +22,7 @@ import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.plugin.tool.ToolResult;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
@@ -53,16 +53,15 @@ import java.util.stream.Collectors;
 /**
  * Agent推理模式
  */
+@Getter
 @Scope("prototype")
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_REACT)
 public class ReActExpertService extends ExpertService {
 
-    @Getter
     @Value("${alinesno.infra.smart.assistant.maxLoop:10}")
     private int maxLoop ;
 
-    @Getter
     @Autowired
     private IToolService toolService ;
 
@@ -84,7 +83,7 @@ public class ReActExpertService extends ExpertService {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
-        List<ToolDto> tools = toolService.getByToolIds(role.getSelectionToolsData()) ;
+        List<ToolDto> tools = toolService.getByToolIds(role.getSelectionToolsData() , role.getOrgId()) ;
 
         HistoriesPrompt historyPrompt = new HistoriesPrompt();
         historyPrompt.setMaxAttachedMessageCount(maxHistory);
@@ -139,11 +138,11 @@ public class ReActExpertService extends ExpertService {
                 log.debug("reactResponse = {}" , reactResponse);
 
                 if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
-                    String observation = "" ;
+                    String observation;
 
                     // 获取到工具名称，拼接名称起来
                     useToolName = reactResponse.getTools().stream()
-                            .map(WorkerResponseJson.Tool::getName) // 假设Tool类中有getName()方法
+                            .map(tool -> tool.getName() + "(" + tool.getType() + ")")
                             .collect(Collectors.joining(","));
 
                     for(WorkerResponseJson.Tool tool : reactResponse.getTools()){
@@ -154,7 +153,7 @@ public class ReActExpertService extends ExpertService {
 
                         // 如果是咨询人类的
                         if(toolFullName.equals(AskHumanHelpTool.class.getSimpleName())){
-                            String question = tool.getArgsList().get("question")+"" ;
+                            String question = tool.getArgsList().get("question");
 
                             streamMessagePublisher.doStuffAndPublishAnEvent(question ,
                                     role,
@@ -166,13 +165,24 @@ public class ReActExpertService extends ExpertService {
                             continue;
                         }
 
-                        log.debug("正在执行工具名称：{}" , toolFullName);
-                        ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getSelectionToolsData()) ;
 
-                        Map<String, Object> argsList = tool.getArgsList();
+                        Map<String, String> argsList = tool.getArgsList();
 
                         try {
-                            ToolResult toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
+
+                            log.debug("正在执行工具名称：{}" , toolFullName);
+
+                            ToolResult toolResult = null ;
+
+                            if(tool.getType().equals("stdio")){
+                                ToolEntity toolEntity = toolService.getToolScript(toolFullName , role.getSelectionToolsData()) ;
+                                toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
+                            }else if(tool.getType().equals("mcp")){
+                                toolResult = toolService.executeMcpTool(tool.getId() , argsList , role.getOrgId()) ;
+                            }else{
+                                continue;
+                            }
+
                             Object executeToolOutput = toolResult.getOutput() ;
 
                             if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
