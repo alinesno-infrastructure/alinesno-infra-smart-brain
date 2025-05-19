@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.plugin.tool;
 
+import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.annotation.ParamInfo;
@@ -19,6 +20,14 @@ public abstract class Tool {
    * @return
    */
    public abstract String execute() ;
+
+   /**
+    * 任务执行
+    * @return
+    */
+   public void initParams(){
+      // 初始化参数
+   }
 
    /**
     * 密钥配置
@@ -42,7 +51,10 @@ public abstract class Tool {
       String toolName = toolInfo.name().isEmpty() ? getClass().getSimpleName() : toolInfo.name();
 
       JSONObject toolJson = new JSONObject();
+
+      toolJson.put("id", IdUtil.nanoId(8));
       toolJson.put("name", toolName);
+      toolJson.put("type", "stdio");  // 本地工具
       toolJson.put("description", toolInfo.description());
 
       List<JSONObject> paramDescriptions = new ArrayList<>();
