@@ -36,7 +36,7 @@
             <template #default="{ option }">
               <div class="aip-el-transfer-panel__item">
 
-                <img :src="imagePath(option.icon)" style="border-radius: 50%; width: 30px; height: 30px; margin-right: 10px;" />
+                <img :src="imagePath(option.icon)" style="border-radius: 50%; width: 30px; height: 30px;" />
                 {{ option.name }}
               </div>
             </template>
