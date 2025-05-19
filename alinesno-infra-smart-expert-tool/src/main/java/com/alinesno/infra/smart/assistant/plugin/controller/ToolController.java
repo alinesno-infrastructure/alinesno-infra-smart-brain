@@ -13,6 +13,7 @@ import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.ToolRequestDto;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
+import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
@@ -46,6 +47,9 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
 
     @Autowired
     private IToolService service;
+
+    @Autowired
+    private ISecretService secretService;
 
     /**
      * 获取ApplicationEntity的DataTables数据
@@ -120,7 +124,7 @@ public class ToolController extends BaseController<ToolEntity, IToolService> {
 
         entity.setGroovyScript(dto.getScript());
 
-        String toolInfo = ToolExecutor.getToolInfo(dto.getScript());
+        String toolInfo = ToolExecutor.getToolInfo(dto.getScript() , secretService.getByOrgId(entity.getOrgId()));
 
         entity.setToolInfo(toolInfo) ;
         entity.setToolFullName(JSONObject.parseObject(toolInfo , JSONObject.class).getString("name"));
