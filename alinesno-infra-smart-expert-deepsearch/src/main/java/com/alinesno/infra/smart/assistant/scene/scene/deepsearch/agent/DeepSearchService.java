@@ -59,7 +59,7 @@ public class DeepSearchService extends ReActExpertService {
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
         List<DeepTaskBean> taskBeans ;
-        initWorkerHandlerParams() ;
+        initWorkerHandlerParams(role.getOrgId()) ;
 
         // 解析出公共的知识库
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
@@ -121,9 +121,9 @@ public class DeepSearchService extends ReActExpertService {
     /**
      * 初始化参数
      */
-    private void initWorkerHandlerParams() {
+    private void initWorkerHandlerParams(Long orgId) {
 
-        List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData()) ;
+        List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData() , orgId) ;
 
         // 初始化规划服务参数
         plannerHandler.setRole(getRole()) ;
