@@ -22,7 +22,9 @@ public interface PromptTemplate {
             "thought": "<输出为什么在这个场景下选择这个工具的思考>",
             "tools": [
                 {
+                    "id": "<工具的ID>",
                     "name": "<工具名>",
+                    "type": "<工具类型，选项是mcp或者是stdio>",
                     "args_list": {
                         "参数名 1": "参数值 1",
                         "参数名 2": "参数值 2"
