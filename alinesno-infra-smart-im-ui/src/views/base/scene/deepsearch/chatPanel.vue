@@ -97,7 +97,9 @@
                       <ChatDeepSearchMessagePanel 
                         :mdi="mdi"
                         v-if="item.deepSearchFlow" 
-                        :deepSearchFlow="item.deepSearchFlow" />
+                        :deepSearchFlow="item.deepSearchFlow"
+                        @handleDisplayContent="handleDisplayContent"
+                         />
                       <!-- 输出DeepSearch内容规划_end -->
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
@@ -241,7 +243,7 @@ const agentSingleRightPanelRef = ref(null)
 
 const userQuestionSuggestionsRef = ref(null);
 const attachmentPanelRef = ref(null);
-const heightDiff = ref(228);
+const heightDiff = ref(218);
 
 const loading = ref(false)
 const roleId = ref(null);
@@ -639,6 +641,11 @@ watch(() => props.taskItem, (newVal, oldVal) => {
 });
 
 
+// 显示DeepSearch的内容
+function handleDisplayContent(item){
+  // emits("handleDisplayContent", item);
+  agentSingleRightPanelRef.value.handleDisplayContent(item)
+}
 
 // 销毁信息
 onBeforeUnmount(() => {
