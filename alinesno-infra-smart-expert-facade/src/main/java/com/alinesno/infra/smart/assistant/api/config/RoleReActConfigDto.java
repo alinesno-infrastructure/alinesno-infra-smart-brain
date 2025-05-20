@@ -54,6 +54,9 @@ public class RoleReActConfigDto {
     // 文件上传
     private boolean uploadStatus ;
 
+    // 文件格式输出
+    private boolean outputFileFormatStatus ;
+
     // 文件上传相关数据
     private UploadData uploadData ;
 
@@ -68,5 +71,8 @@ public class RoleReActConfigDto {
 
     // 语料搜索配置
     private DatasetSearchConfig datasetSearchConfig ;
+
+    // 文件格式输出
+    private OutputFileFormatData outputFileFormatData ;
 
 }
