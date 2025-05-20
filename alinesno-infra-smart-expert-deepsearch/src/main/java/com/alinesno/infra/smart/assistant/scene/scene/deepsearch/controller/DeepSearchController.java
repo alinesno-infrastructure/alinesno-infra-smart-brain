@@ -28,10 +28,13 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * 深度搜索控制器
@@ -126,10 +129,7 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         if(deepSearchSceneEntity != null){
 
             dto.setSearchPlannerEngineer(deepSearchSceneEntity.getSearchPlannerEngineer());
-//            dto.setSearchExecutorEngineer(deepSearchSceneEntity.getSearchExecutorEngineer());
-
             dto.setSearchPlannerEngineers(RoleUtils.getEditors(roleService , String.valueOf(deepSearchSceneEntity.getSearchPlannerEngineer()))); // 查询出当前的数据分析编辑人员
-//            dto.setSearchExecutorEngineers(RoleUtils.getEditors(roleService, String.valueOf(deepSearchSceneEntity.getSearchExecutorEngineer()))); // 查询出当前的内容编辑人员
         }
 
         return AjaxResult.success("操作成功.", dto);
@@ -150,6 +150,38 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         queryWrapper.orderByDesc(DeepSearchTaskEntity::getAddTime);
 
         return AjaxResult.success(taskService.list(queryWrapper)) ;
+    }
+
+    /**
+     * 获取存储文件预览链接
+     * @return
+     */
+    @GetMapping("/getOutputPreviewUrl")
+    public AjaxResult getStoragePreviewUrl(@RequestParam String storageId) {
+        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+        return AjaxResult.success("操作成功" , previewUrl);
+    }
+
+    /**
+     * 获取markdown内容,先获取到预览地址，然后再根据地址请求到里面的markdown内容
+     * @return
+     */
+    @GetMapping("/getOutputMarkdownContent")
+    public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
+
+        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+
+        // 设置 StringHttpMessageConverter 的编码为 UTF-8
+        restTemplate.getMessageConverters()
+                .stream()
+                .filter(converter -> converter instanceof StringHttpMessageConverter)
+                .map(converter -> (StringHttpMessageConverter) converter)
+                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
+
+        // 发送请求并获取响应，指定返回类型为 String
+        String markdownContent = restTemplate.getForObject(previewUrl, String.class);
+
+        return AjaxResult.success("操作成功" , markdownContent);
     }
 
     @Override
