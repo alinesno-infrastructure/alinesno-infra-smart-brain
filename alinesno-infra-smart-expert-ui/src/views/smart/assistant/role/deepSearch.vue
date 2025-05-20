@@ -221,6 +221,25 @@
                                 </el-col>
                             </el-row>
 
+                            <!-- 内容格式化配置_start -->
+                            <el-row class="nav-row">
+                                <el-col :span="12">
+                                    <div class="ai-config-section-title">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                        <span>内容格式化</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text bg @click="toggleOutputFileFormat">
+                                            {{ outputFileFormatStatus ? '关闭' : '开启' }}
+                                        </el-button>
+                                        <el-button v-if="outputFileFormatStatus" type="primary" text bg @click="toggleOutputFileFormatStatusPanel">参数</el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <!-- 内容格式化配置_end -->
+
                         </el-form>
                     </el-card>
                 </el-scrollbar>
@@ -228,7 +247,10 @@
             <!--类型数据-->
             <el-col :span="10" :xs="24">
                 <el-card shadow="never" class="agent-chat-box">
-                    <RoleChatPanel ref="roleChatPanelRef" @pushDeepsearchFlowTracePanel="pushDeepsearchFlowTracePanel" />
+                    <RoleChatPanel ref="roleChatPanelRef" 
+                        @pushDeepsearchFlowTracePanel="pushDeepsearchFlowTracePanel"
+                        @handleDisplayContent="handleDisplayContent"
+                        />
                 </el-card>
             </el-col>
             <el-col :span="7" :xs="24">
@@ -291,6 +313,11 @@
         <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
     </el-dialog>
 
+    <!-- 输出内容格式化 -->
+    <el-dialog title="输出内容格式化参数" v-model="outputFileFormatStatusVisible" width="600px">
+        <OutputFileFormatStatusPanel @handleOutputFileFormatStatusPanelPanelClose="handleOutputFileFormatStatusPanelPanelClose" ref="outputFileFormatRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -310,9 +337,9 @@ import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector
 import DeepSearchTracePanel from './deepSearchTracePanel.vue'
 
 // import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
+// import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
 import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
-// import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
 import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoiceTransferPanel'
 import VoiceChoicePanel from '@/views/smart/assistant/llmModel/choiceVoicePanel'
 import LllModelConfigPanel from '@/views/smart/assistant/llmModel/lllModelConfigPanel'
@@ -321,6 +348,7 @@ import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPane
 import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
 import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
 import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
+import OutputFileFormatStatusPanel from '@/views/smart/assistant/llmModel/outputFileFormatStatusPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -339,6 +367,7 @@ const voiceConfigDialogVisible = ref(false)
 const promptDialogVisible = ref(false)
 const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
+const outputFileFormatStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
 const openingPhraseStatusVisible = ref(false)
 
@@ -349,6 +378,7 @@ const toolsChoicePanelRef = ref(null)
 const roleChatPanelRef = ref(null)
 const voiceChoicePanelRef = ref(null)
 const guessWhatYouAskRef = ref(null)
+const outputFileFormatRef = ref(null)
 const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
@@ -403,6 +433,8 @@ const voicePlayStatus = ref(false);
 const voiceInputStatus = ref(false);
 // 用户问题建议开关
 const guessWhatYouAskStatus = ref(false);
+// 内容格式化开关
+const outputFileFormatStatus = ref(false);
 
 // 已选择的数据集数据
 const selectionDatasetData = ref([]);
@@ -473,6 +505,13 @@ const displayRoleInfoBack = (currentRole) =>{
     agentModelConfigForm.value.guessWhatYouAskStatus = currentRole.guessWhatYouAskStatus ;
     if(currentRole.guessWhatYouAskData){
         agentModelConfigForm.value.guessWhatYouAskData = currentRole.guessWhatYouAskData ; // JSON.parse(currentRole.guessWhatYouAskData);
+    }
+    
+    // 结果内容格式化
+    outputFileFormatStatus.value = currentRole.outputFileFormatStatus ;
+    agentModelConfigForm.value.outputFileFormatStatus = currentRole.outputFileFormatStatus ;
+    if(currentRole.outputFileFormatData){
+        agentModelConfigForm.value.outputFileFormatData = currentRole.outputFileFormatData ; // JSON.parse(currentRole.outputFileFormatData);
     }
 
     // 模型配置
@@ -716,6 +755,42 @@ function handleGuessWhatYouAskStatusPanelClose(formData) {
     }
 }
 
+// 输出内容格式格式化状态
+function toggleOutputFileFormat() {
+    outputFileFormatStatus.value = !outputFileFormatStatus.value;
+    agentModelConfigForm.value.outputFileFormatStatus = outputFileFormatStatus.value;
+
+    // 更新角色内容
+    submitModelConfig();
+}
+
+// 输出内容格式格式化窗口配置
+function toggleOutputFileFormatStatusPanel() {
+    outputFileFormatStatusVisible.value = true;
+    nextTick(() => {
+        outputFileFormatRef.value.setLlmModelOptions(llmModelOptions.value);
+
+        if(agentModelConfigForm.value.outputFileFormatData){
+            outputFileFormatRef.value.setConfigParams(agentModelConfigForm.value.outputFileFormatData);
+        }
+    });
+}
+
+// 用户问题建议窗口相关
+function handleOutputFileFormatStatusPanelPanelClose(formData) {
+    if (outputFileFormatRef.value) {
+        outputFileFormatStatusVisible.value = false ;
+
+        // const formData = guessWhatYouAskRef.value.getFormData();
+        console.log('handleOutputFileFormatStatusPanelPanelClose formData = ' + JSON.stringify(formData))
+        outputFileFormatStatus.value = formData.enable; 
+        agentModelConfigForm.value.outputFileFormatData = formData;
+
+        // 更新角色内容
+        submitModelConfig();
+    }
+}
+
 // 配置语音输入参数 
 function toggleVoiceInputStatusPanel() {
     voiceInputStatusVisible.value = !voiceInputStatusVisible.value;
@@ -853,6 +928,11 @@ const initData = async () => {
 // 推送到deepsearchFlowTracePanel
 const pushDeepsearchFlowTracePanel = (item) =>{
     deepSearchTracePanelRef.value.pushDeepsearchFlowTracePanel(item)
+}
+
+// 内容显示
+const handleDisplayContent = (item) =>{
+    deepSearchTracePanelRef.value.handleDisplayContent(item)
 }
 
 defineExpose({
