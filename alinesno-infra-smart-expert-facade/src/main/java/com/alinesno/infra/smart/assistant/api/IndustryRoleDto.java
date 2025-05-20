@@ -29,11 +29,13 @@ public class IndustryRoleDto {
     private boolean guessWhatYouAskStatus; // 是否用户问题建议
     private boolean voicePlayStatus; // 语音播放
     private boolean uploadStatus ; // 文件上传
-    private UploadData uploadData; // 文件上传配置
+    private boolean outputFileFormatStatus ; // 输出文件格式
+     private UploadData uploadData; // 文件上传配置
     private VoiceInputData voiceInputData; // 语音输入相关数据配置
     private VoicePlayData voicePlayData; // 语音播放
     private GuessWhatYouAskData guessWhatYouAskData; // 猜测用户问题相关数据配置
     private DatasetSearchConfig datasetSearchConfig ;   // 数据集搜索配置
+    private OutputFileFormatData outputFileFormatData; // 输出文件格式
     private String roleAvatar; // 角色头像
     private String roleName; // 角色名称
     private String backstory; // 角色背景
@@ -100,6 +102,11 @@ public class IndustryRoleDto {
         if (entity.getGreetingQuestion() != null) {
             List<String> knowledgeBaseIds = JSONObject.parseObject(entity.getGreetingQuestion(), new TypeReference<>() {});
             dto.setGreetingQuestion(knowledgeBaseIds);
+        }
+
+        // 输出文件格式
+        if (entity.getOutputFileFormatData() != null) {
+            dto.setOutputFileFormatData(JSONObject.parseObject(entity.getOutputFileFormatData(), OutputFileFormatData.class));
         }
 
         return dto;
