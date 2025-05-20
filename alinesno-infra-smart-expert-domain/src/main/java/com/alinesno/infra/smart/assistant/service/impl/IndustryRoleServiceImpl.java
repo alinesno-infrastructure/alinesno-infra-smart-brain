@@ -488,6 +488,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setLongTermMemoryEnabled(dto.isLongTermMemoryEnabled());
         role.setVoicePlayStatus(dto.isVoicePlayStatus());
         role.setUploadStatus(dto.isUploadStatus());
+        role.setOutputFileFormatStatus(dto.isOutputFileFormatStatus());
 
         // 开场白问题
         role.setGreetingQuestion(JSONObject.toJSONString(dto.getGreetingQuestion()));
@@ -520,6 +521,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         if(dto.getVoicePlayData() != null){
             role.setVoicePlayData(JSONObject.toJSONString(dto.getVoicePlayData()));
         }
+
+        // 输出文件格式设置
+        if(dto.getOutputFileFormatData() != null){
+            role.setOutputFileFormatData(JSONObject.toJSONString(dto.getOutputFileFormatData()));
+        }
     }
 
     /**
@@ -528,17 +534,10 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
      * @param orgId
      */
     private void clearPushRole(long roleId, long orgId) {
-
         LambdaQueryWrapper<IndustryRoleEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(IndustryRoleEntity::getOrgId, orgId);
         lambdaQueryWrapper.eq(IndustryRoleEntity::getSaleFromRoleId, roleId);
         remove(lambdaQueryWrapper);
-
-        // TODO 删除工具信息
-//        IndustryRoleEntity roleEntity = getOne(lambdaQueryWrapper) ;
-//        if(roleEntity != null){
-//            roleToolService.remove(new LambdaQueryWrapper<RoleToolEntity>().eq(RoleToolEntity::getRoleId, roleEntity.getId()));
-//        }
     }
 
     /**
