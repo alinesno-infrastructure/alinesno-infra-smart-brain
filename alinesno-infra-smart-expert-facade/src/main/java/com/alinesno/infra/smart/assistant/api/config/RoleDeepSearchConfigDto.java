@@ -47,6 +47,9 @@ public class RoleDeepSearchConfigDto {
     // 是否用户问题建议
     private boolean guessWhatYouAskStatus ;
 
+    // 输出内容格式化
+    private boolean outputFileFormatStatus ;
+
     // 语音播放
     private boolean voicePlayStatus ;
 
@@ -67,5 +70,8 @@ public class RoleDeepSearchConfigDto {
 
     // 语料搜索配置
     private DatasetSearchConfig datasetSearchConfig ;
+
+    // 输出内容格式化数据
+    private OutputFileFormatData outputFileFormatData ;
 
 }
