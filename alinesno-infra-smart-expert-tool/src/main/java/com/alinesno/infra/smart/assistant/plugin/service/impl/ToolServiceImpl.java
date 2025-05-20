@@ -237,9 +237,12 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
             List<ToolEntity> list =  pageResult.getRecords() ;
 
             // 设置list名称
-            list.forEach(tool -> tool.setName("(STDIO) "+tool.getName()));
-
-            list.addAll(mcpTools) ;
+            if(list != null && !list.isEmpty()){
+                list.forEach(tool -> tool.setName("(STDIO) "+tool.getName()));
+                list.addAll(mcpTools) ;
+            }else{
+                list = mcpTools ;
+            }
 
             pageResult.setRecords(list) ;
             pageResult.setTotal(pageResult.getTotal() + mcpTools.size()) ;
