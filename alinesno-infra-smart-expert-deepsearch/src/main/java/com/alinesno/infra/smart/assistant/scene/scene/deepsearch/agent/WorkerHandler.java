@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.Freemarke
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
+import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * 任务执行器，这里使用ReAct模式运行任务，然后获取到FinalAnswer字段
@@ -62,8 +64,6 @@ public class WorkerHandler extends BaseHandler {
      */
     public String executeTask(DeepTaskBean task) {
 
-        StringBuilder output = new StringBuilder();
-
         String answer = "";
         int loopCount = 0;
         boolean isCompleted = false;
@@ -78,6 +78,11 @@ public class WorkerHandler extends BaseHandler {
             CodeContent codeContent = codeContentList.get(0);
 
             WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
+
+            // 获取到工具名称，拼接名称起来
+            String useToolName = reactResponse.getTools().stream()
+                    .map(tool -> tool.getName() + "(" + tool.getType() + ")")
+                    .collect(Collectors.joining(","));
 
             if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
                 for (WorkerResponseJson.Tool tool : reactResponse.getTools()) {
@@ -95,8 +100,9 @@ public class WorkerHandler extends BaseHandler {
                     getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
 
                     String toolFullName = tool.getName() ;
+
                     stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
-                    stepActionDto.setActionName(stepActionDto.getActionName() + "|" + toolFullName);
+                    stepActionDto.setActionName(stepActionDto.getActionName() + "|" + useToolName);
 
                     step.addAction(stepActionDto);
 
@@ -107,14 +113,20 @@ public class WorkerHandler extends BaseHandler {
                     getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
                     log.debug("正在执行工具名称：{}" , toolFullName);
 
-                    ToolEntity toolEntity = getToolService().getToolScript(toolFullName , getRole().getSelectionToolsData()) ;
-
                     Map<String, String> argsList = tool.getArgsList();
-
                     ToolResult toolResult = null;
 
                     try {
-                        toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
+
+                        if(tool.getType().equals("stdio")){
+                            ToolEntity toolEntity = getToolService().getToolScript(toolFullName , getRole().getSelectionToolsData()) ;
+                            toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
+                        }else if(tool.getType().equals("mcp")){
+                            toolResult = getToolService().executeMcpTool(tool.getId() , argsList , getRole().getOrgId()) ;
+                        }else{
+                            continue;
+                        }
+
                         Object executeToolOutput = toolResult.getOutput() ;
                         toolOutput.append(String.format("当前执行次数[%s],使用工具[%s] \r\n执行结果:%s" , loopCount , toolFullName , executeToolOutput));
 
@@ -151,11 +163,15 @@ public class WorkerHandler extends BaseHandler {
 
             log.debug("answer = {} , isCompleted = {}" , answer , isCompleted);
 
-            loopCount++;
-        } while (loopCount < maxLoopCount);
+            if(loopCount >= maxLoopCount){
+                isCompleted = true ;
+                answer = StringUtils.hasText(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
+            }
 
+            loopCount ++ ;
+        } while (!isCompleted);
 
-        return output.toString();
+        return answer ;
 
     }
 
@@ -249,11 +265,12 @@ public class WorkerHandler extends BaseHandler {
         String taskDescription = task.getTaskDesc();
 
         Map<String, Object> params = new HashMap<>();
-        params.put("env_info", envInfo);
+        params.put("observation_info", envInfo);
+        params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());  // 知识库
         params.put("planning_detail", planningDetail);
         params.put("task_id", taskId);
         params.put("task_description", taskDescription);
-        params.put("tool_info", getTools() != null? "没有工具可用" : String.join(",", Prompt.parsePlugins(getTools(), false)));
+        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false)));
         params.put("current_time", Prompt.getCurrentTime());
         return params;
     }
