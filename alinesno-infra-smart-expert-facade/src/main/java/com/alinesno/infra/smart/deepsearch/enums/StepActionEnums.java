@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.deepsearch.enums;
 
-import com.alinesno.infra.smart.assistant.api.wechat.LinkMessage;
 import lombok.Getter;
 
 /**
@@ -8,6 +7,9 @@ import lombok.Getter;
  */
 @Getter
 public enum StepActionEnums {
+
+    // 生成HTML界面
+    GENERATE_HTML("generateHtml", "生成HTML界面", "fa-solid fa-file-code"),
 
     ANALYSIS("analysis", "问题分析", "fa-solid fa-magnifying-glass-chart"),
     PLAN("plan", "执行规划", "fa-solid fa-calendar-check"),
