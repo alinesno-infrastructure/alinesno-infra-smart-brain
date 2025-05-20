@@ -26,6 +26,24 @@ var managerUrl = {
   getPreviewUrl: prefix + "getPreviewUrl",
   createScene: prefix + "createScene" , 
   listAllDeepsearchScene: prefix + "listAllDeepsearchScene" , 
+  getOutputPreviewUrl: prefix +"getOutputPreviewUrl",
+  getOutputMarkdownContent: prefix +"getOutputMarkdownContent"
+}
+
+// 获取输出预览
+export function getOutputPreviewUrl(storageId) {
+  return request({
+    url: managerUrl.getOutputPreviewUrl + "?storageId=" + storageId,
+    method: 'get'
+  })
+}
+
+// 获取到markdown内容 
+export function getOutputMarkdownContent(storageId) {
+  return request({
+    url: managerUrl.getOutputMarkdownContent + "?storageId=" + storageId,
+    method: 'get'
+  })
 }
 
 // 列出所有的场景下的所有DeepSearch
