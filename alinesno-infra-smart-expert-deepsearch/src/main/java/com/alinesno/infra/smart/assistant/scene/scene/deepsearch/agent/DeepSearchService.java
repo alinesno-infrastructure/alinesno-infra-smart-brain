@@ -59,7 +59,6 @@ public class DeepSearchService extends ReActExpertService {
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
         List<DeepTaskBean> taskBeans ;
-        initWorkerHandlerParams(role.getOrgId()) ;
 
         // 解析出公共的知识库
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
@@ -71,6 +70,8 @@ public class DeepSearchService extends ReActExpertService {
 
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
         String datasetKnowledgeDocument = getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
+
+        initWorkerHandlerParams(role.getOrgId() , datasetKnowledgeDocument , goal) ;
 
         Llm llm = getLlm(role) ;
         StringBuilder answerOutput = new StringBuilder(); // 工具执行结果
@@ -113,7 +114,7 @@ public class DeepSearchService extends ReActExpertService {
 
         // 处理完成之后，进行output输出处理
         DeepSearchFlow.Output deepSearchOutput = new DeepSearchFlow.Output() ;
-        deepSearchOutputHandler.handleOutput(answerOutput , deepSearchOutput) ;
+        deepSearchOutputHandler.handleOutput(llm , answerOutput , deepSearchOutput , historyPrompt , goal) ;
 
         return StringUtils.hasLength(answerOutput.toString())? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
     }
@@ -121,7 +122,7 @@ public class DeepSearchService extends ReActExpertService {
     /**
      * 初始化参数
      */
-    private void initWorkerHandlerParams(Long orgId) {
+    private void initWorkerHandlerParams(Long orgId, String datasetKnowledgeDocument, String goal) {
 
         List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData() , orgId) ;
 
@@ -134,6 +135,8 @@ public class DeepSearchService extends ReActExpertService {
         plannerHandler.setToolService(getToolService()) ;
         plannerHandler.setSecretKey(getSecretKey()) ;
         plannerHandler.setTools(tools) ;
+        plannerHandler.setDatasetKnowledgeDocument(datasetKnowledgeDocument) ;
+        plannerHandler.setGoal(goal) ;
 
         // 初始化执行服务参数
         workerHandler.setRole(getRole()) ;
@@ -143,8 +146,10 @@ public class DeepSearchService extends ReActExpertService {
         workerHandler.setDeepSearchFlow(deepSearchFlow) ;
         workerHandler.setToolService(getToolService()) ;
         workerHandler.setSecretKey(getSecretKey()) ;
-        workerHandler.setMaxLoopCount(3);
+        workerHandler.setMaxLoopCount(getMaxLoop());
         workerHandler.setTools(tools) ;
+        workerHandler.setDatasetKnowledgeDocument(datasetKnowledgeDocument) ;
+        workerHandler.setGoal(goal) ;
 
         // outputHandler
         deepSearchOutputHandler.setRole(getRole()) ;
@@ -155,6 +160,9 @@ public class DeepSearchService extends ReActExpertService {
         deepSearchOutputHandler.setToolService(getToolService()) ;
         deepSearchOutputHandler.setSecretKey(getSecretKey()) ;
         deepSearchOutputHandler.setTools(tools) ;
+        deepSearchOutputHandler.setDatasetKnowledgeDocument(datasetKnowledgeDocument) ;
+        deepSearchOutputHandler.setGoal(goal) ;
+
     }
 
 }
