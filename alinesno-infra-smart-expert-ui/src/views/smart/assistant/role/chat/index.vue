@@ -40,7 +40,7 @@
                       </div>
 
                       <!-- 文件输出列表__start -->
-                      <ChatAttachmentMessagePanel :message="item" @handleFileIdToMessageBox="handleFileIdToMessageBox" />
+                      <ChatAttachmentMessagePanel :message="item"  @handleFileIdToMessageBox="handleFileIdToMessageBox"/>
                       <!-- 文件输出列表__end -->
 
                       <!-- 流程输出调试信息_start -->
@@ -82,7 +82,9 @@
                       <ChatDeepSearchMessagePanel 
                         :mdi="mdi"
                         v-if="item.deepSearchFlow" 
-                        :deepSearchFlow="item.deepSearchFlow" />
+                        :deepSearchFlow="item.deepSearchFlow"
+                        @handleDisplayContent="handleDisplayContent"
+                         />
                       <!-- 输出DeepSearch内容规划_end -->
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
@@ -646,6 +648,11 @@ function hideTools(item) {
 function setRoleInfo(newRoleInfo) {
   console.log('roleInfo = ' + newRoleInfo.voicePlayStatus)
   roleInfo.value = newRoleInfo
+}
+
+// 显示DeepSearch的内容
+function handleDisplayContent(item){
+  emits("handleDisplayContent", item);
 }
 
 onMounted(() => {
