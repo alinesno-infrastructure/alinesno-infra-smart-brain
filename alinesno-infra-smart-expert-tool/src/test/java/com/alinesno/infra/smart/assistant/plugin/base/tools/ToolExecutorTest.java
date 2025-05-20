@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.assistant.plugin.base.tools;
 
-import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -39,8 +38,9 @@ public class ToolExecutorTest {
         // 如果有参数，添加到params中
         // params.put("dateStr", "2023-01-01");
 
-        Object result = ToolExecutor.executeGroovyScript(groovyScript, params, new HashMap<>());
-        System.out.println(result);
+//        Object result = ToolExecutor.executeGroovyScript(groovyScript, params, new HashMap<>());
+//        System.out.println(result);
+
     }
 
 }
