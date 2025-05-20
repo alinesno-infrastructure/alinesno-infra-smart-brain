@@ -76,13 +76,13 @@ public class PlannerHandler extends BaseHandler {
     protected CompletableFuture<String> getAiChatResultAsync(Llm llm, HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId, String goal) {
 
         // 先获取到规划任务内容
-        String knowledgeInfo = String.format("知识库:\r\n%s" , "") ;
-        String toolsInfo = String.format("工具列表:\r\n%s" , Prompt.parsePlugins(getTools(), false)) ;
-        int maxPlannings = 5;
+        int maxPlannings = getRole().getAgentTaskPlanCount() == null ? 5 : getRole().getAgentTaskPlanCount();
 
         Map<String, Object> params = new HashMap<>();
+
         params.put("complex_task", goal);
-        params.put("env_info", knowledgeInfo + "\r\n" +  toolsInfo);
+        params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());
+        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false)));
         params.put("max_plannings", maxPlannings);
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT, params);
