@@ -14,7 +14,7 @@
             <i :class="item.icon"></i> {{ item.actionName + '('+ item.actionType +')'}} 
           </div>
           <div class="think-loading" v-if="item.status === 'doing'">
-            <el-button type="primary" text size="large" loading>正在生成中 ...</el-button>
+            <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
           </div>
           <!-- 
           <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
@@ -47,7 +47,7 @@
                   <i :class="actionItem.icon"></i> {{ actionItem.actionName + '('+ actionItem.actionType +')'}} 
                 </div>
                 <div class="think-loading" v-if="actionItem.status === 'doing'">
-                  <el-button type="primary" text size="large" loading>正在生成中 ...</el-button>
+                  <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
                 </div>
                 <!-- <div class="say-message-body markdown-body think-content" v-if="actionItem.think" v-html="readerHtml(actionItem.think)"></div>
                 <div class="say-message-body markdown-body output-content" v-if="actionItem.result" v-html="readerHtml(actionItem.result)"></div> -->
@@ -63,39 +63,31 @@
       <!-- 任务结果输出_start -->
       <div v-if="deepSearchFlow.output">
         <div class="step-title">
-          <i class="fa-solid fa-paper-plane"></i> 任务结果
+          <i class="fa-solid fa-paper-plane"></i> {{ deepSearchFlow.output.name }} 
         </div>
         <div class="task-result">
 
           <!-- 内容结果输出_start -->
-          <div class="task-content-panel">
-            <div class="think-title">
-              思考
+          <div class="task-content-panel" v-for="(item, index) in mergedOutputActions" :key="index">
+            <div class="think-title" >
+              <i :class="item.icon"></i> {{ item.actionName + '('+ item.actionType +')'}} 
             </div>
-            <div class="think-content">
-              用户需要读取并解读指定论文的重点内容，已知论文的URL，根据工具列表，“link_reader”工具可以获取网页、pdf等链接下的标题和内容，正好满足需求，所以选择该工具，参数url_list为包含该论文URL的列表。
+            <div class="think-loading" v-if="item.status === 'doing'">
+              <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
             </div>
-            <div class="output-content">
-              机器学习领域
-              重要学者：周志华（国内机器学习领域权威学者）。
-              相关文献：
-              《机器学习及其应用2007》（周志华著，2007年，清华大学出版社）：结合理论与实际案例，探讨机器学习技术的落地应用[3]。
-              《机器学习》（机械工业出版社，2013年，豆瓣评分7.4）：计算机科学与人工智能领域经典教材，覆盖主流算法与理论[6]。
-              《Generative Adversarial Networks》（生成式对抗网络）：提出GAN架构及训练理论，证明生成器数据分布的全局最优性与算法收敛性[1]。
-              总结
-              《Attention Is All You
-              Need》通过Transformer模型推动了NLP领域从传统RNN/CNN向注意力机制的范式转移，其成果与计算语言学、机器学习领域的基础理论（如翁富良等学者的著作）及技术方法如周志华的机器学习教材、GAN模型）密切相关，共同构成了现代深度学习与自然语言处理的研究基石。
-            </div>
+            <!-- <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
+            <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerHtml(item.result)"></div>  -->
           </div>
           <!-- 内容结果输出_end -->
 
           <!-- 文件结果输出_start -->
-          <div class="task-file-panel">
+          <div class="task-file-panel" v-if="deepSearchFlow.output?.attachments && deepSearchFlow.output?.attachments.length > 0">
             <div class="think-title">
               <i class="fa-solid fa-file-word"></i> 文件列表
             </div>
+
             <div class="file-list-content">
-              <div v-for="(item, index) in fileList" class="file-item" :key="index">
+              <div v-for="(item, index) in deepSearchFlow.output?.attachments" class="file-item" :key="index" @click="handleDisplayContent(item)" >
                 <div class="file-item-content">
                   <div class="icon">
                     <i :class="item.icon"></i>
@@ -105,7 +97,7 @@
                       {{ item.name }}
                     </div>
                     <div class="file-link">
-                      {{ item.downloadLink }}
+                      {{ truncateString(item.desc , 10) }}
                     </div>
                   </div>
                 </div>
@@ -116,6 +108,7 @@
                 </div>
               </div>
             </div>
+
           </div>
           <!-- 文件结果输出_end -->
 
@@ -167,7 +160,7 @@ const currentTraceContent = ref('');
 
 const thinkContent = ref(null)
 
-const emits = defineEmits(['update:message']);
+const emits = defineEmits(['update:message' , "handleDisplayContent"]);
 
 /** 读取html文本 */
 const readerHtml = (chatText) => {
@@ -184,38 +177,9 @@ const readerTraceHtml = (chatText) => {
   }
 }
 
-const fileList = ref([
-  {
-    name: '员工工资表.xlsx',
-    icon: 'fa-solid fa-file-excel',
-    downloadLink: 'employee_salary.xlsx',
-    type: 'excel'
-  },
-  {
-    name: '项目计划书.docx',
-    icon: 'fa-solid fa-file-word',
-    downloadLink: 'project_plan.docx',
-    type: 'word'
-  },
-  {
-    name: '会议记录.txt',
-    icon: 'fa-solid fa-file',
-    downloadLink: 'meeting_notes.txt',
-    type: 'txt'
-  },
-  {
-    name: '产品宣传视频.mp4',
-    icon: 'fa-solid fa-file-video',
-    downloadLink: 'product_promotion.mp4',
-    type: 'video'
-  },
-  {
-    name: '培训课程音频.mp3',
-    icon: 'fa-solid fa-file-audio',
-    downloadLink: 'training_course.mp3',
-    type: 'audio'
-  }
-]);
+const handleDisplayContent = (item) => {
+  emits("handleDisplayContent", item);
+}
 
 // 计算属性：合并规划动作（按actionId拼接think和result）
 const mergedPlanActions = computed(() => {
@@ -289,6 +253,31 @@ const mergedSteps = computed(() => {
   return Array.from(stepMap.values());
 });
 
+// 计算属性：合并规划动作（按actionId拼接think和result）
+const outputActionMap = new Map();
+const mergedOutputActions = computed(() => {
+  
+  (props.deepSearchFlow.output?.actions || []).forEach(newAction => {
+    const actionId = newAction.actionId;
+    const existingAction = outputActionMap.get(actionId);
+
+    if (existingAction) {
+      // 拼接think和result（保留历史内容+新增内容）
+      outputActionMap.set(actionId, {
+        ...existingAction,  // 保留历史属性（如icon、actionType等）
+        ...newAction,       // 用新动作覆盖非文本属性（如status、errorMsg）
+        think: existingAction.think += newAction.think , // `${existingAction.think || ''}${newAction.think || ''}`,  // 关键拼接逻辑
+        result: existingAction.result += newAction.result , // `${existingAction.result || ''}${newAction.result || ''}` // 关键拼接逻辑
+      });
+    } else {
+      // 新动作直接存入（初始化）
+      outputActionMap.set(actionId, { ...newAction });
+    }
+  });
+
+  return Array.from(outputActionMap.values());
+});
+
 const updateDeepSearchFlow= () => {
   const newDeepSearchFlow= { ...props.deepSearchFlow, text: '更新后的消息' };
   emits('update:deepSearchFlow', newDeepSearchFlow);
@@ -317,7 +306,7 @@ const updateDeepSearchFlow= () => {
     padding-left: 10px;
 
     .task-step-title {
-      display: flex;
+      // display: flex;
       align-items: center;
       gap: 5px;
       margin-top: 10px;
@@ -448,8 +437,9 @@ const updateDeepSearchFlow= () => {
       }
 
       .file-item {
-        width: calc(33% - 10px);
+        width: calc(50% - 10px);
         float: left;
+        cursor: pointer;
         color: #555;
         background: #fafafa;
         padding: 10px;
@@ -489,8 +479,13 @@ const updateDeepSearchFlow= () => {
     font-size: 13px;
     color: #999;
     padding: 10px;
+  }
+
 }
 
+.loading-btn{
+  margin-left: 0px;
+  padding-left: 0px;
 }
 </style>
 
