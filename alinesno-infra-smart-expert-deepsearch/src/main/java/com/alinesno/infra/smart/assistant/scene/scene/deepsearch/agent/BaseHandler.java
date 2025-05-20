@@ -15,6 +15,8 @@ import java.util.Map;
 @Data
 public abstract class BaseHandler {
 
+    private String goal ;
+
     private StreamMessagePublisher streamMessagePublisher;
 
     private IndustryRoleEntity role;
@@ -30,4 +32,6 @@ public abstract class BaseHandler {
     private Map<String , String> secretKey ; // 组织配置密钥
 
     private List<ToolDto> tools ;  // 工具列表
+
+    private String datasetKnowledgeDocument ; // 知识库文档内容
 }
