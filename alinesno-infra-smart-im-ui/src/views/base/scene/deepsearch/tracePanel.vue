@@ -8,17 +8,19 @@
         </el-button>
       </span>
     </div>
-    <div class="follow-step-panel">
-      <div class="step-title">
-        <span>
-          <i :class="currentStepAction.icon"></i>
-        </span>
-         &nbsp; 正在使用
+
+    <!-- 执行步骤显示 -->
+    <div class="follow-step-panel" v-if="!displayContentVisible">
+
+      <div class="step-title" v-if="currentStepAction.actionName">
+        <i :class="currentStepAction?.icon"></i> &nbsp; 正在使用
         <span class="trace-tag">{{ currentStepAction.actionName }}</span>
-        <!-- 显示
-        <span class="trace-tag">团队人员提交代码比例</span> -->
       </div>
-      <el-scrollbar class="step-body-panel" ref="scrollbarRef" >
+      <!-- <div v-else>
+          <el-empty description="还未没有执行步骤" />
+      </div> -->
+
+      <el-scrollbar class="step-body-panel" ref="scrollbarRef">
         <div class="step-body" ref="innerRef">
 
           <div class="say-message-body markdown-body think-content" v-if="currentStepAction?.think" v-html="readerHtml(currentStepAction.think)"></div>
@@ -27,6 +29,33 @@
         </div>
       </el-scrollbar>
     </div>
+
+    <!-- 内容显示 -->
+    <div class="follow-step-panel display-output-content" v-if="displayContentVisible">
+      <div class="step-title" style="justify-content: space-between;">
+        <span>
+          <i class="fa-brands fa-html5"></i>&nbsp;文件内容预览({{ displayContentType }})
+        </span>
+        <span style="margin-right: 20px;display: flex;gap: 10px;flex-direction: row;">
+          <el-button type="text" @click="hadnleOpenLink()" v-if="displayContentType === 'html'" >
+            <i class="fa-solid fa-share"></i>
+          </el-button>
+          <el-button type="text" @click="handleCopyContent()">
+            <i class="fa-solid fa-clone"></i>
+          </el-button>
+          <el-button type="text" @click="handleDownloadContent()">
+            <i class="fa-solid fa-file-arrow-down"></i>
+          </el-button>
+        </span>
+      </div>
+
+      <iframe :src="displayContentHtmlUrl" v-if="displayContentType === 'html'" />
+      <el-scrollbar class="step-body-panel" ref="scrollbarRef"  v-if="displayContentType === 'md'" >
+        <div class="say-message-body markdown-body output-content" v-html="readerHtml(displayContentMd)"></div> 
+      </el-scrollbar>
+
+    </div>
+
     <div class="follow-btn-panel">
       <el-row style="width:100%;align-items: center;">
         <el-col :span="8">
@@ -41,11 +70,12 @@
         </el-col>
         <el-col :span="16">
             <div class="step-progress-panel">
-              <el-progress :percentage="percentage" :color="customColor" />
+              <el-progress :percentage="percentage" />
             </div>
         </el-col>
       </el-row>
     </div>
+
   </div>
 </template>
 
@@ -58,11 +88,20 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import { 
+  getOutputPreviewUrl ,
+  getOutputMarkdownContent
+} from '@/api/base/im/scene/deepSearch';
+
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
 
-const percentage = ref(20)
-const customColor = ref('#909399')
+const displayContentVisible = ref(false)
+const displayContentType = ref('html')
+const displayContentHtmlUrl = ref('http://data.linesno.com/index3.html')
+const displayContentMd = ref('')
+
+const percentage = ref(0)
 
 const mdi = new MarkdownIt({
   html: true,
@@ -109,7 +148,7 @@ const currentStepActionFilter = () => {
 // 处理deepsearchFlow数据并更新stepActionList
 const processDeepsearchFlow = (flowData) => {
 
-    const planActins = flowData.plan.actions;
+    const planActins = flowData.plan?.actions;
 
     if(planActins){
         for (const action of planActins) {
@@ -150,6 +189,42 @@ const processDeepsearchFlow = (flowData) => {
         });
     }
 
+    const outputActions = flowData.output?.actions;
+    if (outputActions) {
+      for (const action of outputActions) {
+            const existingIndex = stepActionList.value.findIndex(item => item.actionId === action.actionId);
+
+            if(existingIndex !== -1){
+                stepActionList.value[existingIndex].status = action.status;
+                stepActionList.value[existingIndex].think += action.think;
+                stepActionList.value[existingIndex].result += action.result;
+            }else {
+                stepActionList.value.push(action);
+            }
+
+        }
+    }
+
+    // 附件
+    const attachments = flowData.output?.attachments;
+    if(attachments){
+        if (attachments && attachments.length > 0) {
+            const htmlAttachment = attachments.find(attachment => attachment.type === 'html');
+
+            if (htmlAttachment) {
+                displayContentType.value = 'html';
+                displayContentHtmlUrl.value = getOutputPreviewUrl(htmlAttachment.storageId);
+            }
+        }
+    }
+
+    // 判断是否所有的actions状态都为done
+    if (stepActionList.value.every(action => action.status === 'done')) {
+        percentage.value = 100;
+    } else {
+        percentage.value = Math.round((stepActionList.value.filter(action => action.status === 'done').length / stepActionList.value.length) * 100);
+    }
+
     currentStepActionFilter();
 };
 
@@ -173,13 +248,40 @@ const pushDeepsearchFlowTracePanel = (deepsearchFlowVal) => {
     processDeepsearchFlow(deepsearchFlow.value);
 };
 
-const setRoleInfo = (roleInfoVal) => {
-    console.log('roleInfo = ' + roleInfoVal);
+const hadnleOpenLink = () => {
+  window.open(displayContentHtmlUrl.value);
 };
+
+// 显示内容
+const handleDisplayContent = (item) => {
+  console.log('item = ' + JSON.stringify(item));
+
+  displayContentVisible.value = true ;
+  displayContentType.value = item.type ;
+
+  if(item.type === 'html'){
+
+    ElMessage.info("正在获取生成内容.")
+
+    getOutputPreviewUrl(item.storageId).then(res => {
+      displayContentHtmlUrl.value = res.data ; 
+    })
+
+  }else if(item.type === 'md'){
+
+    ElMessage.info("正在获取生成内容.")
+
+    getOutputMarkdownContent(item.storageId).then(res => {
+      displayContentMd.value = res.data ; 
+    })
+  }else{
+    ElMessage.warning("其它格式暂时不支持显示，可直接下载.")
+  }
+}
 
 defineExpose({
   pushDeepsearchFlowTracePanel,
-  setRoleInfo
+  handleDisplayContent
 });
 </script>
 
@@ -188,19 +290,18 @@ defineExpose({
 .task-trace-panel {
   background: #fff;
   border-radius: 8px;
+  box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.05);
   border: 1px solid var(--line-color-border-2, #eaedf1);
   padding: 10px;
-  height: calc(100% - 110px);
-  margin-top: 110px;
-  box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 12px 0px ;
-  margin-right: 10px;
+  margin-top:20px;
+  height: calc(100vh - 80px);
   
   .title {
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: #444;
-    border-bottom: 1px solid #eaedf1;
+    border-bottom: 1px solid var(--line-color-border-2, #eaedf1);
     margin-bottom: 10px;
     font-size: 18px;
     font-weight: bold;
@@ -215,12 +316,8 @@ defineExpose({
       font-size: 14px;
       margin-bottom: 15px;
       display: flex;
+      color: #555;
       align-items: center;
-      color: #333;
-      background: #fafafa;
-      padding: 8px;
-      border: 4px;
-      border-radius: 5px;
     }
     
     .trace-tag {
@@ -283,8 +380,8 @@ defineExpose({
     color: #aaa;
     border-left: 2px solid #ddd;
     padding-left: 10px;
-    font-size: 14px;
-    line-height: 1.3rem;
+    // font-size: 14px;
+    // line-height: 1.3rem;
     border-radius: 5px;
     margin-bottom: 20px;
     // margin-left:10px;
@@ -293,18 +390,17 @@ defineExpose({
   .output-content {
     color: #444;
     margin-top: 5px;
-    font-size: 14px;
-    line-height: 1.3rem;
+    // font-size: 14px;
+    // line-height: 1.3rem;
     margin-bottom: 5px;
     // margin-left:10px;
   }
 }
 
 .step-body-panel {
-  // height: calc(100vh - 280px);
-  // border: 1px solid #dedede;
-  height: calc(100vh - 370px);
+  height: calc(100vh - 250px);
   border-radius: 7px;
+  // border: 1px solid #dedede;
   padding-bottom: 20px;
 }
 
@@ -317,10 +413,21 @@ defineExpose({
 .link-item {
   margin: 7px 0px;
   font-size: 14px;
-  background: #fafafa;
+  background: #f5f5f5;
   border-radius: 5px;
   padding: 7px;
   padding-left: 10px;
   color: #666;
 }
+
+.display-output-content {
+  iframe {
+    width: 100%;
+    height: calc(100vh - 300px);
+    border: 0px;
+    margin-bottom:15px;
+    border-radius: 8px;
+  }
+}
+
 </style>
