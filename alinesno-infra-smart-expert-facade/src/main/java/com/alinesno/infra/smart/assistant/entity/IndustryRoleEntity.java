@@ -203,4 +203,29 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("功能回调脚本")
     private String functionCallbackScript ;
 
+    // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> Agent(DeepSearch)规划设计 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // Agent循环次数
+    @TableField("agent_loop_count")
+    @ColumnType(value = MySqlTypeConstant.INT, length = 11)
+    @ColumnComment("Agent循环次数")
+    private Integer agentLoopCount ;
+
+    // Agent任务规划条数
+    @TableField("agent_task_plan_count")
+    @ColumnType(value = MySqlTypeConstant.INT, length = 11)
+    @ColumnComment("Agent任务规划条数")
+    private Integer agentTaskPlanCount ;
+
+    // 是否需要格式化内容
+    @TableField("output_file_format_status")
+    @ColumnType(value = MySqlTypeConstant.INT, length = 1)
+    @ColumnComment("是否需要格式化内容")
+    private boolean outputFileFormatStatus;
+
+    // 配置输出文件格式
+    @TableField("output_file_format_data")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 255)
+    @ColumnComment("配置输出文件格式(docx/excel/md/html)")
+    private String outputFileFormatData ;
+
 }
