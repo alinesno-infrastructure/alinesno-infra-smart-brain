@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -83,8 +82,19 @@ public class DeepSearchFlow implements Serializable {
     public static class Output {
         private String name ; // 规划步骤名称
         private String description ; //  规划步骤描述
-        private List<StepAction> actions ; // 规划步骤动作列表
-        private List<FileAttachmentDto> attachments ; // 附件列表
+        private List<StepAction> actions = new ArrayList<>() ; // 规划步骤动作列表
+        private List<FileAttachmentDto> attachments =  new ArrayList<>() ; // 附件列表
+
+        public void addStepAction(StepAction stepActionDto) {
+            // 通过ActionId查询到该动作，如果是同一个则删除当前的actions，然后添加新的action
+            for (StepAction action : actions) {
+                if (action.getActionId().equals(stepActionDto.getActionId())) {
+                    actions.remove(action);
+                    break;
+                }
+            }
+            actions.add(stepActionDto);
+        }
     }
 
     /**
