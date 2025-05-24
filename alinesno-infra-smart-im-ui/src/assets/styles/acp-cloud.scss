@@ -1548,3 +1548,21 @@ $chartColor: #3b5998;
   width: 100%;
   display: flex;
 }
+
+.scene-tag{
+  display: flex;
+  align-items: center;
+}
+
+.exam-pagercontainer{
+  .exam-pager-aside{
+    padding: 0px;
+    border-right: 1px solid #f2f3f7;
+    background: #fff;
+    margin-bottom: 0px;
+  }
+
+  .exam-pager-main{
+    padding: 0px !important;
+  }
+}
