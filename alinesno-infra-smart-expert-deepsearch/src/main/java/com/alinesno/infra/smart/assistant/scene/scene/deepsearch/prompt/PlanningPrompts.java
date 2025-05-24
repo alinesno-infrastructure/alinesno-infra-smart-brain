@@ -37,6 +37,7 @@ public class PlanningPrompts {
                 }
             ]
             ```
+            当前时间:${current_time}
            """ ;
 
 //    public static final String DEFAULT_PLANNING_UPDATE_PROMPT = """
