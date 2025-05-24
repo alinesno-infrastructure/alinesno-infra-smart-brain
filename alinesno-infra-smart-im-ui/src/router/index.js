@@ -85,10 +85,40 @@ const screenRoutes = [
 
   // -->>>>>>>>>>>> 生成试卷场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
-    path: '/scene/examPaperGeneration/index',
-    component: () => import('@/views/base/scene/examPaperGeneration/index'),
-    name: '/scene/examPaperGeneration/index',
+    path: '/scene/examPager/index',
+    component: () => import('@/views/base/scene/examPager/index'),
+    name: '/scene/examPager/index',
     meta: { title: '生成试卷场景', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/agentParser',
+    component: () => import('@/views/base/scene/examPager/agentParser'),
+    name: '/scene/examPager/agentParser',
+    meta: { title: '生成试卷', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/quickPaper',
+    component: () => import('@/views/base/scene/examPager/quickPaper'),
+    name: '/scene/examPager/quickPaper',
+    meta: { title: '快速组卷', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/pagerManager',
+    component: () => import('@/views/base/scene/examPager/pagerManager'),
+    name: '/scene/examPager/pagerManager',
+    meta: { title: '试卷管理', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/examPagerView',
+    component: () => import('@/views/base/scene/examPager/examPagerView'),
+    name: '/scene/examPager/examPagerView',
+    meta: { title: '试卷编辑', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/examManager',
+    component: () => import('@/views/base/scene/examPager/examManager'),
+    name: '/scene/examPager/examManager',
+    meta: { title: '考试管理', icon: 'fa-solid fa-file-invoice', affix: true }
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
