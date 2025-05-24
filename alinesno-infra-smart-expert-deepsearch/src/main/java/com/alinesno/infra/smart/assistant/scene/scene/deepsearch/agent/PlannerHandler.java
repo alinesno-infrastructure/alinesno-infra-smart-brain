@@ -84,6 +84,7 @@ public class PlannerHandler extends BaseHandler {
         params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());
         params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false)));
         params.put("max_plannings", maxPlannings);
+        params.put("current_time", Prompt.getCurrentTime());
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT, params);
         historyPrompt.addMessage(new HumanMessage(plannerPrompt));
