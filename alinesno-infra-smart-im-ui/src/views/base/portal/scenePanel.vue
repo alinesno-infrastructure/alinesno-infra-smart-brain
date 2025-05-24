@@ -15,13 +15,6 @@
                                     <div class="scene-card-content">
                                         <div class="scene-header">
                                             <span class="scene-title">{{ item.sceneName }}</span>
-                                            <div class="scene-tag">
-                                                <!-- <span class="scene-tag-icon"></span> -->
-                                                 <el-button type="primary" size="default" text bg>
-                                                   <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
-                                                </el-button>
-                                                <!-- <span>{{ item.fieldProp }}</span> -->
-                                            </div>
                                         </div>
                                         <div class="scene-author-info">
                                                 <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
@@ -39,9 +32,14 @@
                                                 <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i class="fa-solid fa-globe" /> 公开</el-tag>
                                                 <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" /> 组织</el-tag>
                                             </div>
-                                            <div class="scene-stats">
-                                                <span>{{ item.usage_count }}</span>
-                                                <span>使用</span>
+                                            <div class="scene-tag">
+                                                 <el-button type="primary" size="small" text bg>
+                                                   <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
+                                                </el-button>
+                                                    <div class="scene-stats">
+                                                        <span>{{ item.usage_count }}</span>
+                                                        <span>使用</span>
+                                                    </div>
                                             </div>
                                         </div>
                                     </div>
@@ -112,7 +110,7 @@ defineExpose({
 
 .scene-card {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     flex-grow: 1;
     overflow: hidden;
     padding: 12px 12px 16px;
@@ -128,11 +126,9 @@ defineExpose({
 
     .scene-image-container {
         position: relative;
-        width: 100%;
+        width: 100px;
         height: 100px;
-        // height: 100px;
-        // width: 100px;
-        border-radius: 4px;
+        border-radius: 8px;
         overflow: hidden;
 
         .scene-card-image {
@@ -149,12 +145,17 @@ defineExpose({
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        width: calc(100% - 100px);
+        padding-left: 10px;
 
         .scene-header {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
             margin: 8px 0px;
+            margin-top: 0px;
+            padding-left: 0px;
+            flex-direction: column;
 
             .scene-title {
                 font-weight: 500;
