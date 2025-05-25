@@ -532,6 +532,7 @@ defineExpose({
 .pager-container {
   background-color: #fff;
   margin: 10px 10px;
+  margin-right: 0px;
   border-radius: 8px;
   height: calc(100vh - 110px);
 
