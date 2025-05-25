@@ -103,7 +103,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
-import AttachmentSetionPanel from '@/views/base/scene/common/attachmentSection'
+import AttachmentSetionPanel from '@/views/base/scene/examPager/common/attachmentSection'
 import QuestionTypeConfig from './questionTypeConfig.vue';
 import PagerGenResultPanel from './pagerGenResultPanel.vue';
 import PagerGenContainerPanel from './components/PagerGenContainer.vue';
