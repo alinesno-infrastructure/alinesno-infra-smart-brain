@@ -13,6 +13,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.I
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
@@ -193,6 +194,10 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         return this.list(queryWrapper);
     }
 
+    /**
+     * 更新场景代理
+     * @param dto
+     */
     @Override
     public void updateSceneAgents(UpdateSceneAgentDto dto) {
         String sceneTypeCode = dto.getSceneTypeCode() ;
@@ -227,9 +232,19 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IDeepSearchSceneService deepSearchSceneService = SpringUtils.getBean(IDeepSearchSceneService.class) ;
             deepSearchSceneService.updateSceneAgents(dto);
         }
+        // 培训考试
+        else if(sceneTypeCode.equals(SceneEnum.EXAM_AGENT.getSceneInfo().getCode())){
+            IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
+            examPagerSceneService.updateSceneAgents(dto);
+        }
 
     }
 
+    /**
+     * 获取角色列表
+     * @param dto
+     * @return
+     */
     @Override
     public List<IndustryRoleEntity> getRoleList(RoleListRequestDto dto) {
         String sceneTypeCode = dto.getSceneTypeCode() ;
@@ -263,6 +278,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.DEEP_SEARCH.getSceneInfo().getCode())){
             IDeepSearchSceneService deepSearchSceneService = SpringUtils.getBean(IDeepSearchSceneService.class) ;
             return deepSearchSceneService.getRoleList(dto);
+        }
+        // 培训考试
+        else if(sceneTypeCode.equals(SceneEnum.EXAM_AGENT.getSceneInfo().getCode())){
+            IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
+            return examPagerSceneService.getRoleList(dto);
         }
 
         return null;
