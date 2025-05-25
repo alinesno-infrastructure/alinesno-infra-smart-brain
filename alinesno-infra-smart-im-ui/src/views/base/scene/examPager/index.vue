@@ -13,7 +13,6 @@
           ref="roleSelectPanelRef" />
 
         <div class="main-content">
-
           <el-row>
             <el-col :span="11">
 
@@ -26,10 +25,16 @@
               <div class="input-button-section">
                 <div style="width:100%">
                   <!-- 附件内容-->
-                  <AttachmentSetionPanel style="padding: 0px 0px;margin-bottom:20px;" />
+                  <AttachmentSetionPanel 
+                    @upload-success="handleUploadSuccess"
+                    ref="attachmentPanelRef"
+                    style="padding: 0px 0px;margin-bottom:0px;" />
 
                   <!-- 文本内容 -->
-                  <el-input v-model="promptText" class="input-box" size="large" placeholder="请输入您的需求，获取智能体服务"
+                  <el-input v-model="formData.promptText" 
+                    class="input-box" 
+                    size="large" 
+                    placeholder="请输入您的需求，获取智能体服务"
                     :prefix-icon="Search" />
 
                 </div>
@@ -85,9 +90,6 @@
                 </div>
               <!-- 题目生成预览 -->
                <PagerGenContainerPanel />
-              <!-- <div class="review-question-preview">
-                <PagerGenResultPanel />
-              </div> -->
             </el-col>
           </el-row>
 
@@ -104,7 +106,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
-import AttachmentSetionPanel from '@/views/base/scene/common/attachmentSection'
+import AttachmentSetionPanel from '@/views/base/scene/examPager/common/attachmentSection'
 import QuestionTypeConfig from './questionTypeConfig.vue';
 import PagerGenResultPanel from './pagerGenResultPanel.vue';
 import PagerGenContainerPanel from './components/PagerGenContainer.vue';
@@ -114,7 +116,7 @@ import FunctionList from './functionList'
 import {
   getScene,
   updateChapterPromptContent
-} from '@/api/base/im/scene/generalAgent';
+} from '@/api/base/im/scene/examPaper';
 import SnowflakeId from "snowflake-id";
 
 const roleSelectPanelRef = ref(null)
@@ -125,8 +127,6 @@ const router = useRouter();
 const sceneId = ref(route.query.sceneId)
 const isBack = ref(route.query.back || false)
 const promptText = ref('');
-
-const sizeOptions = ['简单', '中等', '困难']
 
 const greetingQuestionList = ref([
   { text: "制定一份市场营销策划方案" },
@@ -139,21 +139,21 @@ const questionTypeSelect = ref({
     difficulty_levels: [
         {
             "id": 1,
-            "name": "简单",
+            "name": "简 单",
             "description": "基础概念，直接应用",
             "score_weight": 0.3,
             "value": "easy"
         },
         {
             "id": 2,
-            "name": "中等",
+            "name": "中 等",
             "description": "需要一定分析和综合",
             "score_weight": 0.5,
             "value": "medium"
         },
         {
             "id": 3,
-            "name": "困难",
+            "name": "困 难",
             "description": "复杂问题，需深度思考",
             "score_per_question": 0.2,
             "value": "hard"
@@ -165,8 +165,27 @@ const currentSceneInfo = ref({
   sceneName: '通用智能体服务',
 });
 
+// 添加attachmentPanelRef引用
+const attachmentPanelRef = ref(null);
+
+// 处理上传成功
+const handleUploadSuccess = (fileInfo) => {
+  console.log('文件上传成功:', fileInfo);
+  // 这里可以保存storageId到表单数据中
+  // 例如: formData.value.attachments.push(fileInfo.storageId);
+  formData.value.attachments.push(fileInfo.storageId);
+};
+
+// 修改handleUpload方法，直接调用子组件的上传
+const handleUpload = () => {
+  if (attachmentPanelRef.value) {
+    attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
+  }
+};
+
 // 场景表单信息
 const formData = ref({
+  sceneId: sceneId.value,
   difficultyLevel: 'easy',
   examStructure: [
     {
@@ -175,7 +194,8 @@ const formData = ref({
       total_questions: 5,
       score_per_question: 2
     }
-  ] // 直接使用组件内置的题型选项
+  ], // 直接使用组件内置的题型选项
+  attachments:[],
 })
 
 // 统计信息
@@ -221,32 +241,17 @@ const handleGetScene = () => {
 }
 
 const generaterText = () => {
-  if (!promptText.value) {
+  if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
     return;
   }
-  ElMessage.success('处理完成');
 
-  updateChapterPromptContent({
-    sceneId: sceneId.value,
-    promptContent: promptText.value
-  }).then(res => {
-    router.push({
-      path: '/scene/generalAgent/agentParser',
-      query: {
-        sceneId: sceneId.value,
-        genStatus: true,
-        channelStreamId: snowflake.generate()
-      }
-    })
+  updateChapterPromptContent(formData.value).then(res => {
+    console.log('res = ' + res);
+    ElMessage.success('处理完成');
   })
 
 }
-
-// const handleExampleClick = (item) => {
-//   promptText.value = item.text;
-//   // generaterText();
-// }
 
 // 计算总数
 const calculateTotals = () => {
@@ -466,5 +471,7 @@ onMounted(() => {
 <style>
 .exam-pagercontainer .input-button-section .el-input__wrapper {
   box-shadow: none !important;
+  padding: 0px;
+  margin-left: -5px;
 }
 </style>
