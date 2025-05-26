@@ -23,40 +23,55 @@ public class ExamQuestionEntity extends InfraBaseEntity {
     private Long sceneId; // 关联的场景ID
 
     @TableField
-    @Column(name = "question_type", type = MySqlTypeConstant.VARCHAR, length = 20, comment = "题目类型")
-    private String questionType; // 题目类型
+    @Column(name = "assessment_content", type = MySqlTypeConstant.TEXT, isNull = false, comment = "考核内容")
+    private String assessmentContent;
 
     @TableField
-    @Column(name = "content", type = MySqlTypeConstant.TEXT, comment = "题目内容")
-    private String content; // 题目内容
+    @Column(name = "is_required", type = MySqlTypeConstant.TINYINT, isNull = false, defaultValue = "1", comment = "是否必填：0-否，1-是")
+    private Boolean isRequired;
 
     @TableField
-    @Column(name = "options", type = MySqlTypeConstant.JSON, comment = "选项列表，适用于选择题")
-    private List<String> options; // 选项列表，适用于选择题
+    @Column(name = "score", type = MySqlTypeConstant.INT, isNull = false, defaultValue = "0", comment = "题目分数")
+    private Integer score;
 
     @TableField
-    @Column(name = "correct_answer", type = MySqlTypeConstant.TEXT, comment = "正确答案")
-    private String correctAnswer; // 正确答案
+    @Column(name = "question", type = MySqlTypeConstant.TEXT, isNull = false, comment = "问题内容")
+    private String question;
 
     @TableField
-    @Column(name = "difficulty_level", type = MySqlTypeConstant.VARCHAR, length = 10, comment = "难度等级")
-    private String difficultyLevel; // 题目难度等级
+    @Column(name = "answer_analysis", type = MySqlTypeConstant.TEXT, isNull = false, comment = "答案解析")
+    private String answerAnalysis;
 
     @TableField
-    @Column(name = "category", type = MySqlTypeConstant.VARCHAR, length = 50, comment = "题目分类")
-    private String category; // 题目分类
+    @Column(name = "type", type = MySqlTypeConstant.VARCHAR, length = 50, isNull = false, comment = "问题类型")
+    private String type;
 
     @TableField
-    @Column(name = "score", type = MySqlTypeConstant.INT, comment = "分值")
-    private Integer score; // 分值
+    @Column(name = "sort_order", type = MySqlTypeConstant.INT, isNull = false, defaultValue = "1", comment = "排序字段")
+    private Integer order;
 
     @TableField
-    @Column(name = "user_answer", type = MySqlTypeConstant.TEXT, comment = "用户回答")
-    private String userAnswer; // 用户的回答
+    @Column(name = "blanks", type = MySqlTypeConstant.TEXT, comment = "填空题空白位置信息")
+    private String blanks;
 
-    // 根据用户答题情况，分析出用户答题的问题，还有提供建议
     @TableField
-    @Column(name = "analysis", type = MySqlTypeConstant.TEXT, comment = "分析结果")
-    private String analysis;
+    @Column(name = "answers", type = MySqlTypeConstant.TEXT, comment = "答案选项信息")
+    private String answers;
+
+    @TableField
+    @Column(name = "bank_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属题库ID")
+    private Long bankId;
+
+    @TableField
+    @Column(name = "pager_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属试卷ID")
+    private Long pagerId ;
+
+    @TableField
+    @Column(name = "difficulty", type = MySqlTypeConstant.TINYINT, comment = "难度等级：1-简单，2-中等，3-困难")
+    private Integer difficulty;
+
+    @TableField
+    @Column(name = "status", type = MySqlTypeConstant.TINYINT, defaultValue = "1", comment = "状态：0-禁用，1-启用")
+    private Integer status;
 
 }
