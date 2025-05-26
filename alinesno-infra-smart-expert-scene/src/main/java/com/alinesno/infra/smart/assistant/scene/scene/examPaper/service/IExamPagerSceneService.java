@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.examPaper.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
@@ -37,4 +38,10 @@ public interface IExamPagerSceneService extends IBaseService<ExamPagerSceneEntit
      * @return
      */
     ExamPagerSceneEntity getBySceneId(long sceneId, PermissionQuery query);
+
+    /**
+     * 保存试卷
+     * @param dto
+     */
+    void savePager(ExamPaperDTO dto);
 }
