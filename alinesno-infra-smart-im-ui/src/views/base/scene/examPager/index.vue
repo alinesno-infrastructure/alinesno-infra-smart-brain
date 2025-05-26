@@ -165,6 +165,7 @@ import {
   savePagerQuestion,
   chatPromptContent
 } from '@/api/base/im/scene/examPaper';
+
 import SnowflakeId from "snowflake-id";
 
 const roleSelectPanelRef = ref(null)
