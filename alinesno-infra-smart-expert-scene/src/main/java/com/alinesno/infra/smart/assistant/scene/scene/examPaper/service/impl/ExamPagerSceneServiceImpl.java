@@ -1,7 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.QuestionDTO;
@@ -19,6 +21,7 @@ import com.alinesno.infra.smart.scene.entity.ExamQuestionBankEntity;
 import com.alinesno.infra.smart.scene.entity.ExamQuestionEntity;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,6 +122,22 @@ public class ExamPagerSceneServiceImpl extends IBaseServiceImpl<ExamPagerSceneEn
 
     }
 
+    @Override
+    public List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
+
+        page.setPageNum(0);
+        page.setPageSize(20);
+
+        Page<ExamPagerEntity> pageBean = new Page<>(page.getPageNum(), page.getPageSize());
+
+        LambdaQueryWrapper<ExamPagerEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExamPagerEntity::getOrgId, query.getOrgId()) ;
+
+        pageBean = examPagerService.page(pageBean, wrapper);
+
+        return pageBean.getRecords();
+    }
+
     /**
      * 保存题库
      * @param dto
@@ -140,6 +159,7 @@ public class ExamPagerSceneServiceImpl extends IBaseServiceImpl<ExamPagerSceneEn
             BeanUtils.copyProperties(questionDTO , e);
             e.setId(null);
             e.setBankId(examQuestionBankEntity.getId());
+            e.setSortOrder(questionDTO.getOrder());
 
             questionList.add(e);
         }
@@ -156,6 +176,7 @@ public class ExamPagerSceneServiceImpl extends IBaseServiceImpl<ExamPagerSceneEn
         String pagerName = dto.getPagerName() ;
 
         ExamPagerEntity pagerEntity = new ExamPagerEntity();
+        BeanUtils.copyProperties(dto , pagerEntity);
         pagerEntity.setTitle(pagerName);
 
         examPagerService.save(pagerEntity);
@@ -163,11 +184,20 @@ public class ExamPagerSceneServiceImpl extends IBaseServiceImpl<ExamPagerSceneEn
         List<ExamQuestionEntity> questionList = new ArrayList<>() ;
 
         List<QuestionDTO> list = dto.getQuestionList() ;
+
         for(QuestionDTO questionDTO : list){
+
             ExamQuestionEntity e = new ExamQuestionEntity() ;
+
+            BeanUtils.copyProperties(dto , e);
             BeanUtils.copyProperties(questionDTO , e);
+
             e.setId(null);
             e.setPagerId(pagerEntity.getId());
+
+            e.setAnswers(JSONObject.toJSONString(questionDTO.getAnswers()));
+            e.setBlanks(JSONObject.toJSONString(questionDTO.getBlanks()));
+            e.setSortOrder(questionDTO.getOrder());
 
             questionList.add(e);
         }
