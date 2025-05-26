@@ -44,6 +44,9 @@
                                         </div>
                                     </div>
                                 </article>
+                                <div class="scene-card-footer">
+
+                                </div>
                             </div>
                         </el-col>
 
@@ -113,7 +116,8 @@ defineExpose({
     flex-direction: row;
     flex-grow: 1;
     overflow: hidden;
-    padding: 12px 12px 16px;
+    // padding: 12px 12px 16px;
+    padding: 20px;
     border: 1px solid rgba(6, 7, 9, 0.1);
     border-radius: 8px;
     background-color: #fff;
@@ -126,9 +130,9 @@ defineExpose({
 
     .scene-image-container {
         position: relative;
-        width: 100px;
-        height: 100px;
-        border-radius: 8px;
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
         overflow: hidden;
 
         .scene-card-image {
@@ -146,13 +150,13 @@ defineExpose({
         display: flex;
         flex-direction: column;
         width: calc(100% - 100px);
-        padding-left: 10px;
+        padding-left: 20px;
 
         .scene-header {
             display: flex;
             align-items: flex-start;
             gap: 8px;
-            margin: 8px 0px;
+            margin: 4px 0px;
             margin-top: 0px;
             padding-left: 0px;
             flex-direction: column;
@@ -174,7 +178,7 @@ defineExpose({
                 padding: 2px 4px;
                 border-radius: 4px;
                 background-color: var(--coz-tag-primary);
-                color: var(--coz-fg-primary);
+                color: #999;
                 font-weight: 500;
                 font-size: 12px;
                 line-height: 16px;
@@ -237,6 +241,7 @@ defineExpose({
             -webkit-line-clamp: 2;
             -moz-line-clamp: 2;
             line-clamp: 2;
+            color: #899 ;
         }
 
         .scene-footer {
