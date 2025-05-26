@@ -18,7 +18,7 @@ var managerUrl = {
   uploadOss: prefix +"uploadOss",
   updateChapterContent: prefix +"updateChapterContent",
   dispatchAgent: prefix +"dispatchAgent",
-  updateChapterPromptContent: prefix +"updateChapterPromptContent",
+  chatPromptContent: prefix +"chatPromptContent",
   updateSceneGenStatus: prefix +"updateSceneGenStatus",
   genDataReport: prefix +"genDataReport",
   initAgents: prefix + "initAgents",
@@ -27,7 +27,35 @@ var managerUrl = {
   createScene: prefix + "createScene" , 
   listAllDeepsearchScene: prefix + "listAllDeepsearchScene" , 
   getOutputPreviewUrl: prefix +"getOutputPreviewUrl",
-  getOutputMarkdownContent: prefix +"getOutputMarkdownContent"
+  getOutputMarkdownContent: prefix +"getOutputMarkdownContent",
+  getQuestionTypes: prefix +"getQuestionTypes",
+  getQuestionCategoryList: prefix +"getQuestionCategoryList",
+  savePagerQuestion: prefix +"savePagerQuestion",
+}
+
+// 保存试卷问题类型 
+export function savePagerQuestion(data) {
+  return request({
+    url: managerUrl.savePagerQuestion,
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取问题类型
+export function getQuestionCategoryList() {
+  return request({
+    url: managerUrl.getQuestionCategoryList,
+    method: 'get'
+  })
+}
+
+// 获取问题类型
+export function getQuestionTypes() {
+  return request({
+    url: managerUrl.getQuestionTypes,
+    method: 'get'
+  })
 }
 
 // 获取输出预览
@@ -102,9 +130,9 @@ export function updateSceneGenStatus(sceneId , genStatus) {
 }
 
 // 更新prompt内容
-export function updateChapterPromptContent(data) {
+export function chatPromptContent(data) {
  return request({
-   url: managerUrl.updateChapterPromptContent ,
+   url: managerUrl.chatPromptContent ,
    method: 'post',
    data: data
  })
