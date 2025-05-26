@@ -16,9 +16,15 @@ public class ExamStructureItem {
     @NotBlank(message = "题型不能为空")
     private String type;
 
+    @NotBlank(message = "题型名称不能为空")
+    private String typeName ;
+
+    @NotBlank(message = "题型描述不能为空")
+    private String typeDesc ;
+
     @NotNull(message = "题目数量不能为空")
-    private Integer total_questions;
+    private Integer totalQuestion;
 
     @NotNull(message = "每题分数不能为空")
-    private Integer score_per_question;
+    private Integer scorePerQuestion;
 }
