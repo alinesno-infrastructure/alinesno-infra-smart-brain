@@ -11,15 +11,15 @@
       <el-option
         v-for="item in questionTypes"
         :key="item.type"
-        :label="item.type_desc"
+        :label="item.typeName"
         :value="item.type"
-      > {{ item.type_desc }}
+      > {{ item.typeName }}
     </el-option>
       </el-select>
 
       <!-- 题目数量 -->
       <el-input-number
-        v-model="item.total_questions"
+        v-model="item.totalQuestion"
         :min="1"
         :max="maxQuestionCount"
         size="large"
@@ -33,7 +33,7 @@
 
       <!-- 每题分值 -->
       <el-input-number
-        v-model="item.score_per_question"
+        v-model="item.scorePerQuestion"
         :min="1"
         :max="maxScorePerQuestion"
         size="large"
@@ -75,86 +75,17 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { ElMessage , ElMessageBox } from 'element-plus';
+
+import {
+  getQuestionTypes
+} from '@/api/base/im/scene/examPaper';
 
 const emit = defineEmits(['update:modelValue']);
 
 // 内置题型选项（可直接修改此处扩展题型）
-const questionTypes = ref([
-  {
-    type: 'radio',
-    type_desc: '单选',
-    default_total: 20, // 默认题数
-    default_score: 2 // 默认分值
-  },
-  {
-    type: 'checkbox',
-    type_desc: '多选',
-    default_total: 10,
-    default_score: 3
-  },
-  {
-    type: 'image-radio',
-    type_desc: '图片单选',
-    default_total: 5,
-    default_score: 2
-  },
-  {
-    type: 'image-file',
-    type_desc: '图片上传',
-    default_total: 3,
-    default_score: 5
-  },
-  {
-    type: 'image-checkbox',
-    type_desc: '图片多选',
-    default_total: 5,
-    default_score: 3
-  },
-  {
-    type: 'single-line',
-    type_desc: '单行文本',
-    default_total: 10,
-    default_score: 3
-  },
-  {
-    type: 'multi-line',
-    type_desc: '多行文本',
-    default_total: 8,
-    default_score: 5
-  },
-  {
-    type: 'multi-fill',
-    type_desc: '多项填空',
-    default_total: 10,
-    default_score: 2
-  },
-  {
-    type: 'datetime',
-    type_desc: '日期时间',
-    default_total: 5,
-    default_score: 2
-  },
-  {
-    type: 'location',
-    type_desc: '位置',
-    default_total: 3,
-    default_score: 4
-  },
-  {
-    type: 'dynamic-table',
-    type_desc: '动态表单',
-    default_total: 2,
-    default_score: 10
-  },
-  {
-    type: 'description',
-    type_desc: '内容分析',
-    default_total: 2,
-    default_score: 15
-  }
-]);
+const questionTypes = ref([]);
 
 // 接收 props
 const props = defineProps({
@@ -191,8 +122,10 @@ const handleAddQuestionType = () => {
   examStructure.value.push({
     id: newId,
     type: defaultType.type,
-    total_questions: defaultType.default_total,
-    score_per_question: defaultType.default_score
+    typeName: defaultType.typeName,
+    typeDesc: defaultType.typeDesc,
+    totalQuestion: defaultType.defaultTotal,
+    scorePerQuestion: defaultType.defaultScore
   });
 };
 
@@ -218,6 +151,17 @@ const handleDeleteQuestion = async (index) => {
 
 // 数据变化时通知父组件
 watch(examStructure, (newVal) => {
+
+  // 修改newVal的typeName和typeDesc，使得与type对应上
+  examStructure.value.forEach(item => {
+    const type = item.type;
+    const typeInfo = questionTypes.value.find(t => t.type === type);
+    if (typeInfo) {
+      item.typeName = typeInfo.typeName;
+      item.typeDesc = typeInfo.typeDesc;
+    }
+  });
+
   emit('update:modelValue', newVal);
   // 新增：计算并发送统计信息
   const stats = calculateStats(newVal);
@@ -227,8 +171,8 @@ watch(examStructure, (newVal) => {
 // 计算统计信息
 const calculateStats = (items) => {
   return items.reduce((acc, item) => {
-    acc.totalQuestions += item.total_questions || 0;
-    acc.totalScore += (item.total_questions || 0) * (item.score_per_question || 0);
+    acc.totalQuestions += item.totalQuestion || 0;
+    acc.totalScore += (item.totalQuestion || 0) * (item.scorePerQuestion || 0);
     return acc;
   }, { totalQuestions: 0, totalScore: 0 });
 };
@@ -242,18 +186,18 @@ onMounted(() => {
 // // 输入值校验
 // const handleInputChange = (val, item) => {
 //   // 整数校验
-//   if (!Number.isInteger(item.total_questions)) {
-//     item.total_questions = item.total_questions || 1;
+//   if (!Number.isInteger(item.totalQuestion)) {
+//     item.totalQuestion = item.totalQuestion || 1;
 //     ElMessage.warning('题数必须为整数，已自动修正为最小值');
 //   }
-//   if (!Number.isInteger(item.score_per_question)) {
-//     item.score_per_question = item.score_per_question || 1;
+//   if (!Number.isInteger(item.scorePerQuestion)) {
+//     item.scorePerQuestion = item.scorePerQuestion || 1;
 //     ElMessage.warning('分值必须为整数，已自动修正为最小值');
 //   }
   
 //   // 边界值校验
-//   item.total_questions = Math.max(1, Math.min(item.total_questions, props.maxQuestionCount));
-//   item.score_per_question = Math.max(1, Math.min(item.score_per_question, props.maxScorePerQuestion));
+//   item.totalQuestion = Math.max(1, Math.min(item.totalQuestion, props.maxQuestionCount));
+//   item.scorePerQuestion = Math.max(1, Math.min(item.scorePerQuestion, props.maxScorePerQuestion));
 // };
 
 // 修改后的正确代码
@@ -261,24 +205,30 @@ const handleInputChange = (val) => {
   // 不需要item参数，因为v-model已经绑定了
   examStructure.value.forEach(item => {
     // 整数校验
-    if (!Number.isInteger(item.total_questions)) {
-      item.total_questions = Math.floor(item.total_questions) || 1;
+    if (!Number.isInteger(item.totalQuestion)) {
+      item.totalQuestion = Math.floor(item.totalQuestion) || 1;
       ElMessage.warning('题数必须为整数，已自动修正');
     }
-    if (!Number.isInteger(item.score_per_question)) {
-      item.score_per_question = Math.floor(item.score_per_question) || 1;
+    if (!Number.isInteger(item.scorePerQuestion)) {
+      item.scorePerQuestion = Math.floor(item.scorePerQuestion) || 1;
       ElMessage.warning('分值必须为整数，已自动修正');
     }
     
     // 边界值校验
-    item.total_questions = Math.max(1, Math.min(item.total_questions, props.maxQuestionCount));
-    item.score_per_question = Math.max(1, Math.min(item.score_per_question, props.maxScorePerQuestion));
+    item.totalQuestion = Math.max(1, Math.min(item.totalQuestion, props.maxQuestionCount));
+    item.scorePerQuestion = Math.max(1, Math.min(item.scorePerQuestion, props.maxScorePerQuestion));
   });
   
   // 触发统计更新
   const stats = calculateStats(examStructure.value);
   emit('update:total', stats);
 };
+
+onMounted(() => {
+  getQuestionTypes().then(res => {
+    questionTypes.value = res.data;
+  })
+});
 
 </script>
 
