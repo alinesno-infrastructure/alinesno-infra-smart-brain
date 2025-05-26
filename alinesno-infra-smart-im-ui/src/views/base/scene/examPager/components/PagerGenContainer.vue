@@ -266,196 +266,7 @@ const initChatBoxScroll = () => {
 const pagerInfo = reactive({
   'title': '广西中医药大学2022级信息管理与信息系统专业《医学数据挖掘与实践(R或Python)》1学期考试试卷A卷',
   'desc': '欢迎参加《医学数据挖掘与实践(R或Python)》课程的学期考试！本试卷包含选择题、填空题、简答题、计算题和编程题，全面考察你对Python数据挖掘基础知识的掌握程度和应用能力。请认真作答，祝你考试顺利！',
-  'questions': [
-    // {
-    //   'id': 1,
-    //   'type': 'radio',
-    //   'question': '假设有100个学生，其中90个学生回答了问卷调查，另外10个学生没有回答问卷调查，那么有效回复率是？',
-    //   "mediaFiles": [
-    //     {
-    //       "name": "5fd34deecbe349ed91bd8cde2af9cfd6~tplv-13w3uml6bg-resize_800_320.png",
-    //       "type": "image/png",
-    //       "url": "https://picsum.photos/id/242/200/100",
-    //       "previewUrl": "blob:http://localhost:8080/f213353c-b84d-4331-ba9a-3f031b94a136"
-    //     },
-    //     {
-    //       "name": "897c06742e8f445796b6be8729af0a84~tplv-13w3uml6bg-resize_800_320.jpg",
-    //       "type": "image/jpeg",
-    //       "url": "https://picsum.photos/id/242/200/100",
-    //       "previewUrl": "blob:http://localhost:8080/13c8d335-20ae-4f14-9c95-8cb254fd4f09"
-    //     }
-    //   ],
-    //   'isRequired': true,
-    //   'score': 1,
-    //   'order': 1,
-    //   'answers': [
-    //     { 'label': 'A', 'content': '90%', 'isCorrect': true, 'value': '90%' },
-    //     { 'label': 'B', 'content': '10%', 'isCorrect': false, 'value': '10%' },
-    //     { 'label': 'C', 'content': '80%', 'isCorrect': false, 'value': '80%' },
-    //     { 'label': 'D', 'content': '100%', 'isCorrect': false, 'value': '100%' }
-    //   ]
-    // },
-    // {
-    //   'id': 2,
-    //   'type': 'checkbox',
-    //   'question': '以下哪些属于Python数据挖掘常用库？',
-    //   "mediaFiles": [
-    //     {
-    //       "name": "5fd34deecbe349ed91bd8cde2af9cfd6~tplv-13w3uml6bg-resize_800_320.png",
-    //       "type": "image/png",
-    //       "url": "https://picsum.photos/id/242/200/100",
-    //       "previewUrl": "blob:http://localhost:8080/f213353c-b84d-4331-ba9a-3f031b94a136"
-    //     },
-    //     {
-    //       "name": "897c06742e8f445796b6be8729af0a84~tplv-13w3uml6bg-resize_800_320.jpg",
-    //       "type": "image/jpeg",
-    //       "url": "https://picsum.photos/id/242/200/100",
-    //       "previewUrl": "blob:http://localhost:8080/13c8d335-20ae-4f14-9c95-8cb254fd4f09"
-    //     }
-    //   ],
-    //   'isRequired': false,
-    //   'score': 2,
-    //   'answers': [
-    //     { 'label': 'A', 'content': 'NumPy', 'isCorrect': true, 'value': 'numpy' },
-    //     { 'label': 'B', 'content': 'Pandas', 'isCorrect': true, 'value': 'pandas' },
-    //     { 'label': 'C', 'content': 'Matplotlib', 'isCorrect': true, 'value': 'matplotlib' },
-    //     { 'label': 'D', 'content': 'TensorFlow', 'isCorrect': false, 'value': 'tensorflow' }
-    //   ]
-    // },
-    // {
-    //   'id': 3,
-    //   'type': 'radio',
-    //   'question': '假设有100个学生，其中90个学生回答了问卷调查，另外10个学生没有回答问卷调查，那么有效回复率是？',
-    //   'isRequired': true,
-    //   'score': 1,
-    //   'order': 1,
-    //   'answers': [
-    //     { 'label': 'A', 'content': '90%', 'isCorrect': true, 'value': '90%' },
-    //     { 'label': 'B', 'content': '10%', 'isCorrect': false, 'value': '10%' },
-    //     { 'label': 'C', 'content': '80%', 'isCorrect': false, 'value': '80%' },
-    //     { 'label': 'D', 'content': '100%', 'isCorrect': false, 'value': '100%' }
-    //   ]
-    // },
-    // {
-    //   'id': 4,
-    //   'type': 'checkbox',
-    //   'question': '以下哪些属于Python数据挖掘常用库？',
-    //   'isRequired': true,
-    //   'score': 2,
-    //   'answers': [
-    //     { 'label': 'A', 'content': 'NumPy', 'isCorrect': true, 'value': 'numpy' },
-    //     { 'label': 'B', 'content': 'Pandas', 'isCorrect': true, 'value': 'pandas' },
-    //     { 'label': 'C', 'content': 'Matplotlib', 'isCorrect': true, 'value': 'matplotlib' },
-    //     { 'label': 'D', 'content': 'TensorFlow', 'isCorrect': false, 'value': 'tensorflow' }
-    //   ]
-    // },
-    // {
-    //   'id': 5,
-    //   'type': 'dropdown',
-    //   'question': '在Python中，用于处理缺失值的常用方法是？',
-    //   'isRequired': true,
-    //   'score': 1,
-    //   'answers': [
-    //     { 'label': '', 'content': '请选择', 'isCorrect': false, 'value': '' },
-    //     { 'label': '', 'content': 'dropna()', 'isCorrect': true, 'value': 'dropna' },
-    //     { 'label': '', 'content': 'fillna()', 'isCorrect': false, 'value': 'fillna' },
-    //     { 'label': '', 'content': 'replace()', 'isCorrect': false, 'value': 'replace' },
-    //     { 'label': '', 'content': '以上都是', 'isCorrect': false, 'value': 'all' }
-    //   ]
-    // },
-    // {
-    //   'id': 6,
-    //   "type": "image-radio",
-    //   "question": "请选择表示决策树的图形：",
-    //   "isRequired": true,
-    //   "score": 1,
-    //   "answers": [
-    //     { "label": "A", "content": "决策树：一种树状结构模型，通过节点分裂进行特征判断，最终到达叶节点形成分类/回归结果", "img": "https://picsum.photos/id/237/200/100", "isCorrect": true, "value": "tree" },
-    //     { "label": "B", "content": "神经网络：模仿生物神经网络的层级结构，包含输入层、隐藏层和输出层，适合处理复杂非线性关系", "img": "https://picsum.photos/id/238/200/100", "isCorrect": false, "value": "neural" },
-    //     { "label": "C", "content": "聚类分析：无监督学习算法，将相似数据点分组，图中展示的是多维数据在二维平面的投影分布", "img": "https://picsum.photos/id/239/200/100", "isCorrect": false, "value": "cluster" },
-    //     { "label": "D", "content": "回归分析：展示自变量与因变量的线性/非线性关系，图中包含散点图和拟合的趋势线", "img": "https://picsum.photos/id/240/200/100", "isCorrect": false, "value": "regression"}
-    //   ]
-    // },
-    // {
-    //   'id': 7,
-    //   "type": "image-checkbox",
-    //   "question": "请选择所有属于监督学习算法的图示：",
-    //   "isRequired": true,
-    //   "score": 2,
-    //   "answers": [
-    //     { "label": "A", "content": "决策树：经典监督学习算法，图示展示树形结构及'if-then'规则的分支过程", "img": "https://picsum.photos/id/241/200/150", "isCorrect": true,"value": "tree" },
-    //     { "label": "B", "content": "K-means：典型无监督聚类算法，图示展示迭代过程中质心移动和簇形成", "img": "https://picsum.photos/id/242/200/150", "isCorrect": false, "value": "kmeans" },
-    //     { "label": "C", "content": "SVM（支持向量机）：监督学习分类器，图示展示最优超平面及边缘支持向量", "img": "https://picsum.photos/id/243/200/150", "isCorrect": true, "value": "svm" },
-    //     { "label": "D", "content": "随机森林：集成学习算法，图示展示多棵决策树的并行训练及投票机制", "img": "https://picsum.photos/id/244/200/150", "isCorrect": true, "value": "randomforest" }
-    //   ]
-    // },
-    // {
-    //   'id': 8,
-    //   'type': 'single-line',
-    //   'question': '请写出Python中用于计算相关系数的函数名称：',
-    //   'isRequired': true,
-    //   'score': 1,
-    //   'placeholder': '输入函数名称',
-    //   'correctAnswer': 'corr()'
-    // },
-    // {
-    //   'id': 9,
-    //   'type': 'multi-fill',
-    //   'question': '完成以下Python代码，实现读取CSV文件并显示前5行',
-    //   'isRequired': true,
-    //   'score': 2,
-    //   'blanks': [
-    //     { 'index': 1, 'correctAnswer': 'read_csv' },
-    //     { 'index': 2, 'correctAnswer': 'head' }
-    //   ]
-    // },
-    // {
-    //   'id': 10,
-    //   'type': 'multi-line',
-    //   'question': '简要描述K近邻(KNN)算法的基本原理和适用场景：',
-    //   'isRequired': true,
-    //   'score': 3,
-    //   'placeholder': '请输入至少50字的回答',
-    //   'wordLimit': 200
-    // },
-    // {
-    //   'id': 11,
-    //   'type': 'image-file',
-    //   'question': '请上传你完成的数据分析可视化图表：',
-    //   'isRequired': false,
-    //   'score': 2,
-    //   'fileTypes': 'image/*',
-    //   'maxSize': '5MB'
-    // },
-    // {
-    //   'id': 12,
-    //   'type': 'datetime',
-    //   'question': '请输入你预计完成数据分析项目的日期：',
-    //   'isRequired': true,
-    //   'score': 1
-    // },
-    // {
-    //   'id': 13,
-    //   'type': 'location',
-    //   'question': '假设你需要收集患者地理位置数据用于疾病传播分析，你会使用哪种地理坐标系统？',
-    //   'isRequired': true,
-    //   'score': 1,
-    //   'answers': [
-    //     { 'label': 'A', 'content': 'WGS 84', 'isCorrect': true, 'value': 'wgs84' },
-    //     { 'label': 'B', 'content': 'GCJ-02', 'isCorrect': false, 'value': 'gcj02' },
-    //     { 'label': 'C', 'content': 'BD-09', 'isCorrect': false, 'value': 'bd09' },
-    //     { 'label': 'D', 'content': 'UTM', 'isCorrect': false, 'value': 'utm' }
-    //   ]
-    // },
-    // {
-    //   'id': 19,
-    //   'type': 'description',
-    //   'question': '数据挖掘在医学领域的应用：',
-    //   'content': '<p>数据挖掘技术在医学领域有着广泛的应用前景，包括但不限于以下几个方面：</p><ul><li>疾病预测与诊断辅助</li><li>医疗质量评估与改进</li><li>药物疗效分析与个性化医疗</li><li>医疗资源优化配置</li><li>医学影像分析与识别</li></ul><p>请选择其中一个方向，简要阐述数据挖掘技术在该领域的具体应用方式和价值。</p>',
-    //   'isRequired': false,
-    //   'score': 0
-    // }
-  ]
+  'questions': []
 })
 
 // 点击选中当前index面板
@@ -514,10 +325,30 @@ const updateHandleQuestionImageAnswer = (questionId , index , newItem) => {
   question.answers[index] = { ...newItem }
 }
 
+// 增加pagerInfo.questions的数据，传递问题数组
+const addQuestion = (itemArr) => {
+  console.log('addQuestion item = ' + JSON.stringify(itemArr))
+
+  if(itemArr && itemArr.length > 0){
+    itemArr.forEach(item => {
+      item.order = pagerInfo.questions.length + 1
+      pagerInfo.questions.push(item)
+    })
+  }
+
+}
+
+// 获取pagerInfo.questions的数据
+const getQuestionList = () => {
+  return pagerInfo.questions
+}
+
 // 暴露方法给父组件
 defineExpose({
   handleAddQuestionCard , 
-  handleSavePager
+  handleSavePager, 
+  addQuestion,
+  getQuestionList,
 })
 
 </script>
