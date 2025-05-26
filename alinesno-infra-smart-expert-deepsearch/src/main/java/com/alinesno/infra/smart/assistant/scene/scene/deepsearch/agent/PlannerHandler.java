@@ -162,6 +162,7 @@ public class PlannerHandler extends BaseHandler {
 
         Map<String, Object> params = new HashMap<>();
         params.put("plan_content", output);
+        params.put("current_time", Prompt.getCurrentTime());
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT_FORMATTED, params);
         // historyPrompt.addMessage(new HumanMessage(plannerPrompt));
