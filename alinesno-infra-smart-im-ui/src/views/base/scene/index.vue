@@ -52,6 +52,13 @@
                                             {{ item.sceneDesc }}
                                         </div>
                                         <div class="semi-divider semi-divider-horizontal"></div>
+                                    </div>
+                                </article>
+                                <div class="scene-card-footer">
+                                    <el-button type="text" size="small" text bg>
+                                        <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
+                                        JSON.parse(item.fieldProp)?.sceneName }}
+                                    </el-button>
                                         <div class="scene-footer">
                                             <div class="scene-price">
                                                 <el-tag v-if="item.sceneScope == 'private'" type="info"><i
@@ -62,18 +69,13 @@
                                                     组织</el-tag>
                                             </div>
                                             <div class="scene-tag">
-                                                <el-button type="primary" size="small" text bg>
-                                                    <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
-                                                    JSON.parse(item.fieldProp)?.sceneName }}
-                                                </el-button>
                                                 <div class="scene-stats">
                                                     <span>{{ item.usage_count }}</span>
                                                     <span>使用</span>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </article>
+                                </div>
                             </div>
                         </el-col>
 
@@ -136,6 +138,21 @@ onMounted(() => {
     display: flex;
     flex-grow: 1;
     border-radius: 8px;
+    border-radius: 8px;
+    border: 1px solid rgba(6, 7, 9, 0.1);
+    background-color: #fff;
+    flex-direction: column;
+
+    .scene-card-footer {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        border-top: 0.5px solid #f0f0f5;
+        margin-right: 20px;
+        margin-left: 20px;
+        width: auto;
+        padding: 10px 0px; 
+    }
 }
 
 .scene-card {
@@ -143,10 +160,8 @@ onMounted(() => {
     flex-direction: row;
     flex-grow: 1;
     overflow: hidden;
-    padding: 12px 12px 16px;
-    border: 1px solid rgba(6, 7, 9, 0.1);
-    border-radius: 8px;
-    background-color: #fff;
+    padding: 20px;
+    padding-bottom: 10px;
     cursor: pointer;
     transition: box-shadow 0.3s;
 
@@ -156,9 +171,9 @@ onMounted(() => {
 
     .scene-image-container {
         position: relative;
-        width: 100px;
-        height: 100px;
-        border-radius: 8px;
+        width: 60px;
+        height: 60px;
+        border-radius: 10px;
         overflow: hidden;
 
         .scene-card-image {
@@ -176,13 +191,13 @@ onMounted(() => {
         display: flex;
         flex-direction: column;
         width: calc(100% - 100px);
-        padding-left: 10px;
+        padding-left: 20px;
 
         .scene-header {
             display: flex;
             align-items: flex-start;
             gap: 8px;
-            margin: 8px 0px;
+            margin: 4px 0px;
             margin-top: 0px;
             padding-left: 0px;
             flex-direction: column;
@@ -204,7 +219,7 @@ onMounted(() => {
                 padding: 2px 4px;
                 border-radius: 4px;
                 background-color: var(--coz-tag-primary);
-                color: var(--coz-fg-primary);
+                color: #999;
                 font-weight: 500;
                 font-size: 12px;
                 line-height: 16px;
@@ -267,30 +282,32 @@ onMounted(() => {
             -webkit-line-clamp: 2;
             -moz-line-clamp: 2;
             line-clamp: 2;
+            color: #899 ;
         }
 
-        .scene-footer {
-            margin-top: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+    }
+}
+.scene-footer {
+    margin-top: 4px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
 
-            .scene-price {
-                font-weight: 500;
-                font-size: 14px;
-                line-height: 22px;
-                color: var(--coz-fg-primary);
-            }
+    .scene-price {
+        font-weight: 500;
+        font-size: 14px;
+        line-height: 22px;
+        color: var(--coz-fg-primary);
+    }
 
-            .scene-stats {
-                display: flex;
-                align-items: center;
-                gap: 4px;
-                font-size: 12px;
-                line-height: 16px;
-                color: var(--coz-fg-secondary);
-            }
-        }
+    .scene-stats {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--coz-fg-secondary);
     }
 }
 </style>
