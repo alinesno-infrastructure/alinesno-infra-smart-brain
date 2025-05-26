@@ -9,8 +9,8 @@
 
       <el-main class="exam-pager-main">
 
-        <!-- <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
-          ref="roleSelectPanelRef" /> -->
+        <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
+          ref="roleSelectPanelRef" />
 
         <div class="main-content">
 
@@ -283,7 +283,7 @@ onMounted(() => {
   .main-content {
     display: flex;
     flex-direction: column;
-    padding-top: calc(3vh);
+    padding-top: calc(1vh);
     text-align: center;
     // max-width: 90%;
     margin: auto;
@@ -438,7 +438,7 @@ onMounted(() => {
   }
 
   .review-question-preview-title {
-    padding: 10px;
+    padding: 15px;
     text-align: left;
     font-weight: bold;
     margin-left: 20px;
