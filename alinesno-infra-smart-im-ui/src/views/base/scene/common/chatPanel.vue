@@ -620,6 +620,7 @@ function openChatBox(roleIdVal , messageVal){
 /** 打开运行聊天界面 */
 function openChatBoxWithRole(roleIdVal){
   initChatBoxScroll();
+  limitLength.value = 3 ;
   roleId.value = roleIdVal ; 
   handleGetInfo(roleId.value);
 }
