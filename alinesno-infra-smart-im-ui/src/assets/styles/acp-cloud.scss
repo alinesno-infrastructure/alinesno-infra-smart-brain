@@ -1566,3 +1566,21 @@ $chartColor: #3b5998;
     padding: 0px !important;
   }
 }
+
+
+.flow-control-panel .el-drawer__body {
+    padding: 10px !important
+}
+
+.aip-flow-drawer .el-drawer.ltr,
+.aip-flow-drawer .el-drawer.rtl {
+    height: 93%;
+    bottom: 10px;
+    top: auto;
+    right: 10px;
+    border-radius: 8px;
+}
+
+.aip-flow-drawer .el-drawer__header {
+    margin-bottom: 0px;
+}
