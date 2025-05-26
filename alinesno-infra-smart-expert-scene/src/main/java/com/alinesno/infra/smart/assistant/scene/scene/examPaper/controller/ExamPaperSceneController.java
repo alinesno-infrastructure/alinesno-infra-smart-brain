@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.controller;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
@@ -8,13 +9,21 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamConfigurationDTO;
+import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPagerGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPagerSceneDto;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamStructureItem;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.prompt.ExamPagerPromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerFormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
+import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
@@ -25,12 +34,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -55,6 +67,9 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     private String localPath  ;
 
     @Autowired
+    private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
     private ISceneService sceneService;
 
     @Autowired
@@ -62,6 +77,9 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private ExamPagerFormatMessageTool examPagerFormatMessageTool;
 
     /**
      * 通过Id获取到场景
@@ -125,12 +143,86 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
         return AjaxResult.success("上传成功" , r.getData()) ;
     }
 
+    /**
+     * 聊天提示内容
+     * @param dto
+     * @param query
+     * @return
+     */
     @DataPermissionQuery
-    @PostMapping("/updateChapterPromptContent")
-    public AjaxResult updateChapterPromptContent(@RequestBody @Validated ExamConfigurationDTO dto , PermissionQuery query) {
+    @PostMapping("/chatPromptContent")
+    public AjaxResult chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto , PermissionQuery query) {
 
         log.debug("dto = {}" , dto);
 
+        ExamStructureItem examStructure = dto.getExamStructureItem() ;
+        ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+        Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
+
+        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
+
+        // 引用附件不为空，则引入和解析附件
+        if(!CollectionUtils.isEmpty(dto.getAttachments())){
+            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+            taskInfo.setAttachments(attachmentList);
+        }
+
+        String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
+                dto.getDifficultyLevel() ,
+                examStructure) ;
+
+        taskInfo.setRoleId(questionGeneratorEngineer);
+        taskInfo.setChannelStreamId(dto.getChannelStreamId());
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+        taskInfo.setText(promptText);
+
+        // 优先获取到结果内容
+        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        log.debug("genContent = {}", genContent.getGenContent());
+
+        // 获取到格式化的内容
+        examPagerFormatMessageTool.handleChapterMessage(genContent , taskInfo);
+
+        // 解析得到代码内容
+        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+            return AjaxResult.success("操作成功" , dataObject) ;
+        }
+
         return AjaxResult.success("操作成功") ;
     }
+
+    /**
+     * 获取所有题型信息的Map列表
+     */
+    @GetMapping("/getQuestionTypes")
+    public AjaxResult getQuestionTypes() {
+        List<Map<String, Object>> questionTypes = ExamQuestionTypeEnum.getAllTypesList();
+        return AjaxResult.success("操作成功", questionTypes);
+    }
+
+    /**
+     * 获取所有题型信息的Map列表
+     */
+    @GetMapping("/getQuestionCategoryList")
+    public AjaxResult getQuestionCategoryList() {
+        List<Map<String, Object>> questionTypes = ExamQuestionTypeEnum.getCategoryList();
+        return AjaxResult.success("操作成功", questionTypes);
+    }
+
+    /**
+     * 保存试卷问题
+     */
+    @PostMapping("/savePagerQuestion")
+    public AjaxResult savePagerQuestion(@RequestBody @Validated ExamPaperDTO dto) {
+
+        log.info("dto = {}" , dto);
+
+        service.savePager(dto);  // 保存试卷
+
+        return AjaxResult.success("操作成功") ;
+    }
+
 }
