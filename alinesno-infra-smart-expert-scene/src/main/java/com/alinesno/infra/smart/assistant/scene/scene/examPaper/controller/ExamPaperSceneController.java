@@ -4,7 +4,9 @@ import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
@@ -16,11 +18,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamStructureItem;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.prompt.ExamPagerPromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerFormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
@@ -71,6 +75,9 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
 
     @Autowired
     private ISceneService sceneService;
+
+    @Autowired
+    private IExamPagerService examPagerService ;
 
     @Autowired
     private IExamPagerSceneService service ;
@@ -215,6 +222,7 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     /**
      * 保存试卷问题
      */
+    @DataPermissionSave
     @PostMapping("/savePagerQuestion")
     public AjaxResult savePagerQuestion(@RequestBody @Validated ExamPaperDTO dto) {
 
@@ -223,6 +231,25 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
         service.savePager(dto);  // 保存试卷
 
         return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 分页查询试题(pagerListByPage)
+     */
+    @DataPermissionQuery
+    @PostMapping("/pagerListByPage")
+    public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
+        List<ExamPagerEntity> list = service.pagerListByPage(page, query);
+        return AjaxResult.success("操作成功." ,list);
+    }
+
+    /**
+     * 获取试卷详情(getPagerDetail)
+     */
+    @GetMapping("/getPagerDetail")
+    public AjaxResult getPagerDetail(Long id) {
+        ExamPaperDTO entity = examPagerService.getPagerDetail(id);
+        return AjaxResult.success("操作成功." ,entity);
     }
 
 }
