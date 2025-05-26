@@ -32,7 +32,7 @@ public enum SceneEnum {
     EXAM_AGENT(new SceneInfoDto(130000000L, "考试培训", "examPager", "针对于考试培训场景，提供考试场景的智能助手", "已集成", "1", "", "fa-solid fa-graduation-cap",
             List.of(
                     // 出题专员、阅卷专员、组卷专员
-                    new SceneAgent(130000000L, "出题专员", "questionGenerator", "根据问题的类型和难度，自动生成试题。") ,
+                    new SceneAgent(130000000L, "出题专员", "questionGenerator", "根据问题的类型和难度，自动生成试题。" , true) ,
                     new SceneAgent(130000001L, "阅卷专员", "answerChecker", "对学生的答案进行阅卷，给出正确与否的判断，并给出解析答案") ,
                     new SceneAgent(130000002L, "组卷专员", "paperGenerator", "根据试题库和考试规则，自动生成试卷。")
             )
