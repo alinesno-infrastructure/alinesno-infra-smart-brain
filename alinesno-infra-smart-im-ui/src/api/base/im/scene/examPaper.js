@@ -31,6 +31,25 @@ var managerUrl = {
   getQuestionTypes: prefix +"getQuestionTypes",
   getQuestionCategoryList: prefix +"getQuestionCategoryList",
   savePagerQuestion: prefix +"savePagerQuestion",
+  pagerListByPage: prefix +"pagerListByPage",
+  getPagerDetail: prefix +"getPagerDetail",
+}
+
+// 获取试卷详情
+export function getPagerDetail(id) {
+  return request({
+    url: managerUrl.getPagerDetail + '?id=' + parseStrEmpty(id),
+    method: 'get'
+  })
+} 
+
+// 分页查询试卷
+export function pagerListByPage(data) {
+  return request({
+    url: managerUrl.pagerListByPage,
+    method: 'post',
+    data: data
+  })
 }
 
 // 保存试卷问题类型 
