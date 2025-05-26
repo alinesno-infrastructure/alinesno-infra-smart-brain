@@ -1,13 +1,16 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto;
 
+import com.alinesno.infra.common.facade.base.BaseDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
-public class ExamPaperDTO {
+public class ExamPaperDTO extends BaseDto {
 
     @NotBlank(message = "场景ID不能为空")
     private String sceneId;
