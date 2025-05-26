@@ -36,15 +36,12 @@
 
               <div class="channel-container-panel" style="margin-top:20px">
                 <el-row>
-                  <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
+                  <el-col :span="6" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
                     <div class="exam-pager-card-container" @click="enterExamPager(item)">
                       <article class="exam-pager-card">
-                        <!-- <div class="exam-pager-image-container">
-                            <img :src="imagePathByPath(item.sceneBanner)" class="exam-pager-card-image">
-                        </div> -->
                         <div class="exam-pager-card-content">
                           <div class="scene-header">
-                            <span class="scene-title">{{ item.sceneName }}</span>
+                            <span class="scene-title">{{ item.title }}</span>
                           </div>
                           <div class="scene-author-info">
                             <span class="scene-name">
@@ -81,7 +78,7 @@
                     </div>
                   </el-col>
 
-                  <el-col :span="24" v-if="sceneLists.length == 0">
+                  <el-col :span="24" v-if="pagerList.length == 0">
                     <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
                   </el-col>
 
@@ -99,10 +96,10 @@
 <script setup>
 
 import FunctionList from './functionList'
+
 import {
-  sceneList,
-  sceneListByPage
-} from '@/api/base/im/scene';
+  pagerListByPage
+} from '@/api/base/im/scene/examPaper';
 
 import SideTypePanel from './examType.vue'
 
@@ -110,29 +107,37 @@ import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 
 const router = useRouter();
+const route = useRoute();
+
+const sceneId = ref(route.query.sceneId)
 
 const sceneLoading = ref(true)
-const sceneLists = ref([])
+const pagerList = ref([])
 
 /** 进入长文本编辑界面 */
 function enterExamPager(item) {
   const path = '/scene/examPager/examPagerView';
   router.push({
     path: path,
-    query: { 'sceneId': item.id }
+    query: { 
+      'pagerId': item.id ,
+      'sceneId': sceneId.value
+    }
   })
 }
 
 /** 获取场景列表 */
-function handleScreenList() {
-  sceneListByPage().then(res => {
-    sceneLists.value = res.data
+function handlePagerListByPage() {
+  pagerListByPage().then(res => {
+    pagerList.value = res.data
     sceneLoading.value = false
-  })
+  }).catch(err => {
+    sceneLoading.value = false
+  })  
 }
 
 onMounted(() => {
-  handleScreenList()
+  handlePagerListByPage()
 })
 
 </script>
