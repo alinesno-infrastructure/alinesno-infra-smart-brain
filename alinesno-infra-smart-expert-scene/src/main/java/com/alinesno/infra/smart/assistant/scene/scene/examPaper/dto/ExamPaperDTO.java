@@ -24,7 +24,13 @@ public class ExamPaperDTO extends BaseDto {
     @NotBlank(message = "试卷名称不能为空")
     private String pagerName;
 
+    @NotBlank(message = "试卷描述不能为空")
+    private String pagerDesc;
+
     @NotNull(message = "问题列表不能为null")
     private List<QuestionDTO> questionList;
+
+    @NotNull(message = "难度不能为null")
+    private String difficulty;
 
 }
