@@ -4,8 +4,6 @@ import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.annotation.IsAutoIncrement;
-import com.gitee.sunchenbin.mybatis.actable.annotation.IsKey;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Table;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
@@ -25,6 +23,11 @@ public class ExamPagerEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "title", type = MySqlTypeConstant.VARCHAR, length = 255, isNull = false, comment = "试卷标题")
     private String title;
+
+    // 难度Difficulty
+    @TableField
+    @Column(name = "difficulty", type = MySqlTypeConstant.VARCHAR, length = 10, comment = "难度：easy-简单，medium-普通，hard-困难")
+    private String difficulty;
 
     @TableField
     @Column(name = "description", type = MySqlTypeConstant.TEXT, comment = "试卷描述")
