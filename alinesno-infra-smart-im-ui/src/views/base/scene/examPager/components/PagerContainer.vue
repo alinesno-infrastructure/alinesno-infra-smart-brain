@@ -1,5 +1,5 @@
 <template>
-  <el-scrollbar class="pager-container" ref="scrollbarRef">
+  <el-scrollbar class="pager-container" ref="scrollbarRef"> 
 
     <div ref="innerRef">
 
@@ -166,11 +166,12 @@
 <script setup>
 
 import { ref , reactive , defineExpose , nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage , ElLoading } from 'element-plus'
 import draggable from "vuedraggable";
 
 import {
  getPagerDetail ,
+ updatePagerQuestion  ,
 } from '@/api/base/im/scene/examPaper';
 
 import EditableText from './EditableText.vue';
@@ -191,10 +192,15 @@ import DescriptionPanel from '../questions/descriptionPanel.vue';
 const currentIndex = ref(-1)
 const route = useRoute();
 
+const sceneId = ref(route.query.sceneId)
 const pagerId = ref(route.query.pagerId)
+
+const loading = ref(true)
 
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
+
+const emits = defineEmits(['setCurrentPageInfo']);
 
 const props = defineProps({
   showHeader: {
@@ -275,8 +281,8 @@ const initChatBoxScroll = () => {
 }
 
 const pagerInfo = reactive({
-  'title': '广西中医药大学2022级信息管理与信息系统专业《医学数据挖掘与实践(R或Python)》1学期考试试卷A卷',
-  'desc': '欢迎参加《医学数据挖掘与实践(R或Python)》课程的学期考试！本试卷包含选择题、填空题、简答题、计算题和编程题，全面考察你对Python数据挖掘基础知识的掌握程度和应用能力。请认真作答，祝你考试顺利！',
+  'title': '',
+  'desc': '',
   'questions': []
 })
 
@@ -302,7 +308,35 @@ const handleAddQuestionCard = (item) => {
 // 切换选中问题
 const handleSavePager = () => {
     console.log('pagerInfo = ' + JSON.stringify(pagerInfo))
-    ElMessage.success('保存成功')
+
+    pagerInfo.questions.forEach((item , index) => {
+      // 将question与titile值相等
+      item.question = item.title
+    })
+
+    const data = {
+      id: pagerInfo.id,
+      sceneId: sceneId.value,
+      pagerType: pagerInfo.pagerType ,
+      pagerName: pagerInfo.title , 
+      pagerDesc: pagerInfo.desc ,
+      difficulty: pagerInfo.difficulty,
+      questionList: pagerInfo.questions ,
+    }
+
+    const loading = ElLoading.service({
+      lock: true,
+      text: 'Loading',
+      background: 'rgba(0, 0, 0, 0.7)',
+    })
+
+    updatePagerQuestion(data).then(res => {
+      ElMessage.success('保存成功')
+      loading.close() ;
+    }).catch(err => {
+      loading.close()
+    })
+
 }
 
 // 删除答案的问题 
@@ -340,9 +374,14 @@ const updateHandleQuestionImageAnswer = (questionId , index , newItem) => {
 // 获取试卷详情
 const handlePagerDetail = () => {
   getPagerDetail(pagerId.value).then(res => {
+      pagerInfo.id = res.data.id
       pagerInfo.title = res.data.pagerName
-      pagerInfo.desc = res.data.desc
+      pagerInfo.desc = res.data.pagerDesc
+      pagerInfo.pagerType = res.data.pagerType
+      pagerInfo.difficulty = res.data.difficulty
       pagerInfo.questions = res.data.questionList
+
+      emits('setCurrentPageInfo', pagerInfo)
   })
 }
 
