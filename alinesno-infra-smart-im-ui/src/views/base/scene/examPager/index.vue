@@ -89,7 +89,7 @@
                 <span>
                   <i class="fa-solid fa-file-pdf"></i> 题目生成预览
                 </span>
-                <el-button type="primary" @click="dialogVisible = true">
+                <el-button type="primary" @click="openDialogVisible()">
                   <i class="fa-solid fa-floppy-disk"></i>&nbsp;保存题目
                 </el-button>
               </div>
@@ -180,9 +180,11 @@ const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
 
 const sceneId = ref(route.query.sceneId)
-const isBack = ref(route.query.back || false)
-const promptText = ref('');
-const questionGenerator = ref(null);
+
+// const isBack = ref(route.query.back || false)
+// const promptText = ref('');
+// const questionGenerator = ref(null);
+
 const streamLoading = ref(null)
 
 // 表单引用
@@ -287,6 +289,12 @@ const handleUpload = () => {
   }
 };
 
+const openDialogVisible = () => {
+  dialogVisible.value = true;
+  if(!formData.value.pagerName){
+    formData.value.pagerName = formData.value.promptText ;
+  }
+}
 
 // 计算总题目数和总分
 const updateTotalStats = (stats) => {
@@ -348,6 +356,8 @@ const handleSavePagerQuestion = async () => {
       channelStreamId: channelStreamId.value,
       pagerType: formData.value.pagerType,
       pagerName: formData.value.pagerName,
+      pagerDesc: formData.value.pagerName,
+      difficulty: formData.value.difficultyLevel,
       examStructure: formData.value.examStructure,
       questionList: questionList,
     }
