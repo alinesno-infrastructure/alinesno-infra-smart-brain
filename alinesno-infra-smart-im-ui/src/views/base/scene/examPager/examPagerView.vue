@@ -2,19 +2,25 @@
   <div class="exam-pager-container">
     <TopPanel 
       @handleSavePager="handleSavePager"
+      :currentPageInfo="currentPageInfo"
       ref="topPanelRef" />
 
     <el-row>
       <el-col :span="5">
         <LeftPanel 
           @handleAddQuestionCard="handleAddQuestionCard"
+          :currentPageInfo="currentPageInfo"
           ref="leftPanelRef" />
       </el-col>
       <el-col :span="14">
-        <PagerContainer ref="pagerContainerRef" />
+        <PagerContainer 
+          @setCurrentPageInfo="setCurrentPageInfo"
+          ref="pagerContainerRef" />
       </el-col>
       <el-col :span="5">
-        <RightPanel ref="rightPanelRef" />
+        <RightPanel 
+          :currentPageInfo="currentPageInfo"
+          ref="rightPanelRef" />
       </el-col>
     </el-row>
 
@@ -36,6 +42,7 @@ const topPanelRef = ref(null)
 const pagerContainerRef = ref(null)
 const leftPanelRef = ref(null)
 const rightPanelRef = ref(null)
+const currentPageInfo = ref(null)
 
 // 添加问题
 const handleAddQuestionCard = (newQuestionItem) => {
@@ -45,6 +52,10 @@ const handleAddQuestionCard = (newQuestionItem) => {
 // 保存试卷
 const handleSavePager  = () => {
   pagerContainerRef.value.handleSavePager()
+}
+
+const setCurrentPageInfo = (pageInfo) => {
+  currentPageInfo.value = pageInfo
 }
 
 </script>
