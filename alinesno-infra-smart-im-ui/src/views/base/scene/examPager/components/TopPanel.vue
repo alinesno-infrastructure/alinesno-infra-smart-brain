@@ -8,7 +8,7 @@
                         <i class="fa-solid fa-arrow-left"></i>
                     </el-button>
                     <span>
-                        广西中医药大学2022级信息管理与信息系统专业
+                        {{ props.currentPageInfo?.title }}
                     </span>
                     <span>
                         <el-button icon="More" size="small" type="text" @click="handleMoreOptions" />
@@ -44,6 +44,13 @@ const router = useRouter()
 const route = useRoute()
 
 const sceneId = ref(route.query.sceneId)
+
+const props = defineProps({
+    currentPageInfo : {
+        type: Object,
+        default: null 
+    }
+})
 
 const handleSavePager = () => {
     emit('handleSavePager')
