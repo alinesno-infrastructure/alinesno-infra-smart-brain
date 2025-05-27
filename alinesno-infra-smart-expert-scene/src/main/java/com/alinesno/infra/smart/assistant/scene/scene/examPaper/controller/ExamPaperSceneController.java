@@ -12,10 +12,7 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPagerGeneratorDTO;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPagerSceneDto;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamStructureItem;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.prompt.ExamPagerPromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerService;
@@ -225,11 +222,19 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     @DataPermissionSave
     @PostMapping("/savePagerQuestion")
     public AjaxResult savePagerQuestion(@RequestBody @Validated ExamPaperDTO dto) {
-
         log.info("dto = {}" , dto);
+        examPagerService.savePager(dto);  // 保存试卷
+        return AjaxResult.success("操作成功") ;
+    }
 
-        service.savePager(dto);  // 保存试卷
-
+    /**
+     * 更新试卷问题
+     */
+    @DataPermissionSave
+    @PostMapping("/updatePagerQuestion")
+    public AjaxResult updatePagerQuestion(@RequestBody @Validated ExamPaperUpdateDTO dto) {
+        log.info("dto = {}" , dto);
+        examPagerService.updatePager(dto);  // 删除试卷
         return AjaxResult.success("操作成功") ;
     }
 
@@ -239,7 +244,7 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     @DataPermissionQuery
     @PostMapping("/pagerListByPage")
     public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
-        List<ExamPagerEntity> list = service.pagerListByPage(page, query);
+        List<ExamPagerEntity> list = examPagerService.pagerListByPage(page, query);
         return AjaxResult.success("操作成功." ,list);
     }
 
