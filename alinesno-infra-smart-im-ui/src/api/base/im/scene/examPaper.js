@@ -33,6 +33,16 @@ var managerUrl = {
   savePagerQuestion: prefix +"savePagerQuestion",
   pagerListByPage: prefix +"pagerListByPage",
   getPagerDetail: prefix +"getPagerDetail",
+  updatePagerQuestion: prefix +"updatePagerQuestion",
+}
+
+// 更新试卷问题
+export function updatePagerQuestion(data) {
+  return request({
+    url: managerUrl.updatePagerQuestion,
+    method: 'post',
+    data: data
+  })
 }
 
 // 获取试卷详情
