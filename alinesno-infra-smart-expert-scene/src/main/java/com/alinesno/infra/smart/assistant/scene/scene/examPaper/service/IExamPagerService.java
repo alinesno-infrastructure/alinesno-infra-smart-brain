@@ -1,8 +1,13 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.service;
 
+import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperUpdateDTO;
 import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
+
+import java.util.List;
 
 /**
  *
@@ -18,5 +23,25 @@ public interface IExamPagerService extends IBaseService<ExamPagerEntity> {
      * @return
      */
     ExamPaperDTO getPagerDetail(Long id);
+
+    /**
+     * 保存试卷
+     * @param dto
+     */
+    void savePager(ExamPaperDTO dto);
+
+    /**
+     * 更新试卷
+     * @param dto
+     */
+    void updatePager(ExamPaperUpdateDTO dto);
+
+    /**
+     * 分页查询试卷
+     * @param page
+     * @param query
+     * @return
+     */
+    List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query);
 
 }
