@@ -29,7 +29,7 @@ public enum SceneEnum {
             )
     )),
     // 考试培训
-    EXAM_AGENT(new SceneInfoDto(130000000L, "考试培训", "examPager", "针对于考试培训场景，提供考试场景的智能助手", "已集成", "1", "", "fa-solid fa-graduation-cap",
+    EXAM_AGENT(new SceneInfoDto(130000000L, "考试培训", "examPager", "可针对于课件AI生成试卷和生成题库，在线考试和考试培训测试等场景", "已集成", "1", "", "fa-solid fa-graduation-cap",
             List.of(
                     // 出题专员、阅卷专员、组卷专员
                     new SceneAgent(130000000L, "出题专员", "questionGenerator", "根据问题的类型和难度，自动生成试题。" , true) ,
@@ -38,7 +38,7 @@ public enum SceneEnum {
             )
     )),
     // PPT创作
-    PPT_CREATION(new SceneInfoDto(150000000L, "PPT创作", "pptCreation", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件", "已集成", "0", "", "fa-solid fa-file-powerpoint",
+    PPT_CREATION(new SceneInfoDto(150000000L, "PPT创作", "pptCreation", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件", "已集成", "1", "", "fa-solid fa-file-powerpoint",
             List.of(
                     // PPT内容规划专员、PPT内容生成专员
                     new SceneAgent(150000001L, "PPT内容规划专员", "pptPlanner", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件。") ,
