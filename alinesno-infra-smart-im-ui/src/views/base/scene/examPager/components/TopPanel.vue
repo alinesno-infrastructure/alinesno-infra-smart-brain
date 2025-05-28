@@ -3,15 +3,12 @@
 
         <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgb(232, 232, 232); padding: 0px 24px; height: 45px;">
             <div style="display: flex;align-items: center;">
-                <div style="display: flex;gap: 10px;align-items: center;">
+                <div style="display: flex;gap: 10px;align-items: center;margin-right:10px;">
                     <el-button text bg type="primary" @click="handleBack()">
                         <i class="fa-solid fa-arrow-left"></i>
                     </el-button>
                     <span>
                         {{ props.currentPageInfo?.title }}
-                    </span>
-                    <span>
-                        <el-button icon="More" size="small" type="text" @click="handleMoreOptions" />
                     </span>
                 </div>
                 <el-button  type="primary" text bg @click="handleMenu">
