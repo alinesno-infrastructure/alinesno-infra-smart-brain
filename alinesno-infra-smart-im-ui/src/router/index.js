@@ -109,6 +109,12 @@ const screenRoutes = [
     meta: { title: '试卷管理', icon: 'fa-solid fa-file-invoice', affix: true }
   },
   {
+    path: '/scene/examPager/questionBankManager',
+    component: () => import('@/views/base/scene/examPager/questionBankManager'),
+    name: '/scene/examPager/questionBankManager',
+    meta: { title: '题库管理', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
     path: '/scene/examPager/examPagerView',
     component: () => import('@/views/base/scene/examPager/examPagerView'),
     name: '/scene/examPager/examPagerView',
@@ -121,6 +127,21 @@ const screenRoutes = [
     meta: { title: '考试管理', icon: 'fa-solid fa-file-invoice', affix: true }
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // -->>>>>>>>>>>> PPT编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/pptCreation/index',
+    component: () => import('@/views/base/scene/pptCreation/index'),
+    name: '/scene/pptCreation/index',
+    meta: { title: 'PPT编辑', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/pptCreation/pptManager',
+    component: () => import('@/views/base/scene/pptCreation/pptManager'),
+    name: '/scene/pptCreation/pptManager',
+    meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>>> PPT编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 内容排版_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
