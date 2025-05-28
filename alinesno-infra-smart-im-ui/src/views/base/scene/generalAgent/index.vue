@@ -17,6 +17,7 @@
           <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
         </el-button>
       </div>
+
       <div class="example-section">
         <div class="example-title">你可以这样提问</div>
         <div class="example-list">
@@ -26,6 +27,7 @@
           </div> 
         </div>
       </div>
+
     </div>
     <div class="review-footer-message">
       <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
