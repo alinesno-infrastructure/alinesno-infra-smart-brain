@@ -21,31 +21,31 @@ public class ExamQuestionEntity extends InfraBaseEntity {
     private Long sceneId; // 关联的场景ID
 
     @TableField("assessment_content")
-    @Column(name = "assessment_content", type = MySqlTypeConstant.TEXT, isNull = false, comment = "考核内容")
+    @Column(name = "assessment_content", type = MySqlTypeConstant.TEXT, comment = "考核内容")
     private String assessmentContent;
 
     @TableField("is_required")
-    @Column(name = "is_required", type = MySqlTypeConstant.TINYINT, isNull = false, defaultValue = "1", comment = "是否必填：0-否，1-是")
+    @Column(name = "is_required", type = MySqlTypeConstant.TINYINT, defaultValue = "1", comment = "是否必填：0-否，1-是")
     private Boolean isRequired;
 
     @TableField("score")
-    @Column(name = "score", type = MySqlTypeConstant.INT, isNull = false, defaultValue = "0", comment = "题目分数")
+    @Column(name = "score", type = MySqlTypeConstant.INT, defaultValue = "0", comment = "题目分数")
     private Integer score;
 
     @TableField("question")
-    @Column(name = "question", type = MySqlTypeConstant.TEXT, isNull = false, comment = "问题内容")
+    @Column(name = "question", type = MySqlTypeConstant.TEXT, comment = "问题内容")
     private String question;
 
     @TableField("answer_analysis")
-    @Column(name = "answer_analysis", type = MySqlTypeConstant.TEXT, isNull = false, comment = "答案解析")
+    @Column(name = "answer_analysis", type = MySqlTypeConstant.TEXT, comment = "答案解析")
     private String answerAnalysis;
 
     @TableField("type")
-    @Column(name = "type", type = MySqlTypeConstant.VARCHAR, length = 50, isNull = false, comment = "问题类型")
+    @Column(name = "type", type = MySqlTypeConstant.VARCHAR, length = 50, comment = "问题类型")
     private String type;
 
     @TableField("sort_order")
-    @Column(name = "sort_order", type = MySqlTypeConstant.INT, isNull = false, defaultValue = "1", comment = "排序字段")
+    @Column(name = "sort_order", type = MySqlTypeConstant.INT, defaultValue = "1", comment = "排序字段")
     private Integer sortOrder;
 
     @TableField("blanks")
