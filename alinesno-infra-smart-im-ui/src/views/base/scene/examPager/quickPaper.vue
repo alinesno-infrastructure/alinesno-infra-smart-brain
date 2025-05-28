@@ -442,6 +442,7 @@ onMounted(() => {
     text-align: left;
     font-weight: bold;
     margin-left: 20px;
+    margin-right: 10px;
     margin-bottom: 10px;
     border-radius: 10px;
     background: #fafafa;
@@ -465,7 +466,7 @@ onMounted(() => {
 <style>
 .exam-pagercontainer .pager-prompt .el-input__wrapper {
   box-shadow: none !important;
-  padding: 0px;
-  margin-left: -5px;
+  padding: 5px;
+  margin-left: 0px;
 }
 </style>
