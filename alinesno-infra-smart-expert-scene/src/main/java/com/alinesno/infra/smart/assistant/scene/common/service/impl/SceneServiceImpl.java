@@ -17,6 +17,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPag
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGeneratorSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
@@ -237,6 +238,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
             examPagerSceneService.updateSceneAgents(dto);
         }
+        // PPT生成
+        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
+            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
+            pptGeneratorSceneService.updateSceneAgents(dto);
+        }
 
     }
 
@@ -283,6 +289,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.EXAM_AGENT.getSceneInfo().getCode())){
             IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
             return examPagerSceneService.getRoleList(dto);
+        }
+        // PPT生成
+        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
+            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
+            return pptGeneratorSceneService.getRoleList(dto);
         }
 
         return null;
