@@ -59,13 +59,21 @@ const functionList = ref([
     link: '/scene/examPager/pagerManager'
   },
   {
-    name: '考试管理',
+    name: '练习(考试)管理',
     icon: 'fa-solid fa-graduation-cap', // Font Awesome 6.x 毕业帽（象征考试/教育）
     status: 'loading', // 任务状态示例
     log: '正在进行考试安排与通知', // 任务描述
     isSelected: false,
     link: '/scene/examPager/examManager'
-  }
+  },
+  {
+    name: '题库管理', // 菜单名称
+    icon: 'fa-solid fa-book-open-reader', // Font Awesome 6.x 书籍图标（象征知识库/管理）
+    status: 'done', // 任务状态（可根据实际改为 loading）
+    log: '已完成题库分类与题目维护', // 任务描述
+    isSelected: false, 
+    link: '/scene/examPager/questionBankManager' // 路由链接（建议与业务路径匹配）
+  },
 ])
 
 const handleTaskClick = (item) => {
