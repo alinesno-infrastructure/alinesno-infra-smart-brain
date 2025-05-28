@@ -69,7 +69,7 @@
               <div class="example-select-section">
                 <QuestionTypeConfig 
                   v-model="formData.examStructure"
-                  :max-question-count="5"
+                  :max-question-count="20"
                   :max-score-per-question="30" 
                   @update:total="updateTotalStats"
                   />
@@ -120,9 +120,6 @@
           <el-form-item label="名称" prop="pagerName">
             <el-input v-model="formData.pagerName" placeholder="请输入试卷名称" />
           </el-form-item>
-          <!-- <el-form-item label="试卷描述" prop="pagerDesc">
-            <el-input v-model="formData.pagerDesc" placeholder="请输入试卷描述" />
-          </el-form-item> -->
         </el-form>
       </div>
       <template #footer>
