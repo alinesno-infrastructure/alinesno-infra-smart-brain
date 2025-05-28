@@ -168,7 +168,7 @@ public class ExamPagerServiceImpl extends IBaseServiceImpl<ExamPagerEntity , Exa
             questionList.add(e);
         }
 
-        examQuestionService.updateBatchById(questionList);
+        examQuestionService.saveOrUpdateBatch(questionList);
     }
 
 
