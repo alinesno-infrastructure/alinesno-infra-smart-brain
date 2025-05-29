@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -11,6 +12,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTOutline
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.mapper.PPTManagerMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTManagerService;
 import com.alinesno.infra.smart.scene.entity.PPTManagerEntity;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -40,7 +43,19 @@ public class PPTManagerServiceImpl extends IBaseServiceImpl<PPTManagerEntity , P
 
     @Override
     public List<PPTManagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
-        return null;
+        
+        page.setPageNum(0);
+        page.setPageSize(20);
+
+        Page<PPTManagerEntity> pageBean = new Page<>(page.getPageNum(), page.getPageSize());
+
+        LambdaQueryWrapper<PPTManagerEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PPTManagerEntity::getOrgId, query.getOrgId()) ;
+        wrapper.orderByDesc(PPTManagerEntity::getAddTime) ;
+
+        pageBean = page(pageBean, wrapper);
+
+        return pageBean.getRecords();
     }
 
     @Override
@@ -62,7 +77,9 @@ public class PPTManagerServiceImpl extends IBaseServiceImpl<PPTManagerEntity , P
         }
 
         entity.setSceneId(dto.getSceneId());
+        entity.setTitle(dto.getPromptText());
         entity.setOutlineList(dto.getOutline());
+        entity.setPptConfig(JSONObject.toJSONString(dto.getPptConfig()));
 
         saveOrUpdate(entity);
 
