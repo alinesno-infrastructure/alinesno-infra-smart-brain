@@ -20,6 +20,9 @@ public class PPTOutlineDto extends BaseDto {
      */
     private Long pptId;
 
+    @NotNull(message = "提示词不能为空")
+    private String promptText ;
+
     /**
      * 场景的唯一标识符
      */
@@ -31,6 +34,12 @@ public class PPTOutlineDto extends BaseDto {
      */
     @NotNull(message = "大纲内容不能为空")
     private String outline;
+
+    /**
+     * PPT的配置信息
+     */
+    @NotNull(message = "PPT配置不能为空")
+    private PptConfigDto pptConfig;
 
 }
 
