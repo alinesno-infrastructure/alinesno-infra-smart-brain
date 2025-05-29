@@ -22,7 +22,7 @@
                       <div style="gap: 12px;">
                         <h1
                           style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                         试卷列表 
+                         PPT列表
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
