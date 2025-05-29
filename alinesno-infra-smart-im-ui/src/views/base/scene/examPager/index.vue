@@ -34,7 +34,7 @@
                   <el-input v-model="formData.promptText" 
                     class="input-box" 
                     size="large" 
-                    placeholder="请输入您的需求，获取智能体服务"
+                    placeholder="你可以提问，比如小学数据三角函数题目"
                     :prefix-icon="Search" />
 
                 </div>
@@ -420,6 +420,7 @@ const generaterText = async () => {
   } finally {
     // 无论成功或失败都关闭loading
     streamLoading.value.close();
+    showDebugRunDialog.value = false ;
   }
 };
 
