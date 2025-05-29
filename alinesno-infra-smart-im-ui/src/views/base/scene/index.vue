@@ -26,11 +26,52 @@
                     </el-row>
 
                 </div>
+
+                <div class="banner-container-panel" v-if="recommendRole">
+                    <el-row>
+                        <el-col :span="18">
+
+                        <div class="card-container">
+                            <div>
+                            <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
+                            <p><span>{{ truncateString(recommendRole.responsibilities , 50) }}</span></p>
+                            </div>
+                            <el-button type="primary" bg text size="large" @click="handleRoleChat()">
+                            <span class="semi-button-content">立即聊聊</span>
+                            </el-button>
+                        </div>
+
+
+                        </el-col>
+                        <el-col :span="6">
+
+                        <div class="right-container">
+                            <img src="http://data.linesno.com/banner/agent_bg.png" class="bot-banner-bg" alt="Banner Background Image">
+
+                            <div class="banner-info">
+                            <span class="avatar">
+                                <img :src="imagePathByPath(recommendRole.roleAvatar)"  alt="Avatar Image">
+                            </span>
+                            <div class="info-text">
+                                <p class="category">{{ recommendRole.roleName }}</p>
+                                <h1 class="title">{{ recommendRole.roleName }}</h1>
+                                <div class="author-info">
+                                <div class="author-name"><span>罗小东</span></div>
+                                <div class="at-name"><span>@Easton</span></div>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+
+                        </el-col>
+                    </el-row>
+                </div>
+
                 <div class="header">
                     <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
                 </div>
 
-                <div class="channel-container-panel" style="margin-top:20px">
+                <div class="channel-container-panel">
                     <el-row>
                         <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
                             <div class="scene-card-container" @click="enterScreen(item)">
@@ -97,6 +138,7 @@
 
 import {
     sceneList,
+    getRecommendRole ,
     sceneListByPage
 } from '@/api/base/im/scene';
 
@@ -104,9 +146,13 @@ import SideTypePanel from './sideTypePanel'
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
 
 const router = useRouter();
 
+const recommendRole = ref(null);
 const sceneLoading = ref(true)
 const sceneLists = ref([])
 
@@ -119,6 +165,16 @@ function enterScreen(item) {
     })
 }
 
+/** 与单个Role发信息 */
+function handleRoleChat() {
+
+  let id = recommendRole.value.id 
+  router.push({
+      path: '/single/agentChat',
+      query: { 'roleId': id, 'channelId': snowflake.generate() }
+  })
+}
+
 /** 获取场景列表 */
 function handleScreenList() {
     sceneListByPage().then(res => {
@@ -127,8 +183,16 @@ function handleScreenList() {
     })
 }
 
+// 获取推荐角色
+function handleGetRecommendRole() {
+    getRecommendRole().then(response => {
+        recommendRole.value = response.data ;
+    })
+}
+
 onMounted(() => {
-    handleScreenList()
+    handleGetRecommendRole();
+    handleScreenList();
 })
 
 </script>
@@ -309,5 +373,101 @@ onMounted(() => {
         line-height: 16px;
         color: var(--coz-fg-secondary);
     }
+}
+
+.right-container {
+  position: relative; // 确保子元素可以绝对定位在容器内
+
+  .bot-banner-bg {
+    width: 100%;
+    height: 100%;
+    box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.12);
+    border-radius: 10px;
+  }
+
+  .banner-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 5px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
+    flex-direction: row;
+    border-radius: 10px;
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      background: #f0f0f5;
+      border-radius: 8px;
+
+      img {
+        display: block;
+        height: 100%;
+        object-fit: cover;
+        width: 100%;
+        border-radius: 8px;
+      }
+    }
+
+    .info-text {
+      overflow: hidden;
+      flex: 1;
+      align-items: flex-start;
+      display: flex;
+      flex-direction: column;
+
+      .category {
+        font-size: 10px;
+        font-weight: 400;
+        line-height: 12px;
+        color: #FFF;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        margin: 0;
+      }
+
+      .title {
+        font-size: 18px;
+        font-weight: 600;
+        line-height: 24px;
+        color: #FFF;
+        margin: 0;
+      }
+
+      .author-info {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        max-width: 100%;
+        height: 18px;
+        color: rgba(255, 255, 255, 0.39);
+
+        .semi-image {
+          width: 14px;
+          height: 14px;
+          overflow: hidden;
+          border-radius: 12px;
+
+          img {
+            width: 14px;
+            height: 14px;
+          }
+        }
+
+        .author-name,
+        .at-name {
+          font-size: 12px;
+          font-weight: 400;
+          line-height: 18px;
+          flex: 1;
+        }
+      }
+    }
+  }
 }
 </style>
