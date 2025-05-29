@@ -15,6 +15,15 @@ var managerUrl = {
   updateSceneAgents: prefix +"updateSceneAgents",
   getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
   getRoleList: prefix +"getRoleList",
+  getRecommendRole: prefix +"getRecommendRole",
+}
+
+// 获取到推荐角色
+export function getRecommendRole() {
+  return request({
+    url: managerUrl.getRecommendRole,
+    method: 'get' 
+  })
 }
 
 // 获取角色
