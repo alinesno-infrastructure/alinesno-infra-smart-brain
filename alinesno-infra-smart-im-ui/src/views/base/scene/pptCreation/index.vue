@@ -228,7 +228,12 @@ const handleUpload = () => {
 
 // 生成PPT
 const generatorPPT = () => {
-  savePPTOutline(sceneId.value , outline.value , pptId.value).then(res => {
+  savePPTOutline(sceneId.value , 
+      outline.value , 
+      pptId.value , 
+      formData.value.pptConfig,
+      formData.value.promptText
+    ).then(res => {
     pptId.value = res.data ;
     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
   }).catch(error => {
