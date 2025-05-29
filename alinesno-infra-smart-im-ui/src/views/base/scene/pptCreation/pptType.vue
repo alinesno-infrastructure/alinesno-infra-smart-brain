@@ -1,6 +1,6 @@
 <template>
     <div class="side-type-container">
-        <div class="title">试卷场景</div>
+        <div class="title">PPT类型</div>
         <div class="type-list">
             <div
                 v-for="item in sceneList"
@@ -22,43 +22,43 @@ import { ref } from 'vue';
 const sceneList = ref([
     {
         id: 1,
-        sceneName: '驾校培训',
-        icon: 'fa-car'
+        sceneName: '培训课程',
+        icon: 'fa-graduation-cap'
     },
     {
         id: 2,
-        sceneName: '资格考试',
-        icon: 'fa-building'
+        sceneName: '项目介绍',
+        icon: 'fa-briefcase'
     },
     {
         id: 3,
-        sceneName: '职称考试',
-        icon: 'fa-id-card'
+        sceneName: '产品展示',
+        icon: 'fa-cube'
     },
     {
         id: 4,
-        sceneName: '学校考试',
-        icon: 'fa-school'
+        sceneName: '数据分析',
+        icon: 'fa-chart-bar'
     },
     {
         id: 5,
-        sceneName: '企业培训',
-        icon: 'fa-building'
+        sceneName: '活动策划',
+        icon: 'fa-calendar-check'
     },
     {
         id: 6,
-        sceneName: '技能认证',
-        icon: 'fa-certificate'
+        sceneName: '企业宣传',
+        icon: 'fa-building'
     },
     {
         id: 7,
-        sceneName: '在线学习',
-        icon: 'fa-laptop'
+        sceneName: '商业计划',
+        icon: 'fa-line-chart'
     },
     {
         id: 8,
-        sceneName: '安全培训',
-        icon: 'fa-shield-halved'
+        sceneName: '教学课件',
+        icon: 'fa-book'
     }
 ]);
 
