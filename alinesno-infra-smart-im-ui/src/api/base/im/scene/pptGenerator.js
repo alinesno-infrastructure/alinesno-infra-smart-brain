@@ -38,12 +38,14 @@ var managerUrl = {
 }
 
 // savePPTOutline
-export function savePPTOutline(sceneId , outline , pptId) {
+export function savePPTOutline(sceneId , outline , pptId , pptConfig , promptText) {
 
   const data = {
     sceneId: sceneId ,
     outline: outline,
-    pptId: pptId
+    pptId: pptId,
+    pptConfig: pptConfig ,
+    promptText: promptText
   }
 
   return request({
