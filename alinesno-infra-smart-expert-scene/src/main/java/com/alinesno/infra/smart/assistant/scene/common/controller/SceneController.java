@@ -21,6 +21,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
+import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
@@ -81,6 +82,9 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
 
     @Autowired
     private IAgentSceneService agentSceneService ;
+
+    @Autowired
+    private IAgentStoreService agentStoreService ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -382,6 +386,25 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     public AjaxResult getRoleList(@Validated @RequestBody RoleListRequestDto dto){
         log.debug("dto = {}" , dto);
         return AjaxResult.success(service.getRoleList(dto));
+    }
+
+    /**
+     * 获取到系统推荐角色
+     * @return
+     */
+    @GetMapping("/getRecommendRole")
+    public AjaxResult getRecommendRole(){
+
+        long orgId = CurrentAccountJwt.get().getOrgId() ;
+
+        // 查询当前组织推荐角色
+        IndustryRoleEntity industryRoleEntity = roleService.getRecommendRole(orgId) ;
+
+        if(industryRoleEntity == null){  // 如果当前组织没有推荐角色，则从商店中找到公共推荐的角色
+            industryRoleEntity = agentStoreService.getRecommendRole() ;
+        }
+
+        return AjaxResult.success(industryRoleEntity) ;
     }
 
     @Override
