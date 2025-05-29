@@ -37,13 +37,17 @@ public class PPTManagerEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 255, comment = "封面")
     private String cover;
 
-    @TableField("layout")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 255, comment = "排版")
-    private String layout;
-
     // 大纲列表，使用json保存
     @TableField("outline_list")
     @Column(type = MySqlTypeConstant.TEXT, comment = "大纲列表")
     private String outlineList;
+
+    @TableField("ppt_config")
+    @Column(type = MySqlTypeConstant.VARCHAR, comment = "PPT配置")
+    private String pptConfig ;
+
+    @TableField("pptx_json")
+    @Column(type = MySqlTypeConstant.VARCHAR, comment = "PPT文件的JSON内容")
+    private String pptxJson ;
 
 }
