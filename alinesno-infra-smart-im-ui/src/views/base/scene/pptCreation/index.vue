@@ -435,14 +435,6 @@ onMounted(() => {
       }
     }
 
-    .upload-button-section {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      width: 100%;
-      padding: 0px;
-    }
-
     .input-button-section {
       display: flex;
       gap: 10px;
@@ -468,65 +460,6 @@ onMounted(() => {
       }
     }
 
-    .example-section {
-      padding: 0px 0px;
-
-      .example-title {
-        color: rgb(44, 44, 54);
-        font-size: 14px;
-        text-align: left;
-        margin-left: 5px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-      }
-
-      .example-list {
-        display: flex;
-        flex-wrap: wrap;
-
-        .example-item {
-          position: relative;
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          height: 40px;
-          background: rgb(242, 243, 247);
-          border-radius: 8px;
-          cursor: pointer;
-          transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          will-change: opacity, transform;
-          width: auto ; // calc(50% - 10px);
-          box-sizing: border-box;
-          padding: 10px;
-          margin: 5px 5px 8px 5px;
-
-          &:hover {
-            background: rgb(232 233 235);
-
-            .example-icon {
-              visibility: inherit;
-            }
-          }
-
-          .example-icon {
-            visibility: hidden;
-            color: #585a73;
-            font-size: 12px;
-          }
-
-          .example-text {
-            flex: 1 1;
-            overflow: hidden;
-            color: #585a73;
-            font-size: 14px;
-            white-space: nowrap;
-            text-align: left;
-            text-overflow: ellipsis;
-            transition: padding-right .2s ease-out;
-          }
-        }
-      }
-    }
   }
 
   .review-footer-message {
