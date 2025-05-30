@@ -1,61 +1,111 @@
 <template>
-    <div class="content-formatter-container">
+    <div class="content-formatter-container exam-pagercontainer">
 
-        <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
-            ref="roleSelectPanelRef" />
 
-        <div class="main-content">
-            <div class="title-section">
-                <span class="title">内容排版，一键按模板格式</span>
-                <span class="description">高效进行内容排版，输入文本后，即刻为您调整段落结构、字体格式等，根据模板进行排版，打造专业美观的内容呈现</span>
-            </div>
+        <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-            <div>
-                <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules"
-                    style="display: flex;gap: 10px;flex-direction: column;" label-width="120px" :label-position="'top'"
-                    size="large">
+            <el-aside width="280px" class="exam-pager-aside">
+                <FunctionList />
+            </el-aside>
 
-                    <div class="input-button-section">
-                        <el-form-item prop="promptText" style="width:100%">
-                            <el-input type="textarea" :rows="8" v-model="ruleForm.promptText" class="input-box" size="large"
-                                resize="none" placeholder="请输入您的数据及分析需求，生成对应的分析报告或进行数据处理" :prefix-icon="Search" />
-                        </el-form-item>
+            <el-main class="exam-pager-main">
+
+                <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
+                    ref="roleSelectPanelRef" />
+
+                <div class="main-content">
+                    <div class="title-section">
+                        <span class="title">
+                            <i class="fa-solid fa-file-contract"></i> 内容排版，一键按模板格式
+                        </span>
+                        <span class="description">高效进行内容排版，输入文本后，即刻为您调整段落结构、字体格式等，根据模板进行排版，打造专业美观的内容呈现</span>
                     </div>
 
-                    <div style="display: flex;flex-direction: row;gap: 10px;">
+                    <div>
+                        <el-form ref="ruleFormRef" :model="ruleForm" :rules="rules"
+                            style="display: flex;gap: 10px;flex-direction: column;" label-width="120px"
+                            :label-position="'top'" size="large">
 
-                        <el-form-item prop="documentType" style="width:33%">
-                            <el-select v-model="ruleForm.documentType" multiple  collapse-tags collapse-tags-tooltip placeholder="请选择文书类型"
-                                style="width: 100%">
-                                <el-option v-for="option in documentOptions" :key="option.value" :border="false"
-                                    :value="option.value" :label="option.label" />
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item prop="businessScenario" style="width:33%">
-                            <el-select v-model="ruleForm.businessScenario" multiple collapse-tags collapse-tags-tooltip placeholder="请选择业务场景"
-                                style="width: 100%">
-                                <el-option v-for="option in businessOptions" :key="option.value" :border="false"
-                                    :value="option.value" :label="option.label" />
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item prop="templateId" style="width:33%">
-                            <el-select placeholder="选择排版模板" v-model="ruleForm.templateId">
-                                <el-option v-for="item in templateList" :key="item.id" :label="item.templateName"
-                                    :value="item.id">
-                                </el-option>
-                            </el-select>
-                        </el-form-item>
+                            <div class="input-button-section">
+
+                                <!-- 附件内容-->
+                                <AttachmentSetionPanel @upload-success="handleUploadSuccess" ref="attachmentPanelRef"
+                                    style="padding: 0px 0px;margin-bottom:0px;" />
+
+                                <el-form-item prop="promptText" style="width:100%;margin-bottom:0px;">
+                                    <el-input type="textarea" :rows="4" v-model="ruleForm.promptText" class="input-box"
+                                        size="large" resize="none" placeholder="请输入您的数据及分析需求，生成对应的分析报告或进行数据处理"
+                                        :prefix-icon="Search" />
+
+                                    <div class="upload-button-section">
+                                        <el-button type="primary" size="large" class="upload-button"
+                                            @click="handleUpload" text bg>
+                                            <i class="fa-solid fa-paperclip"></i> 上传附件
+                                        </el-button>
+                                        <el-button type="primary" size="large" @click="generaterText()">
+                                            <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
+                                        </el-button>
+                                    </div>
+                                </el-form-item>
+                            </div>
+
+                            <div style="display: flex;flex-direction: row;gap: 10px;">
+
+                                <el-form-item prop="documentType" style="width:33%">
+                                    <el-select v-model="ruleForm.documentType" multiple collapse-tags
+                                        collapse-tags-tooltip placeholder="请选择文书类型" style="width: 100%">
+                                        <el-option v-for="option in documentOptions" :key="option.value" :border="false"
+                                            :value="option.value" :label="option.label" />
+                                        <template #prefix>
+                                            <span>文档类型</span>
+                                        </template>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item prop="businessScenario" style="width:33%">
+                                    <el-select v-model="ruleForm.businessScenario" multiple collapse-tags
+                                        collapse-tags-tooltip placeholder="请选择业务场景" style="width: 100%">
+                                        <el-option v-for="option in businessOptions" :key="option.value" :border="false"
+                                            :value="option.value" :label="option.label" />
+                                        <template #prefix>
+                                            <span>场景</span>
+                                        </template>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item prop="templateId" style="width:33%">
+                                    <el-select placeholder="选择排版模板" v-model="ruleForm.templateId">
+                                        <el-option v-for="item in templateList" :key="item.id"
+                                            :label="item.templateName" :value="item.id">
+                                        </el-option>
+                                        <template #prefix>
+                                            <span>模板</span>
+                                        </template>
+                                    </el-select>
+                                </el-form-item>
+                            </div>
+                        </el-form>
                     </div>
-                </el-form>
-            </div>
 
-            <el-button type="primary" size="large" @click="generaterText()" class="send-button">
+                    <!-- <el-button type="primary" size="large" @click="generaterText()" class="send-button">
                 内容重新排版 &nbsp; <i class="fa-solid fa-paper-plane" style="font-size:15px"></i>
-            </el-button>
-        </div>
-        <div class="review-footer-message">
-            <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
-        </div>
+            </el-button> -->
+                    <div class="example-section">
+                        <div class="example-title">你可以这样提问</div>
+                        <div class="example-list">
+                            <div v-for="(item, index) in topics" :key="index" class="example-item"
+                                @click="handleExampleClick(item)">
+                                <span class="example-text">{{ item.text }}</span>
+                                <i class="fa-solid fa-paper-plane example-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="review-footer-message">
+                    <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
+                </div>
+            </el-main>
+        </el-container>
     </div>
 </template>
 
@@ -63,6 +113,9 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+
+import FunctionList from './functionList'
+import AttachmentSetionPanel from '@/views/base/scene/pptCreation/common/attachmentSection'
 
 import { getScene, updateChapterPromptContent } from '@/api/base/im/scene/contentFormatter';
 import SnowflakeId from "snowflake-id";
@@ -105,6 +158,20 @@ const rules = reactive({
     ]
 });
 
+const topics = [
+    { text: "大学生职业生涯规划" },
+    { text: "房地产行业调控后市场走向" },
+    { text: "生态保护与企业发展兼容方案" },
+    { text: "健康生活方式的趋势" },
+    { text: "虚拟货币市场的发展历程与未来展望" },
+    { text: "新能源汽车市场现状与发展预测" },
+    { text: "人工智能的发展趋势与未来展望" },
+    { text: "公益事业与企业社会责任的结合" },
+    { text: "2025在线教育的发展与挑战" },
+    { text: "企业数字化执行阻力突破" },
+    { text: "年度工作回顾与未来规划" }
+];
+
 const businessOptions = ref([
     { value: 'government', label: '政务' },
     { value: 'commerce', label: '商务' },
@@ -142,12 +209,32 @@ const documentOptions = ref([
     { value: 'resume', label: '简历' }
 ]);
 
-const list = [
-    { text: "分析某电商平台近三个月的销售数据并生成趋势报告" },
-    { text: "对公司员工的绩效数据进行清洗和统计分析" },
-    { text: "根据市场调研数据，撰写一份竞品分析报告" },
-    { text: "对某APP的用户行为数据进行聚类分析并给出优化建议" }
-];
+// const list = [
+//     { text: "分析某电商平台近三个月的销售数据并生成趋势报告" },
+//     { text: "对公司员工的绩效数据进行清洗和统计分析" },
+//     { text: "根据市场调研数据，撰写一份竞品分析报告" },
+//     { text: "对某APP的用户行为数据进行聚类分析并给出优化建议" }
+// ];
+
+const channelStreamId= ref(route.query.channelStreamId || snowflake.generate())
+
+// 添加attachmentPanelRef引用
+const attachmentPanelRef = ref(null);
+
+// 处理上传成功
+const handleUploadSuccess = (fileInfo) => {
+  console.log('文件上传成功:', fileInfo);
+  // 这里可以保存storageId到表单数据中
+  // 例如: formData.value.attachments.push(fileInfo.storageId);
+  formData.value.attachments.push(fileInfo.storageId);
+};
+
+// 修改handleUpload方法，直接调用子组件的上传
+const handleUpload = () => {
+  if (attachmentPanelRef.value) {
+    attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
+  }
+};
 
 const currentSceneInfo = ref({
     sceneName: '文书生成',
@@ -173,6 +260,7 @@ const handleGetScene = () => {
         if (res.data.genStatus == 1) {
             jumpDataParser();
         }
+
     })
 }
 
@@ -211,7 +299,7 @@ const jumpDataParser = () => {
         query: {
             sceneId: sceneId.value,
             genStatus: false,
-            channelStreamId: snowflake.generate()
+            channelStreamId: channelStreamId.value 
         }
     })
 }
@@ -237,7 +325,24 @@ watch([() => ruleForm.documentType, () => ruleForm.businessScenario, () => ruleF
 onMounted(() => {
     handleGetScene();
     handleGetTemplates();
+
 })
+
+// route改变了
+// watch(() => route.query.channelStreamId, (newValue, oldValue) => {
+//     console.log('channelStreamId changed from ' + oldValue + ' to ' + newValue);
+//     channelStreamId.value = newValue;
+
+//     if (!route.query.channelStreamId) {
+//         console.log('channelStreamId = ' + channelStreamId.value);
+//         router.replace({
+//             query: {
+//                 ...route.query,
+//                 channelStreamId: channelStreamId.value
+//             }
+//         });
+//     }
+// });
 
 </script>
 
@@ -253,7 +358,7 @@ onMounted(() => {
     .main-content {
         display: flex;
         flex-direction: column;
-        padding-top: calc(10vh - 56px);
+        padding-top: calc(3vh - 56px);
         text-align: center;
         max-width: 1024px;
         margin: auto;
@@ -261,7 +366,7 @@ onMounted(() => {
         .title-section {
             display: flex;
             flex-direction: column;
-            text-align: center;
+            text-align: left;
 
             .title {
                 color: #2C2C36;
@@ -282,7 +387,7 @@ onMounted(() => {
 
         .input-button-section {
             display: flex;
-            gap: 10px;
+            // gap: 10px;
             position: relative;
             box-sizing: border-box;
             width: 100%;
@@ -294,7 +399,7 @@ onMounted(() => {
             border: 1px solid rgb(232, 234, 242);
             margin-top: 30px;
             margin-bottom: 20px;
-            align-items: center;
+            align-items: flex-start;
             flex-direction: column;
 
             .input-box {
@@ -305,65 +410,65 @@ onMounted(() => {
             }
         }
 
-        .example-section {
-            padding: 0px 20px;
+        // .example-section {
+        //     padding: 0px 20px;
 
-            .example-title {
-                color: rgb(44, 44, 54);
-                font-size: 14px;
-                text-align: left;
-                margin-left: 5px;
-                margin-top: 15px;
-                margin-bottom: 15px;
-            }
+        //     .example-title {
+        //         color: rgb(44, 44, 54);
+        //         font-size: 14px;
+        //         text-align: left;
+        //         margin-left: 5px;
+        //         margin-top: 15px;
+        //         margin-bottom: 15px;
+        //     }
 
-            .example-list {
-                display: flex;
-                flex-wrap: wrap;
+        //     .example-list {
+        //         display: flex;
+        //         flex-wrap: wrap;
 
-                .example-item {
-                    position: relative;
-                    display: flex;
-                    gap: 8px;
-                    align-items: center;
-                    height: 40px;
-                    background: rgb(242, 243, 247);
-                    border-radius: 8px;
-                    cursor: pointer;
-                    transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-                    will-change: opacity, transform;
-                    width: calc(50% - 10px);
-                    box-sizing: border-box;
-                    padding: 10px;
-                    margin: 5px 5px 8px 5px;
+        //         .example-item {
+        //             position: relative;
+        //             display: flex;
+        //             gap: 8px;
+        //             align-items: center;
+        //             height: 40px;
+        //             background: rgb(242, 243, 247);
+        //             border-radius: 8px;
+        //             cursor: pointer;
+        //             transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        //             will-change: opacity, transform;
+        //             width: calc(50% - 10px);
+        //             box-sizing: border-box;
+        //             padding: 10px;
+        //             margin: 5px 5px 8px 5px;
 
-                    &:hover {
-                        background: rgb(232 233 235);
+        //             &:hover {
+        //                 background: rgb(232 233 235);
 
-                        .example-icon {
-                            display: block;
-                        }
-                    }
+        //                 .example-icon {
+        //                     display: block;
+        //                 }
+        //             }
 
-                    .example-icon {
-                        display: none;
-                        color: #585a73;
-                        font-size: 12px;
-                    }
+        //             .example-icon {
+        //                 display: none;
+        //                 color: #585a73;
+        //                 font-size: 12px;
+        //             }
 
-                    .example-text {
-                        flex: 1 1;
-                        overflow: hidden;
-                        color: #585a73;
-                        font-size: 14px;
-                        white-space: nowrap;
-                        text-align: left;
-                        text-overflow: ellipsis;
-                        transition: padding-right .2s ease-out;
-                    }
-                }
-            }
-        }
+        //             .example-text {
+        //                 flex: 1 1;
+        //                 overflow: hidden;
+        //                 color: #585a73;
+        //                 font-size: 14px;
+        //                 white-space: nowrap;
+        //                 text-align: left;
+        //                 text-overflow: ellipsis;
+        //                 transition: padding-right .2s ease-out;
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     .review-footer-message {
