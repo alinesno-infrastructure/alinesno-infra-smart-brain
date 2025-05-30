@@ -9,6 +9,7 @@ import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
@@ -243,6 +244,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
             pptGeneratorSceneService.updateSceneAgents(dto);
         }
+        // 文章编写
+        else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
+            IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
+            articleWriterSceneService.updateSceneAgents(dto);
+        }
 
     }
 
@@ -294,6 +300,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
             IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
             return pptGeneratorSceneService.getRoleList(dto);
+        }
+        // 文章编写
+        else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
+            IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
+            return articleWriterSceneService.getRoleList(dto);
         }
 
         return null;
