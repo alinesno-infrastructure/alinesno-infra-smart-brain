@@ -14,6 +14,13 @@ import java.util.stream.Collectors;
 @Getter
 public enum SceneEnum {
 
+    // 文章写作场景(ArticleWriting)
+    ARTICLE_WRITING(new SceneInfoDto(160000000L, "文章写作", "articleWriting", "专业的文章生成、编辑和优化场景，支持多类型文章创作", "已集成", "1", "", "fa-solid fa-feather", true,
+            List.of(
+                    new SceneAgent(160000001L, "写作专员", "articleWriter", "负责文章内容的创作、编辑和优化，确保逻辑连贯、表达流畅"),
+                    new SceneAgent(160000002L, "排版专员", "articleLayoutDesigner", "负责文章的格式排版、视觉优化和多媒体元素整合")
+            )
+    )),
     // 深度搜索场景(DeepSearch)
     DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "1", "", "fa-solid fa-magnifying-glass", true,
             List.of(
@@ -77,11 +84,10 @@ public enum SceneEnum {
             )
     )),
     // 项目检索
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git或者SVN等，获取到进度更新情况，并进行汇总归纳", "已集成", "0", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git或者SVN等，获取到进度更新情况，并进行汇总归纳", "已集成", "1", "", "fa-solid fa-chart-line",
             Arrays.asList(
-                    new SceneAgent(80000801L, "禅道进度提取助手", "progressExtractor", "从禅道系统中提取产品的进度信息。"),
-                    new SceneAgent(80000802L, "Git进度提取助手", "progressExtractor", "从 Git 仓库中提取产品的开发进度信息。"),
-                    new SceneAgent(80000804L, "报表生成助手", "summarizer", "根据进度信息生成产品进度报表。")
+                    new SceneAgent(80000801L, "进度采集助手", "progressCollector", "从版本管理系统中提取产品的进度信息。"),
+                    new SceneAgent(80000802L, "项目情况分析助手", "progressAnalyzer", "从版本仓库中提取产品的开发进度信息，并提供数据分析")
             )));
 
     private final SceneInfoDto sceneInfo;
