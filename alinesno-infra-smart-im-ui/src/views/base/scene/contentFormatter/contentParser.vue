@@ -1,9 +1,19 @@
 <template>
-    <div class="content-parser-container">
-        <el-row>
+    <div class="content-parser-container exam-pagercontainer">
+
+
+    <el-container style="height:calc(100vh - 60px );background-color: #fff;">
+
+      <el-aside width="280px" class="exam-pager-aside">
+        <FunctionList />
+      </el-aside>
+
+      <el-main class="exam-pager-main">
+
+        <el-row style="margin-left:20px;">
 
             <!-- 左侧内容编辑 -->
-            <el-col :span="10">
+            <el-col :span="12">
                 <div style="font-size: 16px;font-weight: bold;display: flex;align-items: center;gap:5px; justify-content: flex-start;">
                     <el-button type="primary" text bg @click="onClickLeft()">
                         <i class="fa-solid fa-arrow-left"></i>
@@ -20,7 +30,7 @@
             </el-col>
 
             <!-- 右侧内容编辑 -->
-            <el-col :span="14">
+            <el-col :span="12">
                 <div style="padding: 20px;padding-top: 0px;">
                     <el-steps class="mb-4" style="width: 100%;cursor: pointer;" :space="200" :active="currentActive" simple >
                         <el-step @click="handleStepClick(1)" title="文本概览" :icon="Edit" />
@@ -48,6 +58,9 @@
             </el-col>
         </el-row>
 
+        </el-main>
+        </el-container>
+
          <!-- 运行抽屉 -->
         <div class="aip-flow-drawer">
             <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
@@ -70,6 +83,7 @@ const router = useRouter()
 const route = useRoute()
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import FunctionList from './functionList'
 
 import { getScene } from '@/api/base/im/scene/contentFormatter';
 
