@@ -128,6 +128,21 @@ const screenRoutes = [
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+  // -->>>>>>>>>>>> 文章编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/articleWriting/index',
+    component: () => import('@/views/base/scene/articleWriting/index'),
+    name: '/scene/articleWriting/index',
+    meta: { title: '文章编辑', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/articleWriting/articleManager',
+    component: () => import('@/views/base/scene/articleWriting/articleManager'),
+    name: '/scene/articleWriting/articleManager',
+    meta: { title: '文章管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>>> 文章编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   // -->>>>>>>>>>>> PPT编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
     path: '/scene/pptCreation/index',
