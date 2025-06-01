@@ -68,13 +68,29 @@ public class ToolExecutor {
         }
     }
 
+//    private static void setParams(Tool tool, Map<String, String> params) throws IllegalAccessException {
+//        Field[] fields = tool.getClass().getDeclaredFields();
+//        for (Field field : fields) {
+//            if (params.containsKey(field.getName())) {
+//                field.setAccessible(true);
+//                field.set(tool, params.get(field.getName()));
+//            }
+//        }
+//    }
+
     private static void setParams(Tool tool, Map<String, String> params) throws IllegalAccessException {
-        Field[] fields = tool.getClass().getDeclaredFields();
-        for (Field field : fields) {
-            if (params.containsKey(field.getName())) {
-                field.setAccessible(true);
-                field.set(tool, params.get(field.getName()));
+        Class<?> clazz = tool.getClass();
+        // 遍历类的继承层次
+        while (clazz != null) {
+            Field[] fields = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                if (params.containsKey(field.getName())) {
+                    field.setAccessible(true);
+                    field.set(tool, params.get(field.getName()));
+                }
             }
+            // 获取父类
+            clazz = clazz.getSuperclass();
         }
     }
 }
