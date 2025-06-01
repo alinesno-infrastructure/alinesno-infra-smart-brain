@@ -111,6 +111,16 @@ public class SSEChannelController {
     }
 
     /**
+     * 建立SSE连接
+     * @param clientId
+     * @return
+     */
+    @GetMapping(value = "openConnChannel/{clientId}", produces = {MediaType.TEXT_EVENT_STREAM_VALUE})
+    public SseEmitter openConnChannel(@PathVariable("clientId") String clientId) {
+        return service.getConn(clientId);
+    }
+
+    /**
      * 关闭SSE连接
      * @param clientId
      * @return
