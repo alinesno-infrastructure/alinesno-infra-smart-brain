@@ -16,6 +16,16 @@ import java.util.Map;
 public abstract class Tool {
 
    /**
+    *  账号ID
+    */
+   public String accountId ;
+
+   /**
+    *  组织ID
+    */
+   public String accountOrgId ;
+
+   /**
    * 任务执行
    * @return
    */
