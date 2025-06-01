@@ -198,6 +198,30 @@ const screenRoutes = [
     name: '/scene/productResearch/index',
     meta: { title: '产品进度汇总', icon: 'fa-solid fa-chart-line', affix: true }
   },
+  {
+    path: '/scene/productResearch/agentChatPanel',
+    component: () => import('@/views/base/scene/productResearch/agentChatPanel'),
+    name: '/scene/productResearch/agentChatPanel',
+    meta: { title: 'AI数据分析', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/productResearch/projectManagement',
+    component: () => import('@/views/base/scene/productResearch/projectManagement'),
+    name: '/scene/productResearch/projectManagement',
+    meta: { title: '项目管理', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/productResearch/taskMonitoring',
+    component: () => import('@/views/base/scene/productResearch/taskMonitoring'),
+    name: '/scene/productResearch/taskMonitoring',
+    meta: { title: '任务监控', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/productResearch/teamConfiguration',
+    component: () => import('@/views/base/scene/productResearch/teamConfiguration'),
+    name: '/scene/productResearch/teamConfiguration',
+    meta: { title: '团队配置', icon: 'fa-solid fa-chart-line', affix: true }
+  },
   // -->>>>>>>>>>>> 产品进度汇总场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 通用智能体_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
