@@ -63,6 +63,9 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
             Type type = new TypeToken<Map<String, String>>(){}.getType();
             Map<String, String> paramMap = gson.fromJson(paramStr, type);
 
+            paramMap.put("accountId", String.valueOf(dto.getOperatorId()));
+            paramMap.put("accountOrgId", String.valueOf(dto.getOrgId()));
+
             Object output = ToolExecutor.executeGroovyScript(groovyScript, paramMap, new HashMap<>());
             log.debug("工具执行结果：{}", output);
 
