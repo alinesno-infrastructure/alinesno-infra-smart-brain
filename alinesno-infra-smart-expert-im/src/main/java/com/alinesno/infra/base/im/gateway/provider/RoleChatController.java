@@ -116,6 +116,7 @@ public class RoleChatController extends SuperController {
 
         chatMessage.setUsers(Collections.singletonList(roleId));
         chatMessage.setAccountId(currentAccountId);
+        chatMessage.setAccountOrgId(CurrentAccountJwt.get().getOrgId());
         messageService.sendUserMessage(chatMessage, roleList, personDto);
 
         ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
