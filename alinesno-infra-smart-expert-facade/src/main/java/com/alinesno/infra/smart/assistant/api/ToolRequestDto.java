@@ -1,12 +1,15 @@
 package com.alinesno.infra.smart.assistant.api;
 
+import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.assistant.api.validate.ConditionalValidJson;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode(callSuper = true)
 @ConditionalValidJson
 @Data
-public class ToolRequestDto {
+public class ToolRequestDto extends BaseDto {
 
     private String script;
 
