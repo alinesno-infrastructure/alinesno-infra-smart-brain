@@ -49,7 +49,7 @@ public class WorkerResponseJson {
 
         return tools.stream()
                 .filter(tool -> TASK_COMPLETE_TOOL.equals(tool.getName()))
-                .map(tool -> tool.getArgsList().get("finalAnswer")+"")
+                .map(tool -> tool.getArgsList().get("finalAnswer"))
                 .findFirst()
                 .orElse(null);
     }
