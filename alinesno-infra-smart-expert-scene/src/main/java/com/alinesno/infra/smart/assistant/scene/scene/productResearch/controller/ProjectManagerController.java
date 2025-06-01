@@ -15,4 +15,4 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/infra/smart/assistant/scene/productResearch")
 public class ProjectManagerController extends BaseController<ProjectManagerEntity, IProjectManagerService> {
 
-}    
+}
