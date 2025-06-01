@@ -111,6 +111,16 @@ defineExpose({
     border-radius: 8px;
 }
 
+.semi-divider {
+    margin-top: 20px;
+    margin-bottom: 16px;
+    border-bottom: .5px solid #f0f0f5;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    color: var(--semi-color-text-0);
+}
+
 .scene-card {
     display: flex;
     flex-direction: row;
