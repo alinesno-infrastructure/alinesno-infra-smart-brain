@@ -168,6 +168,10 @@ public class ReActExpertService extends ExpertService {
 
                         Map<String, String> argsList = tool.getArgsList();
 
+                        // 放置工具用户和组织信息
+                        argsList.put("accountId" , String.valueOf(taskInfo.getAccountId())) ;
+                        argsList.put("accountOrgId" , String.valueOf(taskInfo.getAccountOrgId())) ;
+
                         try {
 
                             log.debug("正在执行工具名称：{}" , toolFullName);
