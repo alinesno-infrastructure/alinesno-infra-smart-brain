@@ -77,6 +77,9 @@ public class MessageTaskInfo implements Serializable {
     // 操作账号ID
     private Long accountId = 0L ;
 
+    // 账号组织ID
+    private Long accountOrgId = 0L ;
+
     // 当前账号用户名
     private String accountName;
 
