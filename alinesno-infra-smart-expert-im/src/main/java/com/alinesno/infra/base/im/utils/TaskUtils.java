@@ -31,6 +31,7 @@ public class TaskUtils {
 
         // 账户信息
         msg.setAccountId(message.getAccountId());
+        msg.setAccountOrgId(message.getAccountOrgId());
         msg.setAccountName(message.getAccountName());
         msg.setAccountIcon(message.getAccountIcon());
         msg.setAccountEmail(message.getAccountEmail()) ;
