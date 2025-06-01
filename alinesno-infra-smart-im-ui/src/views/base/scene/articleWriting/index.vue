@@ -87,12 +87,11 @@
               <!-- 大纲生成预览 -->
               <div class="pager-gen-result-panel">
 
-                <!-- <div v-if="!outline" style="margin-top: 10vh;">
+                <div v-if="!outline" style="margin-top: 10vh;">
                   <el-empty description="当前未生成文章内容，可以上传相关文档和配置场景，生成文章" />
-                </div> -->
+                </div>
 
-                <!-- <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef">  -->
-                <el-scrollbar class="pager-container" ref="scrollbarRef"> 
+                <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef"> 
                     <!-- <div style="font-size:13px;text-align: left;margin-bottom: 10px;color:#888">
                       确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板
                     </div> -->
