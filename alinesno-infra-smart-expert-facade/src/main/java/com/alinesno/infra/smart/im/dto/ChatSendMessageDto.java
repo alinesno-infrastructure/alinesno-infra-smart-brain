@@ -20,6 +20,7 @@ public class ChatSendMessageDto extends BaseDto {
     private String channelStreamId ;  // 频道流ID
 
     private Long accountId ; // 操作账号ID
+    private Long accountOrgId ; // 操作账户所属组织Id
     private String accountName; // 操作账号名称
     private String accountIcon ; // 操作账号头像
     private String accountEmail ; // 操作账号邮箱
