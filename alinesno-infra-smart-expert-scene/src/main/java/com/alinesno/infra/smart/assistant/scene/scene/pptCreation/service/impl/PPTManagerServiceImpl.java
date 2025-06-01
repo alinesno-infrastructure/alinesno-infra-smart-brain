@@ -44,8 +44,8 @@ public class PPTManagerServiceImpl extends IBaseServiceImpl<PPTManagerEntity , P
     @Override
     public List<PPTManagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
         
-        page.setPageNum(0);
-        page.setPageSize(20);
+        page.setPageNum(page.getPageNum());
+        page.setPageSize(page.getPageSize());
 
         Page<PPTManagerEntity> pageBean = new Page<>(page.getPageNum(), page.getPageSize());
 
