@@ -5,7 +5,7 @@
 
             <SideTypePanel />
 
-            <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
+            <div style="width: calc(100% - 220px);padding: 10px;margin: -10px;margin-top: 0px;" v-loading="sceneLoading">
 
                 <div class="search-container-panel">
                     <el-row>
@@ -27,7 +27,7 @@
 
                 </div>
 
-                <div class="banner-container-panel" v-if="recommendRole">
+                <div class="banner-container-panel" v-if="recommendRole" style="margin-left:10px;">
                     <el-row>
                         <el-col :span="18">
 
