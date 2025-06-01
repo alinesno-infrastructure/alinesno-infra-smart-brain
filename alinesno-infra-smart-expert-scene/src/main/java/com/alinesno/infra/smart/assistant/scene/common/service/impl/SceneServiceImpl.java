@@ -19,6 +19,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGene
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGeneratorSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
@@ -249,6 +250,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
             articleWriterSceneService.updateSceneAgents(dto);
         }
+        //  向量检索
+         else if(sceneTypeCode.equals(SceneEnum.PRODUCT_RESEARCH.getSceneInfo().getCode())){
+            IProjectResearchSceneService productResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
+              productResearchSceneService.updateSceneAgents(dto);
+        }
 
     }
 
@@ -305,6 +311,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
             return articleWriterSceneService.getRoleList(dto);
+        }
+        // 项目检索
+        else if(sceneTypeCode.equals(SceneEnum.PRODUCT_RESEARCH.getSceneInfo().getCode())){
+             IProjectResearchSceneService projectResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
+             return projectResearchSceneService.getRoleList(dto);
         }
 
         return null;
