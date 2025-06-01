@@ -4,6 +4,23 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 // 连接服务器
 let sseSource ;
 
+// 连接通道，连接成功即可，不会有测试信息
+export function openSseConnectChannel(channelId) {
+    let baseURL = import.meta.env.VITE_APP_BASE_API;
+    sseSource = new EventSource(baseURL + "/v1/api/infra/base/im/sse/openConnChannel/" + parseStrEmpty(channelId));
+    sseSource.onopen = function () {
+        console.log("连接打开");
+    }
+
+    // 连接错误
+    sseSource.onerror = function (err) {
+        console.log("连接错误:", err);
+        // handleCloseSse(channelId);
+    }
+
+    return sseSource;
+}
+
 export function openSseConnect(channelId) {
     let baseURL = import.meta.env.VITE_APP_BASE_API;
     sseSource = new EventSource(baseURL + "/v1/api/infra/base/im/sse/openConn/" + parseStrEmpty(channelId));
