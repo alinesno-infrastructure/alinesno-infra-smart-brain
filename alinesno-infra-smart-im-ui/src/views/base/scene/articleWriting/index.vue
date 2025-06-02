@@ -24,6 +24,11 @@
                   依托前沿语言模型，深度解析创作痛点，输入指令 / 要求，迅速输出高水准文章
                 </span>
               </div>
+
+                <ArticleTemplatePanel 
+                  v-model="formData.selectedTemplateId"
+                />
+
               <div class="input-button-section">
                 <div style="width:100%">
                   <!-- 附件内容-->
@@ -87,11 +92,11 @@
               <!-- 大纲生成预览 -->
               <div class="pager-gen-result-panel">
 
-                <div v-if="!outline" style="margin-top: 10vh;">
+                <div :style="!showArticleOutput?'visibility:visible':'visibility:hidden;display:none'" style="margin-top: 10vh;">
                   <el-empty description="当前未生成文章内容，可以上传相关文档和配置场景，生成文章" />
                 </div>
 
-                <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef"> 
+                <el-scrollbar :style="showArticleOutput?'visibility:visible':'visibility:hidden;height:0px;'" class="pager-container" ref="scrollbarRef"> 
                     <!-- <div style="font-size:13px;text-align: left;margin-bottom: 10px;color:#888">
                       确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板
                     </div> -->
@@ -134,7 +139,7 @@ import { ElMessage , ElLoading } from 'element-plus';
 
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
-
+import ArticleTemplatePanel  from './articleTemplate'
 import DataAnalysisDisplay from './agentContentDisplay.vue'
 
 import ArticleTypeConfig from './articleTypeConfig.vue';
@@ -160,9 +165,6 @@ const route = useRoute();
 const router = useRouter();
 
 const topics = [
-    { text: "大学生职业生涯规划" },
-    { text: "房地产行业调控后市场走向" },
-    { text: "生态保护与企业发展兼容方案" },
     { text: "健康生活方式的趋势" },
     { text: "虚拟货币市场的发展历程与未来展望" },
     { text: "新能源汽车市场现状与发展预测" },
@@ -185,6 +187,7 @@ const roleChatPanelRef = ref(null)
 
 const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
+const showArticleOutput = ref(false)
 
 // 表单引用
 const dialogVisible = ref(false);
@@ -199,7 +202,7 @@ const formData = ref({
   difficultyLevel: 'easy',
   channelStreamId: channelStreamId.value ,
   pptConfig: {
-    pages: 'custom',
+    writingType: 'general',
     audience: 'general',
     scenario: 'general',
     tone: 'professional'
@@ -293,7 +296,7 @@ const handleSavePagerQuestion = async () => {
   try {
     // 验证表单
     await formRef.value.validate()
-    console.log('保存试卷数据:', formData.value)
+    console.log('保存文章数据:', formData.value)
 
     const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
 
@@ -349,6 +352,7 @@ const generaterText = async () => {
     console.log('res = ' + res.data);
 
     outline.value = res.data ;
+    showArticleOutput.value = true ;
 
     nextTick(() => {
       dataAnalysisDisplayRef.value.setData(outline.value);
@@ -404,7 +408,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     padding-top: calc(1vh);
-    text-align: center;
+    // text-align: center;
     // max-width: 90%;
     margin: auto;
     padding-left: 20px;
@@ -458,7 +462,7 @@ onMounted(() => {
       background: rgb(255, 255, 255);
       padding: 10px !important;
       border: 1px solid rgb(232, 234, 242);
-      margin-top: 30px;
+      margin-top: 10px;
       margin-bottom: 10px;
       align-items: flex-start;
       flex-direction: column;
