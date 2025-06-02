@@ -40,7 +40,7 @@
       </el-row>
 
       <el-row :gutter="24" class="mb8" >
-         <el-col :span="4" v-for="(item , index) in templateList">
+         <el-col :span="4" v-for="(item , index) in templateList" :key="index">
             <TemplateCardPanel :templateItem="item" :index="index" @configParamFormat="configParamFormat" />
          </el-col>
       </el-row>
