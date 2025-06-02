@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container" style="background-color: #fff;padding-top:10px;">
+    <div class="app-container review-page-contaier">
         <el-page-header @back="goBack" class="review-page-header">
             <template #content>
                 <span class="text-large font-600 mr-3"> 审核规则库</span>
@@ -542,10 +542,6 @@ handleListGroup();
 </script>
 
 <style lang="scss" scoped>
-.review-page-header{
-    margin-bottom: 10px;
-    margin-top: 10px;
-}
 
 
 
