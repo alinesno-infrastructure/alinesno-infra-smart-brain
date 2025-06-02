@@ -28,7 +28,7 @@ public enum SceneEnum {
             )
     )),
     // 通用智能体
-    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用智能体", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
+    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用场景", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
             List.of(
                     new SceneAgent(110000001L, "解决方案助手", "businessProcessor", "业务处理助手负责处理通用业务流程中的各类任务，为后续的结果展示提供准确的数据支持。" , true),
                     new SceneAgent(110000002L, "业务执行助手", "businessExecute", "针对用于处理业务并执行业务指定的内容场景，包括分析业务内容。"),
@@ -40,8 +40,7 @@ public enum SceneEnum {
             List.of(
                     // 出题专员、阅卷专员、组卷专员
                     new SceneAgent(130000000L, "出题专员", "questionGenerator", "根据问题的类型和难度，自动生成试题。" , true) ,
-                    new SceneAgent(130000001L, "阅卷专员", "answerChecker", "对学生的答案进行阅卷，给出正确与否的判断，并给出解析答案") ,
-                    new SceneAgent(130000002L, "组卷专员", "paperGenerator", "根据试题库和考试规则，自动生成试卷。")
+                    new SceneAgent(130000001L, "阅卷专员", "answerChecker", "对学生的答案进行阅卷，给出正确与否的判断，并给出解析答案")
             )
     )),
     // PPT创作
@@ -84,11 +83,23 @@ public enum SceneEnum {
             )
     )),
     // 项目检索
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git或者SVN等，获取到进度更新情况，并进行汇总归纳", "已集成", "1", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git软件项目等，获取到进度更新情况，并进行汇总归纳", "已集成", "1", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "进度采集助手", "progressCollector", "从版本管理系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "项目情况分析助手", "progressAnalyzer", "从版本仓库中提取产品的开发进度信息，并提供数据分析")
-            )));
+            ))),
+    // 原型设计
+    PROTOTYPE_DESIGN(new SceneInfoDto(170000000L, "原型设计", "prototypeDesign", "根据需求文档进行产品原型设计，完成交互逻辑与界面框架规划", "进行中", "1", "", "fa-solid fa-pencil-ruler",
+                 Arrays.asList(
+                     new SceneAgent(170000001L, "需求分析专员", "requirementAnalyzer", "负责解析需求文档，提炼核心功能点与用户交互逻辑"),
+                     new SceneAgent(170000002L, "原型设计专员", "prototypeDesigner", "基于需求分析结果，使用专业工具完成高保真原型设计")
+        ))) ,
+    // 项目管理
+    PROJECT_MANAGEMENT(new SceneInfoDto(180000000L, "项目管理", "projectManagement", "负责项目整体规划、进度跟踪与资源协调", "进行中", "0", "", "fa-solid fa-clipboard-list",
+                Arrays.asList(
+                      new SceneAgent(180000001L, "文档生成专员", "documentGenerator", "根据需求生成各类型文档，包括计划、周报、日报等"),
+                      new SceneAgent(180000002L, "进度分析专员", "progressAnalyzer", "根据进度情况分析项目风险，人员安排等")
+    )));
 
     private final SceneInfoDto sceneInfo;
 
