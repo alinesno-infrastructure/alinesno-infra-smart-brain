@@ -143,6 +143,21 @@ const screenRoutes = [
   },
   // -->>>>>>>>>>>> 文章编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
+  // -->>>>>>>>>>>> 原型设计_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+  {
+    path: '/scene/prototypeDesign/index',
+    component: () => import('@/views/base/scene/prototypeDesign/index'),
+    name: '/scene/prototypeDesign/index',
+    meta: { title: '原型设计', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/prototypeDesign/articleManager',
+    component: () => import('@/views/base/scene/prototypeDesign/articleManager'),
+    name: '/scene/prototypeDesign/articleManager',
+    meta: { title: '原型管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  // -->>>>>>>>>>>> 原型设计_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
   // -->>>>>>>>>>>> PPT编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   {
     path: '/scene/pptCreation/index',
