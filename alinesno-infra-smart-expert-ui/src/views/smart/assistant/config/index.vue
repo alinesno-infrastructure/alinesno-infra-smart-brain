@@ -99,7 +99,7 @@ const globalConfigs = [
 const modelConfigs = [
   {
     id: 3,
-    configName: "模板配置",
+    configName: "输出模板配置",
     configDesc: "系统中存在多种类型的文件需要遵循一定的格式和规范，通过此配置项" , 
     icon: "fa-solid fa-file",
     link: "/template/smart/assistant/template/index"
@@ -125,6 +125,15 @@ const modelConfigs = [
     icon: "fa-solid fa-server",
     status: 0 ,
     link: "/smart/assistant/config/mcpConfig"
+  }, 
+  // 文章模板配置
+  {
+    id: 7,
+    configName: "文章模板配置",
+    configDesc: "此配置项用于对文章模板相关的参数和选项进行设置，以确保文章模板的正常运行和优化使用。",
+    icon: "fa-solid fa-file-lines",
+    status: 0 ,
+    link: "/smart/assistant/template/articleTemplate"
   }
 ];
 </script>
