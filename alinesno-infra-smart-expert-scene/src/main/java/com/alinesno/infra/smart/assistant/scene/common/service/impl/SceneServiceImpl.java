@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterS
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGeneratorSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.prototypeDesign.service.IPrototypeSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
@@ -250,10 +251,15 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
             articleWriterSceneService.updateSceneAgents(dto);
         }
-        //  向量检索
+        // 项目检索
          else if(sceneTypeCode.equals(SceneEnum.PRODUCT_RESEARCH.getSceneInfo().getCode())){
             IProjectResearchSceneService productResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
               productResearchSceneService.updateSceneAgents(dto);
+        }
+         // 原型设计
+         else if(sceneTypeCode.equals(SceneEnum.PROTOTYPE_DESIGN.getSceneInfo().getCode())){
+            IPrototypeSceneService prototypeDesignSceneService = SpringUtils.getBean(IPrototypeSceneService.class) ;
+               prototypeDesignSceneService.updateSceneAgents(dto);
         }
 
     }
@@ -316,6 +322,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.PRODUCT_RESEARCH.getSceneInfo().getCode())){
              IProjectResearchSceneService projectResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
              return projectResearchSceneService.getRoleList(dto);
+        }
+        // 原型设计
+         else if(sceneTypeCode.equals(SceneEnum.PROTOTYPE_DESIGN.getSceneInfo().getCode())){
+            IPrototypeSceneService prototypeDesignSceneService = SpringUtils.getBean(IPrototypeSceneService.class) ;
+              return prototypeDesignSceneService.getRoleList(dto);
         }
 
         return null;
