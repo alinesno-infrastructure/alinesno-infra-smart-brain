@@ -3,6 +3,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 // 接口配置项
 var prefix = '/api/infra/smart/assistant/scene/articleGenerate/' ;
+var templatePrefix = '/api/infra/smart/assistant/scene/articleTemplate/' ; 
 
 var managerUrl = {
   // 大文本
@@ -35,6 +36,25 @@ var managerUrl = {
   getPagerDetail: prefix +"getPagerDetail",
   updatePagerQuestion: prefix +"updatePagerQuestion",
   savePPTOutline: prefix +"savePPTOutline",
+
+  getAllArticleTemplateType: templatePrefix +"getAllArticleTemplate",
+  getTemplateByType: templatePrefix +"getTemplateByType",
+}
+
+// 获取模型类型
+ export function getAllArticleTemplateType() {
+  return request({
+    url: managerUrl.getAllArticleTemplateType , 
+    method: 'get'
+  })
+}
+
+// 获取getTemplateByType
+ export function getTemplateByType(typeCode) {
+  return request({
+    url: managerUrl.getTemplateByType + '?typeCode=' + parseStrEmpty(typeCode),
+    method: 'get'
+  })
 }
 
 // savePPTOutline
