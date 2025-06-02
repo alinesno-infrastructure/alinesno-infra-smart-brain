@@ -236,6 +236,12 @@ export const constantRoutes = [
         name: '/template/smart/assistant/template/addTemplate' , 
         meta: { title: '添加模板', icon: 'dashboard', affix: true }
       },
+      {
+        path: "/smart/assistant/template/articleTemplate",
+        component: () => import('@/views/smart/assistant/template/articleTemplate'),
+        name: "/smart/assistant/template/articleTemplate",
+        meta: { title: '文章模板', icon: 'dashboard', affix: true }
+      },
     ]
   },
   {
