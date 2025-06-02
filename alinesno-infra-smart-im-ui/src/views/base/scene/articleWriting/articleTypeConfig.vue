@@ -1,22 +1,21 @@
 <template>
   <div class="ppt-type-config">
     <div class="config-row">
-      <!-- 页数选择 -->
-      <el-select v-model="config.pages" placeholder="请选择页数" size="large" style="width: 200px; margin-right: 20px;">
-        <el-option-group
-          v-for="group in pageOptions"
-          :key="group.label"
-          :label="group.label"
+      <!-- 写作类型选择 -->
+      <el-select v-model="config.writingType" placeholder="请选择写作类型" size="large" style="width: 200px; margin-right: 20px;">
+        <el-option
+          v-for="type in writingTypeOptions"
+          :key="type.value"
+          :label="type.label"
+          :value="type.value"
         >
-          <el-option
-            v-for="option in group.options"
-            :key="option.value"
-            :label="option.label"
-            :value="option.value"
-          />
-        </el-option-group>
+          <span style="margin-right: 10px;">
+            <i :class="type.icon"></i>
+          </span>
+          <span>{{ type.label }}</span>
+        </el-option>
         <template #prefix>
-          <span>页数</span>
+          <span>类型</span>
         </template>
       </el-select>
 
@@ -67,24 +66,16 @@ import { ref, watch } from 'vue';
 
 const emit = defineEmits(['update:modelValue']);
 
-// 页数选项 - 修改为范围格式
-const pageOptions = ref([
-  {
-    label: '固定页数',
-    options: [
-      { value: '5-10', label: '5-10页' },
-      { value: '10-20', label: '10-20页' },
-      { value: '20-30', label: '20-30页' },
-      { value: '30-40', label: '30-40页' },
-      { value: '40-50', label: '40-50页' }
-    ]
-  },
-  {
-    label: '自定义',
-    options: [
-      { value: 'custom', label: '自定义页数' }
-    ]
-  }
+// 写作类型选项 (with Font Awesome 6.x icons)
+const writingTypeOptions = ref([
+  { value: 'general', label: '通用', icon: 'fa-solid fa-file-lines' },
+  { value: 'experience', label: '心得体会', icon: 'fa-solid fa-heart' },
+  { value: 'speech_draft', label: '发言稿', icon: 'fa-solid fa-microphone' },
+  { value: 'meeting_minutes', label: '会议纪要', icon: 'fa-solid fa-clipboard-list' },
+  { value: 'application', label: '申请书', icon: 'fa-solid fa-file-signature' },
+  { value: 'policy_interpretation', label: '政策解读文章', icon: 'fa-solid fa-gavel' },
+  { value: 'advanced_deeds', label: '先进事迹报道', icon: 'fa-solid fa-medal' },
+  { value: 'speech', label: '讲话发言稿', icon: 'fa-solid fa-bullhorn' }
 ]);
 
 // 受众选项
@@ -140,7 +131,7 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: () => ({
-      pages: '10-20', // 默认值改为范围格式
+      writingType: 'general', // 默认值改为通用
       audience: 'general',
       scenario: 'general',
       tone: 'professional'
@@ -150,7 +141,7 @@ const props = defineProps({
 
 // 双向绑定数据
 const config = ref({
-  pages: props.modelValue.pages || '10-20',
+  writingType: props.modelValue.writingType || 'general',
   audience: props.modelValue.audience || 'general',
   scenario: props.modelValue.scenario || 'general',
   tone: props.modelValue.tone || 'professional'
