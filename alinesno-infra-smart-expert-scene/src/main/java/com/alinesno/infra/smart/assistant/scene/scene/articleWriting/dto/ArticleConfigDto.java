@@ -14,11 +14,10 @@ import lombok.NoArgsConstructor;
 public class ArticleConfigDto {
 
     /**
-     * PPT 页码范围（例如："5-10"）
-     * 不可为空
+     * 作业类型
      */
-    @NotBlank(message = "页码范围不能为空")
-    private String pages;
+    @NotBlank(message = "作业类型不能为空")
+    private String writingType;
 
     /**
      * PPT 目标受众（例如："investor" 表示投资者）
@@ -28,7 +27,7 @@ public class ArticleConfigDto {
     private String audience;
 
     /**
-     * PPT 使用场景（例如："analysis" 表示分析报告）
+     * 文章使用场景（例如："analysis" 表示分析报告）
      * 不可为空
      */
     @NotBlank(message = "使用场景不能为空")
