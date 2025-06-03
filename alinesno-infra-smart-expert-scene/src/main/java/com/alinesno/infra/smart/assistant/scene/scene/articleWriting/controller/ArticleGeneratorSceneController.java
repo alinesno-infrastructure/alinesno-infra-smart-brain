@@ -15,8 +15,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.Article
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleOutlineDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.prompt.ArticlePromptHandle;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleManagerService;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleTemplateService;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
@@ -24,6 +25,7 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
+import com.alinesno.infra.smart.scene.entity.ArticleTemplateEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
@@ -79,6 +81,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
     @Autowired
     private IArticleManagerService pptManagerSceneService;
+
+    @Autowired
+    private IArticleTemplateService articleTemplateService ;
 
     @Autowired
     private IIndustryRoleService roleService ;
@@ -165,7 +170,12 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
             taskInfo.setAttachments(attachmentList);
         }
 
-        String promptText = ArticlePromptHandle.generatorPrompt(dto) ;
+        ArticleTemplateEntity templateEntity = null ;
+        if(dto.getSelectedTemplateId() != null){
+            templateEntity =  articleTemplateService.getById(dto.getSelectedTemplateId()) ;
+        }
+
+        String promptText = ArticlePromptHandle.generatorPrompt(dto , templateEntity) ;
 
         taskInfo.setRoleId(articleWriterEngineer);
         taskInfo.setChannelStreamId(dto.getChannelStreamId());
