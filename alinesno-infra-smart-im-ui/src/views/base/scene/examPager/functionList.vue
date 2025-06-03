@@ -42,14 +42,14 @@ const emits = defineEmits([
 ])
 
 const functionList = ref([
-  {
-    name: '题库组卷', // 菜单名称（可自定义）
-    icon: 'fa-solid fa-layer-group', // 组卷相关图标（示例用"图层组"图标，可替换为更贴切的图标）
-    status: 'done', // 任务状态（可根据实际情况设置为 loading/done）
-    log: '已完成快速组卷任务', // 任务描述
-    isSelected: false, 
-    link: '/scene/examPager/quickPaper' // 路由链接（需根据实际业务路径调整）
-  },
+  // {
+  //   name: '题库组卷', // 菜单名称（可自定义）
+  //   icon: 'fa-solid fa-layer-group', // 组卷相关图标（示例用"图层组"图标，可替换为更贴切的图标）
+  //   status: 'done', // 任务状态（可根据实际情况设置为 loading/done）
+  //   log: '已完成快速组卷任务', // 任务描述
+  //   isSelected: false, 
+  //   link: '/scene/examPager/quickPaper' // 路由链接（需根据实际业务路径调整）
+  // },
   {
     name: '试卷管理',
     icon: 'fa-solid fa-file-pen', // Font Awesome 6.x 试卷/编辑图标
