@@ -21,6 +21,9 @@ public class ArticleGeneratorDTO extends BaseDto {
     @NotNull(message = "场景ID不能为空")
     private Long sceneId;
 
+    @NotBlank(message = "模板ID不能为空")
+    private String selectedTemplateId ;
+
     @NotBlank(message = "难度等级不能为空")
     private String difficultyLevel;
 
