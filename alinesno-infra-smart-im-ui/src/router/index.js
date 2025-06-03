@@ -151,10 +151,16 @@ const screenRoutes = [
     meta: { title: '原型设计', icon: 'fa-solid fa-file-word', affix: true }
   },
   {
-    path: '/scene/prototypeDesign/articleManager',
-    component: () => import('@/views/base/scene/prototypeDesign/articleManager'),
-    name: '/scene/prototypeDesign/articleManager',
+    path: '/scene/prototypeDesign/prototypeManager',
+    component: () => import('@/views/base/scene/prototypeDesign/prototypeManager'),
+    name: '/scene/prototypeDesign/prototypeManager',
     meta: { title: '原型管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/prototypeDesign/prototypeParser',
+    component: () => import('@/views/base/scene/prototypeDesign/components/prototypeParser'),
+    name: '/scene/prototypeDesign/prototypeParser',
+    meta: { title: '原型编辑', icon: 'fa-solid fa-file-word', affix: true }
   },
   // -->>>>>>>>>>>> 原型设计_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
