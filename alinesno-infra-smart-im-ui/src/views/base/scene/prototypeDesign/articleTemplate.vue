@@ -11,23 +11,24 @@
     </div>
 
     <!-- 模型列表 -->
-    <el-scrollbar style="height:170px">
+    <el-scrollbar style="height:calc(100vh - 230px)">
       <div class="article-template-list" v-if="filteredTemplateList.length > 0">
 
         <div class="article-template-item" v-for="item in filteredTemplateList" :key="item.id"
           :class="{ 'active': selectedTemplateCode === item.id }" @click="selectTemplate(item)">
-          <div class="template-icon">
-            <img :src="imagePathByPath(item.icon)" alt="模板图标" />
-          </div>
 
           <div class="template-content">
             <div class="article-template-item-title">
-              {{ truncateString(item.name, 6) }}
+              {{ truncateString(item.name, 8) }}
             </div>
             <div class="article-template-item-content">
-              {{ truncateString(item.description, 14) }}
+              {{ truncateString(item.description, 54) }}
             </div>
           </div>
+
+          <div class="template-icon" :style="'background-size: 100%; background-image: url(&quot;' + imagePathByPath(item.icon) + '&quot;)'">
+          </div>
+
         </div>
       </div>
 
@@ -161,16 +162,17 @@ watch(() => props.modelValue, (newVal) => {
     .article-template-item {
       display: flex;
       font-size: 14px;
-      background: #f5f5f5;
-      border-radius: 8px;
       padding: 8px;
       margin-right: 10px;
       margin-bottom: 10px;
+      background-color: #fafafa;
       gap: 10px;
-      width: calc(25% - 10px);
+      width: calc(50% - 10px);
       cursor: pointer;
       transition: all 0.3s;
-      align-items: center;
+      align-items: flex-start;
+      line-height: 23px;
+      border-radius: 12px;
 
       &:hover {
         // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -184,16 +186,14 @@ watch(() => props.modelValue, (newVal) => {
       }
 
       .template-icon {
-        width: 40px;
-        height: 50px;
+        width: 50%;
+        max-width: 197px;
+        height: 160px;
         flex-shrink: 0;
-
-        img {
-          width: 100%;
-          height: 100%;
-          border-radius: 5px;
-          object-fit: cover;
-        }
+        box-shadow: 0 -2.7px 16.2px 0 rgba(56, 49, 80, .12);
+        position: relative;
+        transform-origin: right bottom;
+        border-radius: 10px;
       }
 
       .template-content {
@@ -204,8 +204,11 @@ watch(() => props.modelValue, (newVal) => {
       }
 
       .article-template-item-title {
-        font-size: 14px;
         color: #444;
+        margin-top: 10px;
+        margin-bottom: 15px;
+        font-size: 20px;
+        font-weight: 550;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -217,11 +220,8 @@ watch(() => props.modelValue, (newVal) => {
 
       .article-template-item-content {
         margin-top: 3px;
-        font-size: 12px;
+        font-size: 14px;
         color: #777;
-        // white-space: nowrap;
-        // overflow: hidden;
-        // text-overflow: ellipsis;
       }
     }
   }
