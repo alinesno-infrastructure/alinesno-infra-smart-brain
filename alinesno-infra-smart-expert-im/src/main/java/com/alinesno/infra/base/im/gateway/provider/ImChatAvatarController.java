@@ -1,9 +1,11 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
+import com.alinesno.infra.base.im.utils.ImageService;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -11,12 +13,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @RestController
@@ -29,22 +35,66 @@ public class ImChatAvatarController {
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
 
+    @Autowired
+    private ImageService imageService ;
+
     /**
-     * 显示图片
+     * 处理图片远程加载的问题
+     * @param imageId
+     * @param request
      * @return
      */
     @GetMapping("/displayImage/{imageId}")
-    public ResponseEntity<byte[]> displayImage(@PathVariable("imageId") String imageId){
+    @Async
+    public CompletableFuture<ResponseEntity<byte[]>> displayImage(
+            @PathVariable String imageId,
+            HttpServletRequest request) {
 
-        byte[] byteBody = null ;
-        try{
-            byteBody = storageConsumer.download(imageId , progress -> {}) ;
-        }catch(Exception e){
-            log.error("文件下载失败:{}" , e.getMessage());
-        }
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                byte[] byteBody = imageService.getImage(imageId);
+                if (byteBody == null) {
+                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+                }
 
-        return new ResponseEntity<>(byteBody, new HttpHeaders(), HttpStatus.OK);
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.IMAGE_JPEG);
+
+                // 设置协商缓存
+                String tag = "\"" + DigestUtils.md5DigestAsHex(byteBody) + "\"";
+                headers.setETag(tag);
+
+                // 检查客户端缓存
+                String ifNoneMatch = request.getHeader("If-None-Match");
+                if (tag.equals(ifNoneMatch)) {
+                    return new ResponseEntity<>(null, headers, HttpStatus.NOT_MODIFIED);
+                }
+
+                headers.setCacheControl("public, max-age=3600"); // 浏览器缓存1小时
+                return new ResponseEntity<>(byteBody, headers, HttpStatus.OK);
+            } catch (Exception e) {
+                log.error("获取图片失败:{}", e.getMessage());
+                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        });
     }
+
+//    /**
+//     * 显示图片
+//     * @return
+//     */
+//    @GetMapping("/displayImage/{imageId}")
+//    public ResponseEntity<byte[]> displayImage(@PathVariable("imageId") String imageId){
+//
+//        byte[] byteBody = null ;
+//        try{
+//            byteBody = storageConsumer.download(imageId , progress -> {}) ;
+//        }catch(Exception e){
+//            log.error("文件下载失败:{}" , e.getMessage());
+//        }
+//
+//        return new ResponseEntity<>(byteBody, new HttpHeaders(), HttpStatus.OK);
+//    }
 
     /**
      * 文件上传
