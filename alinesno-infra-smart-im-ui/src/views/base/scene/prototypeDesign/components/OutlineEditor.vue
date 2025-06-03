@@ -1,352 +1,558 @@
 <template>
-  <div class="outline-editor">
-    <div class="item" 
-      :class="[{ 'title': item.title }, `lv-${item.lv}`]"
-      v-for="item in data"
-      :key="item.id"
-      :data-lv="item.lv"
-      :data-id="item.id"
-      v-contextMenu="contextmenus" 
-    >
-      <Input 
-        class="editable-text" 
-        :value="item.content" 
-        v-if="activeItemId === item.id" 
-        @blur="$event => handleBlur($event, item)"
-        @enter="$event => handleEnter($event, item)"
-        @backspace="$event => handleBackspace($event, item)"
-      />
-      <div class="text" @click="handleFocus(item.id)" v-else>{{ item.content }}</div>
+    <div>
+        <el-card class="box-card" shadow="never">
+            <template #header>
+                <div class="card-header">
+                    <div style="display: flex;align-items: center;gap: 5px;">
 
-      <div class="flag"></div>
+                        <el-button type="primary" size="large" text bg @click="onClickLeft()">
+                            <i class="fa-solid fa-arrow-left"></i>
+                        </el-button>
+
+                        <i class="fa-solid fa-file-pdf"></i> {{ currentSceneInfo.sceneName }}
+
+                        <el-tooltip v-for="(item,index) in currentSceneInfo.businessProcessorEngineers" :key="index"
+                            class="box-item" 
+                            effect="dark" 
+                            :content="item.roleName" 
+                            placement="top">
+                            <span class="edit-header-avatar">
+                                <img :src="imagePathByPath(item.roleAvatar)" @click="selectChaterGenerator(item)" />
+                            </span>
+                        </el-tooltip>
+
+                    </div>
+                    <span>
+
+                        <el-tooltip class="box-item" effect="dark" content="添加章节" placement="top">
+                            <el-button type="primary" text bg size="large" @click="addChapter">
+                                <i class="fa-solid fa-plus-minus"></i>  &nbsp; 添加
+                            </el-button>
+                        </el-tooltip>
+
+                        <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
+                            <el-button type="success" text bg size="large" @click="getOutlineJsonSingle">
+                                <i class="fa-solid fa-file-shield"></i> &nbsp; 保存
+                            </el-button>
+                        </el-tooltip>
+
+                    </span>
+                </div>
+            </template>
+            <el-scrollbar style="height:calc(100vh - 150px)">
+                <div class="data-outline-tree-content">
+                    <el-tree :data="outline" 
+                        node-key="id" 
+                        default-expand-all 
+                        draggable 
+                        :empty-text="treeEmptyText"
+                        :allow-drop="allowDrop"
+                        :allow-drag="allowDrag" 
+                        @node-click="handleNodeClick" 
+                        @node-contextmenu="handleNodeContextMenu">
+                        <template #default="{ node, data }">
+                            <div class="custom-tree-node" style="height:auto;">
+                                <div style="display: flex;flex-direction: column;">
+                                    <div style="font-size: 16px;font-weight: bold;">
+                                        {{ node.label }}
+                                    </div>
+                                    <div class="description">
+                                        <span style="color: #777;">{{ data.description }}</span>
+                                    </div>
+                                </div>
+                                <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
+                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
+
+                                    <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
+                                    <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
+                                    <el-button type="text" icon="EditPen" bg size="mini" @click.stop="editContent(node, data)"></el-button>
+
+                                    <el-popconfirm title="确认要删除章节么?" @confirm="remove(node, data)">
+                                        <template #reference>
+                                            <el-button type="text" icon="Delete" bg size="mini"></el-button>
+                                        </template>
+                                    </el-popconfirm>
+                                </span>
+                            </div>
+                        </template>
+                    </el-tree>
+                </div>
+            </el-scrollbar>
+        </el-card>
+
+        <!-- 编辑节点 -->
+        <el-dialog title="编辑节点" v-model="dialogVisible" width="900px">
+
+            <el-form label-width="80px" size="large">
+                <el-form-item label="节点名称">
+                    <el-input v-model="editingNodeLabel" placeholder="请输入节点名称" />
+                </el-form-item>
+                <el-form-item label="节点描述">
+                    <el-input type="textarea" :rows="5" resize="none" v-model="editingDescription" placeholder="请输入节点描述" />
+                </el-form-item>
+            </el-form>
+
+            <div class="dialog-footer">
+                <el-button @click="dialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveEdit()">确 认</el-button>
+            </div>
+        </el-dialog>
+
+        <!-- 生成流式内容 -->
+        <el-dialog title="由以下工程师生成大纲" v-model="chaterDialogVisible" width="600px">
+
+                <el-card class="person-card" shadow="never">
+                    <div style="display: flex;gap: 20px;align-items: center;">
+                        <div>
+                            <el-avatar :size="60" :src="imagePathByPath(person.roleAvatar)"></el-avatar>
+                        </div>
+                        <div>
+                            <h2 style="font-weight: bold;">{{ person.roleName }}</h2>
+                            <el-row>
+                                <el-col :span="24">
+                                    <div style="margin-bottom: 10px;">
+                                    {{ person.responsibilities }}
+                                    </div>
+                                </el-col>
+                            </el-row>
+                        </div>
+                    </div>
+                </el-card>
+
+                <el-input size="large" v-model="message" placeholder="请输出针对于本章节内容的一些自定义要求"></el-input>
+
+            <div class="dialog-footer">
+                <el-button size="large" @click="chaterDialogVisible = false">取 消</el-button>
+                <el-button size="large" type="primary" @click="openChatBoxStreamContent()">开始规划</el-button>
+            </div>
+        </el-dialog> 
+
+        <!-- Agent选择组件_start -->
+        <!-- <TransferAgentPanel ref="transferAgentPanel" @handleCloseAgentConfig="handleCloseAgentConfig" /> -->
+        <!-- Agent选择组件_end -->
+
     </div>
-  </div>
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted, watch } from 'vue'
-import { nanoid } from 'nanoid'
-import Input from './Input.vue'
 
-const props = defineProps({
-  value: String
+import { ref, reactive, nextTick } from 'vue';
+import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
+
+import { getParam } from '@/utils/ruoyi'
+// import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
+
+import {
+    // updateChapterEditor, 
+    updateSceneGenStatus ,
+    getScene,
+    saveDataPlan,
+    chatRole,
+} from '@/api/base/im/scene/generalAgent'
+
+const route = useRoute();
+const { proxy } = getCurrentInstance();
+
+// const route = useRoute();
+const channelStreamId = ref(route.query.channelStreamId);
+
+const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
+const emit = defineEmits([
+    'setCurrentSceneInfo' , 
+    'getChannelStreamId',
+    'openChatBox' ,
+    'closeShowDebugRunDialog',
+    'genChapterContentByAgent',
+    'editContent' , 
+    'handleExecuteHandle'
+])
+
+// 选择Agent组件
+const transferAgentPanel = ref(null)
+
+const streamLoading = ref(null)
+
+// 定义人物信息
+const person = ref({
+  roleAvatar: '' , 
+  roleName: '',
+  responsibilities: '',
+  email: 'zhangsan@example.com',
+});
+
+const outline = ref([]);
+
+const dialogVisible = ref(false)
+
+const sceneId = ref(route.query.sceneId)
+const channelAgentConfigTitle = ref("")
+const configAgentDialogVisible = ref(false)
+const channelAgentList = ref([])
+const currentAgentConfigType = ref('chapter')
+
+const currentSceneInfo = ref({
+    id: 0,
+    sceneName: null , 
+    sceneDesc: null , 
+    sceneCount: 0,
+    knowledgeId: null ,
+    chapterEditors: [],
+    contentEditors: [] 
 })
+const currentSceneId = ref(route.query.sceneId)
+const isCheckGenStatus = ref(route.query.genStatus)
 
-const emit = defineEmits(['update:value'])
+const agentList = ref([])
+const chaterDialogVisible = ref(false);
+const editingNode = ref(null);
+const editingNodeLabel = ref('');
+const editingDescription = ref('');
 
-const data = ref([])
-const activeItemId = ref('')
+const message = ref("")  // 生成内容的要求
+const isRoleWriter = ref(false)
 
-watch(data, () => {
-  let markdown = ''
-  const prefixTitle = '#'
-  const prefixItem = '-'
-  for (const item of data.value) {
-    if (item.lv !== 1) markdown += '\n'
-    if (item.title) markdown += `${prefixTitle.repeat(item.lv)} ${item.content}`
-    else markdown += `${prefixItem} ${item.content}`
-  }
-  emit('update:value', markdown)
-})
+const allowDrop = (draggingNode, dropNode, type) => {
+    return type !== 'inner';
+};
 
-onMounted(() => {
-  console.log('data', data.value)
+const allowDrag = (draggingNode) => {
+    return draggingNode.data.id !== 1; // 不允许拖动根节点
+};
 
-  const lines = props.value.split('\n')
-  const result = []
+const handleNodeClick = (data) => {
+    console.log('Node clicked: ', data);
+};
 
-  for (const line of lines) {
-    if (!line.trim()) continue
-
-    const headerMatch = line.match(/^(#+)\s*(.*)/)
-    const listMatch = line.match(/^-\s*(.*)/)
-
-    if (headerMatch) {
-      const lv = headerMatch[1].length
-      const content = headerMatch[2]
-      result.push({
-        id: nanoid(),
-        content,
-        title: true,
-        lv,
-      })
-    }
-    else if (listMatch) {
-      const content = listMatch[1]
-      result.push({
-        id: nanoid(),
-        content,
-        lv: 4,
-      })
-    }
-    else {
-      result.push({
-        id: nanoid(),
-        content: line.trim(),
-        lv: 4
-      })
-    }
-  }
-  data.value = result
-})
-
-const handleFocus = (id) => {
-  activeItemId.value = id
-
-  nextTick(() => {
-    const editableRef = document.querySelector('.editable-text input')
-    editableRef.focus()
-  })
+const openChatBoxStreamContent = () => {
+    chaterDialogVisible.value = false ;
+    emit('openChatBox' , person.value.id, message.value)
 }
 
-const handleBlur = (e, item) => {
-  activeItemId.value = ''
-  const value = e.target.value
-  data.value = data.value.map(_item => {
-    if (_item.id === item.id) return { ..._item, content: value }
-    return _item
-  })
+const handleNodeContextMenu = (event, data, node) => {
+    event.preventDefault();
+    console.log('Node context menu: ', data, node);
+};
+
+const append = (data) => {
+    const newChild = { id: Date.now(), label: '新节点', description: '节点内容描述信息', children: [] };
+    if (!data.children) {
+        data.children = []; // 直接赋值，避免使用 this.$set
+    }
+    data.children.push(newChild);
+};
+
+const remove = (node, data) => {
+    const parent = node.parent;
+    const children = parent.data.children || parent.data;
+    const index = children.findIndex(d => d.id === data.id);
+    children.splice(index, 1);
+};
+
+const edit = (node, data) => {
+    editingNode.value = node;
+    editingDescription.value = data.description;
+    editingNodeLabel.value = node.label;
+    dialogVisible.value = true;
+};
+
+/** 编辑内容 */
+const editContent = (node , data) => {
+    emit('editContent' , node , data)
 }
 
-const handleEnter = (e, item) => {
-  const value = e.target.value
-  if (!value) return
+// 保存编辑节点
+const saveEdit = () => {
+    if (editingNode.value) {
+        editingNode.value.data.label = editingNodeLabel.value;
+        editingNode.value.data.description = editingDescription.value;
+        ElMessage.success('编辑成功');
+        dialogVisible.value = false;
+    }
+};
 
-  activeItemId.value = ''
+/** 生成内容 */
+const genStreamContentByMessage = async (roleIdVal , messageVal) => {
+    message.value = messageVal ; 
+    person.value.id = roleIdVal ;
+    currentSceneId.value = getParam('sceneId') ; 
 
-  if (!item.title) {
-    const index = data.value.findIndex(_item => _item.id === item.id)
-    const newItemId = nanoid()
-    data.value.splice(index + 1, 0, { id: newItemId, content: '', lv: 4 })
+    await genStreamContent();
 
-    nextTick(() => {
-      handleFocus(newItemId)
+}
+
+const onClickLeft = () => {
+    proxy.$router.push({
+        path: '/scene/prototypeDesign/prototypeManager' , 
+        query: {
+            sceneId: '1916710099460558850'
+        }
     })
-  }
 }
 
-const handleBackspace = (e, item) => {
-  if (!item.title) {
-    const value = e.target.value
-    if (!value) deleteItem(item.id)
+/** 生成内容 */
+const genStreamContent = async() => {
+
+  if (!message.value) {
+    proxy.$modal.msgError("请输入消息内容.");
+    return;
   }
+
+//   const channelStreamId = emit('getChannelStreamId');
+  console.log('channelStreamId = ' + channelStreamId.value);
+
+  if(!channelStreamId.value){
+    proxy.$modal.msgError("请先创建场景.");
+    return;
+  }
+
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    text: '任务执行中，请勿操作其它界面 ...',
+    background: 'rgba(0, 0, 0, 0.2)',
+  })
+
+
+  let formData = {
+    sceneId: currentSceneId.value,
+    channelStreamId: channelStreamId.value ,
+    message: message.value,
+    roleId: person.value.id ,
+  }
+
+  console.log('outline.value = ' + outline.value);
+
+  const response = await chatRole(formData)
+  console.log('response = ' + response)
+
+  proxy.$modal.msgSuccess("发送成功");
+  chaterDialogVisible.value = false ;
+  message.value = '';
+
+  // 合并数组
+  Array.prototype.push.apply(outline.value, response.data);
+  closeStreamDialog();
+
+  // 自动保存章节
+  getOutlineJson();
+
+};
+
+const addChapter = () => {
+    const newChapter = { id: Date.now(), label: `第${outline.value.length + 1}章`, description: '节点内容描述信息', children: [] };
+    outline.value.push(newChapter);
+};
+
+/** 选择角色生成目录 */
+function selectChaterGenerator(item) {
+    chaterDialogVisible.value = true;
+    console.log('selectChaterGenerator')
+    // console.log(' personCardRef.value = ' +  personCardRef.value)
+    person.value = item ;
+    person.value.email =  'zhangsan@example.com';
 }
 
-const addItem = (itemId, pos, content) => {
-  const index = data.value.findIndex(_item => _item.id === itemId)
-  const item = data.value[index]
-  if (!item) return
+/** 配置成员 */
+function configAgent(type){
 
-  const id = nanoid()
-  let lv = 4
-  let i = 0
-  let title = false
+    configAgentDialogVisible.value = true ;
+    console.log('configAgent')
 
-  if (pos === 'prev') i = index
-  else i = index + 1
+    currentAgentConfigType.value = type 
+    const title = type == 'chapter'?'选择大纲生成专员':'选择内容生成专员' ; 
 
-  if (item.lv === 1) lv = 2
-  else if (item.lv === 2) {
-    if (pos === 'prev') lv = 2
-    else lv = 3
-  }
-  else if (item.lv === 3) {
-    if (pos === 'prev') lv = 3
-    else lv = 4
-  }
-  else lv = 4
-
-  if (lv < 4) title = true
-
-  data.value.splice(i, 0, { id, content, lv, title })
-}
-
-const deleteItem = (itemId, isTitle) => {
-  if (isTitle) {
-    const index = data.value.findIndex(item => item.id === itemId)
-
-    const targetIds = [itemId]
-    const item = data.value[index]
-    for (let i = index + 1; i < data.value.length; i++) {
-      const afterItem = data.value[i]
-      if (afterItem && afterItem.lv > item.lv) {
-        targetIds.push(afterItem.id)
-      }
-      else break
+    if(type === 'chapter'){
+        channelAgentList.value = currentSceneInfo.value.chapterEditors.map(item => item.id); 
+    }else if(type === 'content'){
+        channelAgentList.value = currentSceneInfo.value.contentEditors.map(item => item.id); 
     }
-    data.value = data.value.filter(item => !targetIds.includes(item.id))
-  }
-  else {
-    data.value = data.value.filter(item => item.id !== itemId)
-  }
+
+    transferAgentPanel.value.handleOpendAgent(title , channelAgentList.value)
+
 }
 
-const contextmenus = (el) => {
-  const lv = +el.dataset.lv
-  const id = el.dataset.id
+/** 关闭选择角色弹窗 */
+function handleCloseAgentConfig(selectAgentList){
+  configAgentDialogVisible.value = false ;
 
-  if (lv === 1) {
-    return [
-      {
-        text: '添加子级大纲（章）',
-        handler: () => addItem(id, 'next', '新的一章'),
-      },
-    ]
-  }
-  else if (lv === 2) {
-    return [
-      {
-        text: '上方添加同级大纲（章）',
-        handler: () => addItem(id, 'prev', '新的一章'),
-      },
-      {
-        text: '添加子级大纲（节）',
-        handler: () => addItem(id, 'next', '新的一节'),
-      },
-      {
-        text: '删除此章',
-        handler: () => deleteItem(id, true),
-      },
-    ]
-  }
-  else if (lv === 3) {
-    return [
-      {
-        text: '上方添加同级大纲（节）',
-        handler: () => addItem(id, 'prev', '新的一节'),
-      },
-      {
-        text: '添加子级大纲（项）',
-        handler: () => addItem(id, 'next', '新的一项'),
-      },
-      {
-        text: '删除此节',
-        handler: () => deleteItem(id, true),
-      },
-    ]
-  }
-  return [
-    {
-      text: '上方添加同级大纲（项）',
-      handler: () => addItem(id, 'prev', '新的一项'),
-    },
-    {
-      text: '下方添加同级大纲（项）',
-      handler: () => addItem(id, 'next', '新的一项'),
-    },
-    {
-      text: '删除此项',
-      handler: () => deleteItem(id),
-    },
-  ]
+  updateChapterEditor(currentSceneId.value , selectAgentList , currentAgentConfigType.value).then(res => {
+    proxy.$modal.msgSuccess("更新成功");
+    handleGetScene() ;
+  })
 }
+
+/** 获取到场景详情 */
+function handleGetScene() {
+    getScene(currentSceneId.value).then(res => {
+      currentSceneInfo.value = res.data
+      outline.value = res.data.chapterTree || [];
+
+      emit('setCurrentSceneInfo' , res.data)
+
+      const genStatus = currentSceneInfo.value.genStatus ;
+      message.value = currentSceneInfo.value.promptContent;
+
+      if(genStatus == 0 && isCheckGenStatus.value && currentSceneInfo.value.promptContent){ // 未生成章节
+        ElMessageBox.confirm( '检测到数据分析指令['+ currentSceneInfo.value.promptContent +']是否执行分析规划？', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        })
+        .then(() => {
+            updateSceneGenStatus(currentSceneId.value , 1).then(res => {
+                person.value = currentSceneInfo.value.businessProcessorEngineers[0];
+                message.value = currentSceneInfo.value.promptContent;
+                openChatBoxStreamContent();
+            })
+        })
+        .catch(() => {
+            console.log('用户取消了生成章节操作');
+        });
+      }
+
+    })
+
+}
+
+const getOutlineJson = () => {
+    const jsonResult = JSON.stringify(outline.value, null, 2);
+    console.log(jsonResult);
+    // 可以在这里处理 JSON 数据，例如发送到服务器或显示在页面上
+
+    saveDataPlan(jsonResult , route.query.sceneId).then(res => {
+        proxy.$modal.msgSuccess("保存成功");
+        handleGetScene()
+        // 章节生成完成之后，开始生成内容
+        emit('genChapterContentByAgent')
+    })
+};
+
+const getOutlineJsonSingle = () => {
+    const jsonResult = JSON.stringify(outline.value, null, 2);
+
+    saveChapter(jsonResult , route.query.sceneId).then(res => {
+        proxy.$modal.msgSuccess("保存成功");
+        handleGetScene()
+    })
+}
+
+const closeStreamDialog = () => {
+  console.log('child method. ' + streamLoading.value)
+  if(streamLoading.value){
+    streamLoading.value.close()
+  }
+  emit('closeShowDebugRunDialog')
+}
+
+// 主动暴露childMethod方法
+defineExpose({ 
+    closeStreamDialog ,
+    handleGetScene,
+    genStreamContentByMessage,
+    configAgent
+})
+
+
+nextTick(() => {
+    console.log('sceneId = ' + route.query.sceneId) ;
+    // handleListAllRole()
+    handleGetScene() 
+})
+
 </script>
 
-<style lang="scss">
-@import  "@/assets/styles/ppt.variable.scss";;
-
-@mixin ellipsis-oneline() {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+<style lang="scss" scoped>
+.box-card {
+    width: 100%;
+    margin: auto;
+    border: 0px;
 }
 
-.outline-editor {
-  padding: 0 10px;
-  padding-left: 40px;
-  position: relative;
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0px 20px;
+    align-items: center;
+}
 
-  .item {
-    height: 32px;
-    position: relative;
 
-    &.contextmenu-active {
-      color: $themeColor;
+.dialog-body-content {
+    margin-top:20px;
+    .upload-knowledge {
+        margin-bottom: 20px;
+    }
 
-      .text {
-        background-color: rgba($color: $themeColor, $alpha: .08);
+}
+
+.dialog-footer {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.person-card {
+  margin: 0 auto;
+  margin-bottom: 20px;
+
+  .avatar-container {
+    text-align: center;
+  }
+
+  .info-container {
+    h2 {
+      margin-top: 0;
+    }
+
+    p {
+      margin: 5px 0 15px;
+      font-size: 16px;
+      color: #666;
+    }
+
+    .el-link {
+      display: block;
+      font-size: 14px;
+      color: #409eff;
+
+      .el-icon {
+        margin-right: 5px;
       }
     }
-
-    &.title {
-      font-weight: 700;
-    }
-    &.lv-1 {
-      font-size: 22px;
-    }
-    &.lv-2 {
-      font-size: 17px;
-    }
-    &.lv-3 {
-      font-size: 15px;
-    }
-    &.lv-4 {
-      font-size: 13px;
-      padding-left: 20px;
-    }
-  }
-  .text {
-    height: 100%;
-    padding: 0 11px;
-    line-height: 32px;
-    border-radius: $borderRadius;
-    transition: background-color .2s;
-    text-align: left;
-    cursor: pointer;
-    @include ellipsis-oneline();
-
-    &:hover {
-      background-color: rgba($color: $themeColor, $alpha: .08);
-    }
-  }
-  .flag {
-    width: 32px;
-    height: 32px;
-    position: absolute;
-    top: 50%;
-    left: -40px;
-    margin-top: -16px;
-    z-index: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-    &::before {
-      content: '';
-      width: 1px;
-      height: 100%;
-      position: absolute;
-      left: 50%;
-      background-color: rgba($color: $themeColor, $alpha: .1);
-    }
-    &::after {
-      content: '';
-      width: 32px;
-      height: 22px;
-      border-radius: 2px;
-      background-color: #fff;
-      border: 1px solid $themeColor;
-      border-radius: 3px;
-      color: $themeColor;
-      position: relative;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 12px;
-      font-weight: 400;
-    }
-  }
-  .item.lv-1 .flag::after {
-    content: '主题';
-  }
-  .item.lv-2 .flag::after {
-    content: '章';
-  }
-  .item.lv-3 .flag::after {
-    content: '节';
-  }
-  .item.lv-4 .flag::after {
-    opacity: 0;
   }
 }
+
+.dialog-chapter-stream-content {
+    background-color: #f8f8f8; /* 浅灰色背景 */
+    color: #333; /* 深灰色文字 */
+    overflow: auto; /* 当内容超出容器时显示滚动条 */
+    line-height: 1.6; /* 行间距 */
+    white-space: pre-wrap; /* 保留空白符序列，并且在必要时换行 */
+    width: 100%; /* 宽度为100% */
+    word-wrap: break-word; /* 长单词或URL地址在必要时断开并换行 */
+    overflow-wrap: break-word; /* 同上，更现代的属性名称 */
+}
+
+.chat-gen-container {
+    height: 400px;
+    border: 1px solid #414243;
+    margin-bottom: 20px;
+    margin-top:20px;
+    border-radius: 5px;
+}
+
 </style>
+
+<style>
+/* 
+.el-transfer-panel {
+    width:350px;
+} 
+*/
+
+.el-card__header {
+    border: 0px;
+}
+
+.data-outline-tree-content .el-tree-node__content {
+    height: auto !important;
+} 
+
+</style> 
