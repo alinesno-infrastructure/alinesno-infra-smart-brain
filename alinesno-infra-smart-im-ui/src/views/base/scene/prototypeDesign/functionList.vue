@@ -1,12 +1,12 @@
 <template>
-  <div class="文章-function-panel">
+  <div class="protoype-function-panel">
     <div class="title">
-      <i class="fa-solid fa-feather"></i> 文章编写 
+      <i class="fa-solid fa-feather"></i> 原型设计 
     </div>
     <div class="add-task">
-      <router-link :to="'/scene/articleWriting/index?sceneId=' + sceneId">
+      <router-link :to="'/scene/prototypeDesign/index?sceneId=' + sceneId">
         <el-button type="primary" text bg size="large" style="width:100%;">
-          <i class="fa-solid fa-plus"></i> 新建文章
+          <i class="fa-solid fa-plus"></i> 新建原型
         </el-button>
       </router-link>
     </div>
@@ -43,12 +43,12 @@ const emits = defineEmits([
 
 const functionList = ref([
   {
-    "name": "文章管理",
+    "name": "原型管理",
     "icon": "fa-solid fa-file-powerpoint",
     "status": "done",
-    "log": "已完成 文章 上传与分类管理",
+    "log": "已完成 原型上传与分类管理",
     "isSelected": false,
-    "link": "/scene/articleWriting/articleManager"
+    "link": "/scene/prototypeDesign/prototypeManager"
   }
 ])
 
@@ -74,7 +74,7 @@ const enterFunction = () => {
 </script>
 
 <style lang="scss" scoped>
-.文章-function-panel {
+.protoype-function-panel {
   padding: 10px;
   background: #fff;
   height: calc(100vh - 80px);
