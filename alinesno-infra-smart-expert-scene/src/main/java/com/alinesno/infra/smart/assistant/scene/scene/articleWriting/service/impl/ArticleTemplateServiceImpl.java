@@ -37,6 +37,7 @@ public class ArticleTemplateServiceImpl extends IBaseServiceImpl<ArticleTemplate
         if (typeCode != null && !typeCode.isEmpty()) {
             wrapper.eq(ArticleTemplateEntity::getArticleTemplateType, typeCode);
         }
+        wrapper.orderByDesc(ArticleTemplateEntity::getAddTime) ;
 
         // 执行查询并返回结果
         return this.baseMapper.selectList(wrapper);
