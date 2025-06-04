@@ -5,8 +5,10 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGenerateSceneDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleOutlineDto;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleUpdateDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
 
 import java.util.List;
@@ -46,10 +48,27 @@ public interface IArticleManagerService extends IBaseService<ArticleManagerEntit
      */
     List<ArticleManagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query);
 
+//    /**
+//     * 保存PPT大纲
+//     * @param dto
+//     * @return
+//     */
+//    Long savePPTOutline(ArticleOutlineDto dto);
+
     /**
-     * 保存PPT大纲
+     * 保存文章
+     *
+     * @param articleContent
      * @param dto
+     * @param entity
+     * @param query
      * @return
      */
-    Long savePPTOutline(ArticleOutlineDto dto);
+    Long saveArticle(String articleContent, ArticleGeneratorDTO dto, ArticleGenerateSceneEntity entity, PermissionQuery query);
+
+    /**
+     * 更新文章
+     * @param dto
+     */
+    void updateArticle(ArticleUpdateDto dto);
 }
