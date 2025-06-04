@@ -47,7 +47,7 @@ target
 
 # nodejs
 node
-dist
+#dist
 node_modules
 _node_modules
 
