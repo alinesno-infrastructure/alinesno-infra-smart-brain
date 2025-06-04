@@ -22,7 +22,7 @@ public class ArticleManagerEntity extends InfraBaseEntity {
 
     @TableField("article_generator_scene_id")
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, comment = "PPT场景ID")
-    private Long pptGeneratorSceneId ;
+    private Long articleGeneratorSceneId ;
 
     // 标题、描述、封面、排版
     @TableField("title")
@@ -33,21 +33,14 @@ public class ArticleManagerEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.TEXT, comment = "描述")
     private String description;
 
-    @TableField("cover")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 255, comment = "封面")
-    private String cover;
+    // 文章内容
+    @TableField("content")
+    @Column(type = MySqlTypeConstant.TEXT, comment = "文章内容")
+    private String content;
 
-    // 大纲列表，使用json保存
-    @TableField("outline_list")
-    @Column(type = MySqlTypeConstant.TEXT, comment = "大纲列表")
-    private String outlineList;
-
-    @TableField("ppt_config")
-    @Column(type = MySqlTypeConstant.VARCHAR, comment = "PPT配置")
-    private String pptConfig ;
-
-    @TableField("pptx_json")
-    @Column(type = MySqlTypeConstant.VARCHAR, comment = "PPT文件的JSON内容")
-    private String pptxJson ;
+    // 所使用模板
+    @TableField("template_id")
+    @Column(type = MySqlTypeConstant.VARCHAR , length = 32, comment = "所使用模板")
+    private String templateId;
 
 }
