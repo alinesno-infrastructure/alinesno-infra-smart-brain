@@ -116,11 +116,11 @@ const pagerList = ref([])
 
 /** 进入长文本编辑界面 */
 function enterExamPager(item) {
-  const path = '/scene/pptCreation/examPagerView';
+  const path = '/scene/articleWriting/articleEditPager';
   router.push({
     path: path,
     query: { 
-      'pagerId': item.id ,
+      'articleId': item.id ,
       'sceneId': sceneId.value
     }
   })
