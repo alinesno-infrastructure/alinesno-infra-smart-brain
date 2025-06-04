@@ -10,10 +10,11 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGenerateSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleOutlineDto;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleUpdateDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.prompt.ArticlePromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleManagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleTemplateService;
@@ -30,6 +31,7 @@ import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -80,7 +82,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     private IArticleWriterSceneService service ;
 
     @Autowired
-    private IArticleManagerService pptManagerSceneService;
+    private IArticleManagerService articleManagerSceneService;
 
     @Autowired
     private IArticleTemplateService articleTemplateService ;
@@ -187,7 +189,16 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
         log.debug("genContent = {}", genContent.getGenContent());
 
-        return AjaxResult.success("操作成功" , taskInfo.getFullContent()) ;
+        // 获取文章内容并保存
+        String articleContent = taskInfo.getFullContent() ;
+        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
+        Long articleId = articleManagerSceneService.saveArticle(
+                contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ,
+                dto ,
+                entity ,
+                query) ;
+
+        return AjaxResult.success("操作成功" , articleId) ;
     }
 
     /**
@@ -215,7 +226,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     @PostMapping("/savePagerQuestion")
     public AjaxResult savePagerQuestion(@RequestBody @Validated ExamPaperDTO dto) {
         log.info("dto = {}" , dto);
-        pptManagerSceneService.savePager(dto);  // 保存试卷
+        articleManagerSceneService.savePager(dto);  // 保存试卷
         return AjaxResult.success("操作成功") ;
     }
 
@@ -226,7 +237,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     @PostMapping("/updatePagerQuestion")
     public AjaxResult updatePagerQuestion(@RequestBody @Validated ArticleGenerateSceneDto dto) {
         log.info("dto = {}" , dto);
-        pptManagerSceneService.updatePager(dto);  // 删除试卷
+        articleManagerSceneService.updatePager(dto);  // 删除试卷
         return AjaxResult.success("操作成功") ;
     }
 
@@ -236,7 +247,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     @DataPermissionQuery
     @PostMapping("/pagerListByPage")
     public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
-        List<ArticleManagerEntity> list = pptManagerSceneService.pagerListByPage(page, query);
+        List<ArticleManagerEntity> list = articleManagerSceneService.pagerListByPage(page, query);
         return AjaxResult.success("操作成功." ,list);
     }
 
@@ -245,23 +256,28 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      */
     @GetMapping("/getPagerDetail")
     public AjaxResult getPagerDetail(Long id) {
-        ArticleGenerateSceneDto entity = pptManagerSceneService.getPagerDetail(id);
+        ArticleGenerateSceneDto entity = articleManagerSceneService.getPagerDetail(id);
         return AjaxResult.success("操作成功." ,entity);
     }
 
     /**
-     * 保存PPT大纲
-     * @param dto
-     * @return
+     * 通过id获取文章详情
+     */
+    @GetMapping("/getArticleById")
+    public AjaxResult getArticleById(Long id) {
+        ArticleManagerEntity entity = articleManagerSceneService.getById(id);
+        return AjaxResult.success("操作成功." ,entity);
+    }
+
+    /**
+     * 更新文章updateArticle
      */
     @DataPermissionSave
-    @PostMapping("/savePPTOutline")
-    public AjaxResult savePPTOutline(@RequestBody ArticleOutlineDto dto){
-
-        log.debug("dto = {}" , dto);
-        Long pptId = pptManagerSceneService.savePPTOutline(dto) ;
-
-        return AjaxResult.success("操作成功." , pptId) ;
+    @PostMapping("/updateArticle")
+    public AjaxResult updateArticle(@RequestBody @Validated ArticleUpdateDto dto) {
+        log.info("dto = {}" , dto);
+        articleManagerSceneService.updateArticle(dto);  // 删除试卷
+        return AjaxResult.success("操作成功") ;
     }
 
 }
