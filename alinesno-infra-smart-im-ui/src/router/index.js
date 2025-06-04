@@ -141,6 +141,12 @@ const screenRoutes = [
     name: '/scene/articleWriting/articleManager',
     meta: { title: '文章管理', icon: 'fa-solid fa-file-word', affix: true }
   },
+  {
+    path: '/scene/articleWriting/articleEditPager',
+    component: () => import('@/views/base/scene/articleWriting/articleEditPager'),
+    name: '/scene/articleWriting/articleEditPager',
+    meta: { title: '文章编辑', icon: 'fa-solid fa-file-word', affix: true }
+  },
   // -->>>>>>>>>>>> 文章编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 原型设计_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
