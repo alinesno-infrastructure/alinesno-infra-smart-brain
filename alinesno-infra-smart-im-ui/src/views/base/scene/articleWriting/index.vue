@@ -25,10 +25,6 @@
                 </span>
               </div>
 
-                <ArticleTemplatePanel 
-                  v-model="formData.selectedTemplateId"
-                />
-
               <div class="input-button-section">
                 <div style="width:100%">
                   <!-- 附件内容-->
@@ -85,29 +81,22 @@
                 <span>
                   <i class="fa-solid fa-file-pdf"></i> 文章生成预览
                 </span>
+                <!-- 
                 <el-button type="danger" :disabled="!outline" @click="generatorPPT()">
                   <i class="fa-solid fa-floppy-disk"></i>&nbsp;编辑文章
-                </el-button>
+                </el-button> 
+                -->
               </div>
+
               <!-- 大纲生成预览 -->
               <div class="pager-gen-result-panel">
 
-                <div :style="!showArticleOutput?'visibility:visible':'visibility:hidden;display:none'" style="margin-top: 10vh;">
-                  <el-empty description="当前未生成文章内容，可以上传相关文档和配置场景，生成文章" />
-                </div>
-
-                <el-scrollbar :style="showArticleOutput?'visibility:visible':'visibility:hidden;height:0px;'" class="pager-container" ref="scrollbarRef"> 
-                    <!-- <div style="font-size:13px;text-align: left;margin-bottom: 10px;color:#888">
-                      确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板
-                    </div> -->
+                <el-scrollbar class="pager-container" ref="scrollbarRef"> 
                   <div ref="innerRef">
 
-                    <DataAnalysisDisplay 
-                      ref="dataAnalysisDisplayRef" />
-
-                    <!-- <OutlineGenContainerPanel 
-                        ref="pagerGenContainerPanelRef" 
-                        :value="outline" /> -->
+                    <ArticleTemplatePanel 
+                      v-model="formData.selectedTemplateId"
+                    />
 
                   </div>
                 </el-scrollbar>
@@ -140,20 +129,20 @@ import { ElMessage , ElLoading } from 'element-plus';
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
 import ArticleTemplatePanel  from './articleTemplate'
-import DataAnalysisDisplay from './agentContentDisplay.vue'
 
 import ArticleTypeConfig from './articleTypeConfig.vue';
-import OutlineGenContainerPanel from './components/OutlineEditor.vue';
+
+// import DataAnalysisDisplay from './agentContentDisplay.vue'
+// import OutlineGenContainerPanel from './components/OutlineEditor.vue';
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
-
 import FunctionList from './functionList'
 
 import {
   getScene,
-  savePagerQuestion,
+  // savePagerQuestion,
   chatPromptContent ,
-  savePPTOutline
+  // savePPTOutline
 } from '@/api/base/im/scene/articleWriting';
 
 import SnowflakeId from "snowflake-id";
@@ -176,10 +165,10 @@ const topics = [
 ];
 
 const outline = ref(null)
-const pptId = ref(null)
 
-const pagerGenContainerPanelRef = ref(null)
-const dataAnalysisDisplayRef = ref(null)
+// const pptId = ref(null)
+// const pagerGenContainerPanelRef = ref(null)
+// const dataAnalysisDisplayRef = ref(null)
 
 // 执行面板
 const showDebugRunDialog = ref(false);
@@ -189,9 +178,9 @@ const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
 const showArticleOutput = ref(false)
 
-// 表单引用
-const dialogVisible = ref(false);
-const formRef = ref(null)
+// // 表单引用
+// const dialogVisible = ref(false);
+// const formRef = ref(null)
 
 const channelStreamId= ref(route.query.channelStreamId || snowflake.generate())
 
@@ -237,25 +226,25 @@ const handleUpload = () => {
 };
 
 // 生成PPT
-const generatorPPT = () => {
-  savePPTOutline(sceneId.value , 
-      outline.value , 
-      pptId.value , 
-      formData.value.pptConfig,
-      formData.value.promptText
-    ).then(res => {
-    pptId.value = res.data ;
-    window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
-  }).catch(error => {
-    ElMessage.error(error.message)
-  })
-}
+// const generatorPPT = () => {
+//   savePPTOutline(sceneId.value , 
+//       outline.value , 
+//       pptId.value , 
+//       formData.value.pptConfig,
+//       formData.value.promptText
+//     ).then(res => {
+//     pptId.value = res.data ;
+//     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
+//   }).catch(error => {
+//     ElMessage.error(error.message)
+//   })
+// }
 
-// 计算总题目数和总分
-const updateTotalStats = (stats) => {
-  totalQuestions.value = stats.totalQuestions
-  totalScore.value = stats.totalScore
-}
+// // 计算总题目数和总分
+// const updateTotalStats = (stats) => {
+//   totalQuestions.value = stats.totalQuestions
+//   totalScore.value = stats.totalScore
+// }
 
 const handleGetScene = () => {
   getScene(sceneId.value).then(res => {
@@ -279,53 +268,59 @@ const handleGetScene = () => {
   })
 }
 
-// 关闭对话框前的处理
-const handleClose = (done) => {
-  // 可以在这里添加关闭前的确认逻辑
-  done()
-}
+// // 关闭对话框前的处理
+// const handleClose = (done) => {
+//   // 可以在这里添加关闭前的确认逻辑
+//   done()
+// }
 
 const handleExampleClick = (item) => {
   formData.value.promptText = item.text;
   // generaterText();
 }
 
-// 保存试卷题目信息
-const handleSavePagerQuestion = async () => {
+// // 保存试卷题目信息
+// const handleSavePagerQuestion = async () => {
 
-  try {
-    // 验证表单
-    await formRef.value.validate()
-    console.log('保存文章数据:', formData.value)
+//   try {
+//     // 验证表单
+//     await formRef.value.validate()
+//     console.log('保存文章数据:', formData.value)
 
-    const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
+//     const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
 
-    const data = {
-      sceneId: sceneId.value,
-      channelStreamId: channelStreamId.value,
-      pagerType: formData.value.pagerType,
-      difficulty: formData.value.difficultyLevel,
-      examStructure: formData.value.examStructure,
-      questionList: questionList,
-    }
+//     const data = {
+//       sceneId: sceneId.value,
+//       channelStreamId: channelStreamId.value,
+//       pagerType: formData.value.pagerType,
+//       difficulty: formData.value.difficultyLevel,
+//       examStructure: formData.value.examStructure,
+//       questionList: questionList,
+//     }
 
-    savePagerQuestion(data).then(res => {
-      console.log('保存成功:', res)
-    })
+//     savePagerQuestion(data).then(res => {
+//       console.log('保存成功:', res)
+//     })
     
-    ElMessage.success('试卷保存成功')
-    dialogVisible.value = false
+//     ElMessage.success('试卷保存成功')
+//     dialogVisible.value = false
 
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('请填写完整的试卷信息')
-  }
+//   } catch (error) {
+//     console.error('保存失败:', error)
+//     ElMessage.error('请填写完整的试卷信息')
+//   }
 
-}
+// }
 
 const generaterText = async () => {
   if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
+    return;
+  }
+
+  // 判断是否选择模板
+  if (!formData.value.selectedTemplateId) {
+    ElMessage.error('请选择文章生成模板');
     return;
   }
 
@@ -353,9 +348,17 @@ const generaterText = async () => {
 
     outline.value = res.data ;
     showArticleOutput.value = true ;
+    const articleId = res.data ;
 
     nextTick(() => {
-      dataAnalysisDisplayRef.value.setData(outline.value);
+      const path = '/scene/articleWriting/articleEditPager';
+      router.push({
+        path: path,
+        query: { 
+          'articleId': articleId ,
+          'sceneId': sceneId.value
+        }
+      })
     });
     
     ElMessage.success('处理完成');
@@ -408,8 +411,6 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     padding-top: calc(1vh);
-    // text-align: center;
-    // max-width: 90%;
     margin: auto;
     padding-left: 20px;
     padding-right: 20px;
@@ -457,12 +458,11 @@ onMounted(() => {
       box-sizing: border-box;
       width: 100%;
       border-radius: 15px;
-      // box-shadow: rgba(54, 54, 73, 0.06) 0px 12px 24px -16px, rgba(74, 80, 96, 0.12) 0px 12px 40px, rgba(44, 44, 54, 0.02) 0px 0px 1px;
       transition: 0.3s;
       background: rgb(255, 255, 255);
       padding: 10px !important;
       border: 1px solid rgb(232, 234, 242);
-      margin-top: 10px;
+      margin-top: 30px;
       margin-bottom: 10px;
       align-items: flex-start;
       flex-direction: column;
