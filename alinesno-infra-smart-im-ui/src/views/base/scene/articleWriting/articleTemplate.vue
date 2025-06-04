@@ -11,7 +11,7 @@
     </div>
 
     <!-- 模型列表 -->
-    <el-scrollbar style="height:170px">
+    <el-scrollbar style="height:calc(100vh - 340px)">
       <div class="article-template-list" v-if="filteredTemplateList.length > 0">
 
         <div class="article-template-item" v-for="item in filteredTemplateList" :key="item.id"
@@ -66,7 +66,7 @@ const selectedTemplateCode = ref(props.modelValue);
 const filteredTemplateList = computed(() => {
   if (selectedType.value === 0) {
     // return templateList.value;
-    return templateList.value.slice(0, 7);
+    return templateList.value ; // .slice(0, 7);
   }
   return templateList.value.filter(item => item.articleTemplateTypeId === selectedType.value);
 });
@@ -161,19 +161,18 @@ watch(() => props.modelValue, (newVal) => {
     .article-template-item {
       display: flex;
       font-size: 14px;
-      background: #f5f5f5;
+      background: #fff;
       border-radius: 8px;
       padding: 8px;
       margin-right: 10px;
       margin-bottom: 10px;
       gap: 10px;
-      width: calc(25% - 10px);
+      width: calc(33% - 10px);
       cursor: pointer;
       transition: all 0.3s;
-      align-items: center;
+      align-items: flex-start;
 
       &:hover {
-        // box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         background: #e8f3ff;
         border: 0px solid #409eff;
       }
@@ -184,8 +183,8 @@ watch(() => props.modelValue, (newVal) => {
       }
 
       .template-icon {
-        width: 40px;
-        height: 50px;
+        width: 80px;
+        height: 80px;
         flex-shrink: 0;
 
         img {
@@ -193,6 +192,7 @@ watch(() => props.modelValue, (newVal) => {
           height: 100%;
           border-radius: 5px;
           object-fit: cover;
+          box-shadow: 0 -2.7px 16.2px 0 rgba(56, 49, 80, 0.12);
         }
       }
 
@@ -201,10 +201,12 @@ watch(() => props.modelValue, (newVal) => {
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
+        line-height: 18px;
       }
 
       .article-template-item-title {
         font-size: 14px;
+        font-weight: bold;
         color: #444;
         white-space: nowrap;
         overflow: hidden;
@@ -219,9 +221,6 @@ watch(() => props.modelValue, (newVal) => {
         margin-top: 3px;
         font-size: 12px;
         color: #777;
-        // white-space: nowrap;
-        // overflow: hidden;
-        // text-overflow: ellipsis;
       }
     }
   }
