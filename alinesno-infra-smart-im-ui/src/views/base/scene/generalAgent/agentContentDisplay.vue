@@ -65,6 +65,8 @@ onMounted(() => {
     contentEditor.value = new Vditor('vditor', {
         height: 'calc(100vh - 220px)',
         width: '100%',
+        mode: "wysiwyg",
+        cdn: '/vditor',
         toolbarConfig: {
             pin: true,
         },
@@ -73,8 +75,7 @@ onMounted(() => {
         },
         after: () => {
             contentEditor.value.setValue(defaultMd);
-        },
-        cdn: 'http://data.linesno.com/vditor'
+        }
     });
 });
 
