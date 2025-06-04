@@ -36,9 +36,28 @@ var managerUrl = {
   getPagerDetail: prefix +"getPagerDetail",
   updatePagerQuestion: prefix +"updatePagerQuestion",
   savePPTOutline: prefix +"savePPTOutline",
+  getArticleById: prefix + "getArticleById" ,
+  updateArticle: prefix + "updateArticle" ,
 
   getAllArticleTemplateType: templatePrefix +"getAllArticleTemplate",
   getTemplateByType: templatePrefix +"getTemplateByType",
+}
+
+// 更新文章内容
+export function updateArticle(data) {
+  return request({
+    url: managerUrl.updateArticle,
+    method: 'post',
+    data: data
+  })
+}
+
+// 通过id获取文章
+export function getArticleById(id) {
+  return request({
+    url: managerUrl.getArticleById + '?id=' + parseStrEmpty(id),
+    method: 'get'
+  })
 }
 
 // 获取模型类型
