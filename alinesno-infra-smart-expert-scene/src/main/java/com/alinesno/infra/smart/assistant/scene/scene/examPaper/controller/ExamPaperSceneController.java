@@ -243,8 +243,8 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
      */
     @DataPermissionQuery
     @PostMapping("/pagerListByPage")
-    public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
-        List<ExamPagerEntity> list = examPagerService.pagerListByPage(page, query);
+    public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query , String sceneId) {
+        List<ExamPagerEntity> list = examPagerService.pagerListByPage(page, query , sceneId);
         return AjaxResult.success("操作成功." ,list);
     }
 
