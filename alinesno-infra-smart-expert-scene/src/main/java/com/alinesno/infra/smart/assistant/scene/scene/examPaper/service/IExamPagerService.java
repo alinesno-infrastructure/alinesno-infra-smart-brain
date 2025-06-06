@@ -38,10 +38,12 @@ public interface IExamPagerService extends IBaseService<ExamPagerEntity> {
 
     /**
      * 分页查询试卷
+     *
      * @param page
      * @param query
+     * @param sceneId
      * @return
      */
-    List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query);
+    List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query, String sceneId);
 
 }
