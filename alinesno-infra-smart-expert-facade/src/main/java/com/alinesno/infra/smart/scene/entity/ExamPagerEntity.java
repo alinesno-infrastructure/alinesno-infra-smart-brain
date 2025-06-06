@@ -21,6 +21,10 @@ import java.util.Date;
 public class ExamPagerEntity extends InfraBaseEntity {
 
     @TableField
+    @Column(name = "scene_id", type = MySqlTypeConstant.BIGINT, comment = "场景ID")
+    private Long sceneId;
+
+    @TableField
     @Column(name = "title", type = MySqlTypeConstant.VARCHAR, length = 255, isNull = false, comment = "试卷标题")
     private String title;
 
