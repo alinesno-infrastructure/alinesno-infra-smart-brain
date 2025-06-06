@@ -13,7 +13,7 @@ import java.util.List;
 public class ExamPaperDTO extends BaseDto {
 
     @NotBlank(message = "场景ID不能为空")
-    private String sceneId;
+    private Long sceneId;
 
     @NotBlank(message = "频道流ID不能为空")
     private String channelStreamId;
