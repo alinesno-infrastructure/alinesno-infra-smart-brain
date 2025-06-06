@@ -128,7 +128,7 @@ function enterExamPager(item) {
 
 /** 获取场景列表 */
 function handlePagerListByPage() {
-  pagerListByPage().then(res => {
+  pagerListByPage(sceneId.value).then(res => {
     pagerList.value = res.data
     sceneLoading.value = false
   }).catch(err => {
