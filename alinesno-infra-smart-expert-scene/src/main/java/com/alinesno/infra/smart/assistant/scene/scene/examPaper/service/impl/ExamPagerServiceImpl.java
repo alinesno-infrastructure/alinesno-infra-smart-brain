@@ -109,6 +109,7 @@ public class ExamPagerServiceImpl extends IBaseServiceImpl<ExamPagerEntity , Exa
         pagerEntity.setTitle(pagerName);
         pagerEntity.setDescription(dto.getPagerDesc());
         pagerEntity.setDifficulty(dto.getDifficulty());
+        pagerEntity.setSceneId(dto.getSceneId());
 
         save(pagerEntity);
 
@@ -173,7 +174,7 @@ public class ExamPagerServiceImpl extends IBaseServiceImpl<ExamPagerEntity , Exa
 
 
     @Override
-    public List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
+    public List<ExamPagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query, String sceneId) {
 
         page.setPageNum(0);
         page.setPageSize(20);
@@ -182,6 +183,7 @@ public class ExamPagerServiceImpl extends IBaseServiceImpl<ExamPagerEntity , Exa
 
         LambdaQueryWrapper<ExamPagerEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ExamPagerEntity::getOrgId, query.getOrgId()) ;
+        wrapper.eq(ExamPagerEntity::getSceneId, sceneId) ;
         wrapper.orderByDesc(ExamPagerEntity::getAddTime) ;
 
         pageBean = page(pageBean, wrapper);
@@ -227,6 +229,7 @@ public class ExamPagerServiceImpl extends IBaseServiceImpl<ExamPagerEntity , Exa
 
         ExamQuestionBankEntity examQuestionBankEntity = new ExamQuestionBankEntity();
         examQuestionBankEntity.setBankName(pagerName);
+        examQuestionBankEntity.setSceneId(dto.getSceneId());
 
         examQuestionBankService.save(examQuestionBankEntity);
 
