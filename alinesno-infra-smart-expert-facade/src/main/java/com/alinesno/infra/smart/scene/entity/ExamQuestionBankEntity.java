@@ -19,6 +19,10 @@ import lombok.EqualsAndHashCode;
 public class ExamQuestionBankEntity extends InfraBaseEntity {
 
     @TableField
+    @Column(name = "scene_id", type = MySqlTypeConstant.BIGINT, length = 32 , comment = "场景ID")
+    private Long sceneId;
+
+    @TableField
     @Column(name = "bank_name", type = MySqlTypeConstant.VARCHAR, length = 255, isNull = false, comment = "题库名称")
     private String bankName;
 
