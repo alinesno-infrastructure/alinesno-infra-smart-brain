@@ -54,9 +54,9 @@ export function getPagerDetail(id) {
 } 
 
 // 分页查询试卷
-export function pagerListByPage(data) {
+export function pagerListByPage(sceneId , data) {
   return request({
-    url: managerUrl.pagerListByPage,
+    url: managerUrl.pagerListByPage + '?sceneId=' + parseStrEmpty(sceneId),
     method: 'post',
     data: data
   })
