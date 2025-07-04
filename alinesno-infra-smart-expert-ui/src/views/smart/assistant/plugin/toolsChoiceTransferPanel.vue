@@ -36,7 +36,9 @@
             <template #default="{ option }">
               <div class="aip-el-transfer-panel__item">
 
-                <img :src="imagePath(option.icon)" style="border-radius: 50%; width: 30px; height: 30px;" />
+                <img :src="imagePath(option.icon)" 
+                  @error="handleImageError" 
+                  style="border-radius: 50%; width: 30px; height: 30px;" />
                 {{ option.name }}
               </div>
             </template>
@@ -63,6 +65,7 @@ import { reactive, ref, computed, nextTick } from "vue";
 import { ElMessage } from 'element-plus';
 import { ElTransfer } from 'element-plus';
 import { getCurrentInstance, toRefs } from 'vue';
+import defaultImage from '@/assets/default-avatar.png' // 导入默认图片
 
 const emit = defineEmits(['handleSelectToolsConfigClose']);
 
@@ -76,6 +79,8 @@ const dateRange = ref([]);
 
 const selectedToolIds = ref([]); // 已选择的工具ID
 const defaultSelectedToolIds = ref([]); // 用于存储默认的已选择工具ID
+
+const fallbackImage = ref(defaultImage)
 
 // 列显隐信息（这里不再使用，因为Transfer组件有自己的渲染逻辑）
 const columns = ref([
@@ -165,6 +170,11 @@ function filterTool(value, item) {
   if(item){
     return item?.name?.toLowerCase().includes(value.toLowerCase());
   }
+}
+
+// 图片加载错误处理
+const handleImageError = (event) => {
+  event.target.src = fallbackImage.value
 }
 
 /** 穿梭框选择变化 */
