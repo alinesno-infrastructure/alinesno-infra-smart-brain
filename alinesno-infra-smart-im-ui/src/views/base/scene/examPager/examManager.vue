@@ -1,49 +1,41 @@
 <template>
   <div class="exam-pagercontainer">
-
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
       <el-main class="exam-pager-manager">
-
-          <div class="search-container-panel">
-            <el-row>
-              <el-col :span="24">
-                <div class="feature-team-box">
-                  <div style="gap: 12px;">
-                    <h1
-                      style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 36px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                      考试管理 
-                    </h1>
-                  </div>
-                  <div class="search-container-weDuEn">
-                    <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                      :suffix-icon="Search" />
-                  </div>
+        <div class="search-container-panel">
+          <el-row>
+            <el-col :span="24">
+              <div class="feature-team-box">
+                <div style="gap: 12px;">
+                  <h1
+                    style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 36px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+                    考试管理
+                  </h1>
                 </div>
-              </el-col>
-            </el-row>
-          </div>
+                <div class="search-container-weDuEn">
+                  <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索考试"
+                    :suffix-icon="Search" />
+                </div>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
 
         <div>
           <el-row :gutter="20" style="padding-bottom:30px;margin-top:20px;">
-            <!--应用数据-->
             <el-col :span="24" :xs="24">
               <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
-
-                <el-form-item label="角色名称" prop="roleName">
-                  <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
+                <el-form-item label="考试名称" prop="examName">
+                  <el-input v-model="queryParams['condition[examName|like]']" placeholder="请输入考试名称" clearable
                     style="width: 240px" @keyup.enter="handleQuery" />
                 </el-form-item>
 
-                <el-form-item label="状态" prop="roleName">
-                  <el-segmented
-                      v-model="size"
-                      :options="sizeOptions"
-                    />
+                <el-form-item label="状态" prop="examStatus">
+                  <el-segmented v-model="queryParams.examStatus" :options="statusOptions" @change="handleQuery" />
                 </el-form-item>
 
                 <el-form-item>
@@ -52,10 +44,9 @@
                 </el-form-item>
               </el-form>
 
-              <el-table v-loading="loading" :data="StoreRoleList">
+              <el-table v-loading="loading" :data="examList">
                 <el-table-column type="index" width="40" align="center" />
-                <el-table-column label="角色名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible"
-                  :show-overflow-tooltip="true">
+                <el-table-column label="考试名称" align="left" prop="examName" :show-overflow-tooltip="true">
                   <template #default="scope">
                     <div style="display: flex;gap: 15px;align-items: center;">
                       <div style="font-size:1.8rem;color:#3b5998">
@@ -63,70 +54,55 @@
                       </div>
                       <div style="display: flex;gap: 5px;flex-direction: column;">
                         <div style="font-size: 14px;font-weight: 500;display: flex;gap: 10px;align-items: center;">
-                          {{ scope.row.roleName }}
+                          <span @click="openExam(scope.row)" style="cursor: pointer;">
+                            {{ scope.row.examName }}
+                          </span>
+                          <el-tag v-if="scope.row.examStatus === 0" type="info">未开始</el-tag>
+                          <el-tag v-else-if="scope.row.examStatus === 1" type="warning">进行中</el-tag>
+                          <el-tag v-else type="success">已结束</el-tag>
                         </div>
                         <div style="font-size: 14px;display: flex;gap: 10px; color:#888; align-items: center;">
-                          10题· 进行中·0人交卷
+                          总分: {{ scope.row.totalScore }}分 · 及格分: {{ scope.row.examPassScore }}分 · 版本: v{{ scope.row.examVersion }}
                         </div>
                       </div>
-
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="起止时间" align="left" key="responsibilities" prop="responsibilities"
-                  v-if="columns[2].visible" :show-overflow-tooltip="true">
+                <el-table-column label="起止时间" align="center" :show-overflow-tooltip="true">
                   <template #default="scope">
                     <div style="display: flex;flex-direction: row;gap: 10px;align-items: center;">
                       <el-button type="primary" text bg size="large">
-                        2022-01-01 00:00:00
-                      </el-button>-<el-button type="danger" text bg size="large" style="margin-left:0px;">
-                        2022-01-01 00:00:00
+                        {{ scope.row.startTime }}
+                      </el-button>
+                      <span style="color: #999;">至</span>
+                      <el-button type="danger" text bg size="large">
+                        {{ scope.row.endTime }}
                       </el-button>
                     </div>
                   </template>
                 </el-table-column>
-                <!-- <el-table-column label="所属团队" align="center" key="responsibilities" prop="responsibilities"
-                  v-if="columns[2].visible" :show-overflow-tooltip="true">
+                <el-table-column label="操作" align="center" width="450">
                   <template #default="scope">
-                    <div>
-                      AIP研发团队({{ scope.row.industryCatalog }})
-                    </div>
+                    <el-button type="primary" text bg :loading="runChainAgentLoading" size="large"
+                      @click="handleShareMiniProgram(scope.row)">
+                      <i class="fa-solid fa-qrcode"></i> 二维码分享
+                    </el-button>
+                    <el-button type="success" text bg :loading="runChainAgentLoading" size="large"
+                      @click="handleMarkExamPaper(scope.row)">
+                      <i class="fa-solid fa-check-square"></i> 阅卷
+                    </el-button>
+                    <el-button type="warning" text bg :loading="runChainAgentLoading" size="large"
+                      @click="handleSettings(scope.row)">
+                      <i class="fa-solid fa-cog"></i> 设置
+                    </el-button>
+                    <el-button type="danger" text bg :loading="runChainAgentLoading" size="large"
+                      :disabled="scope.row.examStatus === 1" @click="handleDelete(scope.row)">
+                      <i class="fa-solid fa-trash"></i> 删除
+                    </el-button>
                   </template>
-                </el-table-column> -->
-                <el-table-column label="添加频道" align="center" width="440" key="storagePath" prop="storagePath"
-                  v-if="columns[5].visible" :show-overflow-tooltip="true">
-                  <template #default="scope">
-  <el-button type="primary" text bg :loading="runChainAgentLoading" size="large"
-    @click="handleShareMiniProgram(scope.row)">
-    <i class="fa-brands fa-weixin"></i> 小程序分享
-  </el-button>
-  <el-button type="success" text bg :loading="runChainAgentLoading" size="large"
-    @click="handleMarkExamPaper(scope.row)">
-    <i class="fa-solid fa-check-square"></i> 阅卷
-  </el-button>
-  <el-button type="warning" text bg :loading="runChainAgentLoading" size="large"
-    @click="handleSettings(scope.row)">
-    <i class="fa-solid fa-cog"></i> 设置
-  </el-button>
-  <el-button type="danger" text bg :loading="runChainAgentLoading" size="large"
-    @click="handleDelete(scope.row)">
-    <i class="fa-solid fa-trash"></i> 删除
-  </el-button>
-</template>
-
-                  <!-- <template #default="scope">
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">小程序分享</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">阅卷</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">设置</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">删除</el-button>
-                  </template> -->
                 </el-table-column>
-
               </el-table>
+
               <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
                 v-model:limit="queryParams.pageSize" @pagination="getList" />
             </el-col>
@@ -138,18 +114,25 @@
 </template>
 
 <script setup>
-
 import FunctionList from './functionList'
+import { Search } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
-import { storeRoleList } from '@/api/base/im/store'
+import {
+  queryExamList,
+  deleteExam
+} from "@/api/base/im/scene/examInfoManager";
 
 const emit = defineEmits(['handleChainAgent']);
 
 const router = useRouter();
+const route = useRoute();
 const { proxy } = getCurrentInstance();
 const dateRange = ref([]);
 
-const StoreRoleList = ref([]);
+const sceneId = ref(route.query.sceneId)
+
+const examList = ref([]);
 const showSearch = ref(true);
 const loading = ref(true);
 
@@ -157,82 +140,148 @@ const ids = ref([]);
 const single = ref(true);
 const multiple = ref(true);
 const total = ref(0);
-const runChainAgentLoadding = ref(false);
+const runChainAgentLoading = ref(false);
 
-const size = ref('未考试')
-const sizeOptions = ['未考试', '考试中', '已结束']
-
-// 列显隐信息
-const columns = ref([
-  { key: 0, label: `图标`, visible: true },
-  { key: 1, label: `角色名称`, visible: true },
-  { key: 2, label: `角色描述`, visible: true },
-  { key: 3, label: `所属领域`, visible: true },
-  { key: 4, label: `角色级别`, visible: true },
-  { key: 5, label: `安全存储路径`, visible: true },
-  { key: 6, label: `应用目标`, visible: true },
-  { key: 7, label: `创建时间`, visible: true },
-  { key: 8, label: `编辑`, visible: true },
-
-]);
+const statusOptions = [
+  { label: '全部', value: null },
+  { label: '未开始', value: 0 },
+  { label: '进行中', value: 1 },
+  { label: '已结束', value: 2 }
+]
 
 const data = reactive({
   form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    roleName: undefined,
-    roleName: undefined,
-    responsibilities: undefined,
-    status: undefined,
-    deptId: undefined
+    'condition[examName|like]': undefined,
+    examStatus: null,
+    sceneId: sceneId.value
   },
   rules: {
-    roleId: [{ required: true, message: "应用编号不能为空", trigger: "blur" }],
-    roleName: [{ required: true, message: "角色名称不能为空", trigger: "blur" }, {
-      min: 2,
-      max: 20,
-      message: "角色名称长度必须介于 2 和 20 之间",
-      trigger: "blur"
-    }],
-    responsibilities: [{ required: true, message: "角色描述不能为空", trigger: "blur" }],
-    domain: [{ required: true, message: "所属领域不能为空", trigger: "blur" }],
-    roleLevel: [{ required: true, message: "角色级别不能为空", trigger: "blur" }],
-    storagePath: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
-    target: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
-  },
-  chainForm: {
-    roleId: undefined,
-  },
-  chainRules: {
-    chainName: [{ required: true, message: "链路名称不能为空", trigger: "blur" }],
-    elData: [{ required: true, message: "链路流程不能为空", trigger: "blur" }],
+    examName: [{ required: true, message: "考试名称不能为空", trigger: "blur" }],
+    startTime: [{ required: true, message: "开始时间不能为空", trigger: "blur" }],
+    endTime: [{ required: true, message: "结束时间不能为空", trigger: "blur" }],
   }
 });
 
-const { queryParams, form, rules, chainForm, chainRules } = toRefs(data);
+const { queryParams, form, rules } = toRefs(data);
 
-/** 查询角色列表 */
-const handleStoreRoleList = () => {
+/** 查询考试列表 */
+function getList() {
   loading.value = true;
-  storeRoleList(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  queryExamList(queryParams.value).then(res => {
     loading.value = false;
-    StoreRoleList.value = res.rows;
+    examList.value = res.rows;
     total.value = res.total;
   });
-};
-
-/** 选择角色入频道 */
-const handleChainAgent = (row) => {
-  emit('handleChainAgent', row);
 }
 
-handleStoreRoleList();
+/** 搜索按钮操作 */
+function handleQuery() {
+  queryParams.value.pageNum = 1;
+  getList();
+}
 
+/** 重置按钮操作 */
+function resetQuery() {
+  proxy.resetForm("queryRef");
+  queryParams.value.examStatus = null;
+  handleQuery();
+}
+
+function handleShareMiniProgram(row) {
+  // 处理小程序分享逻辑
+  console.log('分享考试:', row);
+}
+
+function handleMarkExamPaper(row) {
+  // 检查考试状态 (2 = 已结束)
+  // if (row.examStatus !== 2) {
+  //   ElMessage.warning('考试尚未结束，请等待考试结束后再阅卷！')
+  //   return
+  // }
+
+  // 这里添加实际的阅卷逻辑
+  console.log('开始阅卷:', row)
+  // 例如跳转到阅卷页面
+  router.push({
+    path: '/scene/examPager/examMakring',
+    query: { examId: row.id , sceneId: sceneId.value }
+  })
+
+}
+
+function handleSettings(row) {
+  // 处理设置逻辑
+  console.log('设置:', row);
+}
+
+// 打开考试试卷
+function openExam(row) {
+  console.log('row = ' + JSON.stringify(row))
+  const routeData = router.resolve({
+    path: '/scene/examPager/onlineExamPager/' + row.id 
+  })
+  window.open(routeData.href, '_blank')
+}
+
+function handleDelete(row) {
+  if (row.examStatus === 1) {
+    ElMessage.warning('考试进行中，无法删除！')
+    return
+  }
+
+  ElMessageBox.confirm(
+    `确定要删除考试 "${row.examName}" 吗？此操作不可恢复！`,
+    '删除确认',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning',
+      dangerouslyUseHTMLString: true,
+    }
+  ).then(() => {
+    // Call your delete API here
+    deleteExam(row.id).then(() => {
+      ElMessage.success('删除成功')
+      getList() // Refresh the list
+    }).catch(err => {
+      ElMessage.error('删除失败: ' + err.message)
+    })
+
+    // For now, just show a success message
+    ElMessage.success('模拟删除成功')
+    getList()
+  }).catch(() => {
+    ElMessage.info('已取消删除')
+  })
+}
+
+getList();
 </script>
 
 <style lang="scss" scoped>
-.exam-pager-main {
-  margin: 0px;
+.exam-pagercontainer {
+  height: 100%;
+
+  .exam-pager-aside {
+    background-color: #f5f7fa;
+    border-right: 1px solid #e6e6e6;
+  }
+
+  .exam-pager-manager {
+    padding: 20px;
+
+    .search-container-panel {
+      margin-bottom: 20px;
+
+      .feature-team-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+    }
+  }
 }
 </style>
