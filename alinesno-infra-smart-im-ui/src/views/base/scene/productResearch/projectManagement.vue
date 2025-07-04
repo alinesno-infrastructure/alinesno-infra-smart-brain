@@ -3,15 +3,13 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
       <el-main class="exam-pager-main">
         <el-scrollbar style="height:calc(100vh - 50px)">
           <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
-
-            <!-- <SideTypePanel /> -->
 
             <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
 
@@ -21,7 +19,7 @@
                     <div class="feature-team-box">
                       <div style="gap: 12px;">
                         <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                         项目管理 
+                         检索管理 
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
@@ -35,16 +33,16 @@
 
               <div class="channel-container-panel" style="margin-top:20px">
                 <el-row>
-                  <el-col :span="8" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
-                    <div class="exam-pager-card-container" @click="enterExamPager(item)">
+                  <el-col :span="6" v-for="(item, index) in pagerList" :key="index">
+                    <div class="exam-pager-card-container">
                       <article class="exam-pager-card">
-                        <div class="exam-pager-card-content" style="padding:10px;">
+                        <div class="exam-pager-card-content">
                           <div class="scene-header">
 
-                            <span class="scene-title">
+                            <span class="scene-title" @click="enterProductParser(item)">
                               <i v-if="index%2==0" class="fa-brands fa-github"></i>
                               <i v-if="index%2==1" class="fa-brands fa-square-gitlab"></i>
-                              {{ item.projectName || "名称未解析" }}
+                              {{ item.taskName || "名称未解析" }}
                             </span>
 
                             <span>
@@ -59,8 +57,7 @@
                           </div>
                           <div class="scene-author-info">
                             <span class="scene-name">
-                              <i class="fa-solid fa-link"></i>
-                              {{ item.projectRepoUrl }}
+                              {{ item.outline }}
                             </span>
                           </div>
                           <div style="padding: 10px 0px;"></div>
@@ -74,8 +71,8 @@
                                 </el-button>
                             </div>
                             <div class="scene-tag">
-                              <div class="scene-stats" v-if="item.syncInterval > 0">
-                                 <i class="fa-solid fa-clock"></i> 最后更新: <span>{{ item.lastSyncTime }}</span>
+                              <div class="scene-stats" v-if="item.addTime">
+                                 <i class="fa-solid fa-clock"></i> 最后更新: <span>{{ item.addTime }}</span>
                               </div>
                             </div>
                           </div>
@@ -121,15 +118,15 @@ const sceneLoading = ref(true)
 const pagerList = ref([])
 
 /** 进入长文本编辑界面 */
-function enterExamPager(item) {
-  // const path = '/scene/productResearch/examPagerView';
-  // router.push({
-  //   path: path,
-  //   query: { 
-  //     'pagerId': item.id ,
-  //     'sceneId': sceneId.value
-  //   }
-  // })
+function enterProductParser(item) {
+  const path = '/scene/productResearch/productParser';
+  router.push({
+    path: path,
+    query: { 
+      'taskId': item.id ,
+      'sceneId': sceneId.value
+    }
+  })
 }
 
 // 状态类型映射
@@ -173,7 +170,7 @@ const getStatusIcon = (status) => {
 
 /** 获取场景列表 */
 function handlePagerListByPage() {
-  pagerListByPage().then(res => {
+  pagerListByPage(sceneId.value).then(res => {
     pagerList.value = res.data
     sceneLoading.value = false
   }).catch(err => {
@@ -199,13 +196,13 @@ onMounted(() => {
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  // padding: 12px 12px 16px;
   border: 1px solid rgba(6, 7, 9, 0.1);
   border-radius: 8px;
   background-color: #fff;
-  // cursor: pointer;
   gap: 10px;
   padding-bottom:0px;
+  margin-right: 20px;
+  margin-bottom: 20px;
   transition: box-shadow 0.3s;
 
   &:hover {
@@ -216,7 +213,6 @@ onMounted(() => {
     position: relative;
     width: 100%;
     height: 10px;
-    // border-radius: 8px;
     overflow: hidden;
 
     .exam-pager-card-image {
@@ -229,12 +225,11 @@ onMounted(() => {
 
   .exam-pager-card-content {
     margin-top: 10px;
-    padding: 0 4px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     width: calc(100%);
-    padding-left: 10px;
+    padding: 20px;
 
     .scene-header {
       // display: flex;
@@ -259,6 +254,7 @@ onMounted(() => {
         font-size: 16px;
         line-height: 22px;
         color: var(--coz-fg-primary);
+        cursor: pointer;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -301,6 +297,11 @@ onMounted(() => {
         width: 14px;
         height: 14px;
         border-radius: 50%;
+      }
+
+      .scene-name{
+        white-space: normal !important;
+        height: 50px !important;
       }
 
       .scene-name,
