@@ -50,6 +50,7 @@ public class ChannelPublishServiceImpl extends IBaseServiceImpl<ChannelPublishEn
                     dto.getSceneId() ,
                     dto.getAgentTypeId() ,
                     dto.getLlmModelId() ,
+                    dto.getImageModelId() ,
                     dto.getSceneScope() ,
                     dto.getOrgId()) ;
         }
