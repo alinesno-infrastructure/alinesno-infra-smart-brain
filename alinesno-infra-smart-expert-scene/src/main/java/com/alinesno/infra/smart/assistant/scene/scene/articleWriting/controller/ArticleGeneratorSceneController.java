@@ -11,18 +11,22 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGenerateSceneDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleUpdateDto;
+import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.prompt.ArticlePromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleManagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ArticleChatRoleUtil;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ExcelData;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ExcelReaderUtil;
+import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.enums.TaskResultTypeEnums;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
@@ -33,13 +37,17 @@ import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.RoleUtils;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.http.util.Asserts;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -47,6 +55,11 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -89,6 +102,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private ArticleChatRoleUtil articleChatRoleUtil ;
 
     /**
      * 通过Id获取到场景
@@ -176,6 +192,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         if(dto.getSelectedTemplateId() != null){
             templateEntity =  articleTemplateService.getById(dto.getSelectedTemplateId()) ;
         }
+        Asserts.notNull(templateEntity , "未找到对应的模板实体");
 
         String promptText = ArticlePromptHandle.generatorPrompt(dto , templateEntity) ;
 
@@ -190,16 +207,79 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         log.debug("genContent = {}", genContent.getGenContent());
 
         // 获取文章内容并保存
-        String articleContent = taskInfo.getFullContent() ;
-        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
+        String articleContent;
+        if(TaskResultTypeEnums.SUMMARY.getCode().equals(taskInfo.getResultType())){ // 总结性结果输出
+            articleContent = taskInfo.getFullContent() ;
+        }else{
+            List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
+            articleContent = contentList.isEmpty()?  taskInfo.getFullContent() : contentList.get(0).getContent() ;
+        }
+
         Long articleId = articleManagerSceneService.saveArticle(
-                contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ,
+                articleContent ,
                 dto ,
                 entity ,
                 query) ;
 
         return AjaxResult.success("操作成功" , articleId) ;
     }
+
+    /**
+     * 重新润色文章
+     * @param dto
+     * @param query
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/reChatPromptContent")
+    public AjaxResult reChatPromptContent(@RequestBody @Validated ReWriterArticleGeneratorDTO dto , PermissionQuery query) {
+
+        log.debug("dto = {}" , dto);
+
+        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+
+        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+
+        ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId()) ;
+        String promptText = ArticlePromptHandle.generatorReWriterPrompt(dto , articleManagerEntity.getContent()) ;
+
+        taskInfo.setRoleId(articleWriterEngineer);
+        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+        taskInfo.setText(promptText);
+
+        // 优先获取到结果内容
+        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        log.debug("genContent = {}", genContent.getGenContent());
+
+        // 获取文章内容
+        String articleContent = taskInfo.getFullContent() ;
+        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
+
+        return AjaxResult.success("操作成功" , contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ) ;
+    }
+
+    /**
+     * 重新润色文章
+     * @param dto
+     * @param query
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/generateImages")
+    public AjaxResult generateImages(@RequestBody @Validated ImageGeneratorDTO dto , PermissionQuery query) {
+
+        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+
+        List<String> imageList = articleChatRoleUtil.generateImages(dto , articleWriterEngineer , query) ;
+
+        return AjaxResult.success("操作成功" , imageList) ;
+    }
+
+
 
     /**
      * 获取所有题型信息的Map列表
@@ -246,8 +326,8 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      */
     @DataPermissionQuery
     @PostMapping("/pagerListByPage")
-    public AjaxResult pagerListByPage(DatatablesPageBean page, PermissionQuery query) {
-        List<ArticleManagerEntity> list = articleManagerSceneService.pagerListByPage(page, query);
+    public AjaxResult pagerListByPage(DatatablesPageBean page, Long sceneId , PermissionQuery query) {
+        List<ArticleManagerResponseDto> list = articleManagerSceneService.pagerListByPage(page, sceneId , query);
         return AjaxResult.success("操作成功." ,list);
     }
 
@@ -277,6 +357,119 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     public AjaxResult updateArticle(@RequestBody @Validated ArticleUpdateDto dto) {
         log.info("dto = {}" , dto);
         articleManagerSceneService.updateArticle(dto);  // 删除试卷
+        return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 文件上传
+     * @return
+     */
+    @SneakyThrows
+    @DataPermissionQuery
+    @PostMapping("/importData")
+    public AjaxResult importData(@RequestPart("file") MultipartFile file, String type , String updateSupport , PermissionQuery query){
+
+        // 新生成的文件名称
+        String fileSuffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")+1);
+        String newFileName = IdUtil.getSnowflakeNextId() + "." + fileSuffix;
+
+        // 复制文件
+        File targetFile = new File(localPath , newFileName);
+        FileUtils.writeByteArrayToFile(targetFile, file.getBytes());
+
+        log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
+
+        List<ExcelData> dataList = ExcelReaderUtil.readExcel(targetFile.getAbsolutePath());
+        for (ExcelData data : dataList) {
+            log.debug("data = {}" , data);
+        }
+
+        Map<String, Object> failResult = articleTemplateService.readExcel(dataList , query) ;
+        FileUtils.forceDeleteOnExit(targetFile);
+
+        return AjaxResult.success("操作成功." , failResult);
+    }
+
+    /**
+     * 与编辑角色沟通
+     * @param dto
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/chatEditorRole")
+    public AjaxResult chatEditorRole(@RequestBody @Validated ChatEditorDto dto , PermissionQuery query){
+
+        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+
+        IndustryRoleDto roleDto =  RoleUtils.getEditors(roleService , String.valueOf(articleWriterEngineer)).get(0) ;
+
+        articleChatRoleUtil.chat(roleDto , dto , query) ;
+
+        return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 导出试卷为Word文档并直接下载
+     * @param articleId 试卷ID
+     * @param showAnswer 是否显示答案
+     * @return ResponseEntity 包含Word文件流
+     */
+    @PostMapping("/export/{articleId}")
+    public ResponseEntity<byte[]> exportPaperToWord(
+            @PathVariable Long articleId,
+            @RequestParam(required = false, defaultValue = "false") boolean showAnswer) {
+
+        // 1. 验证试卷是否存在
+        ArticleManagerEntity examPager = articleManagerSceneService.getById(articleId);
+        if (examPager == null) {
+            throw new RuntimeException("文章不存在，ID: " + articleId);
+        }
+
+        String filePath = null;
+        try {
+            String title = String.valueOf(examPager.getId());
+
+            filePath = MarkdownToWord.convertMdToDocx(examPager.getContent(), title) ; // articleManagerSceneService.generateToFile(articleId, showAnswer);
+            byte[] fileContent = Files.readAllBytes(Paths.get(filePath));
+
+            // 使用RFC 5987标准编码文件名（支持中文和特殊字符）
+            String fileName = title + ".docx";
+            String encodedFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8)
+                    .replace("+", "%20");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+
+            // 关键设置：使用RFC 5987标准
+            headers.add("Content-Disposition",
+                    "attachment; filename=\"" + fileName + "\";" +
+                            "filename*=UTF-8''" + encodedFileName);
+
+            return ResponseEntity.ok()
+                    .headers(headers)
+                    .body(fileContent);
+
+        } catch (IOException e) {
+            log.error("导出试卷失败", e);
+            throw new RuntimeException("导出试卷失败", e);
+        } finally {
+            // 5. 删除临时文件
+            try {
+                assert filePath != null;
+                FileUtils.forceDeleteOnExit(new java.io.File(filePath));
+            } catch (IOException e) {
+                log.error("删除临时文件失败", e);
+            }
+        }
+    }
+
+    /**
+     * 通过id删除文章deleteArticle
+     */
+    @DeleteMapping("/deleteArticle")
+    public AjaxResult deleteArticle(Long id) {
+        articleManagerSceneService.removeById(id);
         return AjaxResult.success("操作成功") ;
     }
 
