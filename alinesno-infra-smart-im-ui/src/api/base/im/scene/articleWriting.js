@@ -20,6 +20,7 @@ var managerUrl = {
   updateChapterContent: prefix +"updateChapterContent",
   dispatchAgent: prefix +"dispatchAgent",
   chatPromptContent: prefix +"chatPromptContent",
+  reChatPromptContent: prefix +"reChatPromptContent",
   updateSceneGenStatus: prefix +"updateSceneGenStatus",
   genDataReport: prefix +"genDataReport",
   initAgents: prefix + "initAgents",
@@ -38,9 +39,47 @@ var managerUrl = {
   savePPTOutline: prefix +"savePPTOutline",
   getArticleById: prefix + "getArticleById" ,
   updateArticle: prefix + "updateArticle" ,
+  chatEditorRole: prefix + "chatEditorRole" ,
+  deleteArticle: prefix + "deleteArticle" ,
+  generateImages: prefix + "generateImages" ,
 
   getAllArticleTemplateType: templatePrefix +"getAllArticleTemplate",
   getTemplateByType: templatePrefix +"getTemplateByType",
+  getTemplateDetail: templatePrefix +"getTemplateDetail",
+}
+
+// 生成图片
+export function generateImages(data) {
+  return request({
+    url: managerUrl.generateImages,
+    method: 'post',
+    data: data
+  })
+}
+
+// 删除文章
+export function deleteArticle(id) {
+  return request({
+    url: managerUrl.deleteArticle + '?id=' + parseStrEmpty(id),
+    method: 'delete'
+  })
+}
+
+// chatEditorRole
+export function chatEditorRole(data) {
+  return request({
+    url: managerUrl.chatEditorRole,
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取模板详情
+export function getTemplateDetail(templateId) {
+  return request({
+    url: managerUrl.getTemplateDetail + '?templateId=' + parseStrEmpty(templateId),
+    method: 'get'
+  })
 }
 
 // 更新文章内容
@@ -113,9 +152,9 @@ export function getPagerDetail(id) {
 } 
 
 // 分页查询试卷
-export function pagerListByPage(data) {
+export function pagerListByPage(data , sceneId) {
   return request({
-    url: managerUrl.pagerListByPage,
+    url: managerUrl.pagerListByPage + '?sceneId=' + parseStrEmpty(sceneId) ,
     method: 'post',
     data: data
   })
@@ -215,6 +254,15 @@ export function updateSceneGenStatus(sceneId , genStatus) {
     url: managerUrl.updateSceneGenStatus + '?sceneId=' + parseStrEmpty(sceneId) + "&genStatus=" + genStatus , 
     method: 'get'
   })
+}
+
+// 更新prompt内容
+export function reChatPromptContent(data) {
+ return request({
+   url: managerUrl.reChatPromptContent,
+   method: 'post',
+   data: data
+ })
 }
 
 // 更新prompt内容
