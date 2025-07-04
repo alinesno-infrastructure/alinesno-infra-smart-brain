@@ -1,5 +1,5 @@
 <template>
-    <div class="question-container">
+    <div class="question-container" :class="props.isQuestionEdit? '':'question-not-edit'">
 
         <div class="question-tags">
             <span>
@@ -28,7 +28,7 @@
                 </span>
             </span>
 
-            <span class="switch-item" v-if="currentSelect">
+            <span class="switch-item" v-if="currentSelect && props.isQuestionEdit">
                 <el-switch size="small" v-model="requiredStatus" @change="handleRequiredChange" /> 必须
                 <el-button type="text" size="small" text @click="handleDeleteQuestion()">
                     <i class="fa-solid fa-trash"></i>&nbsp;删除
@@ -52,6 +52,7 @@
                 <EditableMediaText
                     style="width:100%" 
                     v-model="questionData" 
+                    :isQuestionEdit="props.isQuestionEdit"
                     :mediaFiles="mediaFiles"
                     @update:modelValue="handleUpdateTitle"
                     @upload-media="handleUploadMedia"
@@ -62,13 +63,13 @@
         </div>
 
         <div class="question-content">
-            <slot>
+            <slot @update-handleUpdateQuestion="$emit('updateHandleUpdateQuestion', $event)">
                 <!-- 自定义内容插槽 -->
             </slot>
         </div>
 
         <!-- 底部功能-->
-        <div class="question-footer" v-if="currentSelect">
+        <div class="question-footer" v-if="currentSelect && props.isQuestionEdit"> 
             <el-button v-if="isSelectType()" type="text" size="large" text @click="handleAddOption()">
                 <i class="fa-solid fa-plus"></i>&nbsp;添加选项
             </el-button>
@@ -134,11 +135,22 @@ import { ElMessageBox , ElMessage } from 'element-plus'
 import EditableText from '../components/EditableText.vue'
 import EditableMediaText from '../components/EditableMediaText.vue'
 
-const emit = defineEmits(['update:question', 'updateQuestionIsRequired' , 'updateHandleUpdateQuestion'])
+const emit = defineEmits([
+'update:question', 
+'updateQuestionIsRequired' , 
+'updateHandleUpdateQuestion',
+'delete-question',
+'update-questionTitle'
+])
 
 const props = defineProps({
     question: {
         type: Object,
+        required: false
+    },
+    isQuestionEdit: {
+        type: Boolean,
+        default: true,
         required: false
     },
     currentSelect: {
@@ -281,6 +293,12 @@ const handleUploadMedia = (uploadItem) => {
 </script>
 
 <style lang="scss" scoped>
+
+.question-not-edit {
+    width: 100% !important;
+    box-shadow: none !important;
+}
+
 .question-container {
 
     width: 90%;
@@ -346,7 +364,7 @@ const handleUploadMedia = (uploadItem) => {
             cursor: text;
             font-size: 17px;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
         }
     }
 
