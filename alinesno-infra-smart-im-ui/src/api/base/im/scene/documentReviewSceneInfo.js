@@ -16,9 +16,9 @@ var managerUrl = {
 }
 
 // 获取预览文档
-export function getPreviewReportDocx(storageId) {
+export function getPreviewReportDocx(storageId , taskId) {
   return request({
-    url: managerUrl.getPreviewReportDocx + '?storageId=' + parseStrEmpty(storageId),
+    url: managerUrl.getPreviewReportDocx + '?storageId=' + parseStrEmpty(storageId) + (taskId ? "&taskId=" + parseStrEmpty(taskId) : ''),
     // responseType: 'arraybuffer', // 显式声明返回二进制流
     responseType: 'blob', // 显式声明返回二进制流
     method: 'get'
@@ -34,9 +34,9 @@ export function getPreviewUrl(storageId) {
 }
 
 // 生成文档审核报告
-export function genDocxReport(sceneId) {
+export function genDocxReport(sceneId , taskId) {
   return request({
-    url: managerUrl.genDocxReport + '?sceneId=' + parseStrEmpty(sceneId),
+    url: managerUrl.genDocxReport + '?sceneId=' + parseStrEmpty(sceneId) + "&taskId=" + parseStrEmpty(taskId),
     method: 'get',
   })
 }
