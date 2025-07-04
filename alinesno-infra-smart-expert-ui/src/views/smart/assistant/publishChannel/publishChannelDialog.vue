@@ -17,7 +17,7 @@
                     </div>
                     <div style="margin-top:20px;">智能体商店打开方式（<a href="http://alinesno-infra-smart-im-ui.beta.base.infra.linesno.com/agentList" target="_blank">打开商店</a>）</div>
                     <div style="margin-top:20px;">
-                        <img src="http://data.linesno.com/icons/aip_store_search.jpg" style="width: 100%;border-radius: 5px;" />
+                        <img :src="getOutlineSvg('aip_store_search')" style="width: 100%;border-radius: 5px;" />
                     </div>
                 </div>
             </div>
@@ -41,10 +41,10 @@
                 <div style="margin-top:0px;padding:10px;">
                     <el-space wrap>
                         <span class="config-item-img" :class="selectedType === 'iframe'?'selected':''" @click="handleImageClick('iframe')">
-                            <img src="https://cloud.fastgpt.cn/imgs/outlink/iframe.svg" alt="" />
+                            <img :src="getOutlineSvg('iframe')" alt="" />
                         </span>
                         <span class="config-item-img" :class="selectedType === 'script'?'selected':''" @click="handleImageClick('script')">
-                            <img src="https://cloud.fastgpt.cn/imgs/outlink/script.svg" alt="" />
+                            <img :src="getOutlineSvg('script')" alt="" />
                         </span>
                     </el-space>
                 </div>
@@ -115,7 +115,7 @@
                     {{ 'http://alinesno-infra-smart-expert-boot.beta.base.infra.linesno.com/api/infra/smart/assistant/publishWeChat/' + props.shareId }} 
                 </div>
                 <div style="margin-top:20px;">
-                    <img src="http://data.linesno.com/icons/offiaccount-copylink.png" style="width: 100%;border-radius: 5px;" />
+                    <img :src="getOutlineSvg('offiaccount-copylink')" style="width: 100%;border-radius: 5px;" />
                 </div>
             </div>
         </div>
@@ -128,7 +128,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import ScriptEditorPanel from './ScriptEditor.vue';
-
+import { getOutlineSvg } from '@/utils/llmIcons'
 import { copyClick } from '@/utils/clipboard'
 
 const showStartUsing = ref(false);
