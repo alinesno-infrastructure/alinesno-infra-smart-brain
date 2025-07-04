@@ -58,7 +58,7 @@
             </el-button>
         </div>
 
-        <div class="contract-overview-container">
+        <div class="contract-overview-container" v-if="currentSceneInfo.contractOverview">
             <div class="contract-overview-title">合同概览</div>
             <div class="contract-info-container">
                 <div class="contract-info-item">
@@ -92,6 +92,7 @@ const currentSceneInfo = ref({});
 // const formSize = ref('default');
 const ruleFormRef = ref();
 const sceneId = ref(route.query.sceneId)
+const taskId = ref(route.query.taskId)
 const streamLoading = ref(null)
 
 const emit = defineEmits(['handleStepClick' , 'genSingleChapterContent'])
@@ -160,6 +161,7 @@ const submitForm = async () => {
             if(ruleForm.reviewListOption == 'dataset'){
 
                 ruleForm.sceneId = currentSceneInfo.value.id ;
+                ruleForm.taskId = taskId.value ; // currentSceneInfo.value.id ;
                 ruleForm.channelStreamId = channelStreamId.value ;
 
                 genReviewListByDataset(ruleForm).then(res => {
@@ -169,6 +171,7 @@ const submitForm = async () => {
             }else if(ruleForm.reviewListOption == 'aigen'){
 
                 ruleForm.sceneId = currentSceneInfo.value.id ;
+                ruleForm.taskId = taskId.value ; // currentSceneInfo.value.id ;
                 ruleForm.channelStreamId = channelStreamId.value ;
 
                 streamLoading.value = ElLoading.service({
@@ -204,7 +207,7 @@ const resetForm = () => {
 };
 
 const handleGetScene = () => {
-    getScene(sceneId.value).then(res => {
+    getScene(sceneId.value , taskId.value).then(res => {
         currentSceneInfo.value = res.data;
         contractTypeList.value = res.data.contractTypes;
 
