@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.ReActExpertService;
+import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
@@ -53,6 +54,9 @@ public class DeepSearchService extends ReActExpertService {
     @Autowired
     private OutputHandler deepSearchOutputHandler ;
 
+    @Autowired
+    private ReActServiceTool reActServiceTool  ;
+
     @Override
     protected String handleRole(IndustryRoleEntity role, MessageEntity workflowMessage, MessageTaskInfo taskInfo) {
 
@@ -62,14 +66,14 @@ public class DeepSearchService extends ReActExpertService {
 
         // 解析出公共的知识库
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
-        handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
+        reActServiceTool.handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
 
         HistoriesPrompt historyPrompt = new HistoriesPrompt();
         historyPrompt.setMaxAttachedMessageCount(maxHistory);
         historyPrompt.setHistoryMessageTruncateEnable(false);
 
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
+        String datasetKnowledgeDocument = reActServiceTool.getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
         initWorkerHandlerParams(role.getOrgId() , datasetKnowledgeDocument , goal) ;
 
