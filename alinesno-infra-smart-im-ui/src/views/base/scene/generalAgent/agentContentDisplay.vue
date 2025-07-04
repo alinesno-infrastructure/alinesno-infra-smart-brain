@@ -46,6 +46,8 @@ const defaultMd = `` ;
 const setData = (planItemVal) => {
     platItem.value = planItemVal;
 
+    console.log("contentEditor = " + contentEditor)
+
     getChapterContent(planItemVal.id).then(res => {
         contentEditor.value.setValue(res.data == null ? '' : res.data) ; 
     })
