@@ -1,12 +1,12 @@
 <template>
   <div class="exam-function-panel">
     <div class="title">
-      <i class="fa-solid fa-graduation-cap"></i> 考试培训 
+      <i class="fa-solid fa-graduation-cap"></i> AI 考试培训 
     </div>
     <div class="add-task">
       <router-link :to="'/scene/examPager/index?sceneId=' + sceneId">
         <el-button type="primary" text bg size="large" style="width:100%;">
-          <i class="fa-solid fa-plus"></i> 新建试卷 
+          <i class="fa-solid fa-plus"></i> 新建 
         </el-button>
       </router-link>
     </div>
@@ -18,10 +18,7 @@
             </span>
           </div>  
           <div class="item-name">
-            <span class="item-label">
-                {{ item.name }}
-            </span>
-            <span class="item-log">{{ item.log }}</span>
+            {{ item.name }}
           </div>
       </div>
     </div>
@@ -42,14 +39,6 @@ const emits = defineEmits([
 ])
 
 const functionList = ref([
-  // {
-  //   name: '题库组卷', // 菜单名称（可自定义）
-  //   icon: 'fa-solid fa-layer-group', // 组卷相关图标（示例用"图层组"图标，可替换为更贴切的图标）
-  //   status: 'done', // 任务状态（可根据实际情况设置为 loading/done）
-  //   log: '已完成快速组卷任务', // 任务描述
-  //   isSelected: false, 
-  //   link: '/scene/examPager/quickPaper' // 路由链接（需根据实际业务路径调整）
-  // },
   {
     name: '试卷管理',
     icon: 'fa-solid fa-file-pen', // Font Awesome 6.x 试卷/编辑图标
@@ -59,7 +48,7 @@ const functionList = ref([
     link: '/scene/examPager/pagerManager'
   },
   {
-    name: '练习(考试)管理',
+    name: '考试管理',
     icon: 'fa-solid fa-graduation-cap', // Font Awesome 6.x 毕业帽（象征考试/教育）
     status: 'loading', // 任务状态示例
     log: '正在进行考试安排与通知', // 任务描述
@@ -106,9 +95,12 @@ const enterFunction = () => {
   .title {
     margin-bottom: 15px;
     margin-top: 5px;
-    text-align: left;
     font-size: 15px;
-    margin-left: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.5rem;
+    text-align: center;
   }
 
   .task-list {
@@ -126,6 +118,7 @@ const enterFunction = () => {
       border-radius: 5px;
       padding: 10px;
       transition: all 0.3s ease; // 添加过渡效果
+      flex-direction: column;
 
       &:hover {
         background: #e9f2ff; // 优化hover颜色
@@ -135,6 +128,7 @@ const enterFunction = () => {
         background: #409EFF; // 修改选中状态背景色
         color: #fff; // 增加文字对比度
         font-weight: bold;
+
         .item-status i {
           color: #fff; // 图标颜色同步调整
         }
@@ -145,21 +139,17 @@ const enterFunction = () => {
 
       }
 
-      .item-status{
+      .item-status {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 30px;
         font-size: 16px;
-        color: #666; // 增加图标默认颜色
-        margin-right: 10px; // 增加图标与文字间距
+        color: #666;
       }
 
-      .item-name{
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+      .item-name {
         line-height: 1rem;
+        text-align: center;
 
         .item-label {
           white-space: nowrap;
