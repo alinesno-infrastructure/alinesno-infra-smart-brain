@@ -36,44 +36,11 @@ public class DocReviewSceneEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, comment = "逻辑审核工程师")
     private long logicReviewerEngineer; // 逻辑审核工程师
 
-    // 新增字段：合同类型
-    @TableField("contract_type")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 32, comment = "合同类型")
-    private String contractType;
 
-    // 新增字段：审核立场
-    @TableField("review_position")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 2, comment = "审核立场")
-    private String reviewPosition;
-
-    // 审核清单生成方式
-    @TableField("review_list_option")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "审查清单生成方式")
-    private String reviewListOption ;
-
-    @TableField("audit_id")
-    @Column(type = MySqlTypeConstant.BIGINT, length = 32, comment = "审查清单ID")
-    private Long auditId ;
-
-    // 新增字段：审查清单
-    @TableField("review_list")
-    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "审查清单")
-    private String reviewList;
-
-    // 新增字段：审查清单知识库
-    @TableField("review_list_knowledge_base")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 256, comment = "审查清单知识库")
-    private String reviewListKnowledgeBase;
-
-    // 审核结果
-    @TableField("review_result")
-    @Column(type = MySqlTypeConstant.LONGTEXT , comment = "审核结果")
-    private String reviewResult;
-
-    // 新增字段：合同概览
-    @TableField("contract_overview")
-    @Column(type = MySqlTypeConstant.TEXT, comment = "合同概览")
-    private String contractOverview;
+//    // 审核清单生成方式
+//    @TableField("review_list_option")
+//    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "审查清单生成方式")
+//    private String reviewListOption ;
 
     @TableField("gen_status")
     @Column(type = MySqlTypeConstant.INT, length = 1, comment = "生成状态")
