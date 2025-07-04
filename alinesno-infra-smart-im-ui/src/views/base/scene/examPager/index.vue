@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -361,10 +361,32 @@ const handleSavePagerQuestion = async () => {
 
     savePagerQuestion(data).then(res => {
       console.log('保存成功:', res)
+
+      ElMessage.success('试卷保存成功')
+      dialogVisible.value = false
+
+      const pageId = res.data ;
+
+      // 跳转到试卷生成页面
+      let path ; 
+      if(data.pagerType == 'pager'){
+        path = '/scene/examPager/examPagerView'
+      }else if(data.pagerType == 'banks'){
+        path = '/scene/examPager/questionBankManager'
+      }
+
+      if(path){
+        router.push({
+          path: path , 
+          query: {
+            sceneId: sceneId.value,
+            pagerId: pageId , // 试卷ID
+          }
+        })
+      }
+
+
     })
-    
-    ElMessage.success('试卷保存成功')
-    dialogVisible.value = false
 
   } catch (error) {
     console.error('保存失败:', error)
