@@ -199,6 +199,13 @@ import { nextTick, onMounted } from "vue";
 // import SnowflakeId from "snowflake-id";
 // const snowflake = new SnowflakeId();
 
+const props = defineProps({
+  heightDiff: {
+    type: Number,
+    default: 280 
+  }
+})
+
 const route = useRoute();
 const channelStreamId = ref(route.query.channelStreamId);
 
@@ -220,7 +227,7 @@ const audioUrl = ref('');
 const transcription = ref('');
 
 // 记录当前的高度差值
-const heightDiff = ref(280);
+const heightDiff = ref(props.heightDiff);
 
 const { proxy } = getCurrentInstance();
 
