@@ -1,5 +1,11 @@
 server:
   port: 30304
+  undertow:
+    threads:
+      io: 8  # IO 线程数量，建议设为 CPU 核心数的 2 倍
+      worker: 256  # 工作线程数量，可根据业务场景调整
+    buffer-size: 1024  # 缓冲区大小（单位：字节）
+    direct-buffers: true  # 启用直接内存缓冲区
 
 # spring 配置
 spring:
@@ -31,6 +37,11 @@ spring:
     restart:
       enabled: true
 
+thread-pool-factory:
+  core-pool-size: 20
+  max-pool-size: 100
+  queue-capacity: 500
+
 actable:
   table:
     auto: update
@@ -44,6 +55,7 @@ actable:
     prefix: alinesno_smart_assistant_uni_
 
 forest:
+  backend: okhttp3
   max-connections: 1000        # 连接池最大连接数
   connect-timeout: 60000        # 连接超时时间，单位为毫秒
   read-timeout: 120000           # 数据读取超时时间，单位为毫秒
@@ -86,6 +98,8 @@ alinesno:
   infra:
     gateway:
       host: http://alinesno-infra-base-authority-boot.beta.base.infra.linesno.com
+      embedding: https://dashscope.aliyuncs.com/compatible-mode/v1
+      reranker: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank
     smart:
       # milvus 向量数据库
       milvus:
