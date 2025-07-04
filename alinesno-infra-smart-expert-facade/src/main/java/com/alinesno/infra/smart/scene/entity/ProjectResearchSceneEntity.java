@@ -22,11 +22,11 @@ public class ProjectResearchSceneEntity extends InfraBaseEntity {
 
     @TableField
     @Column(name = "process_collector_engineer", type = MySqlTypeConstant.BIGINT, length = 32 , comment = "进度采集工程师")
-    private String processCollectorEngineer ;
+    private Long processCollectorEngineer ;
 
     @TableField
     @Column(name = "progress_analyzer_engineer", type = MySqlTypeConstant.BIGINT, length = 32, comment = "项目情况分析工程师")
-    private String progressAnalyzerEngineer ;
+    private Long progressAnalyzerEngineer ;
 
     @TableField("gen_status")
     @Column(type = MySqlTypeConstant.INT, length = 1, comment = "生成状态(1已生成|0未生成)")
