@@ -3,7 +3,6 @@ package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentInitDto;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
@@ -25,11 +24,11 @@ public interface IGeneralAgentSceneService extends IBaseService<GeneralAgentScen
      */
     GeneralAgentSceneEntity getBySceneId(long sceneId , PermissionQuery query);
 
-    /**
-     * 初始化场景代理
-     * @param dto
-     */
-    void initAgents(GeneralAgentInitDto dto);
+//    /**
+//     * 初始化场景代理
+//     * @param dto
+//     */
+//    void initAgents(GeneralAgentInitDto dto);
 
     /**
      * 更新场景代理
@@ -51,5 +50,6 @@ public interface IGeneralAgentSceneService extends IBaseService<GeneralAgentScen
      * @param generalAgentSceneId
      * @return
      */
-    String genMarkdownContent(long sceneId, PermissionQuery query, Long generalAgentSceneId);
+    String genMarkdownContent(long sceneId, long taskId , PermissionQuery query, Long generalAgentSceneId);
+
 }
