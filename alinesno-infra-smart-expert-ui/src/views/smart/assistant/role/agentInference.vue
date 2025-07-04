@@ -54,25 +54,9 @@
                                 <el-col :span="18">
                                     <div class="select-wrapper" style="align-items: flex-start;">
                                         <el-form-item prop="modelName" class="form-item-wrapper">
-                                            <!-- 
-                                            <el-select v-model="agentModelConfigForm.modelId" placeholder="请选择大模型"
-                                                size="large" style="width:100%">
-                                                <el-option v-for="item in llmModelOptions" :key="item.id"
-                                                    :label="item.modelName" :value="item.id">
-                                                    <template #default>
-                                                        <div>
-                                                            <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'"
-                                                                alt="图标"
-                                                                style="width: 25px; height: 25px; border-radius: 50%;">
-                                                            {{ item.modelName }}
-                                                        </div>
-                                                    </template>
-                                                </el-option>
-                                            </el-select> 
-                                            -->
                                             <LLMSelector :modelType="'large_language_model'" v-model="agentModelConfigForm.modelId" />
                                         </el-form-item>
-                                        <el-button type="primary" size="large" text bg @click="openModelConfigDialog">
+                                        <el-button type="primary" size="large" text bg @click="openModelConfigDialog" style="margin-top:2px;">
                                             <i class="fa-solid fa-screwdriver-wrench"></i>
                                         </el-button>
                                     </div>
@@ -520,6 +504,9 @@ function setAgentModelConfig(modelConfig) {
     console.log('agentModelConfigForm modelConfig = ' + modelConfig);
     modelConfigDialogVisible.value = false;
     agentModelConfigForm.value.modelConfig = modelConfig;
+
+    // 更新角色内容
+    submitModelConfig();
 }
 
 // 打开关联知识库选择窗口
