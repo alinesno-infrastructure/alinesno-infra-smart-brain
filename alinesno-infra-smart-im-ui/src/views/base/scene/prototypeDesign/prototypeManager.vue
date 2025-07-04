@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -45,7 +45,7 @@
                           </div>
                           <div class="scene-author-info">
                             <span class="scene-name">
-                              <i class="fa-solid fa-ribbon"></i>
+                              <i class="fa-solid fa-user-shield"></i>
                               {{ item.orgName }}
                             </span>
                           </div>
