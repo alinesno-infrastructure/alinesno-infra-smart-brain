@@ -14,11 +14,11 @@ public interface IGeneralAgentPlanService extends IBaseService<GeneralAgentPlanE
 
     /**
      * 获取章节树
-     * @param sceneId
+     * @param taskId
      * @param analysisSceneId
      * @return
      */
-    List<TreeNodeDto> getPlanTree(Long sceneId , Long analysisSceneId);
+    List<TreeNodeDto> getPlanTree(Long taskId, Long analysisSceneId);
 
     /**
      * 根据层级结构保存章节及其父ID
@@ -28,14 +28,16 @@ public interface IGeneralAgentPlanService extends IBaseService<GeneralAgentPlanE
      * @param level    章节的层级，表示章节在层级结构中的深度
      * @param sceneId
      */
-    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long generalAgentPlanId);
+    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long taskId , long generalAgentPlanId);
 
     /**
      * 更新章节编辑器
+     *
      * @param dto
-     * @param generalAgentSceneId
+     * @param longTextSceneId
+     * @param taskId
      */
-    void updateChapterEditor(ChatContentEditDto dto, Long generalAgentSceneId);
+    void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId , Long taskId) ; // generalAgentSceneId);
 
     /**
      * 获取场景所有章节内容
@@ -43,4 +45,11 @@ public interface IGeneralAgentPlanService extends IBaseService<GeneralAgentPlanE
      * @return
      */
     String getAllChapterContent(long sceneId);
+
+    /**
+     * 根据任务ID获取所有章节
+     * @param taskId
+     * @return
+     */
+    List<GeneralAgentPlanEntity> getChaptersByTaskId(Long taskId);
 }
