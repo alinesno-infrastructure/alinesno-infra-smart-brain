@@ -155,12 +155,17 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         // 准备重新排序请求
         TextRerankRequest request = new TextRerankRequest();
         request.setModel(modelName);
-        request.setInput(new TextRerankRequest.Input());
-        request.getInput().setQuery(dto.getSearchText());
-        request.getInput().setDocuments(arrayDocument);
-        request.setParameters(new TextRerankRequest.Parameters());
-        request.getParameters().setReturn_documents(true);
-        request.getParameters().setTop_n(MAX_RESULTS);
+        request.setQuery(dto.getSearchText());
+        request.setDocuments(arrayDocument);
+        request.setReturn_documents(true);
+        request.setTop_n(MAX_RESULTS);
+
+//        request.setInput(new TextRerankRequest.Input());
+//        request.getInput().setQuery(dto.getSearchText());
+//        request.getInput().setDocuments(arrayDocument);
+//        request.setParameters(new TextRerankRequest.Parameters());
+//        request.getParameters().setReturn_documents(true);
+//        request.getParameters().setTop_n(MAX_RESULTS);
 
         // 发起重新排序请求并处理响应
         try {
