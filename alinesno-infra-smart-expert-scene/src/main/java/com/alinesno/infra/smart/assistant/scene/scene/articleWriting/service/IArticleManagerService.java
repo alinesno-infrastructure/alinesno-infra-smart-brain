@@ -6,8 +6,9 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGenerateSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleManagerResponseDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleUpdateDto;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
 
@@ -43,17 +44,11 @@ public interface IArticleManagerService extends IBaseService<ArticleManagerEntit
     /**
      * 分页查询试卷
      * @param page
+     * @param sceneId
      * @param query
      * @return
      */
-    List<ArticleManagerEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query);
-
-//    /**
-//     * 保存PPT大纲
-//     * @param dto
-//     * @return
-//     */
-//    Long savePPTOutline(ArticleOutlineDto dto);
+    List<ArticleManagerResponseDto> pagerListByPage(DatatablesPageBean page,Long sceneId , PermissionQuery query);
 
     /**
      * 保存文章
@@ -71,4 +66,5 @@ public interface IArticleManagerService extends IBaseService<ArticleManagerEntit
      * @param dto
      */
     void updateArticle(ArticleUpdateDto dto);
+
 }
