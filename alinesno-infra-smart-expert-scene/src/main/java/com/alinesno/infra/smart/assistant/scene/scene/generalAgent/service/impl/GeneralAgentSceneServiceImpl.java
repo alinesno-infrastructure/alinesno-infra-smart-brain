@@ -3,8 +3,6 @@ package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.impl
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.utils.RoleUtils;
-import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.mapper.GeneralAgentSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
@@ -13,6 +11,7 @@ import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -36,31 +35,33 @@ public class GeneralAgentSceneServiceImpl extends IBaseServiceImpl<GeneralAgentS
 
         LambdaQueryWrapper<GeneralAgentSceneEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(GeneralAgentSceneEntity::getSceneId, sceneId) ;
-        wrapper.eq(GeneralAgentSceneEntity::getOrgId, query.getOrgId()) ;
+//        wrapper.eq(GeneralAgentSceneEntity::getOrgId, query.getOrgId()) ;
 
-        return getOne(wrapper) ;
+        List<GeneralAgentSceneEntity> list =  list(wrapper) ;
+
+        return list.isEmpty() ? null : list.get(0) ;
     }
 
-    @Override
-    public void initAgents(GeneralAgentInitDto dto) {
-        long sceneId = dto.getSceneId() ;
-
-        LambdaQueryWrapper<GeneralAgentSceneEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(GeneralAgentSceneEntity::getSceneId, sceneId) ;
-        long count = count(wrapper) ;
-
-        GeneralAgentSceneEntity entity = new GeneralAgentSceneEntity() ;
-        if(count > 0){
-            entity = getOne(wrapper) ;
-        }
-
-        entity.setBusinessProcessorEngineer(String.valueOf(dto.getBusinessProcessorEngineer()));
-        entity.setBusinessExecuteEngineer(String.valueOf(dto.getBusinessExecuteEngineer()));
-        entity.setDataViewerEngineer(String.valueOf(dto.getDataViewerEngineer()));
-
-        entity.setSceneId(sceneId);
-        saveOrUpdate(entity) ;
-    }
+//    @Override
+//    public void initAgents(GeneralAgentInitDto dto) {
+//        long sceneId = dto.getSceneId() ;
+//
+//        LambdaQueryWrapper<GeneralAgentSceneEntity> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(GeneralAgentSceneEntity::getSceneId, sceneId) ;
+//        long count = count(wrapper) ;
+//
+//        GeneralAgentSceneEntity entity = new GeneralAgentSceneEntity() ;
+//        if(count > 0){
+//            entity = getOne(wrapper) ;
+//        }
+//
+//        entity.setBusinessProcessorEngineer(String.valueOf(dto.getBusinessProcessorEngineer()));
+//        entity.setBusinessExecuteEngineer(String.valueOf(dto.getBusinessExecuteEngineer()));
+//        entity.setDataViewerEngineer(String.valueOf(dto.getDataViewerEngineer()));
+//
+//        entity.setSceneId(sceneId);
+//        saveOrUpdate(entity) ;
+//    }
 
     @Override
     public void updateSceneAgents(UpdateSceneAgentDto dto) {
@@ -114,10 +115,11 @@ public class GeneralAgentSceneServiceImpl extends IBaseServiceImpl<GeneralAgentS
     }
 
     @Override
-    public String genMarkdownContent(long sceneId, PermissionQuery query, Long generalAgentSceneId) {
+    public String genMarkdownContent(long sceneId, long taskId , PermissionQuery query, Long generalAgentSceneId) {
 
         LambdaQueryWrapper<GeneralAgentPlanEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(GeneralAgentPlanEntity::getSceneId, sceneId);
+        lambdaQueryWrapper.eq(GeneralAgentPlanEntity::getTaskId, taskId);
 
         // TODO fix:待处理orgId为0的问题
         // lambdaQueryWrapper.eq(GeneralAgentPlanEntity::getOrgId, query.getOrgId()) ;
