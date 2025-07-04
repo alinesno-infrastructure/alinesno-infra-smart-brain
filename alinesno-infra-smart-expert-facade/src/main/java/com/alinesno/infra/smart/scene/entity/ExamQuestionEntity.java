@@ -56,6 +56,10 @@ public class ExamQuestionEntity extends InfraBaseEntity {
     @Column(name = "answers", type = MySqlTypeConstant.TEXT, comment = "答案选项信息")
     private String answers;
 
+    @TableField("correct_answer")
+    @Column(name = "correct_answer", type = MySqlTypeConstant.TEXT, comment = "答案选项信息")
+    private String correctAnswer;
+
     @TableField("bank_id")
     @Column(name = "bank_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属题库ID")
     private Long bankId;
