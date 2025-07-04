@@ -83,6 +83,8 @@ const menuItems = ref([
   { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '市场' },
 ]);
 
+// { id: '8', icon: 'fa-solid fa-credit-card', link: '/knowledge', desc: '知识库' },
+
 // 打开服务市场
 function openServiceList(_path) {
   router.push({ path: _path });
