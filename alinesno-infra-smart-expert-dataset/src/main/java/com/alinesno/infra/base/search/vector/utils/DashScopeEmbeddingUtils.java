@@ -1,10 +1,16 @@
 package com.alinesno.infra.base.search.vector.utils;
 
-import com.alibaba.dashscope.embeddings.*;
+import com.alibaba.dashscope.embeddings.BatchTextEmbedding;
+import com.alibaba.dashscope.embeddings.BatchTextEmbeddingParam;
+import com.alibaba.dashscope.embeddings.BatchTextEmbeddingResult;
+import com.alibaba.dashscope.embeddings.TextEmbeddingResultItem;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.fastjson.JSON;
-import io.jsonwebtoken.lang.Assert;
+import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.assistant.adapter.EmbeddingConsumer;
+import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingRequest;
+import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingResponse;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +21,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -45,33 +51,11 @@ public class DashScopeEmbeddingUtils {
     @Value("${alinesno.infra.smart.brain.qianwen.key:}")
     private String apiKey;
 
-//    public DashScopeEmbeddingUtils(String apiKey) {
-//        this.apiKey = apiKey ;
-//    }
+    @Value("${alinesno.infra.gateway.embedding-model:text-embedding-v4}")
+    private String embeddingModel ;
 
-    /**
-     * 处理单个文本列表的嵌入
-     *
-     * @return
-     * @throws ApiException      当API调用异常时抛出
-     * @throws NoApiKeyException 当没有API密钥时抛出
-     */
-    public TextEmbeddingResult embedSingleList(Collection<? extends String> texts) throws ApiException, NoApiKeyException {
-
-        Assert.hasLength(apiKey, "apiKey is null");
-
-        // 构建文本嵌入参数
-        TextEmbeddingParam param = TextEmbeddingParam
-                .builder()
-                .model(TextEmbedding.Models.TEXT_EMBEDDING_V1) // 设置模型
-                .apiKey(apiKey) // 从环境变量中获取API密钥
-                .texts(texts) // 设置待处理的文本列表
-                .build();
-        // 初始化文本嵌入对象并调用嵌入方法
-        TextEmbedding textEmbedding = new TextEmbedding();
-
-        return textEmbedding.call(param);
-    }
+    @Autowired
+    private EmbeddingConsumer embeddingConsumer;
 
     /**
      * 获取文本的嵌入向量
@@ -81,11 +65,27 @@ public class DashScopeEmbeddingUtils {
      */
     public List<Double> getEmbeddingDoubles(String queryText) throws NoApiKeyException {
         // 将获取到的queryText转换成embedding内容
-        TextEmbeddingResult embedding = embedSingleList(List.of(queryText)) ;
+        List<TextEmbeddingResultItem> embeddingResultItems = embedSingleList(List.of(queryText)) ; //   embedding.getOutput().getEmbeddings() ;
 
-        List<TextEmbeddingResultItem> embeddingResultItems = embedding.getOutput().getEmbeddings() ;
         TextEmbeddingResultItem embeddingResultItem = embeddingResultItems.get(0) ;
         return embeddingResultItem.getEmbedding();
+    }
+
+    /**
+     * 获取文本的嵌入向量
+     * @param queryText
+     * @return
+     */
+    public List<TextEmbeddingResultItem> embedSingleList(List<String> queryText) {
+        TextEmbeddingRequest request = new TextEmbeddingRequest() ;
+
+        request.setDimension("1024");
+        request.setModel(embeddingModel);
+        request.setEncoding_format("float");
+        request.setInput(queryText);
+
+        TextEmbeddingResponse response = embeddingConsumer.embeddings(request , apiKey) ;
+        return response.getData() ;
     }
 
     /**
