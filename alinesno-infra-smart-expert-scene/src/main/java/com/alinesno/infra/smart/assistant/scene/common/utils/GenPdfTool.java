@@ -24,7 +24,7 @@ public class GenPdfTool {
     private static final RestTemplate restTemplate = new RestTemplate();
 
     @NotNull
-    public static ResponseEntity<Resource> getResourceResponseEntity(String storageId , String previewUrl) {
+    public static ResponseEntity<Resource> getResourceResponseEntity(String storageId , String previewUrl, Long taskId) {
 
         byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
 
@@ -77,7 +77,12 @@ public class GenPdfTool {
     }
 
     @NotNull
-    public static StringBuilder getGenDocReviewMarkdownReport(String documentName, String auditOption, String dateTime, List<DocReviewRulesEntity> rules, List<DocReviewAuditResultEntity> auditResultList) {
+    public static StringBuilder getGenDocReviewMarkdownReport(String documentName,
+                                                              String auditOption,
+                                                              String dateTime,
+                                                              List<DocReviewRulesEntity> rules,
+                                                              List<DocReviewAuditResultEntity> auditResultList,
+                                                              long taskId) {
         StringBuilder markdown = new StringBuilder();
 
         // 封面
