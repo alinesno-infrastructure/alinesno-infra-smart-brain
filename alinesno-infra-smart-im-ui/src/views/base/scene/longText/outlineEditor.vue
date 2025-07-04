@@ -3,8 +3,15 @@
         <el-card class="box-card" shadow="never">
             <template #header>
                 <div class="card-header">
-                    <div style="display: flex;align-items: center;gap: 5px;">
-                        <i class="fa-solid fa-file-pdf"></i> {{ currentSceneInfo.sceneName }}
+                    <div style="display: flex;align-items: center;gap: 5px;width: calc(100% - 250px);">
+                        <i class="fa-solid fa-file-pdf"></i> 
+                        <!-- {{ taskInfo.taskName }} -->
+
+                        <!-- 标题内容 -->
+                        <EditableTitle 
+                            v-model:title="taskInfo.taskName" 
+                            class="article-edit-title" 
+                        />
 
                         <el-tooltip v-for="(item,index) in currentSceneInfo.chapterEditors" :key="index"
                             class="box-item" 
@@ -23,6 +30,7 @@
                             </span>
                         </el-tooltip> 
                         -->
+
                     </div>
                     <span>
 
@@ -41,7 +49,7 @@
                     </span>
                 </div>
             </template>
-            <el-scrollbar style="height:calc(100vh - 180px)">
+            <el-scrollbar style="height:calc(100vh - 140px)">
                 <div class="chapter-tree-content">
                     <el-tree :data="outline" 
                         node-key="id" 
@@ -141,6 +149,7 @@
 import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
 
+import EditableTitle from './components/EditableTitle.vue'
 import { getParam } from '@/utils/ruoyi'
 import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
 
@@ -149,14 +158,23 @@ import {
     updateSceneGenStatus ,
     getScene,
     saveChapter,
-    chatRole,
+    // chatRole,
 } from '@/api/base/im/scene/longText'
+
+import {
+    getLongTextTask,
+    submitTask,
+    submitChapterTask,
+    updateTaskGenStatus
+} from '@/api/base/im/scene/longTextTask'
 
 const route = useRoute();
 const { proxy } = getCurrentInstance();
 
 // const route = useRoute();
 const channelStreamId = ref(route.query.channelStreamId);
+const taskId = ref(route.query.taskId);
+const sceneId = ref(route.query.sceneId);
 
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
 const emit = defineEmits([
@@ -173,6 +191,10 @@ const transferAgentPanel = ref(null)
 
 const streamLoading = ref(null)
 
+const taskInfo = ref({
+    taskName: '' ,
+})
+
 // 定义人物信息
 const person = ref({
   roleAvatar: '' , 
@@ -182,7 +204,7 @@ const person = ref({
 });
 
 const outline = ref([]);
-
+const timer = ref(null) // 定时器引用
 const dialogVisible = ref(false)
 
 const channelAgentConfigTitle = ref("")
@@ -272,57 +294,65 @@ const saveEdit = () => {
 
 /** 生成内容 */
 const genStreamContentByMessage = async (roleIdVal , messageVal) => {
+
     message.value = messageVal ; 
     person.value.id = roleIdVal ;
-    currentSceneId.value = getParam('sceneId') ; 
+    currentSceneId.value = sceneId.value ; 
 
     await genStreamContent();
 
 }
 
 /** 生成内容 */
-const genStreamContent = async() => {
+const genStreamContent = async(text) => {
 
-  if (!message.value) {
-    proxy.$modal.msgError("请输入消息内容.");
-    return;
-  }
+//   if (!message.value) {
+//     proxy.$modal.msgError("请输入消息内容.");
+//     return;
+//   }
 
-//   const channelStreamId = emit('getChannelStreamId');
-  console.log('channelStreamId = ' + channelStreamId.value);
+//   console.log('channelStreamId = ' + channelStreamId.value);
 
-  if(!channelStreamId.value){
-    proxy.$modal.msgError("请先创建场景.");
-    return;
-  }
+//   if(!channelStreamId.value){
+//     proxy.$modal.msgError("请先创建场景.");
+//     return;
+//   }
 
   streamLoading.value = ElLoading.service({
     lock: true,
-    text: '任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(0, 0, 0, 0.2)',
+    text: '规划任务执行中，请勿操作其它界面 ...',
+    background: 'rgba(255, 255, 255, 0.5)',
+    customClass: 'custom-loading'
   })
 
-
-  let formData = {
-    sceneId: currentSceneId.value,
-    channelStreamId: channelStreamId.value ,
-    message: message.value,
-    roleId: person.value.id ,
+  if(text){
+    streamLoading.value.setText(text) ;
   }
 
-  const response = await chatRole(formData)
-  console.log('response = ' + response)
+  emit('openChatBox' , person.value.id) ; 
 
-  proxy.$modal.msgSuccess("发送成功");
-  chaterDialogVisible.value = false ;
-  message.value = '';
+//   let formData = {
+//     sceneId: currentSceneId.value,
+//     channelStreamId: channelStreamId.value ,
+//     message: message.value,
+//     taskId: taskId.value,
+//     roleId: person.value.id ,
+//   }
 
-  // 合并数组
-  Array.prototype.push.apply(outline.value, response.data);
-  closeStreamDialog();
+//   const response = await chatRole(formData)
+//   console.log('response = ' + response)
 
-  // 自动保存章节
-  getOutlineJson();
+//   proxy.$modal.msgSuccess("发送成功");
+//   chaterDialogVisible.value = false ;
+//   message.value = '';
+
+//   // 合并数组
+//   Array.prototype.push.apply(outline.value, response.data);
+//   closeStreamDialog();
+
+//   // 自动保存章节
+//   getOutlineJson();
+
 
 };
 
@@ -373,41 +403,39 @@ function handleCloseAgentConfig(selectAgentList){
 }
 
 /** 获取到场景详情 */
-function handleGetScene() {
-    getScene(currentSceneId.value).then(res => {
+const handleGetScene = async() => {
+    await getScene(currentSceneId.value , taskId.value).then(res => {
       currentSceneInfo.value = res.data
+      person.value = currentSceneInfo.value.chapterEditors[0];
+
       outline.value = res.data.chapterTree
+
       emit('setCurrentSceneInfo' , res.data)
 
-      const genStatus = currentSceneInfo.value.genStatus ;
+      // 重新加载场景默认点击第1章节
+      nextTick(() => {
+        const item = outline.value[0];
+        if(item && item.children && item.children.length > 0){
+          const node = {
+              label: item.children[0].label ,
+              data: { chapterEditor:  item.children[0].chapterEditor ,  description: item.children[0].description }
+          }
+          const data = { id: item.children[0].id }
+          editContent(node , data)
+        }
 
-      if(genStatus == 0 && isCheckGenStatus.value){ // 未生成章节
-        ElMessageBox.confirm( '检测到生成指令['+ currentSceneInfo.value.chapterPromptContent +']是否要生成章节大纲？', '提示', {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-        })
-        .then(() => {
-            updateSceneGenStatus(currentSceneId.value , 1).then(res => {
-                person.value = currentSceneInfo.value.chapterEditors[0];
-                message.value = currentSceneInfo.value.chapterPromptContent;
-                openChatBoxStreamContent();
-            })
-        })
-        .catch(() => {
-            console.log('用户取消了生成章节操作');
-        });
-      }
+      })
+
     })
 }
 
 const getOutlineJson = () => {
     const jsonResult = JSON.stringify(outline.value, null, 2);
 
-    saveChapter(jsonResult , route.query.sceneId).then(res => {
+    saveChapter(jsonResult , sceneId.value , taskId.value).then(res => {
         proxy.$modal.msgSuccess("保存成功");
-        handleGetScene()
 
+        handleGetTask()
         // 章节生成完成之后，开始生成内容
         emit('genChapterContentByAgent')
     })
@@ -418,7 +446,7 @@ const getOutlineJsonSingle = () => {
 
     saveChapter(jsonResult , route.query.sceneId).then(res => {
         proxy.$modal.msgSuccess("保存成功");
-        handleGetScene()
+        handleGetTask()
     })
 }
 
@@ -430,19 +458,177 @@ const closeStreamDialog = () => {
   emit('closeShowDebugRunDialog')
 }
 
+// 设置主目录
+const setOutline = (outlineVal) => {
+    outline.value = outlineVal
+}
+
 // 主动暴露childMethod方法
 defineExpose({ 
     closeStreamDialog ,
     handleGetScene,
     genStreamContentByMessage,
-    configAgent
+    configAgent , 
+    setOutline
 })
 
+// 点击当前的chapter
+const openCurrentChapter = (currentChapterId) => {
+    // 递归查找函数
+    const findChapter = (nodes) => {
+        for (const node of nodes) {
+            // 检查当前节点是否匹配
+            if (node.id === currentChapterId) {
+                return node;
+            }
+            // 递归检查子节点
+            if (node.children && node.children.length > 0) {
+                const found = findChapter(node.children);
+                if (found) return found;
+            }
+        }
+        return null; // 未找到
+    };
 
-nextTick(() => {
-    console.log('sceneId = ' + route.query.sceneId) ;
-    // handleListAllRole()
-    handleGetScene() 
+    // 从整个chapterTree中查找
+    const chapter = findChapter(outline.value); // 假设outline.value存储整个章节树
+    
+    if (chapter) {
+        // 构建node对象
+        const node = {
+            label: chapter.label,
+            data: {
+                chapterEditor: chapter.chapterEditor,
+                description: chapter.description,
+                chapterEditorAvatar: chapter.chapterEditorAvatar // 保留头像信息
+            }
+        };
+        
+        // 调用编辑方法
+        editContent(node, { id: chapter.id });
+    } else {
+        console.warn(`未找到ID为 ${currentChapterId} 的章节`);
+        // 可添加默认处理逻辑
+    }
+};
+
+// const handleGetTask = async () => {
+//     await getLongTextTask(taskId.value).then(res => {
+//         taskInfo.value = res.data
+
+//         const taskStatus = taskInfo.value.taskStatus  // 生成大纲状态
+//         const chapterStatus = taskInfo.value.chapterStatus  // 生成章节状态
+
+//         const currentChapterLabel = taskInfo.value.currentChapterLabel // 生成章节信息
+//         const currentChapterId = taskInfo.value.currentChapterId // 生成章节ID
+
+//         // 未生成章节
+//         if(taskStatus == 0 || taskStatus == null){  
+//             // 提交任务
+//             submitTask(taskId.value , channelStreamId.value).then(res => {
+//                 genStreamContent() ;
+//             })
+//         }else if(taskStatus == 2){ // 运行中，则直接打开窗口
+//             genStreamContent() ;
+//         }else if(taskStatus == 1) {  // 大纲已运行成功
+//             // 判断章节状态
+//             person.value = currentSceneInfo.value.contentEditors[0];
+
+//             if(chapterStatus == 0 || chapterStatus == null){
+//                 submitChapterTask(taskId.value , channelStreamId.value).then(res => {
+//                     genStreamContent("开始生成章节内容.") ; 
+//                 }) ;
+//             }else if(chapterStatus == 2){  // 章节生成中
+//                 openCurrentChapter(currentChapterId);
+//                 genStreamContent(currentChapterLabel) ; 
+//             }else if(chapterStatus == 1){  // 章节生成完成 
+
+//             }
+//         }
+//     })
+// }
+
+const handleGetTask = async () => {
+
+  try {
+    await getLongTextTask(taskId.value).then(res => {
+      taskInfo.value = res.data
+      
+      const taskStatus = taskInfo.value.taskStatus
+      const chapterStatus = taskInfo.value.chapterStatus
+      const currentChapterId = taskInfo.value.currentChapterId
+      const currentChapterLabel = taskInfo.value.currentChapterLabel
+      
+      // 检查是否满足停止条件（大纲和章节都完成）
+      if (taskStatus === '1' && chapterStatus === '1') {
+        // 关闭dialog
+        closeStreamDialog();
+
+        clearInterval(timer.value)
+        timer.value = null
+        console.log("任务已完成，停止轮询")
+        return
+      }
+      
+      // 原有逻辑保持不变
+      if (taskStatus == 0 || taskStatus == null) {
+        submitTask(taskId.value, channelStreamId.value).then(res => {
+          genStreamContent()
+        })
+      } else if (taskStatus == 2) {
+        genStreamContent()
+      } else if (taskStatus == 1) {  // 章节生成完成
+
+        if(outline.value.length == 0 ){
+           getScene(currentSceneId.value , taskId.value).then(res => {
+                outline.value = res.data.chapterTree
+           })
+        }
+
+        person.value = currentSceneInfo.value.contentEditors[0]
+        
+        if (chapterStatus == 0 || chapterStatus == null) {
+          submitChapterTask(taskId.value, channelStreamId.value).then(res => {
+            genStreamContent("开始生成章节内容.")
+          })
+        } else if (chapterStatus == 2) {
+          openCurrentChapter(currentChapterId)
+          genStreamContent(currentChapterLabel)
+        } else if (chapterStatus == 1) {
+          // 章节生成完成
+        }
+      }
+    })
+  } catch (error) {
+    console.error("查询任务出错:", error)
+  }
+}
+
+// 启动轮询
+const startPolling = () => {
+  if (!timer.value) {
+    timer.value = setInterval(handleGetTask, 5000) // 每5秒轮询一次
+    console.log("启动任务轮询")
+  }
+}
+
+// 停止轮询
+const stopPolling = () => {
+  if (timer.value) {
+    clearInterval(timer.value)
+    timer.value = null
+    console.log("停止任务轮询")
+  }
+}
+
+nextTick( async () => { 
+    await handleGetScene() ;
+    await handleGetTask() ;
+    startPolling() // 启动定时轮询
+});
+
+onUnmounted(() => {
+  stopPolling() // 组件卸载时清除定时器
 })
 
 </script>
@@ -457,7 +643,7 @@ nextTick(() => {
 .card-header {
     display: flex;
     justify-content: space-between;
-    padding: 0px 20px;
+    padding: 0px 0px;
     align-items: center;
 }
 
@@ -538,6 +724,5 @@ nextTick(() => {
 
 .chapter-tree-content .el-tree-node__content {
     height: auto !important;
-}
-
+} 
 </style>
