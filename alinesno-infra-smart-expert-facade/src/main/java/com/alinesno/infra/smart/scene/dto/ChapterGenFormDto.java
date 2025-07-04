@@ -41,4 +41,10 @@ public class ChapterGenFormDto {
     @Min(value = 1, message = "章节ID不能小于0")
     private long chapterId;
 
+    /**
+     * 任务ID，用于标识章节所属的任务
+     */
+    @NotNull(message = "任务ID不能为空")
+    private Long taskId ;
+
 }
