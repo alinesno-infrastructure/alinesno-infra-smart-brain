@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -111,16 +111,6 @@
                         </el-button>
                       </template>
 
-                      <!-- <template #default="scope">
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">小程序分享</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">阅卷</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">设置</el-button>
-                    <el-button type="primary" text bg icon="Position" :loading="runChainAgentLoadding"
-                      @click="handleChainAgent(scope.row)">删除</el-button>
-                  </template> -->
                     </el-table-column>
 
                   </el-table>
