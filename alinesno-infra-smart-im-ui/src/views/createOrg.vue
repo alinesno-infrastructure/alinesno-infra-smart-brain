@@ -12,8 +12,8 @@
           <h2>组织信息设置</h2>
           <el-form-item label="是否有组织">
             <el-radio-group v-model="orgForm.type">
-              <el-radio value="1" :label="1">加入组织</el-radio>
               <el-radio value="0" :label="0">新建组织</el-radio>
+              <el-radio value="1" :label="1">加入组织</el-radio>
             </el-radio-group>
           </el-form-item>
 
@@ -115,7 +115,7 @@ const icons = ref([
 ]);
 
 const orgForm = ref({
-  type: 1 ,
+  type: 0 ,
   logoUrl: '',
   joinDoorplateNumber: '' ,
   orgName: '',
