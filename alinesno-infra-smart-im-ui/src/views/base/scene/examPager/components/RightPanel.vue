@@ -23,11 +23,11 @@
         </div>
 
       </el-tab-pane>
+
+      <!-- 
       <el-tab-pane label="题目设置" name="second">
-
-        
-
-      </el-tab-pane>
+      </el-tab-pane> 
+      -->
 
       <!-- 
       <el-tab-pane label="分页设置" name="third">
