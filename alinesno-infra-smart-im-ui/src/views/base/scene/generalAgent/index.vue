@@ -1,78 +1,260 @@
 <template>
-  <div class="long-text-container">
+  <div class="ppt-pager-container">
 
-    <RoleSelectPanel 
-      :currentSeneInfo="currentSceneInfo"
-      @openExecuteHandle="openExecuteHandle"
-      ref="roleSelectPanelRef" />
+    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-    <div class="main-content">
-      <div class="title-section">
-        <span class="title">智能体服务，满足多样化场景需求</span>
-        <span class="description">依托强大的通用智能体，轻松应对各类任务。输入需求，快速获得精准、专业的解决方案</span>
-      </div>
-      <div class="input-button-section">
-        <el-input v-model="promptText" class="input-box" size="large" placeholder="请输入您的需求，获取智能体服务" :prefix-icon="Search" />
-        <el-button type="primary" size="large" @click="generaterText()" class="send-button">
-          <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
-        </el-button>
-      </div>
+      <el-aside width="80px" class="ppt-pager-aside">
+        <FunctionList />
+      </el-aside>
 
-      <div class="example-section">
-        <div class="example-title">你可以这样提问</div>
-        <div class="example-list">
-          <div v-for="(item, index) in greetingQuestionList" :key="index" class="example-item" @click="handleExampleClick(item)">
-            <span class="example-text">{{ item.text }}</span>
-            <i class="fa-solid fa-paper-plane example-icon"></i>
-          </div> 
+      <el-main class="ppt-pager-main">
+
+        <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
+          ref="roleSelectPanelRef" />
+
+        <div class="main-content">
+          <el-row>
+            <el-col :span="13">
+
+              <div class="title-section">
+                <span class="title">
+                  <i class="fa-solid fa-feather-pointed"></i> 通用智能体任务 
+                </span>
+                <span class="description">
+                  AI针对于某一个场景设计出智能体任务，并结合需求进行输出
+                </span>
+              </div>
+
+                <!-- 
+                <ArticleTemplatePanel v-model="formData.selectedTemplateId" /> 
+                -->
+
+              <div class="input-button-section">
+                <div style="width:100%">
+                  <!-- 附件内容-->
+                  <AttachmentSetionPanel 
+                    @upload-success="handleUploadSuccess"
+                    ref="attachmentPanelRef"
+                    style="padding: 0px 0px;margin-bottom:0px;" />
+
+                  <!-- 文本内容 -->
+                  <el-input v-model="formData.promptText" 
+                    class="input-box" 
+                    size="large" 
+                    placeholder="请输入您的需求，获取智能体服务"
+                    :prefix-icon="Search" />
+
+                </div>
+
+                <!-- 上传附件按键 -->
+                <div class="upload-button-section">
+                  <div>
+                    <el-button type="primary" size="large" class="upload-button" @click="handleUpload" text bg>
+                      <i class="fa-solid fa-paperclip"></i> 上传附件
+                    </el-button>
+                  </div>
+
+                  <el-button type="primary" size="large" @click="generaterText()" class="send-button">
+                    <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
+                  </el-button>
+                </div>
+              </div>
+
+              <!-- 选择题型-->
+              <div class="example-select-section">
+                <ArticleTypeConfig v-model="formData.pptConfig"/>
+              </div>
+
+              <div class="example-section">
+                <div class="example-title">你可以这样提问</div>
+                <div class="example-list">
+                  <div v-for="(item, index) in topics" :key="index" class="example-item" @click="handleExampleClick(item)">
+                    <span class="example-text">{{ item.text }}</span>
+                    <i class="fa-solid fa-paper-plane example-icon"></i>
+                  </div> 
+                </div>
+              </div>
+
+              <div class="review-footer-message">
+                <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
+              </div>
+
+            </el-col>
+            <el-col :span="11">
+              <div class="review-question-preview-title">
+                <span>
+                  <i class="fa-solid fa-file-pdf"></i> 它可以帮你完成这些事情
+                </span>
+                <!-- 
+                <el-button type="danger" :disabled="!outline" @click="generatorPPT()">
+                  <i class="fa-solid fa-floppy-disk"></i>&nbsp;编辑文章
+                </el-button> 
+                -->
+              </div>
+              <!-- 大纲生成预览 -->
+              <div class="pager-gen-result-panel">
+
+                <!-- 
+                <div :style="!showArticleOutput?'visibility:visible':'visibility:hidden;display:none'" style="margin-top: 10vh;">
+                  <el-empty description="当前未生成文章内容，可以上传相关文档和配置场景，生成文章" />
+                </div> 
+                -->
+
+                <!-- 
+                <el-scrollbar :style="showArticleOutput?'visibility:visible':'visibility:hidden;height:0px;'" class="pager-container" ref="scrollbarRef"> 
+                  <div ref="innerRef">
+                    <DataAnalysisDisplay  ref="dataAnalysisDisplayRef" />
+                  </div>
+                </el-scrollbar> 
+                -->
+                <ArticleTemplatePanel v-model="formData.selectedTemplateId" /> 
+
+              </div>
+            </el-col>
+          </el-row>
+
         </div>
-      </div>
 
+      </el-main>
+    </el-container>
+
+    <!-- 运行抽屉 -->
+    <div class="aip-flow-drawer flow-control-panel">
+        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+            :with-header="true">
+            <div style="margin-top: 0px;">
+                <RoleChatPanel ref="roleChatPanelRef" />
+            </div>
+        </el-drawer>
     </div>
-    <div class="review-footer-message">
-      <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
-    </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
-import { ElMessage } from 'element-plus';
-import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+import { nextTick, ref } from 'vue';
+import { ElMessage , ElLoading } from 'element-plus';
 
-import { 
-  getScene, 
-  updateChapterPromptContent 
+import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
+import ArticleTemplatePanel  from './articleTemplate'
+import ArticleTypeConfig from './articleTypeConfig.vue';
+
+import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import FunctionList from './functionList'
+
+import {
+  getScene,
+  addTask , 
 } from '@/api/base/im/scene/generalAgent';
+
 import SnowflakeId from "snowflake-id";
 
 const roleSelectPanelRef = ref(null)
 const snowflake = new SnowflakeId();
+
 const route = useRoute();
 const router = useRouter();
 
-const sceneId = ref(route.query.sceneId)
-const isBack = ref(route.query.back || false)
-const promptText = ref('');
+const topics = [
+    { text: "写一篇关于产品营销的计划方案" },
+    { text: "分析上传的数据报告" },
+    { text: "人工智能的发展趋势与未来展望" },
+    { text: "公益事业与企业社会责任的结合" },
+    { text: "2025在线教育的发展与挑战" },
+    { text: "企业数字化执行阻力突破" },
+    { text: "年度工作回顾与未来规划" }
+];
 
-const greetingQuestionList = ref([
-  { text: "制定一份市场营销策划方案" },
-  { text: "分析当前热门短视频运营策略" },
-  { text: "规划一场线上产品发布会流程" },
-  { text: "设计一套员工培训课程体系" }
-]);
+const outline = ref(null)
+const pptId = ref(null)
+
+const pagerGenContainerPanelRef = ref(null)
+const dataAnalysisDisplayRef = ref(null)
+
+// 执行面板
+const showDebugRunDialog = ref(false);
+const roleChatPanelRef = ref(null)
+
+const sceneId = ref(route.query.sceneId)
+const streamLoading = ref(null)
+const showArticleOutput = ref(false)
+
+// 表单引用
+const dialogVisible = ref(false);
+const formRef = ref(null)
+
+const channelStreamId= ref(route.query.channelStreamId || snowflake.generate())
+
+// 场景表单信息
+const formData = ref({
+  pagerType: 'pager',
+  sceneId: sceneId.value,
+  difficultyLevel: 'easy',
+  channelStreamId: channelStreamId.value ,
+  pptConfig: {
+    writingType: 'general',
+    audience: 'general',
+    scenario: 'general',
+    tone: 'professional'
+  },
+  attachments:[],
+})
+
+// 统计信息
+const totalQuestions = ref(0)
+const totalScore = ref(0)
 
 const currentSceneInfo = ref({
   sceneName: '通用智能体服务',
 });
+
+// 添加attachmentPanelRef引用
+const attachmentPanelRef = ref(null);
+
+// 处理上传成功
+const handleUploadSuccess = (fileInfo) => {
+  console.log('文件上传成功:', fileInfo);
+  // 这里可以保存storageId到表单数据中
+  // 例如: formData.value.attachments.push(fileInfo.storageId);
+  formData.value.attachments.push(fileInfo.storageId);
+};
+
+// 修改handleUpload方法，直接调用子组件的上传
+const handleUpload = () => {
+  if (attachmentPanelRef.value) {
+    attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
+  }
+};
+
+// 生成PPT
+const generatorPPT = () => {
+  savePPTOutline(sceneId.value , 
+      outline.value , 
+      pptId.value , 
+      formData.value.pptConfig,
+      formData.value.promptText
+    ).then(res => {
+    pptId.value = res.data ;
+    window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
+  }).catch(error => {
+    ElMessage.error(error.message)
+  })
+}
+
+// 计算总题目数和总分
+const updateTotalStats = (stats) => {
+  totalQuestions.value = stats.totalQuestions
+  totalScore.value = stats.totalScore
+}
 
 const handleGetScene = () => {
   getScene(sceneId.value).then(res => {
     currentSceneInfo.value = res.data;
     // handleRoleBySceneIdAndAgentType();
 
-    if(res.data.greetingQuestion && res.data.greetingQuestion.length > 0){
-      greetingQuestionList.value = [] ; 
+    if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) {
+      greetingQuestionList.value = [];
       res.data.greetingQuestion.forEach(item => {
         greetingQuestionList.value.push({
           text: item
@@ -80,77 +262,150 @@ const handleGetScene = () => {
       });
     }
 
-    if(!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer){ // 选择配置角色
+    // if (!currentSceneInfo.value.requirementAnalyzer || !currentSceneInfo.value.prototypeDesigner) { // 选择配置角色
+    //   roleSelectPanelRef.value.configAgent();
+    //   return;
+    // }
+
+    if (!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer) { // 选择配置角色
       roleSelectPanelRef.value.configAgent();
-      return ;
+      return;
     }
 
-    if(res.data.genStatus == 1 && !isBack.value){
-      router.push({
-        path: '/scene/generalAgent/agentParser',
-        query: {
-          sceneId: sceneId.value,
-          genStatus: true ,
-          channelStreamId: snowflake.generate() 
-        }
-      })
-    }
   })
 }
 
-const generaterText = () => {
-  if (!promptText.value) {
+// 关闭对话框前的处理
+const handleClose = (done) => {
+  // 可以在这里添加关闭前的确认逻辑
+  done()
+}
+
+const handleExampleClick = (item) => {
+  formData.value.promptText = item.text;
+  // generaterText();
+}
+
+// 保存试卷题目信息
+const handleSavePagerQuestion = async () => {
+
+  try {
+    // 验证表单
+    await formRef.value.validate()
+    console.log('保存文章数据:', formData.value)
+
+    const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
+
+    const data = {
+      sceneId: sceneId.value,
+      channelStreamId: channelStreamId.value,
+      pagerType: formData.value.pagerType,
+      difficulty: formData.value.difficultyLevel,
+      examStructure: formData.value.examStructure,
+      questionList: questionList,
+    }
+
+    savePagerQuestion(data).then(res => {
+      console.log('保存成功:', res)
+    })
+    
+    ElMessage.success('试卷保存成功')
+    dialogVisible.value = false
+
+  } catch (error) {
+    console.error('保存失败:', error)
+    ElMessage.error('请填写完整的试卷信息')
+  }
+
+}
+
+const generaterText = async () => {
+  if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
     return;
   }
-  ElMessage.success('处理完成');
 
-  updateChapterPromptContent({
-    sceneId: sceneId.value,
-    promptContent: promptText.value
-  }).then(res => {
+  addTask(formData.value).then(res => {
+
+    const taskId = res.data ; 
+
     router.push({
       path: '/scene/generalAgent/agentParser',
       query: {
         sceneId: sceneId.value,
-        genStatus: true ,
-        channelStreamId: snowflake.generate() 
+        genStatus: true,
+        channelStreamId: snowflake.generate(),
+        taskId: taskId , 
       }
     })
+
   })
 
-}
-
-const handleExampleClick = (item) => {
-  promptText.value = item.text;
-  // generaterText();
-}
+};
 
 onMounted(() => {
   handleGetScene();
+  // calculateTotals(); // 初始化统计
+
+  // Add this check for channelStreamId in URL
+  if (!route.query.channelStreamId) {
+    router.replace({
+      query: {
+        ...route.query,
+        channelStreamId: channelStreamId.value
+      }
+    });
+  }
+
 })
 
 </script>
 
 <style lang="scss" scoped>
-.long-text-container {
+.ppt-pager-container {
   background: #fff;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 60px);
 
- .main-content {
+  .review-footer {
+    padding: 10px;
+    font-size: 14px;
+    background: #fafafa;
+    border-radius: 8px;
+    text-align: left;
+    color: #555;
+    margin-top: 10px;
+}
+
+  .main-content {
     display: flex;
     flex-direction: column;
-    padding-top: calc(20vh - 56px);
-    text-align: center;
-    max-width: 1024px;
+    padding-top: calc(1vh);
+    // text-align: center;
+    // max-width: 90%;
     margin: auto;
+    padding-left: 20px;
+    padding-right: 20px;
 
-   .title-section {
+    .example-result-section {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: left;
+      color: #585a73;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-section {
       display: flex;
       flex-direction: column;
       text-align: center;
+      align-items: flex-start;
 
-     .title {
+      .title {
         color: #2C2C36;
         font-weight: 600;
         font-size: 28px;
@@ -158,7 +413,7 @@ onMounted(() => {
         line-height: 40px;
       }
 
-     .description {
+      .description {
         margin-top: 10px;
         color: #8F91A8;
         font-weight: 400;
@@ -167,23 +422,24 @@ onMounted(() => {
       }
     }
 
-   .input-button-section {
+    .input-button-section {
       display: flex;
       gap: 10px;
       position: relative;
       box-sizing: border-box;
       width: 100%;
-      border-radius: 8px;
-      box-shadow: rgba(54, 54, 73, 0.06) 0px 12px 24px -16px, rgba(74, 80, 96, 0.12) 0px 12px 40px, rgba(44, 44, 54, 0.02) 0px 0px 1px;
+      border-radius: 15px;
+      // box-shadow: rgba(54, 54, 73, 0.06) 0px 12px 24px -16px, rgba(74, 80, 96, 0.12) 0px 12px 40px, rgba(44, 44, 54, 0.02) 0px 0px 1px;
       transition: 0.3s;
       background: rgb(255, 255, 255);
       padding: 10px !important;
       border: 1px solid rgb(232, 234, 242);
       margin-top: 30px;
-      margin-bottom: 30px;
-      align-items: center;
+      margin-bottom: 10px;
+      align-items: flex-start;
+      flex-direction: column;
 
-     .input-box {
+      .input-box {
         width: 100%;
         height: 50px;
         border: 0px !important;
@@ -191,89 +447,88 @@ onMounted(() => {
       }
     }
 
-   .example-section {
-      padding: 0px 20px;
-
-     .example-title {
-        color: rgb(44, 44, 54);
-        font-size: 14px;
-        text-align: left;
-        margin-left: 5px;
-        margin-top: 15px;
-        margin-bottom: 15px;
-      }
-
-     .example-list {
-        display: flex;
-        flex-wrap: wrap;
-
-       .example-item {
-          position: relative;
-          display: flex;
-          gap: 8px;
-          align-items: center;
-          height: 40px;
-          background: rgb(242, 243, 247);
-          border-radius: 8px;
-          cursor: pointer;
-          transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-          will-change: opacity, transform;
-          width: calc(50% - 10px);
-          box-sizing: border-box;
-          padding: 10px;
-          margin: 5px 5px 8px 5px;
-
-          &:hover {
-            background: rgb(232 233 235);
-           .example-icon {
-              display: block;
-            }
-          }
-
-          .example-icon {
-            display: none;
-            color: #585a73;
-            font-size:12px;
-          }
-
-         .example-text {
-            flex: 1 1;
-            overflow: hidden;
-            color: #585a73;
-            font-size: 14px;
-            white-space: nowrap;
-            text-align: left;
-            text-overflow: ellipsis;
-            transition: padding-right .2s ease-out;
-          }
-        }
-      }
-    }
   }
 
- .review-footer-message {
+  .review-footer-message {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 10px;
     height: 36px;
     padding: 12px 0px;
     text-align: center;
 
-   .footer-message {
+    .footer-message {
       margin-bottom: 4px;
       color: #C8CAD9;
       font-size: 12px;
       line-height: 12px;
     }
   }
+
+  .review-question-preview-title {
+    padding: 10px;
+    text-align: left;
+    font-weight: bold;
+    margin-left: 20px;
+    margin-right: 10px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #fafafa;
+    color: #444;
+    font-size: 15px;
+    display: flex;
+    align-content: center;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .review-question-preview {
+    height: calc(100vh - 170px);
+    margin-left: 20px;
+    border-radius: 8px;
+    background: #fafafa;
+    border: 1px solid #e8eaf2;
+    overflow: hidden;
+  }
+
 }
 
+.ppt-pager-aside{
+  padding: 0px;
+  border-right: 1px solid #f2f3f7;
+  background: #fff;
+  margin-bottom: 0px;
+}
+
+.ppt-pager-main{
+  padding: 0px !important;
+}
+
+.pager-gen-result-panel{
+  margin-bottom:20px;
+  margin-left:20px;
+  text-align: left;
+
+  .pager-container {
+    background-color: #fafafa;
+    margin: 10px 10px;
+    margin-right: 0px;
+    border-radius: 8px;
+    height: calc(100vh - 190px);
+    padding: 10px;
+    padding-left: 10px;
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
+}
 </style>
 
 
 <style>
-.long-text-container .el-input__wrapper {
+.ppt-pager-container .input-button-section .el-input__wrapper {
   box-shadow: none !important;
+  padding: 5px;
+  margin-left: 0px;
 }
 </style>
