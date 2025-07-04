@@ -217,7 +217,7 @@ defineExpose({
       display: flex;
       align-items: center;
       color: #333;
-      background: #fafafa;
+      background: #f5f5f5;
       padding: 8px;
       border: 4px;
       border-radius: 5px;
@@ -317,7 +317,7 @@ defineExpose({
 .link-item {
   margin: 7px 0px;
   font-size: 14px;
-  background: #fafafa;
+  background: #f5f5f5;
   border-radius: 5px;
   padding: 7px;
   padding-left: 10px;
