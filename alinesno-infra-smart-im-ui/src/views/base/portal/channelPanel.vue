@@ -24,7 +24,7 @@
                 </span>
                 <div class="semi-space container-center" style="gap: 6px;">
                     <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
-                      <i class="fa-solid fa-ribbon"></i>
+                      <i class="fa-solid fa-user-shield"></i>
                       {{ item.orgName }}
                     </span>
                 </div>
@@ -115,100 +115,6 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
-// .right-container {
-//   position: relative; // 确保子元素可以绝对定位在容器内
-
-//   .bot-banner-bg {
-//     width: 100%;
-//     height: 100%;
-//     box-shadow: 0 4px 24px 0 rgba(0, 0, 0, 0.12);
-//     border-radius: 3px;
-//   }
-
-//   .banner-info {
-//     display: flex;
-//     align-items: center;
-//     gap: 16px;
-//     position: absolute;
-//     bottom: 0;
-//     left: 0;
-//     width: 100%;
-//     padding: 5px;
-//     background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%);
-//     flex-direction: row;
-
-//     .avatar {
-//       width: 64px;
-//       height: 64px;
-//       background: #f0f0f5;
-//       border-radius: 8px;
-
-//       img {
-//         display: block;
-//         height: 100%;
-//         object-fit: cover;
-//         width: 100%;
-//         border-radius: 8px;
-//       }
-//     }
-
-//     .info-text {
-//       overflow: hidden;
-//       flex: 1;
-//       align-items: flex-start;
-//       display: flex;
-//       flex-direction: column;
-
-//       .category {
-//         font-size: 10px;
-//         font-weight: 400;
-//         line-height: 12px;
-//         color: #FFF;
-//         white-space: nowrap;
-//         text-overflow: ellipsis;
-//         margin: 0;
-//       }
-
-//       .title {
-//         font-size: 18px;
-//         font-weight: 600;
-//         line-height: 24px;
-//         color: #FFF;
-//         margin: 0;
-//       }
-
-//       .author-info {
-//         display: flex;
-//         align-items: center;
-//         gap: 4px;
-//         flex-shrink: 0;
-//         max-width: 100%;
-//         height: 18px;
-//         color: rgba(255, 255, 255, 0.39);
-
-//         .semi-image {
-//           width: 14px;
-//           height: 14px;
-//           overflow: hidden;
-//           border-radius: 12px;
-
-//           img {
-//             width: 14px;
-//             height: 14px;
-//           }
-//         }
-
-//         .author-name,
-//         .at-name {
-//           font-size: 12px;
-//           font-weight: 400;
-//           line-height: 18px;
-//           flex: 1;
-//         }
-//       }
-//     }
-//   }
-// }
 
 .card-container {
   margin-left: 10px;
