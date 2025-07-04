@@ -338,7 +338,8 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
 
             // 处理响应
             if (response.isOk()) {
-                toolResult.setOutput(response.body());
+                JSONObject jsonResponse = JSONUtil.parseObj(response.body());
+                toolResult.setOutput(jsonResponse.get("data"));
             } else {
                 toolResult.setOutput("请求失败，状态码：" + response.getStatus());
             }
