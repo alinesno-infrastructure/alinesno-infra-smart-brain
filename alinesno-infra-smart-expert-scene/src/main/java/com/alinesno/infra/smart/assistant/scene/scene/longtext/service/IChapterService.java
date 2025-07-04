@@ -9,6 +9,7 @@ import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 
 import java.util.List;
 
@@ -23,28 +24,30 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
     /**
      * 根据层级结构保存章节及其父ID
      *
-     * @param chapters 章节列表，包含章节信息
-     * @param parentId 父章节的ID，用于建立章节间的层级关系
-     * @param level    章节的层级，表示章节在层级结构中的深度
+     * @param chapters           章节列表，包含章节信息
+     * @param parentId           父章节的ID，用于建立章节间的层级关系
+     * @param level              章节的层级，表示章节在层级结构中的深度
      * @param sceneId
      * @param query
+     * @param longTextTaskEntity
      */
-    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId, PermissionQuery query);
+    void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long longTextSceneId, PermissionQuery query, LongTextTaskEntity longTextTaskEntity);
 
     /**
      * 获取章节的树形结构
      *
      * @return 返回一个表示章节层级结构的树形列表，每个节点包含章节信息
      */
-    List<TreeNodeDto> getChapterTree(long sceneId, long longTextSceneId);
+    List<TreeNodeDto> getChapterTree(long sceneId, long longTextSceneId, Long taskId);
 
     /**
      * 更新章节的编辑者
      *
      * @param dto
      * @param longTextSceneId
+     * @param taskId
      */
-    void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId);
+    void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId, Long taskId);
 
     /**
      * 初始化智能助手
@@ -73,4 +76,11 @@ public interface IChapterService extends IBaseService<ChapterEntity> {
      * @return
      */
     String getAllChapterContent(long sceneId);
+
+    /**
+     * 获取智能助手任务列表
+     * @param taskId
+     * @return
+     */
+    List<ChapterEntity> getChaptersByTaskId(Long taskId);
 }
