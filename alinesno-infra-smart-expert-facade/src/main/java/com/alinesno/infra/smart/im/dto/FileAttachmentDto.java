@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.File;
+
 /**
  * 聊天消息中的文件列表
  */
@@ -64,5 +66,10 @@ public class FileAttachmentDto {
      * 一对一聊天 ID
      */
     private String oneChatId ;
+
+    /**
+     * 已经传递指定的文件
+     */
+    private File file ;
 
 }
