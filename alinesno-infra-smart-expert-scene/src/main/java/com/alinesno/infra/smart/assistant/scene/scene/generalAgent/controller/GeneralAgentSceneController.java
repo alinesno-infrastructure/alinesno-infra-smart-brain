@@ -2,12 +2,9 @@ package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.controller;
 
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
-import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -18,22 +15,26 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
-import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentContentRequestDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentSceneDto;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAgentTaskDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools.GeneralAgentFormatMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,11 +55,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 数据分析场景控制器
@@ -76,6 +78,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
     private IGeneralAgentSceneService service;
 
     @Autowired
+    private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
     private IGeneralAgentPlanService generalAgentPlanService;
 
     @Autowired
@@ -83,6 +88,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
 
     @Autowired
     private ISceneService sceneService;
+
+    @Autowired
+    private IGeneralAgentTaskService generalAgentTaskService ;
 
     @Autowired
     private GeneralAgentFormatMessageTool formatMessageTool;
@@ -152,6 +160,48 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
     }
 
     /**
+     * 获取场景信息 getGeneralAgentScene
+     */
+    @DataPermissionQuery
+    @GetMapping("/getGeneralAgentScene")
+    public AjaxResult getGeneralAgentScene(
+            @RequestParam("sceneId") Long sceneId,
+            @RequestParam("taskId") Long taskId,
+            PermissionQuery query) {
+
+        Assert.isTrue( sceneId != null , "参数不能为空");
+        Assert.isTrue( taskId != null , "参数不能为空");
+
+        GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(taskId);
+        if (taskEntity == null) {
+            return AjaxResult.error("未找到对应的场景实体");
+        }
+
+        GeneralAgentTaskDto dto = new GeneralAgentTaskDto();
+        BeanUtils.copyProperties(taskEntity, dto);
+
+        GeneralAgentSceneEntity generalAgentSceneEntity = service.getBySceneId(sceneId, query) ;
+        if(generalAgentSceneEntity != null){
+
+            dto.setBusinessProcessorEngineer(generalAgentSceneEntity.getBusinessProcessorEngineer());
+            dto.setBusinessExecuteEngineer(generalAgentSceneEntity.getBusinessExecuteEngineer());
+            dto.setDataViewerEngineer(generalAgentSceneEntity.getDataViewerEngineer());
+
+            dto.setGenStatus(taskEntity.getGenStatus());
+            dto.setPromptContent(taskEntity.getTaskName());
+
+            dto.setBusinessProcessorEngineers(RoleUtils.getEditors(roleService , generalAgentSceneEntity.getBusinessProcessorEngineer())); // 查询出当前的数据分析编辑人员
+            dto.setDataViewerEngineers(RoleUtils.getEditors(roleService, generalAgentSceneEntity.getDataViewerEngineer())); // 查询出当前的内容编辑人员
+            dto.setBusinessExecuteEngineers(RoleUtils.getEditors(roleService, generalAgentSceneEntity.getBusinessExecuteEngineer()));
+
+            dto.setChapterTree(generalAgentPlanService.getPlanTree(taskEntity.getId() , generalAgentSceneEntity.getId())); // 数据分析树信息
+        }
+
+        return AjaxResult.success("操作成功.", dto);
+    }
+
+
+    /**
      * 通过ID查询章节内容
      */
     @GetMapping("/getChapterContent")
@@ -160,45 +210,58 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
         return AjaxResult.success("操作成功" , chapterEntity.getContent()) ;
     }
 
-    /**
-     * 与角色交互，获取到内容结果
-     */
-    @DataPermissionSave
-    @SneakyThrows
-    @PostMapping("/chatRole")
-    public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
+//    /**
+//     * 与角色交互，获取到内容结果
+//     */
+//    @DataPermissionSave
+//    @SneakyThrows
+//    @PostMapping("/chatRole")
+//    public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
+//
+//        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
+//
+//        GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(chatRole.getTaskId()) ;
+//        handleAttachment(taskEntity, taskInfo);
+//
+//        taskInfo.setRoleId(chatRole.getRoleId());
+//        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
+//        taskInfo.setChannelId(chatRole.getSceneId());
+//        taskInfo.setSceneId(chatRole.getSceneId());
+//        taskInfo.setText(chatRole.getMessage());
+//
+//        // 优先获取到结果内容
+//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+//
+//       // 获取到格式化的内容
+//       formatMessageTool.handleChapterMessage(genContent , taskInfo);
+//
+//        // 解析得到代码内容
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+//
+//            // 验证是否可以正常解析json
+//            try{
+//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+//                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
+//            }catch (Exception e){
+//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
+//            }
+//
+//            return AjaxResult.success("操作成功" , dataObject) ;
+//        }
+//
+//        return AjaxResult.success("操作成功" , genContent) ;
+//    }
 
-        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
-
-        taskInfo.setRoleId(chatRole.getRoleId());
-        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
-        taskInfo.setChannelId(chatRole.getSceneId());
-        taskInfo.setSceneId(chatRole.getSceneId());
-        taskInfo.setText(chatRole.getMessage());
-
-        // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-
-       // 获取到格式化的内容
-       formatMessageTool.handleChapterMessage(genContent , taskInfo);
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-
-            // 验证是否可以正常解析json
-            try{
-                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-            }catch (Exception e){
-                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
-            }
-
-            return AjaxResult.success("操作成功" , dataObject) ;
+    private void handleAttachment(GeneralAgentTaskEntity taskEntity, MessageTaskInfo taskInfo) {
+        // 引用附件不为空，则引入和解析附件
+        if(!StringUtils.isEmpty(taskEntity.getAttachments())){
+            // 以逗号进行切分
+            List<Long> attachments = Arrays.stream(taskEntity.getAttachments().split(",")).map(Long::parseLong).collect(Collectors.toList());
+            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(attachments);
+            taskInfo.setAttachments(attachmentList);
         }
-
-        return AjaxResult.success("操作成功" , genContent) ;
     }
 
     /**
@@ -212,8 +275,12 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
         GeneralAgentSceneEntity sceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
         sceneEntity.setPromptContent(dto.getPromptContent());
 
-        service.updateById(sceneEntity);
-        return AjaxResult.success("操作成功") ;
+        sceneEntity.setId(null);
+        sceneEntity.setGenStatus(0);
+
+        service.save(sceneEntity);  // 保存一个新的场景?是否需要调整，暂时如此
+
+        return AjaxResult.success("操作成功" , sceneEntity.getId()) ;
     }
 
     /**
@@ -240,14 +307,21 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
      */
     @DataPermissionQuery
     @PostMapping("/saveDataPlan")
-    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes, @RequestParam("sceneId") long sceneId , PermissionQuery query) {
+    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes,
+                                   @RequestParam("sceneId") long sceneId ,
+                                   @RequestParam("taskId") long taskId ,
+                                   PermissionQuery query) {
 
         if(nodes == null || nodes.isEmpty()){
             return error("参数错误") ;
         }
 
         GeneralAgentSceneEntity generalAgentSceneEntity = service.getBySceneId(sceneId , query) ;
-        generalAgentPlanService.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , generalAgentSceneEntity.getId());
+        generalAgentPlanService.saveChaptersWithHierarchy(nodes, null,
+                1 ,
+                sceneId ,
+                taskId ,
+                generalAgentSceneEntity.getId());
 
         return ok() ;
     }
@@ -258,7 +332,10 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
      */
     @DataPermissionQuery
     @GetMapping("/dispatchAgent")
-    public AjaxResult dispatchAgent(@RequestParam long sceneId , PermissionQuery query) {
+    public AjaxResult dispatchAgent(
+            @RequestParam Long sceneId ,
+            @RequestParam Long taskId,
+            PermissionQuery query) {
 
         SceneEntity entity = sceneService.getById(sceneId) ;
         GeneralAgentSceneEntity generalAgentSceneEntity = service.getBySceneId(sceneId , query) ;
@@ -267,9 +344,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
         dto.setSceneId(sceneId);
         dto.setRoleId(Long.parseLong(generalAgentSceneEntity.getBusinessExecuteEngineer().split(",")[0]));
 
-        LambdaQueryWrapper<GeneralAgentPlanEntity> lambdaQueryWrapper =  new LambdaQueryWrapper<GeneralAgentPlanEntity>()
+        LambdaQueryWrapper<GeneralAgentPlanEntity> lambdaQueryWrapper = new LambdaQueryWrapper<GeneralAgentPlanEntity>()
                 .eq(GeneralAgentPlanEntity::getSceneId, sceneId)
-                .eq(GeneralAgentPlanEntity::getGeneralAgentSceneId, generalAgentSceneEntity.getId());
+                .eq(GeneralAgentPlanEntity::getTaskId, taskId) ;
 
         List<GeneralAgentPlanEntity> chapters = generalAgentPlanService.list(lambdaQueryWrapper) ;
         List<Long> chapterIds = chapters.stream()
@@ -281,7 +358,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
                 .toList();
 
         dto.setChapters(chapterIdsStr);
-        generalAgentPlanService.updateChapterEditor(dto, generalAgentSceneEntity.getId());
+        generalAgentPlanService.updateChapterEditor(dto, taskId, taskId) ; // generalAgentSceneEntity.getId());
 
         SceneDto sceneEntity = new SceneDto();
         BeanUtils.copyProperties(entity, sceneEntity);
@@ -316,7 +393,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
     @PostMapping("/updateChapterContentEditor")
     public AjaxResult updateChapterContentEditor(@RequestBody @Validated ChatContentEditDto dto , PermissionQuery query) {
         GeneralAgentSceneEntity longTextSceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
-        generalAgentPlanService.updateChapterEditor(dto , longTextSceneEntity.getId());
+        generalAgentPlanService.updateChapterEditor(dto , longTextSceneEntity.getId(), dto.getTaskId());
         return ok() ;
     }
 
@@ -338,6 +415,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
 
         if(roleId != null){
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+            GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(dto.getTaskId()) ;
+            handleAttachment(taskEntity, taskInfo);
 
             taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
             taskInfo.setRoleId(roleId);
@@ -373,10 +453,13 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
      */
     @DataPermissionQuery
     @GetMapping("/genDataReport")
-    public AjaxResult genDataReport(@RequestParam("sceneId") long sceneId , PermissionQuery query) {
+    public AjaxResult genDataReport(
+            @RequestParam("sceneId") long sceneId ,
+            @RequestParam("taskId") long taskId,
+            PermissionQuery query) {
         GeneralAgentSceneEntity generalAgentSceneEntity = service.getBySceneId(sceneId , query) ;
 
-        String markdownContent = service.genMarkdownContent(sceneId ,query , generalAgentSceneEntity.getId()) ;
+        String markdownContent = service.genMarkdownContent(sceneId , taskId , query , generalAgentSceneEntity.getId()) ;
 
         String filename = IdUtil.fastSimpleUUID() ;
 
@@ -465,6 +548,8 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
             }
         }
     }
+
+
 
     @Override
     public IGeneralAgentSceneService getFeign() {
