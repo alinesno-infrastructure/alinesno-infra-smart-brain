@@ -270,7 +270,7 @@ public class WorkerHandler extends BaseHandler {
         params.put("planning_detail", planningDetail);
         params.put("task_id", taskId);
         params.put("task_description", taskDescription);
-        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false)));
+        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false , false)));
         params.put("current_time", Prompt.getCurrentTime());
         return params;
     }
