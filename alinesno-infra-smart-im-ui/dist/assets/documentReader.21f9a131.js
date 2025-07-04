@@ -1,1 +1,0 @@
-import{q as t,v as a}from"./index.d9d30be3.js";var r="/api/infra/smart/assistant/scene/documentReader/",n={getScene:r+"getScene",getPreviewDocx:r+"getPreviewDocx"};function s(e){return t({url:n.getPreviewDocx+"?sceneId="+a(e),responseType:"arraybuffer",method:"get"})}function i(e){return t({url:n.getScene+"?id="+a(e),method:"get"})}export{s as a,i as g};
