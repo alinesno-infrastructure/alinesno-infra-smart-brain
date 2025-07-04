@@ -1,26 +1,30 @@
 <template>
     <div class="side-type-container">
         <div class="title">场景类型</div>
-        <div class="type-list">
+        <div class="type-list" v-if="sceneList.length > 0">
             <div
                 v-for="item in sceneList"
                 :key="item.id"
                 :class="{ 'active': activeItem === item.id }"
                 @mouseover="handleMouseOver(item.id)"
                 @mouseout="handleMouseOut(item.id)"
-                @click="handleClick(item.id)"
-            >
+                @click="handleClick(item.code)">
                 <i :class="item.icon"></i> {{ item.sceneName }}
             </div>
+        </div>
+        <div class="empty-list" v-else>
+            <el-empty image-size="100" description="当前未配置组织场景类型，未找到场景类型" />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref , defineEmits } from 'vue';
 
 import { supportScene } from '@/api/base/im/scene'
 import { getAgentStoreType } from '@/api/base/im/store';
+
+const emit = defineEmits(['selectType']);
 
 const sceneList = ref([]);
 
@@ -39,6 +43,8 @@ const handleMouseOut = (id) => {
 
 const handleClick = (id) => {
     activeItem.value = id;
+    console.log('type id = ' + id)
+    emit('selectType', id);
 };
 
 const handleAgentStoreType = () => {
@@ -56,6 +62,8 @@ handleAgentStoreType();
 .side-type-container {
     padding: 15px;
     width: 220px;
+    position: absolute;
+    height: 100%;
 
     .title {
         font-size: 18px;
@@ -84,6 +92,14 @@ handleAgentStoreType();
                 background: #f5f5f5;
             }
         }
+    }
+
+    .empty-list {
+        display: flex;
+        margin-top:30px;
+        padding: 20px;
+        justify-content: center;
+        align-items: center;
     }
 }
 </style>    
