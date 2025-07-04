@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.config;
 
 import com.alinesno.infra.base.search.memory.BaseMemoryStore;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
+import com.alinesno.infra.base.search.vector.service.IPgVectorService;
 import com.alinesno.infra.common.facade.enable.EnableActable;
 import com.alinesno.infra.common.security.api.enable.EnableInfraApiSecurity;
 import com.alinesno.infra.common.web.adapter.sso.enable.EnableInfraSsoApi;
@@ -64,8 +65,11 @@ import org.springframework.util.unit.DataSize;
 @EnableInfraApiSecurity
 public class AppConfiguration implements CommandLineRunner {
 
-     @Autowired
+    @Autowired
     private IVectorDatasetService vectorDatasetService ;
+
+    @Autowired
+    private IPgVectorService pgVectorService ;
 
     @Autowired
     private BaseMemoryStore baseMemoryStore ;
@@ -92,6 +96,7 @@ public class AppConfiguration implements CommandLineRunner {
         log.debug("deepSearchService = {}" , deepSearchService);
         baseMemoryStore.createMemoryVectorIndex();
         log.info("当前向量存储引擎:{}" , vectorDatasetService.getVectorEngine());
+        pgVectorService.createVectorIndex(null);
         log.debug("项目启动完成");
     }
 
