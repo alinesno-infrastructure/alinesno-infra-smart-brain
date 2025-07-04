@@ -49,6 +49,7 @@ public class ChannelPublishDTO extends BaseDto {
     private long agentStoreType; // 智能体商店类型
 
     private long llmModelId; // 场景的LLM 模型的智能体ID
+    private long imageModelId; // 场景的图片模型的智能体ID
     private long sceneId; // 场景的智能体ID
     private long agentTypeId; // 场景的智能体类型ID
     private String sceneScope ; // 场景的智能体商店类型
@@ -133,6 +134,7 @@ public class ChannelPublishDTO extends BaseDto {
             configMap.put("sceneId", configMap.get("sceneId"));
             configMap.put("agentTypeId", configMap.get("agentTypeId"));
             configMap.put("llmModelId", configMap.get("llmModelId"));
+            configMap.put("imageModelId", configMap.get("imageModelId"));
             configMap.put("sceneScope", configMap.get("sceneScope"));
         }
 
@@ -165,6 +167,7 @@ public class ChannelPublishDTO extends BaseDto {
 
         if (ChannelListEnums.getByParamKey(paramKey) == ChannelListEnums.AIP_AGENT_SCENE) {
             config.put("llmModelId", llmModelId);
+            config.put("imageModelId", imageModelId);
             config.put("sceneId", sceneId);
             config.put("agentTypeId", agentTypeId);
             config.put("sceneScope", sceneScope);
@@ -207,6 +210,7 @@ public class ChannelPublishDTO extends BaseDto {
             dto.setSceneId((Long) configMap.get("sceneId"));
             dto.setAgentTypeId((Long) configMap.get("agentTypeId"));
             dto.setLlmModelId((Long) configMap.get("llmModelId"));
+            dto.setImageModelId((Long) configMap.get("imageModelId"));
             dto.setSceneScope((String) configMap.get("sceneScope"));
         }
     }
