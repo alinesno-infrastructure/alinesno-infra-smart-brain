@@ -2,18 +2,17 @@
   <div class="exam-pagercontainer">
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
-      </el-aside>
+      </el-aside> 
 
       <el-main class="exam-pager-main">
         <el-scrollbar style="height:calc(100vh - 50px)">
           <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
 
-            <SideTypePanel />
+            <!-- <SideTypePanel /> -->
 
-            <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
+            <div style="width: calc(100% - 0px);margin-top: 10px;" v-loading="sceneLoading">
 
               <div class="search-container-panel">
                 <el-row>
@@ -41,16 +40,19 @@
                       <article class="exam-pager-card">
                         <div class="exam-pager-card-content">
                           <div class="scene-header">
-                            <span class="scene-title">{{ item.title }}</span>
+                            <span class="scene-title"> <i class="fa-solid fa-file-word"></i> {{ item.title }}</span>
                           </div>
                           <div class="scene-author-info">
                             <span class="scene-name">
-                              <i class="fa-solid fa-ribbon"></i>
-                              {{ item.orgName }}
+                              <i class="fa-solid fa-user-shield"></i>
+                              难度
+                            </span>
+                            <span class="scene-name">
+                              {{ item.difficulty === 'easy' ? '简单': item.difficulty === 'medium' ? '中等': item.difficulty === 'hard' ? '困难' :'未确认' }}
                             </span>
                           </div>
                           <div class="scene-description">
-                            {{ item.sceneDesc }}
+                            {{ item.description }}
                           </div>
                           <div class="semi-divider semi-divider-horizontal"></div>
                           <div class="scene-footer">
@@ -68,8 +70,8 @@
                                   JSON.parse(item.fieldProp)?.sceneName }}
                               </el-button>
                               <div class="scene-stats">
-                                <span>{{ item.usage_count }}</span>
-                                <span>使用</span>
+                                <span>时间</span>
+                                <span>{{ item.addTime}}</span>
                               </div>
                             </div>
                           </div>
@@ -154,13 +156,13 @@ onMounted(() => {
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  // padding: 12px 12px 16px;
   border: 1px solid rgba(6, 7, 9, 0.1);
   border-radius: 8px;
   background-color: #fff;
   cursor: pointer;
   gap: 10px;
-  padding-bottom:10px;
+  padding: 15px;
+  padding-bottom:20px;
   transition: box-shadow 0.3s;
 
   &:hover {
