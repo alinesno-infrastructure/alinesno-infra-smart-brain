@@ -90,4 +90,11 @@ public class GlobalConfigEntity extends InfraBaseEntity {
     @TableField(value = "image_prompt")
     @Column(value = "image_prompt", type = MySqlTypeConstant.TEXT , comment = "图片生成模型的输入提示词")
     private String imagePrompt;
+
+    /**
+     * 工作台地址，对应数据库表中的 studio_url 字段
+     */
+    @TableField(value = "studio_url")
+    @Column(value = "studio_url", type = MySqlTypeConstant.VARCHAR , comment = "工作台地址")
+    private String studioUrl ;
 }    
