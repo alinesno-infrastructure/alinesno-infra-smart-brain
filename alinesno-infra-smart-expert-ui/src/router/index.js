@@ -85,12 +85,6 @@ export const constantRoutes = [
         meta: { title: '团队配置', icon: 'dashboard', affix: true }
       },
       {
-        path: '/dashboard/smartService',
-        component: () => import('@/views/smartService'),
-        name: '/dashboard/smartService',
-        meta: { title: '智能客服', icon: 'dashboard', affix: true }
-      },
-      {
         path: '/dashboard/suportTechnique',
         component: () => import('@/views/suportTechnique'),
         name: '/dashboard/suportTechnique',
@@ -241,6 +235,18 @@ export const constantRoutes = [
         component: () => import('@/views/smart/assistant/template/articleTemplate'),
         name: "/smart/assistant/template/articleTemplate",
         meta: { title: '文章模板', icon: 'dashboard', affix: true }
+      },
+      {
+        path: "/smart/assistant/template/longTextTemplate",
+        component: () => import('@/views/smart/assistant/template/longTextTemplate'),
+        name: "/smart/assistant/template/longTextTemplate",
+        meta: { title: '长文本模板', icon: 'dashboard', affix: true }
+      },
+      {
+        path: "/smart/assistant/config/generalAgent",
+        component: () => import('@/views/smart/assistant/config/generalAgent'),
+        name: "/smart/assistant/template/generalAgent",
+        meta: { title: '通用智能体配置', icon: 'dashboard', affix: true }
       },
     ]
   },
