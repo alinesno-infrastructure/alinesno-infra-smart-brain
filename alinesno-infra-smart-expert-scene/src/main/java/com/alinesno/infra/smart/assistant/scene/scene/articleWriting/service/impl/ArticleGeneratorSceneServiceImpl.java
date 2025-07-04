@@ -5,7 +5,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.mapper.ArticleGenerateSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamQuestionService;
+import com.alinesno.infra.smart.assistant.scene.common.examPaper.service.IExamQuestionService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
