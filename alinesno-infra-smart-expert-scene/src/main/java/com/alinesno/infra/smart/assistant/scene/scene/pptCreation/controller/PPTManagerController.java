@@ -5,9 +5,7 @@ import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScop
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTManagerService;
-import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.PPTManagerEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
