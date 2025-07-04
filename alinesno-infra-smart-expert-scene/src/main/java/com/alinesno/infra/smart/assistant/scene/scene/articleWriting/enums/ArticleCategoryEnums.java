@@ -33,4 +33,14 @@ public enum ArticleCategoryEnums {
                  Map.of("code", REWRITE.code, "icon", REWRITE.icon, "label", REWRITE.label)
           ) ;
      }
+
+     // 通过code获取到对应的ArticleCategoryEnums
+     public static ArticleCategoryEnums getByCode(String code) {
+         for (ArticleCategoryEnums value : values()) {
+             if (value.code.equals(code)) {
+                 return value;
+             }
+         }
+         return null;
+     }
 }    
