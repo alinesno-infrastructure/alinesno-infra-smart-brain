@@ -16,6 +16,9 @@ public interface AssistantConstants {
     // 流程脚本引擎
     String PREFIX_ASSISTANT_REACT = "Agent_ReActExpert" ;
 
+    // 携带外部知识库
+    String PREFIX_ASSISTANT_REACT_OUTSIDE = "Agent_ReActOutsideExpert" ;
+
     // 简单角色设定Prompt
     String PREFIX_ASSISTANT_SIMPLE = "Agent_SimpleExpert" ;
 
