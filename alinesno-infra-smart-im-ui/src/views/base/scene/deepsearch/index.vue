@@ -1,15 +1,14 @@
 <template>
   <div class="deepsearch-app-container">
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-      <el-aside width="280px" class="deepsearch-app-aside">
+      <el-aside width="80px" class="deepsearch-app-aside">
         <TaskListPanel 
           @handleNewTask="handleNewTask"
           @handleTaskClick="handleTaskClick" />
       </el-aside>
         <el-main class="deepsearch-app-main">
-          <SearchPanel v-if="hasNwTask" />
-          <ChatPanel v-else 
-            :taskItem="taskItem" />
+          <SearchPanel />
+          <!-- <ChatPanel v-else  :taskItem="taskItem" /> -->
         </el-main>
     </el-container>
   </div>
@@ -17,7 +16,7 @@
 
 <script setup>
 
-import TaskListPanel from './taskList.vue'
+import TaskListPanel from './functionList.vue'
 import SearchPanel from './searchPanel.vue'
 import ChatPanel from './chatPanel.vue'
 
@@ -39,12 +38,12 @@ const handleNewTask = () => {
 <style lang="scss" scoped>
 .deepsearch-app-container {
   padding: 0px ;
-  background-color: #fafafa !important;
+  background-color: #f5f5f5 !important;
 
   .deepsearch-app-aside {
     padding: 0px !important;
     margin-bottom: 0px !important;
-    background-color: #fafafa !important;
+    background-color: #f5f5f5 !important;
     border-right: 1px solid #ebebeb !important;
   }
 
