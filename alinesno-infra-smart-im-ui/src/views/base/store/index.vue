@@ -127,7 +127,7 @@
                                             </span>
                                             <div class="semi-space container-center" style="gap: 6px;">
                                                 <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
-                                                    <i class="fa-solid fa-ribbon"></i>
+                                                    <i class="fa-solid fa-user-shield"></i>
                                                     {{ item.orgName }}
                                                 </span>
                                             </div>
