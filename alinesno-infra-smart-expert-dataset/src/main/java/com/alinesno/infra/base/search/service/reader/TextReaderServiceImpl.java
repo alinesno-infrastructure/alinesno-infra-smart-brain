@@ -27,7 +27,14 @@ public class TextReaderServiceImpl  extends BaseReaderServiceImpl {
     @SneakyThrows
     @Override
     public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
-        File file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+
+        File file ;
+        if(attachmentDto.getFile() != null){
+            file = attachmentDto.getFile() ;
+        }else{
+            file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        }
+
         // 读取文件内容
         if (file != null) {
             String content = FileUtils.readFileToString(file, "UTF-8") ;
