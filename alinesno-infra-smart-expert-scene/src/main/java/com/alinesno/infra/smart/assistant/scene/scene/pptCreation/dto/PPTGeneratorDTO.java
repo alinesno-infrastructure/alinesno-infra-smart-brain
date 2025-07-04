@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamStructureItem;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
