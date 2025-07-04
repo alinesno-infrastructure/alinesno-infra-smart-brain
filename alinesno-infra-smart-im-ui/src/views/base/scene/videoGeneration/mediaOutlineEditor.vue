@@ -4,7 +4,19 @@
             <template #header>
                 <div class="card-header">
                     <div style="display: flex;align-items: center;gap: 5px;">
-                        <i class="fa-solid fa-file-pdf"></i> {{ currentScreenInfo.screenName }}
+                        <!-- <i class="fa-solid fa-file-pdf"></i>  -->
+                        <!-- {{ currentScreenInfo.screenName }} -->
+
+                        <span style="display: flex;gap: 5px;align-items: center;">
+                            <i class="fa-solid fa-file-pdf"></i> 
+
+                            <!-- 标题内容 -->
+                            <EditableTitle 
+                                v-if="currentScreenInfo"    
+                                v-model:title="currentScreenInfo.screenName" 
+                                class="article-edit-title" 
+                            />
+                        </span>
 
                         <el-tooltip v-for="(item,index) in currentScreenInfo.chapterEditors" :key="index"
                             class="box-item" 
@@ -16,11 +28,11 @@
                             </span>
                         </el-tooltip>
 
-                        <el-tooltip class="box-item" effect="dark" content="添加章节编写人员" placement="top">
+                        <!-- <el-tooltip class="box-item" effect="dark" content="添加章节编写人员" placement="top">
                             <span class="edit-header-avatar"  @click="configAgent('chapter')">
                                 <i class="fa-solid fa-user-plus"></i>
                             </span>
-                        </el-tooltip>
+                        </el-tooltip> -->
                     </div>
                     <span>
 
@@ -60,13 +72,6 @@
                                     </div>
                                 </div>
                                 <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
-
-                                    <!-- 
-                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
-                                    <el-tooltip class="box-item" effect="dark" content="添加子章节" placement="left">
-                                        <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
-                                    </el-tooltip> 
-                                    -->
 
                                     <el-tooltip class="box-item" effect="dark" content="编辑章节标题" placement="left">
                                         <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
@@ -177,10 +182,12 @@
 import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
+import EditableTitle from './components/EditableTitle.vue'
 import { listAll } from '@/api/base/im/user';
+
 import {
     // updateChapterEditor, 
-    // getScene,
+    getScene,
     // saveChapter,
     // chatRole,
 } from '@/api/base/im/scene'
@@ -310,7 +317,7 @@ const currentAgentConfigType = ref('chapter')
 
 const currentScreenInfo = ref({
     id: 0,
-    screenName: null , 
+    screenName: '业务场景名称', 
     screenDesc: null , 
     screenCount: 0,
     knowledgeId: null ,
