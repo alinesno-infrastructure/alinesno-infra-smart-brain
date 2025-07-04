@@ -26,7 +26,7 @@
                     </el-col>
                     <el-col :span="6">
                         <div class="right-container" style="text-align: right;margin-right: 40px;">
-                            <img src="http://data.linesno.com/banner/agent_bg2.png" class="bot-banner-bg" style="width: 300px;border-radius: 8px;" alt="Banner Background Image">
+                            <img :src="agentBg2" class="bot-banner-bg" style="width: 300px;border-radius: 8px;" alt="Banner Background Image">
                         </div>
                     </el-col>
                 </el-row>
@@ -74,7 +74,9 @@ import CreatePortal from './createPortal.vue'
 import ChannelPanel from './channelPanel.vue'
 import ScenePanel from './scenePanel.vue'
 import { ref, onMounted, nextTick } from 'vue';
+import AgentBg2Png from '@/assets/banner/agent_bg2.png';
 
+const agentBg2 = ref(AgentBg2Png);
 const scenePanelRef = ref(null);
 const businessAgentPanelRef = ref(null);
 const channelPanelRef = ref(null);
@@ -92,7 +94,7 @@ const currentWorkplace = ref({
 })
 
 // 从 localStorage 中读取存储的选项，如果没有则默认 'agent'
-const activeCode = ref(localStorage.getItem('activeCode') || 'agent');
+const activeCode = ref(localStorage.getItem('activeCode') || 'scene');
 const hoveredCode = ref('');
 const workplaceId = ref(''); 
 const createPortalRef = ref(null);
