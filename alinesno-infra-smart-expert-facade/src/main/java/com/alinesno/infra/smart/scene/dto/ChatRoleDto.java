@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.scene.dto;
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,8 +16,11 @@ import javax.validation.constraints.Min;
 @Data
 public class ChatRoleDto extends BaseDto {
 
-    @Min(value = 1, message = "sceneId不能为空")
-    private long sceneId ;  // 场景ID
+    @NotNull(message = "sceneId不能为空")
+    private Long sceneId ;  // 场景ID
+
+    @NotNull(message = "任务Id不能为空")
+    private Long taskId ;
 
     @NotBlank(message = "channelStreamId不能为空")
     private String channelStreamId ;
