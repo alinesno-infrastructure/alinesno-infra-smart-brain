@@ -26,7 +26,7 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
     private IIndustryRoleService industryRoleService ;
 
     @Override
-    public void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId, String sceneScope, Long orgId) {
+    public void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId, long imageModelId , String sceneScope, Long orgId) {
 
         log.debug("添加角色到场景中 roleId = {} , sceneId = {} ,agentTypeId = {} " , roleId , sceneId ,  agentTypeId);
 
@@ -58,6 +58,7 @@ public class AgentSceneServiceImpl extends IBaseServiceImpl<AgentSceneEntity, Ag
             agentSceneEntity.setRoleOrganizationId(AgentConstants.STORE_EMPTY_ORG_ID); // 发布到公共角色场景
 
             agentSceneEntity.setLlmModelId(llmModelId);
+            agentSceneEntity.setImageModelId(imageModelId);
             agentSceneEntity.setSceneScope(sceneScope);
 
             agentSceneEntity.setOrgId(orgId);
