@@ -13,18 +13,14 @@ public class PrototypePromptHandle {
         String chatPrompt = """
                 ## 生成原型需求
                 用户需求=%s
-                功能类型=%s
-                受众群体=%s
-                使用场景=%s
-                设计要求=%s
                 """;
 
         String chatPromptText = String.format(chatPrompt,
-                dto.getPromptText() ,
-                dto.getPptConfig().getWritingType(),
-                dto.getPptConfig().getAudience(),
-                dto.getPptConfig().getScenario(),
-                dto.getPptConfig().getTone());
+                dto.getPromptText()) ;
+//                dto.getPptConfig().getWritingType(),
+//                dto.getPptConfig().getAudience(),
+//                dto.getPptConfig().getScenario(),
+//                dto.getPptConfig().getTone());
 
         return str + chatPromptText;
     }
