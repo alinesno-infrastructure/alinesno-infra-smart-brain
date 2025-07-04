@@ -1,5 +1,6 @@
 <template>
   <div class="editable-container" @mouseleave="handleContainerLeave">
+
     <div 
       v-if="!isEditing" 
       class="editable-display"
@@ -110,6 +111,11 @@ const props = defineProps({
     type: Number,
     default: 300
   },
+  isQuestionEdit: {
+    type: Boolean,
+    default: true,
+    required: false 
+  },
   mediaFiles: {
     type: Array,
     default: () => []
@@ -161,6 +167,12 @@ const triggerFileInput = (type) => {
 };
 
 const startEditing = () => {
+
+  // 如果是不可编辑状态
+  if(!props.isQuestionEdit){
+    return;
+  }
+
   if (isEditing.value) return;
   
   isEditing.value = true;
