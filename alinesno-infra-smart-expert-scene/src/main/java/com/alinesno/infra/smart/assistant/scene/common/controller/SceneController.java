@@ -18,6 +18,7 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
@@ -45,9 +46,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -119,10 +118,46 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     /**
      * 获取到到场景列表
      */
+    @GetMapping("/supportAllScene")
+    public AjaxResult supportAllScene() {
+        // 获取所有预定义的场景类型
+        List<SceneInfoDto> allScenes = SceneEnum.getList();
+       return AjaxResult.success("操作成功", allScenes);
+    }
+
+    /**
+     * 获取支持的场景列表
+     */
     @GetMapping("/supportScene")
     public AjaxResult supportScene() {
-       List<SceneInfoDto> list = SceneEnum.getList() ;
-       return AjaxResult.success("操作成功", list);
+        // 获取所有预定义的场景类型
+        List<SceneInfoDto> allScenes = SceneEnum.getList();
+
+        LambdaQueryWrapper<SceneEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(List.of(SceneEntity::getSceneType))  // 使用 List 形式
+                .and(qw -> qw.eq(SceneEntity::getSceneScope, ModelDataScopeOptions.PUBLIC.getValue())
+                        .or()
+                        .eq(SceneEntity::getSceneScope, ModelDataScopeOptions.ORG.getValue())
+                        .eq(SceneEntity::getOrgId, CurrentAccountJwt.get().getOrgId()))
+                .groupBy(SceneEntity::getSceneType);
+
+        List<SceneEntity> orgSceneTypes = service.list(wrapper);
+
+        // 提取出实际存在的场景类型值
+        Set<String> existingTypes = new HashSet<>();
+        for (SceneEntity scene : orgSceneTypes) {
+            existingTypes.add(scene.getSceneType());
+        }
+
+        // 过滤出同时存在于预定义列表和实际数据库中的场景类型
+        List<SceneInfoDto> supportedScenes = new ArrayList<>();
+        for (SceneInfoDto scene : allScenes) {
+            if (existingTypes.contains(scene.getCode())) {
+                supportedScenes.add(scene);
+            }
+        }
+
+        return AjaxResult.success("操作成功", supportedScenes);
     }
 
     /**
@@ -206,7 +241,12 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
     @DataPermissionQuery
     @GetMapping("/listAllScene")
     public AjaxResult listAllScene(PermissionQuery query) {
-        List<SceneResponseDto> list = service.sceneListByPage(query , 0, 1000).getRecords() ;
+
+        SceneQueryDto page = new SceneQueryDto() ;
+        page.setPageSize(1000);
+        page.setPageNum(0);
+
+        List<SceneResponseDto> list = service.sceneListByPage(query , page).getRecords() ;
         return AjaxResult.success("操作成功", list);
     }
 
@@ -215,12 +255,9 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
      */
     @DataPermissionQuery
     @GetMapping("/sceneListByPage")
-    public AjaxResult sceneListByPage(PermissionQuery query) {
+    public AjaxResult sceneListByPage(SceneQueryDto page , PermissionQuery query) {
 
-        int pageNow = 0 ;
-        int pageSize = 1000 ;
-
-        List<SceneResponseDto> list = service.sceneListByPage(query , pageNow , pageSize).getRecords() ;
+        List<SceneResponseDto> list = service.sceneListByPage(query , page).getRecords() ;
 
         // 调整类型标识
         if(!list.isEmpty()){
