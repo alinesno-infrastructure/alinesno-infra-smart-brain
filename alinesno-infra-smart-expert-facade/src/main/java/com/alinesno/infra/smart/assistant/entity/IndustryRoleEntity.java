@@ -49,6 +49,12 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("开场白问题")
     private String greetingQuestion ; // 开场白问题
 
+    // 历史对话数量
+    @TableField("history_count")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("历史对话数量，默认为0")
+    private Long historyCount = 0L ;
+
     @TableField("ask_human_help")
     @ColumnType(value = MySqlTypeConstant.BIGINT)
     @ColumnComment("是否需要人类帮助")
@@ -181,7 +187,7 @@ public class IndustryRoleEntity extends InfraBaseEntity {
 
     // 是否文件上传配置
     @TableField("upload_data")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 128, isNull = true , comment = "文件上传配置")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 255, isNull = true , comment = "文件上传配置")
     private String uploadData;
 
     // --->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> 角色脚本 ----------->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
