@@ -4,6 +4,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.InitAgentsDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.mapper.ChapterMapper;
@@ -40,7 +41,8 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                                           int level,
                                           long sceneId ,
                                           long longTextSceneId,
-                                          PermissionQuery query) {
+                                          PermissionQuery query,
+                                          LongTextTaskEntity longTextTaskEntity) {
 
         // 先删除当前场景下的所有章节
 //        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
@@ -56,7 +58,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             levelNumbers.put(i, 0); // 初始化每个层级的编号为0
         }
 
-        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, longTextSceneId , levelNumbers , query) ;
+        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, longTextSceneId , levelNumbers , query , longTextTaskEntity) ;
     }
 
     private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters,
@@ -65,7 +67,8 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                                                  long sceneId,
                                                  long longTextSceneId ,
                                                  Map<Integer, Integer> levelNumbers,
-                                                 PermissionQuery query) {
+                                                 PermissionQuery query,
+                                                 LongTextTaskEntity longTextTaskEntity) {
         if (chapters == null || chapters.isEmpty()) {
             return;
         }
@@ -78,6 +81,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             entity.setParentChapterId(parentId);
             entity.setChapterLevel(level);
             entity.setSceneId(sceneId);
+            entity.setTaskId(longTextTaskEntity.getId());
             entity.setLongTextSceneId(longTextSceneId);
             entity.setIsLeaf(chapter.getChildren() == null || chapter.getChildren().isEmpty());
 
@@ -96,7 +100,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             // 递归保存子章节
             if (chapter.getChildren() != null && !chapter.getChildren().isEmpty()) {
                 levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
-                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, longTextSceneId , levelNumbers, query);
+                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, longTextSceneId , levelNumbers, query, longTextTaskEntity);
             }
 
             levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
@@ -120,11 +124,13 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     }
 
     @Override
-    public List<TreeNodeDto> getChapterTree(long sceneId , long longTextSceneId) {
+    public List<TreeNodeDto> getChapterTree(long sceneId , long longTextSceneId, Long taskId) {
         log.info("getChapterTree sceneId:{}", sceneId);
 
         LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
+
         wrapper.eq(ChapterEntity::getSceneId, sceneId);
+        wrapper.eq(ChapterEntity::getTaskId, taskId);
         wrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId);
 
         List<ChapterEntity> allChapters = this.list(wrapper);
@@ -136,7 +142,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     }
 
     @Override
-    public void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId) {
+    public void updateChapterEditor(ChatContentEditDto dto, Long longTextSceneId, Long taskId) {
 
         // 删除旧的编辑记录，重新添加新的编辑记录
         LambdaUpdateWrapper<ChapterEntity> updateWrapper = new LambdaUpdateWrapper<>();
@@ -144,6 +150,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         updateWrapper.eq(ChapterEntity::getSceneId, dto.getSceneId());
         updateWrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId);
         updateWrapper.eq(ChapterEntity::getChapterEditor, dto.getRoleId());
+        updateWrapper.eq(ChapterEntity::getTaskId, taskId);
         updateWrapper.set(ChapterEntity::getChapterEditor, null) ;
         update(updateWrapper) ;
 
@@ -153,7 +160,6 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             for (ChapterEntity chapter : chapterList) {
                 chapter.setChapterEditor(dto.getRoleId());
             }
-
             updateBatchById(chapterList);
         }
     }
@@ -244,6 +250,13 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         }
 
         return contentBuilder.toString();
+    }
+
+    @Override
+    public List<ChapterEntity> getChaptersByTaskId(Long taskId) {
+        LambdaQueryWrapper<ChapterEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ChapterEntity::getTaskId, taskId); // 假设ChapterEntity有taskId字段
+        return this.list(wrapper);
     }
 
     private void buildChapterContent(ChapterEntity chapter, StringBuilder contentBuilder, int level) {
