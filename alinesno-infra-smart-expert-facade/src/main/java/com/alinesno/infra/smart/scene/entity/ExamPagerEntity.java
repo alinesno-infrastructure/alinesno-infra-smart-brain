@@ -68,8 +68,8 @@ public class ExamPagerEntity extends InfraBaseEntity {
     private Date endTime;
 
     @TableField
-    @Column(name = "duration", type = MySqlTypeConstant.INT, comment = "考试时长（分钟）")
-    private Integer duration;
+    @Column(name = "duration", type = MySqlTypeConstant.INT, comment = "考试时长（分钟）, 如果为空，则默认为45分钟")
+    private Integer duration = 45;
 
     @TableField
     @Column(name = "auto_submit", type = MySqlTypeConstant.TINYINT, defaultValue = "1", comment = "时间到是否自动提交：0-否，1-是")
@@ -116,4 +116,5 @@ public class ExamPagerEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "show_answer", type = MySqlTypeConstant.TINYINT, defaultValue = "0", comment = "导出时是否显示答案：0-否，1-是")
     private Integer showAnswer;
+
 }
