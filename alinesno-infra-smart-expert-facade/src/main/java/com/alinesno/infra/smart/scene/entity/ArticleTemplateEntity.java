@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- *
  * @author luoxiaodong
  * @version 1.0.0
  */
@@ -77,7 +76,7 @@ public class ArticleTemplateEntity extends InfraBaseEntity {
     @ColumnComment("模板信息")
     @ColumnType(value = MySqlTypeConstant.LONGTEXT)
     @TableField(value = "article_template_info")
-    private String articleTemplateInfo ;
+    private String articleTemplateInfo;
 
     @ColumnComment("模板全名")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 128)
@@ -94,10 +93,35 @@ public class ArticleTemplateEntity extends InfraBaseEntity {
     @TableField("article_template_permission")
     private String articleTemplatePermission;
 
+    @ColumnComment("系统提示")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @TableField(value = "system_prompt")
+    private String systemPrompt;
+
     // prompt
-     @ColumnComment("模板提示")
-     @ColumnType(value = MySqlTypeConstant.LONGTEXT)
-     @TableField(value = "prompt")
-     private String prompt;
+    @ColumnComment("模板提示")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @TableField(value = "prompt")
+    private String prompt;
+
+    @ColumnComment("结果配置")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @TableField(value = "result_config")
+    private String resultConfig;
+
+    @ColumnComment("配置信息")
+    @ColumnType(value = MySqlTypeConstant.LONGTEXT)
+    @TableField(value = "config")
+    private String config;
+
+    public static ArticleTemplateEntity toPower(InfraBaseEntity entity) {
+        ArticleTemplateEntity template = new ArticleTemplateEntity();
+
+        template.setOrgId(entity.getOrgId());
+        template.setOperatorId(entity.getOperatorId());
+        template.setDepartmentId(entity.getDepartmentId());
+
+        return template;
+    }
 
 }
