@@ -638,37 +638,37 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
 
     @Override
     public List<LlmModelEntity> listLlmMode(PermissionQuery query, String modelType) {
-
         LambdaQueryWrapper<LlmModelEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.setEntityClass(LlmModelEntity.class) ;
-        query.toWrapper(queryWrapper);
+        queryWrapper.setEntityClass(LlmModelEntity.class);
 
-        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
-            queryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
+        Long orgId = query.getOrgId();
+        Long operatorId = query.getOperatorId();
+
+        // 组合条件：公共模型 或 组织模型（按 orgId 过滤） 或 个人模型（按 operatorId 过滤）
+        queryWrapper.and(wrapper ->
+                wrapper
+                        // 无条件查询 PUBLIC 模型
+                        .eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PUBLIC.getValue())
+                        .or()
+                        // 查询 ORG 模型，并限制 orgId 匹配
+                        .nested(q -> {
+                            q.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.ORG.getValue())
+                                    .eq(LlmModelEntity::getOrgId, orgId);  // 直接按 orgId 过滤
+                        })
+                        .or()
+                        // 查询 PERSON 模型，并限制 operatorId 匹配
+                        .nested(q -> {
+                            q.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PERSON.getValue())
+                                    .eq(LlmModelEntity::getOperatorId, operatorId);  // 直接按 operatorId 过滤
+                        })
+        );
+
+        // 按模型类型筛选（如果有）
+        if (StringUtils.isNotEmpty(modelType)) {
+            queryWrapper.eq(LlmModelEntity::getModelType, modelType);
         }
 
-        List<LlmModelEntity> list = list(queryWrapper);
-
-        // 查询出公共模块
-        LambdaQueryWrapper<LlmModelEntity> publicQueryWrapper = new LambdaQueryWrapper<>();
-        publicQueryWrapper.eq(LlmModelEntity::getModelPermission, ModelDataScopeOptions.PUBLIC.getValue());
-
-        if(StringUtils.isNotEmpty(modelType)){  // 根据类型筛选
-            publicQueryWrapper.eq(LlmModelEntity::getModelType , modelType) ;
-        }
-
-        List<LlmModelEntity> publicList = list(publicQueryWrapper);
-
-        // 合并两个模块，同时考虑为空或者null的异常处理情况
-        List<LlmModelEntity> mergedList = new ArrayList<>();
-        if (list != null) {
-            mergedList.addAll(list);
-        }
-        if (publicList != null) {
-            mergedList.addAll(publicList);
-        }
-
-        return mergedList;
+        return list(queryWrapper);
     }
 
 }
