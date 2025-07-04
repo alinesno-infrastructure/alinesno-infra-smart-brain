@@ -290,7 +290,7 @@ const updateDeepSearchFlow= () => {
 
   .step-title {
     font-size: 15px;
-    background-color: #fafafa;
+    background-color: #f5f5f5;
     font-weight: bold;
     margin-bottom: 10px;
     padding: 10px;
@@ -353,7 +353,7 @@ const updateDeepSearchFlow= () => {
 
   .think-title {
     font-size: 14px;
-    background-color: #fafafa;
+    background-color: #f5f5f5;
     color: #444;
     padding: 10px;
     margin-bottom: 10px;
@@ -366,7 +366,7 @@ const updateDeepSearchFlow= () => {
 
   .tool-panel {
     .tool-title {
-      background-color: #fafafa;
+      background-color: #f5f5f5;
       color: #444;
       padding: 5px;
       border-radius: 5px;
@@ -375,7 +375,7 @@ const updateDeepSearchFlow= () => {
     .tool-content {
       margin: 10px;
       padding: 5px;
-      background: #fafafa;
+      background: #f5f5f5;
       border-radius: 7px;
       font-size: 14px;
       color: #444;
@@ -441,7 +441,7 @@ const updateDeepSearchFlow= () => {
         float: left;
         cursor: pointer;
         color: #555;
-        background: #fafafa;
+        background: #f5f5f5;
         padding: 10px;
         border-radius: 8px;
         display: flex;
@@ -473,7 +473,7 @@ const updateDeepSearchFlow= () => {
   }
 
   .step-desc {
-    background: #fafafa;
+    background: #f5f5f5;
     margin-bottom: 10px;
     border-radius: 10px;
     font-size: 13px;
