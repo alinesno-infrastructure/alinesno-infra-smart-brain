@@ -1,173 +1,177 @@
 <template>
-    <div class="app-container" style="background-color: #fff;padding-top:10px;padding-left:0px !important">
-        <el-row>
-            <el-col :span="10">
-                <!-- 目录大纲编辑界面 -->
-                <GeneratorAgentOutlineEditor
-                    ref="OutlineEditorRef"
-                    @openChatBox="openChatBox"
-                    @handleExecuteHandle="handleExecuteHandle"
-                    @handleGetChannelStreamId="handleGetChannelStreamId"
-                    @closeShowDebugRunDialog="closeShowDebugRunDialog"
-                    @genChapterContentByAgent="genChapterContentByAgent"
-                    @setCurrentSceneInfo="setCurrentSceneInfo"
-                    @editContent="editContent"
-                     />
-            </el-col>
 
-            <el-col :span="14">
-                <div class="chapter-edit">
-                    <el-card class="box-card" shadow="never">
-                        <template #header>
-                            <div class="card-header">
-                                <div style="display: flex;align-items: center;gap: 5px;">
-                                    任务执行节点  
-                                    <el-tooltip v-for="(item,index) in currentSceneInfo.businessExecuteEngineers" :key="index"
-                                        class="box-item" 
-                                        effect="dark" 
-                                        :content="item.roleName" 
-                                        placement="top">
-                                        <span class="edit-header-avatar">
-                                            <img :src="imagePathByPath(item.roleAvatar)" @click="openChapterSelectionDialog(item)" />
-                                        </span>
-                                    </el-tooltip>
-                                    <el-tooltip v-for="(item,index) in currentSceneInfo.dataViewerEngineers" :key="index"
-                                        class="box-item" 
-                                        effect="dark" 
-                                        :content="item.roleName" 
-                                        placement="top">
-                                        <span class="edit-header-avatar">
-                                            <img :src="imagePathByPath(item.roleAvatar)" />
-                                        </span>
-                                    </el-tooltip>
-                                </div>
+    <div class="ppt-pager-container long-text-container">
 
-                                <!-- 执行按钮_start -->
-                                <div>
-                                        <el-button type="primary" text bg size="large" @click="genChapterContent()">
-                                            <i class="fa-solid fa-paper-plane"></i> &nbsp; 重新生成
-                                        </el-button>
+        <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-                                        <el-button type="primary" text bg size="large" @click="genSingleChapterContent()">
-                                            <i class="fa-brands fa-firefox-browser"></i> &nbsp; 生成章节
-                                        </el-button>
+            <el-aside width="80px" class="ppt-pager-aside">
+                <FunctionList />
+            </el-aside>
 
-                                        <el-button type="primary" text bg size="large" @click="expertScene">
-                                            <i class="fa-solid fa-download"></i> &nbsp; 报告生成
-                                        </el-button> 
+            <el-main class="ppt-pager-main">
 
-                                </div>
-                                <!-- 执行按钮_end -->
+                <div style="background-color: #fff;padding:0px;margin:0px;padding-left:0px !important">
+                    <el-row>
+                        <el-col :span="11">
+                            <!-- 目录大纲编辑界面 -->
+                            <GeneratorAgentOutlineEditor ref="OutlineEditorRef"
+                                @openChatBox="openChatBox"
+                                @handleExecuteHandle="handleExecuteHandle"
+                                @handleGetChannelStreamId="handleGetChannelStreamId"
+                                @closeShowDebugRunDialog="closeShowDebugRunDialog"
+                                @genChapterContentByAgent="genChapterContentByAgent"
+                                @setCurrentSceneInfo="setCurrentSceneInfo"
+                                @editContent="editContent" />
+                        </el-col>
+
+                        <el-col :span="13">
+                            <div class="chapter-edit">
+                                <el-card class="box-card" shadow="never">
+                                    <template #header>
+                                        <div class="card-header">
+                                            <div style="display: flex;align-items: center;gap: 5px;">
+                                                任务执行节点
+                                                <el-tooltip
+                                                    v-for="(item, index) in currentSceneInfo.businessExecuteEngineers"
+                                                    :key="index" class="box-item" effect="dark" :content="item.roleName"
+                                                    placement="top">
+                                                    <span class="edit-header-avatar">
+                                                        <img :src="imagePathByPath(item.roleAvatar)"
+                                                            @click="openChapterSelectionDialog(item)" />
+                                                    </span>
+                                                </el-tooltip>
+                                                <el-tooltip v-for="(item, index) in currentSceneInfo.dataViewerEngineers"
+                                                    :key="index" class="box-item" effect="dark" :content="item.roleName"
+                                                    placement="top">
+                                                    <span class="edit-header-avatar">
+                                                        <img :src="imagePathByPath(item.roleAvatar)" />
+                                                    </span>
+                                                </el-tooltip>
+                                            </div>
+
+                                            <!-- 执行按钮_start -->
+                                            <div>
+                                                <el-button type="primary" text bg size="large"
+                                                    @click="genChapterContent()">
+                                                    <i class="fa-solid fa-paper-plane"></i> &nbsp; 重新生成
+                                                </el-button>
+
+                                                <el-button type="primary" text bg size="large"
+                                                    @click="genSingleChapterContent()">
+                                                    <i class="fa-brands fa-firefox-browser"></i> &nbsp; 生成章节
+                                                </el-button>
+
+                                                <el-button type="primary" text bg size="large" @click="expertScene">
+                                                    <i class="fa-solid fa-download"></i> &nbsp; 报告生成
+                                                </el-button>
+
+                                            </div>
+                                            <!-- 执行按钮_end -->
+                                        </div>
+                                    </template>
+
+                                    <div>
+                                        <DataAnalysisDisplay ref="dataAnalysisDisplayRef" />
+                                    </div>
+
+                                </el-card>
                             </div>
-                        </template>
+                        </el-col>
+                    </el-row>
 
-                        <div>
-                            <DataAnalysisDisplay ref="dataAnalysisDisplayRef" />
+                    <!-- 选择章节对话框 -->
+                    <el-dialog v-model="dialogVisible" :title="chapterEditTitle" append-to-body width="700px">
+                        <div class="user-info">
+                            <img v-if="currentUser.roleAvatar" class="avatar"
+                                :src="imagePathByPath(currentUser.roleAvatar)" />
+                            角色能力: {{ currentUser.responsibilities }}
                         </div>
-
-                    </el-card>
-                </div>
-            </el-col>
-        </el-row>
-
-        <!-- 选择章节对话框 -->
-        <el-dialog
-            v-model="dialogVisible"
-            :title="chapterEditTitle"
-            append-to-body
-            width="700px"
-            >
-            <div class="user-info">
-                <img v-if="currentUser.roleAvatar" class="avatar" :src="imagePathByPath(currentUser.roleAvatar)" />
-                角色能力: {{ currentUser.responsibilities }}
-            </div>
-            <el-scrollbar style="height:calc(100vh - 400px)">
-                <div class="chapter-tree-content">
-                    <el-tree :data="outline" 
-                        node-key="id" 
-                        default-expand-all 
-                        show-checkbox
-                        :allow-drop="allowDrop"
-                        :allow-drag="allowDrag" 
-                        @node-click="handleNodeClick" 
-                        @node-contextmenu="handleNodeContextMenu"
-                        check-strictly
-                        ref="chapterSelectionTree">
-                        <template #default="{ node, data }">
-                            <div class="custom-tree-node" style="height:auto;">
-                                <div style="display: flex;flex-direction: column;">
-                                    <div style="font-size: 16px;font-weight: bold;color:#333">
-                                        {{ node.label }}
-                                    </div>
-                                    <div class="description">
-                                        <span style="color: #777;">{{ data.description }}</span>
-                                    </div>
-                                </div>
-                                <span style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
-                                    <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)"></el-avatar>
-                                </span>
+                        <el-scrollbar style="height:calc(100vh - 400px)">
+                            <div class="chapter-tree-content">
+                                <el-tree :data="outline" node-key="id" default-expand-all show-checkbox
+                                    :allow-drop="allowDrop" :allow-drag="allowDrag" @node-click="handleNodeClick"
+                                    @node-contextmenu="handleNodeContextMenu" check-strictly ref="chapterSelectionTree">
+                                    <template #default="{ node, data }">
+                                        <div class="custom-tree-node" style="height:auto;">
+                                            <div style="display: flex;flex-direction: column;">
+                                                <div style="font-size: 16px;font-weight: bold;color:#333">
+                                                    {{ node.label }}
+                                                </div>
+                                                <div class="description">
+                                                    <span style="color: #777;">{{ data.description }}</span>
+                                                </div>
+                                            </div>
+                                            <span
+                                                style="margin-right: 10px;display: flex;align-items: center;gap: 5px;">
+                                                <el-avatar v-if="data.chapterEditor" :size="20"
+                                                    :src="imagePathByPath(data.chapterEditorAvatar)"></el-avatar>
+                                            </span>
+                                        </div>
+                                    </template>
+                                </el-tree>
                             </div>
-                        </template>
-                    </el-tree>
-                </div>
-            </el-scrollbar>
-            
-            <div class="dialog-footer">
-                <el-button size="large" @click="dialogVisible = false">取 消</el-button>
-                <el-button type="primary" size="large" @click="assignChaptersToUser">确 定</el-button>
-            </div>
-        </el-dialog>
+                        </el-scrollbar>
 
-         <!-- 运行抽屉 -->
-        <div class="aip-flow-drawer">
-            <el-drawer v-model="showDebugRunDialog" 
-                :modal="false" 
-                size="40%" 
-                style="max-width: 700px;" 
-                title="预览与调试"
-                :with-header="true">
-                <div style="margin-top: 0px;">
-                    <RoleChatPanel ref="roleChatPanelRef" />
-                </div>
-            </el-drawer>
-        </div>
+                        <div class="dialog-footer">
+                            <el-button size="large" @click="dialogVisible = false">取 消</el-button>
+                            <el-button type="primary" size="large" @click="assignChaptersToUser">确 定</el-button>
+                        </div>
+                    </el-dialog>
 
-        <!-- 显示pdf文件 -->
-         <el-dialog v-model="showPdfDialog" :title="pdfTitle" width="1300px" :before-close="handleClosePdfDialog" :show-close="true">
-                <div class="document-wrapper" v-loading="loadingDocument" >
-            <el-scrollbar class="scrollable-area" style="height: calc(70vh);margin-top:20px; padding-right:0px">
-                <iframe 
-                    :src="iframeUrl" 
-                    style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
-                </iframe>
-            </el-scrollbar>
-                </div>
-                <!-- 显示下载word文档按钮 -->
-                 <div class="word-download-button">
-                    <el-button type="primary" size="large" :loading="loadingDocument" @click="downloadWordDocument">
-                        <i class="el-icon-download"></i> 下载Word文档
-                    </el-button>
-                </div>
-        </el-dialog>
+                    <!-- 运行抽屉 -->
+                    <div class="aip-flow-drawer">
+                        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
+                            title="预览与调试" :with-header="true">
+                            <div style="margin-top: 0px;">
+                                <RoleChatPanel ref="roleChatPanelRef" />
+                            </div>
+                        </el-drawer>
+                    </div>
 
+                    <!-- 显示pdf文件 -->
+                    <el-dialog v-model="showPdfDialog" :title="pdfTitle" width="1300px"
+                        :before-close="handleClosePdfDialog" :show-close="true">
+                        <div class="document-wrapper" v-loading="loadingDocument">
+                            <el-scrollbar class="scrollable-area"
+                                style="height: calc(70vh);margin-top:20px; padding-right:0px">
+                                <iframe :src="iframeUrl"
+                                    style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
+                                </iframe>
+                            </el-scrollbar>
+                        </div>
+                        <!-- 显示下载word文档按钮 -->
+                        <div class="word-download-button">
+                            <el-button type="primary" size="large" :loading="loadingDocument"
+                                @click="downloadWordDocument">
+                                <i class="el-icon-download"></i> 下载Word文档
+                            </el-button>
+                        </div>
+                    </el-dialog>
+
+                </div>
+
+            </el-main>
+        </el-container>
     </div>
 </template>
 
 <script setup>
 
-import { ElLoading , ElMessage } from 'element-plus'
+import { ElLoading, ElMessage } from 'element-plus'
 
-import { 
-    updateChapterContentEditor , 
-    getChapterByRole , 
+import {
+    updateChapterContentEditor,
+    getChapterByRole,
     chatRoleSync,
-    genDataReport ,
+    genDataReport,
     getScene,
-    getPreviewDocx , 
-    dispatchAgent , 
-    getPreviewUrl , 
+    getGeneralAgentScene,
+    getPreviewDocx,
+    dispatchAgent,
+    getPreviewUrl,
 } from '@/api/base/im/scene/generalAgent'
 
+import FunctionList from './functionList'
 import GeneratorAgentOutlineEditor from './agentOutlineEditor.vue'
 import DataAnalysisDisplay from './agentContentDisplay.vue'
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
@@ -179,11 +183,12 @@ const { proxy } = getCurrentInstance();
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
 
-const OutlineEditorRef = ref(null); 
+const OutlineEditorRef = ref(null);
 const dataAnalysisDisplayRef = ref(null);
 
 const channelStreamId = ref(route.query.channelStreamId);
 const sceneId = ref(route.query.sceneId)
+const taskId = ref(route.query.taskId)
 const streamLoading = ref(null)
 
 const chapterEditTitle = ref("")
@@ -206,52 +211,57 @@ const loading = ref(false);
 
 // 定义人物信息
 const person = ref({
-  roleAvatar: '' , 
-  roleName: '张三',
-  responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
-  email: 'zhangsan@example.com',
+    roleAvatar: '',
+    roleName: '张三',
+    responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
+    email: 'zhangsan@example.com',
 });
 
 const form = reactive({
-    id: 0 ,
+    id: 0,
     title: '',
-    description: '' ,
+    description: '',
     content: ''
 });
 
 // 打开对话窗口
-const openChatBox = (roleId , message) => {
+const openChatBox = (roleId, message) => {
 
-    showDebugRunDialog.value = true ;
+    // 如果状态本来是打开的，则不再地继续执行
+    if (showDebugRunDialog.value) {
+        return;
+    }
+
+    showDebugRunDialog.value = true;
     console.log('roleId = ' + roleId + ' , message = ' + message);
 
     nextTick(() => {
-        roleChatPanelRef.value.openChatBox(roleId , message);
-        OutlineEditorRef.value.genStreamContentByMessage(roleId , message);
+        roleChatPanelRef.value.openChatBoxWithRole(roleId) ; 
+        // roleChatPanelRef.value.openChatBox(roleId, message);
+        // OutlineEditorRef.value.genStreamContentByMessage(roleId, message);
     })
 
 }
 
-// 生成全部章节内容通过角色
-const genChapterContentByAgent = async () => {
-    console.log('开始生成全部章节内容通过角色 = genChapterContentByAgent');
-    // 分配章节角色
-    dispatchAgent(sceneId.value).then(res => {
-        getScene(sceneId.value).then(res => {
-            setCurrentSceneInfo(res.data)
-            genChapterContent() ;
-            showDebugRunDialog.value = true ;
-        })
-
-    })
-};
+// // 生成全部章节内容通过角色
+// const genChapterContentByAgent = async () => {
+//     console.log('开始生成全部章节内容通过角色 = genChapterContentByAgent');
+//     // 分配章节角色
+//     dispatchAgent(sceneId.value , taskId.value).then(res => {
+//         getGeneralAgentScene(sceneId.value , taskId.value).then(res => {
+//             setCurrentSceneInfo(res.data)
+//             genChapterContent();
+//             showDebugRunDialog.value = true;
+//         })
+//     })
+// };
 
 // 重新生成指定的章节内容
 const genSingleChapterContent = async () => {
 
-    if(!form.id){
+    if (!form.id) {
         ElMessage.error('请先选择指定章节！');
-        return ;
+        return;
     }
 
     // 开始生成
@@ -261,17 +271,18 @@ const genSingleChapterContent = async () => {
         customClass: 'custom-loading'
     });
 
-    showDebugRunDialog.value = true ;
+    showDebugRunDialog.value = true;
 
-    let text = '正在重新生成【'+ form.title +'】内容，请稍等.';
+    let text = '正在重新生成【' + form.title + '】内容，请稍等.';
     streamLoading.value.setText(text)
 
     let formData = {
         sceneId: sceneId.value,
-        channelStreamId: channelStreamId.value ,
-        chapterTitle: form.title ,
+        channelStreamId: channelStreamId.value,
+        chapterTitle: form.title,
+        taskId: taskId.value ,
         chapterDescription: form.description,
-        chapterId : form.id ,
+        chapterId: form.id,
     }
 
     nextTick(() => {
@@ -280,7 +291,7 @@ const genSingleChapterContent = async () => {
 
     const result = await chatRoleSync(formData);
     // chapterEditorRef.value.setData(result.data) ;
-    dataAnalysisDisplayRef.value.setPlanItemContentData(result.data) ; 
+    dataAnalysisDisplayRef.value.setPlanItemContentData(result.data);
 
     streamLoading.value.close();
     showDebugRunDialog.value = false;
@@ -291,80 +302,83 @@ const genSingleChapterContent = async () => {
 // 定义一个异步函数来调用 chatRoleSync
 const genChapterContent = async () => {
 
-  try {
-    totalNodes.value = countNodes(outline.value); 
-    console.log('文档总数量 = ' + totalNodes.value);
+    OutlineEditorRef.value.genChapterContent(); // 重新生成 
 
-    // 将树转换成列表形式
-    const nodeList = [];
-    const flattenTree = (nodes) => {
-      for (let node of nodes) {
-        nodeList.push(node);
-        if (node.children && node.children.length) {
-          flattenTree(node.children);
-        }
-      }
-    };
-    flattenTree(outline.value);
+    // try {
+    //     totalNodes.value = countNodes(outline.value);
+    //     console.log('文档总数量 = ' + totalNodes.value);
 
-     // 开始生成
-     streamLoading.value = ElLoading.service({
-        lock: true,
-        background: 'rgba(255, 255, 255, 0.5)',
-        customClass: 'custom-loading'
-     });
+    //     // 将树转换成列表形式
+    //     const nodeList = [];
+    //     const flattenTree = (nodes) => {
+    //         for (let node of nodes) {
+    //             nodeList.push(node);
+    //             if (node.children && node.children.length) {
+    //                 flattenTree(node.children);
+    //             }
+    //         }
+    //     };
+    //     flattenTree(outline.value);
 
-    showDebugRunDialog.value = true ;
+    //     // 开始生成
+    //     streamLoading.value = ElLoading.service({
+    //         lock: true,
+    //         background: 'rgba(255, 255, 255, 0.5)',
+    //         customClass: 'custom-loading'
+    //     });
 
-    // 遍历输出每个节点的信息
-    for (let i = 0; i < nodeList.length; i++) {
-      const node = nodeList[i];
-      console.log('节点 = ' + JSON.stringify(node));
-      console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
-      let processMsg = ` ${i + 1}: 章节:${node.label}`;
+    //     showDebugRunDialog.value = true;
 
-      let text = processMsg + ' 任务生成中，还有【'+(totalNodes.value - i)+'】篇';
-      streamLoading.value.setText(text)
+    //     // 遍历输出每个节点的信息
+    //     for (let i = 0; i < nodeList.length; i++) {
+    //         const node = nodeList[i];
+    //         console.log('节点 = ' + JSON.stringify(node));
+    //         console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
+    //         let processMsg = ` ${i + 1}: 章节:${node.label}`;
 
-      form.title = node.label;
-      dataAnalysisDisplayRef.value.setPlanItem(node) ; 
+    //         let text = processMsg + ' 任务生成中，还有【' + (totalNodes.value - i) + '】篇';
+    //         streamLoading.value.setText(text)
 
-      let formData = {
-        sceneId: sceneId.value,
-        channelStreamId: channelStreamId.value ,
-        chapterTitle: node.label,
-        chapterDescription: node.description,
-        chapterId : node.id ,
-      }
+    //         form.title = node.label;
+    //         dataAnalysisDisplayRef.value.setPlanItem(node);
 
-      nextTick(() => {
-        console.log('--->> editorRoleId = ' + node.chapterEditor)
-        roleChatPanelRef.value.openChatBox(node.chapterEditor, node.label);
-      })
+    //         let formData = {
+    //             sceneId: sceneId.value,
+    //             channelStreamId: channelStreamId.value,
+    //             chapterTitle: node.label,
+    //             taskId: taskId.value ,
+    //             chapterDescription: node.description,
+    //             chapterId: node.id,
+    //         }
 
-      const result = await chatRoleSync(formData);
-      dataAnalysisDisplayRef.value.setPlanItemContentData(result.data) ; 
-      
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    proxy.$modal.msgError("生成失败");
-    streamLoading.value.close();
-  }
+    //         nextTick(() => {
+    //             console.log('--->> editorRoleId = ' + node.chapterEditor)
+    //             roleChatPanelRef.value.openChatBox(node.chapterEditor, node.label);
+    //         })
 
-    streamLoading.value.close();
-    showDebugRunDialog.value = false;
-    // 编写完成之后，直接可以预览
-    expertScene() ; 
+    //         const result = await chatRoleSync(formData);
+    //         dataAnalysisDisplayRef.value.setPlanItemContentData(result.data);
+
+    //     }
+    // } catch (error) {
+    //     console.error('Error fetching data:', error);
+    //     proxy.$modal.msgError("生成失败");
+    //     streamLoading.value.close();
+    // }
+
+    // streamLoading.value.close();
+    // showDebugRunDialog.value = false;
+    // // 编写完成之后，直接可以预览
+    // expertScene();
 
 };
 
 function sleep(ms) {
-return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /** 导出word文档 */
-function expertScene(){
+function expertScene() {
 
     // 生成数据报告
     // genDataReport(sceneId.value).then(res => {
@@ -375,9 +389,9 @@ function expertScene(){
     showPdfDialog.value = true;
     loadingDocument.value = true;
 
-    genDataReport(sceneId.value).then(res => {
-        const storegeId = res.data ;
-        currentStoreId.value = storegeId ;
+    genDataReport(sceneId.value , taskId.value).then(res => {
+        const storegeId = res.data;
+        currentStoreId.value = storegeId;
 
         nextTick(async () => {
             const response = await getPreviewDocx(storegeId);
@@ -390,56 +404,59 @@ function expertScene(){
 
 // 计算总节点数
 const countNodes = (nodes) => {
-  let count = 0;
-  for (let node of nodes) {
-    count++;
-    if (node.children && node.children.length) {
-      count += countNodes(node.children);
+    let count = 0;
+    for (let node of nodes) {
+        count++;
+        if (node.children && node.children.length) {
+            count += countNodes(node.children);
+        }
     }
-  }
-  return count;
+    return count;
 };
 
 // 递归查找节点
 const findNodeById = (nodes, id) => {
-  for (let node of nodes) {
-    console.log('nodeName = ' + node.label + ', id = ' + node.id) ; 
-    if (node.id === id) {
-        return node;
+    for (let node of nodes) {
+        console.log('nodeName = ' + node.label + ', id = ' + node.id);
+        if (node.id === id) {
+            return node;
+        }
+        if (node.children && node.children.length) {
+            const foundNode = findNodeById(node.children, id);
+            if (foundNode) {
+                return foundNode;
+            }
+        }
     }
-    if (node.children && node.children.length) {
-      const foundNode = findNodeById(node.children, id);
-      if (foundNode) {
-        return foundNode;
-      }
-    }
-  }
-  return null;
+    return null;
 };
 
 /** 编辑章节内容 */
-const editContent = (node , data) => {
+const editContent = (node, data) => {
     // let chapterId = data.id ;
 
     editorRoleId.value = node.data.chapterEditor;
     console.log('editorRoleId = ' + editorRoleId.value)
 
-    form.id = data.id ;
+    form.id = data.id;
     form.title = node.label;
     form.chapterEditor = node.chapterEditor;
     form.description = node.data.description;
 
-    dataAnalysisDisplayRef.value.setData(form) ; 
+    nextTick(() => {
+        dataAnalysisDisplayRef.value.setData(form);
+    })
+    
 
-} 
+}
 
 // 打开选择章节对话框
 const openChapterSelectionDialog = (role) => {
-    chapterEditTitle.value = "请选择["+role.roleName+"]需要编辑的章节"
+    chapterEditTitle.value = "请选择[" + role.roleName + "]需要编辑的章节"
 
-    person.value = role ;
-    person.value.email =  'zhangsan@example.com';
-    
+    person.value = role;
+    person.value.email = 'zhangsan@example.com';
+
     currentUser.value = role;
     currentUser.value.selectedChapters = [];
     dialogVisible.value = true;
@@ -447,10 +464,10 @@ const openChapterSelectionDialog = (role) => {
     // 初始化已选择节点
     nextTick(() => {
         getChapterByRole(role.id, sceneId.value).then(res => {
-            if(res.data){
+            if (res.data) {
                 let selectKey = res.data.map(item => item.id);
                 console.log('selectKey = ' + selectKey);
-                chapterSelectionTree.value.setCheckedKeys(selectKey) ;
+                chapterSelectionTree.value.setCheckedKeys(selectKey);
             }
         })
 
@@ -460,43 +477,43 @@ const openChapterSelectionDialog = (role) => {
 
 // 分配章节给用户
 const assignChaptersToUser = () => {
-  const checkedNodes = chapterSelectionTree.value.getCheckedNodes(false, true);
-  console.log('newChapterIds= ' + checkedNodes)
+    const checkedNodes = chapterSelectionTree.value.getCheckedNodes(false, true);
+    console.log('newChapterIds= ' + checkedNodes)
 
-  const newChapterIds = checkedNodes.map(node => node.id);
-  console.log('newChapterIds = ' + newChapterIds);
+    const newChapterIds = checkedNodes.map(node => node.id);
+    console.log('newChapterIds = ' + newChapterIds);
 
-  currentUser.value.selectedChapters = [...new Set([...currentUser.value.selectedChapters, ...newChapterIds])];
-  console.log('currentUser.value.selectedChapters=' + currentUser.value.selectedChapters);
+    currentUser.value.selectedChapters = [...new Set([...currentUser.value.selectedChapters, ...newChapterIds])];
+    console.log('currentUser.value.selectedChapters=' + currentUser.value.selectedChapters);
 
-  let data = {
-      sceneId: sceneId.value,
-      roleId: currentUser.value.id,
-      chapters: currentUser.value.selectedChapters
-  }
+    let data = {
+        sceneId: sceneId.value,
+        roleId: currentUser.value.id,
+        chapters: currentUser.value.selectedChapters
+    }
 
-  updateChapterContentEditor(data).then(res => {
-    console.log(res)
-    proxy.$modal.msgSuccess("分配成功");
-    dialogVisible.value = false;
+    updateChapterContentEditor(data).then(res => {
+        console.log(res)
+        proxy.$modal.msgSuccess("分配成功");
+        dialogVisible.value = false;
 
-    OutlineEditorRef.value.handleGetScene();
-  })
+        OutlineEditorRef.value.handleGetScene();
+    })
 
 };
 
 const downloadWordDocument = () => {
     getPreviewUrl(currentStoreId.value).then(res => {
         window.open(res.data);
-    }) 
+    })
 }
 
 // 关闭对话窗口
 const closeShowDebugRunDialog = () => {
-    showDebugRunDialog.value = false ;
+    showDebugRunDialog.value = false;
 }
 
-function setCurrentSceneInfo(data){
+function setCurrentSceneInfo(data) {
     currentSceneInfo.value = data
     outline.value = data.chapterTree
 }
@@ -504,10 +521,20 @@ function setCurrentSceneInfo(data){
 </script>
 
 <style lang="scss" scoped>
-
 // 定义一些常用的变量
 $spacing: 10px;
 $avatar-size: 30px;
+
+.ppt-pager-aside {
+    padding: 0px;
+    border-right: 1px solid #f2f3f7;
+    background: #fff;
+    margin-bottom: 0px;
+}
+
+.ppt-pager-main{
+padding: 0px !important;
+}
 
 .user-info {
     padding: $spacing;
@@ -555,7 +582,7 @@ $avatar-size: 30px;
     .scroll-panel {
         height: calc(100vh - 310px);
         width: 100%;
-        border: 1px solid #dcdfe6 ;
+        border: 1px solid #dcdfe6;
         border-radius: 4px;
     }
 
@@ -662,7 +689,7 @@ $avatar-size: 30px;
 .dialog-footer {
     text-align: right;
     margin-top: 19px;
-    margin-bottom:20px;
+    margin-bottom: 20px;
 }
 
 .word-download-button {
@@ -670,7 +697,6 @@ $avatar-size: 30px;
     margin-bottom: 20px;
     text-align: right;
 }
-
 </style>
 
 
@@ -693,6 +719,6 @@ $avatar-size: 30px;
 }
 
 .chapter-tree-content .el-tree-node__content {
-  height: auto !important;
+    height: auto !important;
 }
 </style>
