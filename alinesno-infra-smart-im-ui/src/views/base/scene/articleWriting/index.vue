@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="ppt-pager-aside">
+      <el-aside width="80px" class="ppt-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -33,13 +33,12 @@
                     ref="attachmentPanelRef"
                     style="padding: 0px 0px;margin-bottom:0px;" />
 
-                  <!-- 文本内容 -->
-                  <el-input v-model="formData.promptText" 
-                    class="input-box" 
-                    size="large" 
-                    placeholder="请输入您的需求，获取智能体服务"
-                    :prefix-icon="Search" />
-
+                   <DynamicPromptEditor 
+                      ref="promptEditorRef"
+                      v-model="formData.promptText"
+                      :promptText="currentPromptTemplate"
+                    />
+    
                 </div>
 
                 <!-- 上传附件按键 -->
@@ -58,11 +57,11 @@
 
               <!-- 选择题型-->
               <div class="example-select-section">
-                <ArticleTypeConfig v-model="formData.pptConfig"/>
+                <ArticleTypeConfig v-model="formData.articleConfig" :artcleTemplate="formData.selectedTemplate" />
               </div>
 
               <div class="example-section">
-                <div class="example-title">你可以这样提问</div>
+                <div class="example-title">你可以在这里编写</div>
                 <div class="example-list">
                   <div v-for="(item, index) in topics" :key="index" class="example-item" @click="handleExampleClick(item)">
                     <span class="example-text">{{ item.text }}</span>
@@ -79,23 +78,19 @@
             <el-col :span="13">
               <div class="review-question-preview-title">
                 <span>
-                  <i class="fa-solid fa-file-pdf"></i> 文章生成预览
+                  <i class="fa-solid fa-file-pdf"></i> 文章模板 
                 </span>
-                <!-- 
-                <el-button type="danger" :disabled="!outline" @click="generatorPPT()">
-                  <i class="fa-solid fa-floppy-disk"></i>&nbsp;编辑文章
-                </el-button> 
-                -->
               </div>
 
-              <!-- 大纲生成预览 -->
+              <!-- 文章模板 -->
               <div class="pager-gen-result-panel">
 
                 <el-scrollbar class="pager-container" ref="scrollbarRef"> 
                   <div ref="innerRef">
 
                     <ArticleTemplatePanel 
-                      v-model="formData.selectedTemplateId"
+                      @selectTemplate="selectTemplate"
+                      v-model="formData.selectedTemplate"
                     />
 
                   </div>
@@ -137,6 +132,8 @@ import ArticleTypeConfig from './articleTypeConfig.vue';
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
+// import DynamicTemplateEditor from './components/dynamicTemplateEditor'
+import DynamicPromptEditor from './components/DynamicPromptEditor.vue';
 
 import {
   getScene,
@@ -147,6 +144,7 @@ import {
 
 import SnowflakeId from "snowflake-id";
 
+const promptEditorRef = ref(null); // 获取组件引用
 const roleSelectPanelRef = ref(null)
 const snowflake = new SnowflakeId();
 
@@ -173,7 +171,8 @@ const outline = ref(null)
 // 执行面板
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
-
+const finalText = ref('')
+const currentPromptTemplate = ref('帮我写一篇文章')
 const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
 const showArticleOutput = ref(false)
@@ -190,12 +189,6 @@ const formData = ref({
   sceneId: sceneId.value,
   difficultyLevel: 'easy',
   channelStreamId: channelStreamId.value ,
-  pptConfig: {
-    writingType: 'general',
-    audience: 'general',
-    scenario: 'general',
-    tone: 'professional'
-  },
   attachments:[],
 })
 
@@ -252,12 +245,15 @@ const handleGetScene = () => {
     // handleRoleBySceneIdAndAgentType();
 
     if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) {
+
       greetingQuestionList.value = [];
       res.data.greetingQuestion.forEach(item => {
         greetingQuestionList.value.push({
           text: item
         });
       });
+
+      topics.value = greetingQuestionList.value;
     }
 
     if (!currentSceneInfo.value.articleWriterEngineer || !currentSceneInfo.value.articleLayoutDesignerEngineer) { // 选择配置角色
@@ -313,16 +309,26 @@ const handleExampleClick = (item) => {
 // }
 
 const generaterText = async () => {
+
+  // 验证占位符是否全部填写
+  if (!promptEditorRef.value.validatePlaceholders()) {
+      // 如果有未填写的占位符，方法会自动聚焦到第一个空占位符
+      // 这里可以添加额外的提示逻辑
+      ElMessage.warning('请填写所有提示词变量');
+      return;
+  }
+
   if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
     return;
   }
 
   // 判断是否选择模板
-  if (!formData.value.selectedTemplateId) {
+  if (!formData.value.selectedTemplate) {
     ElMessage.error('请选择文章生成模板');
     return;
   }
+  formData.value.selectedTemplateId = formData.value.selectedTemplate.id;
 
   // 打开流容器
   showDebugRunDialog.value = true;
@@ -338,7 +344,8 @@ const generaterText = async () => {
     background: 'rgba(255, 255, 255, 0.5)',
     customClass: 'custom-loading'
   });
-
+  let text = '文案正在生成，请稍等...' ; 
+  streamLoading.value.setText(text)
   
   try {
 
@@ -356,7 +363,8 @@ const generaterText = async () => {
         path: path,
         query: { 
           'articleId': articleId ,
-          'sceneId': sceneId.value
+          'sceneId': sceneId.value , 
+          'channelStreamId': snowflake.generate() 
         }
       })
     });
@@ -373,6 +381,32 @@ const generaterText = async () => {
   }
 
 };
+
+// 判断是否为string，是则转换为对象
+const getJsonObject = (jsonString) => {
+  if (typeof jsonString === 'string') {
+    return JSON.parse(jsonString);
+  } else {
+    return jsonString;
+  }
+}
+
+const selectTemplate = (item) => {
+  console.log('item = ' + JSON.stringify(item))
+  // formData.value.promptText = item.prompt;
+  currentPromptTemplate.value = item.prompt ;
+};
+
+// // watcher监听selectTemplate是否为空，不为空则赋值给formData.value.promptText（如果为空的情况下）
+// watch(() => formData.value.selectedTemplate, (newValue) => { 
+//   console.log('newValue = ' + newValue.promptText)
+//   if (!newValue) {
+//     return;
+//   }
+//   if (!formData.value.promptText) {
+//     formData.value.promptText = newValue.promptText;
+//   }
+// });
 
 onMounted(() => {
   handleGetScene();
@@ -469,7 +503,7 @@ onMounted(() => {
 
       .input-box {
         width: 100%;
-        height: 50px;
+        // height: 50px;
         border: 0px !important;
         margin-bottom: 0px;
       }
@@ -553,7 +587,7 @@ onMounted(() => {
 
 
 <style>
-.ppt-pager-container .input-button-section .el-input__wrapper {
+.ppt-pager-container .input-button-section .el-textarea__inner{
   box-shadow: none !important;
   padding: 5px;
   margin-left: 0px;
