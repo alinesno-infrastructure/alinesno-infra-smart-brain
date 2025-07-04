@@ -70,7 +70,7 @@ public class ImChatAvatarController {
                     return new ResponseEntity<>(null, headers, HttpStatus.NOT_MODIFIED);
                 }
 
-                headers.setCacheControl("public, max-age=3600"); // 浏览器缓存1小时
+                headers.setCacheControl("public, max-age=72000"); // 浏览器缓存24小时
                 return new ResponseEntity<>(byteBody, headers, HttpStatus.OK);
             } catch (Exception e) {
                 log.error("获取图片失败:{}", e.getMessage());
@@ -78,23 +78,6 @@ public class ImChatAvatarController {
             }
         });
     }
-
-//    /**
-//     * 显示图片
-//     * @return
-//     */
-//    @GetMapping("/displayImage/{imageId}")
-//    public ResponseEntity<byte[]> displayImage(@PathVariable("imageId") String imageId){
-//
-//        byte[] byteBody = null ;
-//        try{
-//            byteBody = storageConsumer.download(imageId , progress -> {}) ;
-//        }catch(Exception e){
-//            log.error("文件下载失败:{}" , e.getMessage());
-//        }
-//
-//        return new ResponseEntity<>(byteBody, new HttpHeaders(), HttpStatus.OK);
-//    }
 
     /**
      * 文件上传
