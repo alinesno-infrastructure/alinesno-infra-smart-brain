@@ -5,56 +5,59 @@
         <div style="width: calc(100% - 0px);margin-top: 0px;" v-loading="fullscreenLoading">
 
             <div class="channel-container-panel" style="margin-top:0px">
-                    <el-row>
-                        <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
-                            <div class="scene-card-container" @click="enterScreen(item)">
-                                <article class="scene-card">
-                                    <div class="scene-image-container">
-                                        <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
-                                    </div>
-                                    <div class="scene-card-content">
-                                        <div class="scene-header">
-                                            <span class="scene-title">{{ item.sceneName }}</span>
-                                        </div>
-                                        <div class="scene-author-info">
-                                                <span class="semi-typography text" style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
-                                                    <i class="fa-solid fa-ribbon"></i>
-                                                    {{ item.orgName }}
-                                                </span>
-                                        </div>
-                                        <div class="scene-description">
-                                            {{ item.sceneDesc }}
-                                        </div>
-                                        <div class="semi-divider semi-divider-horizontal"></div>
-                                        <div class="scene-footer">
-                                            <div class="scene-price">
-                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" /> 私有</el-tag>
-                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i class="fa-solid fa-globe" /> 公开</el-tag>
-                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" /> 组织</el-tag>
-                                            </div>
-                                            <div class="scene-tag">
-                                                 <el-button type="primary" size="small" text bg>
-                                                   <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
-                                                </el-button>
-                                                    <div class="scene-stats">
-                                                        <span>{{ item.usage_count }}</span>
-                                                        <span>使用</span>
-                                                    </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </article>
-                                <div class="scene-card-footer">
-
+                <el-row>
+                    <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
+                        <div class="scene-card-container" @click="enterScreen(item)">
+                            <article class="scene-card">
+                                <div class="scene-image-container">
+                                    <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
                                 </div>
+                                <div class="scene-card-content">
+                                    <div class="scene-header">
+                                        <span class="scene-title">{{ item.sceneName }}</span>
+                                    </div>
+                                    <div class="scene-author-info">
+                                        <span class="semi-typography text"
+                                            style="flex: 1;font-size: 13px;font-weight: 400;line-height: 18px;color: #a5a5a5;">
+                                            <i class="fa-solid fa-user-shield"></i>
+                                            {{ item.orgName }}
+                                        </span>
+                                    </div>
+                                    <div class="scene-description">
+                                        {{ item.sceneDesc }}
+                                    </div>
+                                    <div class="semi-divider semi-divider-horizontal"></div>
+                                    <div class="scene-footer">
+                                        <el-button type="primary" size="small" text bg>
+                                            <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{JSON.parse(item.fieldProp)?.sceneName }}
+                                        </el-button>
+                                        <div class="scene-tag">
+                                            <div class="scene-stats">
+                                                <div class="scene-price">
+                                                    <el-tag v-if="item.sceneScope == 'private'" type="danger"><i
+                                                            class="fa-solid fa-lock" /> 私有</el-tag>
+                                                    <el-tag v-else-if="item.sceneScope == 'public'" type="warning"><i
+                                                            class="fa-solid fa-globe" /> 公开</el-tag>
+                                                    <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
+                                                        组织</el-tag>
+                                                </div>
+                                                <span>使用</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </article>
+                            <div class="scene-card-footer">
+
                             </div>
-                        </el-col>
+                        </div>
+                    </el-col>
 
-                        <el-col :span="24" v-if="sceneLists.length == 0 && !fullscreenLoading">
-                            <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
-                        </el-col>
+                    <el-col :span="24" v-if="sceneLists.length == 0 && !fullscreenLoading">
+                        <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
+                    </el-col>
 
-                    </el-row>
+                </el-row>
                 <!-- </el-scrollbar> -->
             </div>
         </div>
@@ -82,19 +85,19 @@ const sceneLists = ref([])
 
 /** 进入长文本编辑界面 */
 function enterScreen(item) {
-  const path = '/scene/'+ item.sceneType +'/index';
-  router.push({
-      path: path , 
-      query: { 'sceneId': item.id , 'channelStreamId': channelStreamId.value }
-  })
+    const path = '/scene/' + item.sceneType + '/index';
+    router.push({
+        path: path,
+        query: { 'sceneId': item.id, 'channelStreamId': channelStreamId.value }
+    })
 }
 
-const handleGetWorkplaceItem = (workplaceId , type) => {
-    getWorkplaceItem(workplaceId , type).then(response => {
+const handleGetWorkplaceItem = (workplaceId, type) => {
+    getWorkplaceItem(workplaceId, type).then(response => {
         sceneLists.value = response.data || [];
         fullscreenLoading.value = false;
     })
-} 
+}
 
 // 对外暴露的方法 
 defineExpose({
@@ -251,7 +254,7 @@ defineExpose({
             -webkit-line-clamp: 2;
             -moz-line-clamp: 2;
             line-clamp: 2;
-            color: #899 ;
+            color: #899;
         }
 
         .scene-footer {
