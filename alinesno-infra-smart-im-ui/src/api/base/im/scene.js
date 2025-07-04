@@ -12,6 +12,7 @@ var managerUrl = {
   uploadOss: prefix +"uploadOss",
   updateLeaderRole: prefix +"updateLeaderRole",
   supportScene: prefix +"supportScene",
+  supportAllScene: prefix +"supportAllScene",
   updateSceneAgents: prefix +"updateSceneAgents",
   getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
   getRoleList: prefix +"getRoleList",
@@ -55,6 +56,14 @@ export function updateSceneAgents(sceneId , sceneTypeId , sceneTypeCode , data) 
 export function getRoleBySceneIdAndAgentType(sceneId , agentTypeId) {
   return request({
     url: managerUrl.getRoleBySceneIdAndAgentType + "?sceneId=" + parseStrEmpty(sceneId) + "&agentTypeId=" + parseStrEmpty(agentTypeId),
+    method: 'get'
+  })
+}
+
+// 获取所有场景列表
+export function supportAllScene() {
+  return request({
+    url: managerUrl.supportAllScene,
     method: 'get'
   })
 }
