@@ -50,26 +50,30 @@ public interface IDocReviewSceneService extends IBaseService<DocReviewSceneEntit
 
     /**
      * 获取场景信息
-     * @param id
+     * @param sceneId
+     * @param taskId
      * @param entity
      * @return
      */
-    DocReviewSceneInfoDto getDocReviewSceneInfoDto(long id, SceneEntity entity);
+    DocReviewSceneInfoDto getDocReviewSceneInfoDto(long sceneId , long taskId , SceneEntity entity);
 
     /**
      * 获取场景信息，并统计审核结果数量
-     * @param id
+     * @param sceneId
+     * @param taskId
      * @param entity
      * @return
      */
-    DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long id, SceneEntity entity);
+    DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long sceneId , long taskId, SceneEntity entity);
 
     /**
      * 生成Markdown的审核报告格式
+     *
      * @param sceneId
      * @param query
      * @param id
+     * @param taskId
      * @return
      */
-    String genMarkdownReport(long sceneId, PermissionQuery query, Long id);
+    String genMarkdownReport(long sceneId, PermissionQuery query, Long id, long taskId);
 }
