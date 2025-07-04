@@ -15,6 +15,7 @@
 
 	<properties>
 		<commonmark.version>0.18.0</commonmark.version>
+
 		<jxl.version>2.6.10</jxl.version>
 		<pdfbox.version>2.0.1</pdfbox.version>
 		<fontbox.version>2.0.0</fontbox.version>
@@ -22,6 +23,7 @@
 		<xmpbox.version>2.0.0</xmpbox.version>
 		<preflight.version>2.0.0</preflight.version>
 		<pdfbox-tools.version>2.0.0</pdfbox-tools.version>
+		<opencsv.version>5.7.1</opencsv.version>
 
 		<!-- langchain -->
 		<langchain4j.version>0.34.0</langchain4j.version>
@@ -55,6 +57,12 @@
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-web-api</artifactId>
 			<version>${revision}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>${opencsv.version}</version>
 		</dependency>
 
 		<!-- langchain4j_start -->
