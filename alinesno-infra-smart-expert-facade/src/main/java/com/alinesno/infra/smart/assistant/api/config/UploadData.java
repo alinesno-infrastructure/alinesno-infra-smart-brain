@@ -16,4 +16,12 @@ public class UploadData {
     private String modelId;  // 多模态模型ID
     private int imageUploadLimit;  // 图片上传限制
 
+    // 识别结果处理
+    private int maxLength = 16384; // 最大长度，默认16k
+
+
+    // 获取最大长度
+    public int getMaxLength() {
+        return maxLength == 0 ? 16384 : maxLength;
+    }
 }
