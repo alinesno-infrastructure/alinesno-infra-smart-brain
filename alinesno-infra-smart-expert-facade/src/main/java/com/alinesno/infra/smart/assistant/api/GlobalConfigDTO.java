@@ -70,6 +70,12 @@ public class GlobalConfigDTO extends BaseDto {
     private Integer maxChannelPeople;
 
     /**
+     * 工作台地址
+     */
+    @NotBlank(message = "工作台地址不能为空")
+    private String studioUrl;
+
+    /**
      * 默认的 DTO 对象
      * @return
      */
@@ -100,6 +106,7 @@ public class GlobalConfigDTO extends BaseDto {
         entity.setDefaultLargeModel(this.defaultLargeModel);
         entity.setDefaultImageModel(this.defaultImageModel);
         entity.setMaxChannelPeople(this.maxChannelPeople);
+        entity.setStudioUrl(this.studioUrl);
 
         return entity;
     }
