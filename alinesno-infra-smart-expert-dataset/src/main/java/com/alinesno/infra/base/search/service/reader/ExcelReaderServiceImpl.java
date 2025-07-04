@@ -38,7 +38,14 @@ public class ExcelReaderServiceImpl extends BaseReaderServiceImpl {
     @SneakyThrows
     @Override
     public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
-        File file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+
+        File file ;
+        if(attachmentDto.getFile() != null){
+            file = attachmentDto.getFile() ;
+        }else{
+            file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        }
+
         if (file == null || !file.exists()) {
             return null;
         }
@@ -52,10 +59,10 @@ public class ExcelReaderServiceImpl extends BaseReaderServiceImpl {
      * 解析 Excel 文件内容。
      *
      * @param file Excel 文件
-     * @return Excel 文件的文本内容
+     * @return Excel 文件的文本内容，包含格式化的sheet和内容
      * @throws IOException 读取文件时可能出现的异常
      */
-    private String parseExcelFile(File file) throws IOException {
+    private static String parseExcelFile(File file) throws IOException {
         try (InputStream inputStream = new FileInputStream(file)) {
             Workbook workbook;
             String fileName = file.getName();
@@ -68,14 +75,38 @@ public class ExcelReaderServiceImpl extends BaseReaderServiceImpl {
             }
 
             StringBuilder content = new StringBuilder();
+            content.append("=== Excel File: ").append(fileName).append(" ===\n\n");
+
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 Sheet sheet = workbook.getSheetAt(i);
+                content.append("--- Sheet ").append(i + 1).append(": ").append("名称:").append(sheet.getSheetName()).append(" ---\n");
+
+                // Add column headers if they exist (first row)
+                if (sheet.getPhysicalNumberOfRows() > 0) {
+                    Row headerRow = sheet.getRow(0);
+                    if (headerRow != null) {
+                        content.append("[Headers]: ");
+                        for (Cell cell : headerRow) {
+                            content.append(cell.toString()).append(" | ");
+                        }
+                        content.append("\n");
+                    }
+                }
+
+                // Add data rows
+                content.append("[Data]:\n");
                 for (Row row : sheet) {
+                    // Skip header row if we already printed it
+                    if (row.getRowNum() == 0 && sheet.getPhysicalNumberOfRows() > 1) {
+                        continue;
+                    }
+
                     for (Cell cell : row) {
-                        content.append(cell.toString()).append("\t");
+                        content.append(cell.toString()).append(" | ");
                     }
                     content.append("\n");
                 }
+                content.append("\n"); // Add space between sheets
             }
             return content.toString();
         }
