@@ -14,7 +14,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.I
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
+import com.alinesno.infra.smart.assistant.scene.common.examPaper.service.IExamPagerSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
@@ -22,10 +22,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGe
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.prototypeDesign.service.IPrototypeSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
-import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
-import com.alinesno.infra.smart.scene.dto.SceneDto;
-import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
-import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
+import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
@@ -75,10 +72,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         return sceneEntity ;
     }
 
-    public String genMarkdownContent(long sceneId, PermissionQuery query, Long longTextSceneId) {
+    public String genMarkdownContent(long sceneId, PermissionQuery query, Long longTextSceneId, Long taskId) {
 
         LambdaQueryWrapper<ChapterEntity> lambdaQueryWrapper = new LambdaQueryWrapper<>();
         lambdaQueryWrapper.eq(ChapterEntity::getSceneId, sceneId);
+        lambdaQueryWrapper.eq(ChapterEntity::getTaskId, taskId);
         lambdaQueryWrapper.eq(ChapterEntity::getOrgId, query.getOrgId()) ;
         lambdaQueryWrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId) ;
         lambdaQueryWrapper.orderByAsc(ChapterEntity::getChapterSort); // 按照排序字段升序排列
@@ -134,7 +132,7 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
     }
 
     @Override
-    public IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, int pageNum, int pageSize) {
+    public IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, SceneQueryDto pageDto) {
 
         long orgId = query.getOrgId(); // 组织 id
         long operatorId = query.getOperatorId();  // 创建人员(私有频道)
@@ -155,9 +153,17 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
                         .eq(SceneEntity::getOperatorId, operatorId)
                 ));
 
+        if(pageDto.getSceneType() != null){
+            queryWrapper.eq(SceneEntity::getSceneType, pageDto.getSceneType());
+        }
+
+        if(pageDto.getSceneName() != null){
+            queryWrapper.like(SceneEntity::getSceneName, pageDto.getSceneName());
+        }
+
         queryWrapper.orderByDesc(SceneEntity::getAddTime);
 
-        IPage<SceneEntity> page = new Page<>(pageNum, pageSize);
+        IPage<SceneEntity> page = new Page<>(pageDto.getPageNum(), pageDto.getPageSize());
         page =  this.page(page, queryWrapper);
 
         // 获取到orgId
@@ -241,11 +247,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
             examPagerSceneService.updateSceneAgents(dto);
         }
-        // PPT生成
-        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
-            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
-            pptGeneratorSceneService.updateSceneAgents(dto);
-        }
+//        // PPT生成
+//        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
+//            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
+//            pptGeneratorSceneService.updateSceneAgents(dto);
+//        }
         // 文章编写
         else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
@@ -308,11 +314,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
             return examPagerSceneService.getRoleList(dto);
         }
-        // PPT生成
-        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
-            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
-            return pptGeneratorSceneService.getRoleList(dto);
-        }
+//        // PPT生成
+//        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
+//            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
+//            return pptGeneratorSceneService.getRoleList(dto);
+//        }
         // 文章编写
         else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
