@@ -129,6 +129,18 @@ public class MessageTaskInfo implements Serializable {
     // 所属操作员ID
     private Long operatorId ;
 
+    // 结果类型(summary/react)
+    private String resultType ;
+
+    // 查询的文本
+    private String queryText ;
+
+    // 知识库索引集合名称
+    private String collectionIndexName ;
+
+    // 知识库索引集合名称标识
+    private String collectionIndexLabel ;
+
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
         this.businessId = businessId;
