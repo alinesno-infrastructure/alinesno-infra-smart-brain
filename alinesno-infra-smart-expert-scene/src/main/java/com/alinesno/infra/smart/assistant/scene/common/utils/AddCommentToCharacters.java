@@ -56,7 +56,6 @@ public class AddCommentToCharacters {
 
                     String str =  "批注原因:" + revision.getReason() +
                             "\r\n" +
-                            "\r\n" +
                             "修改建议：" + revision.getSuggestedTexts();
                     Comment comment = new Comment(doc);
                     comment.getFormat().setCommentId(1);
