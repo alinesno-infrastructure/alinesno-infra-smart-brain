@@ -1,12 +1,12 @@
 <template>
-  <div class="文章-function-panel">
+  <div class="article-function-panel">
     <div class="title">
-      <i class="fa-solid fa-feather"></i> 文章编写 
+      <i class="fa-solid fa-feather"></i> AI 文章编写 
     </div>
     <div class="add-task">
       <router-link :to="'/scene/articleWriting/index?sceneId=' + sceneId">
         <el-button type="primary" text bg size="large" style="width:100%;">
-          <i class="fa-solid fa-plus"></i> 新建文章
+          <i class="fa-solid fa-plus"></i> 新建
         </el-button>
       </router-link>
     </div>
@@ -18,10 +18,11 @@
             </span>
           </div>  
           <div class="item-name">
-            <span class="item-label">
-                {{ item.name }}
-            </span>
-            <span class="item-log">{{ item.log }}</span>
+            {{ item.name }}
+            <!-- 
+              <span class="item-label"></span>
+              <span class="item-log">{{ item.log }}</span> 
+            -->
           </div>
       </div>
     </div>
@@ -74,7 +75,7 @@ const enterFunction = () => {
 </script>
 
 <style lang="scss" scoped>
-.文章-function-panel {
+.article-function-panel {
   padding: 10px;
   background: #fff;
   height: calc(100vh - 80px);
@@ -82,9 +83,12 @@ const enterFunction = () => {
   .title {
     margin-bottom: 15px;
     margin-top: 5px;
-    text-align: left;
     font-size: 15px;
-    margin-left: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    line-height: 1.5rem;
+    text-align: center;
   }
 
   .task-list {
@@ -102,6 +106,7 @@ const enterFunction = () => {
       border-radius: 5px;
       padding: 10px;
       transition: all 0.3s ease; // 添加过渡效果
+      flex-direction: column;
 
       &:hover {
         background: #e9f2ff; // 优化hover颜色
@@ -111,6 +116,7 @@ const enterFunction = () => {
         background: #409EFF; // 修改选中状态背景色
         color: #fff; // 增加文字对比度
         font-weight: bold;
+
         .item-status i {
           color: #fff; // 图标颜色同步调整
         }
@@ -121,21 +127,17 @@ const enterFunction = () => {
 
       }
 
-      .item-status{
+      .item-status {
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 30px;
         font-size: 16px;
-        color: #666; // 增加图标默认颜色
-        margin-right: 10px; // 增加图标与文字间距
+        color: #666;
       }
 
-      .item-name{
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
+      .item-name {
         line-height: 1rem;
+        text-align: center;
 
         .item-label {
           white-space: nowrap;
