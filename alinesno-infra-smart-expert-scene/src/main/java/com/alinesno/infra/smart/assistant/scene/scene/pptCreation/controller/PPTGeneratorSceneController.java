@@ -11,7 +11,7 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTGenerateSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTOutlineDto;
