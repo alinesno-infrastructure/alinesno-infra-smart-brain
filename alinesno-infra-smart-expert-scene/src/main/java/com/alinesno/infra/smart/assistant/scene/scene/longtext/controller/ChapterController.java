@@ -1,44 +1,52 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
-import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskProgressDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
+import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.scene.dto.*;
+import com.alinesno.infra.smart.scene.dto.ChapterGenFormDto;
+import com.alinesno.infra.smart.scene.dto.ChatContentDto;
+import com.alinesno.infra.smart.scene.dto.ParagraphProcessRequestDTO;
+import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
+import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jodd.util.StringUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.lang.exception.RpcServiceRuntimeException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -60,16 +68,25 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     private ILongTextSceneService longTextSceneService ;
 
     @Autowired
+    private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
     private IIndustryRoleService roleService ;
 
     @Autowired
     private ILLmAdapterService llmAdapterService ;
 
     @Autowired
+    private ILongTextTemplateService longTextTemplateService ;
+
+    @Autowired
     private ILlmModelService llmModelService ;
 
     @Autowired
     private FormatMessageTool formatMessageTool ;
+
+    @Autowired
+    private ILongTextTaskService longTextTaskService ;
 
     @Autowired
     private ISceneService sceneService ;
@@ -101,63 +118,93 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
      */
     @DataPermissionQuery
     @PostMapping("/saveChapters")
-    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes, @RequestParam("sceneId") long sceneId , PermissionQuery query) {
+    public AjaxResult saveChapters(@RequestBody List<TreeNodeDto> nodes,
+                                   @RequestParam("sceneId") long sceneId ,
+                                   @RequestParam("taskId") long taskId,
+                                   PermissionQuery query) {
 
         if(nodes == null || nodes.isEmpty()){
             return error("参数错误") ;
         }
 
         LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
-        service.saveChaptersWithHierarchy(nodes, null, 1 , sceneId , longTextSceneEntity.getId() , query);
+        LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(taskId) ;
+        service.saveChaptersWithHierarchy(nodes,
+                null,
+                1 ,
+                sceneId ,
+                longTextSceneEntity.getId() ,
+                query ,
+                longTextTaskEntity);
+
         return ok() ;
     }
 
-
     /**
-     * 生成章节内容
+     * 异步生成章节内容
      */
-    @DataPermissionQuery
-    @SneakyThrows
+    @Deprecated
     @PostMapping("/chatRoleSync")
-    public AjaxResult chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto , PermissionQuery query) {
+    @Async
+    public CompletableFuture<AjaxResult> chatRoleSyncAsync(@RequestBody @Validated ChapterGenFormDto dto, PermissionQuery query) {
+        try {
+            log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
 
-        log.debug("dto = {}", dto);
+            ChapterEntity chapterEntity = service.getById(dto.getChapterId());
+            if (chapterEntity == null) {
+                return CompletableFuture.completedFuture(AjaxResult.error("章节不存在"));
+            }
 
-        long chapterId = dto.getChapterId() ;
-        ChapterEntity chapterEntity = service.getById(chapterId) ;
-        Long roleId = chapterEntity.getChapterEditor() ;
+            Long roleId = chapterEntity.getChapterEditor();
+            if (roleId == null) {
+                return CompletableFuture.completedFuture(AjaxResult.success("此章节未指定编辑人员"));
+            }
 
-        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(dto.getSceneId() , query) ;
+            LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(dto.getTaskId());
+            LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(dto.getSceneId(), query);
 
-        if(roleId != null){
-            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-
+            // 准备任务信息
+            MessageTaskInfo taskInfo = new MessageTaskInfo();
             taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
             taskInfo.setRoleId(roleId);
             taskInfo.setChannelId(dto.getSceneId());
             taskInfo.setSceneId(dto.getSceneId());
+            taskInfo.setQueryText(dto.getChapterTitle() + ":" + dto.getChapterDescription());
 
-            String allChapterContent = service.getAllChapterContent(dto.getSceneId()) ;
-            String chapterPromptContent = longTextSceneEntity.getChapterPromptContent() ;
+            // 处理附件
+            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+                        .map(Long::parseLong)
+                        .toList();
+                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+                taskInfo.setAttachments(attachments);
+            }
 
+            // 准备章节内容
+            String allChapterContent = service.getAllChapterContent(dto.getSceneId());
+            String chapterPromptContent = longTextTaskEntity.getTaskName();
             taskInfo.setText(FormatMessageTool.getChapterPrompt(
-                    allChapterContent ,
-                    dto ,
-                    chapterPromptContent ,
+                    allChapterContent,
+                    dto,
+                    chapterPromptContent,
                     taskInfo
-            )) ;
+            ));
 
-            WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-            log.debug("chatRole = {}" , genContent);
+            // 执行角色生成
+            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+            log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
 
             // 更新章节内容
             chapterEntity.setContent(taskInfo.getFullContent());
             service.update(chapterEntity);
 
-            return AjaxResult.success("生成成功",chapterEntity.getContent()) ;
-        }
+            return CompletableFuture.completedFuture(AjaxResult.success("生成成功", chapterEntity.getContent()));
 
-        return AjaxResult.success("操作成功" , "此章节未指定编辑人员");
+        } catch (Exception e) {
+            log.error("生成章节内容时发生异常", e);
+            return CompletableFuture.completedFuture(
+                    AjaxResult.error("生成失败: " + e.getMessage()));
+        }
     }
 
     /**
@@ -168,6 +215,24 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         ChapterEntity chapterEntity = service.getById(chapterId) ;
         return AjaxResult.success("操作成功" , chapterEntity.getContent()) ;
     }
+
+//    /**
+//     * 查询任务状态
+//     */
+//    @GetMapping("/getTaskStatus")
+//    public AjaxResult getTaskStatus(@RequestParam("taskId") long taskId) {
+//        LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(taskId) ;
+//
+//        String taskStatus = longTextTaskEntity.getTaskStatus() ;
+//
+//        if(taskStatus.equals(TaskStatusEnum.RUNNING.getCode()+"")){  // 运行中的任务
+//
+//        }
+//
+//        // 获取到当前需要编写的章节内容
+//
+//        return AjaxResult.success("操作成功" , longTextTaskEntity) ;
+//    }
 
     /**
      * 更新章节内容
@@ -209,45 +274,75 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
     }
 
+//    /**
+//     * 与角色交互，获取内容结果（异步版本）
+//     */
+//    @Deprecated
+//    @PostMapping("/chatRole")
+//    public AjaxResult chatRoleAsync(@RequestBody @Validated ChatRoleDto chatRole) {
+//            log.info("开始处理chatRole异步请求，taskId: {}", chatRole.getTaskId());
+//
+//            Long taskId = chatRole.getTaskId();
+//            LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(taskId);
+//
+//            // 构建任务信息
+//            MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo();
+//
+//            // 处理附件（如果有）
+//            if(StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+//                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+//                        .map(Long::parseLong)
+//                        .toList();
+//                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+//                taskInfo.setAttachments(attachments);
+//            }
+//
+//            taskInfo.setRoleId(chatRole.getRoleId());
+//            taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
+//            taskInfo.setChannelId(chatRole.getSceneId());
+//            taskInfo.setSceneId(chatRole.getSceneId());
+//            taskInfo.setText(chatRole.getMessage());
+//            taskInfo.setQueryText(chatRole.getMessage());
+//
+//            // 调用角色服务生成内容
+//            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+//            log.info("角色服务调用完成，taskId: {}", taskId);
+//
+//            // 获取模板信息
+//            LongTextTemplateEntity template = longTextTemplateService.getById(
+//                    longTextTaskEntity.getSelectedTemplateId());
+//
+//            // 格式化内容
+//            formatMessageTool.handleChapterMessage(genContent, taskInfo, template);
+//
+//            // 处理代码内容（如果有）
+//            if(genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+//                String codeContent = genContent.getCodeContent().get(0).getContent();
+//
+//                // 验证JSON格式
+//                try {
+//                    JSONArray.parseArray(codeContent);
+//                    List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+//                    log.debug("解析成功，章节节点数: {}", nodeDtos.size());
+//                    return AjaxResult.success("操作成功", JSONArray.parseArray(codeContent));
+//                } catch (Exception e) {
+//                    log.error("JSON解析失败", e);
+//                    throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
+//                }
+//            }
+//
+//            return AjaxResult.success("操作成功", genContent);
+//
+//    }
+
     /**
-     * 与角色交互，获取到内容结果
+     * 查询任务处理进度
      */
-    @DataPermissionSave
-    @SneakyThrows
-    @PostMapping("/chatRole")
-    public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
-
-        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
-
-        taskInfo.setRoleId(chatRole.getRoleId());
-        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
-        taskInfo.setChannelId(chatRole.getSceneId());
-        taskInfo.setSceneId(chatRole.getSceneId());
-        taskInfo.setText(chatRole.getMessage());
-
-        // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-
-        // 获取到格式化的内容
-        formatMessageTool.handleChapterMessage(genContent , taskInfo);
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-
-            // 验证是否可以正常解析json
-            try{
-                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-            }catch (Exception e){
-                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
-            }
-
-            return AjaxResult.success("操作成功" , dataObject) ;
-        }
-
-        return AjaxResult.success("操作成功" , genContent) ;
+    @GetMapping("/taskProgress/{taskId}")
+    public AjaxResult getTaskProgress(@PathVariable Long taskId) {
+        // 实现中可以从Redis或数据库查询进度
+        TaskProgressDto progress = longTextTaskService.getProgress(taskId);
+        return AjaxResult.success(progress);
     }
 
     /**
@@ -257,9 +352,12 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     @SneakyThrows
     @DataPermissionQuery
     @GetMapping("/getChapterTree")
-    public AjaxResult getChapterTree(@RequestParam("sceneId") long sceneId , PermissionQuery query) {
+    public AjaxResult getChapterTree(
+            @RequestParam("sceneId") Long sceneId ,
+            @RequestParam("taskId") Long taskId,
+            PermissionQuery query) {
         LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
-        List<TreeNodeDto> tree = service.getChapterTree(sceneId ,longTextSceneEntity.getId());
+        List<TreeNodeDto> tree = service.getChapterTree(sceneId ,longTextSceneEntity.getId(), taskId);
         return AjaxResult.success(tree);
 
     }
@@ -279,6 +377,16 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
         List<ChapterEntity> allChapters = service.list(wrapper);
 
         return AjaxResult.success("操作成功." , allChapters) ;
+    }
+
+    /**
+     * 通过id获取到章节
+     * @return
+     */
+    @GetMapping("/getChapterById")
+    public AjaxResult getChapterById(@RequestParam("id") long id) {
+        ChapterEntity chapterEntity = service.getById(id) ;
+        return AjaxResult.success("操作成功" , chapterEntity) ;
     }
 
     @Override
