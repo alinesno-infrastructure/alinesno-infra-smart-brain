@@ -6,6 +6,7 @@ public interface AgentConstants {
     String STEP_START = "start" ; // 节点开始
     String STEP_PROCESS = "process" ; // 节点任务进行中
     String STEP_FINISH = "finish" ;  //  节点结束
+    String EMPTY_RESULT = "" ;  //  空结果
 
     long ORG_AGENT_STORE_TYPE_ID = 9527L ;  // 角色类型ID
     long STORE_EMPTY_ORG_ID = 0L ;  // 商店组织为空
@@ -33,7 +34,11 @@ public interface AgentConstants {
     }
 
     interface Slices {
+        String LOOP_COUNT= "\n##第%s次思考执行:";
         String OBSERVATION = "\n观察";
+        String THOUGHT = "\n场景的思考：%s \r\n";
+        String EXECUTE_TOOL_RESULT = "工具执行结果: %s \r\n" ;
+        String ANSWER_RESULT = "思考分析结果: %s \r\n" ;
         String PRE_CONTENT= "\n## 上一个环境输出的内容:\n";
         String DATASET_CONTENT= "\n## 你的知识库内容:\n";
         String REFERENCE_CONTENT= "\n## 你引用附件内容:\n";
