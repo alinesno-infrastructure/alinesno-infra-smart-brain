@@ -1,155 +1,196 @@
 <template>
   <div class="ppt-type-config">
     <div class="config-row">
-      <!-- 写作类型选择 -->
-      <el-select v-model="config.writingType" placeholder="请选择写作类型" size="large" style="width: 200px; margin-right: 20px;">
-        <el-option
-          v-for="type in writingTypeOptions"
-          :key="type.value"
-          :label="type.label"
-          :value="type.value"
+      <!-- 动态生成配置选项 -->
+      <template v-for="(fieldConfig, index) in dynamicFieldConfigs" :key="index">
+        <!-- {{ fieldConfig }} -->
+        <!-- 按钮类型 -->
+        <!-- <el-button
+          v-if="fieldConfig.type === 'button'"
+          :type="fieldConfig.buttonType || 'primary'"
+          size="large"
+          style="width: calc(33% - 5px);"
+          @click="handleButtonClick(fieldConfig.field)"
         >
-          <span style="margin-right: 10px;">
-            <i :class="type.icon"></i>
-          </span>
-          <span>{{ type.label }}</span>
-        </el-option>
-        <template #prefix>
-          <span>类型</span>
-        </template>
-      </el-select>
+          {{ fieldConfig.title }}
+        </el-button> -->
+        
+        <!-- 下拉选择类型 -->
+        <el-select 
+          v-if="fieldConfig.type === 'select'"
+          v-model="config[fieldConfig.field]"
+          :placeholder="fieldConfig.placeholder || `请选择${fieldConfig.title}`"
+          size="large"
+          style="width: calc(33% - 5px);"
+          clearable
+        >
+          <el-option
+            v-for="option in fieldConfig.options"
+            :key="option.value"
+            :label="option.label"
+            :value="option.value"
+          />
+          <template #prefix>
+            <span>{{ fieldConfig.title }}</span>
+          </template>
+        </el-select>
+        
+        <!-- 文本输入类型 -->
+        <!-- <el-input
+          v-else-if="fieldConfig.type === 'input' || fieldConfig.type === 'textarea'"
+          v-model="config[fieldConfig.field]"
+          :type="fieldConfig.type"
+          :placeholder="fieldConfig.placeholder || `请输入${fieldConfig.title}`"
+          :maxlength="fieldConfig.maxLength"
+          size="large"
+          :resize="fieldConfig.type === 'textarea' ? 'vertical' : 'none'"
+          :rows="fieldConfig.type === 'textarea' ? 3 : 1"
+          style="width: calc(33% - 5px);"
+          clearable
+        >
+          <template #prefix v-if="fieldConfig.type === 'input'">
+            <span>{{ fieldConfig.title }}</span>
+          </template>
+        </el-input> -->
 
-      <!-- 受众选择 -->
-      <el-select v-model="config.audience" placeholder="请选择受众" size="large" style="width: 200px; margin-right: 20px;">
-        <el-option
-          v-for="audience in audienceOptions"
-          :key="audience.value"
-          :label="audience.label"
-          :value="audience.value"
-        />
-        <template #prefix>
-          <span>受众</span>
-        </template>
-      </el-select>
+        <!-- 单选按钮组 -->
+        <div v-else-if="fieldConfig.type === 'radio'" class="radio-group" style="width: calc(33% - 5px);">
+          <div class="radio-title">{{ fieldConfig.title }}</div>
+          <el-radio-group v-model="config[fieldConfig.field]" size="large">
+            <el-radio
+              v-for="option in fieldConfig.options"
+              :key="option.value"
+              :label="option.value"
+              :border="fieldConfig.border"
+            >
+              {{ option.label }}
+            </el-radio>
+          </el-radio-group>
+        </div>
 
-      <!-- 场景选择 -->
-      <el-select v-model="config.scenario" placeholder="请选择场景" size="large" style="width: 200px; margin-right: 20px;">
-        <el-option
-          v-for="scenario in scenarioOptions"
-          :key="scenario.value"
-          :label="scenario.label"
-          :value="scenario.value"
-        />
-        <template #prefix>
-          <span>场景</span>
-        </template>
-      </el-select>
+        <!-- 复选框组 -->
+        <div v-else-if="fieldConfig.type === 'checkbox'" class="checkbox-group" style="width: calc(33% - 5px);">
+          <div class="checkbox-title">{{ fieldConfig.title }}</div>
+          <el-checkbox-group v-model="config[fieldConfig.field]" size="large">
+            <el-checkbox
+              v-for="option in fieldConfig.options"
+              :key="option.value"
+              :label="option.value"
+              :border="fieldConfig.border"
+            >
+              {{ option.label }}
+            </el-checkbox>
+          </el-checkbox-group>
+        </div>
 
-      <!-- 语句风格选择 -->
-      <el-select v-model="config.tone" placeholder="请选择风格" size="large" style="width: 200px;">
-        <el-option
-          v-for="tone in toneOptions"
-          :key="tone.value"
-          :label="tone.label"
-          :value="tone.value"
-        />
-        <template #prefix>
-          <span>语句</span>
-        </template>
-      </el-select>
+        <!-- 单个复选框 -->
+        <div v-else-if="fieldConfig.type === 'checkbox-single'" class="checkbox-single" style="width: calc(33% - 5px);">
+          <el-checkbox
+            v-model="config[fieldConfig.field]"
+            :label="fieldConfig.label || fieldConfig.title"
+            size="large"
+            :border="fieldConfig.border"
+          />
+        </div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, computed } from 'vue';
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'button-click']);
 
-// 写作类型选项 (with Font Awesome 6.x icons)
-const writingTypeOptions = ref([
-  { value: 'general', label: '通用', icon: 'fa-solid fa-file-lines' },
-  { value: 'experience', label: '心得体会', icon: 'fa-solid fa-heart' },
-  { value: 'speech_draft', label: '发言稿', icon: 'fa-solid fa-microphone' },
-  { value: 'meeting_minutes', label: '会议纪要', icon: 'fa-solid fa-clipboard-list' },
-  { value: 'application', label: '申请书', icon: 'fa-solid fa-file-signature' },
-  { value: 'policy_interpretation', label: '政策解读文章', icon: 'fa-solid fa-gavel' },
-  { value: 'advanced_deeds', label: '先进事迹报道', icon: 'fa-solid fa-medal' },
-  { value: 'speech', label: '讲话发言稿', icon: 'fa-solid fa-bullhorn' }
-]);
-
-// 受众选项
-const audienceOptions = ref([
-  { value: 'general', label: '大众' },
-  { value: 'investor', label: '投资者' },
-  { value: 'boss', label: '老板' },
-  { value: 'interviewer', label: '面试官' },
-  { value: 'employee', label: '员工' },
-  { value: 'colleague', label: '同事同行' },
-  { value: 'visitor', label: '在线访客' },
-  { value: 'team', label: '组员' }
-]);
-
-// 场景选项
-const scenarioOptions = ref([
-  { value: 'general', label: '通用' },
-  { value: 'analysis', label: '分析报告' },
-  { value: 'teaching', label: '教学课件' },
-  { value: 'promotion', label: '宣传材料' },
-  { value: 'speech', label: '公众演讲' },
-  { value: 'media', label: '在线媒体' },
-  { value: 'announcement', label: '公告' },
-  { value: 'research', label: '研究报告' },
-  { value: 'conference', label: '学术会议' },
-  { value: 'project', label: '项目汇报' },
-  { value: 'introduction', label: '个人介绍' },
-  { value: 'business_plan', label: '商业计划书' },
-  { value: 'solution', label: '解决方案' },
-  { value: 'product', label: '产品介绍' },
-  { value: 'meeting', label: '会议流程' },
-  { value: 'annual_plan', label: '年度计划' },
-  { value: 'annual_summary', label: '年度总结' },
-  { value: 'health', label: '健康科普' },
-  { value: 'financial', label: '财务报告' },
-  { value: 'project_plan', label: '项目计划书' },
-  { value: 'business', label: '商业' }
-]);
-
-// 语句风格选项
-const toneOptions = ref([
-  { value: 'professional', label: '专业' },
-  { value: 'motivational', label: '励志' },
-  { value: 'humorous', label: '幽默' },
-  { value: 'friendly', label: '亲切' },
-  { value: 'confident', label: '自信' },
-  { value: 'gentle', label: '温柔' }
-]);
-
-// 接收 props
 const props = defineProps({
-  // 配置数据（双向绑定）
   modelValue: {
     type: Object,
-    default: () => ({
-      writingType: 'general', // 默认值改为通用
-      audience: 'general',
-      scenario: 'general',
-      tone: 'professional'
-    })
+    default: () => ({})
+  },
+  artcleTemplate: {
+    type: Object,
+    default: () => ({})
   }
 });
 
-// 双向绑定数据
-const config = ref({
-  writingType: props.modelValue.writingType || 'general',
-  audience: props.modelValue.audience || 'general',
-  scenario: props.modelValue.scenario || 'general',
-  tone: props.modelValue.tone || 'professional'
+// 解析模板配置
+const parsedConfig = computed(() => {
+  try {
+    return JSON.parse(props.artcleTemplate.config || '[]');
+  } catch (e) {
+    console.error('解析模板配置失败:', e);
+    return [];
+  }
 });
+
+// 动态生成字段配置
+const dynamicFieldConfigs = computed(() => {
+  return parsedConfig.value.map(field => {
+    const baseConfig = {
+      field: field.field,
+      title: field.title,
+      type: field.type || 'input',
+      placeholder: field.placeholder,
+      maxLength: field.maxLength,
+      required: field.required,
+      isShow: field.isShow !== false,
+      border: field.border || false,
+      label: field.label,
+      buttonType: field.buttonType || 'primary'
+    };
+
+    // 处理select/radio/checkbox类型的选项
+    if (['select', 'radio', 'checkbox'].includes(field.type) && field.options) {
+      baseConfig.options = field.options.map(opt => {
+        if (typeof opt === 'string') {
+          return { value: opt, label: opt };
+        }
+        return {
+          value: opt.value || opt.key || opt,
+          label: opt.label || opt.name || opt.value || opt.key || opt
+        };
+      });
+    }
+
+    return baseConfig;
+  }).filter(field => field.isShow); // 只显示isShow为true的字段
+});
+
+// 初始化配置数据
+const initConfig = () => {
+  const defaultConfig = {};
+  dynamicFieldConfigs.value.forEach(field => {
+    if (field.type === 'select' && field.options?.length > 0) {
+      defaultConfig[field.field] = field.options[0].value;
+    } else if (field.type === 'checkbox') {
+      defaultConfig[field.field] = Array.isArray(field.value) ? [...field.value] : [];
+    } else if (field.type === 'checkbox-single') {
+      defaultConfig[field.field] = field.value || false;
+    } else if (field.type === 'radio' && field.options?.length > 0) {
+      defaultConfig[field.field] = field.options[0].value;
+    } else if (field.type !== 'button') { // 按钮类型不需要在config中存储值
+      defaultConfig[field.field] = field.value || '';
+    }
+  });
+  return defaultConfig;
+};
+
+// 双向绑定数据
+const config = ref(initConfig());
+
+// 处理按钮点击事件
+const handleButtonClick = (field) => {
+  emit('button-click', field);
+};
 
 // 数据变化时通知父组件
 watch(config, (newVal) => {
   emit('update:modelValue', newVal);
+}, { deep: true });
+
+// 当artcleTemplate变化时重新初始化配置
+watch(() => props.artcleTemplate, () => {
+  config.value = initConfig();
 }, { deep: true });
 </script>
 
@@ -162,9 +203,44 @@ watch(config, (newVal) => {
   display: flex;
   align-items: center;
   margin-bottom: 0px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.config-row > * {
-  margin-right: 10px;
+.radio-group,
+.checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  
+  .radio-title,
+  .checkbox-title {
+    font-size: 14px;
+    color: var(--el-text-color-regular);
+    margin-bottom: 4px;
+  }
+}
+
+.checkbox-single {
+  display: flex;
+  align-items: center;
+  height: 40px; // 与其它表单元素高度一致
+}
+
+.el-radio-group,
+.el-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.el-radio,
+.el-checkbox {
+  margin-right: 8px;
+}
+
+.el-button {
+  // 确保按钮与其他表单元素高度一致
+  height: 40px;
 }
 </style>
