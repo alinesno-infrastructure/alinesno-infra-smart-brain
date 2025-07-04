@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="exam-pager-aside">
+      <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -11,9 +11,9 @@
         <el-scrollbar style="height:calc(100vh - 50px)">
           <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
 
-            <SideTypePanel />
+            <!-- <SideTypePanel /> -->
 
-            <div style="width: calc(100% - 220px);margin-top: 10px;" v-loading="sceneLoading">
+            <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
 
               <div class="search-container-panel">
                 <el-row>
@@ -39,18 +39,30 @@
                   <el-col :span="6" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
                     <div class="exam-pager-card-container" @click="enterExamPager(item)">
                       <article class="exam-pager-card">
+
+                        <!-- 删除按钮 -->
+
                         <div class="exam-pager-card-content">
                           <div class="scene-header">
-                            <span class="scene-title">{{ item.title }}</span>
+
+                            <el-popover placement="top" :width="Math.min(500, item.title.length * 10 + 50)"
+                              trigger="hover" :content="item.title" :disabled="item.title.length <= 30">
+                              <template #reference>
+                                <span class="scene-title">
+                                  {{ item.title.length > 20 ? item.title.substring(0, 18) + '...' : item.title }}
+                                </span>
+                              </template>
+                            </el-popover>
+
                           </div>
                           <div class="scene-author-info">
                             <span class="scene-name">
-                              <i class="fa-solid fa-ribbon"></i>
-                              {{ item.orgName }}
+                              <i class="fa-solid fa-user-shield"></i>
+                              {{ item.templateName }}
                             </span>
                           </div>
                           <div class="scene-description">
-                            {{ item.sceneDesc }}
+                            {{ item.content }}
                           </div>
                           <div class="semi-divider semi-divider-horizontal"></div>
                           <div class="scene-footer">
@@ -61,16 +73,25 @@
                                   class="fa-solid fa-globe" /> 公开</el-tag>
                               <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
                                 组织</el-tag>
+
+
                             </div>
                             <div class="scene-tag">
-                              <el-button type="primary" size="small" text bg>
-                                <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
-                                  JSON.parse(item.fieldProp)?.sceneName }}
-                              </el-button>
                               <div class="scene-stats">
-                                <span>{{ item.usage_count }}</span>
-                                <span>使用</span>
+                                <span>最近更新</span>
+                                <span>{{ item.updateTime ? item.updateTime : item.addTime }}</span>
                               </div>
+
+                              <div class="article-delete-btn" @click.stop>
+                                <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(item)">
+                                  <template #reference>
+                                    <el-button type="danger" text bg size="small" @click.stop>
+                                      <i class="fa-solid fa-trash"></i>&nbsp;删除
+                                    </el-button>
+                                  </template>
+                                </el-popconfirm>
+                              </div>
+
                             </div>
                           </div>
                         </div>
@@ -98,13 +119,18 @@
 import FunctionList from './functionList'
 
 import {
-  pagerListByPage
+  pagerListByPage,
+  deleteArticle
 } from '@/api/base/im/scene/articleWriting';
 
-import SideTypePanel from './articleType.vue'
+// import SideTypePanel from './articleType.vue'
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
+
+import SnowflakeId from "snowflake-id";
+
+const snowflake = new SnowflakeId();
 
 const router = useRouter();
 const route = useRoute();
@@ -119,21 +145,35 @@ function enterExamPager(item) {
   const path = '/scene/articleWriting/articleEditPager';
   router.push({
     path: path,
-    query: { 
-      'articleId': item.id ,
-      'sceneId': sceneId.value
+    query: {
+      'articleId': item.id,
+      'sceneId': sceneId.value,
+      'channelStreamId': snowflake.generate()
     }
   })
 }
 
 /** 获取场景列表 */
 function handlePagerListByPage() {
-  pagerListByPage().then(res => {
+  const pageBean = {
+    pageNow: 1,
+    pageSize: 30
+  }
+  pagerListByPage(pageBean, sceneId.value).then(res => {
     pagerList.value = res.data
     sceneLoading.value = false
   }).catch(err => {
     sceneLoading.value = false
-  })  
+  })
+}
+
+// 删除文章
+const handleDelete = (item) => {
+  deleteArticle(item.id).then(res => {
+    handlePagerListByPage()
+  }).catch(err => {
+
+  })
 }
 
 onMounted(() => {
@@ -149,18 +189,27 @@ onMounted(() => {
   border-radius: 8px;
 }
 
+.semi-divider.semi-divider-horizontal {
+  margin-top: 20px;
+  margin-bottom: 16px;
+  border-bottom: 0.5px solid #f0f0f5;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--semi-color-text-0);
+}
+
 .exam-pager-card {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
   overflow: hidden;
-  // padding: 12px 12px 16px;
   border: 1px solid rgba(6, 7, 9, 0.1);
   border-radius: 8px;
   background-color: #fff;
   cursor: pointer;
   gap: 10px;
-  padding-bottom:10px;
+  padding: 15px;
   transition: box-shadow 0.3s;
 
   &:hover {
@@ -305,5 +354,10 @@ onMounted(() => {
       }
     }
   }
+
+  .article-delete-btn{
+    margin-left: 10px;
+  }
+
 }
 </style>
