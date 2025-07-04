@@ -34,9 +34,6 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     private IIndustryRoleService roleService ;
 
-//    @Autowired
-//    private IWorkflowExecutionService workflowExecutionService ;
-
     @Autowired
     private ISSEService sseService;
 
@@ -49,8 +46,8 @@ public class TaskServiceImpl implements ITaskService {
     public TaskServiceImpl() {
         // 初始化线程池
         executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5); // 核心线程数
-        executor.setMaxPoolSize(10); // 最大线程数
+        executor.setCorePoolSize(10); // 核心线程数
+        executor.setMaxPoolSize(50); // 最大线程数
         executor.setQueueCapacity(MAX_QUEUE_SIZE); // 队列容量
         executor.setRejectedExecutionHandler(new RejectedExecutionHandler() {
             @Override
