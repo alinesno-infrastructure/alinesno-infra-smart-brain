@@ -82,7 +82,7 @@ public class PlannerHandler extends BaseHandler {
 
         params.put("complex_task", goal);
         params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());
-        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false)));
+        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false , false)));
         params.put("max_plannings", maxPlannings);
         params.put("current_time", Prompt.getCurrentTime());
 
