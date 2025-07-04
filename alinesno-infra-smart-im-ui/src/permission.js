@@ -17,6 +17,18 @@ const whiteList = ['login', '/register' , '/agentChat' , '/channelChat' , '/sso/
 router.beforeEach((to, from, next) => {
   NProgress.start()
 
+  // 设置页面的title
+  if (to.meta.title) {
+    document.title = to.meta.title + '-' + document.title
+  }
+
+  // 1. 检查是否免登录路由 (auth: false)
+  if (to.matched.some(record => record.meta.auth === false)) {
+    console.log('免登录路由')
+    next() // 直接放行
+    return
+  }
+
   if (getToken()) {
     to.meta.title && useSettingsStore().setTitle(to.meta.title)
     /* has token*/
