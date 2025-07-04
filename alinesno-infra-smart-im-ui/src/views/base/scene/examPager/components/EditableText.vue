@@ -27,6 +27,7 @@
         </button>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -41,6 +42,11 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: '点击编辑...'
+  },
+  isQuestionEdit: {
+    type: Boolean,
+    default: true,
+    required: false
   },
   saveDebounce: {
     type: Number,
@@ -66,6 +72,11 @@ watch(() => props.modelValue, (newVal) => {
 
 // 开始编辑
 const startEditing = () => {
+
+  if(!props.isQuestionEdit){
+    return;
+  }
+
   if (isEditing.value) return;
   
   isEditing.value = true;
