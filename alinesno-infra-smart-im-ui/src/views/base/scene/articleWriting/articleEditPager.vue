@@ -1,46 +1,54 @@
 <template>
-    <div class="article-edit-container edit-display-container">
-        <el-container style="height:calc(100vh - 40px );background-color: #fff;">
+  <div class="article-edit-container edit-display-container">
+    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-            <el-aside width="280px" class="article-edit-aside">
-                <FunctionList />
-            </el-aside>
+      <el-aside width="80px" class="article-edit-aside">
+        <FunctionList />
+      </el-aside>
 
+      <el-main class="article-edit-main">
 
-            <el-main class="article-edit-main">
+        <div class="article-edit-content">
+          <!-- 标题内容 -->
+          <EditableTitle 
+            v-model:title="articleData.title" 
+            class="article-edit-title" 
+          />
 
-                <!-- 头部/保存 -->
-                <div class="article-edit-header">
-                    <el-button type="primary" text bg size="large" @click="handleSaveArticle" >
-                        <i class="fa-solid fa-floppy-disk"></i> &nbsp; 保存
-                    </el-button>
-                </div>
+          <!-- 编辑内容 -->
+          <div class="article-edit-content-display">
+            <AgentContentDisplay v-model:articleData="articleData" @content-change="handleContentChange"
+              ref="contentEditor" />
+          </div>
+        </div>
+      </el-main>
 
-                <div class="article-edit-content">
-                    <!-- 标题内容 -->
-                    <div class="article-edit-title">
-                        {{ articleData.title }}
-                    </div>
-                    <!-- 编辑内容 -->
-                    <div class="article-edit-content-display">
-                        <AgentContentDisplay 
-                            v-model:articleData="articleData"
-                            @content-change="handleContentChange"
-                            ref="contentEditor"
-                        />
-                    </div>
-                </div>
-            </el-main>
+      <el-aside width="300px" class="article-edit-right-aside">
+        <EditorFunctionPanel @handleSaveArticle="handleSaveArticle" :articleData="articleData"
+          :resultConfig="articleConfig" :promptText="promptText" @handleExportArticle="handleExportArticle"
+          @config-change="handleConfigChange" />
+      </el-aside>
 
-            <el-aside width="300px" class="article-edit-right-aside">
-                <EditorFunctionPanel 
-                    :resultConfig="articleConfig"
-                    @config-change="handleConfigChange"
-                    />
-            </el-aside>
+    </el-container>
 
-        </el-container>
+    <!-- 运行抽屉 -->
+    <div class="aip-flow-drawer flow-control-panel">
+      <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+        :with-header="true">
+        <div style="margin-top: 0px;">
+          <RoleChatPanel ref="roleChatPanelRef" />
+        </div>
+      </el-drawer>
     </div>
+
+    <!-- 添加预览组件 -->
+    <MarkdownPreview 
+      ref="previewDialogRef" 
+      :content="previewContent" 
+      @confirm="handlePreviewConfirm"
+      @regenerate="handlePreviewRegenerate" />
+
+  </div>
 </template>
 
 <script setup>
@@ -49,17 +57,36 @@ import { onMounted, ref } from 'vue';
 
 import {
   getArticleById,
-  updateArticle
+  reChatPromptContent,
+  updateArticle,
+  getScene
 } from '@/api/base/im/scene/articleWriting';
 
+import EditableTitle from './components/EditableTitle.vue'
+import MarkdownPreview from './components/MarkdownPreview.vue';
+import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
 import AgentContentDisplay from './agentContentDisplay'
 import EditorFunctionPanel from './components/editorFunctionPanel'
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElLoading, ElMessageBox } from 'element-plus';
+
+const { proxy } = getCurrentInstance();
+
+// 执行面板
+const showDebugRunDialog = ref(false);
+const roleChatPanelRef = ref(null)
+const streamLoading = ref(null)
+const promptText = ref('')
 
 const route = useRoute();
+const sceneId = ref(route.query.sceneId)
+const channelStreamId = ref(route.query.channelStreamId)
 const articleId = ref(route.query.articleId)
 const contentEditor = ref(null);
+
+const currentSceneInfo = ref({
+  sceneName: '通用智能体服务',
+});
 
 const articleData = ref({
   title: '默认标题',
@@ -68,98 +95,18 @@ const articleData = ref({
 });
 
 const articleConfig = ref({
-    "styles": [
-        {
-            "key": "默认",
-            "name": "默认"
-        },
-        {
-            "key": "生动活泼",
-            "name": "生动活泼"
-        },
-        {
-            "key": "情感真挚",
-            "name": "情感真挚"
-        },
-        {
-            "key": "规范写作",
-            "name": "规范写作"
-        },
-        {
-            "key": "想象力丰富",
-            "name": "想象力丰富"
-        },
-        {
-            "key": "观察描写",
-            "name": "观察描写"
-        },
-        {
-            "key": "童趣表达",
-            "name": "童趣表达"
-        }
-    ],
-    "hooks": [
-        {
-            "key": "默认",
-            "name": "默认"
-        },
-        {
-            "key": "记叙文",
-            "name": "记叙文"
-        },
-        {
-            "key": "日记",
-            "name": "日记"
-        },
-        {
-            "key": "议论文",
-            "name": "议论文"
-        },
-        {
-            "key": "说明文",
-            "name": "说明文"
-        },
-        {
-            "key": "议论文",
-            "name": "议论文"
-        },
-        {
-            "key": "散文",
-            "name": "散文"
-        },
-        {
-            "key": "考试作文",
-            "name": "考试作文"
-        },
-        {
-            "key": "比赛投稿",
-            "name": "比赛投稿"
-        },
-        {
-            "key": "读后感",
-            "name": "读后感"
-        }
-    ],
-    "time": [
-        {
-            "key": "300字",
-            "name": "300字"
-        },
-        {
-            "key": "500字",
-            "name": "500字"
-        },
-        {
-            "key": "800字",
-            "name": "800字"
-        },
-        {
-            "key": "1000字",
-            "name": "1000字"
-        }
-    ]
+  "styles": [],
+  "hooks": [],
+  "time": []
 });
 
+// 添加防抖标志
+const isSaving = ref(false);
+
+// 原有响应式变量保持不变
+const previewDialogRef = ref(null);
+const previewContent = ref('');
+const currentPromptText = ref('');
 
 // 定义用于展示的响应式变量
 const currentStyle = ref('默认');
@@ -181,80 +128,212 @@ const handleConfigChange = (config) => {
 
   // 可在此处触发后续逻辑（如生成文章、保存配置等）
   console.log('最新配置：', config);
+  generaterText(config.promptText);
 };
 
 // 处理内容变化
 const handleContentChange = (content) => {
   console.log('内容已更新:', content);
   // 可以在这里添加自动保存逻辑
-  articleData.value.content = content ; 
+  articleData.value.content = content;
 };
 
-// 保存文章
+// 修改保存方法，返回Promise
 const handleSaveArticle = () => {
-  // 发起保存请求
-  updateArticle(articleData.value).then(res => {
-    console.log('保存成功:', res);
-    ElMessage.success('保存成功');
+  return new Promise((resolve, reject) => {
+    // 发起保存请求
+    updateArticle(articleData.value).then(res => {
+      console.log('保存成功:', res);
+      ElMessage.success('保存成功');
+      resolve();
+    }).catch(err => {
+      console.error('保存失败:', err);
+      reject(err);
+    });
+  });
+};
+
+// 导出文章
+const handleExportArticle = () => {
+
+  // 如果长度过长，则截取前10个字符
+  const downloadTitle = articleData.value.title.length > 10 ? articleData.value.title.substring(0, 10) : articleData.value.title;
+
+  proxy.download('/api/infra/smart/assistant/scene/articleGenerate/export/' + articleId.value, {
+  }, `${downloadTitle}_${new Date().getTime()}.docx`)
+}
+
+// 重构后的 generaterText 方法
+const generaterText = async (promptText) => {
+  currentPromptText.value = promptText;
+  
+  // 打开流容器
+  showDebugRunDialog.value = true;
+  await nextTick(() => {
+    roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.articleWriterEngineer);
+  });
+
+  // 开始生成
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    background: 'rgba(255, 255, 255, 0.5)',
+    customClass: 'custom-loading'
+  });
+  
+  try {
+    const articleData = {
+      sceneId: currentSceneInfo.value.id,
+      articleId: articleId.value,
+      channelStreamId: channelStreamId.value,
+      promptText: promptText
+    };
+
+    const res = await reChatPromptContent(articleData);
+    previewContent.value = res.data;
+    
+    // 关闭加载状态
+    streamLoading.value.close();
+    showDebugRunDialog.value = false;
+    
+    // 显示预览 - 现在使用正确的引用和方法
+    previewDialogRef.value?.open();
+    
+  } catch (err) {
+    console.error('内容处理失败:', err);
+    ElMessage.error('内容生成失败');
+  } finally {
+    if (streamLoading.value) {
+      streamLoading.value.close();
+    }
+    showDebugRunDialog.value = false;
+  }
+};
+
+// 预览确认回调
+const handlePreviewConfirm = (content) => {
+  handleContentChange(content);
+  ElMessage.success('内容已替换');
+};
+
+// 预览重新生成回调
+const handlePreviewRegenerate = async () => {
+  ElMessage.info('重新生成内容');
+  await generaterText(currentPromptText.value);
+};
+
+
+const handleGetScene = () => {
+  getScene(sceneId.value).then(res => {
+    currentSceneInfo.value = res.data;
   })
 }
 
+// 键盘事件处理（添加防抖逻辑）
+const handleKeyDown = (e) => {
+  // 检测是否按下 Ctrl+S (Windows/Linux) 或 Cmd+S (Mac)
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault(); // 阻止浏览器默认的保存对话框
+    
+    // 如果正在保存中，则不再重复执行
+    if (isSaving.value) return;
+    
+    // 设置保存状态为true
+    isSaving.value = true;
+    
+    // 调用保存方法
+    handleSaveArticle().finally(() => {
+      // 保存完成后重置状态
+      isSaving.value = false;
+    });
+  }
+};
+
 onMounted(() => {
+  // 组件挂载时添加键盘事件监听
+  window.addEventListener('keydown', handleKeyDown);
+
+  handleGetScene();
   // 初始化时，根据文章ID获取文章内容
   getArticleById(articleId.value).then(res => {
     console.log('res = ' + res);
-    articleData.value = res.data ;
+    articleData.value = res.data;
   }).catch(err => {
     ElMessage.error('获取文章失败:', err);
   })
+});
+
+onBeforeUnmount(() => {
+  // 组件卸载时移除键盘事件监听，防止内存泄漏
+  window.removeEventListener('keydown', handleKeyDown);
 });
 
 </script>
 
 <style lang="scss" scoped>
 .article-edit-container {
-    .article-edit-aside {
-        padding: 0px;
-        border-right: 1px solid #f2f3f7;
-        background: #fff;
-        margin-bottom: 0px;
+  .article-edit-aside {
+    padding: 0px;
+    border-right: 1px solid #f2f3f7;
+    background: #fff;
+    margin-bottom: 0px;
+  }
+
+  .article-edit-header {
+    text-align: right;
+    margin-right: 20px;
+    margin-top: 20px;
+  }
+
+  .article-edit-right-aside {
+    padding: 20px;
+    margin-bottom: 0px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 40px);
+    border-left: 1px solid #f2f3f7;
+    background-color: #fff;
+  }
+
+  .article-edit-main {
+    padding: 0px !important;
+  }
+
+  .article-edit-content {
+    width: calc(100% - 30px);
+    margin: auto;
+    margin-top: 20px;
+    height: calc(100vh - 70px);
+    margin-bottom: 10px;
+
+    .article-edit-title {
+      margin: 10px 0px;
     }
 
-    .article-edit-header {
-        margin: 10px;
-        text-align: right;
-        position: absolute;
-        right: 310px;
+  }
+
+}
+
+.markdown-preview-dialog {
+  .el-dialog__body {
+    padding: 0;
+  }
+  
+  .markdown-body {
+    pre {
+      background-color: #f6f8fa;
+      border-radius: 6px;
+      padding: 16px;
     }
-
-    .article-edit-right-aside {
-        padding: 20px;
-        margin-bottom: 0px;
-        display: flex;
-        flex-direction: column;
-        height: calc(100vh - 40px);
-        border-left: 1px solid #f2f3f7;
-        background-color: #fafafa;
+    
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      
+      th, td {
+        padding: 6px 13px;
+        border: 1px solid #dfe2e5;
+      }
     }
-
-    .article-edit-main {
-        padding: 0px !important;
-    }
-
-    .article-edit-content {
-        width: 980px;
-        margin: auto;
-        margin-top: 20px;
-        height: calc(100vh - 70px);
-        margin-bottom: 10px;
-
-        .article-edit-title {
-            margin: 10px 0px;
-            font-size: 17px;
-            font-weight: bold;
-        }
-
-    }
-
+  }
 }
 </style>
