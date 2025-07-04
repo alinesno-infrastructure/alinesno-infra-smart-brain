@@ -4,6 +4,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
 import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
 
 import java.util.List;
