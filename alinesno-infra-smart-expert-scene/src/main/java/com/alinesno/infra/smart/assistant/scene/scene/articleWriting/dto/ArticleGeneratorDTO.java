@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto;
 
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import jakarta.validation.Valid;
@@ -27,9 +28,8 @@ public class ArticleGeneratorDTO extends BaseDto {
     @NotBlank(message = "难度等级不能为空")
     private String difficultyLevel;
 
-    @Valid
-    @NotNull(message = "PPT配置不能为空")
-    private ArticleConfigDto pptConfig;
+    @NotNull(message = "文章配置不能为空")
+    private JSONObject articleConfig;
 
     @Valid
     private List<Long> attachments;
