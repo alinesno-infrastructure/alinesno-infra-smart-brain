@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="ppt-pager-aside">
+      <el-aside width="80px" class="ppt-pager-aside">
         <FunctionList />
       </el-aside>
 
