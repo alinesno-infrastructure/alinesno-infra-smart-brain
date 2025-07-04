@@ -40,4 +40,24 @@ public class GeneralAgentSceneEntity extends InfraBaseEntity {
     @Column(name = "gen_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "生成状态(1生成菜单|0未生成)")
     private Integer genStatus = 0;
 
+    @TableField
+    @Column(name = "channel_stream_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "频道流ID")
+    private String channelStreamId ;
+
+    @TableField
+    @Column(name = "outline", type = MySqlTypeConstant.LONGTEXT , comment = "任务执行大纲")
+    private String outline ;
+
+    @TableField
+    @Column(name = "chapter_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "章节生成状态(0未生成|1已生成|2生成中|9生成失败)")
+    private String chapterStatus ;
+
+    @TableField
+    @Column(name = "current_chapter_id", type = MySqlTypeConstant.BIGINT, length = 32 , comment = "当前章节ID")
+    private Long currentChapterId ;
+
+    @TableField
+    @Column(name = "current_chapter_label", type = MySqlTypeConstant.TEXT, comment = "当前章节标签")
+    private String currentChapterLabel ;
+
 }
