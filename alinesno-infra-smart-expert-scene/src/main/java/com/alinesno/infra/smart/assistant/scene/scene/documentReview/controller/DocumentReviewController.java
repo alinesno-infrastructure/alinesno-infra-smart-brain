@@ -23,6 +23,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAudi
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewRulesService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.ParserDocumentTool;
@@ -30,7 +31,7 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
-import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
@@ -56,6 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -75,6 +77,9 @@ public class DocumentReviewController extends SuperController {
 
     @Autowired
     private IDocReviewSceneService docReviewSceneService ;
+
+    @Autowired
+    private IDocReviewTaskService docReviewTaskService ;
 
     @Autowired
     private IIndustryRoleService industryRoleService;
@@ -103,16 +108,16 @@ public class DocumentReviewController extends SuperController {
      * @return
      */
     @GetMapping("/getScene")
-    public AjaxResult getScene(@RequestParam("id") long id) {
+    public AjaxResult getScene(@RequestParam("id") Long id , Long taskId) {
 
-        Assert.isTrue(id > 0, "参数不能为空");
+        Assert.notNull(id , "参数不能为空");
 
         SceneEntity entity = service.getById(id);
         if (entity == null) {
             return AjaxResult.error("未找到对应的场景实体");
         }
 
-        return AjaxResult.success("操作成功.", docReviewSceneService.getDocReviewSceneInfoDto(id, entity));
+        return AjaxResult.success("操作成功.", docReviewSceneService.getDocReviewSceneInfoDto(id, taskId == null ? 0 : taskId , entity));
     }
 
     /**
@@ -121,14 +126,14 @@ public class DocumentReviewController extends SuperController {
      * @return
      */
     @GetMapping("/getSceneResultList")
-    public AjaxResult getSceneResultList(@RequestParam("id") long id) {
+    public AjaxResult getSceneResultList(@RequestParam("id") long id , long taskId) {
 
         SceneEntity entity = service.getById(id);
         if (entity == null) {
             return AjaxResult.error("未找到对应的场景实体");
         }
 
-        DocReviewSceneInfoDto docSceneInfoDto = docReviewSceneService.getDocReviewSceneInfoDtoWithResultCount(id, entity);
+        DocReviewSceneInfoDto docSceneInfoDto = docReviewSceneService.getDocReviewSceneInfoDtoWithResultCount(id, taskId , entity);
         return AjaxResult.success("操作成功." , docSceneInfoDto)  ;
     }
 
@@ -157,9 +162,9 @@ public class DocumentReviewController extends SuperController {
      */
     @SneakyThrows
     @GetMapping("/downloadMarkDocx")
-    public AjaxResult downloadMarkDocx(@RequestParam long sceneId , PermissionQuery query) {
+    public AjaxResult downloadMarkDocx(@RequestParam long sceneId , long taskId , PermissionQuery query) {
 
-        DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId, query);
+        DocReviewTaskEntity entity = docReviewTaskService.getById(taskId);
         String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
 
         String fileName = entity.getDocumentName();
@@ -178,31 +183,20 @@ public class DocumentReviewController extends SuperController {
         File docFile = File.createTempFile("temp-docx", ".docx");
         Files.write(docFile.toPath(), fileBytes);
 
-        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getBySceneIdAndDocReviewSceneId(sceneId, entity.getId()) ;
+        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getBySceneIdAndDocReviewSceneId(sceneId, sceneId , taskId) ;
         Assert.isTrue(CollectionUtils.isNotEmpty(auditResultList), "未找到对应的审核结果");
 
         List<Revision> combinedJson = new ArrayList<>();
 
-        for (DocReviewAuditResultEntity auditResult : auditResultList) {
-            Revision revision = new Revision(auditResult.getOriginalContent(), auditResult.getSuggestedContent() , auditResult.getModificationReason());
-            combinedJson.add(revision);
+        if(CollectionUtils.isNotEmpty(auditResultList)){
+            for (DocReviewAuditResultEntity auditResult : auditResultList) {
+                Revision revision = new Revision(auditResult.getOriginalContent(), auditResult.getSuggestedContent() , auditResult.getModificationReason());
+                combinedJson.add(revision);
+            }
         }
 
         String tempFilePath = AddCommentToCharacters.addCommentToCharacters(docFile.getAbsolutePath(), combinedJson) ;
         assert tempFilePath != null;
-
-//        // 读取 PDF 文件内容
-//        byte[] pdfBytes = FileUtils.readFileToByteArray(new File(tempFilePath)) ;
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        // 设置正确的 MIME 类型
-//        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-//        headers.set("Content-Disposition", "inline; filename=批注版_"+entity.getDocumentName());
-//
-//        ByteArrayResource resource = new ByteArrayResource(pdfBytes);
-//        return ResponseEntity.ok()
-//                .headers(headers)
-//                .body(resource);
 
         String storageId = storageConsumer.upload(new File(tempFilePath)).getData()  ;
 
@@ -212,9 +206,10 @@ public class DocumentReviewController extends SuperController {
 
     @DataPermissionQuery
     @GetMapping("/getPreviewDocx")
-    public ResponseEntity<Resource> getPreviewDocx(@RequestParam long sceneId , PermissionQuery query) {
+    public ResponseEntity<Resource> getPreviewDocx(@RequestParam Long taskId, PermissionQuery query) {
+        Assert.notNull(taskId, "任务ID不能为空");
 
-        DocReviewSceneEntity entity = docReviewSceneService.getBySceneId(sceneId, query);
+        DocReviewTaskEntity entity = docReviewTaskService.getById(taskId);
         String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
 
         String fileName = entity.getDocumentName();
@@ -294,6 +289,7 @@ public class DocumentReviewController extends SuperController {
      * 文件上传
      * @return
      */
+    @DataPermissionQuery
     @SneakyThrows
     @PostMapping("/importData")
     public AjaxResult importData(@RequestPart("file") MultipartFile file, long sceneId , PermissionQuery query){
@@ -313,29 +309,32 @@ public class DocumentReviewController extends SuperController {
 
         R<String> r = storageConsumer.upload(targetFile) ;
 
-        DocReviewSceneEntity docReviewSceneEntity = docReviewSceneService.getBySceneId(sceneId, query) ;
-
         // 获取到文档的基础内容
         String content = analysisTool.analysisDocumentBaseContent(targetFile) ;
 
-        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-        taskInfo.setRoleId(docReviewSceneEntity.getAnalysisAgentEngineer());
-        taskInfo.setChannelId(sceneId);
-        taskInfo.setSceneId(sceneId);
-        taskInfo.setText(content);
+        // 保存到任务清单里面
+        DocReviewTaskEntity taskEntity = new DocReviewTaskEntity() ;
 
-        // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = new WorkflowExecutionDto() ;
+        BeanUtil.copyProperties(query , taskEntity);
 
-        // 更新Entity数据
-        docReviewSceneEntity.setContractOverview(genContent.getGenContent());
-        docReviewSceneEntity.setDocumentId(r.getData());
-        docReviewSceneEntity.setDocumentName(fileName);
+        taskEntity.setTaskName(fileName);
+        taskEntity.setTaskDescription(content);
+        taskEntity.setSceneId(sceneId);
+        taskEntity.setDocumentReviewSceneId(sceneId);
+        taskEntity.setTaskStartTime(new Date());
+        taskEntity.setGenStatus(0);
 
-        docReviewSceneService.update(docReviewSceneEntity);
+        String attachments = r.getData() ;
+        taskEntity.setDocumentId(attachments); // 审核附件ID号，以逗号进行分隔
+        taskEntity.setDocumentName(fileName);
+
+        docReviewTaskService.save(taskEntity);
 
         log.debug("ajaxResult= {}" , r);
-        return AjaxResult.success("上传成功." , r.getData()) ;
+        AjaxResult result = AjaxResult.success("上传成功." , r.getData()) ;
+        result.put("taskId" , taskEntity.getId());
+
+        return result ;
     }
 
     /**
@@ -345,8 +344,8 @@ public class DocumentReviewController extends SuperController {
     @PostMapping("/genAuditResult")
     public AjaxResult genAuditResult(@RequestBody @Validated GenAuditResultDto dto , PermissionQuery query){
 
-        DocReviewSceneEntity sceneEntity = docReviewSceneService.getBySceneId(dto.getSceneId() , query) ;
-        List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(sceneEntity) ;
+        DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId()) ;
+        List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(taskEntity) ;
 
         List<DocReviewAuditResultEntity> auditResultList = new ArrayList<>() ;
 
@@ -358,10 +357,10 @@ public class DocumentReviewController extends SuperController {
         int count = 0 ;
 
         // 如果是aigen处理的审核
-        if(sceneEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){
+        if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){
 
             // 解析获取得到审核内容
-            List<DocReviewRulesEntity> rules = JSONArray.parseArray(sceneEntity.getReviewList(), DocReviewRulesEntity.class) ;
+            List<DocReviewRulesEntity> rules = JSONArray.parseArray(taskEntity.getReviewList(), DocReviewRulesEntity.class) ;
 
             for(DocumentInfoBean bean : contentList){
                 String contentPromptContent = bean.getContent() ;
@@ -372,7 +371,7 @@ public class DocumentReviewController extends SuperController {
                     generateTask(contentPromptContent , dto, query , rule , auditResultList);
                 }
             }
-        }else if(sceneEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())){
+        }else if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())){
             for(DocumentInfoBean bean : contentList){
                 String contentPromptContent = bean.getContent() ;
                 DocReviewRulesEntity rule = ruleService.getById(dto.getRuleId()) ;
@@ -393,7 +392,8 @@ public class DocumentReviewController extends SuperController {
                 entity.setAuditId(dto.getRuleId());
                 entity.setRuleId(dto.getRuleId());
                 entity.setSceneId(dto.getSceneId());
-                entity.setDocReviewSceneId(sceneEntity.getId());
+                entity.setDocReviewSceneId(dto.getSceneId());
+                entity.setTaskId(taskEntity.getId());
 
                 BeanUtil.copyProperties(query , entity , options);
             }
