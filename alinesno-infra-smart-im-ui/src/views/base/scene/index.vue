@@ -3,23 +3,28 @@
     <el-scrollbar style="height:calc(100vh - 60px)">
         <div class="tpl-app" style="display: flex;margin-left: 0px;">
 
-            <SideTypePanel />
+            <SideTypePanel ref="sideTypePanelRef" @selectType="selectType" />
 
-            <div style="width: calc(100% - 220px);padding: 10px;margin: -10px;margin-top: 0px;" v-loading="sceneLoading">
+            <div style="width: calc(100% - 220px); padding: 10px;margin: -10px;margin-top: 0px;margin-left: 230px; " v-loading="sceneLoading">
 
                 <div class="search-container-panel">
                     <el-row>
                         <el-col :span="24">
                             <div class="feature-header-xqbyQk feature-team-box">
                                 <div style="gap: 12px;">
-                                    <h1
-                                        style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
+                                    <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
                                         场景市场
                                     </h1>
                                 </div>
                                 <div class="search-container-weDuEn">
-                                    <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                                        :suffix-icon="Search" />
+                                    <el-input v-model="queryParams.sceneName" style="width: 400px" size="large" placeholder="搜索场景">
+                                        <template #suffix>
+                                            <el-icon>
+                                                <Search />
+                                            </el-icon>
+                                        </template>
+                                    </el-input>
+                                    <el-button type="primary" size="large" text bg icon="Search" @click="handleSearch">搜索</el-button>
                                 </div>
                             </div>
                         </el-col>
@@ -27,6 +32,7 @@
 
                 </div>
 
+                <!--
                 <div class="banner-container-panel" v-if="recommendRole" style="margin-left:10px;">
                     <el-row>
                         <el-col :span="18">
@@ -46,7 +52,7 @@
                         <el-col :span="6">
 
                         <div class="right-container">
-                            <img src="http://data.linesno.com/banner/agent_bg.png" class="bot-banner-bg" alt="Banner Background Image">
+                            <img :src="agentBg" class="bot-banner-bg" alt="Banner Background Image">
 
                             <div class="banner-info">
                             <span class="avatar">
@@ -66,6 +72,7 @@
                         </el-col>
                     </el-row>
                 </div>
+                -->
 
                 <div class="header">
                     <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
@@ -85,7 +92,7 @@
                                         </div>
                                         <div class="scene-author-info">
                                             <span class="scene-name">
-                                                <i class="fa-solid fa-ribbon"></i>
+                                                <i class="fa-solid fa-user-shield"></i>
                                                 {{ item.orgName }}
                                             </span>
                                         </div>
@@ -102,12 +109,9 @@
                                     </el-button>
                                         <div class="scene-footer">
                                             <div class="scene-price">
-                                                <el-tag v-if="item.sceneScope == 'private'" type="info"><i
-                                                        class="fa-solid fa-lock" /> 私有</el-tag>
-                                                <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
-                                                        class="fa-solid fa-globe" /> 公开</el-tag>
-                                                <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
-                                                    组织</el-tag>
+                                                <el-tag v-if="item.sceneScope == 'private'" type="danger"><i class="fa-solid fa-lock" /> 私有</el-tag>
+                                                <el-tag v-else-if="item.sceneScope == 'public'" type="warning"><i class="fa-solid fa-globe" /> 公开</el-tag>
+                                                <el-tag v-else type="primary"><i class="fa-solid fa-truck-plane" />组织</el-tag>
                                             </div>
                                             <div class="scene-tag">
                                                 <div class="scene-stats">
@@ -147,6 +151,7 @@ import SideTypePanel from './sideTypePanel'
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 import SnowflakeId from "snowflake-id";
+import AgentBgPng from '@/assets/banner/agent_bg.png';
 
 const snowflake = new SnowflakeId();
 
@@ -155,6 +160,15 @@ const router = useRouter();
 const recommendRole = ref(null);
 const sceneLoading = ref(true)
 const sceneLists = ref([])
+const agentBg = ref(AgentBgPng)
+
+const sideTypePanelRef = ref(null)
+const queryParams = ref({
+    pageSize: 100,
+    pageNum: 0 ,
+    sceneName: undefined,
+    sceneType: undefined
+})
 
 /** 进入长文本编辑界面 */
 function enterScreen(item) {
@@ -175,9 +189,21 @@ function handleRoleChat() {
   })
 }
 
+// 选择场景类型
+function selectType(type){
+    console.log('type = ' + type)
+    queryParams.value.sceneType = type
+    handleScreenList()
+}
+
+// 点击搜索按钮
+function handleSearch() {
+    handleScreenList()
+}
+
 /** 获取场景列表 */
 function handleScreenList() {
-    sceneListByPage().then(res => {
+    sceneListByPage(queryParams.value).then(res => {
         sceneLists.value = res.data
         sceneLoading.value = false
     })
@@ -193,6 +219,14 @@ function handleGetRecommendRole() {
 onMounted(() => {
     handleGetRecommendRole();
     handleScreenList();
+
+    // 监听Enter，然后调用handleSearch
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            handleSearch();
+        }
+    });
+
 })
 
 </script>
@@ -351,6 +385,12 @@ onMounted(() => {
 
     }
 }
+
+.search-container-weDuEn {
+    display: flex;
+    gap: 10px;
+}
+
 .scene-footer {
     margin-top: 4px;
     display: flex;
@@ -469,5 +509,6 @@ onMounted(() => {
       }
     }
   }
+
 }
 </style>
