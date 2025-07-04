@@ -12,7 +12,27 @@ var managerUrl = {
   getCurrentWorkplace: prefix + "getCurrentWorkplace",
   getWorkplaceItem: prefix + "getWorkplaceItem",
   useWorkplace: prefix + "useWorkplace",
-  customWorkplace: prefix + "customWorkplace"
+  customWorkplace: prefix + "customWorkplace",
+  setHomePage: prefix + "setHomePage",
+  getHomePage: prefix + "getHomePage"
+}
+
+// 获取用户默认主页
+export function getHomePage() {
+  return request({
+    url: managerUrl.getHomePage,
+    method: 'get'
+  })
+}
+
+
+// 设置主页
+export function setHomePage(data) {
+  return request({
+    url: managerUrl.setHomePage,
+    method: 'post',
+    data: data 
+  })
 }
 
 // 自定义工作台
