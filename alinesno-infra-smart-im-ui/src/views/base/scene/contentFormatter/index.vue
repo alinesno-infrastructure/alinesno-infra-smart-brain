@@ -4,7 +4,7 @@
 
         <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-            <el-aside width="280px" class="exam-pager-aside">
+            <el-aside width="80px" class="exam-pager-aside">
                 <FunctionList />
             </el-aside>
 
