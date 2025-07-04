@@ -33,7 +33,12 @@ public class PdfReaderServiceImpl  extends BaseReaderServiceImpl {
     @Override
     public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
 
-        File file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        File file ;
+        if(attachmentDto.getFile() != null){
+            file = attachmentDto.getFile() ;
+        }else{
+            file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        }
 
         FileInputStream stream = new FileInputStream(file);
         PdfBoxDocumentParser parser = new PdfBoxDocumentParser();
