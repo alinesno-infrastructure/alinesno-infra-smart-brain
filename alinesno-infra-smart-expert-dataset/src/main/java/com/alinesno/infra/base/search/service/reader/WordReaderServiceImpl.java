@@ -29,7 +29,12 @@ public class WordReaderServiceImpl  extends BaseReaderServiceImpl {
     @Override
     public String readAttachment(FileAttachmentDto attachmentDto, UploadData uploadData) {
         // 解析word文档的目录结构
-        File file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        File file ;
+        if(attachmentDto.getFile() != null){
+           file = attachmentDto.getFile() ;
+        }else{
+            file = getFileById(attachmentDto.getFileId(), attachmentDto.getFileType());
+        }
 
         //加载包含目录的Word文档
         Document doc = new Document();
