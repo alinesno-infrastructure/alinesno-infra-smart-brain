@@ -17,10 +17,14 @@
               <el-input v-model="modelName" placeholder="请输入大模型名称" clearable
                 style="width: 240px" @keyup.enter="handleQuery" />
             </el-form-item>
+
+            <!-- 
             <el-form-item label="模型类型" prop="modelType">
               <el-input v-model="providerId" placeholder="请输入所属提供商名称" clearable
                 style="width: 240px" @keyup.enter="handleQuery" />
-            </el-form-item>
+            </el-form-item> 
+            -->
+
             <el-form-item>
               <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
               <el-button icon="Refresh" @click="resetQuery">重置</el-button>
@@ -42,7 +46,11 @@
             <div class="aip-template-type" style="padding:0px" >
                <span class="template-type-title" >类型</span>
                <div class="template-type-list" >
-                  <span v-for="(item , index) in modelTypeOptions" :key="index" class="template-type-item">
+                  <span v-for="(item , index) in modelTypeOptions" 
+                    :key="index" 
+                    class="template-type-item" 
+                    :class="queryParams.modelType === item.code ? 'active' : ''"
+                    @click="handleTypeChange(item)">
                      {{ item.displayName }}
                   </span>
                </div>
@@ -67,7 +75,7 @@
             <div class="vc-div div_l14lqa1i">
               <div class="vc-div div_l14lqa1c tpl-item-title">
                 <div class="vc-text text_l14lqa1a" style="display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; -webkit-line-clamp: 1;font-weight: bold">
-                  <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
+                  <img :src="getLlmIconPath(item.providerCode)" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
                    {{ item.modelName }}
                 </div>
                 <div>
@@ -151,7 +159,7 @@
               <el-radio-group v-model="form.providerCode">
                 <el-radio v-for="item in providerOptions" size="large" :value="item.code" :label="item.code" :key="item.code" @change="handleSelectLLMProvider(item)">
                   <!-- 添加图标 -->
-                  <img :src="'http://data.linesno.com/icons/llm/' + item.code + '.png'" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
+                  <img :src="getLlmIconPath(item.code)" alt="图标" style="width: 30px; height: 30px; border-radius: 50%;">
 
                   {{ item.displayName }}
                 </el-radio>
@@ -418,6 +426,7 @@ import { ElMessage } from "element-plus";
 import speakingIcon from '@/assets/icons/speaking.gif';
 import Recorder from 'js-audio-recorder';
 
+import { getLlmIconPath } from '@/utils/llmIcons';
 import { openSseConnect } from "@/api/smart/assistant/chatsse";
 
 import SnowflakeId from "snowflake-id";
@@ -939,6 +948,12 @@ const sendAudioFileToBackend = (audioFormData) => {
   }) ;
   // emits("sendAudioToBackend" , response);
 };
+
+// 模型类型改变
+const handleTypeChange = (item) => {
+  queryParams.value.modelType = item.code ;
+  getList() ;
+}
 
 onMounted(() => {
   getList();
