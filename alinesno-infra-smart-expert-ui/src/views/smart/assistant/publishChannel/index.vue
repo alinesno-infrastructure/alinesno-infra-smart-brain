@@ -143,11 +143,15 @@
                     </el-radio-group>
                 </el-form-item> 
 
-                <el-form-item v-if="currentScreenAgent.needDataModel" label="数据处理模型" props="lllmModelId">
+                <el-form-item v-if="currentScreenAgent.needDataModel" label="数据处理模型" props="llmModelId">
                     <LLMSelector :modelType="'large_language_model'" v-model="configForm.llmModelId" />
                 </el-form-item>
-                <!-- 渠道为场景时，需要选择分类_end -->
 
+                <el-form-item v-if="currentScreenAgent.needImgModel" label="图片处理模型" props="imageModelId">
+                    <LLMSelector :modelType="'image_generation'" v-model="configForm.imageModelId" />
+                </el-form-item>
+
+                <!-- 渠道为场景时，需要选择分类_end -->
 
                 <el-form-item label="过期时间">
                     <el-row style="width:100%">
@@ -337,8 +341,11 @@ const formRules = {
     authPassword: [
         { required: false, message: '身份验证密码不能为空', trigger: 'blur' }
     ],
-    lllmModelId: [
+    llmModelId: [
         { required: true, message: '场景模型不能为空', trigger: 'blur' }
+    ],
+    imageModelId: [
+        { required: true, message: '场景图片模型不能为空', trigger: 'blur' }
     ],
     sceneId: [
         { required: true, message: '场景ID不能为空', trigger: 'blur' }
