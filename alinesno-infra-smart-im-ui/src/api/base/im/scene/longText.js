@@ -3,6 +3,7 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 
 // 接口配置项
 var prefix = '/api/infra/smart/assistant/scene/longText/' ;
+var templatePrefix = '/api/infra/smart/assistant/scene/longTextTemplate/' ; 
 
 var managerUrl = {
   // 大文本
@@ -23,6 +24,43 @@ var managerUrl = {
   initAgents: prefix + "initAgents",
   getPreviewDocx: prefix +"getPreviewDocx",
   getPreviewUrl: prefix + "getPreviewUrl",
+  getChapterById: prefix + "getChapterById",
+
+  getAllLongTextTemplateType: templatePrefix +"getAllLongTextTemplate",
+  getTemplateByType: templatePrefix +"getTemplateByType",
+  getTemplateDetail: templatePrefix +"getTemplateDetail",
+}
+
+// 获取模板详情
+export function getTemplateDetail(templateId) {
+  return request({
+    url: managerUrl.getTemplateDetail + '?templateId=' + parseStrEmpty(templateId),
+    method: 'get'
+  })
+}
+
+// 获取模型类型
+ export function getAllLongTextTemplateType() {
+  return request({
+    url: managerUrl.getAllLongTextTemplateType , 
+    method: 'get'
+  })
+}
+
+// 获取getTemplateByType
+ export function getTemplateByType(typeCode) {
+  return request({
+    url: managerUrl.getTemplateByType + '?typeCode=' + parseStrEmpty(typeCode),
+    method: 'get'
+  })
+}
+
+// 通过id获取章节
+export function getChapterById(id) {
+  return request({
+    url: managerUrl.getChapterById + '?id=' + parseStrEmpty(id),
+    method: 'get'
+  })
 }
 
 // 获取预览文档地址
@@ -61,9 +99,9 @@ export function updateChapterPromptContent(data) {
 }
 
 // 分配Agent角色到每个章节
-export function dispatchAgent(sceneId){
+export function dispatchAgent(sceneId , taskId){
   return request({
-    url: managerUrl.dispatchAgent + '?sceneId=' + parseStrEmpty(sceneId) , 
+    url: managerUrl.dispatchAgent + '?sceneId=' + parseStrEmpty(sceneId) + "&taskId=" + parseStrEmpty(taskId) , 
     method: 'get'
   })
 }
@@ -79,9 +117,9 @@ export function initAgents(data){
 
 
 // 查询场景详细
-export function getScene(id) {
+export function getScene(id , taskId) {
   return request({
-    url: managerUrl.getScene + '?id=' + parseStrEmpty(id),
+    url: managerUrl.getScene + '?id=' + parseStrEmpty(id) + (taskId?'&taskId=' + parseStrEmpty(taskId):''),
     method: 'get'
   })
 }
@@ -122,9 +160,9 @@ export function updateLeaderRole(data) {
 }
 
 // 上传文件到OSS
-export function uploadOss(sceneId) {
+export function uploadOss(sceneId , taskId) {
   return request({
-    url: managerUrl.uploadOss + '?sceneId=' + parseStrEmpty(sceneId),
+    url: managerUrl.uploadOss + '?sceneId=' + parseStrEmpty(sceneId) + '&taskId=' + parseStrEmpty(taskId),
     method: 'get',
   })
 }
@@ -203,9 +241,9 @@ export function chatRole(data) {
 }
 
 // 保存章节
-export function saveChapter(data , sceneId) {
+export function saveChapter(data , sceneId , taskId) {
   return request({
-    url: managerUrl.saveChapter + "?sceneId=" + parseStrEmpty(sceneId) ,
+    url: managerUrl.saveChapter + "?sceneId=" + parseStrEmpty(sceneId) + "&taskId=" + parseStrEmpty(taskId) ,
     method: 'post',
     data: data
   })
