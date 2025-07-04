@@ -80,9 +80,11 @@ import {
     getPreviewUrl
 } from '@/api/base/im/scene/documentReviewSceneInfo';
 
+const { proxy } = getCurrentInstance();
 const route = useRoute();
 const currentSceneInfo = ref(null);
 const sceneId = ref(route.query.sceneId)
+const taskId = ref(route.query.taskId)
 
 import RuleCheckResultPanel from './ruleCheckResultPanel.vue'
 
@@ -149,7 +151,7 @@ const handleCheckItemClick = (item) => {
 }
 
 const handleGetScene = () => {
-    getSceneResultList(sceneId.value).then(res => {
+    getSceneResultList(sceneId.value , taskId.value).then(res => {
         currentSceneInfo.value = res.data;
         checkResultList.value = currentSceneInfo.value.reviewListDtos ;
 
@@ -167,16 +169,21 @@ const handleGenDocxReport = () => {
     showPdfDialog.value = true;
     loadingDocument.value = true;
 
-    genDocxReport(sceneId.value).then(res => {
+    genDocxReport(sceneId.value , taskId.value).then(res => {
         // window.open(res.data)
         const storegeId = res.data ;
         currentStoreId.value = storegeId ;
 
         nextTick(async () => {
-            const response = await getPreviewReportDocx(storegeId);
-            console.log('response.data:' + response); // 打印数据内容
-            iframeUrl.value = window.URL.createObjectURL(response);
-            loadingDocument.value = false;
+            try{
+                const response = await getPreviewReportDocx(storegeId , taskId.value);
+                console.log('response.data:' + response); // 打印数据内容
+                iframeUrl.value = window.URL.createObjectURL(response);
+                loadingDocument.value = false;
+            }catch (error) {
+                console.error('Error:', error);
+                loadingDocument.value = false;
+            }
         })
     })
 }
@@ -190,10 +197,18 @@ const downloadWordDocument = () => {
 // 导出标注文档
 const handleGenMarkDocxReport = () => {
     getMarkLoading.value = true;
-    downloadMarkDocx(sceneId.value).then(res => {
-        window.open(res.data);
+    try{
+        downloadMarkDocx(sceneId.value , taskId.value).then(res => {
+            proxy.download(res.data , {} , `${currentSceneInfo.value.documentName}_${new Date().getTime()}.docx`)
+            getMarkLoading.value = false;
+        }).catch(error => {
+            getMarkLoading.value = false;
+        })
+    } catch (error) {
+        console.error('Error:', error);
+        ElMessage.error('下载失败');
         getMarkLoading.value = false;
-    })
+    }
 }
 
 onMounted(() => {
