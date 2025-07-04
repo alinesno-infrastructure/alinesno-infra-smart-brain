@@ -29,15 +29,19 @@ public class DocReviewAuditResultEntity extends InfraBaseEntity {
     private Long sceneId;
 
     @TableField
+    @Column(name = "task_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "任务ID")
+    private Long taskId ;
+
+    @TableField
     @Column(name = "doc_review_scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "文档审核场景ID")
     private Long docReviewSceneId ;
 
     @TableField
-    @Column(name = "audit_result", type = MySqlTypeConstant.VARCHAR, length = 255, comment = "审核结果")
+    @Column(name = "audit_result", type = MySqlTypeConstant.VARCHAR, length = 1024, comment = "审核结果")
     private String auditResult;
 
     @TableField
-    @Column(name = "audit_opinion", type = MySqlTypeConstant.VARCHAR, length = 255, comment = "审核意见")
+    @Column(name = "audit_opinion", type = MySqlTypeConstant.VARCHAR, length = 1024, comment = "审核意见")
     private String auditOpinion;
 
     @TableField
@@ -45,11 +49,11 @@ public class DocReviewAuditResultEntity extends InfraBaseEntity {
     private int auditStatus;
 
     @TableField
-    @Column(name = "modification_reason", type = MySqlTypeConstant.VARCHAR, length = 512, comment = "修改原因")
+    @Column(name = "modification_reason", type = MySqlTypeConstant.TEXT, comment = "修改原因")
     private String modificationReason;
 
     @TableField
-    @Column(name = "original_content", type = MySqlTypeConstant.VARCHAR, length = 512, comment = "原内容")
+    @Column(name = "original_content", type = MySqlTypeConstant.TEXT, comment = "原内容")
     private String originalContent;
 
     @TableField
@@ -57,7 +61,7 @@ public class DocReviewAuditResultEntity extends InfraBaseEntity {
     private String riskLevel;
 
     @TableField
-    @Column(name = "suggested_content", type = MySqlTypeConstant.VARCHAR, length = 512, comment = "建议修改的内容")
+    @Column(name = "suggested_content", type = MySqlTypeConstant.TEXT, comment = "建议修改的内容")
     private String suggestedContent;
 
 }
