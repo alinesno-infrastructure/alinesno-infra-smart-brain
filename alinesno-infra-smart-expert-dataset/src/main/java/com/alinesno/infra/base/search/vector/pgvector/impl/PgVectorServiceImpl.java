@@ -39,7 +39,8 @@ public class PgVectorServiceImpl implements IPgVectorService {
 
     // 提取获取嵌入向量的方法
     @SneakyThrows
-    private PGvector getEmbeddingVector(String queryText) {
+    @Override
+    public PGvector getEmbeddingVector(String queryText) {
         List<Double> embeddingVector = dashScopeEmbeddingUtils.getEmbeddingDoubles(queryText);
         return new PGvector(embeddingVector);
     }
@@ -145,31 +146,91 @@ public class PgVectorServiceImpl implements IPgVectorService {
         return convertToDocumentVectorBeans(rows, quoteLimit);
     }
 
+//    @Override
+//    public void createVectorIndex(String indexName) {
+//        jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+//        String ddl = "CREATE TABLE IF NOT EXISTS " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " (\n" +
+//                "    id BIGSERIAL PRIMARY KEY,\n" +
+//                "    dataset_id BIGINT NOT NULL,\n" +
+//                "    index_name VARCHAR(255) NOT NULL,\n" +
+//                "    document_title TEXT,\n" +
+//                "    document_desc text,  \n" +
+//                "    document_content TEXT,\n" +
+//                "    document_embedding VECTOR (1024),\n" +
+//                "    token_size int,  \n" +
+//                "    doc_chunk text,  \n" +
+//                "    score REAL,\n" +
+//                "    page INTEGER,\n" +
+//                "    source_file VARCHAR(255),\n" +
+//                "    source_url TEXT,\n" +
+//                "    source_type VARCHAR(50),\n" +
+//                "    author VARCHAR(255),\n" +
+//                "    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP\n" +
+//                ");";
+//
+//        jdbcTemplate.execute(ddl);
+//        jdbcTemplate.execute("CREATE INDEX ON " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " USING ivfflat (document_embedding vector_cosine_ops) WITH (lists = 100);");
+//        jdbcTemplate.execute("CREATE INDEX idx_fts_" + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " ON " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " USING gin(to_tsvector('english', document_title || ' ' || document_content));");
+//    }
+
     @Override
     public void createVectorIndex(String indexName) {
+        // 1. 启用pgvector扩展
         jdbcTemplate.execute("CREATE EXTENSION IF NOT EXISTS vector");
+
+        // 2. 创建向量文档存储表
         String ddl = "CREATE TABLE IF NOT EXISTS " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " (\n" +
                 "    id BIGSERIAL PRIMARY KEY,\n" +
                 "    dataset_id BIGINT NOT NULL,\n" +
                 "    index_name VARCHAR(255) NOT NULL,\n" +
                 "    document_title TEXT,\n" +
-                "    document_desc text,  \n" +
+                "    document_desc TEXT,\n" +
                 "    document_content TEXT,\n" +
-                "    document_embedding VECTOR (1536),\n" +
-                "    token_size int,  \n" +
-                "    doc_chunk text,  \n" +
+                "    document_embedding VECTOR(1024),\n" +
+                "    token_size INT,\n" +
+                "    doc_chunk TEXT,\n" +
                 "    score REAL,\n" +
                 "    page INTEGER,\n" +
                 "    source_file VARCHAR(255),\n" +
                 "    source_url TEXT,\n" +
                 "    source_type VARCHAR(50),\n" +
                 "    author VARCHAR(255),\n" +
-                "    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP\n" +
-                ");";
+                "    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP\n" +
+                ")";
 
         jdbcTemplate.execute(ddl);
-        jdbcTemplate.execute("CREATE INDEX ON " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " USING ivfflat (document_embedding vector_cosine_ops) WITH (lists = 100);");
-        jdbcTemplate.execute("CREATE INDEX idx_fts_" + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " ON " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " USING gin(to_tsvector('english', document_title || ' ' || document_content));");
+        log.debug("创建向量文档表成功");
+
+        // 3. 创建向量索引（添加IF NOT EXISTS条件）
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_vector_embedding ON " +
+                ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME +
+                " USING ivfflat (document_embedding vector_cosine_ops) WITH (lists = 100)");
+
+        // 4. 创建全文检索索引（添加IF NOT EXISTS条件）
+        jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_fts_content ON " +
+                ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME +
+                " USING gin(to_tsvector('english', document_title || ' ' || document_content))");
+
+        // 5. 添加表和字段的中文注释
+        jdbcTemplate.execute("COMMENT ON TABLE " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME +
+                " IS '向量文档存储表，用于存储文档内容及其向量嵌入表示'");
+
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".id IS '自增主键ID'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".dataset_id IS '数据集ID，支持多租户场景'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".index_name IS '索引/集合名称，用于文档分组'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".document_title IS '文档标题'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".document_desc IS '文档描述'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".document_content IS '文档完整内容'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".document_embedding IS '1024维度的文档嵌入向量（BGE模型输出）'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".token_size IS '文档token数量'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".doc_chunk IS '文档分块内容（如使用分块策略）'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".score IS '相关性评分'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".page IS '原始页码（如PDF文档）'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".source_file IS '来源文件名'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".source_url IS '来源URL链接'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".source_type IS '来源类型（如pdf/html/news等）'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".author IS '文档作者'");
+        jdbcTemplate.execute("COMMENT ON COLUMN " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + ".created_at IS '记录创建时间'");
     }
 
     @SneakyThrows
