@@ -15,6 +15,9 @@ public class GenAuditResultDto extends BaseDto {
     @NotNull(message = "场景ID不能为空")
     private Long sceneId ;
 
+    @NotNull(message = "任务ID不能为空")
+    private Long taskId ;
+
     @NotNull(message = "渠道流ID不能为空")
     private Long channelStreamId ;
 
