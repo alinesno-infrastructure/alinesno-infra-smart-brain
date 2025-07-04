@@ -7,7 +7,9 @@ import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
+import com.alinesno.infra.smart.assistant.api.config.ModelConfig;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
@@ -15,12 +17,14 @@ import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
+import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -37,12 +41,23 @@ import java.util.concurrent.CompletableFuture;
 @Service(AssistantConstants.PREFIX_ASSISTANT_SIMPLE)
 public class SimpleExpertService extends ReActExpertService {
 
+
+    @Autowired
+    private ReActServiceTool reActServiceTool  ;
+
     @Override
     protected String handleRole(IndustryRoleEntity role,
                                 MessageEntity workflowMessage,
                                 MessageTaskInfo taskInfo) {
 
+
+        reActServiceTool.setRole(getRole());
+        reActServiceTool.setTaskInfo(getTaskInfo());
+
         String goal = clearMessage(taskInfo.getText()) ; // 目标
+
+        IndustryRoleDto industryRoleDto = IndustryRoleDto.fromEntity(getRole()) ;
+        ModelConfig modelConfig = industryRoleDto.getModelConfig() ;
 
         List<ToolDto> tools = getToolService().getByToolIds(role.getSelectionToolsData() , role.getOrgId()) ;
 
@@ -51,37 +66,30 @@ public class SimpleExpertService extends ReActExpertService {
         historyPrompt.setHistoryMessageTruncateEnable(false);
 
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal , role.getKnowledgeBaseIds()) ;
-        handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
+        reActServiceTool.handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
 
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
+        String datasetKnowledgeDocument = reActServiceTool.getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
-//        boolean isCompleted = false ;  // 是否已经完成
-//        boolean isToolCompleted = false ;  // 是否已经完成
-
-//        int loop = 0 ;
-
+        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getCollectionIndexName()) ;
         String answer = "" ; // 回答
         StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
 
         Llm llm = getLlm(role) ;
 
-//        do {
-
             oneChatId = IdUtil.getSnowflakeNextIdStr() ;
-            eventStepMessage("开始思考问题.", AgentConstants.STEP_START , oneChatId , taskInfo) ;
+            reActServiceTool.eventStepMessage("开始思考问题.", AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
-//            loop++;
 
-            String prompt = Prompt.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument) ;
+            String prompt = Prompt.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument, getMaxLoop() , hasOutsideKnowledge) ;
 
-            eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
+            reActServiceTool.eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
             // 历史对话
             handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
             historyPrompt.addMessage(new HumanMessage(prompt));
 
-            CompletableFuture<String> future = getAiChatResultAsync(llm, historyPrompt , taskInfo , oneChatId) ; // replacePlaceholders(nodeData.getPrompt()));
+            CompletableFuture<String> future = getAiChatResultAsync(llm, historyPrompt , taskInfo , oneChatId, modelConfig) ; // replacePlaceholders(nodeData.getPrompt()));
 
             // 等待异步任务完成并获取结果
             try {
@@ -89,7 +97,7 @@ public class SimpleExpertService extends ReActExpertService {
                 String output = future.get();
                 log.debug("output = {}" , output);
 
-                eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, oneChatId  , taskInfo) ;
+                reActServiceTool.eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, oneChatId  , taskInfo) ;
 
                 List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(output);
                 CodeContent codeContent = codeContentList.get(0);
