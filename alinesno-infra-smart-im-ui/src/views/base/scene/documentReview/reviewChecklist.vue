@@ -28,7 +28,10 @@
 </template>
 
 <script setup>
-import { getScene, genAuditResult } from '@/api/base/im/scene/documentReview';
+import { 
+    getScene, 
+    genAuditResult 
+} from '@/api/base/im/scene/documentReview';
 
 import { useRoute } from 'vue-router';
 import { ElLoading, ElMessage } from 'element-plus';
@@ -41,6 +44,7 @@ const route = useRoute();
 
 const currentSceneInfo = ref(null);
 const sceneId = ref(route.query.sceneId);
+const taskId = ref(route.query.taskId);
 const channelStreamId = ref(route.query.channelStreamId);
 const auditId = ref(null)
 
@@ -48,7 +52,7 @@ const contractReviewList = ref([]);
 const checkList = ref([]);
 
 const handleGetScene = () => {
-    getScene(sceneId.value).then(res => {
+    getScene(sceneId.value , taskId.value).then(res => {
         currentSceneInfo.value = res.data;
         contractReviewList.value = res.data.reviewListDtos;
 
@@ -59,7 +63,7 @@ const handleGetScene = () => {
         }
 
         // 将所有选项的 ruleName 赋值给 checkList 实现全选
-        checkList.value = contractReviewList.value.map(item => item.id);
+        // checkList.value = contractReviewList.value.map(item => item.id);
     });
 };
 
@@ -91,13 +95,21 @@ const submitAuditForm = async () => {
         const data = {
             sceneId: sceneId.value,
             channelStreamId: channelStreamId.value,
+            taskId: taskId.value,
             ruleId: id,
             auditId: auditId.value,
             roleId: currentSceneInfo.value.logicReviewerEngineer
         };
 
-        const res = await genAuditResult(data);
-        console.log('res = ' + res);
+        try {
+            const res = await genAuditResult(data);
+            console.log('res = ' + res);
+        } catch (error) {
+            console.error(`处理规则 ${ruleName} (ID: ${id}) 时出错:`, error);
+            // 可以选择继续处理下一个，或者根据错误类型决定是否继续
+            // 如果需要特定错误才忽略，可以在这里添加条件判断
+            continue;
+        }
     }
 
     streamLoading.value.close();
