@@ -31,6 +31,7 @@ import {
 } from "@/api/base/im/scene";
 import { ref, watch, onMounted } from 'vue';
 import ConfigSceneAgent from './configSceneAgent.vue'; 
+import { ElMessage } from "element-plus";
 
 const route = useRoute();
 const sceneId = ref(route.query.sceneId);
@@ -50,6 +51,13 @@ const agentListMap = ref({});
 
 /** 配置成员 */
 function configAgent() {
+
+  // 公共场景只允许在后台配置
+  if(currentSeneInfo.value && currentSeneInfo.value.sceneScope === 'public'){
+    ElMessage.warning('公共场景不允许在前台配置成员');
+    return ;
+  }
+
   configAgentDialogVisible.value = true;
   sceneAgentConfigTitle.value = currentSeneInfo.value.sceneName + "配置"; 
   nextTick(() => {
