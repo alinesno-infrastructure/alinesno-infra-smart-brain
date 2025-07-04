@@ -21,7 +21,7 @@
 		<minio.version>8.5.2</minio.version>
 
 		<!-- 模型适配 -->
-		<model-adapter.version>2.2.0-M2-SNAPSHOT</model-adapter.version>
+		<model-adapter.version>3.0.0-M2-SNAPSHOT</model-adapter.version>
 	</properties>
 
 	<dependencies>
@@ -204,6 +204,14 @@
 			<version>${model-adapter.version}</version>
 		</dependency>
 		<!-- 视觉模型_end -->
+
+		<!-- 向量化存储_start -->
+		<dependency>
+			<groupId>com.agentsflex</groupId>
+			<artifactId>alinesno-smart-model-adapter-store-pgvector</artifactId>
+			<version>${model-adapter.version}</version>
+		</dependency>
+		<!-- 向量化存储_end -->
 
 	</dependencies>
 
