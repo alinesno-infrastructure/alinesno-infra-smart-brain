@@ -15,9 +15,9 @@ public enum ChannelListEnums {
 
     AIP_AGENT_STORE("AIP商店", "在AIP商店里，你能高效地创建个性化智能助手，便捷地完成发布和共享操作。", "fa-solid fa-shop", "aip_agent_store", false),
     AIP_AGENT_SCENE("AIP场景", "借助AIP场景，你可针对不同场景快速定制智能助手，轻松发布并分享给他人。", "fa-solid fa-theater-masks", "aip_agent_scene", false),
-//    AIP_AGENT_MARKET("AIP市场", "AIP市场为你提供了丰富资源，让你能创建出极具竞争力的智能助手并在市场发布共享。", "fa-solid fa-cart-shopping", "aip_agent_market", false),
+    // AIP_AGENT_MARKET("AIP市场", "AIP市场为你提供了丰富资源，让你能创建出极具竞争力的智能助手并在市场发布共享。", "fa-solid fa-cart-shopping", "aip_agent_market", false),
     WEB_VERSION("网页版", "通过网页版，你能使用PC或移动设备随时随地开启与智能助手的对话。", "fa-brands fa-chrome", "web_version", false),
-//    API_INTERFACE("API接口", "API接口作为系统间数据交互的桥梁，可实现智能助手数据的高效传输。", "fa-solid fa-code", "api_interface", false),
+    // API_INTERFACE("API接口", "API接口作为系统间数据交互的桥梁，可实现智能助手数据的高效传输。", "fa-solid fa-code", "api_interface", false),
     WEB_EMBEDDED("网站嵌入", "使用网站嵌入功能，能通过iframe/JS迅速将智能助手集成到网站，提升用户体验。", "fa-solid fa-window-maximize", "web_embedded", false);
 
     private final String name;
