@@ -9,7 +9,7 @@
       </div>
       <div>
         <el-row :gutter="20">
-          <el-col v-for="(item, index) in globalConfigs" :span="8">
+          <el-col v-for="(item, index) in globalConfigs" :key="index" :span="8">
             <router-link :to="item.link">
               <div :key="index" class="config-item" >
                 <div class="config-icon">
@@ -79,20 +79,22 @@ const globalConfigs = [
     icon: "fa-solid fa-key",
     link: "/template/smart/assistant/secret/index"
   },
+  // 数据资产配置
   {
-    id: 4,
-    configName: "运行监控查看",
-    configDesc: "系统可能会集成多个厂家的大模型以满足不同的业务需求" , 
-    icon: "fa-solid fa-tv",
-    link: "/monitor/smart/assistant/analyse/index"
+    id: 9,
+    configName: "数据资产配置",
+    configDesc: "此配置项用于管理和优化数据资产相关的参数，包括数据存储、分类、权限及备份策略等。",
+    icon: "fa-solid fa-database",
+    status: 1,
+    link: "" 
   },
   {
-    "id": 5,
-    "configName": "数据私有化",
-    "configDesc": "此配置项可用于设置数据存储的私有化方案，确保数据的安全性和隔离性，防止数据泄露和非法访问。",
-    "icon": "fa-solid fa-lock",
-    "status": 1,
-    "link": "" 
+    id: 5,
+    configName: "数据私有化",
+    configDesc: "此配置项可用于设置数据存储的私有化方案，确保数据的安全性和隔离性，防止数据泄露和非法访问。",
+    icon: "fa-solid fa-lock",
+    status: 1,
+    link: "" 
   }
 ];
 
@@ -134,6 +136,24 @@ const modelConfigs = [
     icon: "fa-solid fa-file-lines",
     status: 0 ,
     link: "/smart/assistant/template/articleTemplate"
+  },
+  // 长文档板配置
+  {
+    id: 8,
+    configName: "长文档模板配置",
+    configDesc: "此配置项用于对长文档模板相关的参数和选项进行设置，以确保文章模板的正常运行和优化使用。",
+    icon: "fa-solid fa-file-word",
+    status: 0 ,
+    link: "/smart/assistant/template/longTextTemplate"
+  } , 
+  // 通用智能体场景配置
+  {
+    id: 10,
+    configName: "通用智能体配置",
+    configDesc: "此配置项用于设置和管理通用智能体在不同应用场景下的行为模式、交互逻辑和功能参数。",
+    icon: "fa-solid fa-robot",
+    status: 0,
+    link: "/smart/assistant/config/generalAgent"
   }
 ];
 </script>
@@ -142,7 +162,7 @@ const modelConfigs = [
 .global-config-container {
   margin: auto;
   width: 90%;
-  max-width: 1500px;
+  max-width: 1450px;
 
   .global-section-title {
     font-size: 22px;
@@ -157,7 +177,8 @@ const modelConfigs = [
       padding-top: 20px;
       margin-bottom: 20px;
       border-top: 1px solid rgb(244, 244, 248);
-      font-size: 15px;
+      font-size: 18px;
+      font-weight: bold;
     }
 
    .config-item {
