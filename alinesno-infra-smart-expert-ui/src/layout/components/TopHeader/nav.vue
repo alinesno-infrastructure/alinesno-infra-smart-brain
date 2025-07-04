@@ -32,7 +32,6 @@
           </el-icon>
         </a>
         <a class="header-label-text" target="_blank">
-          <!-- <img src="http://data.linesno.com/switch_header.png" class="su70ez-0 CB-gLgKdv" alt="" /> -->
           <img :src="userStore.avatar" class="su70ez-0 CB-gLgKdv" alt="" />
         </a>
       </div>
@@ -100,10 +99,6 @@ import useUserStore from '@/store/modules/user'
 
 const userStore = useUserStore()
 const router = useRouter();
-
-// const avatar = ref('http://data.linesno.com/switch_header.png') ; 
-// const nickname = ref('超级管理员') ;
-// const name = ref('超级管理员') ;
 
 function logout() {
   ElMessageBox.confirm('确定注销并退出系统吗？', '提示', {
