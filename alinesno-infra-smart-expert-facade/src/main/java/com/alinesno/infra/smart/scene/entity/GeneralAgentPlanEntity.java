@@ -55,6 +55,10 @@ public class GeneralAgentPlanEntity extends InfraBaseEntity {
     @Column(name = "general_agent_scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联的场景ID")
     private Long generalAgentSceneId ; // 关联的长文本场景ID
 
+    @TableField
+    @Column(name = "task_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联任务ID")
+    private Long taskId ; // 关联的长文本场景ID
+
     // 编写人员
     @TableField
     @Column(name = "business_executor_engineer_id" , type = MySqlTypeConstant.BIGINT, length = 32, comment = "任务执行规划编辑人员")
