@@ -21,14 +21,8 @@
 
           <el-form-item label="数据集名称" prop="name">
             <el-input v-model="queryParams['condition[name|like]']" placeholder="请输入应用名称" clearable style="width: 240px"
-              @keyup.enter="handleQuery" />
+               />
           </el-form-item>
-          <!-- 
-          <el-form-item label="所有者" prop="ownerId" label-width="100px">
-            <el-input v-model="queryParams['condition[ownerId|like]']" placeholder="请输入显示名称" clearable
-              style="width: 240px" @keyup.enter="handleQuery" />
-          </el-form-item> 
-          -->
 
           <el-form-item label="访问权限" prop="accessPermission" label-width="100px">
             <el-radio-group v-model="queryParams.accessPermission" label="数据范围" label-width="100px" @change="handleQuery">
