@@ -1,5 +1,12 @@
 <template>
-  <div class="app-container" style="width:2000px;width:90%;margin:auto">
+  <div class="app-container review-page-contaier">
+
+        <el-page-header @back="goBack" class="review-page-header">
+            <template #content>
+                <span class="text-large font-600 mr-3"> 文章排版模板管理 </span>
+            </template>
+        </el-page-header>
+
       <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="100px">
          <el-form-item label="模板名称" prop="templateName">
             <el-input v-model="queryParams.templateName" placeholder="请输入模板名称" clearable style="width: 240px"
@@ -318,6 +325,11 @@ function formatFileSize(bytes) {
    const i = Math.floor(Math.log(bytes) / Math.log(k));
    return (bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i];
 }
+
+// 返回
+const goBack = () => {
+  router.push({ path: "/global/config" });
+};
 
 /** 查询模板列表 */
 function getList() {
