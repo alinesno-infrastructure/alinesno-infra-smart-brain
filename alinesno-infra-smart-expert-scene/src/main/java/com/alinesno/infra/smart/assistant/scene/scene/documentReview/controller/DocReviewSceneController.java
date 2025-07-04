@@ -20,11 +20,13 @@ import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -69,6 +71,9 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
     private IDocReviewAuditService reviewAuditService ;
 
     @Autowired
+    private IDocReviewTaskService docReviewTaskService ;
+
+    @Autowired
     private IIndustryRoleService roleService ;
 
     @Autowired
@@ -99,11 +104,11 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
     public AjaxResult genReviewList(@RequestBody @Validated DocReviewGenReviewDto dto , PermissionQuery query){
 
         long sceneId = dto.getSceneId() ;
-        List<DocReviewRulesDto> rules = new ArrayList<DocReviewRulesDto>() ;
 
-        DocReviewSceneEntity entity = service.getBySceneId(sceneId, query) ;
+        DocReviewSceneEntity sceneEntity = service.getBySceneId(sceneId, query) ;
+        DocReviewTaskEntity entity = docReviewTaskService.getById(dto.getTaskId());
         entity.setGenStatus(1) ;
-        service.update(entity);
+        docReviewTaskService.update(entity);
 
         entity.setContractType(dto.getContractType());
         entity.setReviewPosition(dto.getReviewPosition());
@@ -115,7 +120,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
             MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
             taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-            taskInfo.setRoleId(entity.getAnalysisAgentEngineer());
+            taskInfo.setRoleId(sceneEntity.getAnalysisAgentEngineer());
             taskInfo.setChannelId(sceneId);
             taskInfo.setSceneId(sceneId) ;
             taskInfo.setText("合同类型的审查清单项");
@@ -158,10 +163,9 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
                 }
 
             }
-
         }
-        service.updateById(entity) ;
 
+        docReviewTaskService.updateById(entity) ;
         return AjaxResult.success();
     }
 
@@ -171,9 +175,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
      */
     @PostMapping("/initAgents")
     public AjaxResult initAgents(@RequestBody DocReviewInitDto dto){
-
         service.initAgents(dto) ;
-
         return AjaxResult.success();
     }
 
@@ -186,12 +188,11 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
 
         log.debug("dto = {}", ToStringBuilder.reflectionToString(dto));
 
-        long sceneId = dto.getSceneId() ;
+        DocReviewTaskEntity entity = docReviewTaskService.getById(dto.getTaskId());
 
-        DocReviewSceneEntity entity = service.getBySceneId(sceneId, query) ;
-        entity.setOperatorId(dto.getOperatorId());
-        entity.setOrgId(dto.getOrgId()) ;
-        entity.setDepartmentId(dto.getDepartmentId()) ;
+//        entity.setOperatorId(dto.getOperatorId());
+//        entity.setOrgId(dto.getOrgId()) ;
+//        entity.setDepartmentId(dto.getDepartmentId()) ;
 
         List<DocReviewRulesDto> nodeDtos = new ArrayList<>() ;
 
@@ -219,7 +220,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
         entity.setReviewPosition(dto.getReviewPosition());
         entity.setReviewListOption(dto.getReviewListOption());
 
-        service.updateById(entity) ;
+        docReviewTaskService.updateById(entity) ;
 
         return AjaxResult.success();
     }
@@ -242,10 +243,12 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
      */
     @DataPermissionQuery
     @GetMapping("/genDocxReport")
-    public AjaxResult genDocxReport(@RequestParam("sceneId") long sceneId , PermissionQuery query) {
+    public AjaxResult genDocxReport(@RequestParam("sceneId") long sceneId ,
+                                    @RequestParam("taskId") long taskId ,
+                                    PermissionQuery query) {
 
         DocReviewSceneEntity longTextSceneEntity = service.getBySceneId(sceneId , query) ;
-        String markdownContent = service.genMarkdownReport(sceneId ,query , longTextSceneEntity.getId()) ;
+        String markdownContent = service.genMarkdownReport(sceneId , query , longTextSceneEntity.getId() , taskId) ;
         String filename = IdUtil.fastSimpleUUID() ;
 
         log.debug("markdownContent = {}", markdownContent);
@@ -281,9 +284,9 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
      */
     @DataPermissionQuery
     @GetMapping("/getPreviewReportDocx")
-    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId) {
+    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId , Long taskId) {
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl);
+        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl , taskId);
     }
 
     @Override
