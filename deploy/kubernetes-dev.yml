@@ -37,9 +37,24 @@ spec:
       containers:
       - name: ${PROJECT_NAME}
         image: ${ALIYUN_CR_REGISTORY}/${ALIYUN_CR_NAMESPACE}/${PROJECT_NAME}:${VERSION}
+        resources:
+          limits:
+            memory: "10240Mi"
+            cpu: "2048m"
+          requests:
+            memory: "6144Mi"
+            cpu: "1024m"
         env:
         - name: JAVA_TOOL_OPTIONS
           value: |
+            -XX:+UseG1GC
+            -XX:ParallelGCThreads=4
+            -XX:MetaspaceSize=256m
+            -XX:MaxMetaspaceSize=512m
+            -XX:ReservedCodeCacheSize=256m
+            -XX:+UseContainerSupport
+            -XX:MaxRAMPercentage=50.0
+
             -Dspring.data.redis.host=${REDIS_HOST}
             -Dspring.data.redis.password=${REDIS_KEY}
 
@@ -56,15 +71,19 @@ spec:
             -Dalinesno.smart.project.research.password=${DB_PGVECTOR_PASSWORD}
 
             -Dalinesno.infra.smart.brain.qianwen.key=${QIANWEN_SK}
-            
+
             -Dalinesno.infra.qiniu.access-key=${QINIU_ACCESS_KEY}
             -Dalinesno.infra.qiniu.secret-key=${QINIU_SECRET_KEY}
             -Dalinesno.infra.qiniu.bucket=${QINIU_BUCKET_NAME}
             -Dalinesno.infra.qiniu.domain=${QINIU_BUCKET_DOMAIN}
-            
+
             -Dalinesno.infra.qiniu.bucket-pub=${QINIU_BUCKET_NAME_PUB}
             -Dalinesno.infra.qiniu.domain-pub=${QINIU_BUCKET_DOMAIN_PUB}
-            
+
+            -javaagent:/home/root/libs/aliyun-java-agent-4.2.5.jar
+            -Darms.licenseKey=${OPEN_TELEMETRY_ENDPOINT}
+            -Darms.appName=alinesno-infra-smart-expert-boot
+
             -Dserver.port=8080
         ports:
         - name: http
