@@ -3,10 +3,7 @@ package com.alinesno.infra.smart.scene.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
-import com.alinesno.infra.smart.scene.dto.SceneDto;
-import com.alinesno.infra.smart.scene.dto.SceneResponseDto;
-import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
+import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
@@ -33,18 +30,18 @@ public interface ISceneService extends IBaseService<SceneEntity> {
      * @param sceneId
      * @param query
      * @param id
+     * @param taskId
      * @return
      */
-    String genMarkdownContent(long sceneId, PermissionQuery query, Long id);
+    String genMarkdownContent(long sceneId, PermissionQuery query, Long id, Long taskId);
 
     /**
      * 分页查询场景列表
      * @param query
-     * @param pageNow
-     * @param pageSize
+     * @param page
      * @return
      */
-    IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, int pageNow, int pageSize);
+    IPage<SceneResponseDto> sceneListByPage(PermissionQuery query, SceneQueryDto page);
 
     /**
      * 查询所有公共场景
