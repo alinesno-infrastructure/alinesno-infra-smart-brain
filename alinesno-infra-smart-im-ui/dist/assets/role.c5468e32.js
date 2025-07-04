@@ -1,1 +1,0 @@
-import{q as r}from"./index.d9d30be3.js";var a="/api/infra/smart/assistant/role/",t={marketDatatables:a+"marketDatatables",employRole:a+"employRole"};function s(e,l){return r({url:t.employRole+"?roleId="+e+"&isPush="+l,method:"get"})}function m(e){return r({url:t.marketDatatables,method:"post",params:e})}export{s as e,m as l};
