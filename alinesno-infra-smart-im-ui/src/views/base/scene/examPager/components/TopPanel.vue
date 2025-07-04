@@ -24,13 +24,13 @@
                 <el-button type="warning" text bg @click="handleSavePager()">
                     <i class="fa-solid fa-floppy-disk"></i>&nbsp;保存
                 </el-button>
-                <el-button type="primary" text bg @click="handleExportPaper(props.currentPageInfo?.id)">
+                <el-button type="primary" text bg @click="handleExportPaper(props.currentPageInfo)">
                     <i class="fa-solid fa-floppy-disk"></i>&nbsp;导出试卷
                 </el-button>
-                <el-button type="primary" text bg @click="handleExportPaper(props.currentPageInfo?.id , true)">
+                <el-button type="primary" text bg @click="handleExportPaper(props.currentPageInfo, true)">
                     <i class="fa-solid fa-floppy-disk"></i>&nbsp;导出试卷(含答案)
                 </el-button>
-                <el-button type="danger" text bg @click="handleMenu">
+                <el-button type="danger" text bg @click="handlePublishExam(props.currentPageInfo)">
                     <i class="fa-solid fa-share"></i>&nbsp;发布考试
                 </el-button>
 
@@ -43,14 +43,14 @@
 
 import { ref, defineEmits } from 'vue'
 import { ElLoading , ElMessage } from 'element-plus'
-import { fileUtil } from '@/utils/fileUtil'
-import {
-    exportPaper,
-    getExportUrl
-} from '@/api/base/im/scene/examPaperManager'
+// import {
+//     exportPaper,
+//     getExportUrl
+// } from '@/api/base/im/scene/examPaperManager'
 
-const emit = defineEmits(['handleSavePager', 'handleExportPaper'])
+const emit = defineEmits(['handleSavePager', 'handleExportPaper' , 'handlePublishExam'])
 
+const { proxy } = getCurrentInstance();
 const router = useRouter()
 const route = useRoute()
 
@@ -67,32 +67,14 @@ const handleSavePager = () => {
     emit('handleSavePager')
 }
 
+const handlePublishExam = (currentPageInfo) => {
+    emit('handlePublishExam' , currentPageInfo)
+}
+
 // 导出试卷
-const handleExportPaper = async (pagerId, showAnswer = false) => {
-    try {
-        // 显示加载中
-        const loading = ElLoading.service({
-            lock: true,
-            text: '正在生成试卷，请稍候...',
-            background: 'rgba(0, 0, 0, 0.7)'
-        })
-
-        // 调用API
-        const response = await exportPaper(pagerId, showAnswer)
-
-        // 生成文件名
-        const fileName = `试卷_${pagerId}_${new Date().toISOString().slice(0, 10)}.docx`
-
-        // 下载文件
-        fileUtil.downloadBlob(response.data, fileName)
-
-        // 关闭加载
-        loading.close()
-        ElMessage.success('试卷导出成功')
-    } catch (error) {
-        console.error('导出试卷失败:', error)
-        ElMessage.error('导出试卷失败: ' + (error.message || '未知错误'))
-    }
+const handleExportPaper = (pager , showAnswer = false) => {
+    proxy.download('/api/infra/smart/assistant/scene/examPagerManager/export/' + pager.id + "?showAnswer=" + showAnswer, {}, 
+        `${pager.title}_${new Date().getTime()}.docx`)
 }
 
 const handleBack = () => {
