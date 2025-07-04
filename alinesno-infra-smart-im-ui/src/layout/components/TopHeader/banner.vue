@@ -16,13 +16,16 @@
 import { ref } from 'vue';
 import { toggleTheme } from '@/utils/chat'
 import { getByOrg } from '@/api/base/im/org';
+import AIPLogo from '@/assets/logo/logo.png';
+
+import { useConfigStore } from '@/store/modules/configStore'; 
 
 // 定义响应式数据
 const saasTitle = ref('AIP智能体平台');
 const enableLogo = ref(true);
 const saasUrl = ref('http://portal.infra.linesno.com/');
 const saasLogoId = ref(null);
-const saasLogoUrl = ref('http://data.linesno.com/logo_2.png');
+const saasLogoUrl = ref(AIPLogo) ; 
 const displayUrl = ref('');
 const domainName = ref(null);
 
@@ -40,9 +43,17 @@ const enterDomain = () => {
 // 初始化数据
 onMounted(async () => {
   getByOrg().then(res => {
+
     console.log('res = ' + res);
     saasTitle.value = res.data.productName;
     saasLogoId.value = res.data.logoImg;
+
+    const studioUrl = res.data.studioUrl;
+    const displayService = res.data.displayService;
+
+    // 更新store
+    const configStore = useConfigStore();
+    configStore.updateConfig(studioUrl, displayService);
 
     const themeStyle = res.data.themeStyle;
     console.log('themeStyle = ' + themeStyle)
@@ -51,45 +62,3 @@ onMounted(async () => {
 });
 
 </script>    
-
-<!-- <script>
-
-export default {
-  name: 'TopHeader',
-  components: {
-  },
-  computed: {
-  },
-  data() {
-
-    let saasTitle = 'AIP智能体平台'
-    let enableLogo = true;
-    let saasUrl = 'http://portal.infra.linesno.com/' ; // http://alinesno-infra-plat-console-ui.beta.plat.infra.linesno.com' ;
-    let saasLogoUrl = 'http://data.linesno.com/logo_2.png' ;
-    let displayUrl = ''; 
-
-
-    return {
-      saasTitle,
-      saasUrl,
-      saasLogoUrl,
-      enableLogo,
-      displayUrl,
-      domainName: null,
-    }
-  },
-  created() {
-  },
-  methods: {
-    dashboardHome() {
-      window.open(this.saasUrl, '_blank')
-    },
-    // 进入企业官网
-    enterDomain() {
-      if (this.domainName) { // 跳转进入官网
-        window.open(this.domainName)
-      }
-    }
-  }
-}
-</script> -->
