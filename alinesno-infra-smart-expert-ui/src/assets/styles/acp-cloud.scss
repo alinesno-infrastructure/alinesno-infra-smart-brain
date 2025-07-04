@@ -1483,13 +1483,15 @@ $chartColor: #3b5998;
       &:hover{
         color: #333;
         font-weight: bold;
-        background: #fafafa;
+        background: #f5f5f5;
+        border-radius: 8px;
       }
 
       &.active{
         color: #333;
         font-weight: bold;
-        background: #fafafa;
+        background: #f5f5f5;
+        border-radius: 8px;
       }
     }
 
