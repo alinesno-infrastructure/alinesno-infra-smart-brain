@@ -12,20 +12,6 @@
 
       <!-- 语音模型选择项 -->
       <el-form-item label="大模型" prop="voiceModel">
-        <!-- 
-        <el-select v-model="formData.voiceModel" placeholder="请选择大模型" size="large" style="width:100%">
-          <el-option v-for="item in llmModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
-            <template #default>
-              <div>
-                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
-                  style="width: 25px; height: 25px; border-radius: 50%;">
-                {{ item.modelName }}
-              </div>
-            </template>
-          </el-option>
-        </el-select> 
-        -->
-
         <LLMSelector :modelType="'large_language_model'" v-model="formData.voiceModel" />
       </el-form-item>
 
