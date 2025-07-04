@@ -18,7 +18,7 @@ public interface IAgentSceneService extends IBaseService<AgentSceneEntity> {
      * @param sceneScope
      * @param orgId
      */
-    void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId, String sceneScope, Long orgId);
+    void addRoleToScene(Long roleId, long sceneId, long agentTypeId, long llmModelId, long imageModelId, String sceneScope, Long orgId);
 
     /**
      * 下线场景角色
