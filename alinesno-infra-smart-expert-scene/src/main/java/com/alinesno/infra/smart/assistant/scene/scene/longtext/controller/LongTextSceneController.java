@@ -59,7 +59,9 @@ public class LongTextSceneController {
      */
     @DataPermissionQuery
     @GetMapping("/getScene")
-    public AjaxResult getScene(@RequestParam("id") long id , PermissionQuery query) {
+    public AjaxResult getScene(@RequestParam("id") Long id ,
+                               Long taskId ,
+                               PermissionQuery query) {
 
         Assert.isTrue(id > 0, "参数不能为空");
 
@@ -95,7 +97,9 @@ public class LongTextSceneController {
             dto.setChapterEditors(RoleUtils.getEditors(roleService , longTextSceneEntity.getChapterEditor())); // 查询出当前的章节编辑人员
             dto.setContentEditors(RoleUtils.getEditors(roleService, longTextSceneEntity.getContentEditor())); // 查询出当前的内容编辑人员
 
-            dto.setChapterTree(chapterService.getChapterTree(entity.getId() , longTextSceneEntity.getId())); // 章节树信息
+            if(taskId != null){
+                dto.setChapterTree(chapterService.getChapterTree(entity.getId() , longTextSceneEntity.getId() , taskId)); // 章节树信息
+            }
         }
 
         return AjaxResult.success("操作成功.", dto);
@@ -116,24 +120,6 @@ public class LongTextSceneController {
         longTextSceneService.updateById(sceneEntity);
         return AjaxResult.success("操作成功") ;
     }
-
-    /**
-     * 更新生成状态
-     * @return
-     */
-    @DataPermissionQuery
-    @GetMapping("/updateSceneGenStatus")
-    public AjaxResult updateSceneGenStatus(@RequestParam("sceneId") long sceneId ,
-                                           @RequestParam("genStatus") int genStatus,
-                                           PermissionQuery query) {
-
-        LongTextSceneEntity sceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
-        sceneEntity.setGenStatus(genStatus);
-
-        longTextSceneService.updateById(sceneEntity);
-        return AjaxResult.success("操作成功") ;
-    }
-
 
 
 }
