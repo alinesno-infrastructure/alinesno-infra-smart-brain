@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="选择AI工作台"
-    width="1024"
+    width="980"
     :before-close="handleClose"
   >
     <div 
@@ -64,7 +64,7 @@
                   'flex-direction': 'column'
                 }"
                 @click="selectTemplate(item.id)">
-                <img v-if="item.backgroundImage" :src="imagePathByPath(item.backgroundImage)" style="width: 100%;border-radius: 7px 7px 0px 0px;" />
+                <img v-if="item.backgroundImage" :src="imagePathByPath(item.backgroundImage)" style="width: 100%;border-radius: 7px 7px 0px 0px;height:100px" />
                 <div style="display: flex;flex-direction: column;line-height: 1.4rem;gap: 5px;padding: 10px;">
                   <span style="font-size: 15px;color: #333;font-weight: bold;">
                     {{ item.name }}
