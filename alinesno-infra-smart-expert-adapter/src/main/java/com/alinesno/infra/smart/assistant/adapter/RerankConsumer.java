@@ -7,7 +7,12 @@ import com.dtflys.forest.annotation.Body;
 import com.dtflys.forest.annotation.Header;
 import com.dtflys.forest.annotation.Post;
 
-@BaseRequest(baseURL = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank",
+/**
+ * 文本排序消费者接口
+ */
+@BaseRequest(
+//        baseURL = "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank",
+        baseURL = "#{alinesno.infra.gateway.reranker}" ,
         connectTimeout = 30000,
         readTimeout = 60000)
 public interface RerankConsumer {
