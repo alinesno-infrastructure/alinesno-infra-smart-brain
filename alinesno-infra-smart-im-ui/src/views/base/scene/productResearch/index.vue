@@ -1,114 +1,129 @@
 <template>
-  <div class="exam-pagercontainer product-research-container">
+  <div class="ppt-pager-container">
+
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-      <el-aside width="280px" class="exam-pager-aside">
+
+      <el-aside width="80px" class="ppt-pager-aside">
         <FunctionList />
       </el-aside>
 
-      <el-main class="exam-pager-main">
+      <el-main class="ppt-pager-main">
+
         <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
           ref="roleSelectPanelRef" />
 
         <div class="main-content">
           <el-row>
-            <el-col :span="11">
+            <el-col :span="12">
+
               <div class="title-section">
                 <span class="title">
-                  <i class="fa-solid fa-file-word"></i> 基于AI项目情况分析
+                  <i class="fa-solid fa-feather-pointed"></i> 基于AI项目知识分析
                 </span>
-                <span class="description">依托专业AI智能体，精准聚焦项目痛点，快速定制获取研发进度汇报</span>
+                <span class="description">
+                  依托专业AI智能体，精准聚焦项目痛点，快速定制获取研发进度汇报
+                </span>
               </div>
-              <div class="input-button-section2">
+
+              <DatasetTemplatePanel v-model="formData.datasetGroupId" /> 
+
+              <div class="input-button-section">
                 <div style="width:100%">
+                  <!-- 附件内容-->
                   <AttachmentSetionPanel @upload-success="handleUploadSuccess" ref="attachmentPanelRef"
                     style="padding: 0px 0px;margin-bottom:0px;" />
 
-                  <el-form ref="formRef" :model="formData" label-position="top" :rules="rules">
+                  <!-- 文本内容 -->
+                  <el-input type="textarea" 
+                    :rows="3" 
+                    resize="none" 
+                    v-model="formData.promptText" 
+                    class="input-box" 
+                    size="large" 
+                    placeholder="请输入您的需求，获取智能体服务" 
+                    :prefix-icon="Search" />
 
-                    <!-- 项目名称 -->
-                    <el-form-item prop="projectName" label="项目名称">
-                      <el-input v-model="formData.projectName" size="large" placeholder="请输入项目名称"
-                        :prefix-icon="Search">
-                        <template #prefix>
-                          <div>项目名</div>
-                        </template>
-                      </el-input>
-                    </el-form-item>
+                </div>
 
-                    <el-form-item prop="gitUrl" label="项目仓库地址">
-                      <el-input v-model="formData.gitUrl" size="large" placeholder="项目仓库信息"
-                        :prefix-icon="Search">
-                        <template #prefix>
-                          <div>Git地址</div>
-                        </template>
-                      </el-input>
-                    </el-form-item>
+                <!-- 上传附件按键 -->
+                <div class="upload-button-section">
+                  <div>
+                    <el-button type="primary" size="large" class="upload-button" @click="handleUpload" text bg>
+                      <i class="fa-solid fa-paperclip"></i> 上传附件
+                    </el-button>
+                  </div>
 
-                    <!-- 使用el-switch开关是否使用认证-->
-                    <el-form-item prop="isAuth" label="是否使用认证">  
-                      <el-switch v-model="formData.isAuth" 
-                        class="switch-box" 
-                        size="small" />
-                    </el-form-item>
-
-                    <el-form-item v-if="formData.isAuth" prop="gitUsername" label="认证用户名">  
-                      <el-input v-model="formData.gitUsername" size="large" placeholder="仓库认证用户名"
-                        :prefix-icon="Search">
-                        <template #prefix>
-                          <div>Git用户名</div>
-                        </template>
-                      </el-input>
-                    </el-form-item>
-                    <el-form-item v-if="formData.isAuth" prop="gitPassword" label="认证密钥">
-                      <el-input v-model="formData.gitPassword" size="large" placeholder="仓库认证密钥"
-                        :prefix-icon="Search">
-                        <template #prefix>
-                          <div>Git密码</div>
-                        </template>
-                      </el-input>
-                    </el-form-item>
-                  </el-form>
+                  <el-button type="primary" size="large" @click="generaterOutlineText()" class="send-button">
+                    <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
+                  </el-button>
                 </div>
               </div>
-              <div class="upload-button-section">
-                <el-button type="primary" text bg size="large" @click="submitGitProject()"  v-loading="chatStreamLoading" class="send-button">
-                  <i class="fa-solid fa-paper-plane" style="font-size:22px"></i> &nbsp; 导入项目
-                </el-button>
+
+              <!-- 选择题型
+              <div class="example-select-section">
+                <ArticleTypeConfig v-model="formData.pptConfig" />
+              </div>
+              -->
+
+              <div class="example-section">
+                <div class="example-title">你可以这样提问</div>
+                <div class="example-list">
+                  <div v-for="(item, index) in topics" :key="index" class="example-item"
+                    @click="handleExampleClick(item)">
+                    <span class="example-text">{{ item.text }}</span>
+                    <i class="fa-solid fa-paper-plane example-icon"></i>
+                  </div>
+                </div>
               </div>
 
               <div class="review-footer-message">
                 <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
               </div>
-            </el-col>
 
-            <el-col :span="13">
+            </el-col>
+            <el-col :span="12">
               <div class="review-question-preview-title">
                 <span>
-                  <i class="fa-solid fa-file-pdf"></i> 导入进度详情
+                  <i class="fa-solid fa-file-pdf"></i> 知识库检索规划预览
                 </span>
+                <el-button type="danger" :disabled="!outline" @click="generaterText()">
+                  <i class="fa-solid fa-floppy-disk"></i>&nbsp;开始执行
+                </el-button>
               </div>
-              <div style="margin-top: 10vh;" v-if="logStreamArr.length == 0">
-                <el-empty description="当前未导入项目，这里会实时显示导入的进度情况" />
+
+              <!-- {{ outline }} -->
+
+              <!-- 大纲生成预览 -->
+              <div class="pager-gen-result-panel">
+
+                <div v-if="!outline" style="margin-top: 10vh;">
+                  <el-empty description="当前未生成项目检索的规划，你可以选择自定义的知识库来进行检索，生成项目检索的规划" />
+                </div>
+
+                <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef"> 
+                  <!--
+                  <div style="font-size:13px;text-align: left;margin-bottom: 10px;color:#888">
+                    确认下规划方案思路（点击编辑内容，右键添加/删除大纲项），然后开始执行任务
+                  </div>
+                  -->
+                  <div ref="innerRef">
+                    <OutlineGenContainerPanel 
+                        ref="pagerGenContainerPanelRef" 
+                        :value="outline" />
+                  </div>
+                </el-scrollbar>
               </div>
-              <div v-if="logStreamArr.length > 0">
-                  <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px" style=" height: calc(100vh - 180px);">
-                    <ZshLog ref="innerRef" 
-                        :logs="logStreamArr" 
-                        :show-time="true" 
-                        theme="zsh-dark" 
-                        highlight-level 
-                      />
-                      <div v-if="chatStreamLoading" class="loading-indicator">
-                        <el-button type="primary" text bg :loading="chatStreamLoading">数据加载中 ....</el-button>
-                      </div>
-                  </el-scrollbar>
-              </div>
+
             </el-col>
+
           </el-row>
+
         </div>
+
       </el-main>
     </el-container>
 
+    <!-- 运行抽屉 -->
     <div class="aip-flow-drawer flow-control-panel">
       <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
         :with-header="true">
@@ -117,6 +132,7 @@
         </div>
       </el-drawer>
     </div>
+
   </div>
 </template>
 
@@ -124,105 +140,177 @@
 import { nextTick, ref } from 'vue';
 import { ElMessage, ElLoading } from 'element-plus';
 
-import { openSseConnectChannel , handleCloseSse } from "@/api/base/im/chatsse";
-
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
-import AttachmentSetionPanel from '@/views/base/scene/examPager/common/attachmentSection'
+import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
+import DatasetTemplatePanel from './datasetTemplate'
+// import ArticleTypeConfig from './articleTypeConfig.vue';
+import ZshLog from "./ZshLog";
+import OutlineGenContainerPanel from './components/OutlineEditor.vue';
+
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
-import  ZshLog from "./ZshLog";
 
 import SnowflakeId from "snowflake-id";
 
 import {
   getScene,
   savePagerQuestion,
+  addTask ,
+  chatPromptContent ,
   importGitProject,
   savePPTOutline
 } from '@/api/base/im/scene/productResearch';
 
 const roleSelectPanelRef = ref(null)
 const snowflake = new SnowflakeId();
+
 const route = useRoute();
 const router = useRouter();
+
+const topics = [
+  { text: "写一篇关于产品营销的计划方案" },
+  { text: "分析上传的数据报告" },
+  { text: "人工智能的发展趋势与未来展望" },
+  { text: "公益事业与企业社会责任的结合" },
+  { text: "2025在线教育的发展与挑战" },
+  { text: "企业数字化执行阻力突破" },
+  { text: "年度工作回顾与未来规划" }
+];
+
+const outline = ref(null)
+const pptId = ref(null)
+
+const logStreamArr = ref([])
 const pagerGenContainerPanelRef = ref(null)
+const dataAnalysisDisplayRef = ref(null)
+
+// 执行面板
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
+
 const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
+// const showArticleOutput = ref(false)
+
+// 表单引用
+// const dialogVisible = ref(false);
+// const formRef = ref(null)
 
 const channelStreamId = ref(route.query.channelStreamId || snowflake.generate())
-const logChannelStreamId = ref(snowflake.generate());
 
-const innerRef = ref(null); // 滚动条的处理_starter
-const scrollbarRef = ref(null);
-
-const formRef = ref(null)
+// 场景表单信息
 const formData = ref({
-  projectName: '',
-   gitUrl: '',
-   sceneId: sceneId.value,
-   isAuth: false,
-   channelStreamId: channelStreamId.value ,
-   logChannelStreamId: logChannelStreamId.value ,
-   gitUsername: '',
-   gitPassword: ''
+  pagerType: 'pager',
+  sceneId: sceneId.value,
+  datasetGroupId: null ,
+  channelStreamId: channelStreamId.value,
+  pptConfig: {
+    writingType: 'general',
+    audience: 'general',
+    scenario: 'general',
+    tone: 'professional'
+  },
+  attachments: [],
 })
 
-const chatStreamLoading = ref(false);
-const logStreamArr =  ref([])
+// 统计信息
+// const totalQuestions = ref(0)
+// const totalScore = ref(0)
 
 const currentSceneInfo = ref({
   sceneName: '通用智能体服务',
 });
 
-// 表单验证规则
-const rules = {
-  projectName:  [
-    { required: true, message: '请输入项目名', trigger: 'blur' },
-  ],
-  gitUrl: [
-    { required: true, message: '请输入项目仓库地址', trigger: 'blur' },
-  ],
-  gitUsername: [
-    { required: true, message: '请输入认证用户名', trigger: 'blur' },
-  ],
-  gitPassword: [
-    { required: true, message: '请输入认证密钥', trigger: 'blur' },
-  ]
-}
-
-
+// 添加attachmentPanelRef引用
 const attachmentPanelRef = ref(null);
 
+// 处理上传成功
 const handleUploadSuccess = (fileInfo) => {
+  console.log('文件上传成功:', fileInfo);
+  // 这里可以保存storageId到表单数据中
+  // 例如: formData.value.attachments.push(fileInfo.storageId);
   formData.value.attachments.push(fileInfo.storageId);
 };
 
-const submitGitProject = async () => {
+// 修改handleUpload方法，直接调用子组件的上传
+const handleUpload = () => {
+  if (attachmentPanelRef.value) {
+    attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
+  }
+};
 
-  if(chatStreamLoading.value){
-    ElMessage.warning('正在导入项目，请稍候...');
-    return ; 
+// 生成业务集成大纲
+const generaterOutlineText = async () => {
+  if (!formData.value.promptText) {
+    ElMessage.error('请输入内容');
+    return;
   }
 
-  // 表单验证
-  formRef.value.validate(async (valid) => {
-    if (valid) {
+  // 打开流容器
+  showDebugRunDialog.value = true;
+  await nextTick(() => {
+    console.log('roleChatPanelRef = ' + roleChatPanelRef)
+    console.log('roleChatPanelRef.value = ' + roleChatPanelRef.value)
+    roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.processCollectorEngineer);
+  })
 
-      chatStreamLoading.value = true ;
-      logStreamArr.value = [] ;// 清空日志
-
-      importGitProject(formData.value).then(res => {
-        console.log('res = ' + res);
-        // streamLoading.value.close();
-
-      }).catch( error => {
-      chatStreamLoading.value = false;
-      })
-    }
+  // 开始生成
+  streamLoading.value = ElLoading.service({
+    lock: true,
+    background: 'rgba(255, 255, 255, 0.5)',
+    customClass: 'custom-loading'
   });
+
+  
+  try {
+
+    let text = 'AI规划正在生成，请稍等...' ; 
+    streamLoading.value.setText(text)
+
+    // 使用await等待异步操作完成
+    const res = await chatPromptContent(formData.value);
+    console.log('res = ' + res.data);
+
+    outline.value = res.data ;
+    formData.value.outline = res.data ;
+
+    nextTick(() => {
+      pagerGenContainerPanelRef.value.setOutlineJson(res.data)
+    })
+
+    ElMessage.success('处理完成');
+  } catch (err) {
+    ElMessage.error('处理失败');
+    // 如果需要在这里跳出函数，可以直接return
+    return;
+  } finally {
+    // 无论成功或失败都关闭loading
+    streamLoading.value.close();
+    showDebugRunDialog.value = false ;
+  }
+
 };
+
+// // 生成PPT
+// const generatorPPT = () => {
+//   savePPTOutline(sceneId.value,
+//     outline.value,
+//     pptId.value,
+//     formData.value.pptConfig,
+//     formData.value.promptText
+//   ).then(res => {
+//     pptId.value = res.data;
+//     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
+//   }).catch(error => {
+//     ElMessage.error(error.message)
+//   })
+// }
+
+// // 计算总题目数和总分
+// const updateTotalStats = (stats) => {
+//   totalQuestions.value = stats.totalQuestions
+//   totalScore.value = stats.totalScore
+// }
 
 
 const handleGetScene = () => {
@@ -238,7 +326,8 @@ const handleGetScene = () => {
       });
     }
 
-    if (!currentSceneInfo.value.progressAnalyzerEngineer|| !currentSceneInfo.value.processCollectorEngineer) { // 选择配置角色
+    if (!currentSceneInfo.value.progressAnalyzerEngineer || !currentSceneInfo.value.processCollectorEngineer) { // 选择配置角色
+      console.log('当前未配置角色')
       roleSelectPanelRef.value.configAgent();
       return;
     }
@@ -246,92 +335,78 @@ const handleGetScene = () => {
   })
 }
 
-function initChatBoxScroll() {
+// // 关闭对话框前的处理
+// const handleClose = (done) => {
+//   // 可以在这里添加关闭前的确认逻辑
+//   done()
+// }
 
-  nextTick(() => {
-    const element = innerRef.value;  // 获取滚动元素
-    const scrollHeight = element.scrollHeight;
-
-    scrollbarRef.value.setScrollTop(scrollHeight);
-  })
-
+const handleExampleClick = (item) => {
+  formData.value.promptText = item.text;
+  // generaterText();
 }
 
-const pushResponseMessageList = (data) => {
-  console.log('data = ' + data);
-  logStreamArr.value.push(data)
+// 保存试卷题目信息
+// const handleSavePagerQuestion = async () => {
 
-  if(data.level === 'FINISH'){
-      showDebugRunDialog.value = false ;  
-      streamLoading.value.close() ;
+//   try {
+//     // 验证表单
+//     await formRef.value.validate()
+//     console.log('保存文章数据:', formData.value)
+
+//     const questionList = pagerGenContainerPanelRef.value.getQuestionList();
+
+//     const data = {
+//       sceneId: sceneId.value,
+//       channelStreamId: channelStreamId.value,
+//       pagerType: formData.value.pagerType,
+//       difficulty: formData.value.difficultyLevel,
+//       examStructure: formData.value.examStructure,
+//       questionList: questionList,
+//     }
+
+//     savePagerQuestion(data).then(res => {
+//       console.log('保存成功:', res)
+//     })
+
+//     ElMessage.success('试卷保存成功')
+//     dialogVisible.value = false
+
+//   } catch (error) {
+//     console.error('保存失败:', error)
+//     ElMessage.error('请填写完整的试卷信息')
+//   }
+
+// }
+
+const generaterText = async () => {
+  if (!formData.value.promptText) {
+    ElMessage.error('请输入内容');
+    return;
   }
 
-  // 最大不能超过100条
-   if (logStreamArr.value.length >= 30) {
-    logStreamArr.value.splice(0, 1);
-  }
+  addTask(formData.value).then(res => {
 
-  initChatBoxScroll();
+    const taskId = res.data;
 
-}
+    router.push({
+       path: '/scene/productResearch/productParser',
+       query: {
+         sceneId: sceneId.value,
+         channelStreamId: snowflake.generate(),
+         taskId: taskId,
+       }
+    })
 
-/** 连接sse */
-function handleSseConnect(channelStreamId) {
-  nextTick(() => {
-    if (channelStreamId) {
-
-      let sseSource = openSseConnectChannel(channelStreamId);
-      // 接收到数据
-      sseSource.onmessage = function (event) {
-        if (!event.data.includes('[DONE]')) {
-          let resData = event.data;
-
-          if (resData != 'ping') {  // 非心跳消息
-            const data = JSON.parse(resData);
-            pushResponseMessageList(data);
-          }
-        } else if(event.data.includes('[DONE]')) {
-          console.log('消息接收结束.')
-          chatStreamLoading.value = false ;
-          openRoleChat() ;
-        }
-
-      }
-    }
   })
-}
 
-const openRoleChat = () => {
-  // 打开流容器
-  showDebugRunDialog.value = true;
-    // 开始生成
-    streamLoading.value = ElLoading.service({
-      lock: true,
-      text: '正在解析内容，请勿刷新，请耐心等待...',
-      customClass: 'project-custom-loading',
-      background: 'rgba(0, 0, 0, 0.2)',
-    });
-
-  nextTick(() => {
-    console.log('roleChatPanelRef = ' + roleChatPanelRef)
-    console.log('roleChatPanelRef.value = ' + roleChatPanelRef.value)
-    roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.processCollectorEngineer);
-  })
-}
-
-// 销毁信息
-onBeforeUnmount(() => {
-  handleCloseSse(logChannelStreamId.value).then(res => {
-    console.log('关闭sse连接成功:' + logChannelStreamId.value)
-  })
-});
-
+};
 
 onMounted(() => {
-
-  handleSseConnect(logChannelStreamId.value);
   handleGetScene();
+  // calculateTotals(); // 初始化统计
 
+  // Add this check for channelStreamId in URL
   if (!route.query.channelStreamId) {
     router.replace({
       query: {
@@ -340,22 +415,48 @@ onMounted(() => {
       }
     });
   }
+
 })
+
 </script>
 
 <style lang="scss" scoped>
-
-.exam-pagercontainer {
+.ppt-pager-container {
   background: #fff;
   height: calc(100vh - 60px);
+
+  .review-footer {
+    padding: 10px;
+    font-size: 14px;
+    background: #fafafa;
+    border-radius: 8px;
+    text-align: left;
+    color: #555;
+    margin-top: 10px;
+  }
 
   .main-content {
     display: flex;
     flex-direction: column;
-    padding-top: calc(2vh);
+    padding-top: calc(1vh);
+    // text-align: center;
+    // max-width: 90%;
     margin: auto;
     padding-left: 20px;
     padding-right: 20px;
+
+    .example-result-section {
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 14px;
+      text-align: left;
+      color: #585a73;
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      align-items: center;
+      gap: 10px;
+    }
 
     .title-section {
       display: flex;
@@ -380,28 +481,38 @@ onMounted(() => {
       }
     }
 
-    .input-button-section2 {
+    .input-button-section {
       display: flex;
       gap: 10px;
       position: relative;
       box-sizing: border-box;
       width: 100%;
-      border-radius: 5px;
-      background: #fafafa ;// rgb(255, 255, 255);
+      border-radius: 15px;
+      // box-shadow: rgba(54, 54, 73, 0.06) 0px 12px 24px -16px, rgba(74, 80, 96, 0.12) 0px 12px 40px, rgba(44, 44, 54, 0.02) 0px 0px 1px;
+      transition: 0.3s;
+      background: rgb(255, 255, 255);
       padding: 10px !important;
-      border: 1px solid #f5f5f5 ; // rgb(232, 234, 242);
+      border: 1px solid rgb(232, 234, 242);
       margin-top: 20px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       align-items: flex-start;
       flex-direction: column;
+
+      .input-box {
+        width: 100%;
+        height: 80px;
+        border: 0px !important;
+        margin-bottom: 0px;
+      }
     }
+
   }
 
   .review-footer-message {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 50px;
+    margin-top: 10px;
     height: 36px;
     padding: 12px 0px;
     text-align: center;
@@ -418,7 +529,8 @@ onMounted(() => {
     padding: 10px;
     text-align: left;
     font-weight: bold;
-    margin-left: 20px;
+    margin-left: 30px;
+    margin-right: 0px;
     margin-bottom: 10px;
     border-radius: 10px;
     background: #fafafa;
@@ -430,17 +542,52 @@ onMounted(() => {
     justify-content: space-between;
   }
 
-  .loading-indicator {
-    margin: 10px;
+  .review-question-preview {
+    height: calc(100vh - 170px);
+    margin-left: 20px;
+    border-radius: 8px;
+    background: #fafafa;
+    border: 1px solid #e8eaf2;
+    overflow: hidden;
   }
 
 }
 
-</style>
-
-<style scoped>
-.product-research-container .input-button-section2 .el-input__wrapper{
-  box-shadow: 0 0 0 1px var(--el-input-border-color,var(--el-border-color)) inset !important;
+.ppt-pager-aside {
+  padding: 0px;
+  border-right: 1px solid #f2f3f7;
+  background: #fff;
+  margin-bottom: 0px;
 }
 
+.ppt-pager-main {
+  padding: 0px !important;
+}
+
+.pager-gen-result-panel {
+  margin-bottom: 20px;
+  margin-left: 10px;
+  text-align: left;
+
+  .pager-container {
+    background-color: #fafafa;
+    margin: 10px 10px;
+    margin-right: 0px;
+    border-radius: 8px;
+    height: calc(100vh - 190px);
+    padding: 10px;
+    padding-left: 10px;
+    margin-left: 20px;
+    margin-bottom: 0px;
+  }
+}
+</style>
+
+
+<style>
+.ppt-pager-container .input-button-section .el-textarea__inner{
+  box-shadow: none !important;
+  padding: 5px;
+  margin-left: 0px;
+}
 </style>
