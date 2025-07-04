@@ -35,7 +35,9 @@
 </template>
 
 <script setup>
+
 import { ref, computed, defineEmits, nextTick } from 'vue';
+import { getLlmIconPath } from '@/utils/llmIcons';
 
 import {
   listAllLlmModel
@@ -94,7 +96,7 @@ nextTick(() => {
     const newModels = response.data.map(item => ({
       id: item.id,
       name: item.modelName,
-      imageUrl: 'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'
+      imageUrl: getLlmIconPath(item.providerCode) 
     }));
     models.value = newModels;
 
