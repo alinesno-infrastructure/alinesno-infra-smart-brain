@@ -1,13 +1,17 @@
 package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.mapper.GeneralAgentPlanMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
+import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +31,11 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
     private IIndustryRoleService roleService ;
 
     @Override
-    public List<TreeNodeDto> getPlanTree(Long sceneId, Long generalAgentPlanId) {
-        log.info("getChapterTree sceneId:{}", sceneId);
+    public List<TreeNodeDto> getPlanTree(Long taskId, Long generalAgentPlanId) {
+        log.info("getChapterTree taskId:{}", taskId);
 
         LambdaUpdateWrapper<GeneralAgentPlanEntity> wrapper = new LambdaUpdateWrapper<>();
-        wrapper.eq(GeneralAgentPlanEntity::getSceneId, sceneId);
-        wrapper.eq(GeneralAgentPlanEntity::getGeneralAgentSceneId, generalAgentPlanId);
+        wrapper.eq(GeneralAgentPlanEntity::getTaskId, taskId);
 
         List<GeneralAgentPlanEntity> allChapters = this.list(wrapper);
         List<TreeNodeDto> treeNodes = new ArrayList<>();
@@ -73,7 +76,12 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
     }
 
     @Override
-    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters, Long parentId, int level, long sceneId , long generalAgentPlanId) {
+    public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters,
+                                          Long parentId,
+                                          int level,
+                                          long sceneId ,
+                                          long taskId ,
+                                          long generalAgentPlanId) {
 
         if (chapters == null || chapters.isEmpty()) {
             return;
@@ -84,16 +92,20 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
             levelNumbers.put(i, 0); // 初始化每个层级的编号为0
         }
 
-        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, generalAgentPlanId , levelNumbers);
+        saveChaptersWithHierarchyHelper(chapters, parentId, level, sceneId, taskId , generalAgentPlanId , levelNumbers);
     }
 
     @Override
-    public void updateChapterEditor(ChatContentEditDto dto, Long generalAgentSceneId) {
+    public void updateChapterEditor(ChatContentEditDto dto, Long generalAgentSceneId, Long taskId) {
+
+        // generalAgentSceneId
         // 删除旧的编辑记录，重新添加新的编辑记录
         LambdaUpdateWrapper<GeneralAgentPlanEntity> updateWrapper = new LambdaUpdateWrapper<>();
 
         updateWrapper.eq(GeneralAgentPlanEntity::getSceneId, dto.getSceneId());
-        updateWrapper.eq(GeneralAgentPlanEntity::getGeneralAgentSceneId, generalAgentSceneId);
+        updateWrapper.eq(GeneralAgentPlanEntity::getTaskId, taskId);
+         updateWrapper.eq(GeneralAgentPlanEntity::getGeneralAgentSceneId, generalAgentSceneId);
+
         updateWrapper.eq(GeneralAgentPlanEntity::getBusinessExecutorEngineerId, dto.getRoleId());
         updateWrapper.set(GeneralAgentPlanEntity::getBusinessExecutorEngineerId, null) ;
         update(updateWrapper) ;
@@ -107,12 +119,19 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
 
             updateBatchById(chapterList);
         }
+
+        // 更新taskGenStatus
+        IGeneralAgentTaskService taskService = SpringUtils.getBean(IGeneralAgentTaskService.class);
+        GeneralAgentTaskEntity task = taskService.getById(taskId);
+        task.setGenStatus(1);
+        taskService.updateById(task);
     }
 
     private void saveChaptersWithHierarchyHelper(List<TreeNodeDto> chapters,
                                                  Long parentId,
                                                  int level,
                                                  long sceneId,
+                                                 long taskId ,
                                                  long generalAgentPlanId ,
                                                  Map<Integer, Integer> levelNumbers) {
         if (chapters == null || chapters.isEmpty()) {
@@ -127,6 +146,7 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
             entity.setParentPlanId(parentId);
             entity.setPlanLevel(level);
             entity.setSceneId(sceneId);
+            entity.setTaskId(taskId);
             entity.setGeneralAgentSceneId(generalAgentPlanId);
             entity.setIsLeaf(chapter.getChildren() == null || chapter.getChildren().isEmpty());
 
@@ -140,7 +160,13 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
             // 递归保存子章节
             if (chapter.getChildren() != null && !chapter.getChildren().isEmpty()) {
                 levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
-                saveChaptersWithHierarchyHelper(chapter.getChildren(), entity.getId(), level + 1, sceneId, generalAgentPlanId , levelNumbers);
+                saveChaptersWithHierarchyHelper(chapter.getChildren(),
+                        entity.getId(),
+                        level + 1,
+                        sceneId,
+                        taskId ,
+                        generalAgentPlanId ,
+                        levelNumbers);
             }
 
             levelNumbers.put(level, levelNumbers.getOrDefault(level, 0) + 1); // 当前层级编号递增
@@ -185,6 +211,13 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
         }
 
         return contentBuilder.toString();
+    }
+
+    @Override
+    public List<GeneralAgentPlanEntity> getChaptersByTaskId(Long taskId) {
+        LambdaQueryWrapper<GeneralAgentPlanEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(GeneralAgentPlanEntity::getTaskId, taskId);
+        return this.list(wrapper);
     }
 
     private void buildChapterContent(GeneralAgentPlanEntity chapter, StringBuilder contentBuilder, int level) {
