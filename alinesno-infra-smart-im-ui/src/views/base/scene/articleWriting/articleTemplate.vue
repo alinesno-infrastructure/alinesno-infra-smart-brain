@@ -11,27 +11,27 @@
     </div>
 
     <!-- 模型列表 -->
-    <el-scrollbar style="height:calc(100vh - 340px)">
-      <div class="article-template-list" v-if="filteredTemplateList.length > 0">
+    <el-scrollbar style="height:calc(100vh - 320px)">
+      <div class="article-template-list" v-if="templateList.length > 0">
 
-        <div class="article-template-item" v-for="item in filteredTemplateList" :key="item.id"
-          :class="{ 'active': selectedTemplateCode === item.id }" @click="selectTemplate(item)">
+        <div class="article-template-item" v-for="item in templateList" :key="item.id"
+          :class="{ 'active': selectedTemplateCode.id === item.id }" @click="selectTemplate(item)">
           <div class="template-icon">
             <img :src="imagePathByPath(item.icon)" alt="模板图标" />
           </div>
 
           <div class="template-content">
             <div class="article-template-item-title">
-              {{ truncateString(item.name, 6) }}
+              {{ truncateString(item.name, 10) }}
             </div>
             <div class="article-template-item-content">
-              {{ truncateString(item.description, 14) }}
+              {{ truncateString(item.description, 34) }}
             </div>
           </div>
         </div>
       </div>
 
-      <div style="justify-content: center;" v-if="filteredTemplateList.length == 0">
+      <div style="justify-content: center;" v-if="templateList.length == 0">
         <el-empty style="padding: 10px;" description="此类型还没有模板，请选项其它类型的模板" image-size="70" />
       </div>
     </el-scrollbar>
@@ -43,7 +43,8 @@
 import { ref, computed, onMounted } from 'vue';
 import {
   getAllArticleTemplateType,
-  getTemplateByType
+  getTemplateByType , 
+  getTemplateDetail ,
 } from '@/api/base/im/scene/articleWriting';
 
 // 接收选中的模板类型
@@ -55,7 +56,7 @@ const props = defineProps({
 });
 
 // 发出选中的模板类型
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue' , 'selectTemplate']);
 
 const templateTypeList = ref([]);
 const templateList = ref([]);
@@ -63,13 +64,13 @@ const selectedType = ref(0); // 默认选中"全部"
 const selectedTemplateCode = ref(props.modelValue);
 
 // 计算属性：根据选中的类型过滤模板列表
-const filteredTemplateList = computed(() => {
-  if (selectedType.value === 0) {
-    // return templateList.value;
-    return templateList.value ; // .slice(0, 7);
-  }
-  return templateList.value.filter(item => item.articleTemplateTypeId === selectedType.value);
-});
+// const filteredTemplateList = computed(() => {
+//   if (selectedType.value === 0) {
+//     // return templateList.value;
+//     return templateList.value ; // .slice(0, 7);
+//   }
+//   return templateList.value.filter(item => item.articleTemplateTypeId === selectedType.value);
+// });
 
 // 选择模板类型
 const selectType = (typeId) => {
@@ -84,20 +85,14 @@ const selectType = (typeId) => {
 // 选择模板
 const selectTemplate = (item) => {
   selectedTemplateCode.value = item.id;
-  emit('update:modelValue', item.id);
+
+  // 查询出模板配置项
+  getTemplateDetail(item.id).then(res => {
+    emit('update:modelValue', res.data);
+    emit('selectTemplate', res.data);
+  })
+
 };
-
-// // 截取字符串
-// const truncateString = (str, maxLength) => {
-//   if (!str) return '';
-//   return str.length > maxLength ? str.substring(0, maxLength) + '...' : str;
-// };
-
-// 图片路径处理函数
-// const imagePathByPath = (path) => {
-//   // 这里应该是项目中的图片路径处理函数
-//   return path || 'https://picsum.photos/60/60?random=template';
-// };
 
 onMounted(() => {
   // 获取所有模板类型
@@ -108,6 +103,9 @@ onMounted(() => {
   // 获取默认模板列表（全部类型）
   getTemplateByType(0).then(res => {
     templateList.value = res.data;
+    if (res.data.length > 0 && !props.modelValue) {
+      selectTemplate(res.data[0]);
+    }
   });
 });
 
