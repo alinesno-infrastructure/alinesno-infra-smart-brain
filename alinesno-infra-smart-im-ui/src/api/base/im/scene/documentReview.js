@@ -14,9 +14,9 @@ var managerUrl = {
 }
 
 // 下载文档
-export function downloadMarkDocx(sceneId) {
+export function downloadMarkDocx(sceneId , taskId) {
   return request({
-    url: managerUrl.downloadMarkDocx + '?sceneId=' + parseStrEmpty(sceneId),
+    url: managerUrl.downloadMarkDocx + '?sceneId=' + parseStrEmpty(sceneId) + '&taskId=' + parseStrEmpty(taskId),
     // responseType: 'blob', // 显式声明返回二进制流
     method: 'get'
   })
@@ -40,27 +40,26 @@ export function genAuditResult(data) {
 }
 
 // 获取预览文档
-export function getPreviewDocx(sceneId) {
+export function getPreviewDocx(taskId) {
   return request({
-    url: managerUrl.getPreviewDocx + '?sceneId=' + parseStrEmpty(sceneId),
-    // responseType: 'arraybuffer', // 显式声明返回二进制流
+    url: managerUrl.getPreviewDocx + '?taskId=' + parseStrEmpty(taskId),
     responseType: 'blob', // 显式声明返回二进制流
     method: 'get'
   })
 }
 
 // 查询场景详细
-export function getSceneResultList(id) {
+export function getSceneResultList(id , taskId) {
   return request({
-    url: managerUrl.getSceneResultList+ '?id=' + parseStrEmpty(id),
+    url: managerUrl.getSceneResultList+ '?id=' + parseStrEmpty(id) + (taskId ? '&taskId=' + parseStrEmpty(taskId) : ''),
     method: 'get'
   })
 }
 
 // 查询场景详细
-export function getScene(id) {
+export function getScene(id , taskId) {
   return request({
-    url: managerUrl.getScene + '?id=' + parseStrEmpty(id),
+    url: managerUrl.getScene + '?id=' + parseStrEmpty(id) + (taskId ? '&taskId=' + parseStrEmpty(taskId) : ''),
     method: 'get'
   })
 }
