@@ -12,10 +12,13 @@ import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
 import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
+import com.alinesno.infra.smart.im.dto.HomePageDto;
+import com.alinesno.infra.smart.im.service.IAccountHomePageService;
 import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -37,6 +40,34 @@ public class ImWorkplaceController {
 
     @Autowired
     private IWorkplaceItemService workplaceItemService;
+
+    @Autowired
+    private IAccountHomePageService accountHomePageService;
+
+    /**
+     * 设置主页setHomePage
+     */
+    @PostMapping("/setHomePage")
+    public AjaxResult setHomePage(@RequestBody @Validated HomePageDto dto) {
+        log.debug("dto = {}", dto);
+
+        long accountId = CurrentAccountJwt.getUserId() ;
+        String homePage = dto.getHomePage() ;
+        String type = dto.getType() ;
+
+        boolean b = accountHomePageService.setHomePage(accountId , homePage , type) ;
+
+        return b?AjaxResult.success() : AjaxResult.error() ;
+    }
+
+    /**
+     * 获取当前用户主页
+     */
+    @GetMapping("/getHomePage")
+    public AjaxResult getHomePage(){
+        long accountId = CurrentAccountJwt.getUserId() ;
+        return AjaxResult.success(accountHomePageService.getByAccountId(accountId)) ;
+    }
 
     /**
      * 是否有工作台
