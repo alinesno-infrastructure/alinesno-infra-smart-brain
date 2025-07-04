@@ -107,13 +107,12 @@ import { getToken } from "@/utils/auth";
 
 import {
   createScene,
+  supportAllScene
 } from '@/api/base/im/scene'
 
 import { reactive, ref, onMounted, nextTick } from 'vue'
 import { ElLoading } from 'element-plus'
-// import { useRouter } from 'vue-router';
 
-import { supportScene } from '@/api/base/im/scene'
 const { proxy } = getCurrentInstance();
 
 const centerDialogVisible = ref(false);
@@ -163,7 +162,7 @@ const handleOpenChannel = (val) => {
 
   reset() ; 
 
-  supportScene().then(res => {
+  supportAllScene().then(res => {
     console.log('res = ' + res);
     sceneList.value = res.data;
   })
@@ -324,7 +323,7 @@ defineExpose({
           }
 
           .scene-description {
-            height: 60px;
+            height: 40px;
           }
         }
       }
