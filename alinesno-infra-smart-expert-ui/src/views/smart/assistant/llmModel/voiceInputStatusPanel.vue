@@ -15,7 +15,7 @@
           <el-option v-for="item in voiceModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
             <template #default>
               <div>
-                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
+                <img :src="getLlmIconPath(item.providerCode)" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
                 {{ item.modelName }}
               </div>
             </template>
@@ -62,6 +62,7 @@ import Recorder from 'js-audio-recorder';
 
 import { nextTick, onMounted, onUnmounted , ref } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus'
+import { getLlmIconPath } from '@/utils/llmIcons';
 
 import { getInfo, chatRole, recognize , recognizeForm } from '@/api/smart/assistant/roleChat'
 
