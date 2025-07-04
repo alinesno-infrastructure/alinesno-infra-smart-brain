@@ -12,7 +12,7 @@
 
           <el-form-item label="搜索条件" prop="searchText">
             <el-input v-model="queryParams.searchText" placeholder="请输入搜索条件" clearable style="width: 540px"
-              @keyup.enter="handleQuery" />
+               />
           </el-form-item>
 
           <el-form-item>
