@@ -2,10 +2,18 @@ package com.alinesno.infra.base.search.vector.service;
 
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
+import com.pgvector.PGvector;
 
 import java.util.List;
 
 public interface IPgVectorService {
+
+    /**
+     * 获取向量
+     * @param queryText
+     * @return
+     */
+    PGvector getEmbeddingVector(String queryText) ;
 
     /**
      * 通过文本查询索引内容
