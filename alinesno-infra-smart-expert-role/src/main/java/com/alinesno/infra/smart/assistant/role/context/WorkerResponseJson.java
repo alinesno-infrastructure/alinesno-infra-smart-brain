@@ -12,6 +12,8 @@ public class WorkerResponseJson {
     @JSONField(name = "thought")
     private String thought; // 对应JSON中的"thought"字段
 
+    private String executeToolOutput =  "" ;  // 工具执行的输出结果
+
     @JSONField(name = "finalAnswer")
     private String finalAnswer; // 对应JSON中的"thought"字段
 
@@ -71,7 +73,7 @@ public class WorkerResponseJson {
         }
         return tools.stream()
                 .filter(tool -> ASK_LEADER_HELP_TOOL.equals(tool.getName()))
-                .map(tool -> tool.getArgsList().get("question")+"")
+                .map(tool -> tool.getArgsList().get("question"))
                 .findFirst()
                 .orElse(null);
     }
