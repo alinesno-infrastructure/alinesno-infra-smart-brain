@@ -17,7 +17,7 @@ public enum SceneEnum {
     // 文章写作场景(ArticleWriting)
     ARTICLE_WRITING(new SceneInfoDto(160000000L, "文章写作", "articleWriting", "专业的文章生成、编辑和优化场景，支持多类型文章创作", "已集成", "1", "", "fa-solid fa-feather", true,
             List.of(
-                    new SceneAgent(160000001L, "写作专员", "articleWriter", "负责文章内容的创作、编辑和优化，确保逻辑连贯、表达流畅"),
+                    new SceneAgent(160000001L, "写作专员", "articleWriter", "负责文章内容的创作、编辑和优化，确保逻辑连贯、表达流畅" , true , true),
                     new SceneAgent(160000002L, "排版专员", "articleLayoutDesigner", "负责文章的格式排版、视觉优化和多媒体元素整合")
             )
     )),
@@ -43,16 +43,8 @@ public enum SceneEnum {
                     new SceneAgent(130000001L, "阅卷专员", "answerChecker", "对学生的答案进行阅卷，给出正确与否的判断，并给出解析答案")
             )
     )),
-    // PPT创作
-    PPT_CREATION(new SceneInfoDto(150000000L, "PPT创作", "pptCreation", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件", "已集成", "1", "", "fa-solid fa-file-powerpoint",
-            List.of(
-                    // PPT内容规划专员、PPT内容生成专员
-                    new SceneAgent(150000001L, "PPT内容规划专员", "pptPlanner", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件。") ,
-                    new SceneAgent(150000002L, "PPT内容生成专员", "pptGenerator", "根据提供的文本内容，自动生成PPT内容，并导出为PPT文件。")
-            )
-    )),
     // 长文场景
-    LONG_TEXT(new SceneInfoDto(10000000L, "文档编写", "longText", "主要用于论文、合同、法律、招投标书编写等长文本场景", "已集成", "1", "", "fa-solid fa-signature",
+    LONG_TEXT(new SceneInfoDto(10000000L, "长文档编写", "longText", "主要用于论文、合同、方案、招投标书编写等超长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             List.of(
                     new SceneAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。" , true),
                     new SceneAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。")
@@ -66,11 +58,11 @@ public enum SceneEnum {
     // 视频生成
     VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "0", "", "fa-solid fa-video",
             List.of(
-                    new SceneAgent(70000701L, "视频脚本生成助手", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
-                    new SceneAgent(70000702L, "视频内容生成助手", "videoGenerator", "根据解析的文本内容，生成视频内容。")
+                    new SceneAgent(70000701L, "视频脚本生成", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
+                    new SceneAgent(70000702L, "视频内容生成", "videoGenerator", "根据解析的文本内容，生成视频内容。")
     ))),
     // 文档阅读
-    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "0", "", "fa-solid fa-book-open-reader",
+    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "1", "", "fa-solid fa-book-open-reader",
             List.of(
                     new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
@@ -83,7 +75,7 @@ public enum SceneEnum {
             )
     )),
     // 项目检索
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "项目检索", "productResearch", "自动接入Git软件项目等，获取到进度更新情况，并进行汇总归纳", "已集成", "1", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "知识库检索", "productResearch", "接入企业不同知识库进行内容深度检索，文档报告分析，预测规划等", "已集成", "1", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "进度采集助手", "progressCollector", "从版本管理系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "项目情况分析助手", "progressAnalyzer", "从版本仓库中提取产品的开发进度信息，并提供数据分析")
@@ -93,13 +85,8 @@ public enum SceneEnum {
                  Arrays.asList(
                      new SceneAgent(170000001L, "需求分析专员", "requirementAnalyzer", "负责解析需求文档，提炼核心功能点与用户交互逻辑"),
                      new SceneAgent(170000002L, "原型设计专员", "prototypeDesigner", "基于需求分析结果，使用专业工具完成高保真原型设计")
-        ))) ,
-    // 项目管理
-    PROJECT_MANAGEMENT(new SceneInfoDto(180000000L, "项目管理", "projectManagement", "负责项目整体规划、进度跟踪与资源协调", "进行中", "0", "", "fa-solid fa-clipboard-list",
-                Arrays.asList(
-                      new SceneAgent(180000001L, "文档生成专员", "documentGenerator", "根据需求生成各类型文档，包括计划、周报、日报等"),
-                      new SceneAgent(180000002L, "进度分析专员", "progressAnalyzer", "根据进度情况分析项目风险，人员安排等")
-    )));
+        )))
+    ;
 
     private final SceneInfoDto sceneInfo;
 
