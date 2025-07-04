@@ -70,8 +70,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath;
 
-    @Value("${alinesno.infra.smart.assistant.maxHistory:100}")
-    protected int maxHistory = 100 ;
+    @Value("${alinesno.infra.smart.assistant.maxHistory:20}")
+    protected int maxHistory = 20 ;
 
     @Autowired
     protected QianWenNewApiLLM qianWenNewApiLLM ;
