@@ -64,6 +64,14 @@ public class ArticleTemplateController extends BaseController<ArticleTemplateEnt
     }
 
     /**
+     * 获取模板详情
+     */
+    @GetMapping("/getTemplateDetail")
+    public AjaxResult getTemplateDetail(@RequestParam(value = "templateId") Long templateId) {
+        return AjaxResult.success(service.getById(templateId));
+    }
+
+    /**
      * 获取所有的模板
      *
      * @param query
