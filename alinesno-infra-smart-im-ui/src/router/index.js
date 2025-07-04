@@ -39,6 +39,12 @@ const screenRoutes = [
     name: '/scene/longText/textParser',
     meta: { title: '长文本场景', icon: 'dashboard', affix: true }
   },
+  {
+    path: '/scene/longText/longTextManager',
+    component: () => import('@/views/base/scene/longText/longTextManager'),
+    name: '/scene/longText/longTextManager',
+    meta: { title: '长文本场景', icon: 'dashboard', affix: true }
+  },
   // -->>>>>>>>>>>> 长文本场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 文档审核场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -66,6 +72,12 @@ const screenRoutes = [
     name: '/scene/documentReview/addDataset',
     meta: { title: '添加审核清单', icon: 'fa-solid fa-file-pen', affix: true }
   },
+  {
+    path: '/scene/documentReview/reviewManager',
+    component: () => import('@/views/base/scene/documentReview/reviewManager'),
+    name: '/scene/documentReview/reviewManager',
+    meta: { title: '审核历史任务', icon: 'fa-solid fa-chart-line', affix: true }
+  },
   // -->>>>>>>>>>>> 文档审核场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
   
   // -->>>>>>>>>>>> 文档阅读场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -73,13 +85,19 @@ const screenRoutes = [
     path: '/scene/documentReader/index',
     component: () => import('@/views/base/scene/documentReader/index'),
     name: '/scene/documentReader/index',
-    meta: { title: '文档阅读场景', icon: 'fa-solid fa-book-open', affix: true }
+    meta: { title: '阅读场景', icon: 'fa-solid fa-book-open', affix: true }
   },
   {
     path: '/scene/documentReader/documentParser',
     component: () => import('@/views/base/scene/documentReader/documentParser'),
     name: '/scene/documentReader/documentParser',
-    meta: { title: '文档阅读解析', icon: 'fa-solid fa-file-pen', affix: true }
+    meta: { title: '阅读解析', icon: 'fa-solid fa-file-pen', affix: true }
+  },
+  {
+    path: '/scene/documentReader/readerManager',
+    component: () => import('@/views/base/scene/documentReader/readerManager'),
+    name: '/scene/documentReader/readerManager',
+    meta: { title: '阅读记录', icon: 'fa-solid fa-file-pen', affix: true }
   },
   // -->>>>>>>>>>>> 文档阅读场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -125,6 +143,12 @@ const screenRoutes = [
     component: () => import('@/views/base/scene/examPager/examManager'),
     name: '/scene/examPager/examManager',
     meta: { title: '考试管理', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
+  {
+    path: '/scene/examPager/examMakring',
+    component: () => import('@/views/base/scene/examPager/markExamPager'),
+    name: '/scene/examPager/examMakring',
+    meta: { title: '试卷阅卷', icon: 'fa-solid fa-file-invoice', affix: true }
   },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -183,6 +207,12 @@ const screenRoutes = [
     name: '/scene/pptCreation/pptManager',
     meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
   },
+  {
+    path: '/scene/pptCreation/pptEditor',
+    component: () => import('@/views/base/scene/pptCreation/pptEditor'),
+    name: '/scene/pptCreation/pptEditor',
+    meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
   // -->>>>>>>>>>>> PPT编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 内容排版_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -206,6 +236,18 @@ const screenRoutes = [
     component: () => import('@/views/base/scene/videoGeneration/index'),
     name: '/scene/videoGeneration/index',
     meta: { title: '短视频生成场景', icon: 'fa-solid fa-file-word', affix: true }
+  },
+  {
+    path: '/scene/videoGeneration/videoManager',
+    component: () => import('@/views/base/scene/videoGeneration/videoManager'),
+    name: '/scene/videoGeneration/videoManager',
+    meta: { title: '短视频管理', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/videoGeneration/mediaParser',
+    component: () => import('@/views/base/scene/videoGeneration/mediaParser'),
+    name: '/scene/videoGeneration/mediaParser',
+    meta: { title: '短视频编辑', icon: 'fa-solid fa-chart-line', affix: true }
   },
   // -->>>>>>>>>>>> 短视频生成场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
@@ -249,6 +291,12 @@ const screenRoutes = [
     name: '/scene/productResearch/teamConfiguration',
     meta: { title: '团队配置', icon: 'fa-solid fa-chart-line', affix: true }
   },
+  {
+    path: '/scene/productResearch/productParser',
+    component: () => import('@/views/base/scene/productResearch/productParser'),
+    name: '/scene/productResearch/productParser',
+    meta: { title: '检索面板', icon: 'fa-solid fa-chart-line', affix: true }
+  },
   // -->>>>>>>>>>>> 产品进度汇总场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 通用智能体_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -257,6 +305,12 @@ const screenRoutes = [
     component: () => import('@/views/base/scene/generalAgent/index'),
     name: '/scene/generalAgent/index',
     meta: { title: '通用智能体', icon: 'fa-solid fa-chart-line', affix: true }
+  },
+  {
+    path: '/scene/generalAgent/taskManager',
+    component: () => import('@/views/base/scene/generalAgent/taskManager'),
+    name: '/scene/generalAgent/taskManager',
+    meta: { title: '智能体任务', icon: 'fa-solid fa-chart-line', affix: true }
   },
   {
     path: '/scene/generalAgent/agentParser',
@@ -274,6 +328,12 @@ const deepsearchRoutes = [
     component: () => import('@/views/base/scene/deepsearch/index'),
     name: '/scene/deepsearch/index',
     meta: { title: '深度搜索', icon: 'fa-solid fa-magnifying-glass', affix: true }
+  },
+  {
+    path: '/scene/deepsearch/searchManager',
+    component: () => import('@/views/base/scene/deepsearch/searchManager'),
+    name: '/scene/deepsearch/searchManager',
+    meta: { title: '报告管理', icon: 'fa-solid fa-magnifying-glass', affix: true }
   },
 ]
 
@@ -318,6 +378,28 @@ export const constantRoutes = [
     path: '/401',
     component: () => import('@/views/error/401'),
     hidden: true
+  },
+  {
+    path: '/scene/examPager/onlineExamPager/:examId',
+    component: () => import('@/views/base/scene/examPager/components/OnlineExamPager'),
+    name: '/scene/examPager/onlineExamPager',
+    meta: { 
+      title: '在线考试', 
+      icon: 'fa-solid fa-file-invoice', 
+      auth: false ,
+      affix: true 
+    }
+  },
+  {
+    path: '/scene/examPager/onlineExamAnalysis/:examId',
+    component: () => import('@/views/base/scene/examPager/examResultAnalysis'),
+    name: '/scene/examPager/onlineExamAnalysis',
+    meta: { 
+      title: '考试结果分析', 
+      icon: 'fa-solid fa-file-invoice', 
+      auth: false ,
+      affix: true 
+    }
   },
   {
     path: '',
@@ -395,6 +477,14 @@ export const constantRoutes = [
         component: () => import('@/views/learnPanel'),
         name: '/dashboard/learnPanel',
         meta: { title: '学习手册', icon: 'dashboard', affix: true }
+      },
+
+      // 知识库
+      {
+        path: '/knowledge',
+        component: () => import('@/views/base/knowledge/index'),
+        name: '/knowledge',
+        meta: { title: '知识库', icon: 'dashboard', affix: true }
       },
 
       // ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
