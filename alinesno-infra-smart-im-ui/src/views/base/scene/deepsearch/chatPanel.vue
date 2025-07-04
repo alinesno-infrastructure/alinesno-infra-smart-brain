@@ -739,7 +739,7 @@ onBeforeUnmount(() => {
       padding: 10px;
       line-height: 1.4rem;
       border-radius: 5px;
-      background: #fafafa;
+      background: #f5f5f5;
     }
 
   }
