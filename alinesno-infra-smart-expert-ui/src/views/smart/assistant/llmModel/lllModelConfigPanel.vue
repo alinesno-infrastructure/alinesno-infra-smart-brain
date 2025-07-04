@@ -1,56 +1,30 @@
 <template>
     <div>
-        <el-form :model="modelConfig" :rules="rules" label-width="100" :label-Position="'left'" style="padding:20px"
-            ref="formRef">
-            <el-form-item label="AI模型">
-                <el-select v-model="modelConfig.aiModel" disabled placeholder="请选择大模型" size="large" style="width:100%">
-                    <el-option v-for="item in llmModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
-                        <template #default>
-                            <div>
-                                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标"
-                                    style="width: 25px; height: 25px; border-radius: 50%;">
-                                {{ item.modelName }}
-                            </div>
-                        </template>
-                    </el-option>
-                </el-select>
+        <el-form :model="modelConfig" :rules="rules" label-width="100" :label-Position="'left'" style="padding:20px" ref="formRef">
+
+            <el-form-item label="是否启用" prop="enabled">
+                <el-radio-group size="large" v-model="modelConfig.enabled">
+                <el-radio :value="true">启用</el-radio>
+                <el-radio :value="false">不启用</el-radio>
+                </el-radio-group>
             </el-form-item>
+
             <el-form-item label="记忆轮数" prop="memoryRounds">
-                <el-slider size="large" show-input v-model="modelConfig.memoryRounds" :step="1" :max="30" />
+                <el-slider size="large" show-input v-model="modelConfig.memoryRounds" :step="1" :max="30" :input-width="180"  />
             </el-form-item>
             <el-form-item label="回复上限" prop="replyLimit">
-                <el-slider size="large" show-input v-model="modelConfig.replyLimit" :step="1" :max="4000" />
+                <el-slider size="large" show-input v-model="modelConfig.replyLimit" :step="1" :max="8192" :input-width="180" />
             </el-form-item>
             <el-form-item label="温度" prop="temperature">
-                <el-slider size="large" show-input v-model="modelConfig.temperature" :step="1" :max="10" />
+                <el-slider size="large" show-input v-model="modelConfig.temperature" :step="0.1" :max="1" :input-width="180" />
             </el-form-item>
             <el-form-item label="Top_p" prop="topP">
-                <el-slider size="large" show-input v-model="modelConfig.topP" :step="0.1" :max="1" />
+                <el-slider size="large" show-input v-model="modelConfig.topP" :step="0.1" :max="1" :input-width="180" />
             </el-form-item>
-            <el-form-item label="回复格式" prop="replayFormat">
-                <el-row style="width:100%">
-                    <el-col :span="8">
-                        <el-checkbox v-model="modelConfig.replyFormatEnabled">回复格式设置</el-checkbox>
-                    </el-col>
-                    <el-col :span="16">
-                        <el-radio-group size="large" v-model="modelConfig.replayFormat" v-if="modelConfig.replyFormatEnabled">
-                            <el-radio value="json">JSON</el-radio>
-                            <el-radio value="text">TEXT</el-radio>
-                        </el-radio-group>
-                    </el-col>
-                </el-row>
+            <el-form-item label="执行循环数" prop="memoryRounds">
+                <el-slider size="large" show-input v-model="modelConfig.maxLoop" :step="1" :max="10" :input-width="180"  />
             </el-form-item>
-            <el-form-item label="停止序列" prop="stopSequences">
-                <el-row style="width:100%">
-                    <el-col :span="8">
-                        <el-checkbox v-model="modelConfig.stopSequencesEnabled">停止序列设置</el-checkbox>
-                    </el-col>
-                    <el-col :span="16">
-                        <el-input v-model="modelConfig.stopSequences" size="large"
-                            placeholder="多个序列号通过 | 隔开，例如：finalAnswer|stop" v-if="modelConfig.stopSequencesEnabled" />
-                    </el-col>
-                </el-row>
-            </el-form-item>
+
             <el-form-item style="margin-top: 10px;">
                 <div style="display: flex;justify-content: flex-end;width: 100%;">
                     <el-button text bg size="large" @click="modelConfigDialogVisible = false">关闭</el-button>
@@ -68,20 +42,15 @@ import { ElMessage } from 'element-plus';
 const emit = defineEmits(['setAgentModelConfig'])
 
 const modelConfig = ref({
-    aiModel: '',
-    memoryRounds: '',
-    replyLimit: '',
-    temperature: '',
-    topP: '',
-    replayFormat: '',
-    stopSequences: '',
-    replyFormatEnabled: false ,
-    stopSequencesEnabled: false
+    enabled: false ,
+    memoryRounds: 3,
+    replyLimit: 2048,
+    temperature: 0.7,
+    topP: 0.9,
+    maxLoop: 5
 });
 
 const llmModelOptions = ref([]);
-// const replyFormatEnabled = ref(false);
-// const stopSequencesEnabled = ref(false);
 const modelConfigDialogVisible = ref(false);
 const formRef = ref();
 
@@ -94,7 +63,7 @@ const validateCallback = (field) => {
         if (field === 'memoryRounds' && value > 30) {
             return callback(new Error('记忆轮数不能超过30'));
         }
-        if (field === 'replyLimit' && value > 4000) {
+        if (field === 'replyLimit' && value > 1280000) {
             return callback(new Error('回复上限不能超过4000'));
         }
         if (field === 'temperature' && value > 10) {
@@ -114,6 +83,9 @@ const validateCallback = (field) => {
 };
 
 const rules = {
+    enable: [
+        { required: true, message: '请选择执行场景', trigger: 'change' }
+    ],
     aiModel: [
         { required: true, message: '请选择AI模型', trigger: 'change' }
     ],
@@ -150,8 +122,10 @@ const handleSubmit = () => {
 };
 
 const setAgentModelParams = (modelParams) => {
-    console.log('setAgentModelParams modelParams = ' + JSON.stringify(modelParams));
-    modelConfig.value = modelParams
+    if(modelParams){
+        console.log('setAgentModelParams modelParams = ' + JSON.stringify(modelParams));
+        modelConfig.value = modelParams
+    }
 }
 
 defineExpose({ 
