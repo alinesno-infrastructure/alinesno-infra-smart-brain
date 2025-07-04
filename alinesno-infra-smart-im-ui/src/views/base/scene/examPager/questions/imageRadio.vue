@@ -1,10 +1,15 @@
 <template>
     <questionContainer :question="question">
         <div class="imageCheck-question-wrapper">
-            <div class="imageCheck-question-items" v-for="(item, index) in  props.question.answers" :key="index">
+            <div class="imageCheck-question-items" 
+                 v-for="(item, index) in props.question.answers" 
+                 :key="index"
+                 :class="{ 'selected': isSelected(index) }"
+                 @click="handleItemClick(index)">
                 <ImageAnswerCard 
                     :item="item"
-                    :checked="isAnswerChecked(index)"
+                    :isQuestionEdit="props.isQuestionEdit"
+                    :checked="isSelected(index)"
                     :checkType="question.selectType || 'radio'"
                     @update:item="updateAnswer(index, $event)"
                     @change="handleAnswerChange(index, $event)"
@@ -15,90 +20,99 @@
 </template>
 
 <script setup>
-
-import { defineProps ,defineEmits , ref } from 'vue'
-
+import { defineProps, defineEmits, ref } from 'vue'
 import questionContainer from '@/views/base/scene/examPager/common/questionContainer.vue'
-import ImageAnswerCard  from '../components/ImageAnswerCard.vue'
+import ImageAnswerCard from '../components/ImageAnswerCard.vue'
 
-const emits = defineEmits(['updateHandleQuestionImageAnswer'])
+const emits = defineEmits(['updateHandleQuestionImageAnswer', 'update-handleUpdateQuestion'])
 
 const props = defineProps({
     question: {
         type: Object,
         required: true
+    },
+    isQuestionEdit: {
+        type: Boolean,
+        default: true,
+        required: false
     }
 })
 
-// 初始化选中状态
-const selectedAnswers = ref([])
+// 当前选中的答案索引
+const selectedIndex = ref(-1)
 
-// 检查答案是否被选中
-const isAnswerChecked = (index) => {
-    return selectedAnswers.value.includes(index)
+// 检查是否选中
+const isSelected = (index) => {
+    return selectedIndex.value === index
 }
 
-// 处理选中状态变化
+// 处理选项点击
+const handleItemClick = (index) => {
+    if (props.isQuestionEdit) return
+    
+    selectedIndex.value = index
+    updateQuestionSelection(index)
+}
+
+// 处理答案变化
 const handleAnswerChange = (index, checked) => {
-    console.log('选项已改变:', index, checked)
-
-    let selectType  = props.question.selectType
-    if(!selectType){
-        selectType = 'radio'
-    }
-
-    if (selectType === 'radio') {
-        // 单选逻辑
-        selectedAnswers.value = checked ? [index] : []
-    } else {
-        // 多选逻辑
-        if (checked) {
-            if (!selectedAnswers.value.includes(index)) {
-                selectedAnswers.value.push(index)
-            }
-        } else {
-            selectedAnswers.value = selectedAnswers.value.filter(i => i !== index)
-        }
+    if (checked) {
+        selectedIndex.value = index
+        updateQuestionSelection(index)
     }
 }
 
-// 添加更新答案的方法
+// 更新题目选中状态
+const updateQuestionSelection = (selectedIndex) => {
+    const updatedQuestion = {
+        ...props.question,
+        answers: props.question.answers.map((item, index) => ({
+            ...item,
+            selected: index === selectedIndex
+        }))
+    }
+    
+    emits('update-handleUpdateQuestion', updatedQuestion)
+}
+
+// 更新答案
 const updateAnswer = (index, newItem) => {
-    console.log('updateAnswer index = ' + index + ' newItem = ' + JSON.stringify(newItem))
-    // props.question.answers[index] = { ...newItem }
-    emits('updateHandleQuestionImageAnswer', props.question.id , index, newItem)
+    emits('updateHandleQuestionImageAnswer', props.question.id, index, newItem)
 }
-
 </script>
 
 <style lang="scss" scoped>
-
 .imageCheck-question-wrapper {
     display: flex;
     flex-direction: row;
     gap: 10px;
     width: 100%;
+    flex-wrap: wrap;
 
     .imageCheck-question-items {
         display: flex;
-        width: 25%;
+        width: calc(25% - 10px);
         flex-direction: row;
-        // padding: 10px;
-        gap: 5px;
         border-radius: 3px;
         font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        
+        &.selected {
+            box-shadow: 0 0 0 2px #2378ff;
+            border-radius: 8px;
+        }
 
-        .imageCheck-question-item-content {
-            background: #f5f5f5;
-            img {
-                width:100%;
-                border-radius: 5px;;
-            }
-            .text {
-                padding: 5px;
-            }
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     }
 }
 
+@media (max-width: 768px) {
+    .imageCheck-question-items {
+        width: calc(50% - 10px) !important;
+    }
+}
 </style>
