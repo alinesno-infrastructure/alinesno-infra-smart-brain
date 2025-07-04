@@ -5,11 +5,11 @@
 
     <div class="aip-page-header">
       <div class="logo-section">
-        <img src="http://data.linesno.com/logo_2.png" alt="AIP 智能体平台 logo">
+        <img :src="AIPLogo" alt="AIP 智能体平台 logo">
         AIP 智能体平台
       </div>
       <div class="nav-link">
-        <a href="http://portal.infra.linesno.com/" target="_blank">
+        <a href="http://cloud.linesno.com/" target="_blank">
           <i class="fa-solid fa-link"></i> 官网
         </a>
       </div>
@@ -223,6 +223,7 @@ import { ElLoading, ElMessage } from 'element-plus'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
+import AIPLogo from '@/assets/logo/logo.png'
 
 import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
 import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
