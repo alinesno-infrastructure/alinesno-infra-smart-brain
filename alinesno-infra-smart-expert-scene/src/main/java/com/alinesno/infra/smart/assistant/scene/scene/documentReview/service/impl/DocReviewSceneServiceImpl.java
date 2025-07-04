@@ -3,8 +3,11 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.im
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.utils.GenPdfTool;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
+import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller.ReviewListOptionEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
@@ -19,10 +22,6 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
-import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
-import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
-import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
-import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -130,7 +129,7 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
     @Override
     @NotNull
-    public DocReviewSceneInfoDto getDocReviewSceneInfoDto(long id, SceneEntity entity) {
+    public DocReviewSceneInfoDto getDocReviewSceneInfoDto(long sceneId , long taskId , SceneEntity entity) {
         LongTextSceneDto dto = new LongTextSceneDto();
         BeanUtils.copyProperties(entity, dto);
 
@@ -145,7 +144,12 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
         // 查询出Entity信息
         PermissionQuery query = new PermissionQuery() ;
         BeanUtils.copyProperties(dto , query) ;
-        DocReviewSceneEntity docReviewSceneEntity = getBySceneId(id , query);
+        DocReviewSceneEntity docReviewSceneEntity = getBySceneId(sceneId , query);
+
+        DocReviewTaskEntity taskEntity = null ;
+        if(taskId > 0){
+            taskEntity = SpringUtils.getBean(IDocReviewTaskService.class).getById(taskId);
+        }
 
         if(docReviewSceneEntity != null){
 
@@ -154,19 +158,22 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
             docSceneInfoDto.setLogicReviewerEngineer(docReviewSceneEntity.getLogicReviewerEngineer());
             docSceneInfoDto.setLogicReviewerEngineerEntity(roleService.getById(docReviewSceneEntity.getLogicReviewerEngineer()));
-
-            docSceneInfoDto.setAuditId(docReviewSceneEntity.getAuditId());
-            docSceneInfoDto.setContractType(docReviewSceneEntity.getContractType());
-            docSceneInfoDto.setReviewPosition(docReviewSceneEntity.getReviewPosition()) ;
-            docSceneInfoDto.setReviewListKnowledgeBase(docReviewSceneEntity.getReviewListKnowledgeBase());
-            docSceneInfoDto.setContractOverview(docReviewSceneEntity.getContractOverview());
-            docSceneInfoDto.setDocumentId(docReviewSceneEntity.getDocumentId());
-            docSceneInfoDto.setReviewListOption(docReviewSceneEntity.getReviewListOption());
-
-            docSceneInfoDto.setReviewList(docReviewSceneEntity.getReviewList());
-            docSceneInfoDto.setDocumentName(docReviewSceneEntity.getDocumentName());
-            docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(docReviewSceneEntity.getReviewList(), DocReviewRulesDto.class));
             docSceneInfoDto.setGenStatus(docReviewSceneEntity.getGenStatus());
+
+            if(taskEntity != null){
+                docSceneInfoDto.setDocumentName(taskEntity.getDocumentName());
+                docSceneInfoDto.setDocumentId(taskEntity.getDocumentId());
+                docSceneInfoDto.setAuditId(taskEntity.getAuditId());
+                docSceneInfoDto.setContractType(taskEntity.getContractType());
+                docSceneInfoDto.setReviewPosition(taskEntity.getReviewPosition()) ;
+                docSceneInfoDto.setReviewListKnowledgeBase(taskEntity.getReviewListKnowledgeBase());
+                docSceneInfoDto.setContractOverview(taskEntity.getContractOverview());
+                docSceneInfoDto.setDocumentId(docReviewSceneEntity.getDocumentId());
+                docSceneInfoDto.setReviewListOption(taskEntity.getReviewListOption());
+
+                docSceneInfoDto.setReviewList(taskEntity.getReviewList());
+                docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(taskEntity.getReviewList(), DocReviewRulesDto.class));
+            }
         }
 
         docSceneInfoDto.setContractTypes(ContractTypeEnum.getContractScenarioList());
@@ -174,12 +181,13 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     }
 
     @Override
-    public DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long id, SceneEntity entity) {
-        DocReviewSceneInfoDto docSceneInfoDto = getDocReviewSceneInfoDto(id , entity) ;
+    public DocReviewSceneInfoDto getDocReviewSceneInfoDtoWithResultCount(long sceneId , long taskId,  SceneEntity entity) {
+        DocReviewSceneInfoDto docSceneInfoDto = getDocReviewSceneInfoDto(sceneId ,taskId , entity) ;
 
         List<DocReviewAuditResultEntity> auditResultList = docReviewAuditResultService.list(
                 new LambdaQueryWrapper<DocReviewAuditResultEntity>()
-                        .eq(DocReviewAuditResultEntity::getSceneId, id)
+                        .eq(DocReviewAuditResultEntity::getSceneId, sceneId)
+                        .eq(DocReviewAuditResultEntity::getTaskId, taskId)
         );
 
         if(docSceneInfoDto.getReviewListDtos() != null){
@@ -205,38 +213,38 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     }
 
     @Override
-    public String genMarkdownReport(long sceneId, PermissionQuery query, Long docReviewSceneId) {
+    public String genMarkdownReport(long sceneId, PermissionQuery query, Long docReviewSceneId, long taskId) {
 
-        DocReviewSceneEntity docReviewSceneEntity = getById(docReviewSceneId) ;
+//        DocReviewSceneEntity docReviewSceneEntity = getById(docReviewSceneId) ;
+        DocReviewTaskEntity taskEntity = SpringUtils.getBean(IDocReviewTaskService.class).getById(taskId);
 
         // 获取到所有的审核结果
         List<DocReviewAuditResultEntity> auditResultList = docReviewAuditResultService.list(
                 new LambdaQueryWrapper<DocReviewAuditResultEntity>()
                         .eq(DocReviewAuditResultEntity::getOrgId, query.getOrgId())
                         .eq(DocReviewAuditResultEntity::getSceneId, sceneId)
-                        .eq(DocReviewAuditResultEntity::getDocReviewSceneId, docReviewSceneId)
+                        .eq(DocReviewAuditResultEntity::getTaskId, taskId)
         );
 
         // 审核markdown封面信息
-        String documentName = docReviewSceneEntity.getDocumentName() ;  // 审核文件名称
-        String auditOption = docReviewSceneEntity.getReviewListOption() ;  // 审核方式
-        String dateTime = DateUtils.format(docReviewSceneEntity.getAddTime(), DateUtils.ISO8601_DATETIME_PATTERN) ;  // 审核时间
+        String documentName = taskEntity.getDocumentName() ;  // 审核文件名称
+        String auditOption = taskEntity.getReviewListOption() ;  // 审核方式
+        String dateTime = DateUtils.format(taskEntity.getAddTime(), DateUtils.ISO8601_DATETIME_PATTERN) ;  // 审核时间
 
         // 规则清单
         List<DocReviewRulesEntity> rules;
-        if(docReviewSceneEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){  // 使用AI生成的审核清单
+        if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){  // 使用AI生成的审核清单
             // 解析获取得到审核内容
-            rules = JSONArray.parseArray(docReviewSceneEntity.getReviewList(), DocReviewRulesEntity.class) ;
-        }else if(docReviewSceneEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())) {  // 使用自定义的审核清单
+            rules = JSONArray.parseArray(taskEntity.getReviewList(), DocReviewRulesEntity.class) ;
+        }else if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())) {  // 使用自定义的审核清单
             // 以逗号分隔，获取规则 ID 列表
-            rules = docReviewAuditService.getRulesByAuditId(docReviewSceneEntity.getAuditId()) ;
+            rules = docReviewAuditService.getRulesByAuditId(taskEntity.getAuditId()) ;
         } else {
             rules = null;
         }
 
         // 整理在markdown格式
-        StringBuilder markdown = GenPdfTool.getGenDocReviewMarkdownReport(documentName, auditOption, dateTime, rules, auditResultList);
-
+        StringBuilder markdown = GenPdfTool.getGenDocReviewMarkdownReport(documentName, auditOption, dateTime, rules, auditResultList , taskId);
         return markdown.toString();
     }
 
