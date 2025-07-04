@@ -37,7 +37,7 @@
               :body-style="{ padding: '0px !important' }"
               :class="form.themeStyle === option.code? 'select-card' : ''"
               shadow="never">
-              <img :src="`http://data.linesno.com/icons/aip-style/${option.code}.png`" class="image">
+              <img :src="getAipStyle(option.code)" class="image">
               <div style="padding: 14px;line-height: 1.2rem;">
                 <span>{{ option.desc }}</span>
                 <div class="bottom clearfix">
@@ -74,63 +74,20 @@
             <el-radio value="display">显示</el-radio>
           </el-radio-group>
         </el-form-item>
-
-        <!-- 
-        <el-divider>默认模型配置</el-divider>
-        <div class="default-model-config">
-          <el-form-item label="默认生成模型" prop="defaultLargeModel">
-            <div style="display: flex;flex-direction: row;width: 100%;gap: 20px;align-items: center;">
-              <el-select v-model="form.defaultLargeModel" placeholder="请选择大模型"
-                size="large" style="width:100%">
-                <el-option v-for="item in llmModelOptions" :key="item.id"
-                  :label="item.modelName" :value="item.id">
-                  <template #default>
-                    <div>
-                      <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'"
-                        alt="图标"
-                        style="width: 25px; height: 25px; border-radius: 50%;">
-                      {{ item.modelName }}
-                    </div>
-                  </template>
-                </el-option>
-              </el-select>
-              <el-button type="primary" text bg @click="selectDefaultLargeModel">配置Prompt</el-button>
-            </div>
-          </el-form-item>
-          <el-form-item label="默认图片模型" prop="defaultImageModel">
-            <div style="display: flex;flex-direction: row;width: 100%;gap: 20px;align-items: center;">
-              <el-select v-model="form.defaultImageModel" placeholder="请选择图片生成模型"
-                size="large" style="width:100%">
-                <el-option v-for="item in imageModelOptions" :key="item.id"
-                  :label="item.modelName" :value="item.id">
-                  <template #default>
-                    <div>
-                      <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'"
-                        alt="图标"
-                        style="width: 25px; height: 25px; border-radius: 50%;">
-                      {{ item.modelName }}
-                    </div>
-                  </template>
-                </el-option>
-              </el-select>
-              <el-button type="primary" text bg @click="selectDefaultImageModel">配置Prompt</el-button>
-            </div>
-          </el-form-item>
-          <el-form-item label="频道最多人数" prop="maxChannelPeople">
-            <el-input-number
-              type="input"
-              maxlength="500"
-              size="large"
-              min="2"
-              max="20"
-              show-word-limit
-              v-model="form.maxChannelPeople"
-              placeholder="请输入频道最多人数">
-              <template #append>人</template>
-            </el-input-number>
-          </el-form-item>
-        </div> 
-        -->
+        <el-form-item label="工作台地址" prop="studioUrl">
+          <el-row style="width:100%">
+            <el-col :span="20">
+              <el-input
+                type="input"
+                maxlength="250"
+                size="large"
+                show-word-limit
+                v-model="form.studioUrl"
+                placeholder="请输入产品名称"
+              ></el-input>
+            </el-col>
+          </el-row>
+        </el-form-item>
 
         <br />
         <el-form-item>
@@ -193,6 +150,7 @@ import { ref, reactive, onMounted } from 'vue';
 import { getToken } from "@/utils/auth";
 import { ElMessage, ElDialog } from 'element-plus';
 
+import { getAipStyle } from "@/utils/llmIcons"
 import { listAllLlmModel } from "@/api/smart/assistant/llmModel";
 import { getByOrg , addGlobalConfig } from "@/api/smart/assistant/globalConfig";
 
@@ -245,7 +203,8 @@ const form = ref({
   defaultLargeModel: '',
   defaultImageModel: '',
   maxChannelPeople: 0,
-  displayService: 'none'
+  displayService: 'none' , 
+  studioUrl: 'http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com'
 });
 
 const rules = ref({
@@ -262,6 +221,10 @@ const rules = ref({
   ],
   defaultImageModel: [
     { required: true, message: '请选择默认图片模型', trigger: 'blur' }
+  ],
+  studioUrl: [
+    { required: true, message: '请输入工作台地址', trigger: 'blur' },
+    { min: 1, max: 500, message: '工作台地址长度在1到500之间', trigger: 'blur' }
   ],
   maxChannelPeople: [
     { required: true, message: '请输入频道最多人数', trigger: 'blur' },
