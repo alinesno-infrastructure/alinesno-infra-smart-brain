@@ -33,7 +33,7 @@
           <el-option v-for="item in multiModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
             <template #default>
               <div>
-                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
+                <img :src="getLlmIconPath(item.providerCode)" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
                 {{ item.modelName }}
               </div>
             </template>
@@ -47,12 +47,16 @@
           <el-option v-for="item in ocrModelOptions" :key="item.id" :label="item.modelName" :value="item.id">
             <template #default>
               <div>
-                <img :src="'http://data.linesno.com/icons/llm/' + item.providerCode + '.png'" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
+                <img :src="getLlmIconPath(item.providerCode)" alt="图标" style="width: 25px; height: 25px; border-radius: 50%;">
                 {{ item.modelName }}
               </div>
             </template>
           </el-option>
         </el-select>
+      </el-form-item>
+
+      <el-form-item label="字符长度" prop="maxLength">
+          <el-slider size="large" show-input v-model="formData.maxLength" :step="100" :max="30000" />
       </el-form-item>
 
       <!-- 提交按钮 -->
@@ -71,6 +75,7 @@
 import { nextTick, onUnmounted , ref } from 'vue';
 import { ElMessage } from 'element-plus'
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+import { getLlmIconPath } from '@/utils/llmIcons';
 
 const emit = defineEmits(['handleAttachmentUploadStatusPanelClose'])
 
