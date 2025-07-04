@@ -3,7 +3,7 @@
 
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
-      <el-aside width="280px" class="ppt-pager-aside">
+      <el-aside width="80px" class="ppt-pager-aside">
         <FunctionList />
       </el-aside>
 
@@ -75,6 +75,7 @@
               </div>
 
             </el-col>
+
             <el-col :span="13">
               <div class="review-question-preview-title">
                 <span>
@@ -84,6 +85,7 @@
                   <i class="fa-solid fa-floppy-disk"></i>&nbsp;开始生成PPT
                 </el-button>
               </div>
+
               <!-- 大纲生成预览 -->
               <div class="pager-gen-result-panel">
 
@@ -102,7 +104,9 @@
                   </div>
                 </el-scrollbar>
               </div>
+
             </el-col>
+
           </el-row>
 
         </div>
@@ -228,17 +232,21 @@ const handleUpload = () => {
 
 // 生成PPT
 const generatorPPT = () => {
+
   savePPTOutline(sceneId.value , 
       outline.value , 
       pptId.value , 
       formData.value.pptConfig,
       formData.value.promptText
     ).then(res => {
+
     pptId.value = res.data ;
     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
+
   }).catch(error => {
     ElMessage.error(error.message)
   })
+
 }
 
 // 计算总题目数和总分
