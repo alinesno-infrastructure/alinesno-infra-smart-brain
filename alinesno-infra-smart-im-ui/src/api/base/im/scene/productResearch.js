@@ -4,6 +4,9 @@ import { parseStrEmpty } from "@/utils/ruoyi";
 // 接口配置项
 var prefix = '/api/infra/smart/assistant/scene/productResearchScene/' ;
 
+// 任务接口前缀
+var prefixTask = '/api/infra/smart/assistant/scene/projectTask/' ;
+
 var managerUrl = {
   // 大文本
   saveDataPlan: prefix +"saveDataPlan",
@@ -36,6 +39,46 @@ var managerUrl = {
   updatePagerQuestion: prefix +"updatePagerQuestion",
   savePPTOutline: prefix +"savePPTOutline",
   importGitProject: prefix + "importGitProject",
+
+  addTask: prefixTask + "addTask",
+  getTaskById: prefixTask + "detail",
+  executeTask: prefixTask +"executeTask",
+  saveChapter: prefixTask +"saveChapters",
+}
+
+// 执行任务
+export function executeTask(data) {
+  return request({
+    url: managerUrl.executeTask, 
+    method: 'post' , 
+    data: data
+  })
+}
+
+// 保存章节
+export function saveChapter(data , sceneId) {
+  return request({
+    url: managerUrl.saveChapter + "?sceneId=" + parseStrEmpty(sceneId) ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 通过id获取到任务详情
+export function getTaskById(id) {
+  return request({
+    url: managerUrl.getTaskById + '/' + parseStrEmpty(id),
+    method: 'get'
+  })
+}
+
+// 添加任务addTask
+export function addTask(data) {
+  return request({
+    url: managerUrl.addTask,
+    method: 'post',
+    data: data
+  })
 }
 
 // 导入项目
@@ -84,9 +127,9 @@ export function getPagerDetail(id) {
 } 
 
 // 分页查询试卷
-export function pagerListByPage(data) {
+export function pagerListByPage(sceneId , data) {
   return request({
-    url: managerUrl.pagerListByPage,
+    url: managerUrl.pagerListByPage + '?sceneId=' + parseStrEmpty(sceneId) ,
     method: 'post',
     data: data
   })
