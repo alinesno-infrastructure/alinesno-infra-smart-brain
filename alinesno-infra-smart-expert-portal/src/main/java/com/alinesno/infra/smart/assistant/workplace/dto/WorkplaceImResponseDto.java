@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.workplace.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
+import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
