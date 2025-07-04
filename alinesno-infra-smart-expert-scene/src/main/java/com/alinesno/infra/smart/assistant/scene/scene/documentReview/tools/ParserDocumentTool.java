@@ -5,7 +5,7 @@ import com.agentsflex.core.document.Document;
 import com.agentsflex.document.parser.PdfBoxDocumentParser;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
-import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +14,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,16 +36,16 @@ public class ParserDocumentTool {
 
     /**
      * 解析文档并获取到分档内容分割列表
-     * @param sceneEntity
+     * @param taskEntity
      * @return
      */
     @SneakyThrows
-    public List<DocumentInfoBean> parseContent(DocReviewSceneEntity sceneEntity) {
+    public List<DocumentInfoBean> parseContent(DocReviewTaskEntity taskEntity) {
 
         List<DocumentInfoBean> documentInfoBeans = new ArrayList<>();
 
-        String previewUrl = storageConsumer.getPreviewUrl(sceneEntity.getDocumentId()).getData();
-        String fileName = sceneEntity.getDocumentName();
+        String previewUrl = storageConsumer.getPreviewUrl(taskEntity.getDocumentId()).getData();
+        String fileName = taskEntity.getDocumentName();
 
         log.debug("previewUrl= {}", previewUrl);
 
@@ -56,6 +57,13 @@ public class ParserDocumentTool {
         File file = File.createTempFile("temp-file", "." + fileType);
         Files.write(file.toPath(), fileBytes);
 
+        String content = getString(fileType, file);
+
+        splitContent(content, documentInfoBeans);
+        return documentInfoBeans;
+    }
+
+    private static String getString(String fileType, File file) throws FileNotFoundException {
         String content = "" ;
         if ("pdf".equals(fileType)) {
             // PDF 文件处理逻辑
@@ -70,9 +78,7 @@ public class ParserDocumentTool {
             doc.loadFromFile(file.getAbsolutePath()) ;
             content = doc.getText();
         }
-
-        splitContent(content, documentInfoBeans);
-        return documentInfoBeans;
+        return content;
     }
 
     /**
