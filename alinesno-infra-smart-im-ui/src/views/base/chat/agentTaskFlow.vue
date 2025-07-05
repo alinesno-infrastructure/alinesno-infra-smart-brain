@@ -204,7 +204,7 @@ onBeforeUnmount(() => {
         font-weight: bold;
     }
     span.task-status-icon{
-        color: #007bff !important;
+        color: #145799 !important;
     }
 
     span.task-status-name{
