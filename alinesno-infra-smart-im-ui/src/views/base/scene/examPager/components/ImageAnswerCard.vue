@@ -7,11 +7,12 @@
       'checked': isCheck
     }"
     @mouseleave="handleMouseLeave">
+
     <!-- Display mode -->
     <div v-if="!isEditing" class="editable-card-content" @click="handleClick">
       <div class="image-wrapper">
         <img v-if="item.img" 
-            :src="imagePathByPath(item.img)" 
+            :src="getFullImagePath(item.img)" 
             @error="handleImageError"
             class="image-preview" />
         <div v-else class="image-placeholder">
@@ -26,12 +27,16 @@
 
     <!-- Edit mode -->
     <div v-else class="editable-card-edit">
-
+      
       <el-upload
         class="image-uploader"
-        :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport" 
+        :action="upload.url"
+        :headers="upload.headers"
+        :data="{ type: 'img', updateSupport: upload.updateSupport }"
         :show-file-list="false"
-        :auto-upload="false"
+        :auto-upload="true"
+        :on-success="handleAvatarSuccess" 
+        :on-error="handleUploadError"
         :on-change="handleImageChange"
         :on-progress="handleUploadProgress"
         accept="image/*">
@@ -45,7 +50,9 @@
                 :stroke-width="8"
               />
             </div>
-            <img v-else-if="editData.img" :src="editData.img" class="uploaded-image" @error="handleImageError"/>
+            <!-- <img v-else-if="editData.img" :src="getFullImagePath(editData.img)" class="uploaded-image" @error="handleImageError"/> -->
+
+            <img v-else-if="previewImage || editData.img" :src="previewImage || getFullImagePath(editData.img)" class="uploaded-image" @error="handleImageError"/>
             <div v-else class="upload-placeholder">
               <el-icon><Plus /></el-icon>
               <div class="upload-text">点击上传图片</div>
@@ -53,7 +60,6 @@
           </div>
         </template>
       </el-upload>
-
       
       <div class="edit-fields">
         <el-input 
@@ -97,7 +103,7 @@
 </template>
 
 <script setup>
-import { ref, watch, defineProps, defineEmits } from 'vue';
+import { ref, reactive, watch, defineProps, defineEmits } from 'vue';
 import { Picture, Plus } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { getToken } from "@/utils/auth";
@@ -106,6 +112,8 @@ import errorImage from '@/assets/images/scene-error.png';
 
 const emit = defineEmits(['update:item', 'change']);
 
+// 添加一个预览图的ref
+const previewImage = ref('');
 const props = defineProps({
   item: {
     type: Object,
@@ -136,21 +144,13 @@ const props = defineProps({
   }
 });
 
-/*** 应用导入参数 */
 const upload = reactive({
-  // 是否显示弹出层（应用导入）
   open: false,
-  // 弹出层标题（应用导入）
   title: "",
-  // 是否禁用上传
   isUploading: false,
-  // 是否更新已经存在的应用数据
   updateSupport: 0,
-  // 设置上传的请求头部
   headers: { Authorization: "Bearer " + getToken() },
-  // 上传的地址
-  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
-  // 显示地址
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/examImage/uploadImage",
   display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
 });
 
@@ -161,10 +161,19 @@ const editData = ref({
   label: '',
   content: ''
 });
+const uploadProgress = ref(0);
+
+// Helper function to get full image path
+const getFullImagePath = (imgPath) => {
+  if (!imgPath) return '';
+  if (imgPath.startsWith('http') || imgPath.startsWith('blob:')) {
+    return imgPath;
+  }
+  return upload.display + imgPath;
+};
 
 // 处理选中状态变化
 const handleSelectionChange = (value) => {
-  console.log('value = ' + value)
   emit('change', value);
 };
 
@@ -178,11 +187,9 @@ const initEditData = () => {
 };
 
 const handleClick = () => {
-
   if(!props.isQuestionEdit){
-    return ;
+    return;
   }
-
   if (isEditing.value) return;
   initEditData();
   isEditing.value = true;
@@ -192,23 +199,6 @@ const handleMouseLeave = () => {
   if (isEditing.value && !editData.value.img && !editData.value.label && !editData.value.content) {
     isEditing.value = false;
   }
-};
-
-// 新增上传进度状态
-const uploadProgress = ref(0);
-
-// 模拟上传进度
-const simulateUploadProgress = () => {
-  uploadProgress.value = 0;
-  const interval = setInterval(() => {
-    uploadProgress.value += 10;
-    if (uploadProgress.value >= 100) {
-      clearInterval(interval);
-      setTimeout(() => {
-        uploadProgress.value = 0;
-      }, 500);
-    }
-  }, 200);
 };
 
 const handleImageChange = (file) => {
@@ -225,29 +215,44 @@ const handleImageChange = (file) => {
     ElMessage.error('图片大小不能超过5MB');
     return;
   }
-  
-  // 开始上传进度
-  simulateUploadProgress();
-  
-  // 读取图片文件
+
+  // 创建预览图（仅用于临时显示，不会保存到editData）
   const reader = new FileReader();
   reader.onload = (e) => {
-    editData.value.img = e.target.result;
-  };
-  reader.onerror = () => {
-    ElMessage.error('图片读取失败');
-    uploadProgress.value = 0;
+    // 这里不再赋值给editData.value.img
+    // 只是临时显示预览（如果需要显示预览，可以通过另一个变量）
+    previewImage.value = e.target.result;
   };
   reader.readAsDataURL(file.raw);
 };
 
+/** 图片上传成功 */
+const handleAvatarSuccess = (response) => {
+  uploadProgress.value = 0;
+  if (response.code === 200) {
+    // 关键修改：直接使用服务器返回的路径，而不是base64预览
+    editData.value.img = response.data;
+    ElMessage.success('上传成功');
+  } else {
+    ElMessage.error(response.msg || '上传失败');
+    // 上传失败时清除预览
+    editData.value.img = '';
+  }
+};
+
+// 处理上传错误
+const handleUploadError = (error) => {
+  uploadProgress.value = 0;
+  ElMessage.error('上传失败: ' + (error.message || '未知错误'));
+};
+
 // 处理上传进度事件
 const handleUploadProgress = (event) => {
-  // 如果是真实的上传请求，可以使用实际进度
   uploadProgress.value = Math.round((event.loaded / event.total) * 100);
 };
 
 const saveChanges = () => {
+  console.log('保存修改 = ' + JSON.stringify(editData.value))
   emit('update:item', { ...editData.value });
   isEditing.value = false;
 };
@@ -272,11 +277,8 @@ watch(isCheck, (newVal) => {
   position: relative;
   border: 1px solid #ebeef5;
   border-radius: 8px;
-  // padding: 16px;
-  // margin: 8px;
   transition: all 0.3s ease;
   background-color: #fff;
-  // box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   cursor: pointer;
   
   &:hover {
@@ -311,7 +313,6 @@ watch(isCheck, (newVal) => {
 
 .image-wrapper {
   width: 100%;
-  // height: 120px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -352,8 +353,7 @@ watch(isCheck, (newVal) => {
 }
 
 .image-uploader {
-  width: calc(100% - 5px) ; 
-  // height: 120px;
+  width: calc(100% - 0px) ; 
   border: 1px dashed #d9d9d9;
   border-radius: 6px;
   cursor: pointer;
@@ -405,5 +405,39 @@ watch(isCheck, (newVal) => {
   justify-content: center;
   margin-top: 12px;
   border-top: 1px solid #ebeef5;
+}
+
+.upload-area {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #8c939d;
+  
+  .el-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+  }
+  
+  .upload-text {
+    font-size: 12px;
+  color: #8c939d;
+  }
+}
+
+.upload-progress {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.7);
 }
 </style>
