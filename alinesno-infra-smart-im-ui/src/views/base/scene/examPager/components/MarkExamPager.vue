@@ -172,7 +172,7 @@ defineExpose({
 .online-exam-container {
     background-color: #fafafa;
     border-radius: 10px;
-    min-height: 100vh;
+    max-height: 100vh;
     display: flex;
     flex-direction: column;
 
