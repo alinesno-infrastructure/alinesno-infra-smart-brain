@@ -76,7 +76,7 @@
   }
   
   .scene-card.selected {
-      border-color: #007bff;
+      border-color: #145799;
       background-color: #e7f3ff;
   }
   
@@ -84,6 +84,6 @@
       position: absolute;
       top: 5px;
       right: 5px;
-      color: #007bff;
+      color: #145799;
   }
   </style>    
