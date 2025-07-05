@@ -22,7 +22,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IAr
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ArticleChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ExcelData;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ExcelReaderUtil;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
