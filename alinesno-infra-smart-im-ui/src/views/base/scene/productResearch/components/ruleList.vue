@@ -563,7 +563,7 @@ handleListGroup();
 
 .group-selected {
     background-color: #e6f7ff;
-    color: #3b5998;
+    color: #1d75b0;
     font-size: 14px;
     font-weight: bold;
 }
