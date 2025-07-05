@@ -1,9 +1,8 @@
 <template>
-    <questionContainer :question="question">
+    <questionContainer :question="question" :isQuestionEdit="props.isQuestionEdit">
         <div class="descriptionPanel-question-wrapper">
             <div class="question-title" v-if="question.title">{{ question.title }}</div>
             <div class="question-desc" v-if="question.desc">{{ question.desc }}</div>
-            
             <el-input 
                 type="textarea" 
                 :placeholder="placeholderText"
