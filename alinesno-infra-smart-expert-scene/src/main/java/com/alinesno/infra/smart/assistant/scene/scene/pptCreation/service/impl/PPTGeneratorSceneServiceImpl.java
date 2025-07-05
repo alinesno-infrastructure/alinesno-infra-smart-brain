@@ -3,7 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.impl;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.service.IExamQuestionService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamQuestionService;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.mapper.PPTGenerateSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGeneratorSceneService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
