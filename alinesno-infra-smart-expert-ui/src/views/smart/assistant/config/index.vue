@@ -227,7 +227,7 @@ const modelConfigs = [
 
        .config-link {
           font-size: 15px;
-          color: #007bff;
+          color: #145799;
           text-decoration: none;
 
           &:hover {
