@@ -10,7 +10,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.Article
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.mapper.ArticleManagerMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.mapper.ArticleTemplateMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleManagerService;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleTemplateEntity;
