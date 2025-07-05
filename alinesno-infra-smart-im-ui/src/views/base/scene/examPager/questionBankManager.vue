@@ -55,7 +55,7 @@
                       :show-overflow-tooltip="true">
                       <template #default="scope">
                         <div style="display: flex;gap: 15px;align-items: center;">
-                          <div style="font-size:1.8rem;color:#3b5998">
+                          <div style="font-size:1.8rem;color:#1d75b0">
                             <i class="fa-solid fa-file-word"></i>
                           </div>
                           <div style="display: flex;gap: 5px;flex-direction: column;">
