@@ -8,7 +8,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.Article
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleManagerResponseDto;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ArticleUpdateDto;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
 
