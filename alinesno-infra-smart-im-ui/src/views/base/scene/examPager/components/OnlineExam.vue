@@ -203,6 +203,7 @@ const getQuestionTypeName = (type) => {
 
 // 处理答案变化
 const handleAnswerChange = (updatedQuestion) => {
+  console.log('updatedQuestion = ' + JSON.stringify(updatedQuestion))
   if (updatedQuestion.type === 'checkbox' || updatedQuestion.type === 'image-checkbox') {
     userAnswers[updatedQuestion.id] = updatedQuestion.answers
       .filter(a => a.selected)
@@ -212,9 +213,11 @@ const handleAnswerChange = (updatedQuestion) => {
     userAnswers[updatedQuestion.id] = selected ? [selected.label] : []
   } else if (updatedQuestion.type === 'single-line') {
     userAnswers[updatedQuestion.id] = updatedQuestion.answer[0] || ''
-  } else if (updatedQuestion.type === 'multi-fill' || updatedQuestion.type === 'description') {
+  } else if (updatedQuestion.type === 'multi-fill') {
     console.log('multi-fill = ' + JSON.stringify(updatedQuestion))
     userAnswers[updatedQuestion.id] = updatedQuestion.answers || []
+  } else if (updatedQuestion.type === 'description') {
+    userAnswers[updatedQuestion.id] = updatedQuestion.answer || []
   } else if (updatedQuestion.type === 'multi-line') {
     userAnswers[updatedQuestion.id] = updatedQuestion.answer[0] || ''
   } else if (updatedQuestion.type === 'datetime') {
@@ -280,6 +283,7 @@ const checkUnansweredQuestions = () => {
     let hasAnswer = false
     
     if (question.type === 'single-line' || question.type === 'multi-line' || question.type === 'datetime' || question.type === 'description') {
+      console.log('userAnswers[question.id]=' + userAnswers[question.id])
       hasAnswer = userAnswers[question.id] && userAnswers[question.id].trim() !== ''
     } else if (question.type === 'multi-fill') {
       // 优先从userAnswers获取，其次从question.userAnswers，最后从question.answers
