@@ -248,7 +248,7 @@ watch(() => props.modelValue, (newVal) => {
           color: #666;
         }
         .fa-file {
-          color: #3b5998;
+          color: #1d75b0;
         }
       }
 
