@@ -6,7 +6,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.dto.ExamPaperDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPaperDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTGenerateSceneDto;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto.PPTOutlineDto;
 import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.mapper.PPTManagerMapper;
