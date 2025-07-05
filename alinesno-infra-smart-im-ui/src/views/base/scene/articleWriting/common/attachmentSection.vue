@@ -268,7 +268,7 @@ defineExpose({
     // 附件图标区域
     .attachment-item-icon {
       font-size: 1.25rem;
-      // color: #007bff;
+      // color: #145799;
     }
 
     // 附件信息区域
