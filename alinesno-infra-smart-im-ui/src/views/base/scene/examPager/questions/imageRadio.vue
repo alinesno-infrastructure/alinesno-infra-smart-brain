@@ -1,5 +1,5 @@
 <template>
-    <questionContainer :question="question">
+    <questionContainer :question="question" :isQuestionEdit="props.isQuestionEdit">
         <div class="imageCheck-question-wrapper">
             <div class="imageCheck-question-items" 
                  v-for="(item, index) in props.question.answers" 
@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineProps, defineEmits, ref, onMounted } from 'vue'
 import questionContainer from '@/views/base/scene/examPager/common/questionContainer.vue'
 import ImageAnswerCard from '../components/ImageAnswerCard.vue'
 
@@ -79,6 +79,12 @@ const updateQuestionSelection = (selectedIndex) => {
 const updateAnswer = (index, newItem) => {
     emits('updateHandleQuestionImageAnswer', props.question.id, index, newItem)
 }
+
+onMounted(() => {
+    // 默认选中answers里面的selected:true的选项值
+    selectedIndex.value = props.question.answers.findIndex(item => item.selected)
+})
+
 </script>
 
 <style lang="scss" scoped>
