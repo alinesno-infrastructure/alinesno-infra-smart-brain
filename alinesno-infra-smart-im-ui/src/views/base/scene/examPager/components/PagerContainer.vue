@@ -108,7 +108,9 @@
                 <ImageCheckbox 
                   v-if="element.type === 'image-checkbox'" 
                   :question="element" 
+                  @update-handleQuestionImageAnswer="updateHandleQuestionImageAnswer"
                   @update-handleUpdateQuestion="handleUpdateQuestion"
+                  @update-questionIsRequired="handleUpdateQuestionIsRequired"
                   @delete-question="handleDeleteQuestion"
                   :currentSelect="getIndex(element.id) ===  currentIndex"
                 /> 
@@ -117,6 +119,7 @@
                 <Location 
                   v-if="element.type === 'location'" 
                   :question="element" 
+                  @update-handleQuestionImageAnswer="updateHandleQuestionImageAnswer"
                   @update-handleUpdateQuestion="handleUpdateQuestion"
                   @update-questionIsRequired="handleUpdateQuestionIsRequired"
                   @delete-question="handleDeleteQuestion"
