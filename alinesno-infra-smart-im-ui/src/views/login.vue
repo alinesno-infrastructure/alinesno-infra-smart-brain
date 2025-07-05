@@ -1,6 +1,6 @@
 <template>
   <el-container class="login-container">
-    <el-header style="z-index: 100;height: 45px;background: #3b5998;box-shadow: 0 2px 4px 0 var(--cb-color-shadow,rgba(0,0,0,.16));">
+    <el-header style="z-index: 100;height: 45px;background: #1d75b0;box-shadow: 0 2px 4px 0 var(--cb-color-shadow,rgba(0,0,0,.16));">
       <div>
         <div style="float: left;font-size: 30px;color: rgb(255, 255, 255);margin-top: 5px;">
           <img src="http://data.linesno.com/logo_2.png" style="width:35px" alt="">
@@ -102,7 +102,7 @@
                                       :loading="loading"
                                       size="large"
                                       type="primary"
-                                      style="width:100%;border:0px;background:#3b5998;"
+                                      style="width:100%;border:0px;background:#1d75b0;"
                                       @click.prevent="handleLogin"
                                     >
                                       <span v-if="!loading">登 录</span>
