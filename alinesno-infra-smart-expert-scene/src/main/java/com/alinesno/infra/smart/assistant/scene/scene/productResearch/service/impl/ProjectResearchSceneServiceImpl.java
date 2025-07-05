@@ -3,7 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.i
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.service.IExamQuestionService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamQuestionService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.mapper.ProjectResearchSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
