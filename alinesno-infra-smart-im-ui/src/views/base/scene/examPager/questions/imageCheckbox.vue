@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineProps, defineEmits, ref, onMounted } from 'vue'
 import questionContainer from '@/views/base/scene/examPager/common/questionContainer.vue'
 import ImageAnswerCard from '../components/ImageAnswerCard.vue'
 
@@ -85,8 +85,16 @@ const updateQuestionSelection = () => {
 
 // 更新答案
 const updateAnswer = (index, newItem) => {
+    console.log('newItem = ' + JSON.stringify(newItem))
     emits('updateHandleQuestionImageAnswer', props.question.id, index, newItem)
 }
+
+onMounted(() => {
+    // 初始化选中answers里面selected:true的选项
+    selectedIndices.value = props.question.answers
+        .map((item, index) => (item.selected ? index : -1))
+        .filter(index => index !== -1)
+})
 </script>
 
 <style lang="scss" scoped>
