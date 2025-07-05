@@ -14,11 +14,10 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.I
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
-import com.alinesno.infra.smart.assistant.scene.common.examPaper.service.IExamPagerSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.pptCreation.service.IPPTGeneratorSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.prototypeDesign.service.IPrototypeSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
