@@ -75,7 +75,7 @@
                     </div>
 
                     <div class="platform-container-YOpW3B">
-                      <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;display: flex;color: #3b5998;align-items: center;">
+                      <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;display: flex;color: #1d75b0;align-items: center;">
                         <el-button type="primary" size="small" @click="handleEmployRole(item.id , false)" text bg>
                           <i class="fa-solid fa-clone"></i> &nbsp; 详情
                         </el-button>
