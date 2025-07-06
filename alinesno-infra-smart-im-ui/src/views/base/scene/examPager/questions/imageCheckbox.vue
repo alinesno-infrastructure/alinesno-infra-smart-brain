@@ -89,12 +89,18 @@ const updateAnswer = (index, newItem) => {
     emits('updateHandleQuestionImageAnswer', props.question.id, index, newItem)
 }
 
-onMounted(() => {
-    // 初始化选中answers里面selected:true的选项
-    selectedIndices.value = props.question.answers
+// onMounted(() => {
+//     // 初始化选中answers里面selected:true的选项
+//     selectedIndices.value = props.question.answers
+//         .map((item, index) => (item.selected ? index : -1))
+//         .filter(index => index !== -1)
+// })
+
+watch(() => props.question.answers, (newAnswers) => {
+    selectedIndices.value = newAnswers
         .map((item, index) => (item.selected ? index : -1))
         .filter(index => index !== -1)
-})
+}, { immediate: true, deep: true })
 </script>
 
 <style lang="scss" scoped>
