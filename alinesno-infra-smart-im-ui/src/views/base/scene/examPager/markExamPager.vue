@@ -50,12 +50,10 @@
                   :key="student.id"
                   class="student-item" 
                   :class="{ active: activeStudentId === student.id }"
-                  @click="selectStudent(student)"
-               >
+                  @click="selectStudent(student)">
                   <div class="student-info">
                      <div class="student-details">
                         <div class="student-name">{{ student.userName }}</div>
-                        <!-- <div class="student-class">{{ student.userCode }}</div> -->
                      </div>
                      <div class="student-time" :class="{ primary: isRecent(student.submitTime) }">
                         {{ formatTime(student.submitTime) }}
@@ -94,6 +92,11 @@
                      <span>打印</span>
                   </el-button>
 
+                  <!-- 新增自动阅卷按钮 -->
+                  <el-button type="success" class="auto-mark-btn" @click="handleAutoMarking" size="large">
+                     <i class="fa-solid fa-robot"></i>&nbsp;<span>自动阅卷</span>
+                  </el-button>
+
                   <el-button type="primary" class="save-btn" @click="saveMarking" size="large">
                      <i class="fa-solid fa-train"></i>&nbsp;<span>保存批改</span>
                   </el-button>
@@ -102,10 +105,11 @@
 
             <!-- 试卷内容区 -->
             <div class="exam-paper">
-               <MarkExamPager ref="markExamPagerRef" 
+               <MarkExamQuestionList 
+                  ref="markExamPagerRef" 
                   :examId="examId" 
                   :accountId="activeStudentId" 
-                  :questions="questions" />
+                  />
             </div>
          </div>
       </div>
@@ -128,10 +132,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import ExamPagerContainer from "./examPagerContainer"
-import MarkExamPager from "./components/MarkExamPager"
+import MarkExamQuestionList from "./components/MarkExamQuestionList"
 
 import {
    getExamineeList
@@ -166,23 +170,10 @@ const currentExam = ref({
   totalScore: 150
 })
 
-// 批注类型
-// const annotationTypes = ref([
-//   { value: 'correct', label: '正确' },
-//   { value: 'error', label: '错误' },
-//   { value: 'partial', label: '部分正确' },
-//   { value: 'hint', label: '提示' }
-// ])
-
 // 状态管理
 const activeNav = ref('all')
 const activeStudentId = ref(null)
 const searchQuery = ref('')
-
-// const annotationModalVisible = ref(false)
-// const currentQuestionId = ref(null)
-// const selectedAnnotationType = ref(null)
-// const annotationContent = ref('')
 
 const lastSavedTime = ref('刚刚')
 const studentAnswers = ref({})
@@ -215,7 +206,7 @@ const selectStudent = (student) => {
 const loadStudentAnswers = (student) => {
    // 通过studentId从students里面查询到应对的学生
    currentExam.value.student = student ;
-   currentExam.value.questions = student.questions ;
+   // currentExam.value.questions = student.questions ;
    markExamPagerRef.value.handlePagerDetail(currentExam.value);
 }
 
@@ -241,58 +232,91 @@ const isRecent = (time) => {
   return (now - time) < 24 * 60 * 60 * 1000 // 24小时内算最近
 }
 
-// const showAnnotationModal = (questionId) => {
-//   currentQuestionId.value = questionId
-//   annotationModalVisible.value = true
+// const saveMarking = () => {
+//   // 计算总分
+//   const totalScore = Object.values(questionScores.value).reduce((sum, score) => sum + score, 0)
+  
+//   // 更新学生分数
+//   const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value)
+//   if (studentIndex !== -1) {
+//     students.value[studentIndex].score = totalScore
+//   }
+  
+//   lastSavedTime.value = '刚刚'
 // }
 
-// const selectAnnotationType = (type) => {
-//   selectedAnnotationType.value = type
+// const saveMarking = async () => {
+//   try {
+//     // 调用子组件的保存方法
+//     await markExamPagerRef.value.saveMarkingResults()
+    
+//     // 计算总分
+//     const totalScore = markExamPagerRef.value.pagerInfo.questions
+//       .filter(q => q.markedScore !== undefined)
+//       .reduce((sum, q) => sum + q.markedScore, 0)
+    
+//     // 更新学生分数
+//     const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value)
+//     if (studentIndex !== -1) {
+//       students.value[studentIndex].score = totalScore
+//     }
+    
+//     lastSavedTime.value = '刚刚'
+//     ElMessage.success('批改结果已保存')
+//   } catch (error) {
+//     ElMessage.error('保存批改结果失败')
+//     console.error('保存批改结果失败:', error)
+//   }
 // }
 
-// const addAnnotation = () => {
-//   // 实际项目中这里应该保存批注到服务器
-//   console.log(`为第${currentQuestionId.value}题添加批注:`, {
-//     type: selectedAnnotationType.value,
-//     content: annotationContent.value
-//   })
-//   annotationModalVisible.value = false
-//   // 重置表单
-//   selectedAnnotationType.value = null
-//   annotationContent.value = ''
-// }
+// 自动阅卷方法
+const handleAutoMarking = async () => {
+    try {
+        // 调用子组件的自动阅卷方法
+        await markExamPagerRef.value.autoMarkQuestions();
+        ElMessage.success('自动阅卷完成');
+    } catch (error) {
+        ElMessage.error('自动阅卷失败');
+        console.error('自动阅卷失败:', error);
+    }
+};
 
 const saveMarking = () => {
-  // 计算总分
-  const totalScore = Object.values(questionScores.value).reduce((sum, score) => sum + score, 0)
-  
-  // 更新学生分数
-  const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value)
-  if (studentIndex !== -1) {
-    students.value[studentIndex].score = totalScore
-  }
-  
-  lastSavedTime.value = '刚刚'
+    // 计算总分
+    const totalScore = markExamPagerRef.value.getTotalScore();
+
+    console.log('totalScore = ' + totalScore)
+    
+    // 更新学生分数
+    const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value);
+    if (studentIndex !== -1) {
+        students.value[studentIndex].score = totalScore;
+    }
+    
+    lastSavedTime.value = '刚刚';
 }
 
 // 初始化
-onMounted(() => {
-
-   getExamineeList(examId.value).then(res => {
-      console.log('res = ' + res);
-      students.value = res.data;
-   })
+onMounted(async() => {
 
    // 获取到试卷详情
-   detail(examId.value).then(res => {
+   await detail(examId.value).then(res => {
       console.log('res = ' + res);
       currentExam.value = res.data ;
    })
 
-  // 默认选中第一个学生
-  if (students.value.length > 0) {
-    selectStudent(students.value[0].id)
-  }
+   await getExamineeList(examId.value).then(res => {
+      console.log('res = ' + res);
+      students.value = res.data;
+
+      // 默认选中第一个学生
+      nextTick(() => {
+         if (students.value.length > 0) {
+            selectStudent(students.value[0])
+         }
+      })
+   })
+
 })
 </script>
 
@@ -448,11 +472,14 @@ onMounted(() => {
          .student-item {
             padding: 12px;
             cursor: pointer;
-            border-right: 4px solid transparent;
+            border-left: 4px solid transparent;
             transition: all 0.2s;
+            border-radius: 9px;
+            margin-left: 5px;
+            margin-right: 5px;
 
             &.active {
-               border-right-color: #3b82f6;
+               border-left-color: #3b82f6;
                background-color: rgba(59, 130, 246, 0.05);
             }
 
