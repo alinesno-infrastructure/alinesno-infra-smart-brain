@@ -83,12 +83,12 @@ watch(answer, (newVal) => {
 })
 
 
-// // 监听question变化（用于重置答案等场景）
-// watch(() => props.question, (newQuestion) => {
-//     if (newQuestion.answer !== answer.value) {
-//         answer.value = newQuestion.answer || ''
-//     }
-// }, { deep: true })
+// 监听question变化（用于重置答案等场景）
+watch(() => props.question, (newQuestion) => {
+    if (newQuestion.answer !== answer.value) {
+        answer.value = newQuestion.answer || ''
+    }
+}, { deep: true })
 
 </script>
 
