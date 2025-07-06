@@ -159,7 +159,9 @@ const isEditing = ref(false);
 const editData = ref({
   img: '',
   label: '',
-  content: ''
+  value: '',
+  content: '',
+  isCorrect: null
 });
 const uploadProgress = ref(0);
 
@@ -182,7 +184,9 @@ const initEditData = () => {
   editData.value = {
     img: props.item.img,
     label: props.item.label,
-    content: props.item.content
+    value: props.item.value,
+    content: props.item.content , 
+    isCorrect: props.item.isCorrect,
   };
 };
 
