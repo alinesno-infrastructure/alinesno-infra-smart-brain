@@ -53,16 +53,19 @@
                           </div>
                           <div class="scene-description">
                             {{ item.description }}
+                            填空题 6 题
                           </div>
                           <div class="semi-divider semi-divider-horizontal"></div>
                           <div class="scene-footer">
                             <div class="scene-price">
                               <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" />
-                                私有</el-tag>
+                                考试中
+                              </el-tag>
                               <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
                                   class="fa-solid fa-globe" /> 公开</el-tag>
                               <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
-                                组织</el-tag>
+                                考试中
+                              </el-tag>
                             </div>
                             <div class="scene-tag">
                               <el-button type="primary" size="small" text bg>
