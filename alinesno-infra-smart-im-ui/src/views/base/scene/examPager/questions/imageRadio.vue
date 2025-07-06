@@ -80,10 +80,14 @@ const updateAnswer = (index, newItem) => {
     emits('updateHandleQuestionImageAnswer', props.question.id, index, newItem)
 }
 
-onMounted(() => {
-    // 默认选中answers里面的selected:true的选项值
-    selectedIndex.value = props.question.answers.findIndex(item => item.selected)
-})
+// 初始化答案显示 
+watch(
+  () => props.question.answers,
+  (answers) => {
+    selectedIndex.value = answers.findIndex(item => item.selected)
+  },
+  { immediate: true, deep: true }
+)
 
 </script>
 
