@@ -166,53 +166,6 @@
     </template>
 </el-dialog>
 
-        <!-- <el-dialog
-                v-model="scoringDialogVisible"
-                title="阅卷统计"
-                width="60%"
-                :close-on-click-modal="false">
-                <div class="scoring-summary">
-                    <h3>总分: {{ totalScore }}/{{ maxScore }}</h3>
-                    
-                    <el-divider content-position="left">自动评分题目</el-divider>
-                    <el-table :data="scoringStats.autoScored" border>
-                        <el-table-column prop="order" label="题号" width="80" />
-                        <el-table-column prop="question" label="题目" show-overflow-tooltip />
-                        <el-table-column label="得分" width="120">
-                            <template #default="{row}">
-                                <span class="auto-score">{{ row.score }}/{{ row.total }}</span>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                    
-                    <el-divider v-if="scoringStats.manualScored.length > 0" content-position="left">已手动评分题目</el-divider>
-                    <el-table v-if="scoringStats.manualScored.length > 0" :data="scoringStats.manualScored" border>
-                        <el-table-column prop="order" label="题号" width="80" />
-                        <el-table-column prop="question" label="题目" show-overflow-tooltip />
-                        <el-table-column label="得分" width="120">
-                            <template #default="{row}">
-                                <span class="manual-score">{{ row.score }}/{{ row.total }}</span>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                    
-                    <el-divider v-if="scoringStats.notScored.length > 0" content-position="left">未评分题目</el-divider>
-                    <el-table v-if="scoringStats.notScored.length > 0" :data="scoringStats.notScored" border>
-                        <el-table-column prop="order" label="题号" width="80" />
-                        <el-table-column prop="question" label="题目" show-overflow-tooltip />
-                        <el-table-column label="满分" width="120">
-                            <template #default="{row}">
-                                <span class="not-scored">{{ row.total }}分</span>
-                            </template>
-                        </el-table-column>
-                    </el-table>
-                </div>
-                
-                <template #footer>
-                    <el-button type="primary" @click="scoringDialogVisible = false">确定</el-button>
-                </template>
-            </el-dialog> -->
-
     </div>
 </template>
 
@@ -273,23 +226,6 @@ const getQuestionComponent = (type) => {
     return componentMap[type] || null
 }
 
-// const handlePagerDetail = async (examInfoData) => {
-//     pagerInfo.value = {
-//         ...pagerInfo.value,
-//         id: examInfoData.id,
-//         title: examInfoData.examName,
-//         desc: examInfoData.examName,
-//         pagerType: examInfoData.pagerType,
-//         difficulty: examInfoData.difficulty,
-//         questions: examInfoData.student.questions.map(q => ({
-//             ...q,
-//             markedScore: q.markedScore || undefined,
-//             comment: q.comment || '',
-//             showPopover: false
-//         }))
-//     }
-// }
-
 // 准备评分
 const prepareMarking = (question) => {
     // 初始化评分状态
@@ -322,9 +258,6 @@ const saveMarking = async (question) => {
             }]
         }
         
-        // 调用API保存评分
-        // await saveExamMarking(payload)
-        
         ElMessage.success('评分已保存')
     } catch (error) {
         ElMessage.error('保存评分失败')
@@ -341,132 +274,6 @@ const getScoreClass = (score, total) => {
         return 'partial-score'; // 部分得分
     }
 };
-
-// const handlePagerDetail = async (examInfoData) => {
-//     // 获取学生的答案映射 {questionId: [selectedAnswers]}
-//     const studentAnswers = examInfoData.student.answers || {};
-    
-//     console.log('Exam Info Data:', examInfoData);
-//     console.log('Student Answers:', studentAnswers);
-
-//      // 标记是否有自动评分的题目
-//     let hasAutoScored = false;
-
-//     pagerInfo.value = {
-//         ...pagerInfo.value,
-//         id: examInfoData.id,
-//         title: examInfoData.examName,
-//         desc: examInfoData.examName,
-//         pagerType: examInfoData.pagerType,
-//         difficulty: examInfoData.difficulty,
-//         questions: examInfoData.student.questions.map(q => {
-//             // 自动评分逻辑
-//             let markedScore = q.markedScore;
-//             if (markedScore === undefined && ['radio', 'checkbox', 'image-radio', 'image-checkbox'].includes(q.type)) {
-//                 markedScore = calculateAutoScore(q, studentAnswers[q.id]);
-//                 if (markedScore !== undefined) {
-//                     hasAutoScored = true;
-//                 }
-//             }
-
-//             console.log('Question ID:', q.id, 
-//                        'Marked Score:', markedScore, 
-//                        'Student Answers:', studentAnswers[q.id],
-//                        'Question Type:', q.type);
-
-//             return {
-//                 ...q,
-//                 markedScore: markedScore !== undefined ? markedScore : undefined,
-//                 comment: q.comment || '',
-//                 showPopover: false
-//             }
-//         })
-//     }
-
-//     // 如果有自动评分的题目，显示提示
-//     if (hasAutoScored) {
-//         ElMessage({
-//             message: '系统已完成选择题自动评分，请检查并补充其他题目评分',
-//             type: 'success',
-//             duration: 3000
-//         });
-//     }
-// }
-
-// const handlePagerDetail = async (examInfoData) => {
-//     // 获取学生的答案映射 {questionId: [selectedAnswers]}
-//     const studentAnswers = examInfoData.student.answers || {};
-    
-//     // 用于存储阅卷统计信息
-//     const scoringStats = {
-//         autoScored: [],
-//         manualScored: [],
-//         notScored: []
-//     };
-
-//     pagerInfo.value = {
-//         ...pagerInfo.value,
-//         id: examInfoData.id,
-//         title: examInfoData.examName,
-//         desc: examInfoData.examName,
-//         pagerType: examInfoData.pagerType,
-//         difficulty: examInfoData.difficulty,
-//         questions: examInfoData.student.questions.map(q => {
-//             // 自动评分逻辑
-//             let markedScore = q.markedScore;
-//             let scoreSource = q.markedScore !== undefined ? 'manual' : undefined;
-            
-//             if (markedScore === undefined && ['radio', 'checkbox', 'image-radio', 'image-checkbox'].includes(q.type)) {
-//                 markedScore = calculateAutoScore(q, studentAnswers[q.id]);
-//                 if (markedScore !== undefined) {
-//                     scoreSource = 'auto';
-//                 }
-//             }
-
-//             // 记录题目评分状态
-//             if (scoreSource === 'auto') {
-//                 scoringStats.autoScored.push({
-//                     id: q.id,
-//                     order: q.order,
-//                     question: q.question,
-//                     score: markedScore,
-//                     total: q.score
-//                 });
-//             } else if (markedScore !== undefined) {
-//                 scoringStats.manualScored.push({
-//                     id: q.id,
-//                     order: q.order,
-//                     question: q.question,
-//                     score: markedScore,
-//                     total: q.score
-//                 });
-//             } else {
-//                 scoringStats.notScored.push({
-//                     id: q.id,
-//                     order: q.order,
-//                     question: q.question,
-//                     score: 0,
-//                     total: q.score
-//                 });
-//             }
-
-//             return {
-//                 ...q,
-//                 markedScore: markedScore !== undefined ? markedScore : undefined,
-//                 scoreSource, // 记录评分来源
-//                 comment: q.comment || '',
-//                 showPopover: false
-//             }
-//         })
-//     }
-
-//     // 计算总分
-//     const totalScore = pagerInfo.value.questions.reduce((sum, q) => sum + (q.markedScore || 0), 0);
-//     const maxScore = pagerInfo.value.questions.reduce((sum, q) => sum + q.score, 0);
-
-//     // 显示阅卷统计对话框
-//     showScoringDialog(scoringStats, totalScore, maxScore);
-// }
 
 // 暴露自动阅卷方法
 const autoMarkQuestions = () => {
@@ -531,6 +338,18 @@ const autoMarkQuestions = () => {
 
 // 修改 handlePagerDetail 方法，移除自动评分逻辑
 const handlePagerDetail = async (examInfoData) => {
+
+    // 创建reviewResult的映射，方便快速查找
+    const reviewResultMap = {};
+    if (examInfoData.student.reviewResult && examInfoData.student.reviewResult.length > 0) {
+        examInfoData.student.reviewResult.forEach(item => {
+            reviewResultMap[item.id] = {
+                markedScore: item.score,
+                comment: item.comment || ''
+            };
+        });
+    }
+
     pagerInfo.value = {
         ...pagerInfo.value,
         id: examInfoData.id,
@@ -538,14 +357,20 @@ const handlePagerDetail = async (examInfoData) => {
         desc: examInfoData.examName,
         pagerType: examInfoData.pagerType,
         difficulty: examInfoData.difficulty,
-        student: examInfoData.student, // 保存学生信息，以便后续自动阅卷使用
-        questions: examInfoData.student.questions.map(q => ({
-            ...q,
-            markedScore: q.markedScore !== undefined ? q.markedScore : undefined,
-            comment: q.comment || '',
-            showPopover: false
-        }))
+        student: examInfoData.student,
+        questions: examInfoData.student.questions.map(q => {
+            // 检查是否有对应的reviewResult
+            const reviewData = reviewResultMap[q.id];
+
+            return {
+                ...q,
+                markedScore: reviewData ? reviewData.markedScore : (q.markedScore !== undefined ? q.markedScore : undefined),
+                comment: reviewData ? reviewData.comment : (q.comment || ''),
+                showPopover: false
+            };
+        })
     };
+
 };
 
 // 显示阅卷统计对话框
@@ -627,10 +452,34 @@ const getAllPossibleScores = (maxScore) => {
 }
 
 const getTotalScore = () => {
-    return pagerInfo.value.questions.reduce((sum, q) => {
+    // 计算总分数
+    const totalScore = pagerInfo.value.questions.reduce((sum, q) => {
         return sum + (q.markedScore || 0);
     }, 0);
+
+    // 计算满分
+    const maxScore = pagerInfo.value.questions.reduce((sum, q) => {
+        return sum + q.score;
+    }, 0);
+
+    // 收集每道题目的评分详情
+    const questionScores = pagerInfo.value.questions.map(q => ({
+        id: q.id,
+        score: q.markedScore || 0,
+        maxScore: q.score,
+        comment: q.comment || '',
+    }));
+
+    // 返回包含所有评分信息的对象
+    return {
+        totalScore,
+        maxScore,
+        questionScores,
+        // 计算得分率（百分比）
+        scorePercentage: maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0
+    };
 }
+
 
 defineExpose({
     handlePagerDetail,
@@ -638,9 +487,6 @@ defineExpose({
     autoMarkQuestions
 });
 
-// defineExpose({
-//     handlePagerDetail
-// })
 </script>
 
 <style lang="scss" scoped>
