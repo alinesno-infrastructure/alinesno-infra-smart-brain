@@ -4,6 +4,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamInfoPage;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamMarkingDto;
 import com.alinesno.infra.smart.scene.entity.ExamInfoEntity;
 
 /**
@@ -29,4 +30,5 @@ public interface IExamInfoService extends IBaseService<ExamInfoEntity> {
      * @return
      */
     ExamInfoEntity getExamInfoByUniqueCode(String paperCode, String examId);
+
 }
