@@ -14,7 +14,8 @@
                         class="nav-item" 
                         :class="{ active: activeNav === navItem.id }"
                         size="large"
-                        @click="activeNav = navItem.id">
+                        @click="selectNavItem(navItem)">
+                        <!-- @click="activeNav = navItem.id" -->
                         <i :class="navItem.icon"></i>
                         <span>{{ navItem.label }}</span>
                         <span v-if="navItem.badge" class="badge" :class="navItem.badge.type">
@@ -133,6 +134,7 @@
 
 <script setup>
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { ElMessage , ElLoading } from 'element-plus'
 import { useRouter, useRoute } from 'vue-router'
 import ExamPagerContainer from "./examPagerContainer"
 import MarkExamQuestionList from "./components/MarkExamQuestionList"
@@ -142,7 +144,8 @@ import {
 } from '@/api/base/im/scene/examPaperManager'
 
 import {
- detail 
+ detail , 
+ saveMarkingResults 
 } from '@/api/base/im/scene/examInfoManager'
 
 const markExamPagerRef = ref(null)
@@ -150,6 +153,7 @@ const router = useRouter()
 const route = useRoute()
 
 const examId = ref(route.query.examId)
+const sceneId = ref(route.query.sceneId)
 
 // 导航菜单数据
 const navItems = ref([
@@ -188,12 +192,30 @@ const filteredStudents = computed(() =>
 )
 
 const currentStudent = computed(() => {
+
+   // 查询待阅卷的考生数(navItems.id=pending) 待阅卷的考生数
+   const length = students.value.filter(student => student.examStatus === 'examination_end').length
+
+   // 保存navItems.pending.badge.value，通过过id来判断
+   navItems.value.find(item => item.id === 'pending').badge.value = length
+   
   return students.value.find(student => student.id === activeStudentId.value)
 })
 
 const markedCount = computed(() => {
   return students.value.filter(student => student.score !== null).length
 })
+
+// 选择导航项
+const selectNavItem = (item) => {
+  activeNav.value = item.id
+  activeStudentId.value = null
+
+   getExamineeList(examId.value , item.id).then(res => {
+      students.value = res.data
+      selectStudent(filteredStudents.value[0])
+   })
+}
 
 // 方法
 const selectStudent = (student) => {
@@ -206,6 +228,7 @@ const selectStudent = (student) => {
 const loadStudentAnswers = (student) => {
    // 通过studentId从students里面查询到应对的学生
    currentExam.value.student = student ;
+   console.log('reviewResult = ' + JSON.stringify(student.reviewResult))
    // currentExam.value.questions = student.questions ;
    markExamPagerRef.value.handlePagerDetail(currentExam.value);
 }
@@ -232,43 +255,6 @@ const isRecent = (time) => {
   return (now - time) < 24 * 60 * 60 * 1000 // 24小时内算最近
 }
 
-// const saveMarking = () => {
-//   // 计算总分
-//   const totalScore = Object.values(questionScores.value).reduce((sum, score) => sum + score, 0)
-  
-//   // 更新学生分数
-//   const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value)
-//   if (studentIndex !== -1) {
-//     students.value[studentIndex].score = totalScore
-//   }
-  
-//   lastSavedTime.value = '刚刚'
-// }
-
-// const saveMarking = async () => {
-//   try {
-//     // 调用子组件的保存方法
-//     await markExamPagerRef.value.saveMarkingResults()
-    
-//     // 计算总分
-//     const totalScore = markExamPagerRef.value.pagerInfo.questions
-//       .filter(q => q.markedScore !== undefined)
-//       .reduce((sum, q) => sum + q.markedScore, 0)
-    
-//     // 更新学生分数
-//     const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value)
-//     if (studentIndex !== -1) {
-//       students.value[studentIndex].score = totalScore
-//     }
-    
-//     lastSavedTime.value = '刚刚'
-//     ElMessage.success('批改结果已保存')
-//   } catch (error) {
-//     ElMessage.error('保存批改结果失败')
-//     console.error('保存批改结果失败:', error)
-//   }
-// }
-
 // 自动阅卷方法
 const handleAutoMarking = async () => {
     try {
@@ -285,15 +271,48 @@ const saveMarking = () => {
     // 计算总分
     const totalScore = markExamPagerRef.value.getTotalScore();
 
-    console.log('totalScore = ' + totalScore)
+    console.log('totalScore = ' + JSON.stringify(totalScore))
     
     // 更新学生分数
     const studentIndex = students.value.findIndex(s => s.id === activeStudentId.value);
     if (studentIndex !== -1) {
-        students.value[studentIndex].score = totalScore;
+        students.value[studentIndex].score = totalScore.totalScore;
     }
+
+    // 添加loading加载过程
+    const loading = ElLoading.service({
+      lock: true,
+      text: '保存中...',
+      background: 'rgba(255, 255, 255, 0.5)',
+      customClass: 'custom-loading'
+    });
+
+    // 保存批改结果
+    const data = {
+      examineeId: students.value[studentIndex].userId , // activeStudentId.value,
+      examId: examId.value,
+      sceneId: sceneId.value , 
+      totalScore: totalScore.totalScore,
+      scorePercentage: totalScore.scorePercentage,
+      questionScores: totalScore.questionScores,
+    }
+
+    saveMarkingResults(data).then(res => {
+      lastSavedTime.value = '刚刚';
+      ElMessage.success('保存批改结果成功');
+      loading.close();
+
+         getExamineeList(examId.value).then(res => {
+            console.log('res = ' + res);
+            students.value = res.data;
+         })
+
+    }).catch(err => {
+      loading.close()
+      ElMessage.error('保存批改结果失败')
+      console.error('保存批改结果失败:', err)
+    })
     
-    lastSavedTime.value = '刚刚';
 }
 
 // 初始化
@@ -315,6 +334,17 @@ onMounted(async() => {
             selectStudent(students.value[0])
          }
       })
+   })
+
+   // 配置快捷键(Ctrl+s保存批改 ctrl+q自动阅卷)
+   document.addEventListener('keydown', (e) => { 
+      if (e.ctrlKey && e.key === 's') {
+         e.preventDefault();
+         saveMarking();
+      } else if (e.ctrlKey && e.key === 'd') {
+         e.preventDefault();
+         handleAutoMarking();
+      }
    })
 
 })
