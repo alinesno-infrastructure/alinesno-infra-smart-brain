@@ -85,7 +85,7 @@ const handleValidate = async () => {
 
 const handleExamSubmit = async (answers, isAutoSubmit = false , pagerInfo) => {
   try {
-    await saveAccountScore({
+    const res =  await saveAccountScore({
       accountId: accountId.value,
       examId: examId.value,
       answers,
@@ -102,7 +102,10 @@ const handleExamSubmit = async (answers, isAutoSubmit = false , pagerInfo) => {
     ElMessage.success('试卷提交成功')
 
     // 跳转到结果页面
-    router.push({ path: '/scene/examPager/onlineExamAnalysis/' + examId.value })
+    router.push({ 
+      path: '/scene/examPager/onlineExamAnalysis/' + examId.value + '/' + accountId.value,
+      query: { 'channelStreamId': res.data }
+     })
   } catch (error) {
     ElMessage.error('提交失败: ' + error.message)
   }
