@@ -391,7 +391,7 @@ export const constantRoutes = [
     }
   },
   {
-    path: '/scene/examPager/onlineExamAnalysis/:examId',
+    path: '/scene/examPager/onlineExamAnalysis/:examId/:examineeId',
     component: () => import('@/views/base/scene/examPager/examResultAnalysis'),
     name: '/scene/examPager/onlineExamAnalysis',
     meta: { 
