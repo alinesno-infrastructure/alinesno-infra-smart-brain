@@ -3,19 +3,18 @@ package com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableLogic;
-import com.baomidou.mybatisplus.annotation.Version;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
+import com.alinesno.infra.smart.scene.entity.ExamScoreEntity;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 
 import java.time.LocalDateTime;
 
 /**
  * 考试成绩数据传输对象
  */
+@Slf4j
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class ExamScoreDto extends BaseDto {
@@ -32,7 +31,11 @@ public class ExamScoreDto extends BaseDto {
 
     private String userCode;
 
-    private Integer score;
+    private JSONArray reviewResult ;  // 阅卷结果
+
+    private String examStatus ;
+
+    private Long score;
 
     private Integer isPass;
 
@@ -59,4 +62,33 @@ public class ExamScoreDto extends BaseDto {
     // 分析结果保存
     private String analysisResult ;
 
+    /**
+     * 转换实体类为数据传输对象
+     * @param examScore
+     * @return
+     */
+    public static ExamScoreDto fromEntity(ExamScoreEntity examScore) {
+
+        ExamScoreDto dto = new ExamScoreDto();
+        BeanUtils.copyProperties(examScore, dto);
+        dto.setScore(examScore.getScore());
+
+        if(examScore.getReviewResult() != null){
+            try{
+                dto.setReviewResult(JSONArray.parseArray(examScore.getReviewResult()));  // 阅卷结果
+            }catch(Exception e){
+                log.warn("转换阅卷结果失败：{}", e.getMessage());
+            }
+        }
+
+        if(examScore.getAnswers() != null){
+            dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
+        }
+
+        if(examScore.getQuestions() != null){
+            dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
+        }
+
+        return dto;
+    }
 }
