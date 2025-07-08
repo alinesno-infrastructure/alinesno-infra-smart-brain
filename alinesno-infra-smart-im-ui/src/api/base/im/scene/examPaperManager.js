@@ -7,9 +7,12 @@ const BASE_URL = '/api/infra/smart/assistant/scene/examPagerManager';
 /**
  * 获取考试的考生列表
  */
-export function getExamineeList(examId) {
+export function getExamineeList(examId , examStatus) {
+  if(examStatus == null){
+    examStatus = 'all'
+  }
   return request({
-    url: `${BASE_URL}/examineeList?examId=${parseStrEmpty(examId)}`,
+    url: `${BASE_URL}/examineeList?examId=${parseStrEmpty(examId)}&examStatus=${parseStrEmpty(examStatus)}`,
     method: 'get'
   })
 }
