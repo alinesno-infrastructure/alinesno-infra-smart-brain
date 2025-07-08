@@ -4,6 +4,9 @@
     <div class="loading-content">
       <div class="ai-avatar">
         <img :src="aiAvatar" alt="AI阅卷助手" class="avatar-img">
+        <div class="ai-name">
+          {{ answerCheckerEngineer?.roleName }}
+        </div>
         <div class="ai-speech-bubble">
           <p>{{ currentAIMessage }}</p>
         </div>
@@ -279,19 +282,45 @@
         </div>
       </div>
     </div>
+
+    <!-- 运行抽屉 -->
+    <div class="aip-flow-drawer">
+        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
+            title="预览与调试" :with-header="true">
+            <div style="margin-top: 0px;">
+                <RoleChatPanel ref="roleChatPanelRef" />
+            </div>
+        </el-drawer>
+    </div>
+
   </div>
 </template>
 
 <script setup>
+
 import { ref, onMounted, computed } from 'vue';
+import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import AIPLogo from "@/assets/logo/logo.png" ; 
+import {
+  checkStatus,
+ examAnalysis 
+} from '@/api/base/im/scene/examPaperJob';
+
+const displayImage = import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" ;
 
 // 加载状态
 const loading = ref(true);
 const currentStep = ref(1);
 const stepProgress = ref(0);
+const chatStreamLoading = ref(false); // 聊天加载
+
+// 执行面板
+const showDebugRunDialog = ref(false);
+const roleChatPanelRef = ref(null)
 
 // AI头像
-const aiAvatar = ref('http://localhost:30304/v1/api/infra/base/im/chat/displayImage/1934609190684893186');
+const aiAvatar = ref(AIPLogo);
 
 // AI对话消息
 const aiMessages = ref([
@@ -305,6 +334,13 @@ const aiMessages = ref([
 ]);
 const currentAIMessage = ref(aiMessages.value[0]);
 const currentMessageIndex = ref(0);
+
+const answerCheckerEngineer = ref({
+  roleName: "AI阅卷专员"
+}) ;
+
+const { examId, examineeId } = useRoute().params;
+const channelStreamId = ref(null)
 
 // 考试数据
 const examData = ref({
@@ -353,45 +389,45 @@ const getTimeUsageComment = () => {
   return "部分题目耗时较长，建议加强时间管理";
 };
 
-// 模拟AI处理过程
-const simulateAIProcessing = () => {
-  // 切换AI消息
-  const messageInterval = setInterval(() => {
-    currentMessageIndex.value = (currentMessageIndex.value + 1) % aiMessages.value.length;
-    currentAIMessage.value = aiMessages.value[currentMessageIndex.value];
-  }, 2500);
+// // 模拟AI处理过程
+// const simulateAIProcessing = () => {
+//   // 切换AI消息
+//   const messageInterval = setInterval(() => {
+//     currentMessageIndex.value = (currentMessageIndex.value + 1) % aiMessages.value.length;
+//     currentAIMessage.value = aiMessages.value[currentMessageIndex.value];
+//   }, 10500);
 
-  // 第一步：阅卷
-  const step1Interval = setInterval(() => {
-    stepProgress.value += Math.random() * 5;
-    if (stepProgress.value >= 100) {
-      clearInterval(step1Interval);
-      currentStep.value = 2;
-      stepProgress.value = 0;
+//   // 第一步：阅卷
+//   const step1Interval = setInterval(() => {
+//     stepProgress.value += Math.random() * 5;
+//     if (stepProgress.value >= 100) {
+//       clearInterval(step1Interval);
+//       currentStep.value = 2;
+//       stepProgress.value = 0;
 
-      // 第二步：评分
-      const step2Interval = setInterval(() => {
-        stepProgress.value += Math.random() * 5;
-        if (stepProgress.value >= 100) {
-          clearInterval(step2Interval);
-          currentStep.value = 3;
-          stepProgress.value = 0;
+//       // 第二步：评分
+//       const step2Interval = setInterval(() => {
+//         stepProgress.value += Math.random() * 5;
+//         if (stepProgress.value >= 100) {
+//           clearInterval(step2Interval);
+//           currentStep.value = 3;
+//           stepProgress.value = 0;
 
-          // 第三步：分析
-          const step3Interval = setInterval(() => {
-            stepProgress.value += Math.random() * 5;
-            if (stepProgress.value >= 100) {
-              clearInterval(step3Interval);
-              clearInterval(messageInterval);
-              loading.value = false;
-              loadExamData();
-            }
-          }, 100);
-        }
-      }, 100);
-    }
-  }, 100);
-};
+//           // 第三步：分析
+//           const step3Interval = setInterval(() => {
+//             stepProgress.value += Math.random() * 5;
+//             if (stepProgress.value >= 100) {
+//               clearInterval(step3Interval);
+//               clearInterval(messageInterval);
+//               loading.value = false;
+//               loadExamData();
+//             }
+//           }, 10000);
+//         }
+//           }, 10000);
+//     }
+//           }, 10000);
+// };
 
 // 加载考试数据
 const loadExamData = () => {
@@ -542,12 +578,116 @@ const downloadReport = () => {
   alert("考试结果分析报告下载开始...");
 };
 
+/** 连接sse */
+// function handleSseConnect(channelStreamId) {
+//   nextTick(() => {
+//     if (channelStreamId) {
+
+//       let sseSource = openSseConnect(channelStreamId);
+//       // 接收到数据
+//       sseSource.onmessage = function (event) {
+
+//         if (!event.data.includes('[DONE]')) {
+//           let resData = event.data;
+//           if (resData != 'ping') {  // 非心跳消息
+//             const data = JSON.parse(resData);
+//             pushResponseMessageList(data);
+//           }
+//         } else if(event.data.includes('[DONE]')) {
+//           console.log('消息接收结束.')
+//           chatStreamLoading.value = false ; // 关闭流式结束
+//         }
+
+//       }
+//     }
+//   })
+// }
+
+// // 销毁信息
+// onBeforeUnmount(() => {
+//   if(channelStreamId.value){
+//     handleCloseSse(channelStreamId.value).then(res => {
+//       console.log('关闭sse连接成功:' + channelId)
+//     })
+//   }
+// });
+
+const openChatBox = (roleId) => {
+
+    if(showDebugRunDialog.value){
+        return ;
+    }
+
+    showDebugRunDialog.value = true;
+
+    nextTick(() => {
+        roleChatPanelRef.value.openChatBoxWithRole(roleId) ; 
+    })
+
+}
+
 // 组件挂载时开始模拟AI处理
 onMounted(() => {
-  simulateAIProcessing();
+
+  console.log('examId = ' + examId)
+  console.log('examineeId = ' + examineeId)
+
+  // 检查成绩状态
+  checkStatus(examId , examineeId).then(res => {
+
+    channelStreamId.value = res.data.result.id ;
+    answerCheckerEngineer.value = res.data.answerCheckerEngineer;
+    aiAvatar.value =  displayImage + res.data.answerCheckerEngineer.roleAvatar ; 
+
+    // 路径如果缺少channelStreamId参数，则添加channelStreamId
+    if(channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)){
+      window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value ;
+    }
+
+    const examStatus = res.data.status ;
+
+    console.log('examStatus = ' + examStatus);
+    console.log('channelStreamId = ' + channelStreamId.value);
+
+    if (examStatus == 'review_end') {  // 阅卷结束
+      loading.value = false ;
+      // 模拟考试结果分析
+      // simulateExamAnalysis();
+    }else if (examStatus == 'review') {  // 阅卷中
+      // 模拟考试结果保存
+      openChatBox(answerCheckerEngineer.value.id);
+      // simulateAIProcessing();
+    }else if (examStatus == 'examination_end') {  // 考生完成考试开始进行阅卷
+      // simulateAIProcessing();
+      // handleSseConnect(channelStreamId.value) ;
+      openChatBox(answerCheckerEngineer.value.id);
+
+      examAnalysis(examId , examineeId).then(res => {  // 提交阅卷考试
+        console.log('阅卷完成')
+        currentAIMessage.value = res.msg ;
+      })
+    }
+  })
+
 });
 </script>
 
 <style lang="scss" scoped>
 @import "@/assets/styles/scene/exam-result-analysis.scss";
+
+.step-text{
+  font-size: 16px;
+  color: #333;
+
+  .completed{
+      color: #d5d5d5;
+  }
+}
+
+.ai-name {
+    color: #333;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
 </style>
