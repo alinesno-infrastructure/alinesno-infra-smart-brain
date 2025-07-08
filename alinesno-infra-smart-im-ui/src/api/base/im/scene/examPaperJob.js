@@ -7,6 +7,24 @@ var prefix = '/api/infra/smart/assistant/scene/examPagerJob/' ;
 var managerUrl = {
   validateAccount: prefix +"validateAccount",
   saveAccountScore: prefix +"saveAccountScore",
+  checkStatus: prefix + "checkStatus" ,  // 获取任务状态
+  examAnalysis: prefix + "examAnalysis" , // 获取考试分析
+}
+
+// 获取考试分析结果
+export function examAnalysis(examId , examineeId) {
+  return request({
+    url: managerUrl.examAnalysis + "?examId=" + examId + "&examineeId=" + examineeId ,
+    method: 'get'
+  })
+}
+
+// 获取任务状态
+export function checkStatus(examId , examineeId) {
+  return request({
+    url: managerUrl.checkStatus + "/" + examId + "/" + examineeId ,
+    method: 'get'
+  })
 }
 
 // 验证考生考试信息 
