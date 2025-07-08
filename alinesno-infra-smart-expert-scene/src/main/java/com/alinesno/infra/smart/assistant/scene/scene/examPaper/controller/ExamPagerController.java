@@ -11,12 +11,14 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamScoreDto;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.enums.ExamineeExamEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamScoreService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPaperGenerator;
 import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.ExamScoreEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.dtflys.forest.annotation.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -147,17 +149,27 @@ public class ExamPagerController extends BaseController<ExamPagerEntity, IExamPa
     }
 
     /**
-     * 获取到考生列表
+     * 获取到考生阅卷列表，返回的是已经考试的列表
      * @return
      */
     @DataPermissionQuery
     @GetMapping("/examineeList")
     public AjaxResult examineeList(PermissionQuery query ,
-                                   @RequestParam Long examId) {
+                                   @RequestParam Long examId ,
+                                   @RequestParam String examStatus) {
 
         LambdaQueryWrapper<ExamScoreEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(ExamScoreEntity::getExamInfoId, examId);
         queryWrapper.eq(ExamScoreEntity::getOrgId , query.getOrgId()) ;
+
+        switch (examStatus) {
+            case "pending" ->   // 待阅卷
+                    queryWrapper.notIn(ExamScoreEntity::getExamStatus, ExamineeExamEnums.REVIEW_END.getCode());   // 除了阅卷中的以外
+            case "marked" ->  // 已阅卷
+                    queryWrapper.in(ExamScoreEntity::getExamStatus, ExamineeExamEnums.REVIEW_END.getCode());   // 阅卷结束
+            case "ranking" ->  // 成绩排行榜
+                    queryWrapper.orderByDesc(ExamScoreEntity::getScore); // 通过score分数排序
+        }
 
         // 按时间倒序
         queryWrapper.orderByDesc(ExamScoreEntity::getSubmitTime);
@@ -168,7 +180,9 @@ public class ExamPagerController extends BaseController<ExamPagerEntity, IExamPa
 
             ExamScoreDto dto = new ExamScoreDto();
             BeanUtils.copyProperties(examScore, dto);
+            dto.setScore(examScore.getScore());
 
+            dto.setReviewResult(JSONArray.parseArray(examScore.getReviewResult()));  // 阅卷结果
             dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
             dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
 
