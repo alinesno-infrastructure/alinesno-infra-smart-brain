@@ -45,7 +45,7 @@ public class ExamScoreEntity extends InfraBaseEntity {
     
     @Column(type = MySqlTypeConstant.INT, comment = "考试成绩")
     @TableField("score")
-    private Integer score;
+    private Long score;
     
     @Column(type = MySqlTypeConstant.TINYINT, comment = "是否及格(0:不及格 1:及格)")
     @TableField("is_pass")
@@ -70,7 +70,11 @@ public class ExamScoreEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.DATETIME, comment = "阅卷时间")
     @TableField("review_time")
     private LocalDateTime reviewTime;
-    
+
+    @TableField("review_result")
+    @Column(type = MySqlTypeConstant.TEXT , comment = "阅卷结果")
+    private String reviewResult ;
+
     @Column(type = MySqlTypeConstant.VARCHAR, length = 500, comment = "成绩备注")
     @TableField("remark")
     private String remark;
@@ -97,5 +101,9 @@ public class ExamScoreEntity extends InfraBaseEntity {
     @TableField("analysis_result")
     @Column(type = MySqlTypeConstant.TEXT , comment = "分析结果")
     private String analysisResult ;
+
+    @TableField("exam_status")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 50, comment = "考试状态")
+    private String examStatus ;
 
 }
