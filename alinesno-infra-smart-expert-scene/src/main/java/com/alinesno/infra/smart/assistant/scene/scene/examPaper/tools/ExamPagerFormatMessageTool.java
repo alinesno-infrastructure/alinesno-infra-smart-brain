@@ -4,23 +4,32 @@ import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.message.AiMessage;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.enums.ExamineeExamEnums;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.prompt.ExamPagerPromptHandle;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamScoreService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
+import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
+import com.alinesno.infra.smart.scene.entity.ExamScoreEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -29,6 +38,9 @@ public class ExamPagerFormatMessageTool {
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private IExamScoreService examScoreService;
 
     @Autowired
     private ILLmAdapterService llmAdapterService ;
@@ -162,6 +174,67 @@ public class ExamPagerFormatMessageTool {
 
         genContent.setGenContent(message.getFullContent());
         genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(message.getFullContent()));
+    }
+
+    /**
+     * 成绩结果评分，主要分两步:
+     * 1. 先AI角色阅卷
+     * @param examScore
+     */
+    @Async
+    public void markExamScore(ExamScoreEntity examScore, IndustryRoleEntity industryRole, ExamPagerSceneEntity examPagerScene) {
+
+        // 更新状态为阅卷中
+        examScore.setExamStatus(ExamineeExamEnums.REVIEW.getCode());
+        examScoreService.updateById(examScore);
+
+        try {
+
+            JSONArray questions = JSONArray.parseArray(examScore.getQuestions()); // 传入题目JSON数组
+            JSONObject answers = JSONObject.parseObject(examScore.getAnswers());   // 传入答案JSON对象
+
+            String markdownAnswer = QuestionAnswerFormatter.formatToMarkdown(questions , answers) ;
+            String markdownAnswerPrompt = ExamPagerPromptHandle.generatorMarkPrompt(markdownAnswer) ;
+
+            Long taskId = examScore.getId();
+            Long channelStreamId = examScore.getId();
+
+            // 构建任务信息
+            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+
+            taskInfo.setRoleId(industryRole.getId());
+            taskInfo.setChannelStreamId(String.valueOf(channelStreamId)) ;
+            taskInfo.setChannelId(examScore.getSceneId());
+            taskInfo.setSceneId(examScore.getSceneId());
+            taskInfo.setText(markdownAnswerPrompt);
+
+            // 调用角色服务生成内容
+            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+            log.info("角色服务调用完成，taskId: {}", taskId);
+            log.info("角色服务输出内容：{}", taskInfo.getFullContent());
+
+            // 随机生成分数 (实际应该根据评分逻辑计算)
+            long score = (long) (Math.random() * 100);
+            boolean isPass = score >= 60;
+
+            // 更新成绩信息
+            examScore.setScore(score);
+            examScore.setIsPass(isPass ? 1 : 0);
+            examScore.setReviewTime(LocalDateTime.now());
+            examScore.setReviewerId(1L); // 假设系统自动阅卷
+            examScore.setReviewerName("系统自动阅卷");
+//            examScore.setReviewResult("自动阅卷完成");
+//            examScore.setAnalysisResult(generateAnalysisResult(examScore));
+            examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
+
+            examScoreService.updateById(examScore);
+
+        } catch (Exception e) {
+            log.error("阅卷出错", e);
+            // 出错时更新状态
+            examScore.setExamStatus(ExamineeExamEnums.CANCELED.getCode());
+            examScoreService.updateById(examScore);
+        }
     }
 
 }
