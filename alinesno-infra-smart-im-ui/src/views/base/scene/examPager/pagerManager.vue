@@ -68,12 +68,8 @@
                               </el-tag>
                             </div>
                             <div class="scene-tag">
-                              <el-button type="primary" size="small" text bg>
-                                <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
-                                  JSON.parse(item.fieldProp)?.sceneName }}
-                              </el-button>
                               <div class="scene-stats">
-                                <span>时间</span>
+                                <span>添加</span>
                                 <span>{{ item.addTime}}</span>
                               </div>
                             </div>
