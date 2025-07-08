@@ -10,7 +10,17 @@ const examUrl = {
   detail: examPrefix + "detail",
   deleteExam: examPrefix + "deleteById",
   queryExamList: examPrefix + "queryExamList",
+  saveMarkingResults: examPrefix + "saveMarkingResults",
   exportUrl: examPrefix + "export/url/"
+}
+
+// 保存阅卷结果
+export function saveMarkingResults(data) {
+  return request({
+    url: examUrl.saveMarkingResults,
+    method: 'post',
+    data: data
+  })
 }
 
 // 详细查询
