@@ -8,10 +8,13 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamInfoPage;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamMarkingDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamInfoService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamScoreService;
 import com.alinesno.infra.smart.scene.entity.ExamInfoEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -38,6 +41,9 @@ public class ExamInfoController extends BaseController<ExamInfoEntity, IExamInfo
 
     @Autowired
     private IExamInfoService service;
+
+    @Autowired
+    private IExamScoreService examScoreService ;
 
     /**
      * 添加考试信息
@@ -87,6 +93,21 @@ public class ExamInfoController extends BaseController<ExamInfoEntity, IExamInfo
     @PostMapping("/queryExamList")
     public TableDataInfo queryExamList(@RequestBody @Valid ExamInfoPage examInfoPage , PermissionQuery query) {
         return service.queryExamList(examInfoPage , query);
+    }
+
+    /**
+     * 保存考试信息
+     * @return
+     */
+    @DataPermissionSave
+    @PostMapping("/saveMarkingResults")
+    public AjaxResult saveMarkingResults(@RequestBody @Valid ExamMarkingDto examMarkingDto) {
+        Long currentAccountId = CurrentAccountJwt.getUserId();  // 当前阅卷老师
+        String accountName = CurrentAccountJwt.get().getName();
+
+        examScoreService.saveMarkingResults(examMarkingDto , currentAccountId , accountName)  ;
+
+        return AjaxResult.success("保存成功") ;
     }
 
 
