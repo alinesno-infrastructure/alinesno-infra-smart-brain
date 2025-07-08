@@ -40,20 +40,20 @@ const emits = defineEmits([
 
 const functionList = ref([
   {
-    name: '试卷管理',
-    icon: 'fa-solid fa-file-pen', // Font Awesome 6.x 试卷/编辑图标
-    status: 'done', // 任务状态（loading/done）
-    log: '已完成试卷创建与审核', // 任务描述
-    isSelected: false , // 是否选中
-    link: '/scene/examPager/pagerManager'
-  },
-  {
     name: '考试管理',
     icon: 'fa-solid fa-graduation-cap', // Font Awesome 6.x 毕业帽（象征考试/教育）
     status: 'loading', // 任务状态示例
     log: '正在进行考试安排与通知', // 任务描述
     isSelected: false,
     link: '/scene/examPager/examManager'
+  },
+  {
+    name: '试卷管理',
+    icon: 'fa-solid fa-file-pen', // Font Awesome 6.x 试卷/编辑图标
+    status: 'done', // 任务状态（loading/done）
+    log: '已完成试卷创建与审核', // 任务描述
+    isSelected: false , // 是否选中
+    link: '/scene/examPager/pagerManager'
   },
   {
     name: '题库管理', // 菜单名称
