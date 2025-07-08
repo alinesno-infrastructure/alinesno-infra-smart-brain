@@ -1,7 +1,10 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.impl;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamMarkingDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPageSubmitDto;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.enums.ExamineeExamEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.mapper.ExamInfoMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.mapper.ExamPagerMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.mapper.ExamScoreMapper;
@@ -36,7 +39,7 @@ public class ExamScoreServiceImpl extends IBaseServiceImpl<ExamScoreEntity, Exam
     private ExamineeMapper examineeMapper ; // 考生Mapper层
 
     @Override
-    public void saveAccountScore(ExamPageSubmitDto dto) {
+    public Long saveAccountScore(ExamPageSubmitDto dto) {
 
         String examId = dto.getExamId() ;
         ExamInfoEntity examInfoEntity = examInfoMapper.selectById(examId) ;  // 获取到考试信息
@@ -52,9 +55,12 @@ public class ExamScoreServiceImpl extends IBaseServiceImpl<ExamScoreEntity, Exam
         LambdaQueryWrapper<ExamScoreEntity> waqWrapper = new LambdaQueryWrapper<>() ;
         waqWrapper.eq(ExamScoreEntity::getExamInfoId, examId) ;
         waqWrapper.eq(ExamScoreEntity::getUserId, accountId) ;
+
         if(count(waqWrapper) > 0){
             log.error("该考生已经提交过试卷，请勿重复提交！");
-            return ;
+
+            ExamScoreEntity examScoreEntity = getOne(waqWrapper) ;
+            return examScoreEntity.getId() ;
         }
 
         String submitTime = dto.getSubmitTime() ; // 获取到提交时间
@@ -75,6 +81,7 @@ public class ExamScoreServiceImpl extends IBaseServiceImpl<ExamScoreEntity, Exam
         examScoreEntity.setIsDeleted(0);
         examScoreEntity.setAnswers(answers) ;
         examScoreEntity.setQuestions(questions) ;
+        examScoreEntity.setExamStatus(ExamineeExamEnums.EXAMINATION_END.getCode());
 
         // 设置权限相关
         examScoreEntity.setOrgId(examInfoEntity.getOrgId());
@@ -82,5 +89,36 @@ public class ExamScoreServiceImpl extends IBaseServiceImpl<ExamScoreEntity, Exam
         examScoreEntity.setOperatorId(examInfoEntity.getOperatorId());
 
         save(examScoreEntity);
+
+        return examScoreEntity.getId();
+    }
+
+    /**
+     * 保存阅卷结果
+     *
+     * @param examMarkingDto
+     * @param currentAccountId
+     */
+    @Override
+    public void saveMarkingResults(ExamMarkingDto examMarkingDto, Long currentAccountId , String accountName) {
+
+        // 通过考试号和学生id获取到考试信息
+        LambdaQueryWrapper<ExamScoreEntity> waqWrapper = new LambdaQueryWrapper<>() ;
+        waqWrapper.eq(ExamScoreEntity::getExamInfoId, examMarkingDto.getExamId()) ;
+        waqWrapper.eq(ExamScoreEntity::getUserId , examMarkingDto.getExamineeId()) ;
+        waqWrapper.eq(ExamScoreEntity::getSceneId, examMarkingDto.getSceneId()) ;
+
+        ExamScoreEntity examScoreEntity = getOne(waqWrapper) ;
+        examScoreEntity.setScore(examMarkingDto.getTotalScore()) ; // 设置总分
+
+        examScoreEntity.setReviewerId(currentAccountId) ; // 阅卷人
+        examScoreEntity.setReviewerName(accountName) ;  // 阅卷人姓名
+
+        examScoreEntity.setReviewResult(JSONArray.toJSONString(examMarkingDto.getQuestionScores())) ; // 阅卷结果{key:value}保存，key是题目id,value是分数
+
+        examScoreEntity.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode()) ;
+
+        updateById(examScoreEntity) ;
+
     }
 }
