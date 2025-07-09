@@ -152,7 +152,7 @@
   h2 {
     font-size: 1.5rem;
     color: #1e293b;
-    margin-bottom: 0.5rem;
+    margin-bottom: 1.5rem;
   }
 }
 
@@ -551,13 +551,23 @@ td:first-child, th:first-child {
 
 .suggestions-list {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 5px;
+  margin-top: 30px;
+  flex-wrap: wrap;
 }
 
 .suggestion-item {
   display: flex;
   align-items: center;
+  width: calc(50% - 15px);
+  flex-direction: row;
+  flex-wrap: wrap;
+  background: #fafafa;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  margin-right: 10px;
 }
 
 .suggestion-icon {
