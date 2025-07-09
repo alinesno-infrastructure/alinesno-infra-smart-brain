@@ -26,6 +26,8 @@ import com.agentsflex.llm.deepseek.DeepseekLlm;
 import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.agentsflex.llm.doubao.DoubaoLlm;
 import com.agentsflex.llm.doubao.DoubaoLlmConfig;
+import com.agentsflex.llm.jdcloud.JDcloudLlmConfig;
+import com.agentsflex.llm.jdcloud.JDcloudLlm;
 import com.agentsflex.llm.ollama.OllamaLlm;
 import com.agentsflex.llm.ollama.OllamaLlmConfig;
 import com.agentsflex.llm.qwen.QwenLlm;
@@ -69,7 +71,8 @@ public class LLmAdapterServiceImpl implements ILLmAdapterService {
                 LlmModelProviderEnums.DEEPSEEK.getCode(), deepseekAiConfig -> createLlm(new DeepseekLlmConfig(), deepseekAiConfig, DeepseekLlm::new),
                 LlmModelProviderEnums.OLLAMA.getCode(), ollamaAiConfig -> createLlm(new OllamaLlmConfig(), ollamaAiConfig, OllamaLlm::new),
                 LlmModelProviderEnums.SILICONFLOW.getCode(), siliconAiConfig -> createLlm(new SiliconflowLlmConfig(), siliconAiConfig, SiliconflowLlm::new),
-                LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new)
+                LlmModelProviderEnums.QWQ.getCode(), QwqConfig -> createLlm(new QwqLlmConfig(), QwqConfig, QwqLlm::new),
+                LlmModelProviderEnums.JDCloud.getCode(), jdcloudConfig -> createLlm(new JDcloudLlmConfig(), jdcloudConfig, JDcloudLlm::new)
         );
 
         // 获取对应的工厂方法
