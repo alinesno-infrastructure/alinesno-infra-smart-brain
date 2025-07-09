@@ -197,7 +197,10 @@ const currentStudent = computed(() => {
    const length = students.value.filter(student => student.examStatus === 'examination_end').length
 
    // 保存navItems.pending.badge.value，通过过id来判断
-   navItems.value.find(item => item.id === 'pending').badge.value = length
+   // 如果activeNav为all或者rankiner或者pending的时候，才做这个计算
+   if (activeNav.value !== 'marked') {
+     navItems.value.find(item => item.id === 'pending').badge.value = length
+   }
    
   return students.value.find(student => student.id === activeStudentId.value)
 })
