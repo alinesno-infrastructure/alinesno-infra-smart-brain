@@ -19,7 +19,9 @@ import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.io.ByteArrayResource;
@@ -34,6 +36,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 
 @Slf4j
@@ -202,12 +206,21 @@ public class LongTextController extends SuperController {
      * @param storageId
      * @return
      */
+    @SneakyThrows
     @DataPermissionQuery
     @GetMapping("/getPreviewDocx")
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam String storageId) {
 
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
+
 
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
