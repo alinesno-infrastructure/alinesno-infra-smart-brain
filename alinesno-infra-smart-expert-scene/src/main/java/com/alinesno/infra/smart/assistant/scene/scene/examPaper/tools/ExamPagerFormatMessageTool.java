@@ -7,6 +7,7 @@ import com.agentsflex.core.message.AiMessage;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
+import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
@@ -30,6 +31,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 @Slf4j
@@ -213,6 +215,8 @@ public class ExamPagerFormatMessageTool {
             log.info("角色服务调用完成，taskId: {}", taskId);
             log.info("角色服务输出内容：{}", taskInfo.getFullContent());
 
+            List<CodeContent> codeContent = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
+
             // 随机生成分数 (实际应该根据评分逻辑计算)
             long score = (long) (Math.random() * 100);
             boolean isPass = score >= 60;
@@ -223,8 +227,7 @@ public class ExamPagerFormatMessageTool {
             examScore.setReviewTime(LocalDateTime.now());
             examScore.setReviewerId(1L); // 假设系统自动阅卷
             examScore.setReviewerName("系统自动阅卷");
-//            examScore.setReviewResult("自动阅卷完成");
-//            examScore.setAnalysisResult(generateAnalysisResult(examScore));
+            examScore.setAnalysisResult(codeContent.get(0).getContent());
             examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
 
             examScoreService.updateById(examScore);
