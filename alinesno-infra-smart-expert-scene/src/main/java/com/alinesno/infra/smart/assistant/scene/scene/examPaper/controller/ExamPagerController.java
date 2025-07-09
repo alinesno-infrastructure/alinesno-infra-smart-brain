@@ -1,7 +1,5 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.controller;
 
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -18,12 +16,10 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPaperG
 import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.ExamScoreEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.dtflys.forest.annotation.Request;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpHeaders;
@@ -176,18 +172,14 @@ public class ExamPagerController extends BaseController<ExamPagerEntity, IExamPa
 
         List<ExamScoreEntity> examineeList = examScoreService.list(queryWrapper) ;
 
-        List<ExamScoreDto> examineeListDto = examineeList.stream().map(examScore -> {
+        //            BeanUtils.copyProperties(examScore, dto);
+        //            dto.setScore(examScore.getScore());
+        //
+        //            dto.setReviewResult(JSONArray.parseArray(examScore.getReviewResult()));  // 阅卷结果
+        //            dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
+        //            dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
 
-            ExamScoreDto dto = new ExamScoreDto();
-            BeanUtils.copyProperties(examScore, dto);
-            dto.setScore(examScore.getScore());
-
-            dto.setReviewResult(JSONArray.parseArray(examScore.getReviewResult()));  // 阅卷结果
-            dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
-            dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
-
-            return dto;
-        }).toList();
+        List<ExamScoreDto> examineeListDto = examineeList.stream().map(ExamScoreDto::fromEntity).toList();
 
         return AjaxResult.success("操作成功", examineeListDto) ;
     }
