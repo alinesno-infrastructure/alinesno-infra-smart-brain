@@ -48,8 +48,7 @@
                             <span class="box-card-title">AI配置</span>
                         </div>
 
-                        <el-tabs :tab-position="tabPosition" v-model="scriptType" @tab-click="handleTabClick"
-                            class="demo-tabs">
+                        <el-tabs :tab-position="tabPosition" v-model="scriptType" @tab-click="handleTabClick" class="constom-script-tabs">
 
                             <el-tab-pane name="params" label="参数配置">
                                 <ParamsConfigPanel ref="paramsConfigRef" @submitModelConfig="submitModelConfig" />
@@ -265,4 +264,10 @@ defineExpose({
     }
 }
 
+</style>
+
+<style lang="css">
+.constom-script-tabs .el-tabs__nav{
+    height: auto !important ; 
+}
 </style>
