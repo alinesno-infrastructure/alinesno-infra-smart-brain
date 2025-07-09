@@ -24,7 +24,12 @@ import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClients;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -34,6 +39,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -166,22 +173,48 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
      * 获取markdown内容,先获取到预览地址，然后再根据地址请求到里面的markdown内容
      * @return
      */
+//    @GetMapping("/getOutputMarkdownContent")
+//    public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
+//
+//        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+//
+//        // 设置 StringHttpMessageConverter 的编码为 UTF-8
+//        restTemplate.getMessageConverters()
+//                .stream()
+//                .filter(converter -> converter instanceof StringHttpMessageConverter)
+//                .map(converter -> (StringHttpMessageConverter) converter)
+//                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
+//
+//        // 发送请求并获取响应，指定返回类型为 String
+//        String markdownContent = restTemplate.getForObject(previewUrl, String.class);
+//
+//        return AjaxResult.success("操作成功" , markdownContent);
+//    }
+
     @GetMapping("/getOutputMarkdownContent")
     public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
-
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
 
-        // 设置 StringHttpMessageConverter 的编码为 UTF-8
-        restTemplate.getMessageConverters()
-                .stream()
-                .filter(converter -> converter instanceof StringHttpMessageConverter)
-                .map(converter -> (StringHttpMessageConverter) converter)
-                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
+        HttpClient httpClient = HttpClients.createDefault();
+        HttpGet httpGet = new HttpGet(previewUrl);
 
-        // 发送请求并获取响应，指定返回类型为 String
-        String markdownContent = restTemplate.getForObject(previewUrl, String.class);
-
-        return AjaxResult.success("操作成功" , markdownContent);
+        try {
+            HttpResponse response = httpClient.execute(httpGet);
+            if (response.getStatusLine().getStatusCode() == 200) {
+                // 使用 IOUtils 读取内容，并指定 UTF-8 编码
+                String markdownContent = IOUtils.toString(
+                        response.getEntity().getContent(),
+                        StandardCharsets.UTF_8
+                );
+                return AjaxResult.success("操作成功", markdownContent);
+            } else {
+                return AjaxResult.error("下载失败，HTTP状态码: " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            return AjaxResult.error("请求异常: " + e.getMessage());
+        } finally {
+            httpGet.releaseConnection();
+        }
     }
 
     @Override
