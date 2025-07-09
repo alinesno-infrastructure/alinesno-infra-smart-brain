@@ -202,6 +202,7 @@ public class ReActExpertService extends ExpertService {
                         // 放置工具用户和组织信息
                         argsList.put("accountId" , String.valueOf(taskInfo.getAccountId())) ;
                         argsList.put("accountOrgId" , String.valueOf(taskInfo.getAccountOrgId())) ;
+                        argsList.put("datasetIds" , String.valueOf(role.getKnowledgeBaseIds())) ;
 
                         try {
 
