@@ -47,23 +47,38 @@
   </div>
 
   <!-- 主内容区 -->
-  <div class="exam-result-container" :class="{ blur: loading }">
+  <div class="exam-result-container" :class="{ blur: loading || reSubmit }">
     <!-- 主要内容区 -->
-    <main class="container">
+    <main class="container" id="exam-result-id">
+
       <!-- 考试总结卡片 -->
       <section class="exam-summary-section">
         <div class="exam-summary-card">
           <div class="summary-header">
-            <h2>{{ examInfo.examName }}</h2>
-            <div class="exam-meta">
-              <span>考试日期: 2025年6月15日</span>
-              <span>考试时长: 60分钟</span>
-              <span>总分: {{ examInfo.totalScore }}分</span>
-              <span>你的得分: {{ examData.score }}分</span>
+            <div>
+
+              <h2>{{ examInfo.examName }}</h2>
+              <div class="exam-meta">
+                <span>考试日期: 2025年6月15日</span>
+                <span>考试时长: 60分钟</span>
+                <span>总分: {{ examInfo.totalScore }}分</span>
+                <span>你的得分: {{ examData.score }}分</span>
+              </div>
             </div>
+
+
+            <!-- 新增的分数盖章效果 -->
+            <div class="score-stamp" :class="getScoreStampClass(examData.score, examInfo.totalScore)">
+              <div class="score-value">{{ examData.score }}</div>
+              <div class="score-label">{{ getScoreLabel(examData.score, examInfo.totalScore) }}</div>
+              <div class="stamp-overlay"></div>
+            </div>
+
           </div>
 
-          <MarkdownRenderer :content="analysisResult.overall" />
+          <div class="summary-content-wrapper">
+            <MarkdownRenderer :content="analysisResult.overall" />
+          </div>
 
           <div class="summary-footer">
             <div class="ai-signature">
@@ -110,26 +125,6 @@
         </div>
       </section>
 
-      <!-- 成绩分析文本展示 -->
-      <!-- <section class="text-display-section">
-        <div class="text-display-card">
-          <h3>得分分布</h3>
-          <div class="text-display-content">
-            <p v-for="(item, index) in examData.scoreDistribution" :key="index">
-              <strong>{{ item.type }}：</strong>得分率{{ item.rate }}%
-            </p>
-          </div>
-        </div>
-        <div class="text-display-card">
-          <h3>知识点掌握情况</h3>
-          <div class="text-display-content">
-            <p v-for="(item, index) in examData.knowledgePoints" :key="index">
-              <strong>{{ item.name }}：</strong>掌握程度{{ item.mastery }}%
-            </p>
-          </div>
-        </div>
-      </section> -->
-
       <!-- 答题详情 -->
       <section class="answer-details-section">
         <div class="answer-details-card">
@@ -137,22 +132,38 @@
             <h3>答题详情</h3>
           </div>
 
-          <el-table
-            :data="analysisResult.examResults"
-            style="width: 100%"
-            :size="large"
-            :cell-style="{'font-size':'15px'}"
-            class="answer-table">
-            <el-table-column type="index" align="center" label="题号" width="80" />
-            <el-table-column label="分数" width="120">
+          <el-table :data="analysisResult.examResults" style="width: 100%" :size="large"
+            :cell-style="{ 'font-size': '15px' }" class="answer-table">
+            <el-table-column type="index" align="center" label="题号" width="50" />
+            <el-table-column prop="comment" label="知识点">
               <template #default="{ row }">
-                {{ row.score }}/{{ row.maxScore }}
+                <div class="question-container">
+                  <div class="question-section">
+                    <h4 class="title">题目：</h4>
+                    <p class="content">{{ getQuestionById(row.id)?.question }}</p>
+                  </div>
+
+                  <div class="analysis-section">
+                    <h4 class="title">考核分析：</h4>
+                    <p class="content">{{ getQuestionById(row.id)?.answerAnalysis }}</p>
+                  </div>
+
+                  <div class="comment-section">
+                    <h4 class="title">教师点评：</h4>
+                    <p class="content">{{ row.comment || "暂无点评" }}</p>
+                  </div>
+                </div>
               </template>
             </el-table-column>
-            <el-table-column prop="comment" label="知识点" />
-            <el-table-column label="详情" width="120" align="center">
+            <el-table-column label="分数" align="center" width="80">
               <template #default="{ row }">
-                <el-button type="primary" text @click="openQuestionModal(row)">查看</el-button>
+                <span :class="{
+    'zero-score': row.score === 0,
+    'full-score': row.score === row.maxScore,
+    'partial-score': row.score > 0 && row.score < row.maxScore
+  }">
+                  {{ row.score }}/{{ row.maxScore }}
+                </span>
               </template>
             </el-table-column>
           </el-table>
@@ -169,43 +180,6 @@
         </div>
       </section>
 
-      <!-- 答题详情 -->
-      <!-- <section class="answer-details-section">
-        <div class="answer-details-card">
-          <div class="answer-details-header">
-            <h3>答题详情</h3>
-            <div class="filter-buttons">
-              <el-button type="primary" text bg>全部</el-button>
-              <el-button text bg>正确</el-button>
-              <el-button text bg>错误</el-button>
-              <el-button text bg>未答</el-button>
-            </div>
-          </div>
-
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>题号</th>
-                  <th>分数</th>
-                  <th>知识点</th>
-                  <th align="center">详情</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="item in analysisResult.examResults" :key="item.id">
-                  <td>{{ item.id }}</td>
-                  <td>{{item.score }}/{{ item.maxScore }}</td>
-                  <td>{{ item.comment }}</td>
-                  <td>
-                    <el-button type="primary" text @click="openQuestionModal(item)">查看</el-button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section> -->
 
       <!-- 薄弱知识点分析 -->
       <section class="weak-knowledge-section">
@@ -214,16 +188,8 @@
           <div class="knowledge-grid">
             <div class="knowledge-item" v-for="knowledge in weakAreas" :key="knowledge.id">
               <h4>{{ knowledge.topic }}</h4>
-              <p style="font-size:14px;">{{ knowledge.issue}}</p>
+              <p style="font-size:14px;">{{ knowledge.issue }}</p>
               <p>{{ knowledge.suggestion }}</p>
-              <!-- 
-              -->
-              <!-- <div class="progress-bar">
-                <div :style="{ width: knowledge.scoreRate + '%', 'background-color': knowledge.color }"></div>
-              </div>
-              <div class="action-link">
-                <el-button type="primary" text>查看练习推荐</el-button>
-              </div> -->
             </div>
           </div>
         </div>
@@ -244,12 +210,20 @@
               </div>
             </div>
           </div>
-          <div class="suggestion-action">
-            <el-button size="large" type="primary" @click="downloadReport">下载考试结果分析</el-button>
-          </div>
         </div>
       </section>
+
+
+      <section>
+        <div class="ai-label">此为AI阅卷结果，打分和评语仅供参数，酌情使用</div>
+      </section>
     </main>
+
+    <div class="floating-button">
+      <el-button size="large" type="primary" @click="downloadReport">
+        <i class="fa fa-download"></i> 导出
+      </el-button>
+    </div>
 
     <!-- 模态框 - 题目详情 -->
     <div v-if="showModal" class="question-modal">
@@ -296,12 +270,12 @@
 
     <!-- 运行抽屉 -->
     <div class="aip-flow-drawer">
-        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
-            title="预览与调试" :with-header="true">
-            <div style="margin-top: 0px;">
-                <RoleChatPanel ref="roleChatPanelRef" />
-            </div>
-        </el-drawer>
+      <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+        :with-header="true">
+        <div style="margin-top: 0px;">
+          <RoleChatPanel ref="roleChatPanelRef" />
+        </div>
+      </el-drawer>
     </div>
 
   </div>
@@ -310,22 +284,27 @@
 <script setup>
 
 import { ref, onMounted, computed } from 'vue';
-import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import { ElMessageBox } from 'element-plus';
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
-import MarkdownRenderer from "./components/markResultSummay" ;
-import AIPLogo from "@/assets/logo/logo.png" ; 
+import MarkdownRenderer from "./components/markResultSummay";
+import { htmlToPDF } from '@/utils/htmlToPDF.js';
+import AIPLogo from "@/assets/logo/logo.png";
+
 import {
   checkStatus,
- examAnalysis 
+  updateExamStatus,
+  examAnalysis,
 } from '@/api/base/im/scene/examPaperJob';
 
-const displayImage = import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/" ;
+const displayImage = import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/";
 
 // 加载状态
+const reSubmit = ref(false);
 const loading = ref(true);
 const currentStep = ref(1);
 const stepProgress = ref(0);
-const chatStreamLoading = ref(false); // 聊天加载
+
+const allQuestions = ref([]);
 
 // 执行面板
 const showDebugRunDialog = ref(false);
@@ -335,21 +314,13 @@ const roleChatPanelRef = ref(null)
 const aiAvatar = ref(AIPLogo);
 
 // AI对话消息
-const aiMessages = ref([
-  "正在扫描您的试卷，识别答题内容...",
-  "检测到您的选择题答题卡填涂规范，开始批阅...",
-  "发现第3题三角函数部分可能有计算错误，正在复核...",
-  "您的解答题步骤完整，正在给予过程分...",
-  "已完成客观题批改，开始主观题评分...",
-  "正在分析您的答题模式和学习薄弱点...",
-  "生成个性化学习建议中，请稍候..."
-]);
+const aiMessages = ref(["正在扫描您的试卷，识别答题内容...", "检测到您的选择题答题卡填涂规范，开始批阅...",]);
 const currentAIMessage = ref(aiMessages.value[0]);
 const currentMessageIndex = ref(0);
 
 const answerCheckerEngineer = ref({
   roleName: "AI阅卷专员"
-}) ;
+});
 
 const { examId, examineeId } = useRoute().params;
 const channelStreamId = ref(null)
@@ -369,10 +340,10 @@ const examData = ref({
 
 const examInfo = ref({})
 
-const analysisResult = ref({}) ;
+const analysisResult = ref({});
 const improvementSuggestions = ref([])
 const weakAreas = ref([])
-const allSuggestions= ref([])
+// const allSuggestions= ref([])
 
 // 当前查看的题目
 const showModal = ref(false);
@@ -391,175 +362,6 @@ const currentDate = computed(() => {
   return `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
 });
 
-// 性能等级评价
-const getPerformanceLevel = () => {
-  const score = examData.value.score;
-  if (score >= 135) return "非常优秀";
-  if (score >= 120) return "良好";
-  if (score >= 90) return "中等";
-  return "有待提高";
-};
-
-// 时间使用评价
-const getTimeUsageComment = () => {
-  const timeUsed = examData.value.timeUsed;
-  if (timeUsed < 90) return "答题速度很快，但要注意检查准确率";
-  if (timeUsed < 110) return "时间分配合理，保持了良好节奏";
-  return "部分题目耗时较长，建议加强时间管理";
-};
-
-// // 模拟AI处理过程
-// const simulateAIProcessing = () => {
-//   // 切换AI消息
-//   const messageInterval = setInterval(() => {
-//     currentMessageIndex.value = (currentMessageIndex.value + 1) % aiMessages.value.length;
-//     currentAIMessage.value = aiMessages.value[currentMessageIndex.value];
-//   }, 10500);
-
-//   // 第一步：阅卷
-//   const step1Interval = setInterval(() => {
-//     stepProgress.value += Math.random() * 5;
-//     if (stepProgress.value >= 100) {
-//       clearInterval(step1Interval);
-//       currentStep.value = 2;
-//       stepProgress.value = 0;
-
-//       // 第二步：评分
-//       const step2Interval = setInterval(() => {
-//         stepProgress.value += Math.random() * 5;
-//         if (stepProgress.value >= 100) {
-//           clearInterval(step2Interval);
-//           currentStep.value = 3;
-//           stepProgress.value = 0;
-
-//           // 第三步：分析
-//           const step3Interval = setInterval(() => {
-//             stepProgress.value += Math.random() * 5;
-//             if (stepProgress.value >= 100) {
-//               clearInterval(step3Interval);
-//               clearInterval(messageInterval);
-//               loading.value = false;
-//               loadExamData();
-//             }
-//           }, 10000);
-//         }
-//           }, 10000);
-//     }
-//           }, 10000);
-// };
-
-// 加载考试数据
-const loadExamData = () => {
-  examData.value = {
-    score: 128,
-    rank: 5,
-    accuracy: 85.3,
-    timeUsed: 105,
-    scoreDistribution: [
-      { type: "选择题", rate: 90 },
-      { type: "填空题", rate: 75 },
-      { type: "解答题", rate: 65 },
-      { type: "证明题", rate: 80 },
-      { type: "应用题", rate: 70 }
-    ],
-    knowledgePoints: [
-      { name: "集合与简易逻辑", mastery: 90 },
-      { name: "函数与导数", mastery: 85 },
-      { name: "三角函数", mastery: 40 },
-      { name: "数列", mastery: 75 },
-      { name: "立体几何", mastery: 60 },
-      { name: "解析几何", mastery: 70 },
-      { name: "概率统计", mastery: 80 }
-    ],
-    questions: [
-      {
-        id: 1,
-        type: "选择题",
-        knowledge: "集合与简易逻辑",
-        difficulty: "简单",
-        difficultyClass: "easy",
-        totalScore: 5,
-        score: 5,
-        status: "正确",
-        statusClass: "correct"
-      },
-      {
-        id: 2,
-        type: "选择题",
-        knowledge: "函数与导数",
-        difficulty: "中等",
-        difficultyClass: "medium",
-        totalScore: 5,
-        score: 5,
-        status: "正确",
-        statusClass: "correct"
-      },
-      {
-        id: 3,
-        type: "选择题",
-        knowledge: "三角函数",
-        difficulty: "困难",
-        difficultyClass: "hard",
-        totalScore: 5,
-        score: 0,
-        status: "错误",
-        statusClass: "wrong"
-      },
-      {
-        id: 4,
-        type: "填空题",
-        knowledge: "数列",
-        difficulty: "中等",
-        difficultyClass: "medium",
-        totalScore: 5,
-        score: 3,
-        status: "部分正确",
-        statusClass: "partial"
-      },
-      {
-        id: 5,
-        type: "解答题",
-        knowledge: "立体几何",
-        difficulty: "困难",
-        difficultyClass: "hard",
-        totalScore: 12,
-        score: 8,
-        status: "部分正确",
-        statusClass: "partial"
-      }
-    ],
-    weakPoints: [
-      {
-        id: 1,
-        title: "三角函数",
-        description: "本次考试中，三角函数部分得分率较低，建议加强对基本公式的记忆和应用练习。",
-        scoreRate: 40,
-        color: "#ef4444"
-      },
-      {
-        id: 2,
-        title: "立体几何",
-        description: "空间想象能力和几何证明能力需要提高，建议多做一些空间几何图形的练习。",
-        scoreRate: 60,
-        color: "#eab308"
-      }
-    ],
-    suggestions: [
-      {
-        title: "加强三角函数练习",
-        content: "针对三角函数部分的薄弱环节，建议每天进行30分钟的专项练习，重点掌握三角函数的图像与性质、三角恒等变换等内容。"
-      },
-      {
-        title: "提高解题速度",
-        content: "在保证答题正确率的前提下，需要提高解题速度。建议进行限时训练，逐步提高解题效率。"
-      },
-      {
-        title: "整理错题集",
-        content: "将本次考试中的错题整理到错题集中，分析错误原因，总结解题方法和技巧，定期进行复习。"
-      }
-    ]
-  };
-};
 
 // 打开题目详情
 const openQuestionModal = (question) => {
@@ -586,6 +388,32 @@ const openQuestionModal = (question) => {
   showModal.value = true;
 };
 
+const getQuestionById = (id) => {
+  let q = allQuestions.value.find(question => question.id === id);
+  console.log('getQuestionById  = ' + q + ' , id = ' + id);
+  return q;
+}
+
+// 计算分数等级
+const getScoreLabel = (score, totalScore) => {
+  const percentage = (score / totalScore) * 100;
+  if (percentage >= 90) return '优秀';
+  if (percentage >= 80) return '良好';
+  if (percentage >= 70) return '中等';
+  if (percentage >= 60) return '及格';
+  return '不及格';
+};
+
+// 获取分数对应的样式类
+const getScoreStampClass = (score, totalScore) => {
+  const percentage = (score / totalScore) * 100;
+  if (percentage >= 90) return 'excellent';
+  if (percentage >= 80) return 'good';
+  if (percentage >= 70) return 'medium';
+  if (percentage >= 60) return 'pass';
+  return 'fail';
+};
+
 // 关闭模态框
 const closeModal = () => {
   showModal.value = false;
@@ -594,172 +422,139 @@ const closeModal = () => {
 // 下载报告
 const downloadReport = () => {
   // 模拟下载功能
-  alert("考试结果分析报告下载开始...");
+  // alert("考试结果分析报告下载开始...");
+  const title = examInfo.value.examName + " - " + currentDate.value;
+  const content = document.getElementById('exam-result-id');
+
+  loading.value = true
+  htmlToPDF(title, content);
+  loading.value = false
 };
-
-/** 连接sse */
-// function handleSseConnect(channelStreamId) {
-//   nextTick(() => {
-//     if (channelStreamId) {
-
-//       let sseSource = openSseConnect(channelStreamId);
-//       // 接收到数据
-//       sseSource.onmessage = function (event) {
-
-//         if (!event.data.includes('[DONE]')) {
-//           let resData = event.data;
-//           if (resData != 'ping') {  // 非心跳消息
-//             const data = JSON.parse(resData);
-//             pushResponseMessageList(data);
-//           }
-//         } else if(event.data.includes('[DONE]')) {
-//           console.log('消息接收结束.')
-//           chatStreamLoading.value = false ; // 关闭流式结束
-//         }
-
-//       }
-//     }
-//   })
-// }
-
-// // 销毁信息
-// onBeforeUnmount(() => {
-//   if(channelStreamId.value){
-//     handleCloseSse(channelStreamId.value).then(res => {
-//       console.log('关闭sse连接成功:' + channelId)
-//     })
-//   }
-// });
 
 const openChatBox = (roleId) => {
 
-    if(showDebugRunDialog.value){
-        return ;
-    }
+  if (showDebugRunDialog.value) {
+    return;
+  }
 
-    showDebugRunDialog.value = true;
+  showDebugRunDialog.value = true;
 
-    nextTick(() => {
-        roleChatPanelRef.value.openChatBoxWithRole(roleId) ; 
-    })
+  nextTick(() => {
+    roleChatPanelRef.value.openChatBoxWithRole(roleId);
+  })
 
 }
-
-// // 组件挂载时开始模拟AI处理
-// onMounted(() => {
-
-//   console.log('examId = ' + examId)
-//   console.log('examineeId = ' + examineeId)
-
-//   // 检查成绩状态
-//   checkStatus(examId , examineeId).then(res => {
-
-//     channelStreamId.value = res.data.result.id ;
-//     answerCheckerEngineer.value = res.data.answerCheckerEngineer;
-//     aiAvatar.value =  displayImage + res.data.answerCheckerEngineer.roleAvatar ; 
-
-//     // 路径如果缺少channelStreamId参数，则添加channelStreamId
-//     if(channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)){
-//       window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value ;
-//     }
-
-//     const examStatus = res.data.status ;
-
-//     console.log('examStatus = ' + examStatus);
-//     console.log('channelStreamId = ' + channelStreamId.value);
-
-//     if (examStatus == 'review_end') {  // 阅卷结束
-//       loading.value = false ;
-//       // 模拟考试结果分析
-//       analysisResult.value = res.data.result.analysisResult ;
-//     }else if (examStatus == 'review') {  // 阅卷中
-//       // 模拟考试结果保存
-//       openChatBox(answerCheckerEngineer.value.id);
-//     }else if (examStatus == 'examination_end') {  // 考生完成考试开始进行阅卷
-//       openChatBox(answerCheckerEngineer.value.id);
-
-//       examAnalysis(examId , examineeId).then(res => {  // 提交阅卷考试
-//         console.log('阅卷完成')
-//         currentAIMessage.value = res.msg ;
-//       })
-//     }
-//   })
-
-// });
 
 // 添加一个标志位防止重复打开聊天框
 let chatBoxOpened = false
 
-// 启动状态轮询
-const startStatusPolling = (examId, examineeId) => {
-  const pollingInterval = setInterval(async () => {
-    try {
-      const status = await checkExamStatus(examId, examineeId)
-      
-      if (status === 'review_end') {  // 阅卷结束
-        clearInterval(pollingInterval)
-        loading.value = false
-        showDebugRunDialog.value = false ;
-      } else if (status === 'review') {  // 阅卷中
-        if (!chatBoxOpened) {  // 防止重复打开聊天框
-          openChatBox(answerCheckerEngineer.value.id)
-          chatBoxOpened = true
-        }
-      } else if (status === 'examination_end') {  // 考生完成考试开始进行阅卷
+// 检查状态并处理逻辑
+const handleExamStatus = async (examId, examineeId) => {
+  try {
+    const status = await checkExamStatus(examId, examineeId)
+
+    if (status === 'review_end') {  // 阅卷结束
+      loading.value = false
+      showDebugRunDialog.value = false
+      return false // 停止轮询
+    } else if (status === 'review') {  // 阅卷中
+      if (!chatBoxOpened) {  // 防止重复打开聊天框
         openChatBox(answerCheckerEngineer.value.id)
         chatBoxOpened = true
-
-        examAnalysis(examId, examineeId).then(res => {  // 提交阅卷考试
-          console.log('阅卷完成')
-          currentAIMessage.value = res.msg
-        })
       }
-    } catch (error) {
-      console.error('状态检查失败:', error)
-      // 可以根据需要决定是否清除轮询
-      // clearInterval(pollingInterval)
+    } else if (status === 'examination_end') {  // 考生完成考试开始进行阅卷
+      openChatBox(answerCheckerEngineer.value.id)
+      chatBoxOpened = true
+
+      examAnalysis(examId, examineeId).then(res => {  // 提交阅卷考试
+        console.log('阅卷完成')
+        currentAIMessage.value = res.msg
+      })
+    } else if (status === 'canceled') {  // 考生阅卷取异常而取消
+      loading.value = false
+      reSubmit.value = true
+
+      // 提示考生需要重新提交阅卷
+      ElMessageBox.confirm(
+        '阅卷过程出现异常，请新提交阅卷？',
+        '提示',
+        {
+          confirmButtonText: '重新提交',
+          type: 'warning'
+        }
+      ).then(() => {
+        // 用户点击"重新提交"的处理逻辑
+        console.log('重新提交阅卷')
+        loading.value = true
+        reSubmit.value = false
+
+        // 更新试卷状态为待阅卷
+        updateExamStatus(examId, examineeId, 'examination_end').then(res => {
+          console.log('更新试卷状态成功')
+
+          // 启动状态轮询
+          startStatusPolling(examId, examineeId)
+        })
+
+        return false // 继续轮询
+      }).catch(() => {
+        // 用户点击"取消"的处理逻辑
+        console.log('取消重新提交')
+        return false // 停止轮询
+      })
+
+
+      return false // 停止轮询
     }
-  }, 5000) // 每5秒检查一次
+    return true // 继续轮询
+  } catch (error) {
+    console.error('状态检查失败:', error)
+    return true // 出错时继续轮询（可根据需要修改）
+  }
+}
+
+// 启动状态轮询
+const startStatusPolling = (examId, examineeId) => {
+  // 立即执行第一次检查
+  handleExamStatus(examId, examineeId).then(shouldContinue => {
+    if (!shouldContinue) return
+
+    // 设置定时器进行后续检查
+    const pollingInterval = setInterval(async () => {
+      const shouldContinue = await handleExamStatus(examId, examineeId)
+      if (!shouldContinue) {
+        clearInterval(pollingInterval)
+      }
+    }, 5000) // 每5秒检查一次
+  })
 }
 
 // 单独提取的状态检查方法
 const checkExamStatus = async (examId, examineeId) => {
   const res = await checkStatus(examId, examineeId)
-  
+
   channelStreamId.value = res.data.result.id
   answerCheckerEngineer.value = res.data.answerCheckerEngineer
   aiAvatar.value = displayImage + res.data.answerCheckerEngineer.roleAvatar
   examInfo.value = res.data.examInfo
+  allQuestions.value = res.data.result.questions
+
+  examData.value.score = res.data.result.score
 
   // 模拟考试结果分析
-  if(res.data.result.analysisResult){
+  if (res.data.result.analysisResult) {
     analysisResult.value = res.data.result.analysisResult
 
-    // 合并所有的improvementSuggestions和weakAreas到一个数组
-    // allSuggestions.value = res.data.result.analysisResult.examResults.flatMap(item => {
-    //   const improvements = item.improvementSuggestions || []
-    //   const weakAreas = item.weakAreas ? 
-    //     item.weakAreas.map(weak => ({
-    //       topic: weak.topic,
-    //       text: weak.suggestion,
-    //       type: 'weakArea',
-    //       issue: weak.issue
-    //     })) : []
-      
-    //   return [...improvements, ...weakAreas]
-    // })
-    
     // 如果你需要分开保存
     improvementSuggestions.value = res.data.result.analysisResult.examResults.flatMap(
       item => item.improvementSuggestions || []
     )
-    
+
     weakAreas.value = res.data.result.analysisResult.examResults.flatMap(
       item => item.weakAreas || []
     )
-
   }
-  
+
   // 路径如果缺少channelStreamId参数，则添加channelStreamId
   if (channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)) {
     window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value
@@ -769,13 +564,6 @@ const checkExamStatus = async (examId, examineeId) => {
   console.log('examStatus = ' + examStatus)
   console.log('channelStreamId = ' + channelStreamId.value)
 
-  if (examStatus == 'review_end') {  // 阅卷结束
-    loading.value = false
-  }else{
-    openChatBox(answerCheckerEngineer.value.id)
-    chatBoxOpened = true
-  }
-
   return examStatus
 }
 
@@ -783,10 +571,9 @@ const checkExamStatus = async (examId, examineeId) => {
 onMounted(() => {
   console.log('examId = ' + examId)
   console.log('examineeId = ' + examineeId)
-  
+
   // 启动状态检查轮询
-  checkExamStatus(examId, examineeId);
-  startStatusPolling(examId, examineeId);
+  startStatusPolling(examId, examineeId)
 })
 
 </script>
@@ -794,19 +581,19 @@ onMounted(() => {
 <style lang="scss" scoped>
 @import "@/assets/styles/scene/exam-result-analysis.scss";
 
-.step-text{
+.step-text {
   font-size: 16px;
   color: #333;
 
-  .completed{
-      color: #d5d5d5;
+  .completed {
+    color: #d5d5d5;
   }
 }
 
 .ai-name {
-    color: #333;
-    margin-top: 10px;
-    font-size: 14px;
+  color: #333;
+  margin-top: 10px;
+  font-size: 14px;
 }
 
 .answer-details-section {
@@ -817,7 +604,7 @@ onMounted(() => {
     border-radius: 8px;
     padding: 20px;
 
-    .answer-details-footer{
+    .answer-details-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -851,4 +638,219 @@ onMounted(() => {
   }
 }
 
+$primary-color: #2c3e50;
+$secondary-color: #555;
+$light-gray: #f9f9f9;
+$border-color: #eee;
+
+.question-container {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: $light-gray;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .title {
+    color: $primary-color;
+    margin-bottom: 8px;
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .content {
+    // margin-left: 20px;
+    // margin-bottom: 15px;
+    color: $secondary-color;
+    font-size: 16px;
+  }
+
+  .question-section,
+  .analysis-section,
+  .comment-section {
+    // margin-bottom: 15px;
+    // padding-bottom: 15px;
+    border-bottom: 1px solid $border-color;
+
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+  }
+
+  .comment-section {
+    .content {
+      font-style: italic;
+      color: darken($secondary-color, 10%);
+      font-size: 16px;
+    }
+  }
+
+
+}
+
+.zero-score {
+  color: #ff4d4f;
+  /* Red color for 0 score */
+  font-weight: bold;
+}
+
+.full-score {
+  color: #52c41a;
+  /* Green color for full score */
+  font-weight: bold;
+}
+
+.partial-score {
+  color: #faad14;
+  /* Orange color for partial score */
+  font-weight: bold;
+}
+
+.question-container {
+  padding: 10px;
+}
+
+.title {
+  margin-bottom: 5px;
+  color: #333;
+  font-size: 14px;
+}
+
+.floating-button {
+  display: flex;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  top: 20px;
+}
+
+// .content {
+//     margin-top: 0;
+//     color: #666;
+//     font-size: 13px;
+// }
+
+.exam-summary-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.summary-content-wrapper {
+  position: relative;
+  padding-right: 160px; // 为分数章留出空间
+  min-height: 180px;
+}
+
+.score-stamp {
+  right: 30px;
+  transform: translateY(-0%) rotate(15deg);
+  width: 100px;
+  margin-right: 20px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    opacity: 0.1;
+    z-index: -1;
+  }
+
+  .score-value {
+    font-size: 36px;
+    line-height: 1;
+    margin-bottom: 5px;
+  }
+
+  .score-label {
+    font-size: 20px;
+    letter-spacing: 2px;
+  }
+
+  .stamp-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    // background: radial-gradient(circle at center, transparent 40%, rgba(0, 0, 0, 0.1) 100%);
+    z-index: -1;
+  }
+}
+
+// 不同分数等级的样式
+.score-stamp.excellent {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  color: #2c3e50;
+
+  &::before {
+    background: radial-gradient(circle at 30% 30%, #ffd700 0%, transparent 70%);
+  }
+
+  .score-value {
+    color: #d4af37; // 金色
+  }
+}
+
+.score-stamp.good {
+  background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+  color: #006064;
+
+  &::before {
+    background: radial-gradient(circle at 30% 30%, #4dd0e1 0%, transparent 70%);
+  }
+}
+
+.score-stamp.medium {
+  background: linear-gradient(135deg, #e8f5e9 0%, #a5d6a7 100%);
+  color: #2e7d32;
+
+  &::before {
+    background: radial-gradient(circle at 30% 30%, #81c784 0%, transparent 70%);
+  }
+}
+
+.score-stamp.pass {
+  background: linear-gradient(135deg, #fff3e0 0%, #ffcc80 100%);
+  color: #e65100;
+
+  &::before {
+    background: radial-gradient(circle at 30% 30%, #ffb74d 0%, transparent 70%);
+  }
+}
+
+.score-stamp.fail {
+  background: linear-gradient(135deg, #ffebee 0%, #ef9a9a 100%);
+  color: #c62828;
+
+  &::before {
+    background: radial-gradient(circle at 30% 30%, #ef5350 0%, transparent 70%);
+  }
+
+  .score-value {
+    text-decoration: line-through;
+    opacity: 0.8;
+  }
+}
+
+.ai-label {
+    font-size: 15px;
+    text-align: center;
+    color: #777;
+}
 </style>
