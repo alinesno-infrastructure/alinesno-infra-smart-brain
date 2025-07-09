@@ -6,6 +6,7 @@ import com.agentsflex.image.doubao.DoubaoImageModelEnums;
 import com.agentsflex.image.qwen.QwenImageModelEnums;
 import com.agentsflex.llm.deepseek.DeepSeekModelEnums;
 import com.agentsflex.llm.deepseek.DeepseekLlm;
+import com.agentsflex.llm.jdcloud.JDcloudLlmModelEnums;
 import com.agentsflex.llm.ollama.OllamaLlmModelEnums;
 import com.agentsflex.llm.qwen.QwenLlmModelEnums;
 import com.agentsflex.llm.qwen.QwenVectorModelEnums;
@@ -78,6 +79,10 @@ public enum LlmModelProviderEnums {
 
     QWQ("阿里百炼（QwQ）", "qwq", List.of(
             new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwQLlmModelEnums.getAllModels())
+    )),
+
+    JDCloud("京东灵犀", "jdcloud", List.of(
+            new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "http://jdcloud.linesno.com/v1" , JDcloudLlmModelEnums.getAllModels())
     )),
 
     AIP("AIP模型", "aip", List.of(
