@@ -82,14 +82,6 @@
                         </div>
                       </template>
                     </el-table-column>
-                    <!-- <el-table-column label="所属团队" align="center" key="responsibilities" prop="responsibilities"
-                  v-if="columns[2].visible" :show-overflow-tooltip="true">
-                  <template #default="scope">
-                    <div>
-                      AIP研发团队({{ scope.row.industryCatalog }})
-                    </div>
-                  </template>
-                </el-table-column> -->
                     <el-table-column label="添加频道" align="center" width="440" key="storagePath" prop="storagePath"
                       v-if="columns[5].visible" :show-overflow-tooltip="true">
                       <template #default="scope">
