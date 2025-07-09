@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
@@ -8,6 +9,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamPageSubmitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamScoreDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamSubmissionDto;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamUpdateStatusDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.enums.ExamineeExamEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.*;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerFormatMessageTool;
@@ -194,6 +196,28 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
                 "answerCheckerEngineer", industryRole ,
                 "result", ExamScoreDto.fromEntity(examScore)
         ));
+    }
+
+    /**
+     * 更新考试状态
+     * @return
+     */
+    @PostMapping("/updateExamStatus")
+    public AjaxResult updateExamStatus(@RequestBody @Valid ExamUpdateStatusDto dto) {
+
+        LambdaQueryWrapper<ExamScoreEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExamScoreEntity::getExamInfoId , dto.getExamId());
+        wrapper.eq(ExamScoreEntity::getUserId , dto.getExamineeId());
+
+        ExamScoreEntity examScore = examScoreService.getOne(wrapper) ;
+        if (examScore == null) {
+            return AjaxResult.error("未找到考试记录");
+        }
+
+        examScore.setExamStatus(dto.getStatus()) ;
+        examScoreService.updateById(examScore) ;
+
+        return AjaxResult.success("操作成功");
     }
 
     @Override
