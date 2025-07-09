@@ -9,6 +9,7 @@ const getLlmIconPath = (providerCode) => {
     'ollama': 'ollama.png',
     'qwen': 'qwen.png',
     'qwq': 'qwq.png',
+    'jdcloud': 'jdcloud.png',
     'siliconflow': 'siliconflow.png'
   };
   
