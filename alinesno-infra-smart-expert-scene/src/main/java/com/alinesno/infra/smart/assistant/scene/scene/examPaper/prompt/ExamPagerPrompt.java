@@ -78,7 +78,7 @@ public class ExamPagerPrompt {
                     根对象
                     ├── overall (整体评价，不少于300个字，注意换行格式)
                     └── examResults (题目分析数组)
-                        ├── id (题目ID)
+                        ├── id (题目ID号，与题目关联)
                         ├── score (得分)
                         ├── maxScore (满分)
                         ├── comment (评语，不少于100个字)
