@@ -8,6 +8,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.Docume
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +52,13 @@ public class ParserDocumentTool {
 
         log.debug("previewUrl= {}", previewUrl);
 
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
+
         assert fileBytes != null;
 
         String fileType = FileUtil.getSuffix(fileName);
