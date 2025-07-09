@@ -24,17 +24,6 @@
 
       </el-tab-pane>
 
-      <!-- 
-      <el-tab-pane label="题目设置" name="second">
-      </el-tab-pane> 
-      -->
-
-      <!-- 
-      <el-tab-pane label="分页设置" name="third">
-        分页设置 
-      </el-tab-pane> 
-      -->
-
     </el-tabs>
   </div>
 </template>
@@ -102,9 +91,9 @@ const pagerSettings = ref([{
     {
       "id": "redirect-after-submit",
       "code": "REDIRECT_AFTER_SUBMIT",
-      "label": "交卷后跳转",
+      "label": "AI自动阅卷",
       "icon": "fa-solid fa-arrow-right-from-bracket",
-      "value": false
+      "value": true 
     }
   ]
 },
@@ -118,14 +107,14 @@ const pagerSettings = ref([{
       "code": "RESPONSE_PERMISSION",
       "label": "谁可以填答",
       "icon": "fa-solid fa-users",
-      "value": "true"
+      "value": true
     },
     {
       "id": "contact-permission",
       "code": "CONTACT_PERMISSION",
       "label": "联系人",
       "icon": "fa-solid fa-user-friends",
-      "value": "true"
+      "value": true
     },
     {
       "id": "list-permission",
