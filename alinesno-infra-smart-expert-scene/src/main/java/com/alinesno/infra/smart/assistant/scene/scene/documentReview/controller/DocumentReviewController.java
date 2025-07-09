@@ -39,6 +39,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -52,9 +53,13 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Date;
@@ -174,7 +179,15 @@ public class DocumentReviewController extends SuperController {
 
         log.debug("previewUrl= {}", previewUrl);
 
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
+
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
             return AjaxResult.error() ;
@@ -204,6 +217,7 @@ public class DocumentReviewController extends SuperController {
     }
 
 
+    @SneakyThrows
     @DataPermissionQuery
     @GetMapping("/getPreviewDocx")
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam Long taskId, PermissionQuery query) {
@@ -215,8 +229,12 @@ public class DocumentReviewController extends SuperController {
         String fileName = entity.getDocumentName();
 
         log.debug("previewUrl= {}", previewUrl);
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
 
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
 
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
