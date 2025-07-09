@@ -26,6 +26,11 @@ public abstract class Tool {
    public String accountOrgId ;
 
    /**
+    * 知识库ID
+    */
+   public String datasetIds ;
+
+   /**
    * 任务执行
    * @return
    */
