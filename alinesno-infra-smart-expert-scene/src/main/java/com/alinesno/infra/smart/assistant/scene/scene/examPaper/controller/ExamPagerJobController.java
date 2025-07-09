@@ -172,6 +172,10 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
             return AjaxResult.error("未找到考试记录");
         }
 
+        // 考试ID
+        Long examIdLong = examScore.getExamInfoId() ;
+        ExamInfoEntity examInfo = examInfoService.getById(examIdLong) ;
+
         // 查询出这个场景下阅卷专员
         long sceneId = examScore.getSceneId() ;
 
@@ -185,6 +189,7 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
 
         return AjaxResult.success(Map.of(
                 "status", examScore.getExamStatus(),
+                "examInfo", examInfo,
                 "completed", ExamineeExamEnums.REVIEW_END.getCode().equals(examScore.getExamStatus()),
                 "answerCheckerEngineer", industryRole ,
                 "result", ExamScoreDto.fromEntity(examScore)
