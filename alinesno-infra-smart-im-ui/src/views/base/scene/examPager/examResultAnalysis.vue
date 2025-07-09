@@ -54,28 +54,17 @@
       <section class="exam-summary-section">
         <div class="exam-summary-card">
           <div class="summary-header">
-            <h2>高三数学模拟考试分析报告</h2>
+            <h2>{{ examInfo.examName }}</h2>
             <div class="exam-meta">
               <span>考试日期: 2025年6月15日</span>
-              <span>考试时长: 120分钟</span>
-              <span>总分: 150分</span>
+              <span>考试时长: 60分钟</span>
+              <span>总分: {{ examInfo.totalScore }}分</span>
               <span>你的得分: {{ examData.score }}分</span>
             </div>
           </div>
-          <div class="summary-content">
-            <p>亲爱的同学，本次模拟考试你取得了{{ examData.score }}分的成绩（满分150分），在班级排名第{{ examData.rank }}名。整体表现{{ getPerformanceLevel()
-              }}，正确率达到{{ examData.accuracy }}%。</p>
 
-            <p>
-              从试卷分析来看，你在<strong>集合与简易逻辑</strong>、<strong>函数与导数</strong>等基础知识点上掌握扎实，得分率超过85%，展现了良好的基本功。但在<strong>三角函数</strong>和<strong>立体几何</strong>部分表现相对薄弱，特别是三角函数的综合应用题得分率仅为40%，这反映出你在复杂问题的公式转换和计算准确性上还需加强。
-            </p>
+          <MarkdownRenderer :content="analysisResult.overall" />
 
-            <p>值得肯定的是，你的解题思路清晰，步骤完整，在解答题部分获得了较高的过程分。时间管理方面，你用时{{ examData.timeUsed }}分钟完成全部试题，{{ getTimeUsageComment()
-              }}。</p>
-
-            <p>基于本次考试表现，建议你：1) 每天安排30分钟专项练习三角函数综合题；2) 整理错题本，重点分析几何证明题的解题思路；3)
-              定期进行限时训练，提高解题速度。相信通过有针对性的训练，你在下次考试中一定能取得更大进步！</p>
-          </div>
           <div class="summary-footer">
             <div class="ai-signature">
               <img :src="aiAvatar" alt="AI阅卷助手" class="avatar-sm">
@@ -122,7 +111,7 @@
       </section>
 
       <!-- 成绩分析文本展示 -->
-      <section class="text-display-section">
+      <!-- <section class="text-display-section">
         <div class="text-display-card">
           <h3>得分分布</h3>
           <div class="text-display-content">
@@ -139,10 +128,49 @@
             </p>
           </div>
         </div>
-      </section>
+      </section> -->
 
       <!-- 答题详情 -->
       <section class="answer-details-section">
+        <div class="answer-details-card">
+          <div class="answer-details-header">
+            <h3>答题详情</h3>
+          </div>
+
+          <el-table
+            :data="analysisResult.examResults"
+            style="width: 100%"
+            :size="large"
+            :cell-style="{'font-size':'15px'}"
+            class="answer-table">
+            <el-table-column type="index" align="center" label="题号" width="80" />
+            <el-table-column label="分数" width="120">
+              <template #default="{ row }">
+                {{ row.score }}/{{ row.maxScore }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="comment" label="知识点" />
+            <el-table-column label="详情" width="120" align="center">
+              <template #default="{ row }">
+                <el-button type="primary" text @click="openQuestionModal(row)">查看</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+
+          <div class="answer-details-footer">
+            <div class="filter-buttons">
+              <el-button type="primary" text bg>全部</el-button>
+              <el-button text bg>正确</el-button>
+              <el-button text bg>错误</el-button>
+              <el-button text bg>未答</el-button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- 答题详情 -->
+      <!-- <section class="answer-details-section">
         <div class="answer-details-card">
           <div class="answer-details-header">
             <h3>答题详情</h3>
@@ -159,32 +187,16 @@
               <thead>
                 <tr>
                   <th>题号</th>
-                  <th>题型</th>
-                  <th>知识点</th>
-                  <th>难度</th>
                   <th>分数</th>
-                  <th>得分</th>
-                  <th>状态</th>
+                  <th>知识点</th>
                   <th align="center">详情</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in examData.questions" :key="item.id">
+                <tr v-for="item in analysisResult.examResults" :key="item.id">
                   <td>{{ item.id }}</td>
-                  <td>{{ item.type }}</td>
-                  <td>{{ item.knowledge }}</td>
-                  <td>
-                    <span :class="['difficulty-tag', item.difficultyClass]">
-                      {{ item.difficulty }}
-                    </span>
-                  </td>
-                  <td>{{ item.totalScore }}</td>
-                  <td>{{ item.score }}</td>
-                  <td>
-                    <span :class="['status-tag', item.statusClass]">
-                      {{ item.status }}
-                    </span>
-                  </td>
+                  <td>{{item.score }}/{{ item.maxScore }}</td>
+                  <td>{{ item.comment }}</td>
                   <td>
                     <el-button type="primary" text @click="openQuestionModal(item)">查看</el-button>
                   </td>
@@ -193,26 +205,25 @@
             </table>
           </div>
         </div>
-      </section>
+      </section> -->
 
       <!-- 薄弱知识点分析 -->
       <section class="weak-knowledge-section">
         <div class="weak-knowledge-card">
           <h3>薄弱知识点分析</h3>
           <div class="knowledge-grid">
-            <div class="knowledge-item" v-for="knowledge in examData.weakPoints" :key="knowledge.id">
-              <h4>{{ knowledge.title }}</h4>
-              <p>{{ knowledge.description }}</p>
-              <div class="progress-info">
-                <span>得分率</span>
-                <span>{{ knowledge.scoreRate }}%</span>
-              </div>
-              <div class="progress-bar">
+            <div class="knowledge-item" v-for="knowledge in weakAreas" :key="knowledge.id">
+              <h4>{{ knowledge.topic }}</h4>
+              <p style="font-size:14px;">{{ knowledge.issue}}</p>
+              <p>{{ knowledge.suggestion }}</p>
+              <!-- 
+              -->
+              <!-- <div class="progress-bar">
                 <div :style="{ width: knowledge.scoreRate + '%', 'background-color': knowledge.color }"></div>
               </div>
               <div class="action-link">
                 <el-button type="primary" text>查看练习推荐</el-button>
-              </div>
+              </div> -->
             </div>
           </div>
         </div>
@@ -223,13 +234,13 @@
         <div class="suggestions-card">
           <h3>学习建议</h3>
           <div class="suggestions-list">
-            <div class="suggestion-item" v-for="(suggestion, index) in examData.suggestions" :key="index">
+            <div class="suggestion-item" v-for="(suggestion, index) in improvementSuggestions" :key="index">
               <div class="suggestion-icon">
                 <i class="fa fa-check-circle"></i>
               </div>
               <div class="suggestion-content">
-                <h4>{{ suggestion.title }}</h4>
-                <p>{{ suggestion.content }}</p>
+                <h4>{{ suggestion.topic }}</h4>
+                <p>{{ suggestion.text }}</p>
               </div>
             </div>
           </div>
@@ -301,6 +312,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import MarkdownRenderer from "./components/markResultSummay" ;
 import AIPLogo from "@/assets/logo/logo.png" ; 
 import {
   checkStatus,
@@ -354,6 +366,13 @@ const examData = ref({
   weakPoints: [],
   suggestions: []
 });
+
+const examInfo = ref({})
+
+const analysisResult = ref({}) ;
+const improvementSuggestions = ref([])
+const weakAreas = ref([])
+const allSuggestions= ref([])
 
 // 当前查看的题目
 const showModal = ref(false);
@@ -626,50 +645,150 @@ const openChatBox = (roleId) => {
 
 }
 
+// // 组件挂载时开始模拟AI处理
+// onMounted(() => {
+
+//   console.log('examId = ' + examId)
+//   console.log('examineeId = ' + examineeId)
+
+//   // 检查成绩状态
+//   checkStatus(examId , examineeId).then(res => {
+
+//     channelStreamId.value = res.data.result.id ;
+//     answerCheckerEngineer.value = res.data.answerCheckerEngineer;
+//     aiAvatar.value =  displayImage + res.data.answerCheckerEngineer.roleAvatar ; 
+
+//     // 路径如果缺少channelStreamId参数，则添加channelStreamId
+//     if(channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)){
+//       window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value ;
+//     }
+
+//     const examStatus = res.data.status ;
+
+//     console.log('examStatus = ' + examStatus);
+//     console.log('channelStreamId = ' + channelStreamId.value);
+
+//     if (examStatus == 'review_end') {  // 阅卷结束
+//       loading.value = false ;
+//       // 模拟考试结果分析
+//       analysisResult.value = res.data.result.analysisResult ;
+//     }else if (examStatus == 'review') {  // 阅卷中
+//       // 模拟考试结果保存
+//       openChatBox(answerCheckerEngineer.value.id);
+//     }else if (examStatus == 'examination_end') {  // 考生完成考试开始进行阅卷
+//       openChatBox(answerCheckerEngineer.value.id);
+
+//       examAnalysis(examId , examineeId).then(res => {  // 提交阅卷考试
+//         console.log('阅卷完成')
+//         currentAIMessage.value = res.msg ;
+//       })
+//     }
+//   })
+
+// });
+
+// 添加一个标志位防止重复打开聊天框
+let chatBoxOpened = false
+
+// 启动状态轮询
+const startStatusPolling = (examId, examineeId) => {
+  const pollingInterval = setInterval(async () => {
+    try {
+      const status = await checkExamStatus(examId, examineeId)
+      
+      if (status === 'review_end') {  // 阅卷结束
+        clearInterval(pollingInterval)
+        loading.value = false
+        showDebugRunDialog.value = false ;
+      } else if (status === 'review') {  // 阅卷中
+        if (!chatBoxOpened) {  // 防止重复打开聊天框
+          openChatBox(answerCheckerEngineer.value.id)
+          chatBoxOpened = true
+        }
+      } else if (status === 'examination_end') {  // 考生完成考试开始进行阅卷
+        openChatBox(answerCheckerEngineer.value.id)
+        chatBoxOpened = true
+
+        examAnalysis(examId, examineeId).then(res => {  // 提交阅卷考试
+          console.log('阅卷完成')
+          currentAIMessage.value = res.msg
+        })
+      }
+    } catch (error) {
+      console.error('状态检查失败:', error)
+      // 可以根据需要决定是否清除轮询
+      // clearInterval(pollingInterval)
+    }
+  }, 5000) // 每5秒检查一次
+}
+
+// 单独提取的状态检查方法
+const checkExamStatus = async (examId, examineeId) => {
+  const res = await checkStatus(examId, examineeId)
+  
+  channelStreamId.value = res.data.result.id
+  answerCheckerEngineer.value = res.data.answerCheckerEngineer
+  aiAvatar.value = displayImage + res.data.answerCheckerEngineer.roleAvatar
+  examInfo.value = res.data.examInfo
+
+  // 模拟考试结果分析
+  if(res.data.result.analysisResult){
+    analysisResult.value = res.data.result.analysisResult
+
+    // 合并所有的improvementSuggestions和weakAreas到一个数组
+    // allSuggestions.value = res.data.result.analysisResult.examResults.flatMap(item => {
+    //   const improvements = item.improvementSuggestions || []
+    //   const weakAreas = item.weakAreas ? 
+    //     item.weakAreas.map(weak => ({
+    //       topic: weak.topic,
+    //       text: weak.suggestion,
+    //       type: 'weakArea',
+    //       issue: weak.issue
+    //     })) : []
+      
+    //   return [...improvements, ...weakAreas]
+    // })
+    
+    // 如果你需要分开保存
+    improvementSuggestions.value = res.data.result.analysisResult.examResults.flatMap(
+      item => item.improvementSuggestions || []
+    )
+    
+    weakAreas.value = res.data.result.analysisResult.examResults.flatMap(
+      item => item.weakAreas || []
+    )
+
+  }
+  
+  // 路径如果缺少channelStreamId参数，则添加channelStreamId
+  if (channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)) {
+    window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value
+  }
+
+  const examStatus = res.data.status
+  console.log('examStatus = ' + examStatus)
+  console.log('channelStreamId = ' + channelStreamId.value)
+
+  if (examStatus == 'review_end') {  // 阅卷结束
+    loading.value = false
+  }else{
+    openChatBox(answerCheckerEngineer.value.id)
+    chatBoxOpened = true
+  }
+
+  return examStatus
+}
+
 // 组件挂载时开始模拟AI处理
 onMounted(() => {
-
   console.log('examId = ' + examId)
   console.log('examineeId = ' + examineeId)
+  
+  // 启动状态检查轮询
+  checkExamStatus(examId, examineeId);
+  startStatusPolling(examId, examineeId);
+})
 
-  // 检查成绩状态
-  checkStatus(examId , examineeId).then(res => {
-
-    channelStreamId.value = res.data.result.id ;
-    answerCheckerEngineer.value = res.data.answerCheckerEngineer;
-    aiAvatar.value =  displayImage + res.data.answerCheckerEngineer.roleAvatar ; 
-
-    // 路径如果缺少channelStreamId参数，则添加channelStreamId
-    if(channelStreamId.value && !window.location.href.includes('channelStreamId=' + channelStreamId.value)){
-      window.location.href = window.location.href + '&channelStreamId=' + channelStreamId.value ;
-    }
-
-    const examStatus = res.data.status ;
-
-    console.log('examStatus = ' + examStatus);
-    console.log('channelStreamId = ' + channelStreamId.value);
-
-    if (examStatus == 'review_end') {  // 阅卷结束
-      loading.value = false ;
-      // 模拟考试结果分析
-      // simulateExamAnalysis();
-    }else if (examStatus == 'review') {  // 阅卷中
-      // 模拟考试结果保存
-      openChatBox(answerCheckerEngineer.value.id);
-      // simulateAIProcessing();
-    }else if (examStatus == 'examination_end') {  // 考生完成考试开始进行阅卷
-      // simulateAIProcessing();
-      // handleSseConnect(channelStreamId.value) ;
-      openChatBox(answerCheckerEngineer.value.id);
-
-      examAnalysis(examId , examineeId).then(res => {  // 提交阅卷考试
-        console.log('阅卷完成')
-        currentAIMessage.value = res.msg ;
-      })
-    }
-  })
-
-});
 </script>
 
 <style lang="scss" scoped>
@@ -688,6 +807,48 @@ onMounted(() => {
     color: #333;
     margin-top: 10px;
     font-size: 14px;
+}
+
+.answer-details-section {
+  margin-top: 20px;
+
+  .answer-details-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+
+    .answer-details-footer{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+
+      .filter-buttons {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .answer-details-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 00px;
+
+      .filter-buttons {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .answer-table {
+      margin-top: 16px;
+
+      &:deep(.el-table__cell) {
+        padding: 12px 0;
+      }
+    }
+  }
 }
 
 </style>
