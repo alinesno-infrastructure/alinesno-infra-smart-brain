@@ -150,6 +150,12 @@ const screenRoutes = [
     name: '/scene/examPager/examMakring',
     meta: { title: '试卷阅卷', icon: 'fa-solid fa-file-invoice', affix: true }
   },
+  {
+    path: '/scene/examPager/examineeManager',
+    component: () => import('@/views/base/scene/examPager/examineeManager'),
+    name: '/scene/examPager/examineeManager',
+    meta: { title: '考生管理', icon: 'fa-solid fa-file-invoice', affix: true }
+  },
   // -->>>>>>>>>>>> 生成试卷场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 文章编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
