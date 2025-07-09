@@ -34,13 +34,13 @@ const route = useRoute();
 const sceneId = ref(route.query.sceneId)
 
 const emits = defineEmits([
-'handleTaskClick',
-'handleNewTask'
+  'handleTaskClick',
+  'handleNewTask'
 ])
 
 const functionList = ref([
   {
-    name: '考试管理',
+    name: '考试',
     icon: 'fa-solid fa-graduation-cap', // Font Awesome 6.x 毕业帽（象征考试/教育）
     status: 'loading', // 任务状态示例
     log: '正在进行考试安排与通知', // 任务描述
@@ -48,7 +48,7 @@ const functionList = ref([
     link: '/scene/examPager/examManager'
   },
   {
-    name: '试卷管理',
+    name: '试卷',
     icon: 'fa-solid fa-file-pen', // Font Awesome 6.x 试卷/编辑图标
     status: 'done', // 任务状态（loading/done）
     log: '已完成试卷创建与审核', // 任务描述
@@ -56,13 +56,21 @@ const functionList = ref([
     link: '/scene/examPager/pagerManager'
   },
   {
-    name: '题库管理', // 菜单名称
+    name: '题库', // 菜单名称
     icon: 'fa-solid fa-book-open-reader', // Font Awesome 6.x 书籍图标（象征知识库/管理）
     status: 'done', // 任务状态（可根据实际改为 loading）
     log: '已完成题库分类与题目维护', // 任务描述
     isSelected: false, 
     link: '/scene/examPager/questionBankManager' // 路由链接（建议与业务路径匹配）
   },
+  {
+    name: '考生',
+    icon: 'fa-solid fa-user-pen', // 更符合考生概念的图标（用户+编辑）
+    status: 'loading',
+    log: '考生信息管理与考试分配',
+    isSelected: false,
+    link: '/scene/examPager/examineeManager' // 使用examinee命名
+  }
 ])
 
 const handleTaskClick = (item) => {
@@ -90,7 +98,7 @@ const enterFunction = () => {
 .exam-function-panel {
   padding: 10px;
   background: #fff;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 40px);
 
   .title {
     margin-bottom: 15px;
