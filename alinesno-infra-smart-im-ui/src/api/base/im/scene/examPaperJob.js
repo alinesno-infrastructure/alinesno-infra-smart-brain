@@ -9,6 +9,23 @@ var managerUrl = {
   saveAccountScore: prefix +"saveAccountScore",
   checkStatus: prefix + "checkStatus" ,  // 获取任务状态
   examAnalysis: prefix + "examAnalysis" , // 获取考试分析
+  updateExamStatus: prefix + "updateExamStatus" // 更新考试状态
+}
+
+/**
+ * 更新阅卷状态 
+ * @returns 
+ */
+export function updateExamStatus(examId , examineeId , status) {
+  return request({
+    url: managerUrl.updateExamStatus , 
+    method: 'post', 
+    data: {
+      examId: examId,
+      examineeId: examineeId,
+      status: status
+    }
+  })
 }
 
 // 获取考试分析结果
