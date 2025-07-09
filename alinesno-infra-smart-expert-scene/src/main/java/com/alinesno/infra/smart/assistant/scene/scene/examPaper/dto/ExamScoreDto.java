@@ -60,7 +60,7 @@ public class ExamScoreDto extends BaseDto {
     private JSONArray questions ;
 
     // 分析结果保存
-    private String analysisResult ;
+    private JSONObject analysisResult ;
 
     /**
      * 转换实体类为数据传输对象
@@ -82,11 +82,27 @@ public class ExamScoreDto extends BaseDto {
         }
 
         if(examScore.getAnswers() != null){
-            dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
+            try{
+                dto.setAnswers(JSONObject.parseObject(examScore.getAnswers()));
+            }catch(Exception e){
+                log.warn("转换答案失败：{}", e.getMessage());
+            }
         }
 
         if(examScore.getQuestions() != null){
-            dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
+            try{
+                dto.setQuestions(JSONArray.parseArray(examScore.getQuestions()));
+            }catch(Exception e){
+                log.warn("转换问题失败：{}", e.getMessage());
+            }
+        }
+
+        if(examScore.getAnalysisResult() != null){
+            try {
+                dto.setAnalysisResult(JSONObject.parseObject(examScore.getAnalysisResult()));
+            }catch(Exception e){
+                log.warn("转换分析结果失败：{}", e.getMessage());
+            }
         }
 
         return dto;
