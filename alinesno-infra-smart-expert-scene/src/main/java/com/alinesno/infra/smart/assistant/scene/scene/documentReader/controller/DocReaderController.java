@@ -20,6 +20,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -35,6 +36,8 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -126,6 +129,7 @@ public class DocReaderController extends SuperController {
         return AjaxResult.success("操作成功.", docSceneInfoDto);
     }
 
+    @SneakyThrows
     @GetMapping("/getPreviewDocx")
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam long sceneId) {
 
@@ -135,7 +139,14 @@ public class DocReaderController extends SuperController {
         log.debug("previewUrl= {}" , previewUrl);
 
         RestTemplate restTemplate = new RestTemplate();
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
 
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
