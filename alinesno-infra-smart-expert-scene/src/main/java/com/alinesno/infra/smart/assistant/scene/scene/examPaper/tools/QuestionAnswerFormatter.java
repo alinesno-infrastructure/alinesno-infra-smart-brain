@@ -165,20 +165,20 @@ public class QuestionAnswerFormatter {
      * 获取题型名称
      */
     private static String getQuestionTypeName(String type) {
-        switch (type) {
-            case "radio": return "单选题";
-            case "checkbox": return "多选题";
-            case "dropdown": return "下拉题";
-            case "image-radio": return "图片单选题";
-            case "image-checkbox": return "图片多选题";
-            case "single-line": return "单行填空题";
-            case "multi-line": return "多行填空题";
-            case "multi-fill": return "多项填空题";
-            case "image-file": return "图片上传题";
-            case "datetime": return "日期时间题";
-            case "location": return "地理位置题";
-            case "description": return "描述题";
-            default: return "未知题型";
-        }
+        return switch (type) {
+            case "radio" -> "单选题";
+            case "checkbox" -> "多选题";
+            case "dropdown" -> "下拉题";
+            case "image-radio" -> "图片单选题";
+            case "image-checkbox" -> "图片多选题";
+            case "single-line" -> "单行填空题";
+            case "multi-line" -> "多行填空题";
+            case "multi-fill" -> "多项填空题";
+            case "image-file" -> "图片上传题";
+            case "datetime" -> "日期时间题";
+            case "location" -> "地理位置题";
+            case "description" -> "描述题";
+            default -> "未知题型";
+        };
     }
 }
