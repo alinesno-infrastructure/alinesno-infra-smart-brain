@@ -37,6 +37,7 @@ import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -60,6 +61,8 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
@@ -300,12 +303,20 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
      * @param storageId
      * @return
      */
+    @SneakyThrows
     @GetMapping("/getPreviewDocxByPdf")
     public ResponseEntity<Resource> getPreviewDocxByPdf(@RequestParam String storageId) {
 
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
         log.debug("previewUrl= {}", previewUrl);
-        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
+
+        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+
+        try (InputStream inputStream = new URL(previewUrl).openStream()) {
+            fileBytes = IOUtils.toByteArray(inputStream);
+            // 使用 fileBytes 进行后续处理
+        }
 
         if (fileBytes == null) {
             // 文件下载失败，返回合适的错误信息
