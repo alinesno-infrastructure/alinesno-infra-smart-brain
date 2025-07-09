@@ -217,18 +217,28 @@ public class ExamPagerFormatMessageTool {
 
             List<CodeContent> codeContent = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
 
-            // 随机生成分数 (实际应该根据评分逻辑计算)
-            long score = (long) (Math.random() * 100);
+            // 生成分数 (实际应该根据评分逻辑计算)
+            String jsonResult = codeContent.get(0).getContent() ;
+            JSONObject jsonResultObject = JSONObject.parseObject(jsonResult);
+
+            Long score = jsonResultObject.getJSONArray("examResults")
+                    .stream()
+                    .map(item -> (JSONObject) item)
+                    .map(item -> item.getLong("score"))
+                    .reduce(0L, Long::sum);
+
             boolean isPass = score >= 60;
 
             // 更新成绩信息
             examScore.setScore(score);
             examScore.setIsPass(isPass ? 1 : 0);
             examScore.setReviewTime(LocalDateTime.now());
-            examScore.setReviewerId(1L); // 假设系统自动阅卷
-            examScore.setReviewerName("系统自动阅卷");
-            examScore.setAnalysisResult(codeContent.get(0).getContent());
+            examScore.setAnalysisResult(jsonResultObject.toJSONString());
             examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
+
+            examScore.setReviewerId(industryRole.getId());
+            examScore.setReviewerName(industryRole.getRoleName());
+            examScore.setFieldProp("ai"); // 设置来源为AI
 
             examScoreService.updateById(examScore);
 
