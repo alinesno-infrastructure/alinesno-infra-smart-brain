@@ -26,6 +26,16 @@ public class ExamineeEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 255, comment = "考试编号")
     private String examineeId;
 
+
+    @TableField("scene_id")
+    @Column(type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属场景")
+    private Long sceneId;
+
+    // 所属分组
+    @TableField("group_id")
+    @Column(type = MySqlTypeConstant.BIGINT, length = 32, comment = "分组ID")
+    private Long groupId;
+
     /**
      * 考生姓名
      */
