@@ -9,7 +9,20 @@ var managerUrl = {
   saveAccountScore: prefix +"saveAccountScore",
   checkStatus: prefix + "checkStatus" ,  // 获取任务状态
   examAnalysis: prefix + "examAnalysis" , // 获取考试分析
-  updateExamStatus: prefix + "updateExamStatus" // 更新考试状态
+  updateExamStatus: prefix + "updateExamStatus", // 更新考试状态
+  getExamInfo: prefix + "getExamInfo" // 获取考试信息
+}
+
+/**
+ * 获取考试信息
+ * @param {*} examId 
+ * @returns 
+ */
+export function getExamInfo(examId) {
+  return request({
+    url: managerUrl.getExamInfo + "?examId=" + examId , 
+    method: 'get'
+  })
 }
 
 /**
