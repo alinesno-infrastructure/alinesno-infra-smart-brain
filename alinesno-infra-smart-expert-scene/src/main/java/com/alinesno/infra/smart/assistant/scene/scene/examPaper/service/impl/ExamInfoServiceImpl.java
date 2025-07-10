@@ -47,7 +47,7 @@ public class ExamInfoServiceImpl extends IBaseServiceImpl<ExamInfoEntity, ExamIn
     public ExamInfoEntity getExamInfoByUniqueCode(String paperCode, String examId) {
         ExamInfoEntity examInfo = getById(examId) ;
 
-        if(examInfo != null && examInfo.getExamUniqueCode() != null && examInfo.getExamUniqueCode().equals(paperCode)) {
+        if(examInfo != null && examInfo.getExamCode() != null && examInfo.getExamCode().equals(paperCode)) {
             return examInfo ;
         }
 
