@@ -1,8 +1,22 @@
 <template>
   <div class="online-exam-container">
 
+    <!-- 移动端头部 - 只在移动端显示 -->
+    <div class="mobile-header" v-if="isMobile">
+      <div class="mobile-header-content">
+        <div class="exam-title">{{ pagerInfo.title }}</div>
+        <div class="mobile-timer" :class="{ 
+          'time-warning': timeLeft < 15 * 60,
+          'time-critical': timeLeft < 5 * 60 
+        }">
+          <font-awesome-icon icon="fa-regular fa-clock" />
+          <span>{{ formattedTime }}</span>
+        </div>
+      </div>
+    </div>
+
     <el-container>
-      <el-aside width="400px" style="background: #fff;border-right: 1px solid #f5f5f5;">
+      <el-aside class="exam-sidebar" >
         <!-- 固定顶部导航栏 -->
         <div class="exam-header">
           <div class="header-left">
@@ -66,7 +80,12 @@
       <el-container>
         <el-main>
 
+            <!-- 添加头部，只有移动端的时候才显示 -->
+
           <el-scrollbar style="height:calc(100vh - 50px)">
+
+
+
             <!-- 主内容区 -->
             <main class="exam-main">
               <!-- 考试内容区 -->
@@ -90,9 +109,58 @@
             </main>
           </el-scrollbar>
 
+          <!-- 添加底部，只有移动端才显示，而且固定在底部-->
+
         </el-main>
       </el-container>
     </el-container>
+
+    <!-- 移动端底部导航 - 只在移动端显示 -->
+    <div class="mobile-footer" v-if="isMobile">
+      <div class="footer-content">
+        <el-button class="footer-button" @click="toggleQuestionList">
+          <font-awesome-icon icon="fa-solid fa-list" />
+          <span>题目列表</span>
+        </el-button>
+        
+        <el-button class="footer-button" type="primary" @click="submitExam(false)">
+          <font-awesome-icon icon="fa-solid fa-paper-plane" />
+          <span>提交试卷</span>
+        </el-button>
+      </div>
+    </div>
+
+    <!-- 移动端题目列表抽屉 -->
+    <el-drawer
+      v-model="showQuestionDrawer"
+      title="题目导航"
+      direction="btt"
+      size="100%"
+      :with-header="true"
+      class="question-drawer"
+    >
+      <div class="question-nav">
+        <div 
+          v-for="(question, index) in pagerInfo.questions" 
+          :key="question.id"
+          class="question-nav-item"
+          :class="{
+            'answered': hasAnswer(question.id),
+            'marked': markedQuestions.includes(question.id),
+            'current': currentQuestion === question.id
+          }"
+          @click="scrollToQuestion(question.id)"
+        >
+          <span>{{ index + 1 }}</span>
+          <font-awesome-icon 
+            v-if="markedQuestions.includes(question.id)" 
+            icon="fa-solid fa-bookmark" 
+            class="mark-icon"
+          />
+        </div>
+      </div>
+    </el-drawer>
+
   </div>
 </template>
 
@@ -251,27 +319,27 @@ const hasAnswer = (questionId) => {
   return userAnswers[questionId] && ((Array.isArray(userAnswers[questionId]) && userAnswers[questionId].length > 0) || (!Array.isArray(userAnswers[questionId]) && userAnswers[questionId] !== ''))
 }
 
-// 跳转到指定题目
-const scrollToQuestion = (target) => {
-  let element = null
+// // 跳转到指定题目
+// const scrollToQuestion = (target) => {
+//   let element = null
   
-  if (typeof target === 'number') {
-    element = document.getElementById(`question-${target}`)
-  } else if (typeof target === 'string') {
-    const index = pagerInfo.questions.findIndex(q => q.id === target) + 1
-    if (index > 0) {
-      element = document.getElementById(`question-${index}`)
-    }
-  }
+//   if (typeof target === 'number') {
+//     element = document.getElementById(`question-${target}`)
+//   } else if (typeof target === 'string') {
+//     const index = pagerInfo.questions.findIndex(q => q.id === target) + 1
+//     if (index > 0) {
+//       element = document.getElementById(`question-${index}`)
+//     }
+//   }
   
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    element.classList.add('unanswered-highlight')
-    setTimeout(() => {
-      element.classList.remove('unanswered-highlight')
-    }, 2000)
-  }
-}
+//   if (element) {
+//     element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+//     element.classList.add('unanswered-highlight')
+//     setTimeout(() => {
+//       element.classList.remove('unanswered-highlight')
+//     }, 2000)
+//   }
+// }
 
 // 检查未答题目的函数
 const checkUnansweredQuestions = () => {
@@ -469,17 +537,58 @@ const handleUnload = async () => {
   }
 }
 
+// onMounted(() => {
+// })
+// 
+// onUnmounted(() => {
+// })
+
+// 新增移动端相关状态
+const isMobile = ref(false)
+const showQuestionDrawer = ref(false)
+const currentQuestion = ref(null)
+
+// 在onMounted中添加移动端检测
 onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+  // 原有初始化逻辑保持不变
   initExamData()
   window.addEventListener('beforeunload', handleBeforeUnload)
   window.addEventListener('unload', handleUnload)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobile)
+  // 原有卸载逻辑保持不变
   window.removeEventListener('beforeunload', handleBeforeUnload)
   window.removeEventListener('unload', handleUnload)
   clearInterval(autoSaveInterval)
 })
+
+// 检测是否为移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
+// 切换题目列表抽屉
+const toggleQuestionList = () => {
+  showQuestionDrawer.value = !showQuestionDrawer.value
+}
+
+// 跳转到题目时更新当前题目
+const scrollToQuestion = (questionId) => {
+  const index = pagerInfo.questions.findIndex(q => q.id === questionId)
+  if (index !== -1) {
+    currentQuestion.value = questionId
+    const element = document.getElementById(`question-${index + 1}`)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      showQuestionDrawer.value = false
+    }
+  }
+}
+
 </script>
 
 <style lang="scss" scoped>
@@ -488,6 +597,12 @@ onUnmounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+
+  .exam-sidebar {
+    background: #fff;
+    border-right: 1px solid #f5f5f5;
+    width:400px;
+  }
 
   .header-content {
     display: flex;
@@ -624,4 +739,182 @@ ul.notice-list {
   50% { opacity: 0.5; }
   100% { opacity: 1; }
 }
+
+// 添加移动端样式
+@media (max-width: 768px) { 
+  .exam-sidebar {
+    display: none;
+  }
+
+  .exam-main{
+    padding: 0px !important ;
+  }
+}
+
+/* 移动端头部样式 */
+  .mobile-header {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 50px;
+    background: #fff;
+    // box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 0 15px;
+    
+    .mobile-header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      
+      .exam-title {
+        font-size: 16px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 60%;
+      }
+      
+      .mobile-timer {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 500;
+        padding: 5px 10px;
+        border-radius: 15px;
+        background: #f5f5f5;
+        
+        &.time-warning {
+          color: #FF7D00;
+          background: #fff7e6;
+        }
+        
+        &.time-critical {
+          color: #F53F3F;
+          background: #fff1f0;
+          animation: blink 1s infinite;
+        }
+      }
+    }
+  }
+
+  /* 移动端底部样式 */
+  .mobile-footer {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: #fff;
+    // box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    padding: 0 15px;
+    
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+      gap: 10px;
+      
+      .footer-button {
+        flex: 1;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+    }
+  }
+
+  /* 题目导航抽屉样式 */
+  .question-drawer {
+    .question-nav {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      padding: 15px;
+      
+      .question-nav-item {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f5f5f5;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+        
+        &:hover {
+          background: #e1e1e1;
+        }
+        
+        &.answered {
+          background: #e6f7ff;
+          color: #1890ff;
+        }
+        
+        &.marked {
+          background: #fff7e6;
+          color: #fa8c16;
+        }
+        
+        &.current {
+          border: 2px solid #1890ff;
+        }
+        
+        .mark-icon {
+          position: absolute;
+          top: 2px;
+          right: 2px;
+          font-size: 10px;
+          color: #fa8c16;
+        }
+      }
+    }
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .exam-sidebar {
+      display: none;
+    }
+    
+    .mobile-header,
+    .mobile-footer {
+      display: block;
+    }
+    
+    .el-main {
+      padding-top: 60px !important;
+      padding-bottom: 70px !important;
+    }
+    
+    // .exam-main {
+    //   padding: 15px !important;
+    //   margin-top: 0 !important;
+    // }
+    
+    .questions-area {
+      gap: 1rem !important;
+      
+      .question-wrapper {
+        padding: 15px !important;
+      }
+    }
+  }
+
 </style>
