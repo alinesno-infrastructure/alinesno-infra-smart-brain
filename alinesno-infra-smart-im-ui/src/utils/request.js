@@ -62,7 +62,7 @@ service.interceptors.request.use(config => {
       const s_url = sessionObj.url;                // 请求地址
       const s_data = sessionObj.data;              // 请求数据
       const s_time = sessionObj.time;              // 请求时间
-      const interval = 500 ;                       // 间隔时间(ms)，小于此时间视为重复提交
+      const interval = 300 ;                       // 间隔时间(ms)，小于此时间视为重复提交
 
       if(config.noCheckRepeatSubmit){
         return config;
