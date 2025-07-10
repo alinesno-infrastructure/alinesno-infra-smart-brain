@@ -19,7 +19,7 @@
               </el-form>
 
               <el-table v-loading="loading" :data="UserList" @selection-change="handleSelectionChange">
-                <el-table-column type="index" width="40" align="center"/>
+                <el-table-column type="index" width="50" align="center"/>
                 <el-table-column label="角色名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true">
                   <template #default="scope">
                     <div style="font-size: 14px;font-weight: 500;display: flex;gap: 10px;align-items: center;">
