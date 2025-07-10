@@ -24,9 +24,14 @@ public class ExamineeGroupEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.VARCHAR, length = 64, comment = "分组名称")
     private String groupName;
 
+    // 图标icon
+    @TableField("icon")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 64, comment = "图标icon")
+    private String icon;
+
 
     @TableField("scene_id")
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, comment = "所属场景")
-    private String sceneId;
+    private Long sceneId;
 
 }
