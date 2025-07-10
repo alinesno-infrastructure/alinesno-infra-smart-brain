@@ -20,7 +20,7 @@ public class ExamSubmissionDto {
     /**
      * 考生姓名，不能为空
      */
-    @NotBlank(message = "考生姓名不能为空")
+//    @NotBlank(message = "考生姓名不能为空")
     private String name;
 
     /**
