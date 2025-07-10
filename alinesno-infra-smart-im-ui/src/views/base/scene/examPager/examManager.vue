@@ -85,7 +85,7 @@
                   <template #default="scope">
                     <el-button type="primary" text bg :loading="runChainAgentLoading" size="large"
                       @click="handleShareMiniProgram(scope.row)">
-                      <i class="fa-solid fa-qrcode"></i> 二维码分享
+                      <i class="fa-solid fa-qrcode"></i> 试卷码
                     </el-button>
                     <el-button type="success" text bg :loading="runChainAgentLoading" size="large"
                       @click="handleMarkExamPaper(scope.row)">
@@ -110,6 +110,26 @@
         </div>
       </el-main>
     </el-container>
+
+    <!-- 试卷码弹窗 -->
+    <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="500px" center>
+      <div style="text-align: center;">
+        <div style="margin-bottom: 20px; font-size: 16px; color: #666;">
+         复制【{{ currentExamName }}】试卷码
+        </div>
+        <div style="font-size: 42px; font-weight: bold; letter-spacing: 8px; 
+            color: #1d75b0; margin: 20px 0; padding: 15px; background: #f5f7fa;
+            border-radius: 8px; display: inline-block;">
+          {{ currentExamCode }}
+        </div>
+        <div style="margin-top: 30px;">
+          <el-button type="primary" @click="copyExamCode" size="large" text bg style="width: 120px;">
+            <i class="fa-solid fa-copy"></i> 复制试卷码
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
+
   </div>
 </template>
 
@@ -122,6 +142,13 @@ import {
   queryExamList,
   deleteExam
 } from "@/api/base/im/scene/examInfoManager";
+
+// 控制弹窗显示
+const examCodeDialogVisible = ref(false)
+
+// 当前试卷码
+const currentExamCode = ref('')
+const currentExamName = ref('')
 
 const emit = defineEmits(['handleChainAgent']);
 
@@ -190,10 +217,10 @@ function resetQuery() {
   handleQuery();
 }
 
-function handleShareMiniProgram(row) {
-  // 处理小程序分享逻辑
-  console.log('分享考试:', row);
-}
+// function handleShareMiniProgram(row) {
+//   // 处理小程序分享逻辑
+//   console.log('分享考试:', row);
+// }
 
 function handleMarkExamPaper(row) {
   // 检查考试状态 (2 = 已结束)
@@ -256,6 +283,42 @@ function handleDelete(row) {
   }).catch(() => {
     ElMessage.info('已取消删除')
   })
+}
+
+// 处理分享小程序/显示试卷码
+function handleShareMiniProgram(row) {
+  // 实际项目中这里应该调用API获取试卷码
+  // 这里模拟生成一个6位随机数作为试卷码
+  currentExamCode.value = row.examCode ; // generateExamCode(row.id)
+  currentExamName.value = row.examName
+  examCodeDialogVisible.value = true
+}
+
+
+
+// 复制试卷码
+function copyExamCode() {
+  // 创建临时textarea元素
+  const textarea = document.createElement('textarea')
+  textarea.value = currentExamCode.value
+  textarea.style.position = 'fixed'  // 防止页面滚动
+  document.body.appendChild(textarea)
+  textarea.select()
+  
+  try {
+    // 执行复制命令
+    const successful = document.execCommand('copy')
+    if(successful) {
+      ElMessage.success('试卷码已复制到剪贴板')
+    } else {
+      ElMessage.warning('复制失败，请手动复制')
+    }
+  } catch (err) {
+    ElMessage.error('复制操作不支持')
+  }
+  
+  // 移除临时元素
+  document.body.removeChild(textarea)
 }
 
 getList();
