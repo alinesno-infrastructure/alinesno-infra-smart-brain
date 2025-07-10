@@ -13,12 +13,17 @@
 
         <!-- 考生分组 -->
         <div class="select-type-panel">
-          <div v-for="(item, index) in examineeGroup" :key="index" class="type-panel-box question-bank-box">
-            <div class="type-title" style="margin-bottom:0px; display: flex; justify-content: space-between; align-items: center;">
-              <div @click="selectGroup(item)">
-                <i :class="item.icon" /> {{ item.label }}
+
+          <div v-for="(item, index) in examineeGroup" 
+            :key="index" 
+            :class="{ 'selected': item.isSelected }"
+            @click="selectGroup(item)"
+            class="type-panel-box question-bank-box">
+            <div class="type-title">
+              <div>
+                <i :class="item.icon?item.icon:'fa-solid fa-graduation-cap'" /> {{ item.groupName }}
               </div>
-              <el-dropdown trigger="click" @command="handleGroupCommand($event, item)">
+              <el-dropdown v-if="!item.isSpecial" trigger="click" @command="handleGroupCommand($event, item)">
                 <span class="el-dropdown-link">
                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </span>
@@ -31,6 +36,7 @@
               </el-dropdown>
             </div>
           </div>
+
         </div>
 
       </el-col>
@@ -39,10 +45,10 @@
           <el-row :gutter="20" style="padding-bottom:30px;margin-top:5px;">
             <!--应用数据-->
             <el-col :span="24" :xs="24">
-              <el-form :model="queryParams" size="large" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
+              <el-form :model="queryParams" size="default" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
-                <el-form-item label="考生名称" prop="roleName">
-                  <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
+                <el-form-item label="考生名称" prop="name">
+                  <el-input v-model="queryParams.name" placeholder="请输入考生名称" clearable
                     style="width: 240px" @keyup.enter="handleQuery" />
                 </el-form-item>
 
@@ -50,32 +56,59 @@
                   <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
                   <el-button icon="Refresh" @click="resetQuery">重置</el-button>
                 </el-form-item>
+
+                <el-form-item style="float:right">
+                  <el-button type="primary" icon="Plus" plain @click="showAddExamineeDialog">新增</el-button>
+                  <el-button type="warning" icon="Upload" plain @click="showImportDialog">导入</el-button>
+                  <el-button type="danger" icon="Delete" plain @click="handleBatchDelete" :disabled="!selectedIds.length">批量删除</el-button>
+                </el-form-item>
+
               </el-form>
 
-              <el-table v-loading="loading" :data="StoreRoleList">
-                <el-table-column type="index" width="40" align="center" />
-                <el-table-column label="考生名称" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true"></el-table-column>
-                <el-table-column label="手机号" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true"></el-table-column>
-                <el-table-column label="加入时间" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true"></el-table-column>
-                <el-table-column label="考试次数" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true"></el-table-column>
-                <el-table-column label="所属分组" align="left" key="roleName" prop="roleName" v-if="columns[1].visible" :show-overflow-tooltip="true"></el-table-column>
-
-                <el-table-column label="添加频道" align="center" width="240" key="storagePath" prop="storagePath"
-                  v-if="columns[5].visible" :show-overflow-tooltip="true">
+              <el-table 
+                  v-loading="loading" 
+                  :data="examineeList"
+                  @selection-change="handleSelectionChange">
+                <el-table-column type="selection" width="55" align="center" />
+                <el-table-column type="index" width="60" align="center" label="序号" />
+                <el-table-column label="考生编号" align="left" prop="examineeId" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column label="考生名称" align="left" prop="name" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column label="手机号" align="left" prop="phone" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column label="加入时间" align="center" prop="addTime" :show-overflow-tooltip="true"></el-table-column>
+                <el-table-column label="考试次数" align="center" prop="examCount" :show-overflow-tooltip="true">
                   <template #default="scope">
-                    <el-button type="warning" text bg :loading="runChainAgentLoading" size="large"
-                      @click="handleSettings(scope.row)">
-                      <i class="fa-solid fa-cog"></i> 分组配置
+                    <el-tag v-if="scope.row.examCount > 0" type="success">{{ scope.row.examCount }}</el-tag>
+                    <el-tag v-else>0</el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column label="所属分组" align="center" prop="groupName" :show-overflow-tooltip="true">
+                  <template #default="scope">
+                    <!-- 通过分组id获取到分组名称 -->
+                    <el-button text bg v-if="scope.row.groupId" type="success">{{ getGroupById(scope.row.groupId)?.groupName }}</el-button>
+                    <el-button text bg v-else>未分组</el-button>
+                  </template>
+                </el-table-column>
+
+                <el-table-column label="操作" align="center" width="240">
+                  <template #default="scope">
+                    <el-button type="primary" text bg size="large" @click="handleEdit(scope.row)">
+                      <i class="fa-solid fa-pen-to-square"></i> 编辑
                     </el-button>
-                    <el-button type="danger" text bg :loading="runChainAgentLoading" size="large"
-                      @click="handleDelete(scope.row)">
+                    <el-button type="danger" text bg size="large" @click="handleDelete(scope.row)">
                       <i class="fa-solid fa-trash"></i> 删除
                     </el-button>
                   </template>
                 </el-table-column>
               </el-table>
-              <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
-                v-model:limit="queryParams.pageSize" @pagination="getList" />
+
+              <pagination
+                  v-show="total > 0"
+                  :total="total"
+                  v-model:page="queryParams.pageNum"
+                  v-model:limit="queryParams.pageSize"
+                  @pagination="handleListExaminee"
+              />
+
             </el-col>
           </el-row>
         </div>
@@ -92,8 +125,8 @@
             </template>
           </el-input>
         </el-form-item>
-        <el-form-item label="分组名称" prop="label">
-          <el-input v-model="groupForm.label" placeholder="请输入分组名称"></el-input>
+        <el-form-item label="分组名称" prop="groupName">
+          <el-input v-model="groupForm.groupName" placeholder="请输入分组名称"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -103,138 +136,283 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 添加考生对话框 -->
+    <el-dialog v-model="examineeDialogVisible" :title="examineeDialogTitle" width="40%">
+      <el-form :model="examineeForm" size="large" :rules="examineeRules" ref="examineeFormRef" label-width="100px">
+        <el-form-item label="所属分组" prop="groupId">
+          <el-select v-model="examineeForm.groupId" placeholder="请选择分组" style="width:100%">
+            <el-option 
+              v-for="group in examineeGroup.filter(g => !g.isSpecial)" 
+              :key="group.id" 
+              :label="group.groupName" 
+              :value="group.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="考生编号" prop="examineeId">
+          <el-input v-model="examineeForm.examineeId" placeholder="请输入考生编号/学号"></el-input>
+        </el-form-item>
+        <el-form-item label="考生姓名" prop="name">
+          <el-input v-model="examineeForm.name" placeholder="请输入考生姓名"></el-input>
+        </el-form-item>
+        <el-form-item label="手机号码" prop="phone">
+          <el-input v-model="examineeForm.phone" placeholder="请输入手机号码"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="examineeDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="saveExaminee">确认</el-button>
+        </span>
+      </template>
+    </el-dialog>
+
+    <!-- 批量导入考生对话框 -->
+    <el-dialog v-model="importDialogVisible" title="批量导入考生" width="50%">
+      <el-form size="large" label-width="100px">
+        <el-form-item label="所属分组">
+          <el-select v-model="importForm.groupId" placeholder="请选择分组" style="width:100%">
+            <el-option 
+            v-for="group in examineeGroup.filter(g => !g.isSpecial)" 
+            :key="group.id" :label="group.groupName" :value="group.id"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="考生数据">
+          <el-input 
+            v-model="importForm.data" 
+            type="textarea" 
+            :rows="10" 
+            placeholder="请输入考生数据，格式为：学号|姓名|手机号码，每行一个考生，例如：
+123456|张三|12345678901
+234567|李四|12345678901"></el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="importDialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleImport">导入</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </ExamContainerPanel>
 </template>
 
 <script setup>
 import ExamContainerPanel from "./common/examContainer";
-import { storeRoleList } from '@/api/base/im/store'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox , ElLoading  } from 'element-plus'
+
+import { 
+  listExamineeGroup ,
+  addExamineeGroup,
+  deleteExamineeGroup,
+  updateExamineeGroup,
+
+  listExaminee ,
+  addExaminee,
+  updateExaminee,
+  importExaminee ,
+  deleteExaminee,
+  deleteExamineeBatch
+} from '@/api/base/im/scene/examPaperExaminee'
 
 const router = useRouter();
+const route = useRoute();
 const { proxy } = getCurrentInstance();
 const dateRange = ref([]);
 
-const StoreRoleList = ref([]);
+const sceneId = ref(route.query.sceneId)
+console.log('sceneId = ' + sceneId.value);
+
+const examineeList = ref([]);
 const showSearch = ref(true);
 const loading = ref(true);
 const total = ref(0);
 
-const size = ref('未考试')
-const sizeOptions = ['未考试', '考试中', '已结束']
+const examineeGroup = ref([])
 
-const examineeGroup = ref([
-    {
-        code: "basic-knowledge",
-        label: "默认分组",
-        icon: "fa-solid fa-graduation-cap"
-    },
-])
+const examineeDialogTitle = ref('添加考生')
+
+// 添加响应式变量
+const selectedIds = ref([]) // 存储选中的考生ID
 
 // 分组对话框相关
 const groupDialogVisible = ref(false)
 const isEditGroup = ref(false)
-const currentGroupIndex = ref(null)
 const groupForm = ref({
-  label: '',
+  groupName: '',
+  sceneId: sceneId.value,
   icon: 'fa-solid fa-user',
-  code: ''
 })
 const groupFormRef = ref(null)
 const groupRules = {
-  label: [{ required: true, message: '分组名称不能为空', trigger: 'blur' }],
+  groupName: [{ required: true, message: '分组名称不能为空', trigger: 'blur' }],
   icon: [{ required: true, message: '请选择图标', trigger: 'blur' }]
 }
 
-// 列显隐信息
-const columns = ref([
-  { key: 0, label: `图标`, visible: true },
-  { key: 1, label: `角色名称`, visible: true },
-  { key: 2, label: `角色描述`, visible: true },
-  { key: 3, label: `所属领域`, visible: true },
-  { key: 4, label: `角色级别`, visible: true },
-  { key: 5, label: `安全存储路径`, visible: true },
-  { key: 6, label: `应用目标`, visible: true },
-  { key: 7, label: `创建时间`, visible: true },
-  { key: 8, label: `编辑`, visible: true },
-]);
+// 考生对话框相关
+const examineeDialogVisible = ref(false)
+const examineeForm = ref({
+  examineeId: '',
+  name: '',
+  phone: '',
+  groupId: null,
+  sceneId: sceneId.value
+})
+const examineeFormRef = ref(null)
+const examineeRules = {
+  examineeId: [{ required: true, message: '考生编号不能为空', trigger: 'blur' }],
+  name: [{ required: true, message: '考生姓名不能为空', trigger: 'blur' }],
+  groupId: [{ required: true, message: '请选择分组', trigger: 'change' }]
+}
+
+// 批量导入相关
+const importDialogVisible = ref(false)
+const importForm = ref({
+  groupId: null,
+  data: ''
+})
 
 const data = reactive({
-  form: {},
   queryParams: {
     pageNum: 1,
     pageSize: 10,
-    roleName: undefined,
-    roleName: undefined,
-    responsibilities: undefined,
-    status: undefined,
-    deptId: undefined
-  },
-  rules: {
-    roleId: [{ required: true, message: "应用编号不能为空", trigger: "blur" }],
-    roleName: [{ required: true, message: "角色名称不能为空", trigger: "blur" }, {
-      min: 2,
-      max: 20,
-      message: "角色名称长度必须介于 2 和 20 之间",
-      trigger: "blur"
-    }],
-    responsibilities: [{ required: true, message: "角色描述不能为空", trigger: "blur" }],
-    domain: [{ required: true, message: "所属领域不能为空", trigger: "blur" }],
-    roleLevel: [{ required: true, message: "角色级别不能为空", trigger: "blur" }],
-    storagePath: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
-    target: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
-  },
-  chainForm: {
-    roleId: undefined,
-  },
-  chainRules: {
-    chainName: [{ required: true, message: "链路名称不能为空", trigger: "blur" }],
-    elData: [{ required: true, message: "链路流程不能为空", trigger: "blur" }],
+    sceneId: sceneId.value,
+    name: undefined,
+    groupId: undefined
   }
 });
 
-const { queryParams, form, rules, chainForm, chainRules } = toRefs(data);
+const { queryParams } = toRefs(data);
 
 // 显示添加分组对话框
 const showAddGroupDialog = () => {
   groupForm.value = {
-    label: '',
+    groupName: '',
     icon: 'fa-solid fa-user',
-    code: ''
+    sceneId: sceneId.value
   }
   isEditGroup.value = false
   groupDialogVisible.value = true
 }
 
+// 显示添加考生对话框
+const showAddExamineeDialog = () => {
+  examineeForm.value = {
+    examineeId: '',
+    name: '',
+    phone: '',
+    groupId: null,
+    sceneId: sceneId.value
+  }
+  examineeDialogVisible.value = true
+}
+
+// 显示批量导入对话框
+const showImportDialog = () => {
+  importForm.value = {
+    groupId: null,
+    data: ''
+  }
+  importDialogVisible.value = true
+}
+
+// 编辑考生
+const handleEdit = (row) => {
+  examineeForm.value = {
+    id: row.id, // 添加id字段用于更新
+    examineeId: row.examineeId,
+    name: row.name,
+    phone: row.phone,
+    groupId: row.groupId,
+    sceneId: sceneId.value
+  }
+  examineeDialogVisible.value = true
+  // 更新对话框标题
+  examineeDialogTitle.value = '编辑考生'
+}
+
+// 处理选择变化
+const handleSelectionChange = (selection) => {
+  selectedIds.value = selection.map(item => item.id)
+}
+
+// 批量删除考生
+const handleBatchDelete = () => {
+  if (selectedIds.value.length === 0) {
+    ElMessage.warning('请至少选择一条数据')
+    return
+  }
+
+  ElMessageBox.confirm(`确定要删除选中的${selectedIds.value.length}个考生吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(async () => {
+
+    let loadingInstance;
+
+    try {
+      loadingInstance = ElLoading.service({
+        lock: true,
+        text: '正在删除中...',
+        background: 'rgba(0, 0, 0, 0.7)'
+      })
+      
+      // 调用批量删除API
+      const res = await deleteExamineeBatch(selectedIds.value.join(','))
+      
+      if (res.code === 200) {
+        ElMessage.success(`成功删除${selectedIds.value.length}个考生`)
+        selectedIds.value = [] // 清空选择
+        await handleListExaminee()
+      } else {
+        ElMessage.error(res.msg || '删除失败')
+      }
+    } catch (error) {
+      console.error('删除出错:', error)
+      ElMessage.error('删除过程中发生错误')
+    } finally {
+      loadingInstance?.close()
+    }
+  }).catch(() => {
+    // 用户取消操作
+  })
+}
+
 // 处理分组操作命令
 const handleGroupCommand = (command, group) => {
-  const index = examineeGroup.value.findIndex(item => item.code === group.code)
-  if (index === -1) return
-  
+
+   if (group.isSpecial) {
+    ElMessage.warning('不能操作"全部"分组')
+    return
+  }
+
   if (command === 'edit') {
-    editGroup(index)
+    editGroup(group)
   } else if (command === 'delete') {
-    deleteGroup(index)
+    deleteGroup(group)
   }
 }
 
 // 编辑分组
-const editGroup = (index) => {
-  currentGroupIndex.value = index
-  groupForm.value = { ...examineeGroup.value[index] }
+const editGroup = (group) => {
+  groupForm.value = group
   isEditGroup.value = true
   groupDialogVisible.value = true
 }
 
 // 删除分组
-const deleteGroup = (index) => {
-  ElMessageBox.confirm('确定要删除这个分组吗？', '提示', {
+const deleteGroup = (group) => {
+  ElMessageBox.confirm('确定要删除['+group.groupName+']这个分组吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    examineeGroup.value.splice(index, 1)
-    ElMessage.success('删除成功')
+    deleteExamineeGroup(group.id).then(res => {
+      ElMessage.success('删除成功')
+      handleListExamineeGroup();
+    })
   }).catch(() => {
     // 用户取消删除
   })
@@ -244,53 +422,217 @@ const deleteGroup = (index) => {
 const saveGroup = () => {
   groupFormRef.value.validate(valid => {
     if (valid) {
+      groupForm.value.sceneId = sceneId.value
+
       if (isEditGroup.value) {
-        // 编辑现有分组
-        examineeGroup.value[currentGroupIndex.value] = {
-          ...groupForm.value,
-          code: groupForm.value.code || generateGroupCode(groupForm.value.label)
-        }
-        ElMessage.success('修改成功')
-      } else {
-        // 添加新分组
-        examineeGroup.value.push({
-          ...groupForm.value,
-          code: generateGroupCode(groupForm.value.label)
+        updateExamineeGroup(groupForm.value).then(res => {
+          ElMessage.success('修改成功')
+          groupDialogVisible.value = false
+          handleListExamineeGroup();
         })
-        ElMessage.success('添加成功')
+      } else {
+        addExamineeGroup(groupForm.value).then(res => {
+          ElMessage.success('添加成功')
+          groupDialogVisible.value = false
+          handleListExamineeGroup();
+        })
       }
-      groupDialogVisible.value = false
     }
   })
 }
 
+// // 保存考生
+// const saveExaminee = () => {
+//   examineeFormRef.value.validate(valid => {
+//     if (valid) {
+//       addExaminee(examineeForm.value).then(res => {
+//         ElMessage.success('添加成功')
+//         examineeDialogVisible.value = false
+//         handleListExaminee();
+//       })
+//     }
+//   })
+// }
+
+// 保存考生
+const saveExaminee = () => {
+  examineeFormRef.value.validate(valid => {
+    if (valid) {
+      if (examineeForm.value.id) {
+        // 更新考生
+        updateExaminee(examineeForm.value).then(res => {
+          ElMessage.success('更新成功')
+          examineeDialogVisible.value = false
+          handleListExaminee();
+        })
+      } else {
+        // 添加考生
+        addExaminee(examineeForm.value).then(res => {
+          ElMessage.success('添加成功')
+          examineeDialogVisible.value = false
+          handleListExaminee();
+        })
+      }
+    }
+  })
+}
+
+const getGroupById = (id) => {
+
+   // 使用 find 方法替代 forEach
+  const foundGroup = examineeGroup.value.find(item => item.id === id)
+  console.log('Searching group by id:', id, 'Found:', foundGroup)
+  return foundGroup || null
+
+}
+
+
+// 处理批量导入
+const handleImport = async () => {
+
+  let loadingInstance = null ;
+
+  try {
+    // 1. 表单验证
+    if (!importForm.value.groupId) {
+      ElMessage.warning('请选择分组')
+      return
+    }
+    
+    if (!importForm.value.data) {
+      ElMessage.warning('请输入考生数据')
+      return
+    }
+
+    // 2. 准备加载状态
+    loadingInstance = ElLoading.service({
+      lock: true,
+      text: '正在导入考生数据...',
+      background: 'rgba(0, 0, 0, 0.7)'
+    })
+
+    // 3. 解析并提交数据
+    const res = await importExaminee({
+      groupId: importForm.value.groupId,
+      sceneId: sceneId.value,
+      data: importForm.value.data
+    })
+
+    // 4. 处理响应
+    if (res.code === 200) {
+      if (res.data) {
+        // 处理重复数据
+        let errorMsg = '导入失败，发现重复数据：\n'
+        
+        if (res.data.inputDuplicates && res.data.inputDuplicates.length > 0) {
+          errorMsg += `· 导入数据内部重复: ${res.data.inputDuplicates.join('、')}\n`
+        }
+        
+        if (res.data.dbDuplicates && res.data.dbDuplicates.length > 0) {
+          errorMsg += `· 与系统已有数据重复: ${res.data.dbDuplicates.join('、')}`
+        }
+        
+        ElMessage.error(errorMsg)
+        
+        // 高亮显示重复行（假设有对应方法）
+        highlightDuplicateRows(res.data)
+      } else {
+        ElMessage.success(res.msg)
+        importDialogVisible.value = false
+        await handleListExaminee()
+      }
+    } 
+  } catch (error) {
+    console.error('导入出错:', error)
+    ElMessage.error('导入过程中发生错误')
+  } finally {
+    // 关闭加载状态
+    loadingInstance?.close()
+  }
+}
+
+// 高亮显示重复行（示例方法）
+const highlightDuplicateRows = (duplicates) => {
+  // 这里可以实现文本域中高亮显示重复行的逻辑
+  // 例如使用mark.js库或其他方式标记重复内容
+  console.log('需要高亮的重复数据:', duplicates)
+}
+
 // 选择分组
 const selectGroup = (group) => {
-  // 这里可以添加选择分组后的逻辑
-  console.log('Selected group:', group)
+  examineeGroup.value.forEach(item => {
+    item.isSelected = item.id === group.id
+  })
+
+  // 如果是"全部"分组，查询时不带groupId参数
+  queryParams.value.groupId = group.isSpecial ? undefined : group.id
+  handleListExaminee()
 }
 
-// 生成分组code
-const generateGroupCode = (label) => {
-  return label.replace(/[\s\u4e00-\u9fa5]/g, '').toLowerCase() + '-' + Date.now()
+// 删除考生
+const handleDelete = (row) => {
+  ElMessageBox.confirm(`确定要删除考生[${row.name}]吗？`, '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  }).then(() => {
+    deleteExaminee(row.id).then(res => {
+      ElMessage.success('删除成功')
+      handleListExaminee()
+    })
+  })
 }
 
-/** 查询角色列表 */
-const handleStoreRoleList = () => {
+const handleQuery = () => { 
+  handleListExaminee();
+}
+
+const resetQuery = () => { 
+  queryParams.value.name = null;
+  queryParams.value.groupId = null;
+  handleListExaminee();
+}
+
+/** 查询考生列表 */
+const handleListExaminee= async () => {
   loading.value = true;
-  storeRoleList(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  await listExaminee(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
     loading.value = false;
-    StoreRoleList.value = res.rows;
+    examineeList.value = res.rows;
     total.value = res.total;
   });
 };
 
-/** 选择角色入频道 */
-const handleChainAgent = (row) => {
-  emit('handleChainAgent', row);
+// 查询所有分组
+const handleListExamineeGroup= async() => {
+  await listExamineeGroup({sceneId: sceneId.value}).then(res => {
+    examineeGroup.value = res.data.map(item => ({
+      ...item,
+      isSelected: false,
+      isSpecial: false  // 标记是否为特殊分组
+    }))
+    
+    if (examineeGroup.value.length > 0) {
+
+      // 添加全部分组到列表中，位置默认选择第一个
+      examineeGroup.value.unshift({
+        id: null,
+        groupName: '全部',
+        icon: 'fa-solid fa-users',
+        isSelected: true,
+        isSpecial: true  // 标记为特殊分组
+      })
+
+      selectGroup(examineeGroup.value[0])
+    }
+
+  })
 }
 
-handleStoreRoleList();
+onMounted(async() => {
+  await handleListExamineeGroup()
+  // await handleListExaminee()
+})
 
 </script>
 
@@ -304,6 +646,7 @@ handleStoreRoleList();
     font-weight: normal;
     background: #fafafa;
     border-radius: 5px;
+    border-left: 3px solid #fafafa;  // Blue left border as an indicator
     cursor: pointer;
     padding: 0 10px;
 
@@ -324,7 +667,10 @@ handleStoreRoleList();
     text-align: left;
     padding: 15px 5px;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom:0px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
   }
 
   .type-item-list {
@@ -354,6 +700,33 @@ handleStoreRoleList();
   
   &:hover {
     color: #409EFF;
+  }
+}
+
+.selected {
+  background: #e6f7ff !important; 
+  border-left: 3px solid #1d75b0 !important;
+  color: #1d75b0;
+  
+  .el-dropdown-link {
+    color: #1d75b0;             
+  }
+  
+  &:hover {
+    background: #e6f7ff !important; 
+  }
+}
+
+/* 添加在style部分 */
+.el-button--danger[plain] {
+  &:not(:disabled) {
+    background-color: #fff6f6;
+    border-color: #f89898;
+    color: #f56c6c;
+    
+    &:hover {
+      background-color: #fef0f0;
+    }
   }
 }
 </style>
