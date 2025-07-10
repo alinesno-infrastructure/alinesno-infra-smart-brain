@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamInfoPage
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamMarkingDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamInfoService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamScoreService;
+import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamCodeGenerator;
 import com.alinesno.infra.smart.scene.entity.ExamInfoEntity;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -61,6 +62,10 @@ public class ExamInfoController extends BaseController<ExamInfoEntity, IExamInfo
 
         ExamInfoEntity examInfoEntity = new ExamInfoEntity();
         BeanUtils.copyProperties(examInfoDto, examInfoEntity);
+
+        // 生成唯一试卷码
+        String prefixedCode = ExamCodeGenerator.generateExamCodeWithPrefix("EX");
+        examInfoEntity.setExamCode(prefixedCode);
 
         // 设置其他必要字段
         examInfoEntity.setPagerId(examInfoDto.getPaperId());
