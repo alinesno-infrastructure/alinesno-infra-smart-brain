@@ -14,10 +14,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.enums.ExamineeEx
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.*;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerFormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.scene.entity.ExamInfoEntity;
-import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
-import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
-import com.alinesno.infra.smart.scene.entity.ExamScoreEntity;
+import com.alinesno.infra.smart.scene.entity.*;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +60,18 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
     private IIndustryRoleService industryRoleService ;
 
     /**
+     * 通过id获取到考试信息
+     */
+    @GetMapping("/getExamInfo")
+    public AjaxResult getExamInfo(@RequestParam("examId") String examId){
+
+        ExamInfoEntity examInfo = examInfoService.getById(examId) ;
+        log.debug("examInfo = {}" , examInfo);
+
+        return AjaxResult.success("操作成功." , examInfo) ;
+    }
+
+    /**
      * 验证考生信息
      * @return
      */
@@ -74,12 +83,21 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
         // 验证试卷唯一码
         ExamInfoEntity examInfo = examInfoService.getExamInfoByUniqueCode(submission.getPaperCode() , submission.getExamId()) ;
         log.debug("examInfo = {}" , examInfo);
-//        Assert.notNull(examInfo , "试卷唯一码不正确.");
+        Assert.notNull(examInfo , "试卷唯一码不正确.");
 
-        String accountId = examineeService.initExaminee(submission) ;
-        log.debug("accountId = {}", accountId);
+        // 查询考生信息，通过考生号还有场景进行查询
+        Long sceneId = examInfo.getSceneId() ;
+        LambdaQueryWrapper<ExamineeEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ExamineeEntity::getExamineeId , submission.getExamineeId());
+        wrapper.eq(ExamineeEntity::getSceneId , sceneId);
 
-        return AjaxResult.success("操作成功." , accountId) ;
+        ExamineeEntity examinee = examineeService.getOne(wrapper) ;
+        Assert.notNull(examinee , "没有找到该考生信息，请确认是否填写正确.");
+
+        // 判断考生名称是否对得上
+        // Assert.isTrue(examinee.getName().equals(submission.getName()) , "考生姓名不匹配.");
+
+        return AjaxResult.success("操作成功." , examinee) ;
     }
 
     /**
