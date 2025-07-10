@@ -11,16 +11,16 @@
     </el-menu>
 
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
-        <el-menu-item index="9" @click="addChannel()" class="aip-menu-item">
-          <i class="fa-solid fa-marker"></i>
-          <span>
-            创建频道
-          </span>
-      </el-menu-item>
         <el-menu-item index="11" @click="addScreen()" class="aip-menu-item">
           <i class="fa-solid fa-paper-plane"></i>
           <span>
             创建场景
+          </span>
+      </el-menu-item>
+        <el-menu-item index="9" @click="addChannel()" class="aip-menu-item">
+          <i class="fa-solid fa-marker"></i>
+          <span>
+            创建频道
           </span>
       </el-menu-item>
         <el-menu-item index="12" @click="dialogVisible = true" class="aip-menu-item">
