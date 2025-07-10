@@ -134,36 +134,33 @@
 
           <el-table :data="analysisResult.examResults" style="width: 100%" :size="large"
             :cell-style="{ 'font-size': '15px' }" class="answer-table">
-            <el-table-column type="index" align="center" label="题号" width="50" />
+            <!-- <el-table-column type="index" align="center" label="题号" width="50" /> -->
             <el-table-column prop="comment" label="知识点">
-              <template #default="{ row }">
+              <template #default="scope">
                 <div class="question-container">
                   <div class="question-section">
-                    <h4 class="title">题目：</h4>
-                    <p class="content">{{ getQuestionById(row.id)?.question }}</p>
+                    <h4 class="title">{{ scope.$index + 1 }}. 题目：
+                    <span :class="{
+                      'zero-score': scope.row.score === 0,
+                      'full-score': scope.row.score === scope.row.maxScore,
+                      'partial-score': scope.row.score > 0 && scope.row.score < scope.row.maxScore 
+                      }">
+                      ( {{ scope.row.score }}/{{ scope.row.maxScore }} )
+                    </span>
+                    </h4>
+                    <p class="content">{{ getQuestionById(scope.row.id)?.question }}</p>
                   </div>
 
                   <div class="analysis-section">
                     <h4 class="title">考核分析：</h4>
-                    <p class="content">{{ getQuestionById(row.id)?.answerAnalysis }}</p>
+                    <p class="content">{{ getQuestionById(scope.row.id)?.answerAnalysis }}</p>
                   </div>
 
                   <div class="comment-section">
                     <h4 class="title">教师点评：</h4>
-                    <p class="content">{{ row.comment || "暂无点评" }}</p>
+                    <p class="content">{{ scope.row.comment || "暂无点评" }}</p>
                   </div>
                 </div>
-              </template>
-            </el-table-column>
-            <el-table-column label="分数" align="center" width="80">
-              <template #default="{ row }">
-                <span :class="{
-    'zero-score': row.score === 0,
-    'full-score': row.score === row.maxScore,
-    'partial-score': row.score > 0 && row.score < row.maxScore
-  }">
-                  {{ row.score }}/{{ row.maxScore }}
-                </span>
               </template>
             </el-table-column>
           </el-table>
@@ -270,7 +267,10 @@
 
     <!-- 运行抽屉 -->
     <div class="aip-flow-drawer">
-      <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+      <el-drawer v-model="showDebugRunDialog" 
+        :modal="false" 
+        :size="isMobile?'calc(100% - 20px)':'40%'" 
+        title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
           <RoleChatPanel ref="roleChatPanelRef" />
@@ -431,6 +431,13 @@ const downloadReport = () => {
   loading.value = false
 };
 
+const isMobile = ref(false)
+
+// 检测是否为移动端
+const checkMobile = () => {
+  isMobile.value = window.innerWidth <= 768
+}
+
 const openChatBox = (roleId) => {
 
   if (showDebugRunDialog.value) {
@@ -572,6 +579,8 @@ onMounted(() => {
   console.log('examId = ' + examId)
   console.log('examineeId = ' + examineeId)
 
+  checkMobile();
+
   // 启动状态检查轮询
   startStatusPolling(examId, examineeId)
 })
@@ -648,6 +657,8 @@ $border-color: #eee;
   line-height: 1.6;
   color: #333;
   padding: 15px;
+  margin-left: -12px;
+  margin-right: -12px;
   border-radius: 8px;
   background-color: $light-gray;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -724,6 +735,7 @@ $border-color: #eee;
   bottom: 20px;
   right: 20px;
   top: 20px;
+  z-index: 9999;
 }
 
 // .content {
@@ -739,7 +751,6 @@ $border-color: #eee;
 
 .summary-content-wrapper {
   position: relative;
-  padding-right: 160px; // 为分数章留出空间
   min-height: 180px;
 }
 
@@ -779,6 +790,7 @@ $border-color: #eee;
   .score-label {
     font-size: 20px;
     letter-spacing: 2px;
+    text-align: center;
   }
 
   .stamp-overlay {
@@ -853,4 +865,13 @@ $border-color: #eee;
     text-align: center;
     color: #777;
 }
+
+// 定义手机样式
+@media (max-width: 768px) { 
+}
+  .aip-flow-drawer-content{
+    width: calc(100% - 20px) !important ;
+    max-width: 100% !important;
+  }
+
 </style>
