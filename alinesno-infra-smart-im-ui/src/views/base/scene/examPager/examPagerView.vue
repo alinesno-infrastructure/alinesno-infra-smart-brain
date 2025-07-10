@@ -1,97 +1,77 @@
 <template>
   <div class="exam-pager-container">
-    <TopPanel 
-      @handleSavePager="handleSavePager"
-      @handlePublishExam="handlePublishExam"
-      :currentPageInfo="currentPageInfo"
-      ref="topPanelRef" />
+    <TopPanel @handleSavePager="handleSavePager" @handlePublishExam="handlePublishExam"
+      :currentPageInfo="currentPageInfo" ref="topPanelRef" />
 
     <el-row>
       <el-col :span="5">
-        <LeftPanel 
-          @handleAddQuestionCard="handleAddQuestionCard"
-          :currentPageInfo="currentPageInfo"
+        <LeftPanel @handleAddQuestionCard="handleAddQuestionCard" :currentPageInfo="currentPageInfo"
           ref="leftPanelRef" />
       </el-col>
       <el-col :span="14">
-        <PagerContainer 
-          @setCurrentPageInfo="setCurrentPageInfo"
-          ref="pagerContainerRef" />
+        <PagerContainer @setCurrentPageInfo="setCurrentPageInfo" ref="pagerContainerRef" />
       </el-col>
       <el-col :span="5">
-        <RightPanel 
-          :currentPageInfo="currentPageInfo"
-          ref="rightPanelRef" />
+        <RightPanel :currentPageInfo="currentPageInfo" ref="rightPanelRef" />
       </el-col>
     </el-row>
 
     <!-- 考试配置弹出窗 -->
-     <!-- 考试配置弹出窗 -->
-    <el-dialog
-      v-model="examConfigVisible"
-      title="考试发布配置"
-      width="560"
-      :close-on-click-modal="false"
-      @closed="handleConfigDialogClosed"
-    >
-      <el-form
-        ref="examConfigFormRef"
-        size="large"
-        :model="examConfigForm"
-        :rules="examConfigRules"
-        label-width="120px"
-        label-position="right"
-      >
+    <!-- 考试配置弹出窗 -->
+    <el-dialog v-model="examConfigVisible" title="考试发布配置" width="860" :close-on-click-modal="false"
+      @closed="handleConfigDialogClosed">
+      <el-form ref="examConfigFormRef" size="large" :model="examConfigForm" :rules="examConfigRules" label-width="120px"
+        label-position="right">
         <el-form-item label="考试名称" prop="examName">
           <el-input v-model="examConfigForm.examName" placeholder="请输入考试名称" />
         </el-form-item>
-        
+
         <el-form-item label="考试时间" required>
+          <el-col :span="24">
+          <div class="quick-time-select">
+            <el-button-group>
+              <el-button @click="setQuickTime(10)">10分钟</el-button>
+              <el-button @click="setQuickTime(30)">30分钟</el-button>
+              <el-button @click="setQuickTime(45)">45分钟</el-button>
+            </el-button-group>
+          </div>
+          </el-col>
           <el-col :span="11">
             <el-form-item prop="startTime">
-              <el-date-picker
-                v-model="examConfigForm.startTime"
-                type="datetime"
-                placeholder="开始时间"
-                style="width: 100%"
-                :disabled-date="disabledStartDate"
-              />
+              <el-date-picker v-model="examConfigForm.startTime" type="datetime" placeholder="开始时间" style="width: 100%"
+                :disabled-date="disabledStartDate" />
             </el-form-item>
           </el-col>
           <el-col :span="2" class="text-center">-</el-col>
           <el-col :span="11">
             <el-form-item prop="endTime">
-              <el-date-picker
-                v-model="examConfigForm.endTime"
-                type="datetime"
-                placeholder="结束时间"
-                style="width: 100%"
-                :disabled-date="disabledEndDate"
-              />
+              <el-date-picker v-model="examConfigForm.endTime" type="datetime" placeholder="结束时间" style="width: 100%"
+                :disabled-date="disabledEndDate" />
             </el-form-item>
           </el-col>
         </el-form-item>
-        
+
         <el-form-item label="考试时长(分钟)" prop="duration">
-          <el-input-number 
-            v-model="examConfigForm.duration" 
-            :min="10" 
-            :max="600" 
-            controls-position="right"
-          />
+          <el-button-group>
+            <el-button @click="examConfigForm.duration = 5">5分钟</el-button>
+            <el-button @click="examConfigForm.duration = 10">10分钟</el-button>
+            <el-button @click="examConfigForm.duration = 15">15分钟</el-button>
+            <el-button @click="examConfigForm.duration = 30">30分钟</el-button>
+          </el-button-group>
+          <el-input-number v-model="examConfigForm.duration" :min="10" :max="600" controls-position="right" />
         </el-form-item>
-        
+
         <el-form-item label="及格分数" prop="passScore">
-          <el-input-number 
-            v-model="examConfigForm.passScore" 
-            :min="0" 
-            :max="100" 
-            controls-position="right"
-          />
+          <el-button-group>
+            <el-button @click="examConfigForm.passScore = 10">10分</el-button>
+            <el-button @click="examConfigForm.passScore = 20">20分</el-button>
+            <el-button @click="examConfigForm.passScore = 30">30分</el-button>
+          </el-button-group>
+          <el-input-number v-model="examConfigForm.passScore" :min="0" :max="100" controls-position="right" />
         </el-form-item>
-        
+
       </el-form>
-      
+
       <template #footer>
         <span class="dialog-footer">
           <el-button size="large" @click="examConfigVisible = false">取消</el-button>
@@ -116,7 +96,7 @@ import LeftPanel from './components/LeftPanel.vue'
 
 import {
   addExamInfo
-} from "@/api/base/im/scene/examInfoManager" ; 
+} from "@/api/base/im/scene/examInfoManager";
 
 // 引用组件
 const topPanelRef = ref(null)
@@ -141,8 +121,8 @@ const examConfigForm = reactive({
   startTime: '',
   endTime: '',
   duration: 60,
-  sceneId: sceneId.value , 
-  pageId: 0, 
+  sceneId: sceneId.value,
+  pageId: 0,
   passScore: 60,
   description: ''
 })
@@ -152,8 +132,8 @@ const examConfigForm = reactive({
 const validateStartTime = (rule, value, callback) => {
   if (!value) {
     callback(new Error('请选择开始时间'))
-  } else if (value.getTime() < Date.now()) {
-    callback(new Error('开始时间不能早于当前时间'))
+    // } else if (value.getTime() < Date.now()) {
+    //   callback(new Error('开始时间不能早于当前时间'))
   } else {
     callback()
   }
@@ -215,16 +195,16 @@ const handleConfigDialogClosed = () => {
 const submitExamConfig = async () => {
   try {
     await examConfigFormRef.value.validate()
-    
+
     // 这里可以添加API调用逻辑
     addExamInfo(examConfigForm).then(res => {
       ElMessage.success('考试配置保存成功')
       examConfigVisible.value = false
 
       // 跳转到考试界面
-       router.push('/scene/examPager/examManager?sceneId=' + sceneId.value)
+      router.push('/scene/examPager/examManager?sceneId=' + sceneId.value)
     })
-    
+
   } catch (error) {
     console.error('考试配置验证失败:', error)
   }
@@ -236,7 +216,7 @@ const handleAddQuestionCard = (newQuestionItem) => {
 }
 
 // 保存试卷
-const handleSavePager  = () => {
+const handleSavePager = () => {
   pagerContainerRef.value.handleSavePager()
 }
 
@@ -247,7 +227,7 @@ const handlePublishExam = (currentPageInfo) => {
 
   // 打开考试配置弹窗
   examConfigVisible.value = true
-  
+
   // 如果已有配置，填充表单
   if (currentPageInfo) {
     // Object.assign(examConfigForm, currentPageInfo)
@@ -260,12 +240,55 @@ const setCurrentPageInfo = (pageInfo) => {
   currentPageInfo.value = pageInfo
 }
 
+// 快速设置考试时间
+const setQuickTime = (minutes) => {
+  const now = new Date()
+  examConfigForm.startTime = now
+  examConfigForm.endTime = new Date(now.getTime() + minutes * 60 * 1000)
+  examConfigForm.duration = minutes
+}
+
+// 自动计算结束时间
+watch(() => examConfigForm.startTime, (newVal) => {
+  if (newVal && examConfigForm.duration) {
+    examConfigForm.endTime = new Date(newVal.getTime() + examConfigForm.duration * 60 * 1000)
+  }
+})
+
+// 自动计算时长
+watch(() => [examConfigForm.startTime, examConfigForm.endTime], ([start, end]) => {
+  if (start && end) {
+    examConfigForm.duration = Math.round((end.getTime() - start.getTime()) / (60 * 1000))
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
-
 .exam-pager-container {
-    background: #f5f5f5;
+  background: #f5f5f5;
 }
 
+.quick-time-select {
+  margin-bottom: 10px;
+
+  .el-button-group {
+    margin-right: 10px;
+
+    .el-button {
+      padding: 8px 12px;
+    }
+  }
+}
+
+.el-form-item {
+  .el-button-group {
+    margin-right: 10px;
+    // margin-bottom: 10px;
+
+    .el-button {
+      padding: 8px 12px;
+    }
+  }
+}
 </style>
