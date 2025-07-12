@@ -26,11 +26,6 @@
         <el-form-item label="考生号" prop="examineeId">
           <el-input v-model="validateForm.examineeId" placeholder="请输入考生号"></el-input>
         </el-form-item>
-        <!-- 
-        <el-form-item label="考生姓名" prop="name">
-          <el-input v-model="validateForm.name" placeholder="请输入姓名"></el-input>
-        </el-form-item> 
-        -->
         <br/>
         <el-form-item>
           <el-button type="primary" style="width:100%" @click="handleValidate">开始考试</el-button>
@@ -72,9 +67,17 @@ const validateForm = reactive({
 })
 
 const rules = {
-  paperCode: [{ required: true, message: '请输入试卷唯一码', trigger: 'blur' }],
-  // name: [{ required: true, message: '请输入姓名', trigger: 'blur' }],
-  examineeId: [{ required: true, message: '请输入考号', trigger: 'blur' }]
+  paperCode: [
+    { required: true, message: '请输入试卷唯一码', trigger: 'blur' },
+    { 
+      pattern: /^\d{6}$/, 
+      message: '试卷唯一码必须是6位数字', 
+      trigger: 'blur' 
+    }
+  ],
+  examineeId: [
+    { required: true, message: '请输入考号', trigger: 'blur' }
+  ]
 }
 
 const handleValidate = async () => {
@@ -86,7 +89,20 @@ const handleValidate = async () => {
     })
     
     if (res.code == 200) {
+
       accountId.value = res.data.id
+      let examStatus = res.examStatus ; 
+
+      if(res.isExistScore && (examStatus == 'review' || examStatus == 'examination_end' || examStatus == 'review_end'  )){  // 用户已经做过考试
+
+        let channelStreamId = res.channelStreamId ;
+        router.push({ 
+          path: '/scene/examPager/onlineExamAnalysis/' + examId.value + '/' + accountId.value,
+          query: { 'channelStreamId': channelStreamId}
+        })
+        return ; 
+      }
+
       validateForm.name = res.data.name
       validated.value = true
 
