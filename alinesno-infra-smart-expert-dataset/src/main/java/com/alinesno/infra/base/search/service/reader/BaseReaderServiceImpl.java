@@ -17,8 +17,8 @@ import java.io.IOException;
 @Slf4j
 public abstract class BaseReaderServiceImpl implements IAttachmentReaderService {
 
-    protected static final String IMAGE_OCR = "ocr" ; // 通过ocr识别
-    protected static final String IMAGE_LLM = "llm" ; // 通过LLM识别
+    public static final String IMAGE_OCR = "ocr" ; // 通过ocr识别
+    public static final String IMAGE_LLM = "llm" ; // 通过LLM识别
 
     @Autowired
     protected CloudStorageConsumer storageConsumer;
