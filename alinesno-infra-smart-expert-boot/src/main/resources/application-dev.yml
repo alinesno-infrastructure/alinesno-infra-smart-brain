@@ -38,9 +38,9 @@ spring:
       enabled: true
 
 thread-pool-factory:
-  core-pool-size: 20
-  max-pool-size: 100
-  queue-capacity: 500
+  core-pool-size: 200
+  max-pool-size: 1000
+  queue-capacity: 00
 
 actable:
   table:
