@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
-import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
@@ -94,10 +93,25 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
         ExamineeEntity examinee = examineeService.getOne(wrapper) ;
         Assert.notNull(examinee , "没有找到该考生信息，请确认是否填写正确.");
 
-        // 判断考生名称是否对得上
-        // Assert.isTrue(examinee.getName().equals(submission.getName()) , "考生姓名不匹配.");
+        // 判断考生是否已经提交过试卷
+        LambdaQueryWrapper<ExamScoreEntity> examScoreWrapper = new LambdaQueryWrapper<>();
+        examScoreWrapper.eq(ExamScoreEntity::getExamInfoId , submission.getExamId());
+        examScoreWrapper.eq(ExamScoreEntity::getUserId , examinee.getId());
+        ExamScoreEntity examScore = examScoreService.getOne(examScoreWrapper) ;
 
-        return AjaxResult.success("操作成功." , examinee) ;
+        AjaxResult result = AjaxResult.success("操作成功." , examinee) ;
+
+        boolean isExist = examScore != null ;
+        String examStatus = ExamineeExamEnums.NOT_STARTED.getCode() ;
+        if (examScore != null) {
+            examStatus = examScore.getExamStatus() ;
+            result.put("channelStreamId", examScore.getId());
+        }
+
+        result.put("isExistScore", isExist);
+        result.put("examStatus", examStatus);
+
+        return result ;
     }
 
     /**
