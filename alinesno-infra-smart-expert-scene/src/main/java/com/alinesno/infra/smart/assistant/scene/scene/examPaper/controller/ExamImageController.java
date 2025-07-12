@@ -36,50 +36,6 @@ public class ExamImageController {
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
 
-//    @Autowired
-//    private ImageTools imageService ;
-//
-//    /**
-//     * 处理图片远程加载的问题
-//     * @param imageId
-//     * @param request
-//     * @return
-//     */
-//    @GetMapping("/displayImage/{imageId}")
-//    @Async
-//    public CompletableFuture<ResponseEntity<byte[]>> displayImage(
-//            @PathVariable String imageId,
-//            HttpServletRequest request) {
-//
-//        return CompletableFuture.supplyAsync(() -> {
-//            try {
-//                byte[] byteBody = imageService.getImage(imageId);
-//                if (byteBody == null) {
-//                    return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-//                }
-//
-//                HttpHeaders headers = new HttpHeaders();
-//                headers.setContentType(MediaType.IMAGE_JPEG);
-//
-//                // 设置协商缓存
-//                String tag = "\"" + DigestUtils.md5DigestAsHex(byteBody) + "\"";
-//                headers.setETag(tag);
-//
-//                // 检查客户端缓存
-//                String ifNoneMatch = request.getHeader("If-None-Match");
-//                if (tag.equals(ifNoneMatch)) {
-//                    return new ResponseEntity<>(null, headers, HttpStatus.NOT_MODIFIED);
-//                }
-//
-//                headers.setCacheControl("public, max-age=72000"); // 浏览器缓存24小时
-//                return new ResponseEntity<>(byteBody, headers, HttpStatus.OK);
-//            } catch (Exception e) {
-//                log.error("获取图片失败:{}", e.getMessage());
-//                return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-//            }
-//        });
-//    }
-
     /**
      * 文件上传
      * @return
