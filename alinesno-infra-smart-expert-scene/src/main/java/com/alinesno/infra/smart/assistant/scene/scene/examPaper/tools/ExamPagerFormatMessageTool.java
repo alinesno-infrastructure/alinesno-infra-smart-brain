@@ -220,8 +220,9 @@ public class ExamPagerFormatMessageTool {
             // 生成分数 (实际应该根据评分逻辑计算)
             String jsonResult = codeContent.get(0).getContent() ;
             JSONObject jsonResultObject = JSONObject.parseObject(jsonResult);
+            JSONArray examResults = jsonResultObject.getJSONArray("examResults") ;
 
-            Long score = jsonResultObject.getJSONArray("examResults")
+            Long score = examResults
                     .stream()
                     .map(item -> (JSONObject) item)
                     .map(item -> item.getLong("score"))
@@ -238,6 +239,7 @@ public class ExamPagerFormatMessageTool {
 
             examScore.setReviewerId(industryRole.getId());
             examScore.setReviewerName(industryRole.getRoleName());
+            examScore.setReviewResult(examResults.toJSONString());
             examScore.setFieldProp("ai"); // 设置来源为AI
 
             examScoreService.updateById(examScore);
