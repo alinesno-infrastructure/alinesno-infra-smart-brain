@@ -63,6 +63,7 @@ public class AttachmentReaderUtils {
         return switch (fileType) {
             case "txt" -> SpringUtil.getBean(TextReaderServiceImpl.class);
             case "md" -> SpringUtil.getBean(MarkdownReaderServiceImpl.class);
+            case "ppt", "pptx" -> SpringUtil.getBean(PPTReaderServiceImpl.class);
             case "pdf" -> SpringUtil.getBean(PdfReaderServiceImpl.class);
             case "doc", "docx" -> SpringUtil.getBean(WordReaderServiceImpl.class);
             case "xls", "xlsx" -> SpringUtil.getBean(ExcelReaderServiceImpl.class);
