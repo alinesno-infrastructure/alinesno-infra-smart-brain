@@ -64,7 +64,7 @@ public class ExamInfoController extends BaseController<ExamInfoEntity, IExamInfo
         BeanUtils.copyProperties(examInfoDto, examInfoEntity);
 
         // 生成唯一试卷码
-        String prefixedCode = ExamCodeGenerator.generateExamCodeWithPrefix("EX");
+        String prefixedCode = ExamCodeGenerator.generateExamCode();
         examInfoEntity.setExamCode(prefixedCode);
 
         // 设置其他必要字段
