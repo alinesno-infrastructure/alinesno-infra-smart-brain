@@ -63,6 +63,7 @@
                   <div class="exam-info">
                      <span class="exam-tag info">{{ student.userCode}}</span>
                      <span class="exam-score" :class="{ success: student.score !== null }">
+                        <i v-if="student.fieldProp === 'ai'" class="fa-solid fa-robot"></i> 
                         总分: {{ student.score !== null ? student.score : '--' }}
                      </span>
                   </div>
@@ -567,7 +568,7 @@ onMounted(async() => {
                .exam-tag {
                   padding: 4px 8px;
                   border-radius: 4px;
-                  font-size: 12px;
+                  font-size: 14px;
 
                   &.info {
                      background-color: rgba(59, 130, 246, 0.1);
@@ -577,7 +578,7 @@ onMounted(async() => {
 
                .exam-score {
                   margin-left: auto;
-                  font-size: 12px;
+                  font-size: 14px;
                   font-weight: 500;
 
                   &.success {
