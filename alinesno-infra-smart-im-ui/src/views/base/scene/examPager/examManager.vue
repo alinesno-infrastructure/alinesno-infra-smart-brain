@@ -68,7 +68,7 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="起止时间" align="center" :show-overflow-tooltip="true">
+                <el-table-column label="起止时间" align="center" width="400" :show-overflow-tooltip="true">
                   <template #default="scope">
                     <div style="display: flex;flex-direction: row;gap: 10px;align-items: center;">
                       <el-button type="primary" text bg size="large">
@@ -112,7 +112,7 @@
     </el-container>
 
     <!-- 试卷码弹窗 -->
-    <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="500px" center>
+    <!-- <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="500px" center>
       <div style="text-align: center;">
         <div style="margin-bottom: 20px; font-size: 16px; color: #666;">
          复制【{{ currentExamName }}】试卷码
@@ -128,6 +128,37 @@
           </el-button>
         </div>
       </div>
+    </el-dialog> -->
+
+    <!-- 试卷码弹窗 -->
+    <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="600px" center>
+      <div style="text-align: center;">
+        <div style="margin-bottom: 20px; font-size: 16px; color: #666;">
+          复制【{{ currentExamName }}】试卷码
+        </div>
+        <div style="font-size: 42px; font-weight: bold; letter-spacing: 8px; 
+            color: #1d75b0; margin: 20px 0; padding: 15px; background: #f5f7fa;
+            border-radius: 8px; display: inline-block;">
+          {{ currentExamCode }}
+        </div>
+        
+        <!-- 添加二维码展示区域 -->
+        <div style="margin: 30px 0;">
+          <div style="margin-bottom: 10px; font-size: 14px; color: #666;">
+            扫描二维码参加考试
+          </div>
+          <div ref="qrCodeRef" style="display: inline-block; padding: 10px; background: white; border: 1px solid #eee;"></div>
+        </div>
+        
+        <div style="margin-top: 30px; display: flex; justify-content: center; gap: 20px;">
+          <el-button type="primary" @click="copyExamCode" size="large" text bg style="width: 120px;">
+            <i class="fa-solid fa-copy"></i> 复制试卷码
+          </el-button>
+          <el-button type="success" @click="downloadQRCode" size="large" text bg style="width: 120px;">
+            <i class="fa-solid fa-download"></i> 下载二维码
+          </el-button>
+        </div>
+      </div>
     </el-dialog>
 
   </div>
@@ -137,6 +168,8 @@
 import FunctionList from './functionList'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import QRCode from 'qrcodejs2-fix'
+import { saveAs } from 'file-saver'
 
 import {
   queryExamList,
@@ -193,6 +226,65 @@ const data = reactive({
 });
 
 const { queryParams, form, rules } = toRefs(data);
+
+const qrCodeRef = ref(null)
+let qrCode = null
+
+// 获取基础域名
+function getBaseUrl() {
+  const currentUrl = window.location.href;
+  const urlObj = new URL(currentUrl);
+  return `${urlObj.protocol}//${urlObj.host}`;
+}
+
+// 生成二维码
+function generateQRCode(examId) {
+  // 清除已有的二维码
+  if (qrCode) {
+    qrCode.clear()
+    qrCode = null
+  }
+  
+  // 处理分享小程序/显示试卷码
+function handleShareMiniProgram(row) {
+  currentExamCode.value = row.examCode
+  currentExamName.value = row.examName
+  examCodeDialogVisible.value = true
+  
+  // 在下次DOM更新后生成二维码
+  nextTick(() => {
+    generateQRCode(row.id)
+  })
+}
+
+  // 生成考试链接 - 自动获取当前域名
+  const baseUrl = getBaseUrl();
+  const examLink = `${baseUrl}/scene/examPager/onlineExamPager/${examId}`
+  
+  // 创建新的二维码
+  qrCode = new QRCode(qrCodeRef.value, {
+    text: examLink,
+    width: 180,
+    height: 180,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+    correctLevel: QRCode.CorrectLevel.H
+  })
+}
+
+// 下载二维码
+function downloadQRCode() {
+  if (!qrCode) return
+  
+  // 获取二维码canvas元素
+  const canvas = qrCodeRef.value.querySelector('canvas')
+  if (!canvas) return
+  
+  // 将canvas转为blob并下载
+  canvas.toBlob((blob) => {
+    saveAs(blob, `${currentExamName.value}_二维码.png`)
+  })
+}
 
 /** 查询考试列表 */
 function getList() {
@@ -285,13 +377,18 @@ function handleDelete(row) {
   })
 }
 
-// 处理分享小程序/显示试卷码
+// 处理分享/显示试卷码
 function handleShareMiniProgram(row) {
   // 实际项目中这里应该调用API获取试卷码
   // 这里模拟生成一个6位随机数作为试卷码
   currentExamCode.value = row.examCode ; // generateExamCode(row.id)
   currentExamName.value = row.examName
   examCodeDialogVisible.value = true
+
+  // 在下次DOM更新后生成二维码
+  nextTick(() => {
+    generateQRCode(row.id)
+  })
 }
 
 
