@@ -17,7 +17,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.prompt.ExamPager
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPagerService;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerFormatMessageTool;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.JsonEscapeFixer;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
@@ -29,11 +28,6 @@ import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonParser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
@@ -41,16 +35,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -90,6 +87,9 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
 
     @Autowired
     private ExamPagerFormatMessageTool examPagerFormatMessageTool;
+
+    @Autowired
+    private ThreadPoolTaskExecutor customTaskExecutor;
 
     /**
      * 通过Id获取到场景
@@ -161,48 +161,110 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
      */
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
-    public AjaxResult chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto , PermissionQuery query) {
+    public DeferredResult<AjaxResult> chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto, PermissionQuery query) {
+        // 设置超时时间（例如5分钟）
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(600*1000L);
 
-        log.debug("dto = {}" , dto);
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                // 原有业务逻辑
+                ExamStructureItem examStructure = dto.getExamStructureItem() ;
+                ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+                Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
 
-        ExamStructureItem examStructure = dto.getExamStructureItem() ;
-        ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-        Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
+                MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
 
-        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
+                // 引用附件不为空，则引入和解析附件
+                if(!CollectionUtils.isEmpty(dto.getAttachments())){
+                    List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+                    taskInfo.setAttachments(attachmentList);
+                }
 
-        // 引用附件不为空，则引入和解析附件
-        if(!CollectionUtils.isEmpty(dto.getAttachments())){
-            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-            taskInfo.setAttachments(attachmentList);
-        }
+                String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
+                        dto.getDifficultyLevel() ,
+                        examStructure) ;
 
-        String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
-                dto.getDifficultyLevel() ,
-                examStructure) ;
+                taskInfo.setRoleId(questionGeneratorEngineer);
+                taskInfo.setChannelStreamId(dto.getChannelStreamId());
+                taskInfo.setChannelId(dto.getSceneId());
+                taskInfo.setSceneId(dto.getSceneId());
+                taskInfo.setText(promptText);
 
-        taskInfo.setRoleId(questionGeneratorEngineer);
-        taskInfo.setChannelStreamId(dto.getChannelStreamId());
-        taskInfo.setChannelId(dto.getSceneId());
-        taskInfo.setSceneId(dto.getSceneId());
-        taskInfo.setText(promptText);
+                // 优先获取到结果内容
+                WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+                examPagerFormatMessageTool.handleChapterMessage(genContent, taskInfo);
 
-        // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent.getGenContent());
+                if(genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+                    String codeContent = genContent.getCodeContent().get(0).getContent();
+                    JSONArray dataObject = JSONArray.parseArray(codeContent);
+                    return AjaxResult.success("操作成功", dataObject);
+                }
+                return AjaxResult.success("操作成功");
+            } catch (Exception e) {
+                log.error("处理失败", e);
+                return AjaxResult.error("处理失败: " + e.getMessage());
+            }
+        } , customTaskExecutor).whenComplete((result, ex) -> {
+            if(ex != null) {
+                deferredResult.setErrorResult(AjaxResult.error("处理异常"));
+            } else {
+                deferredResult.setResult(result);
+            }
+        });
 
-        // 获取到格式化的内容
-        examPagerFormatMessageTool.handleChapterMessage(genContent , taskInfo);
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-            return AjaxResult.success("操作成功" , dataObject) ;
-        }
-
-        return AjaxResult.success("操作成功") ;
+        return deferredResult;
     }
+
+//    /**
+//     * 聊天提示内容
+//     * @param dto
+//     * @param query
+//     * @return
+//     */
+//    @DataPermissionQuery
+//    @PostMapping("/chatPromptContent")
+//    public AjaxResult chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto , PermissionQuery query) {
+//
+//        log.debug("dto = {}" , dto);
+//
+//        ExamStructureItem examStructure = dto.getExamStructureItem() ;
+//        ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+//        Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
+//
+//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
+//
+//        // 引用附件不为空，则引入和解析附件
+//        if(!CollectionUtils.isEmpty(dto.getAttachments())){
+//            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+//            taskInfo.setAttachments(attachmentList);
+//        }
+//
+//        String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
+//                dto.getDifficultyLevel() ,
+//                examStructure) ;
+//
+//        taskInfo.setRoleId(questionGeneratorEngineer);
+//        taskInfo.setChannelStreamId(dto.getChannelStreamId());
+//        taskInfo.setChannelId(dto.getSceneId());
+//        taskInfo.setSceneId(dto.getSceneId());
+//        taskInfo.setText(promptText);
+//
+//        // 优先获取到结果内容
+//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+//        log.debug("genContent = {}", genContent.getGenContent());
+//
+//        // 获取到格式化的内容
+//        examPagerFormatMessageTool.handleChapterMessage(genContent , taskInfo);
+//
+//        // 解析得到代码内容
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+//            return AjaxResult.success("操作成功" , dataObject) ;
+//        }
+//
+//        return AjaxResult.success("操作成功") ;
+//    }
 
     /**
      * 获取所有题型信息的Map列表
