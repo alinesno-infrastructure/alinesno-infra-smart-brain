@@ -41,6 +41,7 @@
     "nanoid": "^5.0.7",
     "nprogress": "0.2.0",
     "pinia": "2.0.22",
+    "qrcodejs2-fix": "^0.0.1",
     "snowflake-id": "^1.1.0",
     "vditor": "^3.11.0",
     "vue": "3.2.45",
