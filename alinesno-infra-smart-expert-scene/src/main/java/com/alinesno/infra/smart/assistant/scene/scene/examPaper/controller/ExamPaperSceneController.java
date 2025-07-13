@@ -32,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
@@ -89,7 +90,7 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     private ExamPagerFormatMessageTool examPagerFormatMessageTool;
 
     @Autowired
-    private ThreadPoolTaskExecutor customTaskExecutor;
+    private ThreadPoolTaskExecutor chatThreadPool;
 
     /**
      * 通过Id获取到场景
@@ -204,7 +205,7 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
                 log.error("处理失败", e);
                 return AjaxResult.error("处理失败: " + e.getMessage());
             }
-        } , customTaskExecutor).whenComplete((result, ex) -> {
+        } , chatThreadPool).whenComplete((result, ex) -> {
             if(ex != null) {
                 deferredResult.setErrorResult(AjaxResult.error("处理异常"));
             } else {
