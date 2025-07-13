@@ -37,14 +37,9 @@ spring:
     restart:
       enabled: true
 
-thread-pool-factory:
-  core-pool-size: 200
-  max-pool-size: 1000
-  queue-capacity: 00
-
 actable:
   table:
-    auto: update
+    auto: none # update
   model:
     pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.scene.core.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;com.alinesno.infra.smart.assistant.publish.entity;com.alinesno.infra.smart.assistant.workplace.entity;com.alinesno.infra.smart.scene.entity;
   database:
@@ -74,6 +69,16 @@ sa-token:
     secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
 
 alinesno:
+  thread-pool:
+    chat:
+      core-pool-size: 50
+      max-pool-size: 100
+      queue-capacity: 300
+      thread-name-prefix: "smart-chat-"
+      keep-alive-seconds: 1200
+      wait-for-tasks-on-shutdown: true
+      await-termination-seconds: 600
+      rejected-execution-type: "CALLER_RUNS"  # 可选: ABORT/DISCARD/DISCARD_OLDEST/CALLER_RUNS
   security:
     # 排除路径
     excludes:
@@ -92,6 +97,7 @@ alinesno:
       - /api/infra/smart/assistant/scene/**
       - /api/infra/smart/assistant/screenLongtext/**
       - /api/infra/smart/assistant/scene/pptGenerate/tools/**
+      - /chatThreadPoolStatus
   xss:
     # TODO 待处理XSS的问题
     enabled: false
