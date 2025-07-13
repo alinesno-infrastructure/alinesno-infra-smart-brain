@@ -64,20 +64,18 @@ public class BaseModelAdapter {
     }
 
     protected CompletableFuture<AiMessage> getAiChatResultAsync(Llm llm,
-                                                                IndustryRoleEntity role  ,
+                                                                IndustryRoleEntity role,
                                                                 String prompt,
                                                                 MessageTaskInfo taskInfo) {
 
         CompletableFuture<AiMessage> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
 
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
         final MessageTaskInfo localTaskInfo = taskInfo;
         long startTime = System.currentTimeMillis();
 
         try {
             llm.chatStream(prompt, (context, response) -> {
-
                 AiMessage message = response.getMessage();
 
                 System.out.println(">>>> " + message);
@@ -96,36 +94,26 @@ public class BaseModelAdapter {
                     stepDto.setFlowReasoningText(message.getReasoningContent());
                 }
 
-//                stepDto.setPrint(true);
-
-                synchronized (localTaskInfo) {
-                    localTaskInfo.setFlowStep(stepDto);
-                }
+                localTaskInfo.setFlowStep(stepDto);
 
                 try {
-                    boolean isEnd = false;
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            outputStr.set(message.getFullContent());
-                            stepDto.setStatus(AgentConstants.STEP_FINISH);
-                            isEnd = true;
-                        }
+                    boolean isEnd = message.getStatus() == MessageStatus.END;
+                    if (isEnd) {
+                        outputStr.set(message.getFullContent());
+                        stepDto.setStatus(AgentConstants.STEP_FINISH);
                     }
 
-                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId()) ;
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getTraceBusId());
 
-                    // TODO 是否在这里插入完成的消息？
                     if (isEnd) {
                         future.complete(message);
                     }
                 } catch (Exception e) {
-                    // 处理发布事件时的异常
                     log.error(e.getMessage());
                     future.completeExceptionally(e);
                 }
             });
         } catch (Exception e) {
-            // 处理 chatStream 方法的异常
             log.error(e.getMessage());
             future.completeExceptionally(e);
         }
@@ -134,54 +122,42 @@ public class BaseModelAdapter {
     }
 
     public CompletableFuture<AiMessage> getSingleAiChatResultAsync(Llm llm,
-                                                                IndustryRoleEntity role  ,
-                                                                String prompt,
-                                                                MessageTaskInfo taskInfo ,
-                                                                      long messageId) {
+                                                                   IndustryRoleEntity role,
+                                                                   String prompt,
+                                                                   MessageTaskInfo taskInfo,
+                                                                   long messageId) {
 
         CompletableFuture<AiMessage> future = new CompletableFuture<>();
-
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
         final MessageTaskInfo localTaskInfo = taskInfo;
 
         try {
             llm.chatStream(prompt, (context, response) -> {
-
                 AiMessage message = response.getMessage();
 
                 if(StringUtils.isNotBlank(message.getReasoningContent())){
                     taskInfo.setReasoningText(message.getReasoningContent());
-                }else{
+                } else {
                     taskInfo.setReasoningText(StringUtils.EMPTY);
                 }
 
                 try {
-                    boolean isEnd = false;
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            isEnd = true;
-                        }
-                    }
-
-                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent() , role, localTaskInfo, localTaskInfo.getTraceBusId() , messageId);
+                    boolean isEnd = message.getStatus() == MessageStatus.END;
+                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent(), role, localTaskInfo, localTaskInfo.getTraceBusId(), messageId);
 
                     if (isEnd) {
                         future.complete(message);
                     }
                 } catch (Exception e) {
-                    // 处理发布事件时的异常
                     log.error(e.getMessage());
                     future.completeExceptionally(e);
                 }
             });
         } catch (Exception e) {
-            // 处理 chatStream 方法的异常
             log.error(e.getMessage());
             future.completeExceptionally(e);
         }
 
         return future;
     }
-
 
 }
