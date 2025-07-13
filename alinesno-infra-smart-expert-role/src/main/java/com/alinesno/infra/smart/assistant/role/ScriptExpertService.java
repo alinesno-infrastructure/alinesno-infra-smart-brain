@@ -1,7 +1,10 @@
 package com.alinesno.infra.smart.assistant.role;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.prompt.HistoriesPrompt;
+import com.agentsflex.llm.deepseek.DeepseekLlm;
+import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -17,12 +20,12 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
 import java.util.List;
-import java.util.concurrent.*;
 
 /**
  * 脚本编辑方式
@@ -32,21 +35,17 @@ import java.util.concurrent.*;
 @Service(AssistantConstants.PREFIX_ASSISTANT_SCRIPT)
 public class ScriptExpertService extends ReActExpertService {
 
-	// 新增：Groovy脚本执行线程池 (静态共享)
-	private static final ExecutorService GROOVY_SCRIPT_EXECUTOR = new ThreadPoolExecutor(
-			4,  // 核心线程数
-			16, // 最大线程数
-			60, // 空闲线程存活时间
-			TimeUnit.SECONDS,
-			new LinkedBlockingQueue<>(100), // 任务队列容量
-			new ThreadPoolExecutor.CallerRunsPolicy() // 饱和策略
-	);
-
 	@Autowired
 	private ModelAdapterLLM modelAdapterLLM ;
 
 	@Autowired
 	private ReActServiceTool reActServiceTool  ;
+
+	@Autowired
+	private ThreadPoolTaskExecutor chatThreadPool;
+
+	@Value("${alinesno.infra.smart.brain.qianwen.key:}")
+	private String apiKey;
 
 	@Override
 	protected String handleRole(IndustryRoleEntity role,
@@ -165,11 +164,26 @@ public class ScriptExpertService extends ReActExpertService {
 									   String scriptText ,
 									   String datasetKnowledgeDocument) {
 
-		// 清空流程步骤信息
-		taskInfo.setFlowStep(null);
-
-		modelAdapterLLM.setRole(role);
-		modelAdapterLLM.setTaskInfo(taskInfo);
+//		// 清空流程步骤信息
+//		taskInfo.setFlowStep(null);
+//
+//		modelAdapterLLM.setRole(role);
+//		modelAdapterLLM.setTaskInfo(taskInfo);
+//
+//		DeepseekLlmConfig config = new DeepseekLlmConfig();
+//
+//		config.setEndpoint("https://dashscope.aliyuncs.com/compatible-mode/v1") ;
+//		config.setApiKey(apiKey) ;
+//		config.setModel("qwen3-8b");
+//
+//		Llm llm = new DeepseekLlm(config);
+//
+//		String prompt = clearMessage(datasetKnowledgeDocument + taskInfo.getText()) ;
+//		String output = modelAdapterLLM.processStreamSingle(llm , role , prompt , taskInfo) ;
+//
+//		taskInfo.setFullContent(output) ;
+//
+//		return "操作成功"  ;
 
 		// TODO 待处理Groovy脚本安全的问题
 		ToolsUtil tools = new ToolsUtil() ;
@@ -196,29 +210,9 @@ public class ScriptExpertService extends ReActExpertService {
 		binding.setVariable("contextMap", ContextManager.getInstance());
 		binding.setVariable("log", log); // 日志输出
 
-		// 创建可中断的Groovy执行任务
-		Callable<String> groovyTask = () -> {
-			GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), binding);
-			try {
-				return String.valueOf(shell.evaluate(scriptText));
-			} catch (Exception e) {
-				log.error("Groovy脚本执行异常", e);
-				return "角色脚本执行失败:" + e.getMessage();
-			}
-		};
+		GroovyShell shell = new GroovyShell(binding);
+		return String.valueOf(shell.evaluate(scriptText));
 
-		// 提交任务并设置超时
-		Future<String> future = GROOVY_SCRIPT_EXECUTOR.submit(groovyTask);
-		try {
-			return future.get(10, TimeUnit.MINUTES); // 设置10分钟超时
-		} catch (TimeoutException e) {
-			future.cancel(true); // 中断执行
-			log.warn("Groovy脚本执行超时: role={}", role.getId());
-			return "角色脚本执行超时，已中断";
-		} catch (Exception e) {
-			log.error("任务提交异常", e);
-			return "脚本执行系统异常: " + e.getMessage();
-		}
 	}
 
 }
