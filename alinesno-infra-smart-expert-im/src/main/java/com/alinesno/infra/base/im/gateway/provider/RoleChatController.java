@@ -22,7 +22,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -32,6 +34,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 使用于多个网站针对于专家单独咨询的接口
@@ -53,6 +56,9 @@ public class RoleChatController extends SuperController {
 
     @Autowired
     private CloudStorageConsumer storageConsumer ;
+
+    @Autowired
+    private ThreadPoolTaskExecutor chatThreadPool;
 
     /**
      * 获取角色信息
@@ -96,38 +102,90 @@ public class RoleChatController extends SuperController {
      * @param roleId
      * @return
      */
+//    @SneakyThrows
+//    @PostMapping("/chatRole")
+//    public AjaxResult chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
+//
+//        IndustryRoleEntity role = industryRoleService.getById(roleId);
+//
+//        long currentAccountId = CurrentAccountJwt.getUserId();
+//
+//        List<IndustryRoleEntity> roleList = new ArrayList<>();
+//        roleList.add(role);
+//
+//        List<ChatMessageDto> personDto = new ArrayList<>();
+//        roleList.forEach(r -> {
+//            ChatMessageDto msg = AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId());
+//            msg.setAccountId(currentAccountId);
+//            personDto.add(msg);
+//        });
+//
+//        chatMessage.setUsers(Collections.singletonList(roleId));
+//        chatMessage.setAccountId(currentAccountId);
+//        chatMessage.setAccountOrgId(CurrentAccountJwt.get().getOrgId());
+//        messageService.sendUserMessage(chatMessage, roleList, personDto);
+//
+//        ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
+//
+//        msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
+//        msgDto.setName(CurrentAccountJwt.get().getName());
+//        msgDto.setRoleType("person");
+//        msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
+//        msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
+//
+//        return AjaxResult.success(msgDto);
+//    }
+
     @SneakyThrows
     @PostMapping("/chatRole")
-    public AjaxResult chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
+    public DeferredResult<AjaxResult> chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>();
 
-        IndustryRoleEntity role = industryRoleService.getById(roleId);
-
+        // 在主线程（Web上下文存在时）先获取所有需要的信息
         long currentAccountId = CurrentAccountJwt.getUserId();
+        long accountOrgId = CurrentAccountJwt.get().getOrgId();
+        String name = CurrentAccountJwt.get().getName();
+        String avatarPath = CurrentAccountJwt.get().getAvatarPath();
 
-        List<IndustryRoleEntity> roleList = new ArrayList<>();
-        roleList.add(role);
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                IndustryRoleEntity role = industryRoleService.getById(roleId);
+                List<IndustryRoleEntity> roleList = new ArrayList<>();
+                roleList.add(role);
 
-        List<ChatMessageDto> personDto = new ArrayList<>();
-        roleList.forEach(r -> {
-            ChatMessageDto msg = AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId());
-            msg.setAccountId(currentAccountId);
-            personDto.add(msg);
+                List<ChatMessageDto> personDto = new ArrayList<>();
+                roleList.forEach(r -> {
+                    ChatMessageDto msg = AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId());
+                    msg.setAccountId(currentAccountId); // 使用预先获取的ID
+                    personDto.add(msg);
+                });
+
+                chatMessage.setUsers(Collections.singletonList(roleId));
+                chatMessage.setAccountId(currentAccountId);
+                chatMessage.setAccountOrgId(accountOrgId); // 使用预先获取的orgId
+                messageService.sendUserMessage(chatMessage, roleList, personDto);
+
+                ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
+                msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
+                msgDto.setName(name); // 使用预先获取的名称
+                msgDto.setRoleType("person");
+                msgDto.setIcon(avatarPath); // 使用预先获取的头像路径
+                msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
+
+                return AjaxResult.success(msgDto);
+            } catch (Exception e) {
+                log.error("角色对话处理失败", e);
+                return AjaxResult.error("角色对话处理失败: " + e.getMessage());
+            }
+        }, chatThreadPool).whenComplete((result, ex) -> {
+            if (ex != null) {
+                deferredResult.setErrorResult(AjaxResult.error("处理请求时发生异常"));
+            } else {
+                deferredResult.setResult(result);
+            }
         });
 
-        chatMessage.setUsers(Collections.singletonList(roleId));
-        chatMessage.setAccountId(currentAccountId);
-        chatMessage.setAccountOrgId(CurrentAccountJwt.get().getOrgId());
-        messageService.sendUserMessage(chatMessage, roleList, personDto);
-
-        ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
-
-        msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
-        msgDto.setName(CurrentAccountJwt.get().getName());
-        msgDto.setRoleType("person");
-        msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
-        msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
-
-        return AjaxResult.success(msgDto);
+        return deferredResult;
     }
 
     // 处理文件上传的方法
