@@ -23,6 +23,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.lang.exception.RpcServiceRuntimeException;
@@ -42,7 +44,10 @@ public class LongTextTaskExecutionService {
     // 存储章节任务及其Future的映射
     private final ConcurrentMap<Long, Future<?>> chapterTaskFutures = new ConcurrentHashMap<>();
 
-    private final ExecutorService executor = Executors.newCachedThreadPool();
+//    private final ExecutorService executor = Executors.newCachedThreadPool();
+
+    @Autowired
+    private ThreadPoolTaskExecutor executor;
 
     // 存储任务进度
     private final ConcurrentHashMap<Long, Integer> taskProgress = new ConcurrentHashMap<>();
@@ -79,17 +84,31 @@ public class LongTextTaskExecutionService {
      * @param query  权限查询
      */
     public void executeTaskAsync(Long taskId, Long channelStreamId, PermissionQuery query) {
-        // 提交任务并存储Future
-        Future<?> future = executor.submit(() -> {
+//        // 提交任务并存储Future
+//        Future<?> future = executor.submit(() -> {
+//            try {
+//                internalExecuteTask(taskId, channelStreamId, query);
+//            } catch (InterruptedException e) {
+//                log.warn("任务被中断: taskId={}", taskId);
+//                Thread.currentThread().interrupt(); // 恢复中断状态
+//            }
+//        });
+//
+//        taskFutures.put(taskId, future);
+
+        CompletableFuture.runAsync(() -> {
             try {
                 internalExecuteTask(taskId, channelStreamId, query);
             } catch (InterruptedException e) {
                 log.warn("任务被中断: taskId={}", taskId);
-                Thread.currentThread().interrupt(); // 恢复中断状态
+                Thread.currentThread().interrupt();
             }
+        }, executor)
+        .exceptionally(ex -> {
+            log.error("任务执行失败: taskId={}", taskId, ex);
+            return null;
         });
 
-        taskFutures.put(taskId, future);
     }
 
     /**
