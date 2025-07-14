@@ -216,57 +216,6 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
         return deferredResult;
     }
 
-//    /**
-//     * 聊天提示内容
-//     * @param dto
-//     * @param query
-//     * @return
-//     */
-//    @DataPermissionQuery
-//    @PostMapping("/chatPromptContent")
-//    public AjaxResult chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto , PermissionQuery query) {
-//
-//        log.debug("dto = {}" , dto);
-//
-//        ExamStructureItem examStructure = dto.getExamStructureItem() ;
-//        ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-//        Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
-//
-//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
-//
-//        // 引用附件不为空，则引入和解析附件
-//        if(!CollectionUtils.isEmpty(dto.getAttachments())){
-//            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-//            taskInfo.setAttachments(attachmentList);
-//        }
-//
-//        String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
-//                dto.getDifficultyLevel() ,
-//                examStructure) ;
-//
-//        taskInfo.setRoleId(questionGeneratorEngineer);
-//        taskInfo.setChannelStreamId(dto.getChannelStreamId());
-//        taskInfo.setChannelId(dto.getSceneId());
-//        taskInfo.setSceneId(dto.getSceneId());
-//        taskInfo.setText(promptText);
-//
-//        // 优先获取到结果内容
-//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("genContent = {}", genContent.getGenContent());
-//
-//        // 获取到格式化的内容
-//        examPagerFormatMessageTool.handleChapterMessage(genContent , taskInfo);
-//
-//        // 解析得到代码内容
-//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-//            return AjaxResult.success("操作成功" , dataObject) ;
-//        }
-//
-//        return AjaxResult.success("操作成功") ;
-//    }
-
     /**
      * 获取所有题型信息的Map列表
      */
