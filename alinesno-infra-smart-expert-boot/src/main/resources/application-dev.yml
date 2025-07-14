@@ -98,6 +98,7 @@ alinesno:
       - /api/infra/smart/assistant/screenLongtext/**
       - /api/infra/smart/assistant/scene/pptGenerate/tools/**
       - /chatThreadPoolStatus
+      - /undertowServerStatusJmx
   xss:
     # TODO 待处理XSS的问题
     enabled: false
