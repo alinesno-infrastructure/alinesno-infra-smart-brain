@@ -106,8 +106,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     protected QianWenLLM qianWenLLM;
 
-    @Autowired
-    protected AgentFlexLLM agentFlexLLM ;
+//    @Autowired
+//    protected AgentFlexLLM agentFlexLLM ;
 
     @Autowired
     protected QianWenAuditLLM qianWenAuditLLM;
