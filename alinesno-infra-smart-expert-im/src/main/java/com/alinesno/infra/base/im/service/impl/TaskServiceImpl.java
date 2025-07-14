@@ -60,19 +60,20 @@ public class TaskServiceImpl implements ITaskService {
 
     @Override
     public void addTask(MessageTaskInfo info) {
-        synchronized (taskQueue) {
-            if (taskQueue.size() < MAX_QUEUE_SIZE) { // 假设最大队列大小为100
-                taskQueue.add(info);
-                executor.execute(this::processTask);
-            } else {
-                log.warn("任务列表已满，不能再添加新任务.");
-            }
-        }
+        processTask(info) ;
+//        synchronized (taskQueue) {
+//            if (taskQueue.size() < MAX_QUEUE_SIZE) { // 假设最大队列大小为100
+//                taskQueue.add(info);
+//                executor.execute(this::processTask);
+//            } else {
+//                log.warn("任务列表已满，不能再添加新任务.");
+//            }
+//        }
     }
 
     @Async
-    private void processTask() {
-         MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
+    private void processTask(MessageTaskInfo taskInfo) {
+//         MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
 
         if (taskInfo != null) {
             try {
