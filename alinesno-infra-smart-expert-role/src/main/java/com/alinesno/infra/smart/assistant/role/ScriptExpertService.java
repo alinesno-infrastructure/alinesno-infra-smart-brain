@@ -197,7 +197,7 @@ public class ScriptExpertService extends ReActExpertService {
 
 		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
 		binding.setVariable("modelAdapterLLM", modelAdapterLLM); // 文本和图片生成
-		binding.setVariable("agentFlexLLM", agentFlexLLM); // 多模型适配生成
+//		binding.setVariable("agentFlexLLM", agentFlexLLM); // 多模型适配生成
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
 		binding.setVariable("expertService", this);  // 操作服务
