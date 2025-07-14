@@ -1,14 +1,28 @@
 package com.alinesno.infra.smart.assistant.monitor;
 
+import io.undertow.Undertow;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.embedded.undertow.UndertowServletWebServer;
+import org.springframework.boot.web.embedded.undertow.UndertowWebServer;
+import org.springframework.boot.web.server.WebServer;
+import org.springframework.boot.web.servlet.context.ServletWebServerApplicationContext;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.xnio.Options;
+import org.xnio.XnioWorker;
 
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +34,7 @@ import java.util.concurrent.ThreadPoolExecutor;
  * 控制台表格化线程监控控制器
  * 返回适合CMD显示的表格格式数据
  */
+@Slf4j
 @RestController
 public class ChatMonitorController {
 
@@ -32,11 +47,15 @@ public class ChatMonitorController {
     @Autowired
     private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Autowired
+    private ServletWebServerApplicationContext serverContext;
+
     /**
      * 获取线程池状态信息
      */
     @GetMapping("/chatThreadPoolStatus")
     public String getThreadPoolStatus() {
+
         ThreadPoolExecutor executor = chatThreadPool.getThreadPoolExecutor();
 
         return "+--------------------------------+------------+\n" +
