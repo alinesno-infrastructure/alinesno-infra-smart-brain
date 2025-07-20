@@ -35,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -221,8 +222,8 @@ public class PrototypeSceneController extends BaseController<PrototypeSceneEntit
         taskInfo.setText(promptText);
 
         // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent.getGenContent());
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
+//        log.debug("genContent = {}", genContent.getGenContent());
 
         return AjaxResult.success("操作成功" , taskInfo.getFullContent()) ;
     }
