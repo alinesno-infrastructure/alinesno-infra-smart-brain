@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.scene.dto.RoleTaskDto;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 工作任务服务接口，提供任务执行、代理运行和服务器发送事件的方法。
@@ -26,7 +27,7 @@ public interface IWorkerTaskService {
      * @param preTaskList 需要在运行代理之前完成的任务列表。
      * @return 返回工作流的执行详情。
      */
-    WorkflowExecutionDto runAgent(RoleTaskDto task, List<RoleTaskDto> preTaskList);
+    CompletableFuture<WorkflowExecutionDto> runAgent(RoleTaskDto task, List<RoleTaskDto> preTaskList);
 
     /**
      * 发送特定任务的服务器发送事件（SSE）消息。
