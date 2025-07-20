@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 文档审核场景控制
@@ -462,24 +463,24 @@ public class DocumentReviewController extends SuperController {
 
         taskInfo.setText(prompt);
 
-        WorkflowExecutionDto genContent  = industryRoleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = industryRoleService.runRoleAgent(taskInfo) ;
 
-        genContent.setGenContent(taskInfo.getFullContent());
-        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-
-        // 解析得到代码内容
-        try{
-            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-
-                String codeContent = genContent.getCodeContent().get(0).getContent() ;
-                List<DocReviewAuditResultEntity> dataObject = JSONArray.parseArray(codeContent , DocReviewAuditResultEntity.class) ;
-
-                log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
-                auditResultList.addAll(dataObject);
-            }
-        }catch (Exception e){
-            log.warn("解析代码块出错:{}", e.getMessage());
-        }
+//        genContent.setGenContent(taskInfo.getFullContent());
+//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+//
+//        // 解析得到代码内容
+//        try{
+//            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//
+//                String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//                List<DocReviewAuditResultEntity> dataObject = JSONArray.parseArray(codeContent , DocReviewAuditResultEntity.class) ;
+//
+//                log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
+//                auditResultList.addAll(dataObject);
+//            }
+//        }catch (Exception e){
+//            log.warn("解析代码块出错:{}", e.getMessage());
+//        }
     }
 
 }
