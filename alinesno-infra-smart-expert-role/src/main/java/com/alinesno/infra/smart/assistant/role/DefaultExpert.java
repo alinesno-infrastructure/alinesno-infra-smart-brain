@@ -12,6 +12,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 默认专家，如果没有其它任何专家的情况下，会默认使用这个
@@ -22,9 +23,9 @@ import java.util.List;
 public class DefaultExpert extends ExpertService {
 
     @Override
-    public String handleRole(IndustryRoleEntity role,
-                             MessageEntity workflowExecutionEntity,
-                             MessageTaskInfo taskInfo) {
+    public CompletableFuture<String> handleRole(IndustryRoleEntity role,
+                                                MessageEntity workflowExecutionEntity,
+                                                MessageTaskInfo taskInfo) {
 
         String message = clearMessage(taskInfo.getText()) ;
         String promptContent = role.getPromptContent() ;
@@ -37,11 +38,12 @@ public class DefaultExpert extends ExpertService {
 
         log.debug("result:{}", gentContent);
 
-        return gentContent ;
+        return null ; //  gentContent ;
     }
 
     /**
      * 生成调用方法函数
+     *
      * @param role
      * @param workflowExecutionEntity
      * @param codeContentList
@@ -49,14 +51,14 @@ public class DefaultExpert extends ExpertService {
      * @return
      */
     @Override
-    protected String handleFunctionCall(IndustryRoleEntity role,
-                                        MessageEntity workflowExecutionEntity,
-                                        List<CodeContent> codeContentList,
-                                        MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleFunctionCall(IndustryRoleEntity role,
+                                                           MessageEntity workflowExecutionEntity,
+                                                           List<CodeContent> codeContentList,
+                                                           MessageTaskInfo taskInfo) {
 
         log.debug("handleFunctionCall:{}", taskInfo);
 
-        return "任务处理完成.";
+        return null ; // "任务处理完成.";
     }
 
 }
