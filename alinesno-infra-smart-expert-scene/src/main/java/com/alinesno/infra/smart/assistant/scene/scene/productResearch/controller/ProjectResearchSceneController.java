@@ -51,6 +51,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 项目跟进场景管理
@@ -222,28 +223,28 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
         taskInfo.setCollectionIndexLabel(groupEntity.getGroupName());
 
         // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent.getGenContent());
-
-        genContent.setGenContent(taskInfo.getFullContent());
-        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-
-            // 验证是否可以正常解析json
-            try{
-                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-            }catch (Exception e){
-                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
-            }
-
-            return AjaxResult.success("操作成功" , dataObject) ;
-        }
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
+//        log.debug("genContent = {}", genContent.getGenContent());
+//
+//        genContent.setGenContent(taskInfo.getFullContent());
+//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+//
+//        // 解析得到代码内容
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+//
+//            // 验证是否可以正常解析json
+//            try{
+//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+//                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
+//            }catch (Exception e){
+//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
+//            }
+//
+//            return AjaxResult.success("操作成功" , dataObject) ;
+//        }
 
         return AjaxResult.success("操作成功") ;
     }
