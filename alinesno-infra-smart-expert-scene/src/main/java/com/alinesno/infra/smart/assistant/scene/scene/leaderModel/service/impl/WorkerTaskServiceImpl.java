@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 监听工作线程任务的组件
@@ -52,22 +53,22 @@ public class WorkerTaskServiceImpl implements IWorkerTaskService {
         task.setQuestion("");
         task.setThought("");
 
-        WorkflowExecutionDto dto = runAgent(task , preTaskList);
-        sendSSE(task , dto.getGenContent()); // 生成完整任务给前端
+//        CompletableFuture<WorkflowExecutionDto> dto = runAgent(task , preTaskList);
+//        sendSSE(task , dto.getGenContent()); // 生成完整任务给前端
+//
+//        log.debug("--->>>> dto = {}", JSONUtil.toJsonPrettyStr(dto));
+//
+//        MessageEntity message = messageService.selectByTraceBusId(dto.getTraceBusId()) ;
+//        log.debug("--->>>> message = {}", JSONUtil.toJsonPrettyStr(message));
 
-        log.debug("--->>>> dto = {}", JSONUtil.toJsonPrettyStr(dto));
-
-        MessageEntity message = messageService.selectByTraceBusId(dto.getTraceBusId()) ;
-        log.debug("--->>>> message = {}", JSONUtil.toJsonPrettyStr(message));
-
-        task.setOutputMessage(message);
+//        task.setOutputMessage(message);
 
         roleExecuteService.finishTask(task.getId());
     }
 
 
     @Override
-    public WorkflowExecutionDto runAgent(RoleTaskDto task, List<RoleTaskDto> preTaskList) {
+    public CompletableFuture<WorkflowExecutionDto> runAgent(RoleTaskDto task, List<RoleTaskDto> preTaskList) {
 
         MessageTaskInfo taskInfo = new MessageTaskInfo();
 
