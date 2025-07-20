@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -160,48 +161,50 @@ public class LeaderModelController extends BaseController<RoleExecuteEntity, IRo
         params.put("label1", JSONArray.toJSONString(paramsList));
         taskInfo.setParams(params);
 
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
-        MessageEntity messageCallback = messageService.selectByTraceBusId(genContent.getTraceBusId()) ;
-
-        genContent.setGenContent(messageCallback.getContent());
-        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(genContent.getGenContent());
-        genContent.setCodeContent(codeContentList);
-
-        log.debug("messageCallback = {}" , messageCallback);
-        message.setChatText(genContent.getGenContent());
-        sseService.send(String.valueOf(sceneId), message);
-
-        // 解析得到代码内容
-        List<RoleTaskDto> tasks = new ArrayList<>();
-
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            // 验证是否可以正常解析json
-            try{
-                tasks = JSON.parseArray(codeContent, RoleTaskDto.class);
-                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(tasks));
-
-                for(RoleTaskDto task : tasks){  // 设置任务目标
-                    task.setTaskGoal(genContent.getGenContent());
-                    task.setLeaderRoleId(leaderRole.getId());
-                    task.setSceneId(sceneId);
-                }
-
-                // 更新保存到数据库中
-                service.saveNewTasks(sceneId , tasks);
-            }catch (Exception e){
-                log.error("出现异常",e);
-                message.setChatText("生成人员安排格式不正确，请点击重新生成，异常:" + e.getMessage());
-                sseService.send(String.valueOf(sceneId), message);
-                throw new RpcServiceRuntimeException("生成人员安排格式不正确，请点击重新生成.") ;
-            }
-        }
+//        MessageEntity messageCallback = messageService.selectByTraceBusId(genContent.getTraceBusId()) ;
+//
+//        genContent.setGenContent(messageCallback.getContent());
+//        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(genContent.getGenContent());
+//        genContent.setCodeContent(codeContentList);
+//
+//        log.debug("messageCallback = {}" , messageCallback);
+//        message.setChatText(genContent.getGenContent());
+//        sseService.send(String.valueOf(sceneId), message);
+//
+//        // 解析得到代码内容
+//        List<RoleTaskDto> tasks = new ArrayList<>();
+//
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            // 验证是否可以正常解析json
+//            try{
+//                tasks = JSON.parseArray(codeContent, RoleTaskDto.class);
+//                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(tasks));
+//
+//                for(RoleTaskDto task : tasks){  // 设置任务目标
+//                    task.setTaskGoal(genContent.getGenContent());
+//                    task.setLeaderRoleId(leaderRole.getId());
+//                    task.setSceneId(sceneId);
+//                }
+//
+//                // 更新保存到数据库中
+//                service.saveNewTasks(sceneId , tasks);
+//            }catch (Exception e){
+//                log.error("出现异常",e);
+//                message.setChatText("生成人员安排格式不正确，请点击重新生成，异常:" + e.getMessage());
+//                sseService.send(String.valueOf(sceneId), message);
+//                throw new RpcServiceRuntimeException("生成人员安排格式不正确，请点击重新生成.") ;
+//            }
+//        }
 
         // 优化处理流程
         // executeTask(tasks, message, sceneEntity, sceneId, leaderRole , genContent.getGenContent());
 
-        return AjaxResult.success("操作成功." , tasks);
+//        return AjaxResult.success("操作成功." , tasks);
+
+        return AjaxResult.success("操作成功.") ;
     }
 
     /**
