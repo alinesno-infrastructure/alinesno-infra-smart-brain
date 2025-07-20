@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 // 创建 Expert 接口
 public interface IBaseExpertService {
@@ -19,7 +20,7 @@ public interface IBaseExpertService {
      * @param taskInfo                消息任务信息
      * @return
      */
-    WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, MessageEntity message, MessageTaskInfo taskInfo);
+    CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity message, MessageTaskInfo taskInfo);
 
     /**
      * 获取到PromptMessage信息列表
