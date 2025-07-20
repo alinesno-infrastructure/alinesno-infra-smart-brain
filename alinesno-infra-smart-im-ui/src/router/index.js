@@ -234,6 +234,12 @@ const screenRoutes = [
     name: '/scene/contentFormatter/contentParser',
     meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
   },
+  {
+    path: '/scene/contentFormatter/documentManager',
+    component: () => import('@/views/base/scene/contentFormatter/documentManager'),
+    name: '/scene/contentFormatter/documentManager',
+    meta: { title: '排版管理', icon: 'fa-solid fa-file-word', affix: true }
+  },
   // -->>>>>>>>>>> 内容排版_end>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 短视频生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
