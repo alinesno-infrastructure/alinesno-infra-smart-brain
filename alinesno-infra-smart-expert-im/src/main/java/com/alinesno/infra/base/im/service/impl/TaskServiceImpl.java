@@ -18,6 +18,7 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -37,56 +38,33 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     private ISSEService sseService;
 
-    private static final int MAX_QUEUE_SIZE = 100;
-
-    private final static Queue<MessageTaskInfo> errorTaskQueue = new LinkedList<>();
-    private final static Queue<MessageTaskInfo> taskQueue = new LinkedList<>();
-    private static ThreadPoolTaskExecutor executor;
-
-    public TaskServiceImpl() {
-        // 初始化线程池
-        executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(10); // 核心线程数
-        executor.setMaxPoolSize(50); // 最大线程数
-        executor.setQueueCapacity(MAX_QUEUE_SIZE); // 队列容量
-        executor.setRejectedExecutionHandler(new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-                log.error("Task queue is full, cannot add more tasks.");
-            }
-        });
-        executor.initialize();
-    }
+    @Autowired
+    private ThreadPoolTaskExecutor chatThreadPool;
 
     @Override
     public void addTask(MessageTaskInfo info) {
-        processTask(info) ;
-//        synchronized (taskQueue) {
-//            if (taskQueue.size() < MAX_QUEUE_SIZE) { // 假设最大队列大小为100
-//                taskQueue.add(info);
-//                executor.execute(this::processTask);
-//            } else {
-//                log.warn("任务列表已满，不能再添加新任务.");
-//            }
-//        }
+        // 使用线程池异步执行任务
+        chatThreadPool.execute(() -> processTask(info));
     }
 
-    @Async
     private void processTask(MessageTaskInfo taskInfo) {
-//         MessageTaskInfo taskInfo = taskQueue.poll(); // 获取并移除队首的任务
 
         if (taskInfo != null) {
             try {
                 log.info("任务处理中: {}", taskInfo);
 
-                WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-
+                CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
                 // 处理消息结果
-                handleWorkflowMessage(taskInfo, genContent);
+                genContent.whenComplete((result, ex) -> {
+                    try {
+                        handleWorkflowMessage(taskInfo, result) ;
+                    } catch (Exception e) {
+                        log.error("Failed to handle workflow message", e);
+                    }
+                });
 
             } catch (Exception e) {
                 log.error("发送消息通知前端失败:", e);
-                errorTaskQueue.add(taskInfo);
             } finally {
                 // 在finally块中保证线程结束
                 log.debug("任务处理完成.");
@@ -163,17 +141,17 @@ public class TaskServiceImpl implements ITaskService {
         // 创建一个列表来存储符合条件的任务信息
         List<MessageTaskInfo> filteredTasks = new ArrayList<>();
 
-        // 使用迭代器遍历队列中的每个任务
-        Iterator<MessageTaskInfo> iterator = errorTaskQueue.iterator();
-        while (iterator.hasNext()) {
-            MessageTaskInfo task = iterator.next();
-            // 如果任务的 channelId 与给定的相匹配，则添加到列表中
-            if (String.valueOf(task.getChannelId()).equals(channelId)) {
-                filteredTasks.add(task);
-                // 移除匹配的任务
-                iterator.remove();
-            }
-        }
+//        // 使用迭代器遍历队列中的每个任务
+//        Iterator<MessageTaskInfo> iterator = errorTaskQueue.iterator();
+//        while (iterator.hasNext()) {
+//            MessageTaskInfo task = iterator.next();
+//            // 如果任务的 channelId 与给定的相匹配，则添加到列表中
+//            if (String.valueOf(task.getChannelId()).equals(channelId)) {
+//                filteredTasks.add(task);
+//                // 移除匹配的任务
+//                iterator.remove();
+//            }
+//        }
 
         return filteredTasks; // 返回匹配的任务列表
     }
