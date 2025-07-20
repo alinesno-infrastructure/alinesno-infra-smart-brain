@@ -28,6 +28,7 @@ import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import org.springframework.util.StringUtils;
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 应用构建Service业务层处理
@@ -62,6 +64,9 @@ public class IndustryRoleDraftServiceImpl extends IBaseServiceImpl<IndustryRoleD
 
     @Autowired
     private IToolService toolService ;
+
+    @Autowired
+    private ThreadPoolTaskExecutor chatThreadPool;
 
     private static final Gson gson = new Gson();
 
@@ -114,36 +119,43 @@ public class IndustryRoleDraftServiceImpl extends IBaseServiceImpl<IndustryRoleD
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
-    public WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo) {
-
+    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(MessageTaskInfo taskInfo) {
         long roleId = taskInfo.getRoleId();
         IndustryRoleDraftEntity role = getById(roleId);
         Assert.notNull(role, "角色不存在");
 
-        // 更新角色会话次数
-        role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
-        update(role) ;
+        // 同步更新角色会话次数
+        role.setChatCount(role.getChatCount() == null ? 0L : role.getChatCount() + 1);
+        update(role);
 
         taskInfo.setRoleDto(role);
 
         // 获取到节点的执行内容信息
-        MessageEntity message = null;
-
         String preBusinessId = taskInfo.getPreBusinessId();  // 获取到前一个节点的业务ID
-        log.info("preBusinessId:{}", preBusinessId);
 
-        if (StringUtils.hasLength(preBusinessId)) {
-            IMessageService messageService = SpringUtils.getBean(IMessageService.class);
-            message = messageService.getById(preBusinessId);
-        }
-
-        log.debug("role.getChainId() = {}", role.getChainId());
-        IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
-
-        WorkflowExecutionDto dto = expertService.runRoleAgent(role, message, taskInfo);
-        workflowExecutionService.saveRecord(dto);
-
-        return dto ;
+        // 构建异步执行链
+        return CompletableFuture.supplyAsync(() -> {
+                    MessageEntity message = null;
+                    if (StringUtils.hasLength(preBusinessId)) {
+                        IMessageService messageService = SpringUtils.getBean(IMessageService.class);
+                        message = messageService.getById(preBusinessId);
+                    }
+                    return message;
+                }, chatThreadPool) // 使用专用线程池
+                .thenCompose(message -> {
+                    IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
+                    // 假设expertService.runRoleAgent已改为异步方法
+                    return expertService.runRoleAgent(role, message, taskInfo);
+                })
+                .thenApply(dto -> {
+                    workflowExecutionService.saveRecord(dto);
+                    return dto;
+                })
+                .exceptionally(ex -> {
+                    log.error("执行角色代理失败", ex);
+                    // 可以在这里处理异常情况，返回默认值或抛出特定异常
+                    throw new RuntimeException("执行角色代理失败", ex);
+                });
     }
 
     @Override
@@ -217,7 +229,7 @@ public class IndustryRoleDraftServiceImpl extends IBaseServiceImpl<IndustryRoleD
     }
 
     @Override
-    public WorkflowExecutionDto validateRoleScript(RoleScriptDto dto) {
+    public CompletableFuture<WorkflowExecutionDto> validateRoleScript(RoleScriptDto dto) {
         log.debug("validateRoleScript:{}" , dto);
 
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
@@ -320,7 +332,7 @@ public class IndustryRoleDraftServiceImpl extends IBaseServiceImpl<IndustryRoleD
     }
 
     @Override
-    public WorkflowExecutionDto validateReActRole(ReActRoleScriptDto dto) {
+    public CompletableFuture<WorkflowExecutionDto> validateReActRole(ReActRoleScriptDto dto) {
 
         log.debug("validateReActRole:{}" , dto);
 
