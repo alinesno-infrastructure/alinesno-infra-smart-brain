@@ -10,6 +10,7 @@ import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 应用构建Service接口
@@ -51,7 +52,7 @@ public interface IIndustryRoleDraftService extends IBaseService<IndustryRoleDraf
      * @param taskInfo
      * @return
      */
-    WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo);
+    CompletableFuture<WorkflowExecutionDto> runRoleAgent(MessageTaskInfo taskInfo);
 
     /**
      * 批量生成角色
@@ -72,7 +73,7 @@ public interface IIndustryRoleDraftService extends IBaseService<IndustryRoleDraf
      * @param dto 角色脚本数据传输对象，包含需要验证的角色脚本信息
      * @return
      */
-    WorkflowExecutionDto validateRoleScript(RoleScriptDto dto);
+    CompletableFuture<WorkflowExecutionDto> validateRoleScript(RoleScriptDto dto);
 
     /**
      * 创建角色
@@ -106,7 +107,7 @@ public interface IIndustryRoleDraftService extends IBaseService<IndustryRoleDraf
      * @param dto
      * @return
      */
-    WorkflowExecutionDto validateReActRole(ReActRoleScriptDto dto);
+    CompletableFuture<WorkflowExecutionDto> validateReActRole(ReActRoleScriptDto dto);
 
     /**
      * 启用角色和员工
