@@ -95,47 +95,6 @@ public class RoleChatController extends SuperController {
         return result;
     }
 
-    /**
-     * 角色对话
-     *
-     * @param chatMessage
-     * @param roleId
-     * @return
-     */
-//    @SneakyThrows
-//    @PostMapping("/chatRole")
-//    public AjaxResult chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
-//
-//        IndustryRoleEntity role = industryRoleService.getById(roleId);
-//
-//        long currentAccountId = CurrentAccountJwt.getUserId();
-//
-//        List<IndustryRoleEntity> roleList = new ArrayList<>();
-//        roleList.add(role);
-//
-//        List<ChatMessageDto> personDto = new ArrayList<>();
-//        roleList.forEach(r -> {
-//            ChatMessageDto msg = AgentUtils.getChatMessageDto(r, IdUtil.getSnowflakeNextId());
-//            msg.setAccountId(currentAccountId);
-//            personDto.add(msg);
-//        });
-//
-//        chatMessage.setUsers(Collections.singletonList(roleId));
-//        chatMessage.setAccountId(currentAccountId);
-//        chatMessage.setAccountOrgId(CurrentAccountJwt.get().getOrgId());
-//        messageService.sendUserMessage(chatMessage, roleList, personDto);
-//
-//        ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
-//
-//        msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
-//        msgDto.setName(CurrentAccountJwt.get().getName());
-//        msgDto.setRoleType("person");
-//        msgDto.setIcon(CurrentAccountJwt.get().getAvatarPath()) ;
-//        msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
-//
-//        return AjaxResult.success(msgDto);
-//    }
-
     @SneakyThrows
     @PostMapping("/chatRole")
     public DeferredResult<AjaxResult> chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
@@ -160,10 +119,6 @@ public class RoleChatController extends SuperController {
                     personDto.add(msg);
                 });
 
-                chatMessage.setUsers(Collections.singletonList(roleId));
-                chatMessage.setAccountId(currentAccountId);
-                chatMessage.setAccountOrgId(accountOrgId); // 使用预先获取的orgId
-                messageService.sendUserMessage(chatMessage, roleList, personDto);
 
                 ChatMessageDto msgDto = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
                 msgDto.setChatText(MessageFormatter.getMessage(chatMessage.getMessage()));
@@ -172,11 +127,20 @@ public class RoleChatController extends SuperController {
                 msgDto.setIcon(avatarPath); // 使用预先获取的头像路径
                 msgDto.setFileAttributeList(storageConsumer.list(chatMessage.getFileIds()));
 
+
+                chatMessage.setUsers(Collections.singletonList(roleId));
+                chatMessage.setAccountId(currentAccountId);
+                chatMessage.setAccountOrgId(accountOrgId); // 使用预先获取的orgId
+
+                // 异步运行以下方法
+                messageService.sendUserMessage(chatMessage, roleList, personDto);
+
                 return AjaxResult.success(msgDto);
             } catch (Exception e) {
                 log.error("角色对话处理失败", e);
                 return AjaxResult.error("角色对话处理失败: " + e.getMessage());
             }
+
         }, chatThreadPool).whenComplete((result, ex) -> {
             if (ex != null) {
                 deferredResult.setErrorResult(AjaxResult.error("处理请求时发生异常"));
