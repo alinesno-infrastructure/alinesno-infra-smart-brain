@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * 这是一个助手控制器类
  * 该类用于提供助手功能的接口
@@ -34,7 +36,7 @@ public class AssistantController extends SuperController {
      */
     @PostMapping("/runRoleAgent")
     public AjaxResult runRoleAgent(@RequestBody MessageTaskInfo taskInfo) {
-        WorkflowExecutionDto dto = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> dto = roleService.runRoleAgent(taskInfo) ;
         return AjaxResult.success(dto) ;
     }
 
