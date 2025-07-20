@@ -191,7 +191,7 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
             ));
 
             // 执行角色生成
-            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
             log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
 
             // 更新章节内容
@@ -268,10 +268,11 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
 
         taskInfo.setParams(paramMap);
 
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
         log.debug("chatRole = {}" , genContent);
 
-        return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
+//        return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
+        return AjaxResult.success("操作成功") ;
     }
 
 //    /**
