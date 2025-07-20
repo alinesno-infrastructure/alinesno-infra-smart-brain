@@ -63,6 +63,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -203,8 +204,8 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         taskInfo.setText(promptText);
 
         // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent.getGenContent());
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
+//        log.debug("genContent = {}", genContent.getGenContent());
 
         // 获取文章内容并保存
         String articleContent;
@@ -251,8 +252,8 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         taskInfo.setText(promptText);
 
         // 优先获取到结果内容
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent.getGenContent());
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
+        log.debug("genContent = {}", genContent);
 
         // 获取文章内容
         String articleContent = taskInfo.getFullContent() ;
