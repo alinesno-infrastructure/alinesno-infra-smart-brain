@@ -289,31 +289,31 @@ public class LongTextTaskExecutionService {
         taskInfo.setQueryText(chatRole.getMessage());
 
         // 调用角色服务生成内容
-        WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+        CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
         log.info("角色服务调用完成，taskId: {}", taskId);
 
-        // 获取模板信息
-        LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
-
-        // 格式化内容
-        formatMessageTool.handleChapterMessage(genContent, taskInfo, template);
-
-        // 处理代码内容（如果有）
-        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
-            String codeContent = genContent.getCodeContent().get(0).getContent();
-
-            // 验证JSON格式
-            try {
-                JSONArray.parseArray(codeContent);
-                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
-
-                return nodeDtos ;
-            } catch (Exception e) {
-                log.error("JSON解析失败", e);
-                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
-            }
-        }
+//        // 获取模板信息
+//        LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+//
+//        // 格式化内容
+//        formatMessageTool.handleChapterMessage(genContent, taskInfo, template);
+//
+//        // 处理代码内容（如果有）
+//        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+//            String codeContent = genContent.getCodeContent().get(0).getContent();
+//
+//            // 验证JSON格式
+//            try {
+//                JSONArray.parseArray(codeContent);
+//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+//                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
+//
+//                return nodeDtos ;
+//            } catch (Exception e) {
+//                log.error("JSON解析失败", e);
+//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
+//            }
+//        }
         return Collections.emptyList() ;
     }
 
@@ -364,7 +364,7 @@ public class LongTextTaskExecutionService {
             ));
 
             // 执行角色生成
-            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
             log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
 
             // 更新章节内容
