@@ -25,7 +25,6 @@ import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
-import com.alinesno.infra.smart.assistant.role.llm.AgentFlexLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
@@ -52,9 +51,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.*;
@@ -118,31 +121,24 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     private ITemplateService templateService ;
 
-    /**
-     * 执行角色
-     *
-     * @param role              角色信息
-     * @param workflowExecution 工作流执行实体
-     * @param taskInfo          消息任务信息
-     * @return
-     */
-    @Override
-    public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+    @Autowired
+    private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
+    @Override
+    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+
+        // 1. 初始化基础数据（同步操作， lightweight 处理）
         WorkflowExecutionDto record = new WorkflowExecutionDto();
 
-        // 设置业务跟踪
         long traceBusId = IdUtil.getSnowflakeNextId();
+
         taskInfo.setTraceBusId(traceBusId);
         record.setTraceBusId(traceBusId);
-
-        // 任务开始记录
         record.setRoleId(role.getId());
         record.setChannelId(taskInfo.getChannelId());
-
         record.setBuildNumber(1);
         record.setStartTime(System.currentTimeMillis());
-
         record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
 
         this.setRole(role);
@@ -150,87 +146,248 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         this.setMsgUuid(IdUtil.getSnowflakeNextId());
         this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
 
-        if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
-           taskInfo.setHasExecuteTool(true);
+        if (StringUtils.isEmpty(role.getFunctionCallbackScript())) {
+            taskInfo.setHasExecuteTool(true);
         }
 
-        if (taskInfo.isFunctionCall()) {  // 执行方法
+        // 2. 根据任务类型执行异步处理
+        CompletableFuture<String> contentFuture;
 
+        if (taskInfo.isFunctionCall()) {
             record.setChatType(TYPE_FUNCTION);
-
-            if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
-                record.setGenContent("未配置执行能力.");
-
-                return record ;
-            }
-
-            String result = null;
-            if (workflowExecution == null) {
-                result = "请选择操作业务.";
-                record.setGenContent(result);
-            } else {
-                // 执行任务并记录
-                String gentContent = workflowExecution.getContent();
-                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-
-                result = handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
-                record.setGenContent(result);
-            }
-
+            contentFuture = handleFunctionCallAsync(role, workflowExecution, taskInfo);
         } else if (taskInfo.isModify()) {
-
             record.setChatType(TYPE_MODIFY);
-
-            if(StringUtils.isEmpty(role.getAuditScript())){
-                record.setGenContent("未配置审核修改能力.");
-
-                return record ;
-            }
-
-            String result = null;
-
-            if(!taskInfo.isModifyPreBusinessId()){
-                result = handleModifyCall(role, workflowExecution, null , taskInfo);
-            }else{
-                if (workflowExecution == null) {
-                    result = "请选择操作业务.";
-                } else {
-                    // 执行任务并记录
-                    String gentContent = workflowExecution.getContent();
-                    List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-
-                    result = handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
-                }
-            }
-
-            record.setGenContent(result);
+            contentFuture = handleModifyCallAsync(role, workflowExecution, taskInfo);
         } else {
-
             record.setChatType(TYPE_ROLE);
-
-
-            try {
-                // 处理业务
-                String gentContent = handleRole(role, workflowExecution, taskInfo);
-                // 解析出生成的内容
-                record.setGenContent(gentContent);
-
-                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-
-                record.setCodeContent(codeContentList);
-            } catch (Exception e) {
-                log.error("解析代码块异常:{}", e.getMessage());
-                record.setGenContent("执行异常:" + e.getMessage());
-            }
+            contentFuture = handleRoleAsync(role, workflowExecution, taskInfo); // 调用异步版handleRole
         }
 
-        // 处理完成之后记录更新
-        record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
-        record.setEndTime(System.currentTimeMillis());
-        record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
-
-        return record;
+        // 3. 处理结果并返回CompletableFuture
+        return contentFuture
+                .thenApply(gentContent -> {
+                    // 解析代码块并更新记录
+                    record.setGenContent(gentContent);
+                    try {
+                        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+                        record.setCodeContent(codeContentList);
+                    } catch (Exception e) {
+                        log.error("解析代码块异常:{}", e.getMessage());
+                        record.setGenContent("执行异常:" + e.getMessage());
+                    }
+                    return record;
+                })
+                .whenComplete((result, ex) -> {
+                    // 无论成功失败，更新状态和时间
+                    result.setStatus(ex != null ? WorkflowStatusEnum.FAILED.getStatus() : WorkflowStatusEnum.COMPLETED.getStatus());
+                    result.setEndTime(System.currentTimeMillis());
+                    result.setUsageTimeSeconds(RoleUtils.formatTime(result.getStartTime(), result.getEndTime()));
+                })
+                .exceptionally(ex -> {
+                    // 异常处理
+                    record.setStatus(WorkflowStatusEnum.FAILED.getStatus());
+                    record.setGenContent("执行异常:" + ex.getMessage());
+                    record.setEndTime(System.currentTimeMillis());
+                    record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+                    return record;
+                });
     }
+
+    // ------------------------------
+    // 新增异步处理方法（拆分原有同步逻辑）
+    // ------------------------------
+
+    /**
+     * 异步处理FunctionCall类型任务
+     */
+    private CompletableFuture<String> handleFunctionCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+        // 快速失败校验
+        if (StringUtils.isEmpty(role.getFunctionCallbackScript())) {
+            return CompletableFuture.completedFuture("未配置执行能力.");
+        }
+
+        // 异步执行业务逻辑
+//        return CompletableFuture.supplyAsync(() -> {
+////            if (workflowExecution == null) {
+////                return "请选择操作业务.";
+////            }
+//            String gentContent = workflowExecution.getContent();
+//            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//            return handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
+//        }, chatThreadPool);
+
+        if (workflowExecution == null) {
+            return CompletableFuture.completedFuture("请选择操作业务.");
+        }
+        String gentContent = workflowExecution.getContent();
+        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+        return handleFunctionCall(role, workflowExecution, codeContentList, taskInfo) ;
+    }
+
+    /**
+     * 异步处理Modify类型任务
+     */
+    private CompletableFuture<String> handleModifyCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+        // 快速失败校验
+        if (StringUtils.isEmpty(role.getAuditScript())) {
+            return CompletableFuture.completedFuture("未配置审核修改能力.");
+        }
+
+        // 异步执行业务逻辑
+//        return CompletableFuture.supplyAsync(() -> {
+//            if (!taskInfo.isModifyPreBusinessId()) {
+//                return handleModifyCall(role, workflowExecution, null, taskInfo);
+//            } else {
+//                if (workflowExecution == null) {
+//                    return "请选择操作业务.";
+//                }
+//                String gentContent = workflowExecution.getContent();
+//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//                return handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
+//            }
+//        }, chatThreadPool);
+
+        if (!taskInfo.isModifyPreBusinessId()) {
+            return handleModifyCall(role, workflowExecution, null, taskInfo);
+        } else {
+            if (workflowExecution == null) {
+                return CompletableFuture.completedFuture("请选择操作业务.");
+            }
+            String gentContent = workflowExecution.getContent();
+            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+            return handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
+        }
+    }
+
+    /**
+     * 异步处理Role类型任务（适配之前改造的handleRole异步方法）
+     */
+    private CompletableFuture<String> handleRoleAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                // 调用之前改造的返回CompletableFuture<String>的handleRole方法
+                return handleRole(role, workflowExecution, taskInfo).get(); // 注意：这里的handleRole已改造为返回CompletableFuture
+            } catch (Exception e) {
+                log.error("handleRole执行异常", e);
+                return "执行异常:" + e.getMessage();
+            }
+        }, chatThreadPool);
+    }
+
+//    /**
+//     * 执行角色
+//     *
+//     * @param role              角色信息
+//     * @param workflowExecution 工作流执行实体
+//     * @param taskInfo          消息任务信息
+//     * @return
+//     */
+//    @Override
+//    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+//
+//        WorkflowExecutionDto record = new WorkflowExecutionDto();
+//
+//        // 设置业务跟踪
+//        long traceBusId = IdUtil.getSnowflakeNextId();
+//        taskInfo.setTraceBusId(traceBusId);
+//        record.setTraceBusId(traceBusId);
+//
+//        // 任务开始记录
+//        record.setRoleId(role.getId());
+//        record.setChannelId(taskInfo.getChannelId());
+//
+//        record.setBuildNumber(1);
+//        record.setStartTime(System.currentTimeMillis());
+//
+//        record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
+//
+//        this.setRole(role);
+//        this.setTaskInfo(taskInfo);
+//        this.setMsgUuid(IdUtil.getSnowflakeNextId());
+//        this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
+//
+//        if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
+//           taskInfo.setHasExecuteTool(true);
+//        }
+//
+//        if (taskInfo.isFunctionCall()) {  // 执行方法
+//
+//            record.setChatType(TYPE_FUNCTION);
+//
+//            if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
+//                record.setGenContent("未配置执行能力.");
+//
+//                return record ;
+//            }
+//
+//            String result = null;
+//            if (workflowExecution == null) {
+//                result = "请选择操作业务.";
+//                record.setGenContent(result);
+//            } else {
+//                // 执行任务并记录
+//                String gentContent = workflowExecution.getContent();
+//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//
+//                result = handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
+//                record.setGenContent(result);
+//            }
+//
+//        } else if (taskInfo.isModify()) {
+//
+//            record.setChatType(TYPE_MODIFY);
+//
+//            if(StringUtils.isEmpty(role.getAuditScript())){
+//                record.setGenContent("未配置审核修改能力.");
+//
+//                return record ;
+//            }
+//
+//            String result = null;
+//
+//            if(!taskInfo.isModifyPreBusinessId()){
+//                result = handleModifyCall(role, workflowExecution, null , taskInfo);
+//            }else{
+//                if (workflowExecution == null) {
+//                    result = "请选择操作业务.";
+//                } else {
+//                    // 执行任务并记录
+//                    String gentContent = workflowExecution.getContent();
+//                    List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//
+//                    result = handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
+//                }
+//            }
+//
+//            record.setGenContent(result);
+//        } else {
+//
+//            record.setChatType(TYPE_ROLE);
+//
+//
+//            try {
+//                // 处理业务
+//                String gentContent = handleRole(role, workflowExecution, taskInfo);
+//                // 解析出生成的内容
+//                record.setGenContent(gentContent);
+//
+//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//
+//                record.setCodeContent(codeContentList);
+//            } catch (Exception e) {
+//                log.error("解析代码块异常:{}", e.getMessage());
+//                record.setGenContent("执行异常:" + e.getMessage());
+//            }
+//        }
+//
+//        // 处理完成之后记录更新
+//        record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+//        record.setEndTime(System.currentTimeMillis());
+//        record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+//
+//        return record;
+//    }
 
     /**
      * 通过channelId获取渠道信息
@@ -279,12 +436,12 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param taskInfo
      * @return
      */
-    protected String handleModifyCall(IndustryRoleEntity role,
+    protected CompletableFuture<String> handleModifyCall(IndustryRoleEntity role,
                                       MessageEntity workflowExecution,
                                       List<CodeContent> codeContentList,
                                       MessageTaskInfo taskInfo) {
         log.debug("handleModifyCall:{}", taskInfo);
-        return "已接收到处理消息";
+        return CompletableFuture.completedFuture("已接收到任务执行消息");
     }
 
     /**
@@ -296,12 +453,12 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param taskInfo
      * @return
      */
-    protected String handleFunctionCall(IndustryRoleEntity role,
+    protected CompletableFuture<String>  handleFunctionCall(IndustryRoleEntity role,
                                         MessageEntity workflowExecution,
                                         List<CodeContent> codeContentList,
                                         MessageTaskInfo taskInfo) {
         log.debug("handleFunctionCall:{}", taskInfo);
-        return "已接收到任务执行消息";
+        return CompletableFuture.completedFuture("已接收到任务执行消息");
     }
 
     /**
@@ -311,7 +468,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      * @param workflowExecution
      * @param taskInfo
      */
-    protected abstract String handleRole(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo);
+    protected abstract CompletableFuture<String> handleRole(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo);
 
     /**
      * 查询历史消息
