@@ -22,6 +22,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 应用构建Controller
@@ -115,10 +116,12 @@ public class WorkflowController extends SuperController {
 
         taskInfo.setParams(paramMap);
 
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
         log.debug("chatRole = {}" , genContent);
 
-        return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
+//        return AjaxResult.success("操作成功" , genContent.getGenContent()) ;
+
+        return AjaxResult.success("操作成功") ;
     }
 
 
