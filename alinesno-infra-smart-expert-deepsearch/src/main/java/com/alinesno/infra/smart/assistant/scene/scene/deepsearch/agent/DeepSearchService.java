@@ -58,7 +58,7 @@ public class DeepSearchService extends ReActExpertService {
     private ReActServiceTool reActServiceTool  ;
 
     @Override
-    protected String handleRole(IndustryRoleEntity role, MessageEntity workflowMessage, MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleRole(IndustryRoleEntity role, MessageEntity workflowMessage, MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
 
@@ -120,7 +120,9 @@ public class DeepSearchService extends ReActExpertService {
         DeepSearchFlow.Output deepSearchOutput = new DeepSearchFlow.Output() ;
         deepSearchOutputHandler.handleOutput(llm , answerOutput , deepSearchOutput , historyPrompt , goal) ;
 
-        return StringUtils.hasLength(answerOutput.toString())? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+//        return StringUtils.hasLength(answerOutput.toString())? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+
+        return null ;
     }
 
     /**
