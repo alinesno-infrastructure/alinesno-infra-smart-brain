@@ -28,6 +28,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -55,6 +56,9 @@ public class ExamPagerFormatMessageTool {
 
     @Autowired
     private IAgentSceneService agentSceneService ;
+
+    @Autowired
+    private ThreadPoolTaskExecutor chatThreadPool;
 
     @SneakyThrows
     public void handleChapterMessage(WorkflowExecutionDto genContent, MessageTaskInfo taskInfo) {
@@ -179,6 +183,22 @@ public class ExamPagerFormatMessageTool {
     }
 
     /**
+     * 异步处理章节消息（与同步方法handleChapterMessage功能一致，返回CompletableFuture）
+     */
+    public CompletableFuture<Void> handleChapterMessageAsync(WorkflowExecutionDto genContent, MessageTaskInfo taskInfo) {
+        // 使用chatThreadPool执行异步任务
+        return CompletableFuture.runAsync(() -> {
+            try {
+                // 直接调用同步方法的逻辑（复用已有实现）
+                handleChapterMessage(genContent, taskInfo);
+            } catch (Exception e) {
+                log.error("异步处理章节消息失败", e);
+                throw new RuntimeException("章节消息处理异常: " + e.getMessage(), e);
+            }
+        }, chatThreadPool);
+    }
+
+    /**
      * 成绩结果评分，主要分两步:
      * 1. 先AI角色阅卷
      * @param examScore
@@ -211,7 +231,7 @@ public class ExamPagerFormatMessageTool {
             taskInfo.setText(markdownAnswerPrompt);
 
             // 调用角色服务生成内容
-            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
             log.info("角色服务调用完成，taskId: {}", taskId);
             log.info("角色服务输出内容：{}", taskInfo.getFullContent());
 
