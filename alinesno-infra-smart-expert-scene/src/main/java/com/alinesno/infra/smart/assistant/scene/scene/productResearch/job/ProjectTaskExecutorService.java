@@ -72,7 +72,7 @@ public class ProjectTaskExecutorService {
                 String description = section.description;
 
                 MessageTaskInfo taskInfo = createTaskInfo(query, taskEntity, label, description, progressAnalyzerEngineer, dto);
-                WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
+                CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
 
                 // 构建详细内容
                 if (section.isMain) {
