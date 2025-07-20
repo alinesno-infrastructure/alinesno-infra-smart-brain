@@ -41,6 +41,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 应用构建Controller
@@ -262,7 +263,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @PostMapping("/validateRoleScript")
     public AjaxResult validateRoleScript(@RequestBody @Validated RoleScriptDto dto){
         log.debug("dto = {}", dto);
-        WorkflowExecutionDto output = service.validateRoleScript(dto);
+        CompletableFuture<WorkflowExecutionDto> output = service.validateRoleScript(dto);
         return AjaxResult.success(output) ;
     }
 
@@ -274,7 +275,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @PostMapping("/validateReActRole")
     public AjaxResult validateReActRole(@RequestBody @Validated ReActRoleScriptDto dto){
         log.debug("dto = {}", dto);
-        WorkflowExecutionDto output = service.validateReActRole(dto);
+        CompletableFuture<WorkflowExecutionDto> output = service.validateReActRole(dto);
         return AjaxResult.success(output) ;
     }
 
