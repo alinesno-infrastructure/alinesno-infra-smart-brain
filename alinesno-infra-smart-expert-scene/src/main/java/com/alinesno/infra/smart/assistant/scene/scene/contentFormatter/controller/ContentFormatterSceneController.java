@@ -66,6 +66,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 数据分析场景控制器
@@ -240,25 +241,25 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
         taskInfo.setText(prompt);
 
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
         log.debug("genContent = {}" ,genContent) ;
         log.debug("fullContent = {}" , taskInfo.getFullContent());
 
-        genContent.setGenContent(taskInfo.getFullContent());
-        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONObject dataObject = JSONArray.parseObject(codeContent) ;
-
-            log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
-
-            // 与模板结合，生成返回的文件url路径
-            String storageId = templateService.genTemplate(dataObject , dto.getTemplateId());
-            return AjaxResult.success("操作成功" , storageId) ;
-        }
+//        genContent.setGenContent(taskInfo.getFullContent());
+//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+//
+//        // 解析得到代码内容
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            JSONObject dataObject = JSONArray.parseObject(codeContent) ;
+//
+//            log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
+//
+//            // 与模板结合，生成返回的文件url路径
+//            String storageId = templateService.genTemplate(dataObject , dto.getTemplateId());
+//            return AjaxResult.success("操作成功" , storageId) ;
+//        }
 
         return AjaxResult.success("操作成功") ;
     }
@@ -405,22 +406,22 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
                 taskInfo.setText(prompt);
 
-                WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+                CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
                 log.debug("genContent = {}" ,genContent) ;
                 log.debug("fullContent = {}" , taskInfo.getFullContent());
 
-                genContent.setGenContent(taskInfo.getFullContent());
-                genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-
-                // 解析得到代码内容
-                if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-
-                    String codeContent = genContent.getCodeContent().get(0).getContent() ;
-                    JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-
-                    checkOutput.addAll(dataObject) ;
-                }
+//                genContent.setGenContent(taskInfo.getFullContent());
+//                genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+//
+//                // 解析得到代码内容
+//                if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//
+//                    String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//                    JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+//
+//                    checkOutput.addAll(dataObject) ;
+//                }
             }catch(Exception e){
                 log.error("reviewChatRoleSync error" , e) ;
             }
@@ -456,24 +457,24 @@ public class ContentFormatterSceneController extends BaseController<ContentForma
 
         taskInfo.setText(prompt);
 
-        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
-        log.debug("genContent = {}" ,genContent) ;
-        log.debug("fullContent = {}" , taskInfo.getFullContent());
-
-        genContent.setGenContent(taskInfo.getFullContent());
-        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-
-        // 解析得到代码内容
-        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-
-            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-
-            log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
-
-            return AjaxResult.success("操作成功" , dataObject) ;
-        }
+//        log.debug("genContent = {}" ,genContent) ;
+//        log.debug("fullContent = {}" , taskInfo.getFullContent());
+//
+//        genContent.setGenContent(taskInfo.getFullContent());
+//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
+//
+//        // 解析得到代码内容
+//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//
+//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
+//
+//            log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
+//
+//            return AjaxResult.success("操作成功" , dataObject) ;
+//        }
 
         return AjaxResult.success("操作成功") ;
     }
