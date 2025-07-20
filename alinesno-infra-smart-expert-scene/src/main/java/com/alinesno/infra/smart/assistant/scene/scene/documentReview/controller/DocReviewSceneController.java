@@ -45,6 +45,7 @@ import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
@@ -142,27 +143,27 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
                     entity.getContractOverview() == null ?"":entity.getContractOverview()));
 
             // 优先获取到结果内容
-            WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
+            CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
-            // 获取到格式化的内容
-            analysisTool.handleFormatRuleMessage(genContent , taskInfo);
-
-            // 解析得到代码内容
-            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-                String codeContent = genContent.getCodeContent().get(0).getContent() ;
-                // 验证是否可以正常解析json
-                try{
-                    List<DocReviewRulesDto> nodeDtos = JSON.parseArray(codeContent, DocReviewRulesDto.class);
-                    log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-                    for(DocReviewRulesDto d : nodeDtos){
-                        d.setId(IdUtil.getSnowflakeNextId());
-                    }
-                    entity.setReviewList(JSONUtil.toJsonStr(nodeDtos));
-                }catch (Exception e){
-                    throw new RpcServiceRuntimeException("生成审核规则格式不正确，请点击重新生成.") ;
-                }
-
-            }
+//            // 获取到格式化的内容
+//            analysisTool.handleFormatRuleMessage(genContent , taskInfo);
+//
+//            // 解析得到代码内容
+//            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
+//                String codeContent = genContent.getCodeContent().get(0).getContent() ;
+//                // 验证是否可以正常解析json
+//                try{
+//                    List<DocReviewRulesDto> nodeDtos = JSON.parseArray(codeContent, DocReviewRulesDto.class);
+//                    log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
+//                    for(DocReviewRulesDto d : nodeDtos){
+//                        d.setId(IdUtil.getSnowflakeNextId());
+//                    }
+//                    entity.setReviewList(JSONUtil.toJsonStr(nodeDtos));
+//                }catch (Exception e){
+//                    throw new RpcServiceRuntimeException("生成审核规则格式不正确，请点击重新生成.") ;
+//                }
+//
+//            }
         }
 
         docReviewTaskService.updateById(entity) ;
