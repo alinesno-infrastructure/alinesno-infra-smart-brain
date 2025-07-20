@@ -1,10 +1,7 @@
 package com.alinesno.infra.smart.assistant.role;
 
 import cn.hutool.core.util.IdUtil;
-import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.prompt.HistoriesPrompt;
-import com.agentsflex.llm.deepseek.DeepseekLlm;
-import com.agentsflex.llm.deepseek.DeepseekLlmConfig;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
@@ -13,19 +10,29 @@ import com.alinesno.infra.smart.assistant.role.context.ContextManager;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
+import com.alinesno.infra.smart.assistant.role.utils.GroovySandbox;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
 /**
  * 脚本编辑方式
@@ -41,16 +48,16 @@ public class ScriptExpertService extends ReActExpertService {
 	@Autowired
 	private ReActServiceTool reActServiceTool  ;
 
-	@Autowired
-	private ThreadPoolTaskExecutor chatThreadPool;
 
 	@Value("${alinesno.infra.smart.brain.qianwen.key:}")
 	private String apiKey;
 
+	@SneakyThrows
+	@Transactional(propagation = Propagation.NOT_SUPPORTED)
 	@Override
-	protected String handleRole(IndustryRoleEntity role,
-								MessageEntity workflowExecution,
-								MessageTaskInfo taskInfo) {
+	protected CompletableFuture<String> handleRole(IndustryRoleEntity role,
+												   MessageEntity workflowExecution,
+												   MessageTaskInfo taskInfo) {
 
 		String datasetKnowledgeDocument = getDatasetKnowledgeDocument(role, workflowExecution, taskInfo);
 
@@ -59,8 +66,8 @@ public class ScriptExpertService extends ReActExpertService {
 
 		String scriptText = role.getExecuteScript() ;
 
-		if(scriptText == null || scriptText.isEmpty()){
-			return "scriptText is null or empty" ;
+		if (scriptText == null || scriptText.isEmpty()) {
+			return CompletableFuture.completedFuture("scriptText is null or empty");
 		}
 
 		// 上一个任务节点不为空，执行任务并记录
@@ -72,15 +79,15 @@ public class ScriptExpertService extends ReActExpertService {
 
 		log.trace("角色脚本:{}" , scriptText);
 
-		String output = executeGroovyScript(role ,
+		CompletableFuture<String> future = executeGroovyScriptAsync(role ,
 				workflowExecution ,
 				taskInfo ,
 				codeContentLis ,
 				scriptText ,
 				datasetKnowledgeDocument) ;
-		log.debug("handleRole output : {}", output);
+		log.debug("handleRole output : {}", future);
 
-		return output ;
+		return future ;
 	}
 
 	private String getDatasetKnowledgeDocument(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
@@ -100,7 +107,7 @@ public class ScriptExpertService extends ReActExpertService {
 	}
 
 	@Override
-	protected String handleModifyCall(IndustryRoleEntity role,
+	protected CompletableFuture<String> handleModifyCall(IndustryRoleEntity role,
 									  MessageEntity workflowExecution,
 									  List<CodeContent> codeContentList,
 									  MessageTaskInfo taskInfo) {
@@ -108,11 +115,11 @@ public class ScriptExpertService extends ReActExpertService {
 		String scriptText = role.getAuditScript() ;
 		String datasetKnowledgeDocument = getDatasetKnowledgeDocument(role, workflowExecution, taskInfo);
 
-		if(scriptText == null || scriptText.isEmpty()){
-			return "scriptText is null or empty" ;
+		if (scriptText == null || scriptText.isEmpty()) {
+			return CompletableFuture.completedFuture("scriptText is null or empty");
 		}
 
-		String output = executeGroovyScript(role ,
+		CompletableFuture<String> output = executeGroovyScriptAsync(role ,
 				workflowExecution ,
 				taskInfo ,
 				codeContentList ,
@@ -124,19 +131,19 @@ public class ScriptExpertService extends ReActExpertService {
 	}
 
 	@Override
-	protected String handleFunctionCall(IndustryRoleEntity role,
-										MessageEntity workflowExecution,
-										List<CodeContent> codeContentList,
-										MessageTaskInfo taskInfo) {
+	protected CompletableFuture<String> handleFunctionCall(IndustryRoleEntity role,
+														   MessageEntity workflowExecution,
+														   List<CodeContent> codeContentList,
+														   MessageTaskInfo taskInfo) {
 
 		String scriptText = role.getFunctionCallbackScript() ;
 		String datasetKnowledgeDocument = getDatasetKnowledgeDocument(role, workflowExecution, taskInfo);
 
-		if(scriptText == null || scriptText.isEmpty()){
-			return "scriptText is null or empty" ;
+		if (scriptText == null || scriptText.isEmpty()) {
+			return CompletableFuture.completedFuture("scriptText is null or empty");
 		}
 
-		String output = executeGroovyScript(role ,
+		CompletableFuture<String> output = executeGroovyScriptAsync(role ,
 				workflowExecution ,
 				taskInfo ,
 				codeContentList,
@@ -147,45 +154,13 @@ public class ScriptExpertService extends ReActExpertService {
 		return output ;
 	}
 
-	/**
-	 * 执行groovy脚本并返回执行结果
-	 *
-	 * @param role
-	 * @param workflow
-	 * @param taskInfo
-	 * @param codeContentList
-	 * @param scriptText
-	 * @return
-	 */
-	private String executeGroovyScript(IndustryRoleEntity role,
-									   MessageEntity workflow ,
+	@NotNull
+	private GroovyShell getGroovyShell(IndustryRoleEntity role,
+									   MessageEntity workflow,
 									   MessageTaskInfo taskInfo,
 									   List<CodeContent> codeContentList,
-									   String scriptText ,
 									   String datasetKnowledgeDocument) {
 
-//		// 清空流程步骤信息
-//		taskInfo.setFlowStep(null);
-//
-//		modelAdapterLLM.setRole(role);
-//		modelAdapterLLM.setTaskInfo(taskInfo);
-//
-//		DeepseekLlmConfig config = new DeepseekLlmConfig();
-//
-//		config.setEndpoint("https://dashscope.aliyuncs.com/compatible-mode/v1") ;
-//		config.setApiKey(apiKey) ;
-//		config.setModel("qwen3-8b");
-//
-//		Llm llm = new DeepseekLlm(config);
-//
-//		String prompt = clearMessage(datasetKnowledgeDocument + taskInfo.getText()) ;
-//		String output = modelAdapterLLM.processStreamSingle(llm , role , prompt , taskInfo) ;
-//
-//		taskInfo.setFullContent(output) ;
-//
-//		return "操作成功"  ;
-
-		// TODO 待处理Groovy脚本安全的问题
 		ToolsUtil tools = new ToolsUtil() ;
 
 		// 创建 Binding 对象，用于绑定变量到 Groovy 脚本
@@ -197,21 +172,42 @@ public class ScriptExpertService extends ReActExpertService {
 
 		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
 		binding.setVariable("modelAdapterLLM", modelAdapterLLM); // 文本和图片生成
-//		binding.setVariable("agentFlexLLM", agentFlexLLM); // 多模型适配生成
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
 		binding.setVariable("expertService", this);  // 操作服务
 		binding.setVariable("secretKey", getSecretKey());  // 操作服务
 		binding.setVariable("channelInfo", getChannelInfo(taskInfo.getChannelId()));  // 操作服务
 		binding.setVariable("tools", tools); // 工具类
-
+		binding.setVariable("chatThreadPool", getChatThreadPool()); // 工具类
 		binding.setVariable("codeContent", codeContentList == null || codeContentList.isEmpty() ? null : codeContentList.get(0));  // 生成 代码
-
 		binding.setVariable("contextMap", ContextManager.getInstance());
 		binding.setVariable("log", log); // 日志输出
+		binding.setVariable("completableFuture", CompletableFuture.class);
 
-		GroovyShell shell = new GroovyShell(binding);
-		return String.valueOf(shell.evaluate(scriptText));
+		CompilerConfiguration config = GroovySandbox.createSecureCompilerConfiguration();
+        return new GroovyShell(binding , config);
+	}
+
+	// 将同步执行改为异步回调
+	private CompletableFuture<String> executeGroovyScriptAsync(IndustryRoleEntity role,
+									   MessageEntity workflow ,
+									   MessageTaskInfo taskInfo,
+									   List<CodeContent> codeContentList,
+									   String scriptText ,
+									   String datasetKnowledgeDocument) {
+
+		GroovyShell shell = getGroovyShell(role, workflow, taskInfo, codeContentList, datasetKnowledgeDocument);
+
+		// 执行脚本并返回Future
+		Object result = shell.evaluate(scriptText);
+
+		if (result instanceof CompletableFuture<?>) {
+			@SuppressWarnings("unchecked")  // 明确告诉编译器这是安全的
+			CompletableFuture<String> futureResult = (CompletableFuture<String>) result;
+			return futureResult;
+		}
+
+		return CompletableFuture.completedFuture(String.valueOf(result));
 
 	}
 
