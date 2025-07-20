@@ -156,61 +156,78 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
 
     /**
      * 聊天提示内容
-     * @param dto
-     * @param query
-     * @return
+     * @param dto 请求参数
+     * @param query 权限查询参数
+     * @return 异步处理结果
      */
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
     public DeferredResult<AjaxResult> chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto, PermissionQuery query) {
         // 设置超时时间（例如5分钟）
-        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(600*1000L);
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(600 * 1000L);
 
-        CompletableFuture.supplyAsync(() -> {
-            try {
-                // 原有业务逻辑
-                ExamStructureItem examStructure = dto.getExamStructureItem() ;
-                ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
-                Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer() ;
+        // 在异步流程外部创建taskInfo
+        MessageTaskInfo taskInfo = new MessageTaskInfo();
 
-                MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
+        // 构建异步处理流程
+        CompletableFuture<Void> processFuture = CompletableFuture.runAsync(() -> {
+                    // 1. 获取场景信息
+                    ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+                    Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer();
 
-                // 引用附件不为空，则引入和解析附件
-                if(!CollectionUtils.isEmpty(dto.getAttachments())){
-                    List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-                    taskInfo.setAttachments(attachmentList);
-                }
+                    // 2. 构建任务信息
+                    BeanUtils.copyProperties(dto.toPowerMessageTaskInfo(), taskInfo);
 
-                String promptText = ExamPagerPromptHandle.generatorPrompt(dto.getPromptText() ,
-                        dto.getDifficultyLevel() ,
-                        examStructure) ;
+                    // 3. 处理附件（如果有）
+                    if (!CollectionUtils.isEmpty(dto.getAttachments())) {
+                        List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+                        taskInfo.setAttachments(attachmentList);
+                    }
 
-                taskInfo.setRoleId(questionGeneratorEngineer);
-                taskInfo.setChannelStreamId(dto.getChannelStreamId());
-                taskInfo.setChannelId(dto.getSceneId());
-                taskInfo.setSceneId(dto.getSceneId());
-                taskInfo.setText(promptText);
+                    // 4. 生成提示文本
+                    String promptText = ExamPagerPromptHandle.generatorPrompt(
+                            dto.getPromptText(),
+                            dto.getDifficultyLevel(),
+                            dto.getExamStructureItem()
+                    );
 
-                // 优先获取到结果内容
-                WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo);
-                examPagerFormatMessageTool.handleChapterMessage(genContent, taskInfo);
+                    // 5. 设置任务参数
+                    taskInfo.setRoleId(questionGeneratorEngineer);
+                    taskInfo.setChannelStreamId(dto.getChannelStreamId());
+                    taskInfo.setChannelId(dto.getSceneId());
+                    taskInfo.setSceneId(dto.getSceneId());
+                    taskInfo.setText(promptText);
+                }, chatThreadPool)
+                .thenComposeAsync(v -> {
+                    // 6. 异步调用角色服务获取内容
+                    return roleService.runRoleAgent(taskInfo);
+                }, chatThreadPool)
+                .thenComposeAsync(genContent -> {
+                    // 7. 异步格式化章节消息
+                    return examPagerFormatMessageTool.handleChapterMessageAsync(genContent, taskInfo)
+                            .thenApply(v -> genContent);
+                }, chatThreadPool)
+                .thenAcceptAsync(genContent -> {
+                    // 8. 处理最终结果
+                    if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+                        String codeContent = genContent.getCodeContent().get(0).getContent();
+                        JSONArray dataObject = JSONArray.parseArray(codeContent);
+                        deferredResult.setResult(AjaxResult.success("操作成功", dataObject));
+                    } else {
+                        deferredResult.setResult(AjaxResult.success("操作成功"));
+                    }
+                }, chatThreadPool)
+                .exceptionally(ex -> {
+                    // 异常处理
+                    log.error("处理失败", ex);
+                    deferredResult.setErrorResult(AjaxResult.error("处理失败: " + ex.getMessage()));
+                    return null;
+                });
 
-                if(genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
-                    String codeContent = genContent.getCodeContent().get(0).getContent();
-                    JSONArray dataObject = JSONArray.parseArray(codeContent);
-                    return AjaxResult.success("操作成功", dataObject);
-                }
-                return AjaxResult.success("操作成功");
-            } catch (Exception e) {
-                log.error("处理失败", e);
-                return AjaxResult.error("处理失败: " + e.getMessage());
-            }
-        } , chatThreadPool).whenComplete((result, ex) -> {
-            if(ex != null) {
-                deferredResult.setErrorResult(AjaxResult.error("处理异常"));
-            } else {
-                deferredResult.setResult(result);
-            }
+        // 设置超时回调
+        deferredResult.onTimeout(() -> {
+            log.error("请求超时: {}", dto.getSceneId());
+            deferredResult.setErrorResult(AjaxResult.error("请求超时，请稍后重试"));
         });
 
         return deferredResult;
