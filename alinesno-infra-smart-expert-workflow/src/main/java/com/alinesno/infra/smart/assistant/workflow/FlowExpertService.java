@@ -19,7 +19,6 @@ import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +26,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_ROLE;
 
@@ -48,18 +48,18 @@ public class FlowExpertService extends ExpertService {
     private StringBuilder outputContent;
 
     @Override
-    protected String handleRole(IndustryRoleEntity role,
-                                MessageEntity workflowExecution,
-                                MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleRole(IndustryRoleEntity role,
+                                                   MessageEntity workflowExecution,
+                                                   MessageTaskInfo taskInfo) {
 
         String result = flowService.runRoleFlow(taskInfo, role, workflowExecution, this);
         log.debug("handleRole result : {}", result);
 
-        return AgentConstants.ChatText.CHAT_FINISH ;
+        return null ; //   AgentConstants.ChatText.CHAT_FINISH ;
     }
 
     @Override
-    public WorkflowExecutionDto runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
 
         WorkflowExecutionDto record = new WorkflowExecutionDto();
 
@@ -90,11 +90,11 @@ public class FlowExpertService extends ExpertService {
 
         try {
             // 处理业务
-            String gentContent = handleRole(role, workflowExecution, taskInfo);
+            CompletableFuture<String> gentContent = handleRole(role, workflowExecution, taskInfo);
             log.debug("handleRole result : {}", gentContent);// 解析出生成的内容
-            record.setGenContent(gentContent);
-            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-            record.setCodeContent(codeContentList);
+//            record.setGenContent(gentContent);
+//            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+//            record.setCodeContent(codeContentList);
         } catch (Exception e) {
             log.error("解析代码块异常:{}", e.getMessage());
 
@@ -107,12 +107,14 @@ public class FlowExpertService extends ExpertService {
         record.setEndTime(System.currentTimeMillis());
         record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
 
-        return record;
+//        return  record;
+
+        return null ;
 
     }
 
     @Override
-    protected String handleModifyCall(IndustryRoleEntity role,
+    protected CompletableFuture<String> handleModifyCall(IndustryRoleEntity role,
                                       MessageEntity workflowExecution,
                                       List<CodeContent> codeContentList,
                                       MessageTaskInfo taskInfo) {
@@ -121,10 +123,10 @@ public class FlowExpertService extends ExpertService {
     }
 
     @Override
-    protected String handleFunctionCall(IndustryRoleEntity role,
-                                        MessageEntity workflowExecution,
-                                        List<CodeContent> codeContentList,
-                                        MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleFunctionCall(IndustryRoleEntity role,
+                                                           MessageEntity workflowExecution,
+                                                           List<CodeContent> codeContentList,
+                                                           MessageTaskInfo taskInfo) {
 
         return null;
     }
