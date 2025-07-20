@@ -83,9 +83,9 @@ public class ReActExpertService extends ExpertService {
     private final MessageUsageDto usage = new MessageUsageDto();  // 消耗统计
 
     @Override
-    protected String handleRole(IndustryRoleEntity role,
-                                MessageEntity workflowMessage,
-                                MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleRole(IndustryRoleEntity role,
+                                                   MessageEntity workflowMessage,
+                                                   MessageTaskInfo taskInfo) {
 
         String goal = clearMessage(taskInfo.getText()) ; // 目标
         String queryText = StringUtils.hasLength(taskInfo.getQueryText()) ? taskInfo.getQueryText() : goal ;
@@ -309,7 +309,9 @@ public class ReActExpertService extends ExpertService {
                 taskInfo,
                 taskInfo.getTraceBusId()) ;
 
-        return StringUtils.hasLength(answer)? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+        return CompletableFuture.completedFuture(StringUtils.hasLength(answer)?
+                AgentConstants.ChatText.CHAT_FINISH :
+                AgentConstants.ChatText.CHAT_NO_ANSWER);
     }
 
     @NotNull
@@ -346,7 +348,7 @@ public class ReActExpertService extends ExpertService {
 
 
     @Override
-    protected String handleModifyCall(IndustryRoleEntity role,
+    protected CompletableFuture<String> handleModifyCall(IndustryRoleEntity role,
                                       MessageEntity workflowMessage,
                                       List<CodeContent> codeContentList,
                                       MessageTaskInfo taskInfo) {
@@ -355,10 +357,10 @@ public class ReActExpertService extends ExpertService {
     }
 
     @Override
-    protected String handleFunctionCall(IndustryRoleEntity role,
-                                        MessageEntity workflowMessage,
-                                        List<CodeContent> codeContentList,
-                                        MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleFunctionCall(IndustryRoleEntity role,
+                                                           MessageEntity workflowMessage,
+                                                           List<CodeContent> codeContentList,
+                                                           MessageTaskInfo taskInfo) {
 
         return null;
     }
