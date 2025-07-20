@@ -46,9 +46,9 @@ public class SimpleExpertService extends ReActExpertService {
     private ReActServiceTool reActServiceTool  ;
 
     @Override
-    protected String handleRole(IndustryRoleEntity role,
-                                MessageEntity workflowMessage,
-                                MessageTaskInfo taskInfo) {
+    protected CompletableFuture<String> handleRole(IndustryRoleEntity role,
+                                                   MessageEntity workflowMessage,
+                                                   MessageTaskInfo taskInfo) {
 
 
         reActServiceTool.setRole(getRole());
@@ -203,7 +203,9 @@ public class SimpleExpertService extends ReActExpertService {
                 taskInfo,
                 taskInfo.getTraceBusId()) ;
 
-        return StringUtils.hasLength(answer)? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+//        return StringUtils.hasLength(answer)? AgentConstants.ChatText.CHAT_FINISH : AgentConstants.ChatText.CHAT_NO_ANSWER;
+
+        return null ;
     }
 
 }
