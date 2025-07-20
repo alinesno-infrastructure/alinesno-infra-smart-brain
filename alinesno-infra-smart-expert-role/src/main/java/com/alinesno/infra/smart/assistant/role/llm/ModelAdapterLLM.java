@@ -10,6 +10,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
 import java.util.concurrent.CompletableFuture;
@@ -104,6 +106,8 @@ public class ModelAdapterLLM extends BaseModelAdapter {
      * @param taskInfo
      * @return
      */
+    @Deprecated
+    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @SneakyThrows
     public String processStreamSingle(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
 
@@ -141,6 +145,17 @@ public class ModelAdapterLLM extends BaseModelAdapter {
 
         return message.getFullContent() ;
 
+    }
+
+    // 移除同步等待，返回CompletableFuture而非String
+    public CompletableFuture<String> processStreamSingleAsync(Llm llm, IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+        long messageId = IdUtil.getSnowflakeNextId();
+        return getSingleAiChatResultAsync(llm, role, prompt, taskInfo, messageId)
+                .thenApply(aiMessage -> {
+                    MessageEntity entity = getMessageEntity(role, taskInfo, aiMessage);
+                    messageService.save(entity);
+                    return aiMessage.getFullContent();
+                });
     }
 
     /**
