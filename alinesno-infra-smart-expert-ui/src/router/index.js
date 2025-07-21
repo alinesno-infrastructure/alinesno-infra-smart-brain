@@ -248,6 +248,12 @@ export const constantRoutes = [
         name: "/smart/assistant/template/generalAgent",
         meta: { title: '通用智能体配置', icon: 'dashboard', affix: true }
       },
+      {
+        path: "/smart/assistant/config/officialDocument",
+        component: () => import('@/views/smart/assistant/config/officialDocument'),
+        name: "/smart/assistant/config/officialDocument",
+        meta: { title: '智能文档配置', icon: 'dashboard', affix: true }
+      },
     ]
   },
   {
