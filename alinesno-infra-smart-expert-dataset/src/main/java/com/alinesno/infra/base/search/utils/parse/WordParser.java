@@ -2,10 +2,15 @@ package com.alinesno.infra.base.search.utils.parse;
 
 import com.alinesno.infra.base.search.service.reader.BaseReaderServiceImpl;
 import com.alinesno.infra.base.search.utils.TextParser;
-import com.spire.doc.Document;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,58 +21,49 @@ import java.util.List;
 public class WordParser extends TextParser {
 
     /**
-     * 读取word文档中，docx后缀的文件
-     * @param filePath
-     * @return
+     * 读取word文档内容（支持.doc和.docx）
+     * @param filePath 文件路径
+     * @return 文档内容列表
      */
     public static List<String> searchWord(String filePath) {
         List<String> docList = new ArrayList<>();
-        File tempFile = new File(filePath);
-        try {
-            Document doc = new Document();
-            doc.loadFromFile(tempFile.toString());
-            String content = doc.getText();
+        File file = new File(filePath);
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            String content;
+
+            if (filePath.toLowerCase().endsWith(".docx")) {
+                // 处理.docx文件
+                XWPFDocument document = new XWPFDocument(fis);
+                XWPFWordExtractor extractor = new XWPFWordExtractor(document);
+                content = extractor.getText();
+                extractor.close();
+            } else if (filePath.toLowerCase().endsWith(".doc")) {
+                // 处理.doc文件
+                HWPFDocument document = new HWPFDocument(fis);
+                WordExtractor extractor = new WordExtractor(document);
+                content = extractor.getText();
+                extractor.close();
+            } else {
+                log.warn("不支持的文件格式: {}", filePath);
+                return docList;
+            }
 
             docList.add(BaseReaderServiceImpl.cleanText(content));
-        } catch (Exception e) {
-            log.error("解析异常:{}", e.getMessage());
+        } catch (IOException e) {
+            log.error("解析Word文件异常: {}", e.getMessage());
         }
+
         return docList;
     }
 
-    //读取word文档中，doc后缀的文件
-    public static List<String> searchWordDoc(String filePath){
-//        List<String> docList = new ArrayList<String>();
-//        String content=null;
-//        //读取字节流，读取文件路径
-//        InputStream input = null;
-//        try {
-//            input = new FileInputStream(new File(filePath));
-//            WordExtractor wex = new WordExtractor(input);
-//            content = wex.getText();
-//            docList.add(content);
-//        } catch (Exception e) {
-//            log.error("解析异常:{}" , e.getMessage());
-//        }
-//        return docList;
+    // 读取.doc文件
+    public static List<String> searchWordDoc(String filePath) {
         return searchWord(filePath);
     }
 
-    public static List<String> searchWordDocX(String filePath){
-//        //读取文件路径
-//        OPCPackage opcPackage = null;
-//        String content = null;
-//        List<String> docxList = new ArrayList<String>();
-//        try {
-//            opcPackage = POIXMLDocument.openPackage(filePath);
-//            XWPFDocument xwpf = new XWPFDocument(opcPackage);
-//            POIXMLTextExtractor poiText = new XWPFWordExtractor(xwpf);
-//            content = poiText.getText();
-//            docxList.add(content);
-//        } catch (IOException e) {
-//            log.error("解析异常:{}" , e.getMessage());
-//        }
-//        return docxList;
+    // 读取.docx文件
+    public static List<String> searchWordDocX(String filePath) {
         return searchWord(filePath);
     }
 }
