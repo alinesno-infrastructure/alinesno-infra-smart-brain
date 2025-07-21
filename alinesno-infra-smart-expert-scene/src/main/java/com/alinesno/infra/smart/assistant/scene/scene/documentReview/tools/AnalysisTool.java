@@ -17,13 +17,18 @@ import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
-import com.spire.doc.Document;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,9 +37,6 @@ import java.util.concurrent.CompletableFuture;
 @Slf4j
 @Component
 public class AnalysisTool {
-
-//    @Autowired
-//    private IAttachmentReaderService attachmentReaderService ;
 
     private static final int maxLength = 10000 ;
 
@@ -55,24 +57,46 @@ public class AnalysisTool {
 
     /**
      * 分析文档基础内容
+     * @param file 要分析的Word文档文件
+     * @return 处理后的文档内容（最多2000个字符）
      */
     public String analysisDocumentBaseContent(File file) {
+        log.debug("documentId = {}", file.getAbsoluteFile());
 
-        log.debug("documentId = {}" , file.getAbsoluteFile());
+        String content = "";
+        String fileName = file.getName().toLowerCase();
 
-        //加载包含目录的Word文档
-        Document doc = new Document();
-        doc.loadFromFile(file.getAbsolutePath()) ;
+        try {
+            if (fileName.endsWith(".docx")) {
+                // 处理.docx文件
+                try (XWPFDocument document = new XWPFDocument(new FileInputStream(file));
+                     XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
+                    content = extractor.getText();
+                }
+            } else if (fileName.endsWith(".doc")) {
+                // 处理.doc文件
+                try (HWPFDocument document = new HWPFDocument(new FileInputStream(file));
+                     WordExtractor extractor = new WordExtractor(document)) {
+                    content = extractor.getText();
+                }
+            } else {
+                log.warn("不支持的文件格式: {}", fileName);
+                return "";
+            }
 
-        // 获取到所有内容，并去掉所有空格
-        String content = BaseReaderServiceImpl.cleanText(doc.getText());
+            // 清理文本内容
+            content = BaseReaderServiceImpl.cleanText(content);
 
-        // 如果content不为空，则截取前2000个字符
-        if (content.length() > maxLength) {
-            content = content.substring(0, maxLength);
+            // 截取前2000个字符
+            if (content.length() > maxLength) {
+                content = content.substring(0, maxLength);
+            }
+
+        } catch (IOException e) {
+            log.error("解析Word文档失败: {}", e.getMessage());
         }
 
-        return content ;
+        return content;
     }
 
     @SneakyThrows
