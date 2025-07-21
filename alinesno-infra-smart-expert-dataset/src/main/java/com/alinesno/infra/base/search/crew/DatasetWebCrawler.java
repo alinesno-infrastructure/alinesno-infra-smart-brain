@@ -2,18 +2,21 @@ package com.alinesno.infra.base.search.crew;
 
 import com.alinesno.infra.base.search.api.CrawlerDto;
 import com.alinesno.infra.smart.im.service.ISSEService;
-import com.spire.doc.Document;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -241,17 +244,44 @@ public class DatasetWebCrawler {
         HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
         connection.setConnectTimeout(CONNECTION_TIMEOUT);
         connection.setReadTimeout(READ_TIMEOUT);
-        Path tempFile = Files.createTempFile("temp", ".docx");
+
+        Path tempFile = Files.createTempFile("temp", getFileExtension(url));
+
         try (InputStream inputStream = connection.getInputStream()) {
             Files.copy(inputStream, tempFile, StandardCopyOption.REPLACE_EXISTING);
 
-            Document doc = new Document();
-            doc.loadFromFile(tempFile.toString());
+            String content;
+            if (url.toLowerCase().endsWith(".docx")) {
+                // 处理.docx文件
+                try (XWPFDocument document = new XWPFDocument(Files.newInputStream(tempFile));
+                     XWPFWordExtractor extractor = new XWPFWordExtractor(document)) {
+                    content = extractor.getText();
+                }
+            } else if (url.toLowerCase().endsWith(".doc")) {
+                // 处理.doc文件
+                try (HWPFDocument document = new HWPFDocument(Files.newInputStream(tempFile));
+                     WordExtractor extractor = new WordExtractor(document)) {
+                    content = extractor.getText();
+                }
+            } else {
+                throw new IllegalArgumentException("不支持的文件格式: " + url);
+            }
 
-            return doc.getText();
+            return content;
         } finally {
             Files.deleteIfExists(tempFile);
         }
+    }
+
+    /**
+     * 根据URL获取文件扩展名
+     */
+    private String getFileExtension(String url) {
+        int lastDotIndex = url.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            return url.substring(lastDotIndex);
+        }
+        return ".tmp"; // 默认扩展名
     }
 
     /**
