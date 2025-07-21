@@ -11,7 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * 描述：MCP配置
+ * 描述：MCP配置与其它三方服务配置
  * @author luoxiaodong
  */
 @EqualsAndHashCode(callSuper = true)
