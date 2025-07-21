@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-extend-datascope</artifactId>
-			<version>${revision}</version>
+			<version>${alinesno.infra.common.version}</version>
 		</dependency>
 		<!-- 扩展引入_end -->
 
@@ -228,18 +228,5 @@
 		</dependency>
 
 	</dependencies>
-
-	<repositories>
-		<repository>
-			<id>iceblue-repos</id>
-			<url>https://repo.e-iceblue.cn/repository/maven-public/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
 
 </project>
