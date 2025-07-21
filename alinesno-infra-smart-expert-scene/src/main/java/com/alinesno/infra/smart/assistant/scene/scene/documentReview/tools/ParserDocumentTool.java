@@ -82,10 +82,10 @@ public class ParserDocumentTool {
 
              content = document.getContent();
         }else if("docx".equals(fileType) || "doc".equals(fileType)){
-            //加载包含目录的Word文档
-            com.spire.doc.Document doc = new com.spire.doc.Document();
-            doc.loadFromFile(file.getAbsolutePath()) ;
-            content = doc.getText();
+            //TODO 加载包含目录的Word文档
+//            com.spire.doc.Document doc = new com.spire.doc.Document();
+//            doc.loadFromFile(file.getAbsolutePath()) ;
+//            content = doc.getText();
         }
         return content;
     }
