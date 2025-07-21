@@ -45,14 +45,14 @@
 		<dependency>
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-web-api</artifactId>
-			<version>${revision}</version>
+			<version>${alinesno.infra.common.version}</version>
 		</dependency>
 
 		<!-- 扩展引入_start -->
 		<dependency>
 			<groupId>com.alinesno.infra.common</groupId>
 			<artifactId>alinesno-infra-common-extend-datascope</artifactId>
-			<version>${revision}</version>
+			<version>${alinesno.infra.common.version}</version>
 		</dependency>
 		<!-- 扩展引入_end -->
 
@@ -100,9 +100,9 @@
         </dependency>
 
 		<dependency>
-			<groupId>com.luhuiguo</groupId>
-			<artifactId>aspose-words</artifactId>
-			<version>23.1</version>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>4.1.2</version>
 		</dependency>
 
 	</dependencies>
