@@ -37,7 +37,7 @@
         <dependency>
             <groupId>com.alinesno.infra.common</groupId>
             <artifactId>alinesno-infra-common-core</artifactId>
-			<version>${revision}</version>
+			<version>${alinesno.infra.common.version}</version>
         </dependency>
 
 		<!-- 引用fastjson -->
