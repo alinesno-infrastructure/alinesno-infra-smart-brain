@@ -154,7 +154,16 @@ const modelConfigs = [
     icon: "fa-solid fa-robot",
     status: 0,
     link: "/smart/assistant/config/generalAgent"
-  }
+  },
+  // 智能公文配置
+  {
+      id: 9,
+      configName: "智能文档配置",
+      configDesc: "此配置项用于设置文档生成、格式校验和排版相关的参数，确保公文处理的规范性和高效性。",
+      icon: "fa-solid fa-file-contract",
+      status: 0,
+      link: "/smart/assistant/config/officialDocument"
+  },
 ];
 </script>
 
