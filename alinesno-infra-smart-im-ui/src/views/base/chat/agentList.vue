@@ -21,9 +21,10 @@
                 </div>
 
                 <div class="header">
-                    <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
+                    <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的团队能力服务列表</span>
                 </div>
 
+                <!-- 
                 <div class="popular border-bottom">
                     <div class="popular-item" v-for="(item, index) in demoProductList" :key="index">
                         <img :alt="item.name" class="popular-item__banner"
@@ -35,7 +36,8 @@
                             {{ truncateString(item.description, 20) }}
                         </div>
                     </div>
-                </div>
+                </div> 
+                -->
 
                 <section v-for="(type, index) in productList" :key="index">
                     <h2 class="section-title" style="margin-left:10px">
