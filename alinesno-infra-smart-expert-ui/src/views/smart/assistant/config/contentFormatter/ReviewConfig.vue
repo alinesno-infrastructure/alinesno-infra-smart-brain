@@ -1,8 +1,9 @@
 <template>
   <div class="review-config">
-    <el-button type="primary" @click="addRule" class="mb-20">添加审核规则</el-button>
+    <el-button type="primary" text bg size="large" @click="addRule" icon="Plus" class="mb-20">添加审核规则</el-button>
 
-    <el-table :data="rules" border style="width: 100%">
+    <el-table :data="rules" style="width: 100%">
+      <el-table-column type="index" label="序号" width="60" />
       <el-table-column prop="name" label="规则名称" width="180" />
       <el-table-column prop="docType" label="文档类型" width="120" />
       <el-table-column prop="riskLevel" label="风险级别" width="120">
@@ -16,16 +17,16 @@
         </template>
       </el-table-column>
       <el-table-column prop="description" label="规则描述" />
-      <el-table-column label="操作" width="150">
+      <el-table-column label="操作" align="center" width="200">
         <template #default="{row}">
-          <el-button size="small" @click="editRule(row)">编辑</el-button>
-          <el-button size="small" type="danger" @click="deleteRule(row)">删除</el-button>
+          <el-button text bg @click="editRule(row)">编辑</el-button>
+          <el-button type="danger" text bg @click="deleteRule(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
 
     <el-dialog v-model="dialogVisible" :title="dialogTitle" width="50%">
-      <el-form :model="currentRule" label-width="120px">
+      <el-form :model="currentRule" label-width="80px" size="large">
         <el-form-item label="规则名称">
           <el-input v-model="currentRule.name" placeholder="请输入规则名称" />
         </el-form-item>
