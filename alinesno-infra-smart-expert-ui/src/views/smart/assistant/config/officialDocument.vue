@@ -1,9 +1,14 @@
 <template>
-  <div class="smart-doc-config">
-    <h1 class="title">智能文档配置</h1>
+  <div class="app-container smart-doc-config">
+    <!-- 顶部导航栏 -->
+    <el-page-header @back="goBack" class="page-header">
+      <template #content>
+        <span class="header-title">智能文档配置</span>
+      </template>
+    </el-page-header>
 
     <el-tabs v-model="activeTab" :tab-position="'right'" class="config-tabs">
-      <el-tab-pane label="文档解析服务配置" name="parse">
+      <el-tab-pane label="文档解析服务" name="parse">
         <ParseConfig />
       </el-tab-pane>
 
@@ -42,6 +47,7 @@ const activeTab = ref('parse')
 
   .config-tabs {
     width: 100%;
+    margin-top:20px;
 
     :deep(.el-tabs__content) {
       padding-right: 20px;
@@ -53,9 +59,9 @@ const activeTab = ref('parse')
     }
 
     :deep(.el-tabs__item) {
-      font-size: 16px;
-      height: 50px;
-      line-height: 50px;
+      font-size: 14px;
+      height: 40px;
+      line-height: 40px;
     }
   }
 }
