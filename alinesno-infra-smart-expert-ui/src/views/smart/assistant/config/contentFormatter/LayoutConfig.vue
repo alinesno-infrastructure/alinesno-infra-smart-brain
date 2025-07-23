@@ -1,22 +1,45 @@
 <template>
   <div class="layout-config">
     <div class="layout-manager">
+
       <div class="layout-list">
-        <el-button type="primary" text bg size="large" icon="Plus" @click="addLayoutTemplate"
+        <el-button type="primary" text bg size="large" icon="Plus" @click="showAddDialog"
           class="mb-20">添加排版模板</el-button>
 
         <el-table :data="templates" style="width: 100%">
           <el-table-column type="index" label="序号" width="60" />
           <el-table-column prop="name" label="模板名称" width="120" :show-overflow-tooltip="true" />
-          <el-table-column prop="description" label="描述" />
-          <el-table-column label="操作" align="center" width="200">
+          <el-table-column prop="layoutDesc" label="描述" />
+          <el-table-column label="操作" align="center" width="300">
             <template #default="{ row }">
               <el-button text bg @click="editTemplate(row)">编辑</el-button>
+              <el-button type="primary" text bg @click="editLayoutTemplate(row)">排版</el-button>
               <el-button type="danger" text bg @click="deleteTemplate(row)">删除</el-button>
             </template>
           </el-table-column>
         </el-table>
+        <pagination style="margin-bottom:30px" v-show="total > 0" 
+            :total="total" 
+            v-model:page="queryParams.pageNum" 
+            v-model:limit="queryParams.pageSize" 
+            @pagination="getList" />
       </div>
+
+      <!-- 添加/编辑模板的对话框 -->
+      <el-dialog v-model="dialogVisible" :title="dialogTitle" width="500px">
+        <el-form :model="form" label-width="80px">
+          <el-form-item label="模板名称" required>
+            <el-input v-model="form.name" placeholder="请输入模板名称" />
+          </el-form-item>
+          <el-form-item label="描述">
+            <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入模板描述" />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary" @click="handleDialogConfirm">确认</el-button>
+        </template>
+      </el-dialog>
 
       <div class="layout-editor" v-if="currentTemplate">
         <h3>模板编辑: {{ currentTemplate.name }}</h3>
@@ -57,8 +80,10 @@
                     controls-position="right" />
                   <span>px</span>
                 </el-form-item>
-                <el-form-item label="行高">
-                  <el-slider v-model="currentTemplate.body.lineHeight" :min="1" :max="2" :step="0.1" show-input />
+                <el-form-item label="行高"> 
+                  <el-slider v-model="currentTemplate.body.lineHeight" 
+                    :format-tooltip="val => val.toFixed(2)"
+                    :min="1" :max="2" :step="0.1" show-input />
                 </el-form-item>
                 <el-form-item label="颜色">
                   <el-color-picker v-model="currentTemplate.body.color" />
@@ -71,26 +96,11 @@
             <el-form label-width="100px" size="large">
 
               <el-form-item label="预设边距">
-                <el-select v-model="selectedMarginPreset" placeholder="选择预设边距" @change="applyMarginPreset">
+                <el-select v-model="currentTemplate.selectedMarginPreset" placeholder="选择预设边距" @change="applyMarginPreset">
                   <el-option v-for="preset in marginPresets" :key="preset.value" :label="preset.label"
                     :value="preset.value" />
                 </el-select>
               </el-form-item>
-
-              <!-- <el-form-item label="页边距(mm)">
-                <div class="form-row">
-                  <el-row>
-                    <el-col :span="12">
-                      <el-input-number v-model="currentTemplate.margin.top" :min="10" :max="50" /> 上
-                      <el-input-number v-model="currentTemplate.margin.bottom" :min="10" :max="50" /> 下
-                    </el-col>
-                    <el-col :span="12">
-                      <el-input-number v-model="currentTemplate.margin.left" :min="10" :max="50" /> 左
-                      <el-input-number v-model="currentTemplate.margin.right" :min="10" :max="50" /> 右
-                    </el-col>
-                  </el-row>
-                </div>
-              </el-form-item> -->
 
               <el-form-item label="页边距(mm)">
                 <div class="form-row">
@@ -230,31 +240,267 @@
 
 <script setup>
 import { ref, reactive } from 'vue'
+import { ElMessage, ElMessageBox } from "element-plus"
 
-const templates = ref([
-  {
-    id: 1,
-    name: '政府公文模板',
-    description: '适用于政府机关公文排版',
+import { 
+  listLayoutTemplates, 
+  getLayoutTemplate, 
+  addLayoutTemplate as apiAddLayoutTemplate, 
+  updateLayoutTemplate, 
+  updateLayoutInfoTemplate,
+  delLayoutTemplate, 
+  previewLayoutTemplate 
+} from '@/api/smart/scene/contentFormatterLayout'
+
+// 修改原有的模板数据为从API获取
+const templates = ref([])
+
+const currentTemplate = ref(null)
+const dialogVisible = ref(false)
+const dialogTitle = ref('添加模板')
+const isEditMode = ref(false)
+const dateRange = ref([]); 
+const total = ref(0);
+
+const { proxy } = getCurrentInstance();
+
+const form = reactive({
+  id: null,
+  name: '',
+  description: ''
+})
+
+const preview = reactive({
+  cover: '',
+  header: '',
+  footer: '',
+  officialHeader: ''
+})
+
+// 显示添加对话框
+const showAddDialog = () => {
+  resetForm()
+  dialogTitle.value = '添加模板'
+  isEditMode.value = false
+  dialogVisible.value = true
+}
+
+// 编辑模板
+const editTemplate = async (template) => {
+  try {
+    const res = await getLayoutTemplate(template.id)
+    currentTemplate.value = res.data
+    
+    // 填充表单数据
+    form.id = res.data.id
+    form.name = res.data.name
+    form.description = res.data.description
+    
+    dialogTitle.value = '编辑模板'
+    isEditMode.value = true
+    dialogVisible.value = true
+    
+    updateAllPreviews()
+  } catch (error) {
+    console.error('获取模板详情失败:', error)
+    ElMessage.error('获取模板详情失败')
+  }
+}
+
+// 编辑模板
+const editLayoutTemplate = async (template) => {
+  try {
+    const res = await getLayoutTemplate(template.id)  
+    currentTemplate.value = res.data 
+
+    // 确保lineHeight是数字类型
+    if (currentTemplate.value.body) {
+      currentTemplate.value.body.lineHeight = Number(currentTemplate.value.body.lineHeight) || 1.5
+    }
+
+    updateAllPreviews()
+  } catch (error) {
+    console.error('获取模板详情失败:', error)
+    ElMessage.error('获取模板详情失败')
+  }
+}
+
+// 重置表单
+const resetForm = () => {
+  form.id = null
+  form.name = ''
+  form.description = ''
+}
+
+const data = reactive({
+   queryParams: {
+      pageNum: 1,
+      pageSize: 10,
+      templateName: undefined,
+      promptDesc: undefined,
+      catalogId: undefined
+   },
+   rules: {
+      templateName: [{ required: true, message: "名称不能为空", trigger: "blur" }],
+   }
+});
+
+const { queryParams, rules } = toRefs(data);
+
+// 处理对话框确认
+const handleDialogConfirm = async () => {
+  if (!form.name.trim()) {
+    ElMessage.warning('请输入模板名称')
+    return
+  }
+
+  try {
+    if (isEditMode.value) {
+      // 更新模板基本信息
+      await updateLayoutInfoTemplate({
+        id: form.id,
+        name: form.name,
+        description: form.description
+      })
+      
+      // 更新当前模板的显示名称和描述
+      if (currentTemplate.value) {
+        currentTemplate.value.name = form.name
+        currentTemplate.value.layoutDesc = form.description
+      }
+      
+      // 更新列表中的模板信息
+      const index = templates.value.findIndex(item => item.id === form.id)
+      if (index !== -1) {
+        templates.value[index].name = form.name
+        templates.value[index].layoutDesc = form.description
+      }
+      
+      ElMessage.success('模板更新成功')
+    } else {
+      // 创建新模板
+      const newTemplate = {
+        name: form.name,
+        description: form.description,
+        headings: Array(6).fill().map((_, i) => ({
+          level: i + 1,
+          fontFamily: 'SimSun',
+          fontSize: 24 - i * 2,
+          color: '#333333',
+          align: 'left'
+        })),
+        body: {
+          fontFamily: 'SimSun',
+          fontSize: 12,
+          lineHeight: 1.5,
+          color: '#333333'
+        },
+        margin: {
+          top: 30,
+          bottom: 30,
+          left: 25,
+          right: 25
+        },
+        selectedMarginPreset: 'normal',
+        pageSize: 'A4',
+        headerHeight: 15,
+        footerHeight: 15,
+        coverHtml: `<div style="text-align: center; padding: 50px 0; border: 1px solid #eee; background: #f9f9f9;">
+            <h1 style="font-size: 36px; color: #333; margin-bottom: 30px;">${form.name}</h1>
+            <div style="font-size: 18px; color: #666; margin-bottom: 20px;">某某单位</div>
+            <div style="font-size: 16px; color: #999;">日期：${new Date().getFullYear()}年XX月XX日</div>
+          </div>`,
+        headerHtml: `<div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; border-bottom: 1px solid #eee;">
+            <div style="font-size: 12px; color: #333;">${form.name}</div>
+            <div style="font-size: 12px; color: #666;">第<span style="margin: 0 5px;">1</span>页</div>
+          </div>`,
+        footerHtml: `<div style="display: flex; justify-content: center; align-items: center; padding: 5px 10px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
+            <div>机密等级：普通</div>
+            <div style="margin: 0 20px;">文件编号：XXXX-XX-XX</div>
+            <div>打印日期：${new Date().getFullYear()}-XX-XX</div>
+          </div>`,
+        officialHeaderHtml: `<div style="text-align: center; margin-bottom: 20px;">
+            <div style="font-size: 22px; font-weight: bold; color: #c00; margin-bottom: 5px;">
+              ${form.name}
+            </div>
+            <div style="font-size: 16px; color: #333; margin-bottom: 15px;">
+              文件编号
+            </div>
+            <div style="height: 2px; background: #c00; margin: 0 auto 15px; width: 100%;"></div>
+            <div style="font-size: 24px; font-weight: bold; color: #333;">
+              文件标题
+            </div>
+          </div>`,
+        officialHeaderHeight: 150,
+        headerLineColor: '#c00',
+        headerLineWidth: 2
+      }
+      
+      const res = await apiAddLayoutTemplate(newTemplate)
+      currentTemplate.value = res.data
+      templates.value.push(currentTemplate.value)
+      updateAllPreviews()
+      ElMessage.success('模板创建成功')
+    }
+    
+    dialogVisible.value = false
+  } catch (error) {
+    console.error('操作失败:', error)
+    ElMessage.error(isEditMode.value ? '更新模板失败' : '创建模板失败')
+  }
+}
+
+// 删除模板
+const deleteTemplate = async (template) => {
+  try {
+    await ElMessageBox.confirm(`确定要删除模板 "${template.name}" 吗?`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    })
+    
+    await delLayoutTemplate(template.id)
+    templates.value = templates.value.filter(item => item.id !== template.id)
+    
+    if (currentTemplate.value?.id === template.id) {
+      currentTemplate.value = null
+    }
+    
+    ElMessage.success('删除成功')
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('删除模板失败:', error)
+      ElMessage.error('删除失败')
+    }
+  }
+}
+
+
+// 修改 addLayoutTemplate 方法
+const addLayoutTemplate = async () => {
+  const newTemplate = {
+    name: '新建模板',
+    description: '',
     headings: Array(6).fill().map((_, i) => ({
       level: i + 1,
       fontFamily: 'SimSun',
       fontSize: 24 - i * 2,
       color: '#333333',
-      align: 'center'
+      align: 'left'
     })),
     body: {
       fontFamily: 'SimSun',
-      fontSize: 16,
+      fontSize: 12,
       lineHeight: 1.5,
       color: '#333333'
     },
     margin: {
       top: 30,
       bottom: 30,
-      left: 28,
-      right: 26
+      left: 25,
+      right: 25
     },
+    selectedMarginPreset:'normal',
     pageSize: 'A4',
     headerHeight: 15,
     footerHeight: 15,
@@ -262,47 +508,75 @@ const templates = ref([
         <h1 style="font-size: 36px; color: #333; margin-bottom: 30px;">文档标题</h1>
         <div style="font-size: 18px; color: #666; margin-bottom: 20px;">某某单位</div>
         <div style="font-size: 16px; color: #999;">日期：2023年XX月XX日</div>
-      </div>
-    `,
-
+      </div>`,
     headerHtml: `<div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; border-bottom: 1px solid #eee;">
         <div style="font-size: 12px; color: #333;">某某单位文件</div>
         <div style="font-size: 12px; color: #666;">第<span style="margin: 0 5px;">1</span>页</div>
-      </div>
-    `,
-
+      </div>`,
     footerHtml: `<div style="display: flex; justify-content: center; align-items: center; padding: 5px 10px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
         <div>机密等级：普通</div>
         <div style="margin: 0 20px;">文件编号：XXXX-XX-XX</div>
         <div>打印日期：2023-XX-XX</div>
-      </div>
-    `,
+      </div>`,
     officialHeaderHtml: `<div style="text-align: center; margin-bottom: 20px;">
         <div style="font-size: 22px; font-weight: bold; color: #c00; margin-bottom: 5px;">
-          某某市人民政府文件
+          单位名称文件
         </div>
         <div style="font-size: 16px; color: #333; margin-bottom: 15px;">
-          某政发〔2023〕12号
+          文件编号
         </div>
         <div style="height: 2px; background: #c00; margin: 0 auto 15px; width: 100%;"></div>
         <div style="font-size: 24px; font-weight: bold; color: #333;">
-          关于某某事项的通知
+          文件标题
         </div>
-      </div>
-    `,
+      </div>`,
     officialHeaderHeight: 150,
     headerLineColor: '#c00',
     headerLineWidth: 2
   }
-])
+  
+  try {
+    const res = await apiAddLayoutTemplate(newTemplate)
+    currentTemplate.value = res.data
+    templates.value.push(currentTemplate.value)
+    updateAllPreviews()
+    ElMessage.success('模板创建成功')
+  } catch (error) {
+    console.error('创建模板失败:', error)
+  }
+}
+  
+// 修改 saveTemplate 方法
+const saveTemplate = async () => {
+  try {
+    if (currentTemplate.value.id) {
+      await updateLayoutTemplate(currentTemplate.value)
+      ElMessage.success('保存成功')
+    }
+  } catch (error) {
+    console.error('保存模板失败:', error)
+  }
+}
 
-const currentTemplate = ref(null)
-const preview = reactive({
-  cover: '',
-  header: '',
-  footer: '',
-  officialHeader: ''
-})
+// 修改 previewTemplate 方法
+const previewTemplate = async () => {
+  try {
+    const res = await previewLayoutTemplate(currentTemplate.value.id)
+    // 这里可以打开一个新窗口显示预览，或者使用其他方式展示预览结果
+    console.log('预览结果:', res.data)
+    ElMessage.success('预览生成成功')
+  } catch (error) {
+    console.error('预览生成失败:', error)
+  }
+}
+
+// const currentTemplate = ref(null)
+// const preview = reactive({
+//   cover: '',
+//   header: '',
+//   footer: '',
+//   officialHeader: ''
+// })
 
 // 新增边距预设选项
 const marginPresets = ref([
@@ -320,77 +594,9 @@ const applyMarginPreset = (presetValue) => {
   const preset = marginPresets.value.find(p => p.value === presetValue)
   if (preset) {
     currentTemplate.value.margin = { ...preset.margins }
+    currentTemplate.value.selectedMarginPreset = presetValue;
   }
 }
-
-// // 页面预览样式计算
-// const pageStyle = computed(() => {
-//   return {
-//     width: currentTemplate.value.pageSize === 'A4' ? '210mm' : '297mm',
-//     height: currentTemplate.value.pageSize === 'A4' ? '297mm' : '420mm',
-//     margin: '0 auto',
-//     position: 'relative'
-//   }
-// })
-
-// const headerStyle = computed(() => {
-//   return {
-//     height: `${currentTemplate.value.headerHeight}mm`,
-//     backgroundColor: 'rgba(200, 200, 255, 0.3)',
-//     borderBottom: '1px dashed #ccc'
-//   }
-// })
-
-// const footerStyle = computed(() => {
-//   return {
-//     height: `${currentTemplate.value.footerHeight}mm`,
-//     backgroundColor: 'rgba(200, 200, 255, 0.3)',
-//     borderTop: '1px dashed #ccc'
-//   }
-// })
-
-// const contentStyle = computed(() => {
-//   return {
-//     height: `calc(100% - ${currentTemplate.value.headerHeight + currentTemplate.value.footerHeight}mm)`,
-//     position: 'relative',
-//     backgroundColor: 'rgba(255, 255, 255, 0.8)'
-//   }
-// })
-
-// const marginLineStyle = (side) => {
-//   const marginValue = currentTemplate.value.margin[side]
-//   const positionStyle = {
-//     top: {
-//       top: '0',
-//       left: '0',
-//       right: '0',
-//       height: `${marginValue}mm`,
-//       borderBottom: '1px dashed red'
-//     },
-//     bottom: {
-//       bottom: '0',
-//       left: '0',
-//       right: '0',
-//       height: `${marginValue}mm`,
-//       borderTop: '1px dashed red'
-//     },
-//     left: {
-//       top: '0',
-//       bottom: '0',
-//       left: '0',
-//       width: `${marginValue}mm`,
-//       borderRight: '1px dashed red'
-//     },
-//     right: {
-//       top: '0',
-//       bottom: '0',
-//       right: '0',
-//       width: `${marginValue}mm`,
-//       borderLeft: '1px dashed red'
-//     }
-//   }
-//   return positionStyle[side]
-// }
 
 // 页面预览样式计算（按比例缩小，宽度固定180px）
 const pageStyle = computed(() => {
@@ -492,93 +698,6 @@ const marginLineStyle = (side) => {
   return positionStyle[side]
 }
 
-const addLayoutTemplate = () => {
-  currentTemplate.value = {
-    id: Date.now(),
-    name: '新建模板',
-    description: '',
-    headings: Array(6).fill().map((_, i) => ({
-      level: i + 1,
-      fontFamily: 'SimSun',
-      fontSize: 24 - i * 2,
-      color: '#333333',
-      align: 'left'
-    })),
-    body: {
-      fontFamily: 'SimSun',
-      fontSize: 12,
-      lineHeight: 1.5,
-      color: '#333333'
-    },
-    margin: {
-      top: 30,
-      bottom: 30,
-      left: 25,
-      right: 25
-    },
-    pageSize: 'A4',
-    headerHeight: 15,
-    footerHeight: 15,
-    coverHtml: `<div style="text-align: center; padding: 50px 0; border: 1px solid #eee; background: #f9f9f9;">
-        <h1 style="font-size: 36px; color: #333; margin-bottom: 30px;">文档标题</h1>
-        <div style="font-size: 18px; color: #666; margin-bottom: 20px;">某某单位</div>
-        <div style="font-size: 16px; color: #999;">日期：2023年XX月XX日</div>
-      </div>
-    `,
-
-    headerHtml: `<div style="display: flex; justify-content: space-between; align-items: center; padding: 5px 10px; border-bottom: 1px solid #eee;">
-        <div style="font-size: 12px; color: #333;">某某单位文件</div>
-        <div style="font-size: 12px; color: #666;">第<span style="margin: 0 5px;">1</span>页</div>
-      </div>
-    `,
-
-    footerHtml: `<div style="display: flex; justify-content: center; align-items: center; padding: 5px 10px; border-top: 1px solid #eee; font-size: 12px; color: #666;">
-        <div>机密等级：普通</div>
-        <div style="margin: 0 20px;">文件编号：XXXX-XX-XX</div>
-        <div>打印日期：2023-XX-XX</div>
-      </div>
-    `,
-    officialHeaderHtml: `<div style="text-align: center; margin-bottom: 20px;">
-        <div style="font-size: 22px; font-weight: bold; color: #c00; margin-bottom: 5px;">
-          单位名称文件
-        </div>
-        <div style="font-size: 16px; color: #333; margin-bottom: 15px;">
-          文件编号
-        </div>
-        <div style="height: 2px; background: #c00; margin: 0 auto 15px; width: 100%;"></div>
-        <div style="font-size: 24px; font-weight: bold; color: #333;">
-          文件标题
-        </div>
-      </div>
-    `,
-    officialHeaderHeight: 150,
-    headerLineColor: '#c00',
-    headerLineWidth: 2
-  }
-  templates.value.push(currentTemplate.value)
-  updateAllPreviews()
-}
-
-const editTemplate = (template) => {
-  currentTemplate.value = template
-  updateAllPreviews()
-}
-
-const deleteTemplate = (template) => {
-  templates.value = templates.value.filter(item => item !== template)
-  if (currentTemplate.value === template) {
-    currentTemplate.value = null
-  }
-}
-
-const saveTemplate = () => {
-  console.log('保存模板:', currentTemplate.value)
-}
-
-const previewTemplate = () => {
-  console.log('预览模板:', currentTemplate.value)
-}
-
 const updatePreview = (type) => {
   if (currentTemplate.value) {
     preview[type] = currentTemplate.value[`${type}Html`] || ''
@@ -608,12 +727,27 @@ const updateAllPreviews = () => {
   }
 }
 
+
+// 加载模板列表
+const loadTemplates = () => {
+
+listLayoutTemplates(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+  templates.value = res.rows || [];
+    total.value = res.total;
+
+    if (templates.value.length > 0) {
+    console.log(JSON.stringify(templates.value[0].layoutConfig))
+      //currentTemplate.value = templates.value[0].layoutConfig
+      updateAllPreviews()
+    }
+})
+
+}
+
+
 // 在 setup 脚本中添加：
 onMounted(() => {
-  if (templates.value.length > 0) {
-    currentTemplate.value = templates.value[0]
-    updateAllPreviews()
-  }
+  loadTemplates(); 
 })
 
 </script>
@@ -682,8 +816,6 @@ onMounted(() => {
       }
 
       .official-header-preview {
-        // border: 1px solid #eee;
-        // padding: 20px;
         background: white;
 
         .html-preview {
