@@ -8,16 +8,14 @@
     </el-page-header>
 
     <el-tabs v-model="activeTab" :tab-position="'right'" class="config-tabs">
-      <el-tab-pane label="文档解析服务" name="parse">
-        <ParseConfig />
-      </el-tab-pane>
-
       <el-tab-pane label="排版模板配置" name="layout">
         <LayoutConfig />
       </el-tab-pane>
-
       <el-tab-pane label="审核规则配置" name="review">
         <ReviewConfig />
+      </el-tab-pane>
+      <el-tab-pane label="文档解析服务" name="parse">
+        <ParseConfig />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -25,11 +23,20 @@
 
 <script setup>
 import { ref } from 'vue'
+
+const router = useRouter()
+
 import ParseConfig from './contentFormatter/ParseConfig.vue'
 import LayoutConfig from './contentFormatter/LayoutConfig.vue'
 import ReviewConfig from './contentFormatter/ReviewConfig.vue'
 
-const activeTab = ref('parse')
+const activeTab = ref('layout')
+
+// 返回
+const goBack = () => {
+  router.push({ path: "/global/config" })
+}
+
 </script>
 
 <style lang="scss" scoped>
