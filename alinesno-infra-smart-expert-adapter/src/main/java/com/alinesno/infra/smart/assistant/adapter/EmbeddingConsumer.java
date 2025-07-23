@@ -12,7 +12,6 @@ import com.dtflys.forest.annotation.Post;
  * 文本嵌入接口
  */
 @BaseRequest(
-//        baseURL = "https://dashscope.aliyuncs.com/compatible-mode/v1/",
         baseURL = "#{alinesno.infra.gateway.embedding}" ,
         connectTimeout = 30000,
         readTimeout = 60000)
