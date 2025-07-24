@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.pgvector.PGvector;
 
 import java.util.List;
+import java.util.Map;
 
 public interface IPgVectorService {
 
@@ -87,4 +88,19 @@ public interface IPgVectorService {
      * @return
      */
     List<DocumentVectorBean> queryMultiVectorDocument(List<Long> datasetIdArr, String searchText, Integer topK);
+
+    /**
+     * 根据数据集ID和文档名称分页查询文档
+     * @param params 查询参数
+     * @return 文档列表
+     */
+    List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Map<String, Object> params);
+
+    /**
+     * 根据数据集ID和文档名称统计总记录数
+     * @param datasetId 数据集ID
+     * @param documentName 文档名称
+     * @return 总记录数
+     */
+    long countByDatasetIdAndDocumentName(Long datasetId, String documentName);
 }
