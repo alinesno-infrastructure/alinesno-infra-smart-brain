@@ -66,7 +66,7 @@
 
           <el-table-column width="50px" align="center" label="图标" v-if="columns[0].visible">
             <template #default="scope">
-              <div style="font-size: 26px;color:#3b5998">
+              <div style="font-size: 26px;color:#1d75b0">
                 <i v-if="scope.row.icon" :class="scope.row.icon"></i>  
                 <i v-else class="fa-solid fa-file-pdf"></i>
               </div>
