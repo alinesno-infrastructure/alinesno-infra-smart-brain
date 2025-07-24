@@ -211,7 +211,7 @@ const modelConfigs = [
         padding: 10px;
         width: 55px;
         height: 55px;
-        color: #3b5998;
+        color: #1d75b0;
         border-radius: 50%;
         display: flex;
         align-items: center;
