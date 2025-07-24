@@ -8,13 +8,13 @@
     </el-page-header>
 
     <el-tabs v-model="activeTab" :tab-position="'right'" class="config-tabs">
-      <el-tab-pane label="排版模板配置" name="layout">
+      <el-tab-pane label="排版模板" name="layout" :lazy="true">
         <LayoutConfig />
       </el-tab-pane>
-      <el-tab-pane label="审核规则配置" name="review">
+      <el-tab-pane label="审核规则" name="review" :lazy="true">
         <ReviewConfig />
       </el-tab-pane>
-      <el-tab-pane label="文档解析服务" name="parse">
+      <el-tab-pane label="解析服务" name="parse" :lazy="true">
         <ParseConfig />
       </el-tab-pane>
     </el-tabs>
@@ -29,6 +29,7 @@ const router = useRouter()
 import ParseConfig from './contentFormatter/ParseConfig.vue'
 import LayoutConfig from './contentFormatter/LayoutConfig.vue'
 import ReviewConfig from './contentFormatter/ReviewConfig.vue'
+import GroupConfig from './contentFormatter/GroupConfig.vue'
 
 const activeTab = ref('layout')
 
