@@ -83,4 +83,15 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @return
      */
     TableDataInfo toolSelection(DatatablesPageBean page, PermissionQuery query);
+
+    /**
+     * 查询分页
+     * @param datasetId
+     * @param documentName
+     * @param pageNum
+     * @param pageSize
+     * @param total
+     * @return
+     */
+    List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Long datasetId, String documentName, int pageNum, int pageSize, long total);
 }
