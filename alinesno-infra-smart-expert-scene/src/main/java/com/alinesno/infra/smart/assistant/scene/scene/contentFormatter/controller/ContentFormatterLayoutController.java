@@ -112,8 +112,10 @@ public class ContentFormatterLayoutController extends BaseController<ContentForm
     public AjaxResult updateLayoutInfoTemplate(@RequestBody @Valid DocumentTemplateInfoDTO dto) {
 
         ContentFormatterLayoutEntity entity = service.getById(dto.getId()) ;
+
         entity.setName(dto.getName());
         entity.setLayoutDesc(dto.getDescription());
+        entity.setGroupId(dto.getGroupId());
 
         service.update(entity);
 
