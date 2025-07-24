@@ -75,7 +75,7 @@
           </el-table-column>
           <el-table-column label="场景名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+              <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                {{ scope.row.sceneName }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
