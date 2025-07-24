@@ -60,7 +60,7 @@
           <el-table-column type="selection" width="50" align="center"/>
           <el-table-column label="图标" align="center" width="60px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
-              <div class="role-icon" style="font-size: 30px;color:#3b5998">
+              <div class="role-icon" style="font-size: 30px;color:#1d75b0">
                 <i v-if="(scope.$index + 1)%3 == 2" class="fa-brands fa-node-js"></i>
                 <i v-if="(scope.$index + 1)%3 == 0" class="fa-brands fa-java"></i>
                 <i v-if="(scope.$index + 1)%3 == 1" class="fa-brands fa-python"></i>
@@ -69,7 +69,7 @@
           </el-table-column>
           <el-table-column label="脚本名称" align="left" key="scriptName" prop="scriptName" v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+              <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                 {{ scope.row.scriptName }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
@@ -79,7 +79,7 @@
           </el-table-column>
           <el-table-column label="流程标识" align="left" width="250" key="scriptId" prop="scriptId" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+              <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                 {{ scope.row.scriptId }}
               </div>
             </template>
