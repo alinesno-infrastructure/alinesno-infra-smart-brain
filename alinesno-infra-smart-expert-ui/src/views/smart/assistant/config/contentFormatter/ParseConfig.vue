@@ -9,12 +9,6 @@
       <el-form-item label="解析服务名称" prop="toolName">
         <el-input v-model="formData.toolName" placeholder="请输入解析服务名称" />
       </el-form-item>
-      <el-form-item label="解析服务地址" prop="toolPath">
-        <el-input v-model="formData.toolPath" placeholder="例如：http://localhost:8080/office" />
-      </el-form-item>
-      <el-form-item label="请求Token" prop="requestToken">
-        <el-input v-model="formData.requestToken" placeholder="如需认证请填写Token" />
-      </el-form-item>
       <el-form-item label="服务范围" prop="dataScope">
         <el-radio-group v-model="formData.dataScope">
           <el-radio 
@@ -22,7 +16,7 @@
             :key="item.id" 
             :value="item.id" 
             :label="item.id"
-            style="margin-top: 10px;align-items: center; margin-bottom: 10px; width: 100%; height: auto;"
+            style="margin-top: 10px;align-items: center; margin-bottom: 10px; height: auto;"
           >
             <div class="scope-option">
               <span class="scope-title">
@@ -34,6 +28,12 @@
             </div>
           </el-radio>
         </el-radio-group>
+      </el-form-item>
+      <el-form-item label="解析服务地址" prop="toolPath">
+        <el-input v-model="formData.toolPath" placeholder="例如：http://localhost:8080/office" />
+      </el-form-item>
+      <el-form-item label="请求Token" prop="requestToken">
+        <el-input v-model="formData.requestToken" placeholder="如需认证请填写Token" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm">保存配置</el-button>
@@ -136,7 +136,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .parse-config {
   padding: 20px;
-  max-width: 800px;
+  max-width: 960px;
   margin: 0 auto;
   
   .header {
