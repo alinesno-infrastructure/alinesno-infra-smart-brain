@@ -2,86 +2,102 @@
   <div class="app-container">
     <el-page-header @back="goBack">
       <template #content>
-        <span class="text-large font-600 mr-3" style="font-size: 16px;"> 配置数据集数据集</span>
+        <span class="text-large font-600 mr-3" style="font-size: 16px;"> {{ documentName }}</span>
       </template>
     </el-page-header>
     <el-row :gutter="20" style="margin-top:20px;">
       <el-col :span="19">
-        <el-form :model="queryParams" ref="queryRef" :rule="rules" :inline="true" v-show="showSearch"
+        <el-form :model="queryParams" size="large" ref="queryRef" :rule="rules" :inline="true" v-show="showSearch"
           label-width="100px">
-
           <el-form-item label="搜索条件" prop="searchText">
-            <el-input v-model="queryParams.searchText" placeholder="请输入搜索条件" clearable style="width: 540px"
-               />
+            <el-input v-model="queryParams.searchText" placeholder="请输入搜索条件" clearable style="width: 540px" />
           </el-form-item>
-
           <el-form-item>
             <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
           </el-form-item>
         </el-form>
 
-        <el-scrollbar style="height:calc(100vh - 180px)">
-          <el-table v-loading="loading" :data="datasetList" @selection-change="handleSelectionChange">
-            <el-table-column type="index" width="50" label="序号" align="center" />
-            <el-table-column label="查询结果" align="left" key="name" prop="name" v-if="columns[1].visible">
-              <template #default="scope">
-                <div
-                  style="background: rgb(250, 250, 250);border-radius: 5px;padding:10px;display: flex;flex-direction: column;gap: 5px;">
-                  <div class="role-icon" style="font-size: 14px;">
-                    评分:<i class="fa-solid fa-file-pdf" />
-                    {{ scope.row.score }}
-                  </div>
-                  <div style="padding: 5px;">
-                    {{ truncateString(scope.row.document_content, 300) }}
-                  </div>
-                  <div class="role-icon" style="font-size: 14px;">
-                    引用: <i class="fa-solid fa-file-pdf" />
-                    {{ scope.row.document_title }}
-                  </div>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
+        <el-scrollbar style="height:calc(100vh - 200px)">
+          <!-- 修改为分段内容列表 -->
+          <div class="segment-list">
+            <div v-for="(segment, index) in datasetList" :key="index" class="segment-item">
+              <div class="segment-header">
+                <span class="segment-index"># 分段 {{ index + 1 }}（ID:{{segment.id}}）</span>
+                <span class="segment-length">长度: {{ segment.document_content?.length || 0 }} 字符</span>
+              </div>
+              <div 
+                class="segment-content" 
+                @click="showFullContent(segment.document_content)"
+              >
+                {{ truncateString(segment.document_content, 300) }}
+              </div>
+            </div>
+          </div>
           <pagination v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
             v-model:limit="queryParams.pageSize" @pagination="getList" />
         </el-scrollbar>
       </el-col>
 
       <el-col :span="5">
-        <div style="font-size: 14px;margin: 10px;font-weight: bold;">
-          元数据
+        <div class="metadata-container">
+          <div style="font-size: 14px;margin-bottom: 15px;font-weight: bold;">
+            元数据
+          </div>
+          <div class="metadata-item" v-for="(item, index) in metadataList" :key="index">
+            <div class="metadata-label">{{ item.metaDataItem }}</div>
+            <div class="metadata-value">{{ item.detail }}</div>
+          </div>
         </div>
-        <el-table :data="metadataList" stripe>
-          <el-table-column prop="metaDataItem" width="100" label="数据项"></el-table-column>
-          <el-table-column prop="detail" label="详情"></el-table-column>
-        </el-table>
       </el-col>
-
     </el-row>
+
+    <!-- 添加弹窗显示完整内容 -->
+    <el-dialog
+      v-model="dialogVisible"
+      title="分段内容详情"
+      width="60%"
+      top="5vh"
+    >
+      <div class="full-content">
+        <pre>{{ currentContent }}</pre>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="dialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 
 import {
-  getSearch
+  getSearch,
 } from "@/api/base/search/vectorDataset";
+
+import {
+  knowledgeDetail,
+  queryDocumentPage
+} from "@/api/base/search/datasetKnowledge";
+
 import { reactive } from "vue";
 
 const route = useRoute();
 const router = useRouter();
 const { proxy } = getCurrentInstance();
 
+const documentName = ref('文档名称')
+const knowledgeId = ref(route.query.id)
 const datasetList = ref([]);
 const loading = ref(false);
 const showSearch = ref(true);
-const ids = ref([]);
-const single = ref(true);
-const multiple = ref(true);
 const total = ref(0);
 const dateRange = ref([]);
+
+// 添加弹窗相关状态
+const dialogVisible = ref(false);
+const currentContent = ref('');
 
 const metadataList = ref([
   { metaDataItem: '集合 ID', detail: '67b1618119984de00881fb9d' },
@@ -94,24 +110,6 @@ const metadataList = ref([
   { metaDataItem: '训练模式', detail: '直接分段' },
   { metaDataItem: '分割大小', detail: '512' }
 ])
-
-// 列显隐信息
-const columns = ref([
-  { key: 0, label: `图标`, visible: true },
-  { key: 1, label: `数据集名称`, visible: true },
-  { key: 2, label: `所有者`, visible: true },
-  { key: 3, label: `描述信息`, visible: true },
-  { key: 4, label: `状态`, visible: true },
-  { key: 5, label: `访问权限`, visible: true },
-  { key: 6, label: `数据总量`, visible: true },
-  { key: 7, label: `创建时间`, visible: true },
-  { key: 8, label: `编辑`, visible: true },
-
-]);
-
-const goBack = () => {
-  router.back();
-}
 
 const data = reactive({
   form: {},
@@ -142,6 +140,20 @@ const data = reactive({
 
 const { queryParams, form, rules } = toRefs(data);
 
+// 显示完整内容
+const showFullContent = (content) => {
+  currentContent.value = content;
+  dialogVisible.value = true;
+};
+
+// 截断字符串
+const truncateString = (str, num) => {
+  if (!str) return '';
+  if (str.length <= num) {
+    return str;
+  }
+  return str.slice(0, num) + '...';
+};
 
 /** 查询应用列表 */
 function getList() {
@@ -158,9 +170,7 @@ function getList() {
   }).catch(() => {
     loading.value = false;
   });
-
 };
-
 
 /** 搜索按钮操作 */
 function handleQuery() {
@@ -183,37 +193,130 @@ function resetQuery() {
   handleQuery();
 };
 
-/** 选择条数  */
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.id);
-  single.value = selection.length != 1;
-  multiple.value = !selection.length;
-};
+// 查询数据集详情
+const handleDatasetKnowledge = () => {
+  knowledgeDetail(knowledgeId.value).then(res => {
+    const knowledgeData = res.data;
 
+    documentName.value = knowledgeData.documentName;
+
+    metadataList.value = [
+      { metaDataItem: '集合 ID', detail: knowledgeData.id || 'N/A' },
+      { metaDataItem: '数据来源', detail: knowledgeData.fileType ? '文件' : 'N/A' },
+      { metaDataItem: '来源名', detail: knowledgeData.documentName || 'N/A' },
+      { metaDataItem: '来源大小', detail: knowledgeData.fileSize ? `${knowledgeData.fileSize} KB` : 'N/A' },
+      { metaDataItem: '创建时间', detail: knowledgeData.addTime || 'N/A' },
+      { metaDataItem: '更新时间', detail: knowledgeData.updateTime || 'N/A' },
+      { metaDataItem: '文档数量', detail: knowledgeData.documentCount?.toString() || 'N/A' },
+      {
+        metaDataItem: '训练模式', detail:
+          knowledgeData.processingMethod === 'direct_segmentation' ? '直接分段' :
+            (knowledgeData.processingMethod || 'N/A')
+      },
+      { metaDataItem: '分割大小', detail: knowledgeData.idealChunk?.toString() || 'N/A' }
+    ];
+  })
+}
+
+// 查询文档列表
+const handleQueryDocumentPage = () => {
+  const params = {
+    id: knowledgeId.value,
+    pageNum: 1,
+    pageSize: 10
+  };
+  queryDocumentPage(params).then(res => {
+    console.log('res = ' + res);
+    datasetList.value = res.rows;
+    total.value = res.total;
+  })
+}
+
+const goBack = () => {
+  router.back();
+}
+
+onMounted(() => {
+  handleDatasetKnowledge();
+  handleQueryDocumentPage();
+})
 </script>
 
 <style lang="scss" scoped>
-.role-icon {
-  img {
-    width: 45px;
-    height: 45px;
-    border-radius: 50%;
+.app-container {
+  .segment-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 8px;
+    margin: 0px 20px;
   }
-}
-</style>
 
-<style lang="scss" scoped>
-.input-search-text {
-  width: 100%;
-  resize: none;
-  font-size: 14px;
-  border: 0px solid #ccc;
-  border-radius: 5px;
-  background-color: #fafafa;
-  outline: none;
+  .segment-item {
+    background: #f8f8f8;
+    border-radius: 4px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 
-  textarea {
-    background-color: #fafafa;
+    &:hover {
+      background: #f0f0f0;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .segment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .segment-content {
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.6;
+    font-size: 14px;
+    color: #333;
+  }
+
+  .full-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    line-height: 1.6;
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: inherit;
+      margin: 0;
+    }
+  }
+
+  .metadata-container {
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 4px;
+  }
+
+  .metadata-item {
+    margin-bottom: 12px;
+    line-height: 1.2rem;
+  }
+
+  .metadata-label {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .metadata-value {
+    font-size: 14px;
+    color: #333;
+    word-break: break-word;
   }
 }
 </style>
