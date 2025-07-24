@@ -3,6 +3,7 @@ package com.alinesno.infra.base.search.service;
 import com.alinesno.infra.base.search.api.DataProcessingDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.services.IBaseService;
 
 import java.io.File;
@@ -63,4 +64,13 @@ public interface IDatasetKnowledgeService extends IBaseService<DatasetKnowledgeE
      * @return
      */
     void dataUploadToVectorDataset(DataProcessingDto dto);
+
+    /**
+     * 查询文档分页向量存储的数据情况
+     * @param entity
+     * @param pageNum
+     * @param pageSize
+     * @return
+     */
+    TableDataInfo queryDocumentPage(DatasetKnowledgeEntity entity , int pageNum, int pageSize);
 }
