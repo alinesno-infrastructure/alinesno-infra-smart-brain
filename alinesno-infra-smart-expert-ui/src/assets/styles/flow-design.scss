@@ -85,7 +85,7 @@
                     cursor: pointer;
 
                     .act-item {
-                        border-bottom: 3px solid #3b5998;
+                        border-bottom: 3px solid #1d75b0;
                         padding-bottom: 12px;
                         color: #575757;
                     }
@@ -295,11 +295,11 @@
 
                                 .node-sp,
                                 .node-start-bg {
-                                    background-image: -webkit-gradient(linear, left top, right top, from(#3b5998), to(#3b5998)),
-                                        -webkit-gradient(linear, left top, left bottom, from(#3b5998), to(#3b5998));
-                                    background-image: -webkit-linear-gradient(left, #3b5998, #3b5998), -webkit-linear-gradient(#3b5998, #3b5998);
-                                    background-image: -o-linear-gradient(left, #3b5998 0, #3b5998 100%), -o-linear-gradient(#3b5998, #3b5998);
-                                    background-image: linear-gradient(90deg, #3b5998, #3b5998), linear-gradient(#3b5998, #3b5998);
+                                    background-image: -webkit-gradient(linear, left top, right top, from(#1d75b0), to(#1d75b0)),
+                                        -webkit-gradient(linear, left top, left bottom, from(#1d75b0), to(#1d75b0));
+                                    background-image: -webkit-linear-gradient(left, #1d75b0, #1d75b0), -webkit-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: -o-linear-gradient(left, #1d75b0 0, #1d75b0 100%), -o-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: linear-gradient(90deg, #1d75b0, #1d75b0), linear-gradient(#1d75b0, #1d75b0);
                                 }
 
                                 .node-launch {
@@ -319,18 +319,18 @@
                                 
                                 .node-cc {
                                     background-image: -webkit-gradient(linear, left top, right top, from(#268bfb -16.37%), to(#33e1ae 137.34%)),
-                                        -webkit-gradient(linear, left top, left bottom, from(#3b5998), to(#3b5998));
-                                    background-image: -webkit-linear-gradient(left, #268bfb -16.37%, #33e1ae 137.34%), -webkit-linear-gradient(#3b5998, #3b5998);
-                                    background-image: -o-linear-gradient(left, #268bfb -16.37% 0, #33e1ae 137.34%), -o-linear-gradient(#3b5998, #3b5998);
-                                    background-image: linear-gradient(90deg, #268bfb -16.37%, #33e1ae 137.34%), linear-gradient(#3b5998, #3b5998);
+                                        -webkit-gradient(linear, left top, left bottom, from(#1d75b0), to(#1d75b0));
+                                    background-image: -webkit-linear-gradient(left, #268bfb -16.37%, #33e1ae 137.34%), -webkit-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: -o-linear-gradient(left, #268bfb -16.37% 0, #33e1ae 137.34%), -o-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: linear-gradient(90deg, #268bfb -16.37%, #33e1ae 137.34%), linear-gradient(#1d75b0, #1d75b0);
                                 }
 
                                 .node-tz {
                                     background-image: -webkit-gradient(linear, left top, right top, from(#498ff2), to(#6da4f2)),
-                                        -webkit-gradient(linear, left top, left bottom, from(#3b5998), to(#3b5998));
-                                    background-image: -webkit-linear-gradient(left, #498ff2, #6da4f2), -webkit-linear-gradient(#3b5998, #3b5998);
-                                    background-image: -o-linear-gradient(left, #498ff2 0, #6da4f2 100%), -o-linear-gradient(#3b5998, #3b5998);
-                                    background-image: linear-gradient(90deg, #498ff2, #6da4f2), linear-gradient(#3b5998, #3b5998);
+                                        -webkit-gradient(linear, left top, left bottom, from(#1d75b0), to(#1d75b0));
+                                    background-image: -webkit-linear-gradient(left, #498ff2, #6da4f2), -webkit-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: -o-linear-gradient(left, #498ff2 0, #6da4f2 100%), -o-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: linear-gradient(90deg, #498ff2, #6da4f2), linear-gradient(#1d75b0, #1d75b0);
                                 }
 
                                 .node-fill {
@@ -367,26 +367,26 @@
 
                                 .node-zl {
                                     background-image: -webkit-gradient(linear, left top, right top, from(#ff9313), to(#faab4b)),
-                                        -webkit-gradient(linear, left top, left bottom, from(#3b5998), to(#3b5998));
-                                    background-image: -webkit-linear-gradient(left, #ff9313, #faab4b), -webkit-linear-gradient(#3b5998, #3b5998);
-                                    background-image: -o-linear-gradient(left, #ff9313 0, #faab4b 100%), -o-linear-gradient(#3b5998, #3b5998);
-                                    background-image: linear-gradient(90deg, #ff9313, #faab4b), linear-gradient(#3b5998, #3b5998);
+                                        -webkit-gradient(linear, left top, left bottom, from(#1d75b0), to(#1d75b0));
+                                    background-image: -webkit-linear-gradient(left, #ff9313, #faab4b), -webkit-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: -o-linear-gradient(left, #ff9313 0, #faab4b 100%), -o-linear-gradient(#1d75b0, #1d75b0);
+                                    background-image: linear-gradient(90deg, #ff9313, #faab4b), linear-gradient(#1d75b0, #1d75b0);
                                 }
                                 
                                 .node-notice {
                                     /* WebKit-based browsers (Safari, Chrome) */
                                     background-image: -webkit-gradient(linear, left top, right top, from(#0084FF), to(#00A2FF)),
-                                                      -webkit-gradient(linear, left top, left bottom, from(#3b5998), to(#3b5998));
+                                                      -webkit-gradient(linear, left top, left bottom, from(#1d75b0), to(#1d75b0));
                                     background-image: -webkit-linear-gradient(left, #0084FF, #00A2FF), 
-                                                      -webkit-linear-gradient(#3b5998, #3b5998);
+                                                      -webkit-linear-gradient(#1d75b0, #1d75b0);
                                 
                                     /* Old versions of Opera */
                                     background-image: -o-linear-gradient(left, #0084FF 0, #00A2FF 100%), 
-                                                      -o-linear-gradient(#3b5998, #3b5998);
+                                                      -o-linear-gradient(#1d75b0, #1d75b0);
                                 
                                     /* Standard syntax for modern browsers */
                                     background-image: linear-gradient(90deg, #0084FF, #00A2FF), 
-                                                      linear-gradient(#3b5998, #3b5998);
+                                                      linear-gradient(#1d75b0, #1d75b0);
                                 }
 
                                 .node-status-current {
@@ -430,7 +430,7 @@
                                     -ms-flex-align: center;
                                     align-items: center;
                                     color: #fff;
-                                    background-color: #3b5998;
+                                    background-color: #1d75b0;
 
                                     .node-name-title {
                                         font-weight: bold;
@@ -468,7 +468,7 @@
                                     }
 
                                     .hint-title {
-                                        color: #3b5998;
+                                        color: #1d75b0;
                                         font-size: 12px;
                                     }
                                 }
@@ -1222,7 +1222,7 @@
                         top: 9px;
                         left: 0;
                         border-radius: 2px;
-                        background: #3b5998;
+                        background: #1d75b0;
                     }
                 }
             }
