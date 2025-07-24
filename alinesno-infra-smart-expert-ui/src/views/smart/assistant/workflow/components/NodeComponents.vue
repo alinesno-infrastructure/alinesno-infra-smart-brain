@@ -306,7 +306,7 @@ defineExpose({ clickNode });
     .node-components-icon {
         width: 35px;
         height: 35px;
-        background: #3b5998;
+        background: #1d75b0;
         display: flex;
         flex-direction: column;
         justify-content: center;
