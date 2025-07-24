@@ -198,7 +198,7 @@ handleListGroup();
 
     &:hover {
         background-color: #e6f7ff;
-        color: #3b5998; 
+        color: #1d75b0; 
         font-size: 14px;
         font-weight: bold;
     }
@@ -217,7 +217,7 @@ handleListGroup();
 
 .group-selected {
     background-color: #e6f7ff;
-    color: #3b5998; 
+    color: #1d75b0; 
     font-size: 14px;
     font-weight: bold;
 }
@@ -233,7 +233,7 @@ handleListGroup();
 
     &:hover {
         background-color: #f0f9ff;
-        color: #3b5998; 
+        color: #1d75b0; 
         font-size: 14px;
         font-weight: bold;
     }
