@@ -41,7 +41,7 @@
                   <el-table-column label="评分" width="100px" align="center" key="name" prop="name"
                       v-if="columns[1].visible" :show-overflow-tooltip="true">
                       <template #default="scope">
-                          <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+                          <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                               {{ scope.row.score }}
                           </div>
                       </template>
