@@ -19,4 +19,10 @@ public class DocumentTemplateInfoDTO extends BaseDto {
      */
     @NotNull(message = "模板描述不能为空")
     private String description;
+
+    /**
+     * 模板分组ID
+     */
+    @NotNull(message = "模板分组ID不能为空")
+    private Long groupId;
 }
