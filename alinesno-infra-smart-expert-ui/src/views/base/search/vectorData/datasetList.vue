@@ -32,10 +32,9 @@
         <el-table v-loading="loading" :data="DatasetKnowledgeList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
-          <el-table-column label="文档名称" align="left" key="name" prop="name" v-if="columns[1].visible"
-            :show-overflow-tooltip="true">
+          <el-table-column label="文档名称" align="left" key="name" prop="name" v-if="columns[1].visible">
             <template #default="scope">
-              <div style="white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
+              <div>
                 <i class="fa-solid fa-file-pdf" style="font-size:20px" />
                 <router-link :to="'/base/search/vectorData/knowledgeDetail?id=' + scope.row.id + '&datasetId=' + currentDatasetId" >
                   {{ scope.row.documentName }}
@@ -50,7 +49,7 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="分割模式" align="center" key="description" prop="description" v-if="columns[3].visible"
+          <el-table-column label="分割模式" align="center" width="100" key="description" prop="description" v-if="columns[3].visible"
             :show-overflow-tooltip="true">
             <template #default="scope">
               <div v-if="scope.row.processingMethod == 'direct_segmentation'">
@@ -58,7 +57,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="数据数量" align="center" width="130" key="documentCount" prop="documentCount"
+          <el-table-column label="数据数量" align="center" width="80" key="documentCount" prop="documentCount"
             v-if="columns[2].visible" :show-overflow-tooltip="true" />
           <el-table-column label="创建/更新时间" align="center" prop="addTime" v-if="columns[7].visible" width="200">
             <template #default="scope">
@@ -68,7 +67,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="状态" align="center" width="300" key="datasetStatus" prop="datasetStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
+          <el-table-column label="状态" align="center" width="200" key="datasetStatus" prop="datasetStatus" v-if="columns[4].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button v-if="scope.row.status === 'import_in_progress'" type="warning" text bg>
                   <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
