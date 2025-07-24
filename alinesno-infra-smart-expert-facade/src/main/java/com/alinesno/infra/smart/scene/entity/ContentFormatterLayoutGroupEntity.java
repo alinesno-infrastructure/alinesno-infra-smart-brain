@@ -30,6 +30,15 @@ public class ContentFormatterLayoutGroupEntity extends InfraBaseEntity {
     @Column(comment = "排序" , length = 11 , type = MySqlTypeConstant.INT)
     private Integer sort;
 
+    @TableField
+    @Column(comment = "分组类型(layout排版分组|audit审核分组)" , length = 50 , type = MySqlTypeConstant.VARCHAR)
+    private String groupType ; // 分组类型
+
+    // 数据范围（是否为公开或者为组织所用)
+    @TableField
+    @Column(name = "data_scope", type = MySqlTypeConstant.VARCHAR, length = 16, comment = "数据范围")
+    private String dataScope ;
+
     public static ContentFormatterLayoutGroupEntity toPower(InfraBaseEntity entity) {
         ContentFormatterLayoutGroupEntity template = new ContentFormatterLayoutGroupEntity();
 
