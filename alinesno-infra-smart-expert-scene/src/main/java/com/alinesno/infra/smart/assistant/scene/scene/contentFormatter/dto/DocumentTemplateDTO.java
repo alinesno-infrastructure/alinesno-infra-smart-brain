@@ -27,7 +27,7 @@ public class DocumentTemplateDTO extends BaseDto {
      */
     @NotNull(message = "模板描述不能为空")
     private String description;
-    
+
     /**
      * 各级标题样式配置
      */
@@ -113,6 +113,12 @@ public class DocumentTemplateDTO extends BaseDto {
     private Integer headerLineWidth;
 
     /**
+     * 文档模板分组ID
+     */
+    @NotNull(message = "模板分组ID不能为空")
+    private Long groupId ;
+
+    /**
      * 转换为内容格式化布局配置
      * @return
      */
@@ -143,7 +149,7 @@ public class DocumentTemplateDTO extends BaseDto {
         }
 
         dto.setSort(1);
-        dto.setGroupId(1L);
+        dto.setGroupId(this.getGroupId());
 
         // 处理权限
         dto.setOrgId(this.getOrgId());
@@ -181,6 +187,7 @@ public class DocumentTemplateDTO extends BaseDto {
             templateDTO.setOfficialHeaderHeight(jsonObject.getInteger("officialHeaderHeight"));
             templateDTO.setHeaderLineColor(jsonObject.getString("headerLineColor"));
             templateDTO.setHeaderLineWidth(jsonObject.getInteger("headerLineWidth"));
+            templateDTO.setGroupId(dto.getGroupId());
         }
 
         templateDTO.setOrgId(dto.getOrgId());
