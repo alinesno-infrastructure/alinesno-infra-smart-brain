@@ -18,6 +18,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -195,6 +196,28 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
     public AjaxResult crawler(@RequestBody @Validated CrawlerDto dto , PermissionQuery query) {
         crawlerService.parseWebsite(dto , query);
         return ok() ;
+    }
+
+    /**
+     * 查询数据文件详情
+     * @return
+     */
+    @GetMapping("/knowledgeDetail")
+    public AjaxResult knowledgeDetail(@RequestParam Long id) {
+        DatasetKnowledgeEntity entity = service.getById(id) ;
+        return AjaxResult.success(entity) ;
+    }
+
+    /**
+     * 分页查询指定的文档ID
+     * @return
+     */
+    @GetMapping("/queryDocumentPage")
+    public TableDataInfo queryDocumentPage(@RequestParam Long id,
+                                        @RequestParam int pageNum ,
+                                        @RequestParam int pageSize) {
+        DatasetKnowledgeEntity entity = service.getById(id) ;
+        return service.queryDocumentPage(entity, pageNum , pageSize);
     }
 
 
