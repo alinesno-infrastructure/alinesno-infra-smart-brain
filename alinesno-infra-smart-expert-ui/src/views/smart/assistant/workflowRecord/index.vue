@@ -68,7 +68,7 @@
               <el-table-column type="selection" width="50" align="center" />
               <el-table-column label="图标" align="center" width="50px" prop="icon" v-if="columns[0].visible">
                 <template #default="scope">
-                  <div class="role-icon" style="font-size: 30px;color:#3b5998">
+                  <div class="role-icon" style="font-size: 30px;color:#1d75b0">
                     <i v-if="(scope.$index + 1) % 3 == 2" class="fa-brands fa-node-js"></i>
                     <i v-if="(scope.$index + 1) % 3 == 0" class="fa-brands fa-java"></i>
                     <i v-if="(scope.$index + 1) % 3 == 1" class="fa-brands fa-python"></i>
@@ -78,7 +78,7 @@
               <el-table-column label="流程名称" align="left" key="workflowName" prop="workflowName" v-if="columns[1].visible"
                 :show-overflow-tooltip="true">
                 <template #default="scope">
-                  <div style="font-size: 14px;font-weight: 500;color: #3b5998;">
+                  <div style="font-size: 14px;font-weight: 500;color: #1d75b0;">
                     {{ scope.row.id }}#{{ scope.row.buildNumber }}
                   </div>
                   <div style="font-size: 12px;color: #a5a5a5;">
