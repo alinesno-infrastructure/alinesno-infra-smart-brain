@@ -305,4 +305,34 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         return bean;
     }
 
+    @Override
+    public List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Long datasetId, String documentName, int pageNum, int pageSize, long total) {
+        // 参数校验
+        Assert.notNull(datasetId, "datasetId cannot be null");
+        Assert.hasText(documentName, "documentName cannot be empty");
+
+        // 获取数据集信息
+        VectorDatasetEntity dataset = getById(datasetId);
+        Assert.notNull(dataset, "Dataset not found with id: " + datasetId);
+
+        // 计算偏移量
+        int offset = (pageNum - 1) * pageSize;
+
+        // 构建查询条件
+        Map<String, Object> params = new HashMap<>();
+        params.put("datasetId", datasetId);
+        params.put("documentName", documentName);
+        params.put("limit", pageSize);
+        params.put("offset", offset);
+
+        // 执行分页查询
+        List<DocumentVectorBean> result = pgVectorService.queryPageByDatasetIdAndDocumentName(params);
+
+        // 如果total为0，则查询总记录数
+        if (total == 0 && !result.isEmpty()) {
+            total = pgVectorService.countByDatasetIdAndDocumentName(datasetId, documentName);
+        }
+
+        return result;
+    }
 }
