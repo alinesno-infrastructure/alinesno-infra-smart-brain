@@ -54,7 +54,7 @@ const currentEnvClusterObj = ref({
     float: left;
     font-size: 2.4rem;
     margin-right: 10px;
-    color: #3b5998;
+    color: #1d75b0;
   }
 
   .head-app-status{
@@ -93,7 +93,7 @@ const currentEnvClusterObj = ref({
     margin-left: 10px;
     font-weight: bold;
     margin-top: 10px;
-    color: #3b5998;
+    color: #1d75b0;
 
     span {
       margin-left: 20px;
