@@ -650,7 +650,7 @@ onMounted(() => {
 
                 .channel-icon {
                     font-size: 25px;
-                    color: #3b5998;
+                    color: #1d75b0;
 
                     .channel-img {
                         width: 35px;
