@@ -34,7 +34,7 @@ i<template>
          <!-- 
          <el-table-column label="图标" align="center" width="50" key="format" prop="format" v-if="columns[5].visible">
             <template #default="scope">
-               <span style="font-size: 1.6rem;color:#3b5998">
+               <span style="font-size: 1.6rem;color:#1d75b0">
                   <i v-if="scope.row.templateType == 'pdf'" class="fa-solid fa-file-pdf"></i>
                   <i v-if="scope.row.templateType == 'xml'" class="fa-regular fa-file-word"></i>
                   <i v-if="scope.row.templateType == 'docx'" class="fa-solid fa-file-word"></i>
