@@ -217,12 +217,12 @@
         <el-row>
           <el-col :span="24">
             <el-form-item label="ApiKey" prop="apiKey">
-              <el-input type="password" v-model="form.apiKey" size="large" placeholder="请输入 API 密钥" maxlength="255" show-password="true" autocomplete="off" />
+              <el-input type="password" v-model="form.apiKey" size="large" placeholder="请输入 API 密钥" maxlength="255" autocomplete="off" />
             </el-form-item>
           </el-col>
           <el-col :span="24" v-if="form.providerCode === 'doubao' && form.modelType === 'image_generation'" prop="secretKey">
             <el-form-item label="SecretKey" prop="secretKey">
-              <el-input type="password" size="large" v-model="form.secretKey" placeholder="请输入 secretKey 密钥" maxlength="255" show-password="true" autocomplete="off" />
+              <el-input type="password" size="large" v-model="form.secretKey" placeholder="请输入 secretKey 密钥" maxlength="255" autocomplete="off" />
             </el-form-item>
           </el-col>
         </el-row>
