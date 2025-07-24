@@ -60,7 +60,7 @@
           <el-table-column type="selection" width="50" align="center"/>
           <el-table-column label="工具名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <div style="font-size: 15px;font-weight: 500;color: #3b5998;">
+              <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                <i class="fa-solid fa-screwdriver-wrench" />  {{ scope.row.name }}
               </div>
               <div style="font-size: 13px;color: #a5a5a5;">
