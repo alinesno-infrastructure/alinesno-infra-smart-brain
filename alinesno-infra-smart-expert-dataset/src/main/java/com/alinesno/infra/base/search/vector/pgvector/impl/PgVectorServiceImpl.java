@@ -440,4 +440,71 @@ public class PgVectorServiceImpl implements IPgVectorService {
         // 转换结果
         return convertToDocumentVectorBeans(rows, 0);
     }
+
+    @Override
+    public List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Map<String, Object> params) {
+        // 参数校验
+        if (params == null || params.isEmpty()) {
+            throw new IllegalArgumentException("查询参数不能为空");
+        }
+
+        Long datasetId = (Long) params.get("datasetId");
+        String documentName = (String) params.get("documentName");
+        Integer limit = (Integer) params.get("limit");
+        Integer offset = (Integer) params.get("offset");
+
+        if (datasetId == null || documentName == null || limit == null || offset == null) {
+            throw new IllegalArgumentException("缺少必要的查询参数");
+        }
+
+        // 明确指定查询字段，排除document_embedding
+        String sql = "SELECT " +
+                "id, " +
+                "dataset_id, " +
+                "index_name, " +
+                "document_title, " +
+                "document_desc, " +
+                "document_content, " +
+                "token_size, " +
+                "doc_chunk, " +
+                "score, " +
+                "page, " +
+                "source_file, " +
+                "source_url, " +
+                "source_type, " +
+                "author, " +
+                "created_at " +
+                "FROM " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " " +
+                "WHERE dataset_id = ? AND document_title = ? " +
+                "ORDER BY created_at DESC " +
+                "LIMIT ? OFFSET ?";
+
+        // 执行查询
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
+                sql,
+                datasetId,
+                documentName,
+                limit,
+                offset
+        );
+
+        // 转换结果
+        return convertToDocumentVectorBeans(rows, 0);
+    }
+
+    @Override
+    public long countByDatasetIdAndDocumentName(Long datasetId, String documentName) {
+        // 参数校验
+        if (datasetId == null || documentName == null) {
+            throw new IllegalArgumentException("datasetId和documentName不能为空");
+        }
+
+        // 构建SQL查询
+        String sql = "SELECT COUNT(1) FROM " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " " +
+                "WHERE dataset_id = ? AND document_title = ?";
+
+        // 执行查询并返回结果，处理可能的null值
+        Long count = jdbcTemplate.queryForObject(sql, Long.class, datasetId, documentName);
+        return count != null ? count : 0L;
+    }
 }
