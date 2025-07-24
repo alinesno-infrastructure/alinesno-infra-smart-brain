@@ -13,6 +13,7 @@ var prefix = '/api/infra/base/search/datasetKnowledge/' ;
 var managerUrl = {
     datatables : prefix +"datatables" ,
     createUrl: prefix + 'add' ,
+    knowledgeDetail: prefix + 'knowledgeDetail' ,
     saveUrl: prefix + 'save' ,
     updateUrl: prefix +"modify" ,
     statusUrl: prefix +"changeStatus" ,
@@ -25,6 +26,22 @@ var managerUrl = {
     queryTmpFileByDatasetId: prefix + "queryTmpFileByDatasetId",
     uploadTmpFileByDatasetId: prefix + "uploadTmpFileByDatasetId",
     crawler: prefix + "crawler",
+    queryDocumentPage: prefix + "queryDocumentPage",
+}
+
+export function queryDocumentPage(params) {
+  return request({
+    url: managerUrl.queryDocumentPage,
+    method: 'get',
+    params: params  
+  })
+}
+
+export function knowledgeDetail(id) {
+  return request({
+    url: managerUrl.knowledgeDetail + '?id=' + parseStrEmpty(id),
+    method: 'get'
+  })
 }
 
 // 爬取数据
