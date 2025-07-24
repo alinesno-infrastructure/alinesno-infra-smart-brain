@@ -141,6 +141,12 @@ export const constantRoutes = [
         meta: { title: '数据集管理', icon: 'dashboard', affix: true }
       },
       {
+        path: '/base/search/vectorData/knowledgeDetail',
+        component: () => import('@/views/base/search/vectorData/knowledgeDetail'),
+        name: '/base/search/vectorData/knowledgeDetail',
+        meta: { title: '数据集管理', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/base/search/vectorData/parseDataset',
         component: () => import('@/views/base/search/vectorData/parseDataset'),
         name: '/base/search/vectorData/parseDataset',
