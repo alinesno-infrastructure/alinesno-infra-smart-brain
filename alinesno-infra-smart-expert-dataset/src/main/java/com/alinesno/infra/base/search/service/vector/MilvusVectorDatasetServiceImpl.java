@@ -106,4 +106,9 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
         return null;
     }
 
+    @Override
+    public List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Long datasetId, String documentName, int pageNum, int pageSize, long total) {
+        return null;
+    }
+
 }
