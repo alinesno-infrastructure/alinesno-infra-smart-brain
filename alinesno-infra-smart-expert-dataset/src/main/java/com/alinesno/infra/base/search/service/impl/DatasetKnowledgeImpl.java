@@ -13,6 +13,8 @@ import com.alinesno.infra.base.search.service.IDocumentParserService;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
@@ -201,5 +203,28 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
             }
         }
 
+    }
+
+    @Override
+    public TableDataInfo queryDocumentPage(DatasetKnowledgeEntity entity , int pageNum, int pageSize) {
+
+        String documentName = entity.getDocumentName() ;
+        Long datasetId = entity.getDatasetId() ;
+        long total = 0 ;
+
+        List<DocumentVectorBean> list = vectorDatasetService.queryPageByDatasetIdAndDocumentName(
+                datasetId,
+                documentName ,
+                pageNum,
+                pageSize,
+                total) ;
+
+        TableDataInfo tableDataInfo = new TableDataInfo();
+        tableDataInfo.setTotal(total);
+        tableDataInfo.setRows(list);
+        tableDataInfo.setCode(200);
+        tableDataInfo.setMsg("查询成功");
+
+        return tableDataInfo ;
     }
 }
