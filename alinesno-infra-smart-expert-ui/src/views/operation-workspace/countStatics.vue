@@ -494,7 +494,7 @@ li.product_list_li.count-li {
         float: left;
         font-size: 15px;
         font-weight: 550;
-        color: #3b5998;
+        color: #1d75b0;
       }
 
       span.label {
