@@ -22,6 +22,11 @@ public class ContentFormatterLayoutGroupEntity extends InfraBaseEntity {
     @Column(comment = "分组名称" , length = 50 , type = MySqlTypeConstant.VARCHAR)
     private String name;
 
+    // 分组描述
+    @TableField
+    @Column(comment = "分组描述" , length = 255 , type = MySqlTypeConstant.VARCHAR)
+    private String groupDesc ;
+
     @TableField
     @Column(comment = "分组图标" , length = 128 , type = MySqlTypeConstant.VARCHAR)
     private String icon;
