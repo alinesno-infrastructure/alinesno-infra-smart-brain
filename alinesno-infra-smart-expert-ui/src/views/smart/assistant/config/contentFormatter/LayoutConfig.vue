@@ -5,7 +5,9 @@
       <el-row>
         <el-col :span="4">
           <LayoutGroupPanel 
+              ref="layoutGroupPanelRef"
               :groupType="'layout'"
+              @refreshRules="refreshLayout"
               @filterGroup="filterGroup"
               @settingGroup="settingGroup"
               />
@@ -13,19 +15,34 @@
 
         <el-col :span="10">
           <div class="layout-list">
-            <el-button type="primary" text bg size="large" icon="Plus" @click="showAddDialog"
-              class="mb-20">添加排版模板</el-button>
+
+            <div>
+              <el-button type="primary" text bg size="large" icon="Plus" @click="showAddDialog" class="mb-20">添加排版模板</el-button>
+
+              <!-- 添加重置-->
+              <el-button type="primary" text bg size="large" icon="Refresh" @click="refreshLayout" class="mb-20">刷新</el-button>
+
+              <!-- 导入-->
+              <el-button type="warning" text bg size="large" icon="Upload" @click="handleImport" class="mb-20">导入</el-button>
+            </div>
 
             <el-table :data="templates" style="width: 100%">
               <el-table-column type="index" align="center" label="序号" width="60" />
+              <el-table-column prop="name" label="图标" :show-overflow-tooltip="true" width="70">
+                <template #default="{ row }">
+                  <div class="role-icon">
+                    <img :src="imagePath(row.icon)" />
+                  </div>
+                </template>
+              </el-table-column>
               <el-table-column prop="name" label="模板名称" :show-overflow-tooltip="true">
                 <template #default="{ row }">
-                      <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
+                    <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                       {{ row.name }}
-                      </div>
-                      <div style="font-size: 13px;color: #a5a5a5;">
+                    </div>
+                    <div style="font-size: 13px;color: #a5a5a5;">
                         {{ getGroupNameById(row.groupId) }}
-                      </div>
+                    </div>
                 </template>
               </el-table-column>
               <!-- <el-table-column prop="layoutDesc" label="描述" /> -->
@@ -38,7 +55,7 @@
               </el-table-column>
             </el-table>
             <pagination style="margin-bottom:30px" v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
-              v-model:limit="queryParams.pageSize" @pagination="getList" />
+              v-model:limit="queryParams.pageSize" @pagination="loadTemplates" />
           </div>
 
         </el-col>
@@ -267,12 +284,36 @@
       </template>
     </el-dialog>
 
+
+        <!-- 模板导入对话框 -->
+    <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body :before-close="handleClose">
+      <el-upload ref="uploadRef" :limit="1" accept=".xlsx, .xls" :headers="upload.headers"
+        :action="upload.url + '?updateSupport=' + upload.updateSupport" 
+        :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress" :on-success="handleFileSuccess" :auto-upload="false" drag>
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip text-center">
+            <span>仅允许导入xls、xlsx格式文件。</span>
+          </div>
+        </template>
+      </el-upload>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" :loading="upload.isUploading" @click="submitFileForm">确 定</el-button>
+          <el-button :disabled="upload.isUploading" @click="upload.open = false">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from "element-plus"
+import { getToken } from "@/utils/auth";
 
 import LayoutGroupPanel from "./LayoutGroup"
 
@@ -290,6 +331,8 @@ import {
 //   listGroups,
 // } from '@/api/smart/scene/contentFormatterGroup'
 
+const layoutGroupPanelRef = ref(null)
+
 // 修改原有的模板数据为从API获取
 const templates = ref([])
 const groups = ref([])
@@ -301,6 +344,26 @@ const dateRange = ref([]);
 const total = ref(0);
 
 const { proxy } = getCurrentInstance();
+
+/*** 模板导入参数 */
+const upload = reactive({
+  // 是否显示弹出层（模板导入）
+  open: false,
+  // 弹出层标题（模板导入）
+  title: "",
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的模板数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: { Authorization: "Bearer " + getToken() },
+  // 头像上传的地址
+  headerUrl: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/contentFormatterLayout/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
 
 const form = reactive({
   id: null,
@@ -808,10 +871,76 @@ const loadTemplates = () => {
   })
 }
 
+// 更新规则信息
+const refreshLayout= () => {
+  queryParams.value.groupId = null;
+  loadTemplates()
+}
+
+/** 导入按钮操作 */
+function handleImport() {
+  upload.title = "审核规则导入";
+  upload.open = true;
+};
+
+/**文件上传中处理 */
+const handleFileUploadProgress = (event, file, fileList) => {
+  upload.isUploading = true;
+};
+
+const handleFileSuccess = (response, file, fileList) => {
+  upload.open = false;
+  upload.isUploading = false;
+  proxy.$refs["uploadRef"].handleRemove(file);
+
+  const responseData = response.data;
+
+  // 构建导入结果信息
+  let message = '';
+  if (responseData.failedCount > 0) {
+    message += `<div class="import-summary">
+                  <p>导入成功: ${responseData.successCount} 条</p>
+                  <p class="text-danger">导入失败: ${responseData.failedCount} 条</p>
+                </div>
+                <div class="failed-list mt-3">
+                  <h4 class="mb-2">失败详情</h4>
+                  <ul class="list-group">`;
+
+    responseData.failedList.forEach(item => {
+      message += `<li class="list-group-item list-group-item-danger">
+                    <div class="font-weight-bold">规则: ${item.layoutName} (分组: ${item.failReason.groupName || '无'})</div>
+                    <div class="text-muted">原因: ${item.failReason.error || item.failReason.message || '未知错误'}</div>
+                  </li>`;
+    });
+
+    message += `</ul></div>`;
+  } else {
+    message += `<div class="text-success">全部 ${responseData.successCount} 条数据导入成功</div>`;
+  }
+
+  proxy.$alert(`<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>${message}</div>`,
+    "导入结果",
+    { dangerouslyUseHTMLString: true });
+
+  layoutGroupPanelRef.value.refreshGroupType();
+  loadTemplates();
+};
+
+// /** 导入按钮操作 */
+// function handleImport() {
+//   upload.title = " 排版模板导入" ;
+//   upload.open = true;
+// };
+
+/** 提交上传文件 */
+function submitFileForm() {
+  proxy.$refs["uploadRef"].submit();
+};
+
+
 // 在 setup 脚本中添加：
 onMounted(() => {
   loadTemplates();
-  // fetchGroups();
 })
 
 </script>
@@ -947,5 +1076,11 @@ onMounted(() => {
   .mb-20 {
     margin-bottom: 20px;
   }
+
+  .role-icon img{
+    width:50px;
+    border-radius: 3px;
+  }
 }
+
 </style>
