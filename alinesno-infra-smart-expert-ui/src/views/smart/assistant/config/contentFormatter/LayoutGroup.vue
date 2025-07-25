@@ -1,7 +1,7 @@
 <template>
   <div class="group-management">
     <div class="header">
-      <h3>分组管理</h3>
+      <h3> {{ props.groupType === 'layout' ? '排版':'审核' }}分组管理</h3>
       <el-button type="primary" size="large" text bg @click="showAddDialog">
         <el-icon>
           <Plus />
@@ -11,10 +11,9 @@
 
     <div class="group-list">
       <div v-for="group in groups" :key="group.id" class="group-item" 
-        @click="selectGroup(group)" 
         @mouseenter="hoverGroupId = group.id"
         @mouseleave="hoverGroupId = null">
-        <span>
+        <span @click="selectGroup(group)" >
          <i v-if="group.dataScope === 'public'" class="fa-solid fa-globe"></i>  
          <i v-if="group.dataScope === 'org'" class="fa-solid fa-truck-plane"></i>  
          {{ group.name }}
@@ -32,6 +31,12 @@
           </el-button>
         </div>
       </div>
+
+      <!-- 为空显示 -->
+       <div v-if="groups.length === 0" class="empty-container">
+        <el-empty description="暂无数据" :image-size="100" />
+      </div>
+
     </div>
 
     <!-- Add/Edit Dialog -->
@@ -77,6 +82,31 @@
         </span>
       </template>
     </el-dialog>
+
+    <!-- 添加/编辑模板的对话框 -->
+    <el-dialog v-model="dialogVisible" :title="dialogTitle" width="670px">
+      <el-form :model="form" size="large" label-width="80px">
+        <!-- 所属分组 -->
+         <el-form-item label="所属分组" required> 
+          <el-select v-model="form.groupId" placeholder="请选择分组" @change="changeGroup"> 
+            <el-option v-for="item in groups" :key="item.id" :label="item.name" :value="item.id"> 
+            </el-option> 
+          </el-select>
+         </el-form-item>
+        <el-form-item label="模板名称" required>
+          <el-input v-model="form.name" placeholder="请输入模板名称" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入模板描述" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="handleDialogConfirm">确认</el-button>
+      </template>
+    </el-dialog>
+
+
   </div>
 </template>
 
@@ -85,6 +115,7 @@ import { ref, reactive, onMounted, getCurrentInstance } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Edit, Delete } from '@element-plus/icons-vue'
 import * as icons from '@element-plus/icons-vue'
+
 import {
   listGroups,
   addGroup as apiAddGroup,
@@ -93,7 +124,7 @@ import {
   getGroup
 } from '@/api/smart/scene/contentFormatterGroup'
 
-const emit = defineEmits(['filterGroup' , 'settingGroup'])
+const emit = defineEmits(['filterGroup' , 'settingGroup' , 'refreshRules'])
 const props = defineProps({
   groupType: {
     type: String,
@@ -159,6 +190,10 @@ onMounted(() => {
   fetchGroups()
 })
 
+const refreshGroupType = () => {
+  fetchGroups()
+}
+
 // 获取分组列表
 const fetchGroups = async () => {
   try {
@@ -221,8 +256,11 @@ const confirmDelete = async (id) => {
       type: 'warning',
     })
 
-    await delGroup(id)
+    await delGroup(id , props.groupType)
+
+    emit('refreshRules')
     ElMessage.success('分组已删除')
+
     fetchGroups()
   } catch (error) {
     if (error !== 'cancel') {
@@ -248,6 +286,11 @@ const resetForm = () => {
     groupForm.value.resetFields()
   }
 }
+
+// 提供方法
+defineExpose({
+  refreshGroupType
+})
 </script>
 
 <style lang="scss" scoped>
