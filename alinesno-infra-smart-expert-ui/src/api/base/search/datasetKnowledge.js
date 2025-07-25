@@ -27,6 +27,16 @@ var managerUrl = {
     uploadTmpFileByDatasetId: prefix + "uploadTmpFileByDatasetId",
     crawler: prefix + "crawler",
     queryDocumentPage: prefix + "queryDocumentPage",
+    updateSegmentContent: prefix + "updateSegmentContent",
+}
+
+// 更新文档分词内容
+export function updateSegmentContent(data) {
+  return request({
+    url: managerUrl.updateSegmentContent ,
+    method: 'post',
+    data: data
+  })
 }
 
 export function queryDocumentPage(params) {
