@@ -21,10 +21,10 @@
               <p>{{ category.desc }}</p>
             </div>
             <div class="image-wrapper">
+
               <img 
-                :src="getIconSvg(category.image)" 
+                :src="imagePathByPath(category.image)" 
                 :alt="category.name" 
-                @error="handleImageError"
               />
             </div>
           </div>
@@ -70,9 +70,8 @@
       >
         <div class="image-container">
           <img 
-            :src="getIconSvg(sub.image)" 
+            :src="imagePathByPath(sub.image)" 
             :alt="sub.name"
-            @error="handleImageError"
           />
         </div>
         <div class="name">{{ sub.name }}</div>
@@ -94,78 +93,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { selectOrgLayout } from '@/api/base/im/scene/contentFormatterLayout';
 
 // 在状态管理部分添加 hoveredSubcategory
 const hoveredSubcategory = ref(null);
 
-// 模板分类数据
-const templateCategories = ref([
-  { 
-    id: 'thesis', 
-    name: '学位论文', 
-    desc: '收录多所高校论文格式',
-    hasChildren: true,
-    image: 'documents/thesis.png'
-  },
-  { 
-    id: 'official', 
-    name: '党政公文', 
-    desc: '适合党政风格通知和公告',
-    hasChildren: true,
-    image: 'documents/official.png'
-  },
-  { 
-    id: 'contract', 
-    name: '合同协议', 
-    desc: '适合各种法律协议、合同',
-    hasChildren: false,
-    image: 'documents/contract.png'
-  },
-  { 
-    id: 'bidding', 
-    name: '招投标文书', 
-    desc: '适合各类型图标文件',
-    hasChildren: false,
-    image: 'documents/bidding.png'
-  },
-  { 
-    id: 'general', 
-    name: '通用文档', 
-    desc: '适合大部分文档',
-    hasChildren: false,
-    image: 'documents/general.png'
-  }
-]);
+// 模板分类数据 - 初始为空，将从后端加载
+const templateCategories = ref([]);
 
-// 子类数据
-const subcategories = {
-  thesis: [
-    { id: 1, name: '中山大学', image: 'office/sysu.png' },
-    { id: 2, name: '广东工业大学', image: 'office/gdut.png' },
-    { id: 3, name: '广西大学', image: 'office/gxu.png' },
-    { id: 6, name: '广西中医药大学', image: 'office/gxzyydx.png' }, // 修正id和图片路径
-    { id: 4, name: '广西桂林电子科技大学', image: 'office/guet.png' },
-    { id: 5, name: '广西民族大学', image: 'office/gxun.png' }
-  ],
-  official: [
-    { id: 1, name: '公文主体', image: 'office/01.png' },
-    { id: 2, name: '意见（短署名）', image: 'office/02.png' },
-    { id: 3, name: '报告（短署名）', image: 'office/03.png' },
-    { id: 4, name: '报告（长署名）', image: 'office/04.png' },
-    { id: 5, name: '请示', image: 'office/05.png' },
-    { id: 6, name: '请求（公章）', image: 'office/06.png' },
-    { id: 7, name: '通知', image: 'office/07.png' },
-    { id: 8, name: '通告（长署名）', image: 'office/08.png' },
-    { id: 9, name: '通报', image: 'office/09.png' },
-    { id: 10, name: '纪要', image: 'office/10.png' },
-    { id: 11, name: '信涵', image: 'office/11.png' },
-    { id: 12, name: '决定（公章）', image: 'office/12.png' },
-    { id: 13, name: '决议（短书名）', image: 'office/13.png' },
-    { id: 14, name: '命令', image: 'office/14.png' },
-    { id: 15, name: '批复（短署名）', image: 'office/15.png' }
-  ]
-};
+// 子类数据 - 初始为空，将从后端加载
+const subcategories = ref({});
 
 // 状态管理
 const hoveredCategory = ref(null);
@@ -174,8 +112,37 @@ const selectedCategory = ref(null);
 // 计算当前子分类
 const currentSubcategories = computed(() => {
   if (!selectedCategory.value) return [];
-  return subcategories[selectedCategory.value.id] || [];
+  return subcategories.value[selectedCategory.value.id] || [];
 });
+
+// 加载模板数据
+const loadTemplateData = async () => {
+  try {
+    const res = await selectOrgLayout();
+    if (res.code === 200) {
+      // 假设后端返回的数据结构为 { categories: [], subcategories: {} }
+      templateCategories.value = res.data.categories || [];
+      subcategories.value = res.data.subcategories || {};
+      
+      // 如果没有数据，使用默认数据
+      if (templateCategories.value.length === 0) {
+        templateCategories.value = getDefaultCategories();
+        subcategories.value = getDefaultSubcategories();
+      }
+    }
+  } catch (error) {
+    console.error('加载模板数据失败:', error);
+    // 使用默认数据作为回退
+    templateCategories.value = getDefaultCategories();
+    subcategories.value = getDefaultSubcategories();
+  }
+};
+
+// 默认分类数据
+const getDefaultCategories = () => [];
+
+// 默认子分类数据
+const getDefaultSubcategories = () => ({});
 
 // 处理分类点击
 const handleCategoryClick = (category) => {
@@ -187,21 +154,42 @@ const handleCategoryClick = (category) => {
 };
 
 // 开始排版
-const startFormatting = (template) => {
+const startFormatting = async (template) => {
   console.log('开始排版:', template);
-  // 这里可以触发排版逻辑或跳转到排版页面
-  // emit('select', template);
+  
+  try {
+    // 这里可以调用后端API获取模板详情
+    // const res = await getLayoutTemplate(template.id);
+    // if (res.code === 200) {
+    //   // 处理模板详情
+    //   const templateDetail = res.data;
+    //   emit('select', templateDetail);
+    // }
+    
+    // 暂时直接触发事件
+    emit('select', template);
+  } catch (error) {
+    console.error('获取模板详情失败:', error);
+    // 可以显示错误提示
+  }
 };
 
-// 处理图片加载错误
-const handleImageError = (event) => {
-  // event.target.src = '/images/default-image.jpg';
-};
+// // 处理图片加载错误
+// const handleImageError = (event) => {
+//   event.target.src = '/images/default-document.png';
+// };
 
-const getIconSvg = (fileName) => {
-  return new URL(`/src/assets/icons/${fileName}`, import.meta.url).href;
-};
+// const getIconSvg = (fileName) => {
+//   return new URL(`/src/assets/icons/${fileName}`, import.meta.url).href;
+// };
 
+// 定义emit事件
+const emit = defineEmits(['select']);
+
+onMounted(() => {
+  console.log('加载文档模板...');
+  loadTemplateData();
+});
 </script>
 
 <style lang="scss" scoped>
