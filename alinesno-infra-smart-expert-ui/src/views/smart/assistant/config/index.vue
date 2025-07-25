@@ -225,12 +225,12 @@ const modelConfigs = [
         width: calc(100% - 60px);
 
        .config-name {
-          font-size: 15px;
+          font-size: 16px;
         }
 
        .config-desc {
-          font-size: 15px;
-          line-height: 1.2rem;
+          font-size: 14px;
+          line-height: 1.4rem;
           color: #888;
         }
 
