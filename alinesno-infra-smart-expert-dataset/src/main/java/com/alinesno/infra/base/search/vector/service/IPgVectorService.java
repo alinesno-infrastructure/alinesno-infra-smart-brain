@@ -103,4 +103,11 @@ public interface IPgVectorService {
      * @return 总记录数
      */
     long countByDatasetIdAndDocumentName(Long datasetId, String documentName);
+
+    /**
+     * 根据向量ID获取向量信息
+     * @param segmentId
+     * @return
+     */
+    DocumentVectorBean getVectorById(long segmentId);
 }
