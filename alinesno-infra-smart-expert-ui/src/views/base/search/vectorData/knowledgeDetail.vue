@@ -23,14 +23,12 @@
           <div class="segment-list">
             <div v-for="(segment, index) in datasetList" :key="index" class="segment-item">
               <div class="segment-header">
-                <span class="segment-index"># 分段 {{ index + 1 }}（ID:{{segment.id}}）</span>
+                <span class="segment-index"># 分段 {{ index + 1 }}（ID:{{ segment.id }}）</span>
                 <span class="segment-length">长度: {{ segment.document_content?.length || 0 }} 字符</span>
               </div>
-              <div 
-                class="segment-content" 
-                @click="showFullContent(segment.document_content)"
-              >
-                {{ truncateString(segment.document_content, 300) }}
+              <div class="segment-content" @click="showFullContent(segment.document_content, segment.id)">
+                <!-- {{ truncateString(segment.document_content, 300) }} -->
+                <MdPreviewPanel :content="segment.document_content" />
               </div>
             </div>
           </div>
@@ -53,32 +51,32 @@
     </el-row>
 
     <!-- 添加弹窗显示完整内容 -->
-    <el-dialog
-      v-model="dialogVisible"
-      title="分段内容详情"
-      width="60%"
-      top="5vh"
-    >
-      <div class="full-content">
-        <pre>{{ currentContent }}</pre>
-      </div>
+    <el-dialog v-model="dialogVisible" title="分段内容详情" width="670" top="5vh">
+      <el-form :model="contentForm" ref="contentFormRef">
+        <el-form-item prop="content">
+          <el-input v-model="contentForm.content" type="textarea" :rows="15" placeholder="请输入内容" resize="none" />
+        </el-form-item>
+      </el-form>
       <template #footer>
-        <el-button type="primary" @click="dialogVisible = false">关闭</el-button>
+        <el-button @click="dialogVisible = false" size="large">取消</el-button>
+        <el-button type="primary" :loading="loading" @click="handleSaveContent" size="large">保存</el-button>
       </template>
     </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from 'vue'
-
+import MdPreviewPanel from "./MarkdownPreview"
 import {
   getSearch,
 } from "@/api/base/search/vectorDataset";
 
 import {
   knowledgeDetail,
-  queryDocumentPage
+  updateSegmentContent,
+  queryDocumentPage,
 } from "@/api/base/search/datasetKnowledge";
 
 import { reactive } from "vue";
@@ -94,6 +92,14 @@ const loading = ref(false);
 const showSearch = ref(true);
 const total = ref(0);
 const dateRange = ref([]);
+
+// 在setup()中添加以下内容
+const contentForm = ref({
+  id: '',
+  content: ''
+});
+const contentFormRef = ref(null);
+const currentSegmentId = ref('');
 
 // 添加弹窗相关状态
 const dialogVisible = ref(false);
@@ -141,10 +147,10 @@ const data = reactive({
 const { queryParams, form, rules } = toRefs(data);
 
 // 显示完整内容
-const showFullContent = (content) => {
-  currentContent.value = content;
-  dialogVisible.value = true;
-};
+// const showFullContent = (content) => {
+//   currentContent.value = content;
+//   dialogVisible.value = true;
+// };
 
 // 截断字符串
 const truncateString = (str, num) => {
@@ -218,6 +224,44 @@ const handleDatasetKnowledge = () => {
   })
 }
 
+// 修改showFullContent方法
+const showFullContent = (content, id) => {
+  currentContent.value = content;
+  currentSegmentId.value = id;
+  contentForm.value = {
+    id: id,
+    content: content
+  };
+  dialogVisible.value = true;
+};
+
+// 添加保存方法
+const handleSaveContent = () => {
+  // 这里添加保存逻辑，调用API
+  console.log('保存内容:', contentForm.value);
+  loading.value = true;
+  // 示例API调用:
+  updateSegmentContent(contentForm.value).then(response => {
+    proxy.$modal.msgSuccess("保存成功");
+    dialogVisible.value = false;
+    // getList(); // 刷新列表
+
+    // 更新列表中对应的内容
+    const index = datasetList.value.findIndex(item => item.id === currentSegmentId.value);
+    if (index !== -1) {
+      datasetList.value[index].document_content = contentForm.value.content;
+    }
+
+    loading.value = false;
+  });
+
+  // 临时模拟保存成功
+  // proxy.$modal.msgSuccess("保存成功");
+  // dialogVisible.value = false;
+
+};
+
+
 // 查询文档列表
 const handleQueryDocumentPage = () => {
   const params = {
@@ -288,6 +332,7 @@ onMounted(() => {
     background: #f9f9f9;
     border-radius: 4px;
     line-height: 1.6;
+
     pre {
       white-space: pre-wrap;
       word-break: break-word;
@@ -317,6 +362,21 @@ onMounted(() => {
     font-size: 14px;
     color: #333;
     word-break: break-word;
+  }
+
+  .full-content {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    line-height: 1.6;
+
+    :deep(.el-textarea__inner) {
+      font-family: inherit;
+      line-height: 1.6;
+      padding: 12px;
+    }
   }
 }
 </style>
