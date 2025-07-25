@@ -4,6 +4,7 @@ import cn.hutool.core.io.FileTypeUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.search.api.CrawlerDto;
 import com.alinesno.infra.base.search.api.DataProcessingDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.enums.FileTypeEnums;
 import com.alinesno.infra.base.search.service.ICrawlerService;
@@ -218,6 +219,16 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
                                         @RequestParam int pageSize) {
         DatasetKnowledgeEntity entity = service.getById(id) ;
         return service.queryDocumentPage(entity, pageNum , pageSize);
+    }
+
+    /**
+     * 更新分段内容
+     * @return
+     */
+    @PostMapping("/updateSegmentContent")
+    public AjaxResult updateSegmentContent(@RequestBody @Valid SegmentUpdateDto dto) {
+        service.updateSegmentContent(dto);
+        return ok() ;
     }
 
 
