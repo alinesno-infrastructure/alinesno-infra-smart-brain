@@ -1,6 +1,7 @@
 package com.alinesno.infra.base.search.service;
 
 import com.alinesno.infra.base.search.api.DataProcessingDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
@@ -73,4 +74,11 @@ public interface IDatasetKnowledgeService extends IBaseService<DatasetKnowledgeE
      * @return
      */
     TableDataInfo queryDocumentPage(DatasetKnowledgeEntity entity , int pageNum, int pageSize);
+
+    /**
+     * 更新向量存储的文档内容
+     * @param dto
+     */
+    void updateSegmentContent(SegmentUpdateDto dto);
+
 }
