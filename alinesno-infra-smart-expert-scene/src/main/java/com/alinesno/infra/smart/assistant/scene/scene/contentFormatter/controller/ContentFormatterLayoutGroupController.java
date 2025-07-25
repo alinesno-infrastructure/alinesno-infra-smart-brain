@@ -107,8 +107,8 @@ public class ContentFormatterLayoutGroupController extends BaseController<Conten
 
     @ApiOperation("删除分组")
     @DeleteMapping("delGroup")
-    public AjaxResult delGroup(@RequestParam Long id) {
-        service.removeById(id);
+    public AjaxResult delGroup(@RequestParam Long id , String groupType) {
+        service.removeGroup(id , groupType);
         return AjaxResult.success("删除成功");
     }
 
