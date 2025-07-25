@@ -2,6 +2,7 @@ package com.alinesno.infra.base.search.service;
 
 
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -94,4 +95,10 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @return
      */
     List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Long datasetId, String documentName, int pageNum, int pageSize, long total);
+
+    /**
+     * 更新分词内容
+     * @param dto
+     */
+    void updateSegmentContent(SegmentUpdateDto dto);
 }
