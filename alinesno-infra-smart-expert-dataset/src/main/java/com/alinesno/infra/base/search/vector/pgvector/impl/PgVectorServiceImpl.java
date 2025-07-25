@@ -507,4 +507,27 @@ public class PgVectorServiceImpl implements IPgVectorService {
         Long count = jdbcTemplate.queryForObject(sql, Long.class, datasetId, documentName);
         return count != null ? count : 0L;
     }
+
+    @SneakyThrows
+    @Override
+    public DocumentVectorBean getVectorById(long segmentId) {
+        // 1. 构建SQL查询语句
+        String sql = "SELECT *, 0 AS cosine_similarity " + // 添加伪相似度字段以满足convert方法要求
+                "FROM " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME + " " +
+                "WHERE id = ?";
+
+        // 2. 执行查询
+        List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql, segmentId);
+
+        // 3. 检查结果是否存在
+        if (rows.isEmpty()) {
+            return null; // 或者抛出异常 throw new RuntimeException("未找到ID为 " + segmentId + " 的文档片段");
+        }
+
+        // 4. 使用现有转换方法
+        List<DocumentVectorBean> result = convertToDocumentVectorBeans(rows, 0); // quoteLimit设为0表示不限制
+
+        // 5. 返回第一个结果(唯一结果)
+        return result.get(0);
+    }
 }
