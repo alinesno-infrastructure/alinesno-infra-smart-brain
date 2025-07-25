@@ -11,7 +11,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.Conte
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,7 +48,7 @@ public class ContentFormatterOfficeConfigController extends BaseController<Conte
         ContentFormatterOfficeConfigEntity entity = dto.toEntity();
 
         // 简单检查
-        if (!HealthCheckUtil.isServiceOk(dto.getToolPath())) {
+        if (HealthCheckUtil.isServiceOk(dto.getToolPath())) {
             return AjaxResult.error("请检查服务是否正常启动，查询链接异常.");
         }
 
@@ -65,11 +64,17 @@ public class ContentFormatterOfficeConfigController extends BaseController<Conte
         }
 
         // 简单检查
-        if (!HealthCheckUtil.isServiceOk(dto.getToolPath())) {
+        if (HealthCheckUtil.isServiceOk(dto.getToolPath())) {
             return AjaxResult.error("请检查服务是否正常启动，解析地址连接异常.");
         }
 
-        ContentFormatterOfficeConfigEntity entity = dto.toEntity();
+        ContentFormatterOfficeConfigEntity entity = service.getById(dto.getId()) ;
+
+        entity.setToolName(dto.getToolName());
+        entity.setToolPath(dto.getToolPath());
+        entity.setRequestToken(dto.getRequestToken());
+        entity.setDataScope(dto.getDataScope());
+
         service.update(entity);
         return AjaxResult.success("配置更新成功");
     }
