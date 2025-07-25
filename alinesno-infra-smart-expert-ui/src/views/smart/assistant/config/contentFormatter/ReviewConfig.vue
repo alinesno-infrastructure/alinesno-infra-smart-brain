@@ -4,39 +4,52 @@
     <el-row>
       <el-col :span="4">
           <RuleGroupPanel 
+              ref="ruleGroupPanelRef"
               :groupType="'audit'"
               @filterGroup="filterGroup"
+              @refreshRules="refreshRules"
               @settingGroup="settingGroup"
               />
       </el-col>
       <el-col :span="20">
         <div style="margin-left:20px;margin-top:5px;">
-        <el-button type="primary" text bg size="large" @click="addRule" icon="Plus" class="mb-20">添加审核规则</el-button>
+
+          <div>
+            <el-button type="primary" text bg size="large" @click="addRule" icon="Plus" class="mb-20">添加审核规则</el-button>
+
+            <!-- 添加重置-->
+            <el-button type="primary" text bg size="large" icon="Refresh" @click="refreshLayout" class="mb-20">刷新</el-button>
+
+            <el-button type="warning" text bg size="large" icon="Upload" @click="handleImport" class="mb-20" v-hasPermi="['system:user:import']">导入</el-button>
+          </div>
 
         <el-table :data="rules" style="width: 100%" v-loading="loading">
-          <el-table-column type="index" label="序号" width="60" />
-          <el-table-column prop="ruleName" label="规则名称" width="180" />
-          <el-table-column prop="docType" label="文档类型" width="120">
-            <template #default="{ row }">
-              {{ formatDocType(row.docType) }}
-            </template>
+          <el-table-column type="index" label="序号" align="center" width="50" />
+          <el-table-column prop="ruleName" label="规则名称" width="180">
+                <template #default="{ row }">
+                    <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
+                      {{ row.ruleName}}
+                    </div>
+                </template>
           </el-table-column>
-          <el-table-column prop="riskLevel" label="风险级别" width="120">
+
+          <el-table-column prop="docType" align="center" label="所属分组" width="180">
+            <template #default="{ row }">
+                {{ getGroupNameById(row.groupId) }}
+            </template>
+          </el-table-column> 
+          <el-table-column prop="riskLevel" align="center" label="风险" width="90">
             <template #default="{ row }">
               <el-tag :type="riskTagType(row.riskLevel)">{{ formatRiskLevel(row.riskLevel) }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="scope" label="适用范围" width="120">
-            <template #default="{ row }">
-              <el-tag :type="scopeTagType(row.scope)">{{ formatScope(row.scope) }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="reviewPosition" label="审核立场" width="120">
+          <el-table-column prop="reviewPosition" align="center" label="立场" width="120">
             <template #default="{ row }">
               {{ formatReviewPosition(row.reviewPosition) }}
             </template>
           </el-table-column>
-          <el-table-column prop="ruleDescription" label="规则描述" />
+
+          <el-table-column prop="ruleContent" label="规则描述" />
           <el-table-column label="操作" align="center" width="200">
             <template #default="{ row }">
               <el-button text bg @click="editRule(row)">编辑</el-button>
@@ -46,7 +59,7 @@
         </el-table>
 
         <pagination style="margin-bottom:30px" v-show="total > 0" :total="total" v-model:page="queryParams.pageNum"
-          v-model:limit="queryParams.pageSize" @pagination="getList" />
+          v-model:limit="queryParams.pageSize" @pagination="fetchRules" />
         </div>
       </el-col>
     </el-row>
@@ -68,14 +81,6 @@
           <el-input v-model="currentRule.ruleName" placeholder="请输入规则名称" maxlength="128" show-word-limit />
         </el-form-item>
 
-        <!--
-        <el-form-item label="文档类型" prop="docType">
-          <el-radio-group v-model="currentRule.docType">
-            <el-radio v-for="item in docTypeOptions" :key="item.value" :label="item.value">{{ item.label }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        -->
-
         <el-form-item label="风险级别" prop="riskLevel">
           <el-radio-group v-model="currentRule.riskLevel">
             <el-radio v-for="item in riskLevelOptions" :key="item.value" :label="item.value">{{ item.label }}</el-radio>
@@ -89,32 +94,46 @@
           </el-radio-group>
         </el-form-item>
 
-        <el-form-item label="适用范围" prop="scope">
-          <el-radio-group v-model="currentRule.scope">
-            <el-radio v-for="item in scopeOptions" :key="item.value" :label="item.value">{{ item.label }}</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
         <el-form-item label="规则内容" prop="ruleContent">
-          <el-input type="textarea" v-model="currentRule.ruleContent" :rows="4" placeholder="请输入规则内容" />
+          <el-input type="textarea" v-model="currentRule.ruleContent" :rows="7" placeholder="请输入规则内容" />
         </el-form-item>
 
-        <el-form-item label="规则描述" prop="ruleDescription">
-          <el-input type="textarea" v-model="currentRule.ruleDescription" :rows="2" placeholder="请输入规则描述"
-            maxlength="500" show-word-limit />
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
         <el-button type="primary" @click="submitForm">保存</el-button>
       </template>
     </el-dialog>
+
+        <!-- 模板导入对话框 -->
+    <el-dialog :title="upload.title" v-model="upload.open" width="400px" append-to-body :before-close="handleClose">
+      <el-upload ref="uploadRef" :limit="1" accept=".xlsx, .xls" :headers="upload.headers"
+        :action="upload.url + '?updateSupport=' + upload.updateSupport" 
+        :disabled="upload.isUploading"
+        :on-progress="handleFileUploadProgress" :on-success="handleFileSuccess" :auto-upload="false" drag>
+        <el-icon class="el-icon--upload"><upload-filled /></el-icon>
+        <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+        <template #tip>
+          <div class="el-upload__tip text-center">
+            <span>仅允许导入xls、xlsx格式文件。</span>
+          </div>
+        </template>
+      </el-upload>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button type="primary" :loading="upload.isUploading" @click="submitFileForm">确 定</el-button>
+          <el-button :disabled="upload.isUploading" @click="upload.open = false">取 消</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { getToken } from "@/utils/auth";
 import {
   listRules as getRules,
   addRule as createRule,
@@ -124,6 +143,7 @@ import {
 
 import RuleGroupPanel from "./LayoutGroup"
 
+const ruleGroupPanelRef = ref(null)
 const loading = ref(true)
 const rules = ref([])
 const dialogVisible = ref(false)
@@ -142,6 +162,26 @@ const props = defineProps({
 const dateRange = ref([]);
 const groups = ref([])
 const total = ref(0);
+
+/*** 模板导入参数 */
+const upload = reactive({
+  // 是否显示弹出层（模板导入）
+  open: false,
+  // 弹出层标题（模板导入）
+  title: "",
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的模板数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: { Authorization: "Bearer " + getToken() },
+  // 头像上传的地址
+  headerUrl: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/contentFormatterRule/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
 
 // 表单验证规则
 const formRules = reactive({
@@ -275,6 +315,11 @@ const submitForm = async () => {
   }
 }
 
+const getGroupNameById = (groupId) => {
+  const group = groups.value.find(g => g.id === groupId)
+  return group ? group.name : '未分组'
+}
+
 // 重置表单
 const resetForm = () => {
   currentRule.id = null
@@ -291,10 +336,10 @@ const resetForm = () => {
 }
 
 // 格式化显示
-const formatDocType = (type) => {
-  const item = docTypeOptions.find(item => item.value === type)
-  return item ? item.label : type
-}
+// const formatDocType = (type) => {
+//   const item = docTypeOptions.find(item => item.value === type)
+//   return item ? item.label : type
+// }
 
 const formatRiskLevel = (level) => {
   const item = riskLevelOptions.find(item => item.value === level)
@@ -306,10 +351,10 @@ const formatReviewPosition = (position) => {
   return item ? item.label : position
 }
 
-const formatScope = (scope) => {
-  const item = scopeOptions.find(item => item.value === scope)
-  return item ? item.label : scope
-}
+// const formatScope = (scope) => {
+//   const item = scopeOptions.find(item => item.value === scope)
+//   return item ? item.label : scope
+// }
 
 // 标签类型
 const riskTagType = (level) => {
@@ -342,6 +387,74 @@ const settingGroup = (groupsArr) => {
   console.log("groups = " + groupsArr);
   groups.value = groupsArr || [];
 }
+
+// 更新规则信息
+const refreshRules = () => {
+  queryParams.value.groupId = null;
+  fetchRules()
+}
+
+/** 导入按钮操作 */
+function handleImport() {
+  upload.title = "审核规则导入";
+  upload.open = true;
+};
+
+/**文件上传中处理 */
+const handleFileUploadProgress = (event, file, fileList) => {
+  upload.isUploading = true;
+};
+
+const handleFileSuccess = (response, file, fileList) => {
+  upload.open = false;
+  upload.isUploading = false;
+  proxy.$refs["uploadRef"].handleRemove(file);
+
+  const responseData = response.data;
+
+  // 构建导入结果信息
+  let message = '';
+  if (responseData.failedCount > 0) {
+    message += `<div class="import-summary">
+                  <p>导入成功: ${responseData.successCount} 条</p>
+                  <p class="text-danger">导入失败: ${responseData.failedCount} 条</p>
+                </div>
+                <div class="failed-list mt-3">
+                  <h4 class="mb-2">失败详情</h4>
+                  <ul class="list-group">`;
+
+    responseData.failedList.forEach(item => {
+      message += `<li class="list-group-item list-group-item-danger">
+                    <div class="font-weight-bold">规则: ${item.ruleName} (分组: ${item.failReason.groupName || '无'})</div>
+                    <div class="text-muted">原因: ${item.failReason.error || item.failReason.message || '未知错误'}</div>
+                  </li>`;
+    });
+
+    message += `</ul></div>`;
+  } else {
+    message += `<div class="text-success">全部 ${responseData.successCount} 条数据导入成功</div>`;
+  }
+
+  proxy.$alert(`<div style='overflow: auto;overflow-x: hidden;max-height: 70vh;padding: 10px 20px 0;'>${message}</div>`,
+    "导入结果",
+    { dangerouslyUseHTMLString: true });
+
+  ruleGroupPanelRef.value.refreshGroupType();
+  fetchRules();
+};
+
+const handleClose = (done) => {
+  // 如果正在上传文件，则阻止关闭对话框
+  if (upload.isUploading) {
+    proxy.$modal.msgError("正在上传文件，请稍后再试");
+    return;
+  }
+}
+
+/** 提交上传文件 */
+function submitFileForm() {
+  proxy.$refs["uploadRef"].submit();
+};
 
 // 生命周期钩子
 onMounted(() => {
