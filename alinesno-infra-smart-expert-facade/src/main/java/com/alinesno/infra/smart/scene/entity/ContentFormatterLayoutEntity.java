@@ -16,7 +16,11 @@ import lombok.EqualsAndHashCode;
 @TableName("content_formatter_layout")
 public class ContentFormatterLayoutEntity extends InfraBaseEntity {
 
-    // 排版的名称、描述、所属分组、配置内容（长文本）、排序
+    // 排版图标
+    @TableField
+    @Column(comment = "排版图标" , length = 32, type = MySqlTypeConstant.VARCHAR)
+    private String icon;
+
     @TableField
     @Column(comment = "排版名称" , length = 50 , type = MySqlTypeConstant.VARCHAR)
     private String name;
@@ -26,7 +30,7 @@ public class ContentFormatterLayoutEntity extends InfraBaseEntity {
     private String layoutDesc;
 
     @TableField
-    @Column(comment = "排版分组" , length = 50 , type = MySqlTypeConstant.VARCHAR)
+    @Column(comment = "排版分组" , length = 32, type = MySqlTypeConstant.BIGINT)
     private Long groupId;
 
     @TableField
