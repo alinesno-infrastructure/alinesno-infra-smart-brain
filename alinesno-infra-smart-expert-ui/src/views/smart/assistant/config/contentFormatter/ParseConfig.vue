@@ -33,7 +33,7 @@
         <el-input v-model="formData.toolPath" placeholder="例如：http://localhost:8080/office" />
       </el-form-item>
       <el-form-item label="请求Token" prop="requestToken">
-        <el-input v-model="formData.requestToken" placeholder="如需认证请填写Token" />
+        <el-input v-model="formData.requestToken" type="password" placeholder="如需认证请填写Token" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" @click="submitForm">保存配置</el-button>
@@ -74,7 +74,8 @@ const rules = reactive({
     { required: true, message: '请输入服务地址', trigger: 'blur' },
     { pattern: /^https?:\/\/.+/i, message: '请输入有效的URL地址', trigger: 'blur' }
   ],
-  dataScope: [{ required: true, message: '请选择服务范围', trigger: 'change' }]
+  dataScope: [{ required: true, message: '请选择服务范围', trigger: 'change' }],
+  requestToken: [{ required: false, message: '请输入请求Token', trigger: 'blur' }]
 })
 
 // 获取配置
