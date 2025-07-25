@@ -39,9 +39,9 @@ export function updateGroup(data) {
 }
 
 // 删除分组
-export function delGroup(id) {
+export function delGroup(id , groupType) {
   return request({
-    url: prefix + 'delGroup?id=' + parseStrEmpty(id),
+    url: prefix + 'delGroup?id=' + parseStrEmpty(id) + '&groupType=' + parseStrEmpty(groupType),
     method: 'delete'
   })
 }
