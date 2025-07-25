@@ -2,6 +2,7 @@ package com.alinesno.infra.base.search.service.vector;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.base.search.enums.SearchType;
 import com.alinesno.infra.base.search.mapper.VectorDatasetMapper;
@@ -334,5 +335,50 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         }
 
         return result;
+    }
+
+    /**
+     * 更新指定片段的内容，包括文本内容和向量内容
+     * @param dto 包含片段ID和更新内容的传输对象
+     */
+    @Override
+    public void updateSegmentContent(SegmentUpdateDto dto) {
+        // 参数校验
+        if (!StringUtils.hasText(dto.getId())) {
+            throw new IllegalArgumentException("片段ID不能为空");
+        }
+        if (!StringUtils.hasText(dto.getContent())) {
+            throw new IllegalArgumentException("更新内容不能为空");
+        }
+
+        try {
+            // 将字符串ID转换为long类型
+            long segmentId = Long.parseLong(dto.getId());
+
+            // 1. 从向量数据库获取现有片段
+            DocumentVectorBean existingSegment = pgVectorService.getVectorById(segmentId);
+            if (existingSegment == null) {
+                throw new RuntimeException("未找到ID为 " + segmentId + " 的片段");
+            }
+
+            // 2. 准备更新对象
+            DocumentVectorBean updateBean = new DocumentVectorBean();
+            // 复制原有属性
+            BeanUtils.copyProperties(existingSegment, updateBean);
+            // 设置新的内容
+            updateBean.setDocument_content(dto.getContent());
+
+            // 3. 更新向量数据库中的内容
+            // 这会自动处理文本的重新向量化
+            pgVectorService.updateVector(updateBean);
+
+            log.info("成功更新片段内容，片段ID: {}", segmentId);
+
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("片段ID格式不正确");
+        } catch (Exception e) {
+            log.error("更新片段内容失败，片段ID: " + dto.getId(), e);
+            throw new RuntimeException("更新片段内容失败: " + e.getMessage());
+        }
     }
 }
