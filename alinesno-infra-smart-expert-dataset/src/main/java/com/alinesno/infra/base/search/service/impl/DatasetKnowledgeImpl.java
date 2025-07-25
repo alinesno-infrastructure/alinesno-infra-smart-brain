@@ -3,6 +3,7 @@ package com.alinesno.infra.base.search.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
 import com.alinesno.infra.base.search.api.DataProcessingDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.base.search.enums.DocumentStatusEnums;
@@ -226,5 +227,10 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
         tableDataInfo.setMsg("查询成功");
 
         return tableDataInfo ;
+    }
+
+    @Override
+    public void updateSegmentContent(SegmentUpdateDto dto) {
+        vectorDatasetService.updateSegmentContent(dto);
     }
 }
