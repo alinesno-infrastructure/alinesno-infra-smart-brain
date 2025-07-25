@@ -2,6 +2,7 @@ package com.alinesno.infra.base.search.service.vector;
 
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
+import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.base.search.mapper.VectorDatasetMapper;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
@@ -109,6 +110,11 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
     @Override
     public List<DocumentVectorBean> queryPageByDatasetIdAndDocumentName(Long datasetId, String documentName, int pageNum, int pageSize, long total) {
         return null;
+    }
+
+    @Override
+    public void updateSegmentContent(SegmentUpdateDto dto) {
+
     }
 
 }
