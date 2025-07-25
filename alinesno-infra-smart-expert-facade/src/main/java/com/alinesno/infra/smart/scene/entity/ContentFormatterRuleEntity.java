@@ -29,6 +29,10 @@ public class ContentFormatterRuleEntity extends InfraBaseEntity {
     private String ruleContent;
 
     @TableField
+    @Column(comment = "排版分组" , length = 50 , type = MySqlTypeConstant.VARCHAR)
+    private Long groupId;
+
+    @TableField
     @Column(name = "review_position", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "审核立场")
     private String reviewPosition;
 
