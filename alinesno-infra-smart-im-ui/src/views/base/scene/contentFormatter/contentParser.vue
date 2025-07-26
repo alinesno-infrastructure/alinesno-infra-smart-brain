@@ -68,13 +68,10 @@
 
         <!-- Right Sidebar - Templates -->
         <aside class="sidebar right-sidebar">
-
          <!-- AI重写 -->
          <AIRewriteSider v-if="currentFunctionId == 'rewrite'" />
-
          <!-- AI校对  -->
          <AiProofreadSider v-if="currentFunctionId == 'proofread'" />
-
           <!-- AI排版 -->
           <TemplateSider v-if="currentFunctionId == 'format'" @select="handleTemplateSelect" />
         </aside>
@@ -115,6 +112,9 @@ import AiProofreadSider from './components/AiProofreadSider';
 import TemplateSider from './components/TemplateSider';
 
 import { getScene } from '@/api/base/im/scene/contentFormatter';
+import { 
+  formatContent 
+} from '@/api/base/im/scene/contentFormatterLayout';
 
 const currentFunctionId = ref('format')
 
@@ -132,12 +132,6 @@ const currentSceneInfo = ref({
 
 // AI功能按钮配置数组
 const aiFunctionButtons = ref([
-
-  // { id: 'polish', icon: 'fa-solid fa-wand-magic-sparkles', label: 'AI润色', isPrimary: true },  // AI润色（主按钮）
-  // { id: 'continue', icon: 'fa-solid fa-pen-to-square', label: 'AI续写' },      // AI续写
-  // { id: 'expand', icon: 'fa-solid fa-expand', label: 'AI扩写' },                // AI扩写
-  // { id: 'summarize', icon: 'fa-solid fa-file-contract', label: 'AI总结' },      // 新增：AI总结
-
   { id: 'rewrite', icon: 'fa-solid fa-rotate', label: 'AI重写' },              // AI重写
   { id: 'format', icon: 'fa-solid fa-align-left', label: 'AI排版' },            // AI排版
   { id: 'proofread', icon: 'fa-solid fa-spell-check', label: 'AI校对' },        // 新增：AI校对
@@ -306,8 +300,16 @@ const handleSetHtml = (textContent, htmlContent) => {
 };
 
 const handleTemplateSelect = (template) => {
-  console.log('选择的模板:', template);
+  console.log('选择的模板:', template.id);
+  console.log('文档内容', customEditorContent.value);
   // 处理模板选择逻辑
+  const data = {
+    templateId: template.id,
+    content:  customEditorContent.value ,
+  }
+  formatContent(data).then(res => {
+    console.log('res = ' + res)
+  })
 };
 
 const handleGetScene = () => {
