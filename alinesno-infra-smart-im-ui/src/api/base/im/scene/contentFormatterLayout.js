@@ -8,6 +8,16 @@ var managerUrl = {
   selectOrgLayout: prefix +"selectOrgLayout",
   getLayoutTemplate: prefix +"getLayoutTemplate",
   previewLayoutTemplate: prefix +"previewLayoutTemplate",
+  formatContent: prefix +"formatContent"
+}
+
+// 文档排版格式化
+export function formatContent(data) {
+  return request({
+    url: managerUrl.formatContent,
+    method: 'post',
+    data: data
+  })
 }
 
 // 查询界面排版数据
