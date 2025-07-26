@@ -1,99 +1,265 @@
 <template>
     <div class="ai-audit-container">
-        <div class="header">
-            <h1>AI文档审核</h1>
-            <div class="actions">
-                <el-button type="primary" text bg icon="Download" @click="exportResults">导出审核结果</el-button>
-            </div>
-        </div>
+        <!-- Step indicator -->
+        <el-steps class="audit-step-container" :active="activeStep" finish-status="success" simple>
+            <el-step title="选择审核规则" />
+            <el-step title="审核结果" />
+        </el-steps>
 
-        <div class="filter-section">
-            <div class="filter-group">
-                <span class="filter-label">风险等级：</span>
-                <el-checkbox-group v-model="filterRiskLevels">
-                    <el-checkbox label="high">高风险</el-checkbox>
-                    <el-checkbox label="medium">中风险</el-checkbox>
-                    <el-checkbox label="low">低风险</el-checkbox>
-                </el-checkbox-group>
+        <!-- Step 1: Rule Selection -->
+        <div v-if="activeStep === 1" class="rule-selection">
+            <div class="selection-header">
+                <p>请选择要应用的审核规则分类和具体规则</p>
             </div>
 
-        </div>
+            <el-scrollbar style="height: calc(100vh - 370px)">
+                <el-collapse v-model="activeCategories" accordion style="border:0px;">
+                    <el-collapse-item 
+                        v-for="category in ruleCategories" 
+                        :key="category.id" 
+                        :name="category.id"
+                        class="category-item"
+                    >
+                        <template #title>
+                            <div class="category-header">
+                                <el-icon v-if="category.icon" :size="20">
+                                    <component :is="category.icon" />
+                                </el-icon>
+                                <span>{{ category.name }}</span>
+                                <el-tag size="large">{{ category.ruleCount }}条规则</el-tag>
+                                <el-checkbox 
+                                    v-model="selectedAllInCategory[category.id]" 
+                                    @click.stop
+                                    @change="(val) => toggleSelectAllCategory(category.id, val)"
+                                >
+                                    全选
+                                </el-checkbox>
+                            </div>
+                        </template>
 
-        <el-scrollbar style="height:calc(100vh - 330px)">
-            <div class="audit-results">
-
-                <el-collapse v-model="activeNames" accordion expand-icon-position="left" @change="handleChange">
-                    <template v-for="(results, type) in filteredResults" :key="type">
-                        <el-collapse-item :name="type">
-                            <template #title>
-                                <div class="collapse-title">
-                                    <span>{{ type }}</span>
-                                    <el-tag :type="getRiskTagType(getHighestRiskLevel(results))">
-                                        {{ results.length }}个问题
-                                    </el-tag>
-                                    <div class="risk-tags">
-                                        <el-tag v-if="hasRiskLevel(results, 'high')" type="danger">
-                                            高风险: {{ countRiskLevel(results, 'high') }}
-                                        </el-tag>
-                                        <el-tag v-if="hasRiskLevel(results, 'medium')" type="warning">
-                                            中风险: {{ countRiskLevel(results, 'medium') }}
-                                        </el-tag>
-                                        <el-tag v-if="hasRiskLevel(results, 'low')" type="success">
-                                            低风险: {{ countRiskLevel(results, 'low') }}
+                        <el-checkbox-group v-model="selectedRules" class="rule-list">
+                            <el-checkbox 
+                                v-for="rule in getRulesByCategory(category.id)" 
+                                :key="rule.id" 
+                                :label="rule.id"
+                                class="rule-item"
+                            >
+                                <div class="rule-content">
+                                    <div class="rule-header">
+                                        <span class="rule-name">{{ rule.ruleName }}</span>
+                                        <el-tag :type="getRiskTagType(rule.riskLevel)" size="small">
+                                            {{ formatRiskLevel(rule.riskLevel) }}
                                         </el-tag>
                                     </div>
+                                    <p class="rule-desc">{{ rule.ruleDescription }}</p>
                                 </div>
-                            </template>
+                            </el-checkbox>
+                        </el-checkbox-group>
+                    </el-collapse-item>
+                </el-collapse>
+            </el-scrollbar>
+            <div class="action-buttons">
+                <el-button type="primary" size="large" @click="startAudit" :disabled="!selectedRules.length">
+                    开始审核 ({{ selectedRules.length }}条规则已选)
+                </el-button>
+            </div>
 
-                            <div v-for="(item, index) in results" 
-                                :key="index" 
-                                class="audit-item"
-                                :data-risk="item.riskLevel">
+        </div>
 
-                                <div class="item-header">
-                                    <el-tag :type="getRiskTagType(item.riskLevel)">
-                                        {{ formatRiskLevel(item.riskLevel) }}
-                                    </el-tag>
-                                    <span class="item-title">{{ item.checkItem }}</span>
-                                    <el-button v-if="item.position" type="text"
-                                        @click="navigateToPosition(item.position)">
-                                        <el-icon>
-                                            <Position />
-                                        </el-icon> 定位
-                                    </el-button>
-                                </div>
+        <!-- Step 2: Audit Results -->
+        <div v-if="activeStep === 2" class="audit-results-view">
+            <div class="header">
+                <h1>AI文档审核结果</h1>
+                <div class="actions">
+                    <el-button type="primary" text bg icon="Download" @click="exportResults">导出审核结果</el-button>
+                    <el-button type="info" text bg icon="Refresh" @click="backToSelection">重新选择规则</el-button>
+                </div>
+            </div>
 
-                                <div class="item-content">
-                                    <div class="problem-section">
-                                        <h4>检查详情：</h4>
-                                        <p>{{ item.checkDetails }}</p>
-                                        <div v-if="item.context" class="problem-context">
-                                            <el-tag type="info">上下文</el-tag>
-                                            <pre>{{ item.context }}</pre>
+            <div class="filter-section">
+                <div class="filter-group">
+                    <span class="filter-label">风险等级：</span>
+                    <el-checkbox-group v-model="filterRiskLevels">
+                        <el-checkbox label="high">高风险</el-checkbox>
+                        <el-checkbox label="medium">中风险</el-checkbox>
+                        <el-checkbox label="low">低风险</el-checkbox>
+                    </el-checkbox-group>
+                </div>
+            </div>
+
+            <el-scrollbar style="height:calc(100vh - 380px)">
+                <div class="audit-results">
+                    <el-collapse v-model="activeNames" accordion>
+                        <template v-for="(results, type) in filteredResults" :key="type">
+                            <el-collapse-item :name="type">
+                                <template #title>
+                                    <div class="collapse-title">
+                                        <span>{{ type }}</span>
+                                        <el-tag :type="getRiskTagType(getHighestRiskLevel(results))">
+                                            {{ results.length }}个问题
+                                        </el-tag>
+                                        <div class="risk-tags">
+                                            <el-tag v-if="hasRiskLevel(results, 'high')" type="danger">
+                                                高风险: {{ countRiskLevel(results, 'high') }}
+                                            </el-tag>
+                                            <el-tag v-if="hasRiskLevel(results, 'medium')" type="warning">
+                                                中风险: {{ countRiskLevel(results, 'medium') }}
+                                            </el-tag>
+                                            <el-tag v-if="hasRiskLevel(results, 'low')" type="success">
+                                                低风险: {{ countRiskLevel(results, 'low') }}
+                                            </el-tag>
                                         </div>
                                     </div>
+                                </template>
 
-                                    <div class="solution-section">
-                                        <h4>修改建议：</h4>
-                                        <p>{{ item.suggestion || '暂无具体建议' }}</p>
+                                <div v-for="(item, index) in results" 
+                                    :key="index" 
+                                    class="audit-item"
+                                    :data-risk="item.riskLevel">
+                                    <div class="item-header">
+                                        <el-tag :type="getRiskTagType(item.riskLevel)">
+                                            {{ formatRiskLevel(item.riskLevel) }}
+                                        </el-tag>
+                                        <span class="item-title">{{ item.checkItem }}</span>
+                                        <el-button v-if="item.position" type="text"
+                                            @click="navigateToPosition(item.position)">
+                                            <el-icon>
+                                                <Position />
+                                            </el-icon> 定位
+                                        </el-button>
+                                    </div>
+
+                                    <div class="item-content">
+                                        <div class="problem-section">
+                                            <h4>检查详情：</h4>
+                                            <p>{{ item.checkDetails }}</p>
+                                            <div v-if="item.context" class="problem-context">
+                                                <el-tag type="info">上下文</el-tag>
+                                                <pre>{{ item.context }}</pre>
+                                            </div>
+                                        </div>
+
+                                        <div class="solution-section">
+                                            <h4>修改建议：</h4>
+                                            <p>{{ item.suggestion || '暂无具体建议' }}</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </el-collapse-item>
-                    </template>
-                </el-collapse>
-            </div>
-        </el-scrollbar>
+                            </el-collapse-item>
+                        </template>
+                    </el-collapse>
+                </div>
+            </el-scrollbar>
+        </div>
     </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Position } from '@element-plus/icons-vue'
+import { Position, Document, Connection, Grid, School, Checked } from '@element-plus/icons-vue'
 
-// 审核规则数据
-const auditRules = [
+// Step management
+const activeStep = ref(1)
+
+// Rule selection data
+const ruleCategories = ref([
+    { id: 1, name: '语言规范', icon: Document, ruleCount: 8, groupType: 'audit' },
+    { id: 2, name: '逻辑结构', icon: Connection, ruleCount: 3, groupType: 'audit' },
+    { id: 3, name: '格式规范', icon: Grid, ruleCount: 5, groupType: 'audit' },
+    { id: 4, name: '学术规范', icon: School, ruleCount: 4, groupType: 'audit' },
+    { id: 5, name: '内容真实', icon: Checked, ruleCount: 2, groupType: 'audit' }
+])
+
+const allRules = ref([
+    // Language rules
+    { id: 101, groupId: 1, ruleName: '错别字检查', riskLevel: 'high', ruleDescription: '检查文档中的错别字和形似字错误' },
+    { id: 102, groupId: 1, ruleName: '标点符号', riskLevel: 'medium', ruleDescription: '检查标点符号使用是否正确' },
+    { id: 103, groupId: 1, ruleName: '语法规范', riskLevel: 'high', ruleDescription: '检查语法是否正确' },
+    { id: 104, groupId: 1, ruleName: '用词恰当', riskLevel: 'medium', ruleDescription: '检查用词是否恰当' },
+    { id: 105, groupId: 1, ruleName: '语句通顺', riskLevel: 'high', ruleDescription: '检查语句是否通顺' },
+    { id: 106, groupId: 1, ruleName: '成语检查', riskLevel: 'medium', ruleDescription: '检查成语使用是否正确' },
+    { id: 107, groupId: 1, ruleName: '风格统一', riskLevel: 'medium', ruleDescription: '检查语言风格是否统一' },
+    { id: 108, groupId: 1, ruleName: '场景风格', riskLevel: 'medium', ruleDescription: '检查风格是否符合场景' },
+    
+    // Logic rules
+    { id: 201, groupId: 2, ruleName: '表达严谨', riskLevel: 'high', ruleDescription: '检查表达是否严谨' },
+    { id: 202, groupId: 2, ruleName: '内容完整', riskLevel: 'high', ruleDescription: '检查内容是否完整' },
+    { id: 203, groupId: 2, ruleName: '逻辑连贯', riskLevel: 'medium', ruleDescription: '检查逻辑是否连贯' },
+    
+    // Format rules
+    { id: 301, groupId: 3, ruleName: '格式规范', riskLevel: 'low', ruleDescription: '检查文档格式是否符合要求' },
+    { id: 302, groupId: 3, ruleName: '排版规范', riskLevel: 'low', ruleDescription: '检查排版是否符合规范' },
+    { id: 303, groupId: 3, ruleName: '字体统一', riskLevel: 'low', ruleDescription: '检查字体是否统一' },
+    { id: 304, groupId: 3, ruleName: '间距规范', riskLevel: 'low', ruleDescription: '检查行距段距是否符合要求' },
+    { id: 305, groupId: 3, ruleName: '页眉页脚', riskLevel: 'low', ruleDescription: '检查页眉页脚设置' },
+    
+    // Academic rules
+    { id: 401, groupId: 4, ruleName: '引用规范', riskLevel: 'high', ruleDescription: '检查引用是否规范' },
+    { id: 402, groupId: 4, ruleName: '参考文献', riskLevel: 'high', ruleDescription: '检查参考文献格式' },
+    { id: 403, groupId: 4, ruleName: '学术诚信', riskLevel: 'high', ruleDescription: '检查学术诚信问题' },
+    { id: 404, groupId: 4, ruleName: '数据引用', riskLevel: 'medium', ruleDescription: '检查数据引用规范' },
+    
+    // Content rules
+    { id: 501, groupId: 5, ruleName: '数据准确', riskLevel: 'high', ruleDescription: '检查数据准确性' },
+    { id: 502, groupId: 5, ruleName: '事实核查', riskLevel: 'high', ruleDescription: '核查事实准确性' }
+])
+
+const activeCategories = ref([])
+const selectedRules = ref([])
+const selectedAllInCategory = ref({})
+
+// Initialize selectedAllInCategory
+ruleCategories.value.forEach(cat => {
+    selectedAllInCategory.value[cat.id] = false
+})
+
+// Watch selected rules to update "Select All" checkboxes
+watch(selectedRules, (newVal) => {
+    ruleCategories.value.forEach(cat => {
+        const categoryRules = getRulesByCategory(cat.id).map(r => r.id)
+        const allSelected = categoryRules.length > 0 && 
+                          categoryRules.every(id => newVal.includes(id))
+        selectedAllInCategory.value[cat.id] = allSelected
+    })
+}, { deep: true })
+
+// Methods for rule selection
+const getRulesByCategory = (categoryId) => {
+    return allRules.value.filter(rule => rule.groupId === categoryId)
+}
+
+const toggleSelectAllCategory = (categoryId, selected) => {
+    const categoryRuleIds = getRulesByCategory(categoryId).map(r => r.id)
+    
+    if (selected) {
+        // Add all category rules (avoid duplicates)
+        const newSelected = [...new Set([...selectedRules.value, ...categoryRuleIds])]
+        selectedRules.value = newSelected
+    } else {
+        // Remove all category rules
+        selectedRules.value = selectedRules.value.filter(id => !categoryRuleIds.includes(id))
+    }
+}
+
+const startAudit = () => {
+    if (selectedRules.value.length === 0) {
+        ElMessage.warning('请至少选择一条审核规则')
+        return
+    }
+    activeStep.value = 2
+}
+
+const backToSelection = () => {
+    activeStep.value = 1
+}
+
+// Audit results data and methods
+const filterRiskLevels = ref([])
+const activeNames = ref([])
+
+// Original example data
+const auditResults = ref([
     {
         "checkDetails": "检查文字的拼写是否正确，有无形似字、同音字误用等情况。",
         "id": 1,
@@ -224,12 +390,12 @@ const auditRules = [
         "suggestion": "建议使用规范的学术用语",
         "position": { "page": 5, "line": 11, "column": 18 }
     }
-]
+])
 
-// 按类型分组的结果
+// Group results by type
 const groupedResults = computed(() => {
     const groups = {}
-    auditRules.forEach(rule => {
+    auditResults.value.forEach(rule => {
         if (!groups[rule.type]) {
             groups[rule.type] = []
         }
@@ -238,113 +404,52 @@ const groupedResults = computed(() => {
     return groups
 })
 
-// 过滤条件
-// const filterRiskLevels = ref([])
-// const filterType = ref('')
-
-// 将原来的 filterType 改为 filterTypes 数组形式
-const filterTypes = ref([])
-const filterRiskLevels = ref([])
-
-// 修改过滤逻辑
+// Filtered results
 const filteredResults = computed(() => {
     const result = {}
-
     for (const [type, items] of Object.entries(groupedResults.value)) {
-        // 类型过滤
-        if (filterTypes.value.length > 0 && !filterTypes.value.includes(type)) continue
-
         const filteredItems = items.filter(item => {
-            // 风险等级过滤
             if (filterRiskLevels.value.length > 0 && !filterRiskLevels.value.includes(item.riskLevel)) {
                 return false
             }
             return true
         })
-
         if (filteredItems.length > 0) {
             result[type] = filteredItems
         }
     }
-
     return result
 })
 
-// 当前展开的面板
-const activeNames = ref([])
-
-// 格式化风险等级显示
+// Helper methods
 const formatRiskLevel = (level) => {
-    const map = {
-        high: '高风险',
-        medium: '中风险',
-        low: '低风险'
-    }
+    const map = { high: '高风险', medium: '中风险', low: '低风险' }
     return map[level] || level
 }
 
-// 获取风险等级对应的标签类型
 const getRiskTagType = (level) => {
-    const map = {
-        high: 'danger',
-        medium: 'warning',
-        low: 'success'
-    }
+    const map = { high: 'danger', medium: 'warning', low: 'success' }
     return map[level] || ''
 }
 
-// 获取一组结果中的最高风险等级
 const getHighestRiskLevel = (results) => {
     if (results.some(item => item.riskLevel === 'high')) return 'high'
     if (results.some(item => item.riskLevel === 'medium')) return 'medium'
     return 'low'
 }
 
-// 计算特定风险等级的数量
 const countRiskLevel = (results, level) => {
     return results.filter(item => item.riskLevel === level).length
 }
 
-// 检查是否包含特定风险等级
 const hasRiskLevel = (results, level) => {
     return results.some(item => item.riskLevel === level)
 }
 
-// // 过滤后的结果
-// const filteredResults = computed(() => {
-//   const result = {}
-
-//   for (const [type, items] of Object.entries(groupedResults.value)) {
-//     // 类型过滤
-//     if (filterType.value && type !== filterType.value) continue
-
-//     const filteredItems = items.filter(item => {
-//       // 风险等级过滤
-//       if (filterRiskLevels.value.length > 0 && !filterRiskLevels.value.includes(item.riskLevel)) {
-//         return false
-//       }
-//       return true
-//     })
-
-//     if (filteredItems.length > 0) {
-//       result[type] = filteredItems
-//     }
-//   }
-
-//   return result
-// })
-
-// 定位到问题位置
 const navigateToPosition = (position) => {
-    // 实际项目中这里可以实现定位到文档具体位置
     ElMessage.success(`定位到第${position.page}页第${position.line}行第${position.column}列`)
-    console.log('定位到:', position)
-
-    // 模拟定位效果
-    // 实际项目中可能需要滚动到文档对应位置或高亮显示问题文本
 }
 
-// 导出审核结果
 const exportResults = () => {
     const data = JSON.stringify(filteredResults.value, null, 2)
     const blob = new Blob([data], { type: 'application/json' })
@@ -354,7 +459,6 @@ const exportResults = () => {
     link.download = `文档审核结果_${new Date().toISOString().slice(0, 10)}.json`
     link.click()
     URL.revokeObjectURL(url)
-
     ElMessage.success('导出成功')
 }
 </script>
@@ -364,36 +468,156 @@ const exportResults = () => {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+}
 
+/* Rule selection styles */
+.rule-selection {
+    background: #fff;
+    padding: 0px;
+    border-radius: 8px;
+    
+    .selection-header {
+        margin-bottom: 10px;
+        
+        h2 {
+            margin: 0 0 8px 0;
+            color: #333;
+        }
+        
+        p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+        }
+    }
+    
+    .category-item {
+        margin-bottom: 10px;
+        border: 1px solid #ebeef5;
+        border-radius: 4px;
+        overflow: hidden;
+        
+        :deep(.el-collapse-item__header) {
+            padding: 12px 16px;
+            background-color: #f5f7fa;
+            border-bottom: none;
+        }
+        
+        :deep(.el-collapse-item__wrap) {
+            border-bottom: none;
+        }
+        
+        :deep(.el-collapse-item__content) {
+            padding: 0;
+        }
+        
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+            
+            // span {
+            //     flex: 1;
+            // }
+            
+            .el-checkbox {
+                margin-left: auto;
+            }
+        }
+        
+        .rule-list {
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .rule-item {
+            margin: 0;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ebeef5;
+            transition: all 0.3s;
+            height: 70px ; 
+            
+            &:hover {
+                border-color: #409eff;
+                background-color: #f5f7fa;
+            }
+            
+            :deep(.el-checkbox__label) {
+                display: flex;
+                width: 100%;
+            }
+            
+            .rule-content {
+                flex: 1;
+                
+                .rule-header {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 6px;
+                    
+                    .rule-name {
+                        font-weight: 500;
+                        flex: 1;
+                    }
+                }
+                
+                .rule-desc {
+                    margin: 0;
+                    color: #666;
+                    font-size: 13px;
+                    line-height: 1.5;
+                }
+            }
+        }
+    }
+    
+    .action-buttons {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+        
+        .el-button {
+            width: 100%;
+        }
+    }
+}
+
+/* Audit results styles */
+.audit-results-view {
     .header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 10px;
-
+        margin-bottom: 20px;
+        
         h1 {
             margin: 0;
             color: #333;
         }
     }
-
+    
     .filter-section {
         margin-bottom: 20px;
         display: flex;
         flex-direction: column;
         gap: 15px;
-
+        
         .filter-group {
             display: flex;
             align-items: center;
-
+            
             .filter-label {
                 margin-right: 10px;
                 font-size: 14px;
                 color: #606266;
                 min-width: 70px;
             }
-
+            
             .el-checkbox-group {
                 display: flex;
                 flex-wrap: wrap;
@@ -401,63 +625,62 @@ const exportResults = () => {
             }
         }
     }
-
+    
     .audit-results {
         .collapse-title {
             display: flex;
             align-items: center;
             gap: 10px;
             flex: 1;
-
+            
             .risk-tags {
                 display: flex;
                 gap: 8px;
                 margin-left: auto;
             }
         }
-
+        
         .audit-item {
             padding: 15px;
             margin-bottom: 15px;
             border-radius: 4px;
             background-color: #f9f9f9;
             border-left: 4px solid #e0e0e0;
-
+            
             &:hover {
                 background-color: #f0f0f0;
             }
-
+            
             .item-header {
                 display: flex;
                 align-items: center;
                 margin-bottom: 10px;
                 gap: 10px;
-
+                
                 .item-title {
                     font-weight: bold;
                     flex: 1;
                 }
             }
-
+            
             .item-content {
                 h4 {
                     margin: 10px 0 5px;
                     color: #666;
                 }
-
-                p,
-                pre {
+                
+                p, pre {
                     margin: 0 0 10px;
                     line-height: 1.5;
                 }
-
+                
                 .problem-context {
                     margin-top: 10px;
                     padding: 10px;
                     background-color: #fff;
                     border-radius: 4px;
                     border: 1px solid #eee;
-
+                    
                     pre {
                         white-space: pre-wrap;
                         font-family: inherit;
@@ -466,19 +689,35 @@ const exportResults = () => {
                 }
             }
         }
-
-        // 根据风险等级设置边框颜色
+        
         .audit-item[data-risk="high"] {
             border-left-color: #f56c6c;
         }
-
+        
         .audit-item[data-risk="medium"] {
             border-left-color: #e6a23c;
         }
-
+        
         .audit-item[data-risk="low"] {
             border-left-color: #67c23a;
         }
     }
+}
+
+.audit-step-container{
+    max-width: 800px; 
+    margin: 0 auto 10px;
+    height:40px;
+}
+
+</style>
+
+<style lang="css">
+.audit-step-container .el-step.is-simple .el-step__head{
+    display: flex;
+}
+
+.audit-step-container .el-step.is-simple .el-step__title{
+    font-size: 15px;
 }
 </style>
