@@ -13,4 +13,5 @@ public interface IContentFormatterOfficeConfigService extends IBaseService<Conte
      */
     ContentFormatterOfficeConfigEntity getConfig(Long orgId) ;
 
+
 }
