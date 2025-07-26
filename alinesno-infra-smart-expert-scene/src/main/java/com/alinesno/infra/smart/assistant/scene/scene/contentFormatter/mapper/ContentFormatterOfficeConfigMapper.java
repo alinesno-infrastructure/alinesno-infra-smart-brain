@@ -5,4 +5,6 @@ import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterParseEntity;
 
 public interface ContentFormatterOfficeConfigMapper extends IBaseMapper<ContentFormatterOfficeConfigEntity> {
-}    
+
+
+}
