@@ -68,7 +68,7 @@ public enum SceneEnum {
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
     ))),
     // 内容排版
-    CONTENT_FORMATTER(new SceneInfoDto(70000000L, "内容排版", "contentFormatter", "根据给定的模板，自动生成内容，并优化排版", "已集成", "1", "", "fa-solid fa-file-lines",
+    CONTENT_FORMATTER(new SceneInfoDto(70000000L, "智能文档", "contentFormatter", "AI智能文档管理，文档编写，文档审核和内容排版等功能", "已集成", "1", "", "fa-solid fa-file-lines",
             List.of(
                     new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。") ,
                     new SceneAgent(40000402L, "内容检查助手", "contentReviewer", "对提取的模块内容进行检查，确保模板的完整性和正确性。" , true)
