@@ -155,7 +155,7 @@ const handleCategoryClick = (category) => {
 
 // 开始排版
 const startFormatting = async (template) => {
-  console.log('开始排版:', template);
+  console.log('开始排版:', template.id);
   
   try {
     // 这里可以调用后端API获取模板详情
