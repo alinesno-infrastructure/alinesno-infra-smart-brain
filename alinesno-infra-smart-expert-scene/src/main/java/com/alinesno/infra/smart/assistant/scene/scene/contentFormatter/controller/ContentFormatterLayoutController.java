@@ -12,6 +12,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterLayoutDto;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentFormatDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateInfoDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutGroupService;
@@ -201,7 +202,8 @@ public class ContentFormatterLayoutController extends BaseController<ContentForm
         List<ContentFormatterLayoutGroupEntity> groups = layoutGroupService.listOrgGroup(query);
 
         // 2. 查询所有模板
-        List<ContentFormatterLayoutEntity> layouts = service.list();
+        List<Long> groupIds = groups.stream().map(ContentFormatterLayoutGroupEntity::getId).toList();
+        List<ContentFormatterLayoutEntity> layouts = service.listByGroupIds(groupIds);
 
         // 3. 构建分类数据结构
         Map<String, Object> result = new HashMap<>();
@@ -244,6 +246,18 @@ public class ContentFormatterLayoutController extends BaseController<ContentForm
         result.put("subcategories", subcategories);
 
         return AjaxResult.success(result);
+    }
+
+    /**
+     * 文档内容格式化formatContent
+     * @return
+     */
+    @ApiOperation("文档内容格式化")
+    @DataPermissionQuery
+    @PostMapping("/formatContent")
+    public AjaxResult formatContent(@RequestBody @Valid DocumentFormatDTO dto , PermissionQuery query) {
+        String newContent = service.formatContent(dto , query) ;
+        return AjaxResult.success("格式化成功" , newContent);
     }
 
     @Override
