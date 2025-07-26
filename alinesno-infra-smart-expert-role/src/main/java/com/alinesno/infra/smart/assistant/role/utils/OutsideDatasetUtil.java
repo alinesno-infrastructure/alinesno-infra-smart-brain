@@ -64,7 +64,7 @@ public class OutsideDatasetUtil {
             String[] portAndDb = parts[1].split("/");
             this.pgVectorPort = Integer.parseInt(portAndDb[0]);
 
-            log.info("解析PostgreSQL连接信息 - Host: {}, Port: {}", pgVectorHost, pgVectorPort);
+//            log.info("解析PostgreSQL连接信息 - Host: {}, Port: {}", pgVectorHost, pgVectorPort);
         } catch (Exception e) {
             log.error("解析PostgreSQL URL失败，使用默认值", e);
             this.pgVectorHost = "127.0.0.1";
