@@ -53,6 +53,7 @@
         <module>alinesno-infra-smart-expert-deepsearch</module> <!-- 深度搜索 -->
         <module>alinesno-infra-smart-expert-scene</module>  <!-- 场景管理 -->
         <module>alinesno-infra-smart-expert-publish</module>  <!-- 角色分发 -->
+        <module>alinesno-infra-smart-expert-point</module>  <!-- 积分管理 -->
 
         <module>alinesno-infra-smart-expert-boot</module>  <!-- 启动服务 -->
     </modules>
