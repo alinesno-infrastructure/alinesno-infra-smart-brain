@@ -57,14 +57,14 @@ const functionList = ref([
     "isSelected": false,
     "link": "/scene/productResearch/projectManagement"
   },
-  {
-    "name": "知识库",
-    "icon": "fa-solid fa-book", // 更适合知识库的图标
-    "status": "new",
-    "log": "智能体数据分析与洞察建议",
-    "isSelected": false,
-    "link": "/scene/productResearch/agentChatPanel"
-  },
+  // {
+  //   "name": "知识库",
+  //   "icon": "fa-solid fa-book", // 更适合知识库的图标
+  //   "status": "new",
+  //   "log": "智能体数据分析与洞察建议",
+  //   "isSelected": false,
+  //   "link": "/scene/productResearch/agentChatPanel"
+  // },
 ]);
 
 const handleGetScene = () => {
