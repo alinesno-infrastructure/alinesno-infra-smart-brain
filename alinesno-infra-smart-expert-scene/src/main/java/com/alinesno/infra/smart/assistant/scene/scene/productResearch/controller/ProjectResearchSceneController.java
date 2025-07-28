@@ -1,9 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.productResearch.controller;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -16,14 +13,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.Projec
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectResearchSceneDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectSearchDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.prompt.ProjectPromptHandle;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
-import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectResearchSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
@@ -31,7 +27,6 @@ import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +41,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
