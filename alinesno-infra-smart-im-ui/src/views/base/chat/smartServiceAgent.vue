@@ -89,11 +89,11 @@ function handleGetChannelAgent(){
     loading.value = false ; 
 
     // 如果没有数据，则显示弹窗
-    if(favouriteList.value.length == 0){
-      setTimeout(() => {
-        dialogVisible.value = true ;
-      }, 1000)
-    }
+    // if(favouriteList.value.length == 0){
+    //   setTimeout(() => {
+    //     dialogVisible.value = true ;
+    //   }, 5000)
+    // }
 
   })
 }
