@@ -24,21 +24,6 @@
                     <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的团队能力服务列表</span>
                 </div>
 
-                <!-- 
-                <div class="popular border-bottom">
-                    <div class="popular-item" v-for="(item, index) in demoProductList" :key="index">
-                        <img :alt="item.name" class="popular-item__banner"
-                            :src="'http://data.linesno.com/banner/' + (index % 4 + 1) + '.png'" />
-                        <h1 class="popular-item__title">
-                            {{ item.name }}
-                        </h1>
-                        <div class="popular-item__desc" style="text-align: left">
-                            {{ truncateString(item.description, 20) }}
-                        </div>
-                    </div>
-                </div> 
-                -->
-
                 <section v-for="(type, index) in productList" :key="index">
                     <h2 class="section-title" style="margin-left:10px">
                         <i :class="type.banner" /> {{ type.name }}
@@ -65,6 +50,8 @@
                                                     {{ item.roleName }}
                                                 </span>
                                             </span>
+
+                                            <!-- 
                                             <div class="semi-space container-center" style="gap: 6px;">
                                                 <div class="semi-image avatar-oDHtb3"
                                                     style="width: 14px; height: 14px;">
@@ -76,7 +63,9 @@
                                                     <span class="semi-typography text"
                                                         style="max-width: 150px;"><span>韦恩W</span></span>
                                                 </div>
-                                            </div>
+                                            </div> 
+                                            -->
+
                                             <p class="semi-typography card-desc" style="-webkit-line-clamp: 3;margin-bottom:0px">
                                                 <span>
                                                     {{ truncateString(item.responsibilities, 100) }}
@@ -86,7 +75,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="semi-divider semi-divider-horizontal"></div>
+                                    <!-- <div class="semi-divider semi-divider-horizontal"></div> -->
                                     
                                     <div class="semi-space" style="width: 100%;gap: 8px;display: flex;justify-content: space-between;align-items: center;">
                                         <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children" style="display: inline-flex;">
