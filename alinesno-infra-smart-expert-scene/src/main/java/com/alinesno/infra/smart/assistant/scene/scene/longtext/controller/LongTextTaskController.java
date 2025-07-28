@@ -140,8 +140,8 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
     @DataPermissionQuery
     @GetMapping("/updateTaskGenStatus")
     public AjaxResult updateTaskGenStatus(@RequestParam("taskId") long taskId,
-                                           @RequestParam("genStatus") String genStatus,
-                                           PermissionQuery query) {
+                                          @RequestParam("genStatus") String genStatus,
+                                          PermissionQuery query) {
 
         LongTextTaskEntity taskEntity = service.getById(taskId) ;
         taskEntity.setTaskStatus(genStatus);
@@ -205,7 +205,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         service.updateById(task);
 
         // 异步执行任务
-        taskExecutionService.executeChapterTask(taskId, query, task);
+        taskExecutionService.executeChapterTaskAsync(taskId, query, task);
 
         return AjaxResult.success("章节任务已开始执行");
     }
