@@ -1,6 +1,6 @@
 <template>
   <div class="siderbar">
-    <el-menu default-active="1" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
+    <el-menu :default-active="activeMenu" class="el-menu-vertical" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
 
         <el-menu-item :index="item.id" @click="openServiceList(item.link)" v-for="item in menuItems" :key="item.id"  class="aip-menu-item">
           <i :class="item.icon"></i>
@@ -58,6 +58,7 @@
 
 <script setup>
 
+
 import ChannelGroup from "@/views/base/chat/channelGroup.vue";
 import ScreenGroup from "@/views/base/scene/screenGroup.vue";
 
@@ -65,19 +66,19 @@ const createChildComp = ref(null);
 const createScreenComp = ref(null);
 
 const dialogVisible = ref(false)
+
 const router = useRouter();
+const route = useRoute();
 
 // 菜单列表
 const menuItems = ref([
   { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '工作台' }, 
   { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景' },
   { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体' },
+  { id: '6', icon: 'fa-solid fa-file-pdf', link: '/dataset', desc: '知识库' },
   { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道' },
   { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织' },
-  { id: '6', icon: 'fa-solid fa-window-restore', link: '/agentMarket', desc: '市场' },
 ]);
-
-// { id: '8', icon: 'fa-solid fa-credit-card', link: '/knowledge', desc: '知识库' },
 
 // 打开服务市场
 function openServiceList(_path) {
@@ -108,6 +109,14 @@ function jumpTo() {
 function openSmartService() {
   router.push({ path: "/dashboard/smartService" });
 }
+
+const activeMenu = computed(() => {
+  const currentPath = route.path
+  const item = menuItems.value.find(item => {
+    return currentPath.startsWith(item.link) // 匹配路由前缀
+  })
+  return item ? item.id : '1'
+})
 
 </script>
 
