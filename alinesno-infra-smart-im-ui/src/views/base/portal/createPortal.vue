@@ -2,7 +2,7 @@
   <el-dialog
     v-model="dialogVisible"
     title="选择AI工作台"
-    width="980"
+    width="580"
     :before-close="handleClose"
   >
     <div 
@@ -14,7 +14,7 @@
     >
 
       <div style="padding: 5px;margin-bottom: 10px;">
-        选择不同的工作台会形成不同的<b>AI智能体</b>工作组合，并且可以根据需求进行定制工作台。
+        选择不同的工作台会形成不同的<b>AI智能体</b>工作组合
       </div>
 
       <el-form
@@ -26,12 +26,16 @@
         :label-position="'top'"
         :size="formSize"
         status-icon>
-        <el-form-item label="工作台名称" prop="name">
+        <el-form-item label="名称" prop="name">
           <el-input v-model="ruleForm.name" placeholder="请输入工作台名称"  />
         </el-form-item>
 
+        <el-form-item label="描述" prop="name">
+          <el-input v-model="ruleForm.name" placeholder="请输入工作台描述"  />
+        </el-form-item>
+
         <!-- 自定义工作台 -->
-         <el-form-item label="类型" prop="type">
+         <!-- <el-form-item label="类型" prop="type">
               <el-radio-group v-model="ruleForm.type" @change="handleWorkplaceTypeChanne">
                 <el-radio v-for="item in workplaceTypesArr" 
                   style="margin-top: 10px;margin-bottom: 10px;" 
@@ -48,7 +52,7 @@
                   </div>
                 </el-radio>
               </el-radio-group>
-            </el-form-item>
+            </el-form-item> -->
 
         <el-form-item label="工作台" prop="template" v-if="ruleForm.type === 1">
           <el-row style="width:100%">
@@ -81,6 +85,7 @@
           </el-row>
         </el-form-item>
 
+        <!-- 
         <el-form-item label="选择智能体" prop="selectAgentId" v-if="ruleForm.type === 2">
           <el-scrollbar style="height:200px;width:100%;">
             <el-row>
@@ -96,8 +101,10 @@
                 </el-col>
             </el-row>
           </el-scrollbar> 
-        </el-form-item>
+        </el-form-item> 
+        -->
 
+        <!-- 
         <el-form-item label="选择场景" prop="selectSceneId" v-if="ruleForm.type === 2">
             <el-scrollbar style="height:250px;width:100%;">
           <el-row>
@@ -109,7 +116,8 @@
             </el-col>
           </el-row>
           </el-scrollbar>
-        </el-form-item>
+        </el-form-item> 
+        -->
 
       </el-form>
     </div>
@@ -156,7 +164,7 @@ const submitLoading = ref(false);
 const ruleFormRef = ref(null);
 const ruleForm = ref({
   name: '',
-  type: 1,
+  type: 2,
   template: ''
 });
 const formSize = ref('large');
@@ -185,7 +193,8 @@ const rules = ref({
   ]
 });
 const handleClose = (done) => {
-  ElMessage.warning('请先选择工作台.');
+  // ElMessage.warning('请先选择工作台.');
+  dialogVisible.value = false;
 };
 
 const handleCancel = () => {
