@@ -8,7 +8,7 @@ import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ExecuteTaskDto;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.prompt.ProjectPromptHandle;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
