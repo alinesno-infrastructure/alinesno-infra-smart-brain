@@ -95,6 +95,11 @@
 			<artifactId>alinesno-infra-smart-expert-portal</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-point</artifactId>
+			<version>${revision}</version>
+		</dependency>
 		<!-- >>>>>>>>>>>>>>>>>> 引用服务_end >>>>>>>>>>>>>>>>>> -->
 
 		<!-- 记忆和知识库引入_start -->
