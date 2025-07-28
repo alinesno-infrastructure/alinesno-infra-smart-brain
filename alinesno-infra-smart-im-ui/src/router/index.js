@@ -432,6 +432,12 @@ export const constantRoutes = [
         meta: { title: '频道列表', icon: 'dashboard', affix: true }
       },
       {
+        path: '/dataset',
+        component: () => import('@/views/base/dataset/index'),
+        name: '/dataset',
+        meta: { title: '知识库', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/scene',
         component: () => import('@/views/base/scene/index'),
         name: '/scene',
