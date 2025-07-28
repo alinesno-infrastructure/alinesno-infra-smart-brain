@@ -11,7 +11,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.Execut
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectTaskGeneratorDTO;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.job.ProjectTaskExecutorService;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
