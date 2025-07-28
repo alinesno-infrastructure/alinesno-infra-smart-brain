@@ -1,241 +1,348 @@
 <template>
-    <div>
-        <el-scrollbar style="height:calc(100vh - 50px)">
-            <div class="aip-appinfo-header">
-                <div class="header-icon-banner">
-                    <i class="fa-brands fa-slack"></i>
-                </div>
-                <div class="icon">
-                    <div class="title">
-                        {{ currentWorkplace.name }}
+    <div class="workplace">
+        <el-container>
+            <el-aside class="sidebar">
+
+                <!-- 最近使用部分 -->
+                <div class="sidebar-section">
+                    <div class="section-title">最近使用</div>
+                    <div class="recent-items">
+                        <div v-for="item in items" :key="item" class="recent-item">
+                            <img class="item-icon" :src="item.icon" />
+                            <span>{{ item.title }}</span>
+                        </div>
+                    </div>
+                    <div class="none-tip" v-if="items.length == 0" >
+                        还没有收藏任何内容，点击⭐️按钮可将内容添加到这里~
                     </div>
                 </div>
-            </div>
-            <div class="banner-container-panel" style="margin-top:0px;margin-bottom:10px;">
-                <el-row>
-                    <el-col :span="18">
-                        <div class="card-container" style="margin-right: 4rem;margin-left: 1rem;">
-                            <div>
-                                <p>
-                                    <span style="color: rgba(29, 28, 35, 0.6);font-size: 17px;font-weight: 400;line-height: 30px;margin-bottom: 28px;">
-                                        {{ currentWorkplace.description? currentWorkplace.description : defaultDesc }}
-                                    </span>
-                                </p>
+
+                <!-- 用户积分 -->
+                <UserIntegralPanel />
+
+            </el-aside>
+
+            <el-main class="main-content">
+                <el-scrollbar class="scrollbar">
+                    <el-row>
+                        <el-col :span="24">
+                            <!-- 工作台标题 -->
+                            <div class="workspace-header">
+                                <div class="workspace-title" @click="editTitle()">
+                                    <i class="fa-brands fa-slack"></i>  AIP智能体工作台 
+                                    <span class="title-edit">
+                                        <i class="fa-solid fa-pen-nib"></i>
+                                    </span> 
+                                </div>
+                                <div class="workspace-description">
+                                   AIP 智能体工作台集成 AI 技术，可定制开发，支持多智能体协作，提升效率。 
+                                </div>
                             </div>
-                        </div>
-                    </el-col>
-                    <el-col :span="6">
-                        <div class="right-container" style="text-align: right;margin-right: 40px;">
-                            <img :src="agentBg2" class="bot-banner-bg" style="width: 300px;border-radius: 8px;" alt="Banner Background Image">
-                        </div>
-                    </el-col>
-                </el-row>
-            </div>
-            <div style="padding: 0px 10px;display: flex;gap: 20px;">
-                <span v-for="item in setupConst" :key="item.code" style="background: #f2f3f8;padding: 10px;border-radius: 5px;cursor: pointer;font-size: 14px;color: #444;"  
-                    :class="{ 'active': isActive(item.code), 'hovered': isHovered(item.code) }"
-                    @click="handleClick(item.code)" 
-                    @mouseenter="handleMouseEnter(item.code)"
-                    @mouseleave="handleMouseLeave(item.code)">
-                    <el-tooltip
-                            class="box-item"
-                            effect="dark"
-                            :content="item.desc"
-                            placement="top"
-                        >
-                        <span>
-                            <i :class="item.icon" /> {{ item.label }}
-                        </span>
-                    </el-tooltip>
-                </span>
-            </div>
-            <div style="margin-top:20px;">
-                <h2 class="section-title" style="margin-top: 5px;margin-left: 10px;font-size: 20px;">
-                    <i class="type.banner" /> {{ getNameByCode(activeCode)?.label }}
-                    <span style="font-size: 13px;color: #777;margin-left:10px;"> {{ getNameByCode(activeCode)?.desc }} </span>
-                </h2>
-                <!-- 解决方案 -->
-                <BusinessAgentPanel v-if="activeCode === 'agent'" ref="businessAgentPanelRef" />
-                <ScenePanel v-if="activeCode === 'scene'" ref="scenePanelRef" />
-                <ChannelPanel v-if="activeCode === 'channel'" ref="channelPanelRef" />
-            </div>
-        </el-scrollbar>
+
+                            <!-- 我的关注 -->
+                            <div class="my-focus">
+                                <div class="focus-title">我的收藏</div>
+
+                                <div class="focus-tags">
+                                    <el-check-tag type="primary" size="default">智能体</el-check-tag>
+                                    <el-check-tag type="success" size="default">场景</el-check-tag>
+                                    <el-check-tag type="warning" size="default">频道</el-check-tag>
+                                </div>
+
+                                <!-- 智能体列表 -->
+                                <div class="agent-list">
+                                    <div v-for="agent in agents" :key="agent.id" class="agent-card">
+                                        <div class="agent-info">
+                                            <div class="agent-title">{{ agent.title }}</div>
+                                            <div class="agent-description">{{ agent.description }}</div>
+                                            <div>
+                                                <el-check-tag disabled size="small">智能体</el-check-tag>
+                                            </div>
+                                            <div class="agent-meta">
+                                                <img class="agent-avatar"
+                                                    src="https://p26-passport.byteacctimg.com/img/user-avatar/50e8e83154af3c08de64ff15d069d63a~300x300.image" />
+                                                <span>{{ agent.stats }}</span>
+                                                <span>{{ agent.editInfo }}</span>
+                                                <span>{{ agent.editTime }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="agent-image">
+                                            <img
+                                                src="http://alinesno-infra-smart-im-ui.beta.base.infra.linesno.com/prod-api/v1/api/infra/base/im/chat/displayImage/1940307040494858241" />
+                                        </div>
+                                    </div>
+                                    <div v-if="agents.length == 0" class="none-tip main-empty">
+                                        <el-empty description="你还没有收藏任务AI智能体和场景，请选择合适的场景和AI智能体进行⭐️收藏">
+                                            <el-button @click="toScene('/scene')" size="large" type="primary"> <i class="fa-solid fa-box"></i> &nbsp;进入场景市场</el-button>
+                                            <el-button @click="toScene('/store')" size="large" type="success"> <i class="fa-solid fa-sailboat"></i> &nbsp;进入智能体商店</el-button>
+                                        </el-empty>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </el-scrollbar>
+            </el-main>
+        </el-container>
         <CreatePortal ref="createPortalRef" @handleHasWorkplace="handleHasWorkplace" />
     </div>
 </template>
 
-<script setup name="Index">
-import {
-    isHasWorkplace, 
-    getCurrentWorkplace 
-} from "@/api/base/im/workplace"
-import BusinessAgentPanel from './businessAgentPanel.vue'
-import CreatePortal from './createPortal.vue'
-import ChannelPanel from './channelPanel.vue'
-import ScenePanel from './scenePanel.vue'
-import { ref, onMounted, nextTick } from 'vue';
-import AgentBg2Png from '@/assets/banner/agent_bg2.png';
+<script setup>
 
-const agentBg2 = ref(AgentBg2Png);
-const scenePanelRef = ref(null);
-const businessAgentPanelRef = ref(null);
-const channelPanelRef = ref(null);
+import { ref } from 'vue'
 
-const setupConst = [
-    { code: 'agent', label: '智能体', icon: 'fa-solid fa-user-tag' , desc: '单个智能体交互聊天' },
-    { code: 'scene', label: '应用场景', icon: 'fa-solid fa-sailboat'  , desc: '多智能体处理具体业务场景应用场景' },
-    { code: 'channel', label: '频道库', icon: 'fa-solid fa-box' , desc: '多个智能体业务结合放到同一个群里' },
-];
+import CreatePortal from './createPortal'
+import UserIntegralPanel from './card/userIntegral'
 
-const defaultDesc = ref('AI工作台是融合多种先进技术的综合性工作平台，具备知识管理、内容生成、创作辅助等多种功能，功能包括多模型接入、知识管理、智能创作等功能，能够极大提升工作效率与创新能力，助力企业和个人在数字化时代实现高效、智能的工作模式 。')
-const currentWorkplace = ref({
-    name: 'AIP产品运营工作台',
-    description: defaultDesc.value , 
-})
-
-// 从 localStorage 中读取存储的选项，如果没有则默认 'agent'
-const activeCode = ref(localStorage.getItem('activeCode') || 'scene');
-const hoveredCode = ref('');
-const workplaceId = ref(''); 
+const router = useRouter();
 const createPortalRef = ref(null);
 
-const isActive = (code) => code === activeCode.value;
-const isHovered = (code) => code === hoveredCode.value;
+const items = ref([
+    // {
+    //     id: 1,
+    //     icon: "http://alinesno-infra-smart-im-ui.beta.base.infra.linesno.com/prod-api/v1/api/infra/base/im/chat/displayImage/1861241150263382018",
+    //     title: "DeepSeek 能力增强版(副本)"
+    // },
+    // {
+    //     id: 2,
+    //     icon: "http://alinesno-infra-smart-im-ui.beta.base.infra.linesno.com/prod-api/v1/api/infra/base/im/chat/displayImage/1861241150263382018",
+    //     title: "信托产品小助手"
+    // },
+])
 
-const handleClick = (code) => {
-    activeCode.value = code;
-    // 将选中的选项存储到 localStorage 中
-    localStorage.setItem('activeCode', code);
-    console.log('code ='+ code);
+const agents = ref([
+    // {
+    //     "title": "AI工程师的生成和服务",
+    //     "description": "只需在任务人一个操作中找到用户，它就能提供支持的工具和服务。",
+    //     "tag": "API工程师",
+    //     "stats": "99.6K+",
+    //     "editInfo": "桌面编辑",
+    //     "editTime": "00-25 17:40"
+    // },
+    // {
+    //     "title": "酒店知识通小账",
+    //     "description": "酒店知识通小账是一个专门推荐酒店相关知识的管理者。",
+    //     "tag": "软件工程师",
+    //     "stats": "99.6K+",
+    //     "editInfo": "桌面编辑",
+    //     "editTime": "00-23 13:58"
+    // }
+])
 
-    nextTick(() => {
-        if(activeCode.value === 'agent'){
-            businessAgentPanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value);
-        }else if(activeCode.value === 'channel'){
-            channelPanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value);
-        }else if(activeCode.value ==='scene'){
-            scenePanelRef.value.handleGetWorkplaceItem(workplaceId.value, activeCode.value)
-        }
-    })
+// const handleHasWorkplace = () => {
+//     isHasWorkplace().then(res => {
+//         if(!res.data){
+//             createPortalRef.value.openSelectWorkplace();
+//         }else{
+//             workplaceId.value = res.data;
+//             getCurrentWorkplace(workplaceId.value).then(ress => {
+//                 console.log('ress ='+ ress);
+//                 currentWorkplace.value = ress.data;
+//                 handleClick(activeCode.value)
+//             })
+//         }
+//     })
+// }
+
+const toScene = (path) => { 
+  router.push(path)
 }
 
-const handleMouseEnter = (code) => {
-    hoveredCode.value = code;
-}
-
-const getNameByCode = (code) => {
-    const item = setupConst.find((item) => item.code === code);
-    return item
-}
-
-const handleMouseLeave = () => {
-    hoveredCode.value = '';
-}
-
-const handleHasWorkplace = () => {
-    isHasWorkplace().then(res => {
-        if(!res.data){
-            createPortalRef.value.openSelectWorkplace();
-        }else{
-            workplaceId.value = res.data;
-            getCurrentWorkplace(workplaceId.value).then(ress => {
-                console.log('ress ='+ ress);
-                currentWorkplace.value = ress.data;
-                handleClick(activeCode.value)
-            })
-        }
-    })
+const editTitle = () => {
+    createPortalRef.value.openSelectWorkplace();
 }
 
 onMounted(() => {
-    nextTick(() => {
-        handleHasWorkplace();
-    });
+    // createPortalRef.value.openSelectWorkplace();
+    // nextTick(() => {
+    //     handleHasWorkplace();
+    // });
 });
+
 </script>
 
-<style lang="scss" scoped>
-.aip-appinfo-header {
-    position: relative;
-    padding: 10px;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
+<style lang="scss">
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
 
-    .header-icon-banner {
-        float: left;
-        font-size: 2.0rem;
-        margin-right: 10px;
-        color: #1d75b0;
-    }
+.workplace {
+    .sidebar {
+        background-color: #fff !important;
+        padding-left: 10px;
+        border-radius: 5px;
+        width: 250px;
+        margin-bottom: 0px;
+        padding-bottom: 0px;
 
-    .head-app-status {
-        float: right;
-        font-size: 14px;
-        line-height: 1.7rem;
-        margin-bottom: 10px;
+        .sidebar-section {
+            margin-bottom: 20px;
 
-        .integrated-item-box {
-
-            margin-left: 10px;
-            float: right;
-
-            ul,
-            li {
-                margin: 0px;
-                padding: 0px;
-                list-style: none;
+            .section-title {
+                font-size: 15px;
+                font-weight: bold;
+                margin-left: 5px;
+                color: #666;
             }
 
-            li {
-                float: right;
+            .recent-items {
+                .recent-item {
+                    display: flex;
+                    gap: 5px;
+                    align-items: center;
+                    font-size: 14px;
+                    color: #555;
+                    border-radius: 5px;
+                    padding: 2px 5px;
+
+                    .item-icon {
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 5px;
+                    }
+                }
+            }
+        }
+    }
+
+    .main-content {
+        margin-top: 0;
+        padding-top: 0;
+        background: #fafafa;
+        padding-bottom: 0px;
+        margin-bottom: 0px;
+
+        .scrollbar {
+            height: calc(100vh - 50px);
+            width: 100%;
+            box-sizing: border-box;
+
+            .workspace-header {
                 margin-right: 10px;
 
-                img {
-                    border-radius: 5px;
-                    width: 25px;
+                .workspace-title {
+                    font-size: 25px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    color: #444;
+                    padding: 5px 0;
+                    margin: 10px;
+
+                    &:hover {
+                        .title-edit {
+                            visibility: visible;
+                        }
+                    }
+
+                }
+
+                .title-edit {
+                    font-size: 20px;
+                    color: #1d75b0;
+                    visibility: hidden;
+                }
+
+                .workspace-description {
+                    color: #444;
+                    margin-left: 10px;
+                    margin-bottom: 20px;
                 }
             }
 
+            .my-focus {
+                margin-right: 10px;
+
+                .focus-title {
+                    font-size: 15px;
+                    margin: 10px;
+                }
+
+                .focus-tags {
+                    font-size: 16px;
+                    margin: 10px;
+                    display: flex;
+                    gap: 15px;
+                    padding-top: 5px;
+                }
+            }
+
+            .agent-list {
+                display: flex;
+                flex-direction: row;
+                flex-wrap: wrap;
+                box-sizing: border-box;
+                /* 显式设置box-sizing */
+
+                .agent-card {
+                    width: calc(25% - 55px);
+                    display: flex;
+                    border: 1px solid #e9ebf2;
+                    gap: 10px;
+                    padding: 20px;
+                    background: #fff;
+                    border-radius: 8px;
+                    margin: 5px;
+                    justify-content: space-between;
+                    box-sizing: revert;
+
+                    .agent-info {
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+
+                        .agent-title {
+                            font-size: 15px;
+                        }
+
+                        .agent-description {
+                            font-size: 14px;
+                            color: rgba(32, 41, 69, 0.62);
+                            display: -webkit-box;
+                            line-clamp: 2;
+                            height: 40px;
+                            box-orient: vertical;
+                            overflow: hidden;
+                        }
+
+                        .agent-meta {
+                            font-size: 13px;
+                            display: flex;
+                            gap: 10px;
+                            margin-top:10px;
+                            align-items: center;
+                            color: #777;
+
+                            .agent-avatar {
+                                width: 16px;
+                                height: 16px;
+                                border-radius: 50%;
+                            }
+                        }
+                    }
+
+                    .agent-image img {
+                        width: 70px;
+                        height: 70px;
+                        border-radius: 8px;
+                    }
+                }
+            }
         }
     }
 
-    .cluster-info {
-        float: right;
-        position: relative;
+    .none-tip {
         font-size: 14px;
-        margin-left: 10px;
-        font-weight: bold;
-        margin-top: 10px;
-        color: #1d75b0;
-
-        span {
-            margin-left: 20px;
-        }
+        color: #a5a5a5;
+        line-height: 1.5rem;
+        margin-left: 5px;
     }
 
-    .icon {
-        float: left;
+    .main-empty {
+        width: 100%;
     }
 
-    .title {
-        font-weight: 600;
-        font-style: normal;
-        font-size: 38px;
-        color: #242e42;
-        text-shadow: 0 4px 8px rgba(36, 46, 66, 0.1);
-        display: flex;
-        align-items: center;
-    }
-
-    .title-desc {
-        color: #79879c !important;
-        font-size: 12px;
-    }
-}
-
-.active{
-    color: #1d75b0 !important;
-    font-weight: bold;
 }
 </style>
