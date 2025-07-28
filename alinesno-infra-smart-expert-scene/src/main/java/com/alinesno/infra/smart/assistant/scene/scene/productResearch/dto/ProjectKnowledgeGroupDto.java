@@ -28,12 +28,6 @@ public class ProjectKnowledgeGroupDto extends BaseDto {
     private String groupName ;
 
     /**
-     * 场景ID
-     */
-    @NotNull(message = "场景ID不能为空"  )
-    private Long sceneId;
-
-    /**
      * 规则组所有列表
      */
     private List<ProjectKnowledgeDto> rules;
