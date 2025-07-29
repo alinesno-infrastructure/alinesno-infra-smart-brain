@@ -5,6 +5,10 @@ import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceImResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceItemDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceItemEntity;
+import com.alinesno.infra.smart.im.dto.CollectItemDto;
+import com.alinesno.infra.smart.im.dto.CollectItemObjectDto;
+
+import java.util.List;
 
 public interface IWorkplaceItemService extends IBaseService<WorkplaceItemEntity> {
 
@@ -28,5 +32,19 @@ public interface IWorkplaceItemService extends IBaseService<WorkplaceItemEntity>
      * @param type
      * @return
      */
-    WorkplaceImResponseDto getWorkplaceItemByType(Long workplaceId, String type);
+    List<CollectItemObjectDto> getWorkplaceItemByType(Long workplaceId, String type);
+
+    /**
+     * 添加收藏项目
+     * @param dto
+     * @param workplaceId
+     */
+    void addCollectItem(CollectItemDto dto, Long workplaceId);
+
+    /**
+     * 删除收藏项目
+     * @param dto
+     * @param workplaceId
+     */
+    void removeCollectItem(CollectItemDto dto, Long workplaceId);
 }
