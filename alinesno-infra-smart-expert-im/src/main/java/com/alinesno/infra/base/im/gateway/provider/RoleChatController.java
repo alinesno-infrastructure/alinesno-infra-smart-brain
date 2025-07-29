@@ -14,6 +14,8 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.enums.FrequentTypeEnums;
+import com.alinesno.infra.smart.im.service.IFrequentAgentService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.utils.AgentUtils;
@@ -60,6 +62,9 @@ public class RoleChatController extends SuperController {
     @Autowired
     private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Autowired
+    private IFrequentAgentService frequentAgentService ;
+
     /**
      * 获取角色信息
      *
@@ -105,6 +110,11 @@ public class RoleChatController extends SuperController {
         long accountOrgId = CurrentAccountJwt.get().getOrgId();
         String name = CurrentAccountJwt.get().getName();
         String avatarPath = CurrentAccountJwt.get().getAvatarPath();
+
+        // 记录到用户常用场景里面
+        if(CurrentAccountJwt.get() != null){
+            frequentAgentService.addFrequentAgent(CurrentAccountJwt.getUserId(), roleId, FrequentTypeEnums.AGENT) ;
+        }
 
         CompletableFuture.supplyAsync(() -> {
             try {
