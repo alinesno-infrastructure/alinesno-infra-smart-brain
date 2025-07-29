@@ -25,17 +25,17 @@
       <el-row>
 
         <el-col :span="6" v-for="(item, index) in publicChatChannel" :key="index" style="padding:8px;">
-          <div class="semi-card-container" @click="enterChannel(item)">
+          <div class="semi-card-container">
             <div class="semi-space cart-head-continer" style="gap: 16px;">
               <div class="cart-head-content">
                 <div class="cart-head-content">
-                  <span class="semi-avatar semi-avatar-square">
+                  <span class="semi-avatar semi-avatar-square"  @click="enterChannel(item)">
                     <img :src="imagePath(item)" class="">
                   </span>
                 </div>
               </div>
               <div class="semi-space info-container" style="gap: 6px;">
-                <span class="semi-typography card-title">
+                <span class="semi-typography card-title"  @click="enterChannel(item)">
                   <span>
                     {{ item.channelName }}
                   </span>
@@ -59,9 +59,9 @@
               </div>
             </div>
             <div class="semi-divider semi-divider-horizontal"></div>
-            <div class="semi-space" style="width: 100%; gap: 8px;display: flex; justify-content: space-between;">
+            <div class="semi-space item-space">
 
-              <div class="semi-space semi-space-align-center card-statics semi-space-horizontal" style="display: flex;align-items: center;gap: 10px;">
+              <div class="semi-space semi-space-align-center card-statics semi-space-horizontal" style="display: flex;align-items: center;gap: 10px;font-size:14px;">
 
                 <span class="semi-typography text-h6" v-if="item.channelType == 'public'" ><i class="fa-solid fa-globe"></i> 公共频道</span>
                 <span class="semi-typography text-h6" v-if="item.channelType == 'private'"><i class="fa-solid fa-lock"></i> 私人频道</span>
@@ -78,6 +78,13 @@
                   <img v-if="item.knowledgeType.includes('docx')" src="http://data.linesno.com/dataset_icons/docx.webp" class="knowledge-type-icon" />
                   <img v-if="item.knowledgeType.includes('pdf')" src="http://data.linesno.com/dataset_icons/pdf.webp" class="knowledge-type-icon" />
                 </div>
+
+                <div>
+                  <span class="aip-collect-tip" @click="handleCollectChannel(item)" >
+                      <i class="fa-solid fa-star"></i> 收藏
+                  </span>
+                </div>
+
               </div>
 
             </div>
@@ -97,10 +104,14 @@ import { ElMessageBox , ElLoading } from 'element-plus'
 import {
   allMyChannel,
 } from '@/api/base/im/channel'
+
+import {
+    collectItem
+} from "@/api/base/im/workplace"
+
 import { nextTick, ref } from 'vue';
 import SnowflakeId from "snowflake-id";
-
-const snowflake = new SnowflakeId();
+const { proxy } = getCurrentInstance();
 
 const router = useRouter();
 // const loading = ref(false)
@@ -130,29 +141,6 @@ function enterChannel(item) {
     query: { 'channel': item.id }
   })
 }
-
-/** 查询所所有我在参与的频道 */
-// function handleAllMyChannel() {
-//   loading.value = true;
-//   allMyChannel().then(response => {
-//     let items = response.data;
-
-//     recommendRole.value = response.recommendRole;
-//     publicChatChannel.value = items; 
-
-//     loading.value = false;
-
-//     let hasRole = response.hasRole;  // 判断组织是否包含角色
-//     if (!hasRole) {
-//       // 显示推荐角色
-//         ElMessageBox.confirm('你所有当前组织未包含智能体，是否需要到智能体市场选择体验', '系统提示', { confirmButtonText: '进入智能体市场', cancelButtonText: '后期建立', type: 'warning' })
-//         .then(() => {
-//           router.push({ path: '/agentMarket'})
-//         });
-//     }
-
-//   })
-// }
 
 function handleAllMyChannel() {
   // loading.value = true;
@@ -200,6 +188,18 @@ function handleAllMyChannel() {
     console.error("获取频道信息失败", error);
     loading.close()
   });
+}
+
+// 收藏角色
+const handleCollectChannel = (item) => {
+    console.log('收藏频道')
+    const data = {
+        itemId: item.id, 
+        type: 'channel'
+    }
+    collectItem(data).then(res => {
+        proxy.$modal.msgSuccess("收藏成功.");
+    })
 }
 
 nextTick(() => {
@@ -254,4 +254,13 @@ nextTick(() => {
   height:20px;
   margin-top:10px
 }
+
+.item-space{
+  width: 100%; 
+  gap: 8px;
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between;
+}
+
 </style>
