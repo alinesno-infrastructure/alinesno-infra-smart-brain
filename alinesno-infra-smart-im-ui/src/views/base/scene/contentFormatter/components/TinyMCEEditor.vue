@@ -124,7 +124,7 @@ const init = ({
   quickbars_image_toolbar: "alignleft aligncenter alignright | rotateleft rotateright | imageoptions",
   editimage_toolbar: "rotateleft rotateright | flipv fliph | editimage imageoptions",
   // 文字样式
-  font_family_formats: "Arial=arial,helvetica,sans-serif; 宋体=SimSun; 微软雅黑=Microsoft Yahei; Impact=impact,chicago;", //字体
+  font_family_formats: "Arial=arial,helvetica,sans-serif;仿宋_GB2312=仿宋_GB2312; 宋体=SimSun; 微软雅黑=Microsoft Yahei; Impact=impact,chicago;", //字体
   font_size_formats: "11px 12px 14px 16px 18px 24px 36px 48px 64px 72px", //文字大小
   image_caption: true,
   editimage_cors_hosts: ["picsum.photos"],
