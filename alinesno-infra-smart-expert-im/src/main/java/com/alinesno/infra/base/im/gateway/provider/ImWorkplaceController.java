@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
+import com.alinesno.infra.smart.assistant.api.IndustryFrequentRoleDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.OrgWorkplaceDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceImResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
@@ -11,9 +12,12 @@ import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceItemTypeEnums
 import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
+import com.alinesno.infra.smart.im.dto.CollectItemDto;
+import com.alinesno.infra.smart.im.dto.CollectItemObjectDto;
 import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
 import com.alinesno.infra.smart.im.dto.HomePageDto;
 import com.alinesno.infra.smart.im.service.IAccountHomePageService;
+import com.alinesno.infra.smart.im.service.IFrequentAgentService;
 import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -23,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 工作台配置管理
@@ -43,6 +48,18 @@ public class ImWorkplaceController {
 
     @Autowired
     private IAccountHomePageService accountHomePageService;
+
+    @Autowired
+    private IFrequentAgentService frequentAgentService;
+
+    /**
+     * 获取最近访问列表getFrequentItem
+     */
+    @GetMapping("/getFrequentItem")
+    public AjaxResult getFrequentItem() {
+        List<IndustryFrequentRoleDto> list = frequentAgentService.getFrequentAgentList(CurrentAccountJwt.getUserId() , 10);
+        return AjaxResult.success("操作成功." , list);
+    }
 
     /**
      * 设置主页setHomePage
@@ -80,23 +97,60 @@ public class ImWorkplaceController {
     }
 
     /**
+     * 是否有个人工作台
+     * @return
+     */
+    @GetMapping("/isHasAccountWorkplace")
+    public AjaxResult isHasAccountWorkplace() {
+        Long workplaceId = orgWorkplaceService.isHasAccountWorkplace(CurrentAccountJwt.get().getId() , CurrentAccountJwt.get().getOrgId()) ;
+        return AjaxResult.success("操作成功." , workplaceId);
+    }
+
+    /**
      * 获取当前工作台
      * @return
      */
     @GetMapping("/getCurrentWorkplace")
-    public AjaxResult getCurrentWorkplace(Long workplaceId) {
+    public AjaxResult getCurrentWorkplace(@RequestParam(value = "workplaceId") Long workplaceId , String type) {
 
-        WorkplaceEntity entity = workplaceService.getById(workplaceId) ; // orgWorkplaceService.getCurrentWorkplace(CurrentAccountJwt.get().getOrgId()) ;
+        WorkplaceEntity entity = workplaceService.getById(workplaceId) ;
 
         WorkplaceResponseDto dto = new WorkplaceResponseDto() ;
         BeanUtils.copyProperties(entity , dto) ;
 
-//        WorkplaceResponseDto workplaceItemDto = workplaceItemService.getWorkplaceItem(entity.getId()) ;
-//        dto.setAgentsList(workplaceItemDto.getAgentsList());
-//        dto.setChannelsList(workplaceItemDto.getChannelsList());
-//        dto.setScenesList(workplaceItemDto.getScenesList());
+        // 查询出工作台下的所有场景列表
+        List<CollectItemObjectDto> workplaceItems = workplaceItemService.getWorkplaceItemByType(workplaceId , type) ;
 
-        return AjaxResult.success("操作成功." , dto);
+        AjaxResult result = AjaxResult.success("操作成功." , dto);
+        result.put("workplaceItems" , workplaceItems);
+
+        return result  ;
+    }
+
+    /**
+     * 收藏事项collectItem
+     */
+    @PostMapping("/collectItem")
+    public AjaxResult collectItem(@RequestBody @Validated CollectItemDto dto) {
+        log.debug("dto = {}", dto);
+
+        Long workplaceId = orgWorkplaceService.isHasAccountWorkplace(CurrentAccountJwt.get().getId() , CurrentAccountJwt.get().getOrgId()) ;
+        workplaceItemService.addCollectItem(dto , workplaceId) ;
+
+        return AjaxResult.success() ;
+    }
+
+    /**
+     * 收藏事项collectItem
+     */
+    @PostMapping("/unCollectItem")
+    public AjaxResult unCollectItem(@RequestBody @Validated CollectItemDto dto) {
+        log.debug("dto = {}", dto);
+
+        Long workplaceId = orgWorkplaceService.isHasAccountWorkplace(CurrentAccountJwt.get().getId() , CurrentAccountJwt.get().getOrgId()) ;
+        workplaceItemService.removeCollectItem(dto , workplaceId) ;
+
+        return AjaxResult.success() ;
     }
 
     /**
@@ -129,32 +183,5 @@ public class ImWorkplaceController {
         orgWorkplaceService.customizeWorkbench(dto) ;
         return AjaxResult.success();
     }
-
-    /**
-     * 获取到当前工作区的智能体、频道、场景
-     */
-    @GetMapping("/getWorkplaceItem")
-    public AjaxResult getWorkplaceItem(
-            @RequestParam Long workplaceId,
-            @RequestParam String type) {
-
-        // 获取数据
-        WorkplaceImResponseDto dto = workplaceItemService.getWorkplaceItemByType(workplaceId, type);
-        Assert.notNull(dto, "未找到对应的工作区项");
-
-        // 使用枚举进行类型匹配
-        WorkplaceItemTypeEnums itemType = WorkplaceItemTypeEnums.getByCode(type);
-        Assert.notNull(itemType, "无效的类型");
-
-        return switch (itemType) {
-            case AGENT ->
-                    AjaxResult.success(dto.getAgentsList() != null ? dto.getAgentsList() : Collections.emptyList());
-            case CHANNEL ->
-                    AjaxResult.success(dto.getChannelsList() != null ? dto.getChannelsList() : Collections.emptyList());
-            case SCENE ->
-                    AjaxResult.success(dto.getScenesList() != null ? dto.getScenesList() : Collections.emptyList());
-        };
-    }
-
 
 }
