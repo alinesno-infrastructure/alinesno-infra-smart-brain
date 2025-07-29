@@ -21,8 +21,10 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.im.enums.FrequentTypeEnums;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
+import com.alinesno.infra.smart.im.service.IFrequentAgentService;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
@@ -63,6 +65,9 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
 
     @Autowired
     private BaseSearchConsumer searchController ;
+
+    @Autowired
+    private IFrequentAgentService frequentAgentService ;
 
     @Autowired
     private CloudStorageConsumer storageConsumer ;
@@ -327,6 +332,11 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
             }catch (Exception e){
                 dto.setGreetingQuestion(new ArrayList<>());
             }
+        }
+
+        // 记录到用户常用场景里面
+        if(CurrentAccountJwt.get() != null){
+            frequentAgentService.addFrequentAgent(CurrentAccountJwt.getUserId(), entity.getId(), FrequentTypeEnums.SCENE) ;
         }
 
         return AjaxResult.success("操作成功.", dto);
