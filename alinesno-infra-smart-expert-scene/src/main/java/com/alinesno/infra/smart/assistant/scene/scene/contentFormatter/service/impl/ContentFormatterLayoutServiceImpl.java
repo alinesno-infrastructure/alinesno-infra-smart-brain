@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.I
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelData;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelParser;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.HtmlUtils;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
@@ -137,27 +138,27 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
 
             // 3. 将HTML内容保存为临时文件
-            String htmlContent = content.getContent();
+            String htmlContent = HtmlUtils.ensureHtmlStructure(content.getContent());
             tempHtmlFile = File.createTempFile("temp_input_", ".html");
             Files.write(tempHtmlFile.toPath(), htmlContent.getBytes(StandardCharsets.UTF_8));
 
             // 4. 将HTML转换为DOCX
             tempDocxFile = File.createTempFile("temp_converted_", ".docx");
-            ResponseEntity<String> convertResponse = smartDocumentConsumer.convertHtmlToDocx(tempHtmlFile);
+            ResponseEntity<byte[]> convertResponse = smartDocumentConsumer.convertHtmlToDocx(tempHtmlFile);
             if (!convertResponse.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("HTML转DOCX失败，状态码：" + convertResponse.getStatusCode());
             }
             // 假设返回的是文件内容，需要写入临时文件
-            Files.write(tempDocxFile.toPath(), convertResponse.getBody().getBytes(StandardCharsets.UTF_8));
+            Files.write(tempDocxFile.toPath(), Objects.requireNonNull(convertResponse.getBody()));
 
             // 5. 将DOCX格式化为公文格式
             formattedDocxFile = File.createTempFile("temp_formatted_", ".docx");
-            ResponseEntity<String> formatResponse = smartDocumentConsumer.formatOfficialDocument(tempDocxFile);
+            ResponseEntity<byte[]> formatResponse = smartDocumentConsumer.formatOfficialDocument(tempDocxFile);
             if (!formatResponse.getStatusCode().is2xxSuccessful()) {
                 throw new RuntimeException("公文格式化失败，状态码：" + formatResponse.getStatusCode());
             }
             // 假设返回的是文件内容，需要写入临时文件
-            Files.write(formattedDocxFile.toPath(), formatResponse.getBody().getBytes(StandardCharsets.UTF_8));
+            Files.write(formattedDocxFile.toPath(), Objects.requireNonNull(formatResponse.getBody())) ;
 
             // 6. 将格式化后的DOCX转回HTML
             ResponseEntity<String> finalResponse = smartDocumentConsumer.convertToHtml(formattedDocxFile);
@@ -173,19 +174,25 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             throw new RuntimeException("文档格式化处理失败", e);
         } finally {
             // 7. 清理所有临时文件
-            try {
-                if (tempHtmlFile != null && !tempHtmlFile.delete()) {
-                    log.warn("临时HTML文件删除失败：" + tempHtmlFile.getAbsolutePath());
-                }
-                if (tempDocxFile != null && !tempDocxFile.delete()) {
-                    log.warn("临时DOCX文件删除失败：" + tempDocxFile.getAbsolutePath());
-                }
-                if (formattedDocxFile != null && !formattedDocxFile.delete()) {
-                    log.warn("格式化后DOCX文件删除失败：" + formattedDocxFile.getAbsolutePath());
-                }
-            } catch (Exception e) {
-                log.error("删除临时文件时出错", e);
-            }
+//            try {
+//                if (tempHtmlFile != null && !tempHtmlFile.delete()) {
+//                    log.warn("临时HTML文件删除失败：" + tempHtmlFile.getAbsolutePath());
+//                }
+//                if (tempDocxFile != null && !tempDocxFile.delete()) {
+//                    log.warn("临时DOCX文件删除失败：" + tempDocxFile.getAbsolutePath());
+//                }
+//                if (formattedDocxFile != null && !formattedDocxFile.delete()) {
+//                    log.warn("格式化后DOCX文件删除失败：" + formattedDocxFile.getAbsolutePath());
+//                }
+//            } catch (Exception e) {
+//                log.error("删除临时文件时出错", e);
+//            }
+
+           // 打印出所有的问题
+           log.info("tempHtmlFile = {}" , tempHtmlFile);
+           log.info("tempDocxFile = {}" , tempDocxFile);
+           log.info("formattedDocxFile = {}" , formattedDocxFile);
+
         }
     }
 
