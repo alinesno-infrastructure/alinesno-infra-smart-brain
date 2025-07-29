@@ -31,19 +31,18 @@
                     <div class="section-body">
                         <el-row>
                             <el-col :span="6" v-for="(item, i) in orgRoleList" :key="i" style="padding:8px;">
-                                <div class="semi-card-container" @click="handleRoleChat(item)">
+                                <div class="semi-card-container" >
                                     <div class="semi-space cart-head-continer" style="gap: 16px;flex-direction: row;display: flex;">
                                         <div class="cart-head-content">
-                                            <div class="cart-head-content">
-                                                <span class="semi-avatar semi-avatar-square" style="border-radius: 8px;">
+                                            <div class="cart-head-content" >
+                                                <span class="semi-avatar semi-avatar-square" style="border-radius: 8px;" @click="handleRoleChat(item)">
                                                     <img :src="imagePathByPath(item.roleAvatar)">
                                                 </span>
                                             </div>
                                         </div>
                                         <div class="semi-space info-container" style="gap: 6px;height:100px">
 
-
-                                            <span class="semi-typography card-title">
+                                            <span class="semi-typography card-title" @click="handleRoleChat(item)">
                                                 <span>
                                                     {{ item.roleName }}
                                                 </span>
@@ -107,11 +106,11 @@
                     <div class="section-body">
                         <el-row>
                             <el-col :span="6" v-for="(item, i) in publicRoleList" :key="i" style="padding:8px;">
-                                <div class="semi-card-container" @click="handleRoleChat(item)">
+                                <div class="semi-card-container">
                                     <div class="semi-space cart-head-continer" style="gap: 16px;flex-direction: row;display: flex;">
                                         <div class="cart-head-content">
                                             <div class="cart-head-content">
-                                                <span class="semi-avatar semi-avatar-square"
+                                                <span class="semi-avatar semi-avatar-square"  @click="handleRoleChat(item)"
                                                     style="border-radius: 8px;">
                                                     <img :src="imagePathByPath(item.roleAvatar)">
                                                 </span>
@@ -120,7 +119,7 @@
                                         <div class="semi-space info-container" style="gap: 6px;height:100px">
 
 
-                                            <span class="semi-typography card-title">
+                                            <span class="semi-typography card-title"  @click="handleRoleChat(item)">
                                                 <span>
                                                     {{ item.roleName }}
                                                 </span>
@@ -152,7 +151,7 @@
                                         </div>
 
                                         <div class="platform-container-YOpW3B">
-                                            <div class="semi-space semi-space-align-center semi-space-horizontal" style="gap: 4px;display: flex;color: #1d75b0;" v-if="item.roleType">
+                                            <div class="semi-space semi-space-align-center semi-space-horizontal" style="font-size:14px;gap: 4px;display: flex;color: #1d75b0;" v-if="item.roleType">
                                                 <span v-if="item.roleType == 'single_role'">
                                                     <i class="fa-solid fa-user-ninja"></i>
                                                 </span>
@@ -161,6 +160,9 @@
                                                 </span>
                                                 <span v-if="item.roleType == 'scenario_role'">
                                                     <i class="fa-solid fa-user-secret"></i>
+                                                </span>
+                                                <span class="aip-collect-tip" @click="handleCollectAgent(item)" >
+                                                    <i class="fa-solid fa-star"></i> 收藏
                                                 </span>
                                             </div>
                                         </div>
@@ -201,11 +203,18 @@ import { ElLoading } from 'element-plus'
 import { getAllCatalog } from "@/api/base/im/robot";
 import SnowflakeId from "snowflake-id";
 
-import { getAgentStoreRole } from '@/api/base/im/store';
+import { 
+    getAgentStoreRole 
+} from '@/api/base/im/store';
+
+import {
+    collectItem
+} from "@/api/base/im/workplace"
 
 import SideTypePanel from './sideTypePanel'
 import learnLogo from '@/assets/icons/data_03.svg';
 
+const { proxy } = getCurrentInstance();
 const snowflake = new SnowflakeId();
 
 const router = useRouter();
@@ -217,33 +226,6 @@ const roleChatUri = ref("")
 const publicRoleList = ref([])
 const orgRoleList = ref([])
 const demoProductList = ref([])
-
-/**  获取产品列表 */
-function handleGetProductList() {
-    // const loading = ElLoading.service({
-    //     lock: true,
-    //     text: 'Loading',
-    // })
-    // getAllCatalog().then(response => {
-    //     console.log('response = ' + response);
-    //     productList.value = response.data;
-
-    //     // 循环处理 jsonData.data 数组中的每一个元素
-    //     response.data.forEach(item => {
-    //         if (demoProductList.value.length < 7) {
-    //             demoProductList.value.push({
-    //                 name: item.name, // 使用 data 中的 name 字段
-    //                 typeDescribe: "", // 如果没有对应的字段，这里可以留空或自定义
-    //                 teamSize: 0, // 如果没有对应的字段，这里可以留空或自定义
-    //                 mainResponsibilities: [item.description], // 使用 data 中的 description 字段作为 responsibilities 的一个元素
-    //                 description: item.description // 使用 data 中的 description 字段
-    //             });
-    //         }
-    //     });
-
-    //     loading.close();
-    // });
-}
 
 const data = reactive({
   form: {
@@ -289,15 +271,10 @@ const { queryParams, form, rules, chainForm, chainRules } = toRefs(data);
 
 /** 与单个Role发信息 */
 function handleRoleChat(item) {
-
     router.push({
         path: '/single/agentChat',
         query: { 'roleId': item.id, 'channelId': snowflake.generate() }
     })
-
-    // roleChatUri.value = "/agentChat?roleId=" + item.id;
-    // chatTitle.value = item.roleName;
-    // dialogVisible.value = true;
 }
 
 /** 关闭对话框 */
@@ -305,23 +282,23 @@ function handleClose() {
     dialogVisible.value = false;
 }
 
-// handleGetProductList();
+// 收藏角色
+const handleCollectAgent = (item) => {
+    console.log('收藏智能体')
+    const data = {
+        itemId: item.id, 
+        type: 'agent'
+    }
+    collectItem(data).then(res => {
+        proxy.$modal.msgSuccess("收藏成功.");
+    })
+}
 
 const handleAgentStoreRole = () => {
     getAgentStoreRole().then(response => {
         console.log('response = ' + response);
         publicRoleList.value = response.data.publicRoleList || [];
         orgRoleList.value = response.data.orgRoleList || [];
-
-        // productList.value = response.data;
-        // // 循环处理 jsonData.data 数组中的每一个元素
-        // response.data.forEach(item => {
-        //     if (demoProductList.value.length < 7) {
-        //         demoProductList.value.push({
-        //             name: item.name, // 使用data 中的 name 字段
-        //         })
-        //     }
-        // })
     })
 }
 
