@@ -343,7 +343,6 @@
 }
 
 .semi-card-container {
-  cursor: pointer;
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -354,14 +353,13 @@
   border-radius: 8px;
 
   .semi-divider {
-    margin-top: 20px;
-    margin-bottom: 16px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     border-bottom: 0.5px solid #f0f0f5;
     display: flex;
     width: 100%;
     box-sizing: border-box;
     color: var(--semi-color-text-0);
-//     margin: 1px 0 1px 0;
   }
 
   .card-desc {
@@ -427,6 +425,7 @@
 
   .card-title {
     height: 24px;
+    cursor: pointer;
     font-size: 18px;
     font-weight: 600;
     line-height: 24px;
@@ -437,6 +436,7 @@
     border-radius: 8px;
     width: 64px;
     height: 64px;
+    cursor: pointer;
     border: 1px solid #f0f0f5;
     background: #f0f0f5;
     align-items: center;
