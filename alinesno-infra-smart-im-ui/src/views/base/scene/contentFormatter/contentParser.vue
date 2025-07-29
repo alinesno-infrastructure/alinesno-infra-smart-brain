@@ -309,6 +309,7 @@ const handleTemplateSelect = (template) => {
   }
   formatContent(data).then(res => {
     console.log('res = ' + res)
+    customEditorContent.value = res.data;
   })
 };
 
