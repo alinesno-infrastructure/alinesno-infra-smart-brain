@@ -85,13 +85,12 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
      */
     @DataPermissionQuery
     @GetMapping("/getAllArticleTemplate")
-    public AjaxResult getAllArticleTemplate(PermissionQuery query , @RequestParam(value = "sceneId") Long sceneId) {
+    public AjaxResult getAllArticleTemplate(PermissionQuery query) {
 
        // 获取到所有的分类
         LambdaQueryWrapper<ProjectKnowledgeGroupEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.setEntityClass(ProjectKnowledgeGroupEntity.class);
         query.toWrapper(queryWrapper);
-        queryWrapper.eq(ProjectKnowledgeGroupEntity::getSceneId, sceneId);
 
        List<ProjectKnowledgeGroupEntity> list = service.list(queryWrapper) ;
        return AjaxResult.success(list);
@@ -115,13 +114,11 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
     @DataPermissionQuery
     @GetMapping("/getTemplateByType")
     public AjaxResult getTemplateByType(PermissionQuery query ,
-                                        @RequestParam(value = "groupId") String groupId ,
-                                        @RequestParam(value = "sceneId") Long sceneId) throws Exception {
+                                        @RequestParam(value = "groupId") String groupId) throws Exception {
 
         LambdaQueryWrapper<ProjectKnowledgeEntity> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.setEntityClass(ProjectKnowledgeEntity.class);
         query.toWrapper(queryWrapper);
-        queryWrapper.eq(ProjectKnowledgeEntity::getSceneId, sceneId);
 
         if(StringUtils.isNotBlank(groupId)){
             queryWrapper.eq(ProjectKnowledgeEntity::getGroupId, groupId);
