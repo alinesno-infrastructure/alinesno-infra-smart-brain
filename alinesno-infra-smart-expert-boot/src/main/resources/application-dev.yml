@@ -81,6 +81,10 @@ sa-token:
     secret-key: kQwIOrYvnXmSDkwEiFngrKidMcdrgKor
 
 alinesno:
+  point:
+    enabled: false # 确保这个配置存在
+    service-url: http://your-point-service
+    cache-duration: 300
   thread-pool:
     chat:
       core-pool-size: 50
