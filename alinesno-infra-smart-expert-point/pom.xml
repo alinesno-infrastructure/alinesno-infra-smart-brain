@@ -33,6 +33,12 @@
 			<artifactId>alinesno-infra-smart-expert-facade</artifactId>
 			<version>${revision}</version>
 		</dependency>
+		<dependency>
+			<groupId>com.alinesno.infra.smart</groupId>
+			<artifactId>alinesno-infra-smart-expert-adapter</artifactId>
+			<version>${revision}</version>
+			<scope>compile</scope>
+		</dependency>
 
 		<!-- 引入sa-token -->
 		<dependency>
@@ -40,6 +46,6 @@
 			<artifactId>sa-token-spring-boot3-starter</artifactId>
 		</dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>
