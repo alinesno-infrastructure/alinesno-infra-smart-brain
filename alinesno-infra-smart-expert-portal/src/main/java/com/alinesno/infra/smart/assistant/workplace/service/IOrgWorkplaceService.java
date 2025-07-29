@@ -35,4 +35,12 @@ public interface IOrgWorkplaceService extends IBaseService<OrgWorkplaceEntity> {
      * @param dto
      */
     void customizeWorkbench(CustomizeWorkbenchDTO dto);
+
+    /**
+     * 判断当前用户是否已经配置工作台
+     * @param userId
+     * @param orgId
+     * @return
+     */
+    Long isHasAccountWorkplace(Long userId , Long orgId);
 }
