@@ -130,44 +130,51 @@ public class OrgWorkplaceServiceImpl extends IBaseServiceImpl<OrgWorkplaceEntity
     @Override
     public void customizeWorkbench(CustomizeWorkbenchDTO dto) {
         // 保存新的用户工作台
-        WorkplaceEntity newWorkplace = new WorkplaceEntity() ;
-        BeanUtils.copyProperties(dto, newWorkplace);
+        Long newWorkplaceId = this.isHasAccountWorkplace(dto.getOperatorId(), dto.getOrgId()) ;
+
+        WorkplaceEntity newWorkplace = workplaceService.getById(newWorkplaceId);
 
         newWorkplace.setName(dto.getName());
+        newWorkplace.setDescription(dto.getDescription());
+
         newWorkplace.setOrgId(dto.getOrgId());
         newWorkplace.setOperatorId(dto.getOperatorId());
-        newWorkplace.setWorkplaceType(WorkplaceType.ORG.getId());
+        newWorkplace.setWorkplaceType(WorkplaceType.PRIVATE.getId());
 
         newWorkplace.setWorkplaceSource(WorkplaceSourceEnums.BACKEND.getCode());
 
-        workplaceService.save(newWorkplace) ;
+        workplaceService.update(newWorkplace) ;
+    }
 
-        long workspaceId = newWorkplace.getId() ;
+    @Override
+    public Long isHasAccountWorkplace(Long userId , Long orgId) {
+        LambdaQueryWrapper<OrgWorkplaceEntity> query = Wrappers.lambdaQuery(OrgWorkplaceEntity.class) ;
+        query.eq(OrgWorkplaceEntity::getOrgId, orgId) ;
+        query.eq(OrgWorkplaceEntity::getOperatorId, userId) ;
 
-        List<WorkplaceItemEntity> list = new ArrayList<>() ;
+        OrgWorkplaceEntity orgWorkplaceEntity = getOne(query);
 
-        for(String sceneId : dto.getSelectSceneId()) {
-            WorkplaceItemEntity item = new WorkplaceItemEntity() ;
-            item.setWorkplaceId(workspaceId);
-            item.setItemId(Long.parseLong(sceneId));
-            item.setItemType(WorkplaceItemTypeEnums.SCENE.getCode());
-            list.add(item) ;
+        // 如果没有自动添加默认
+        if(orgWorkplaceEntity == null){
+
+            // 保存新的用户工作台
+            WorkplaceEntity newWorkplace = new WorkplaceEntity() ;
+            newWorkplace.setOrgId(orgId);
+            newWorkplace.setOperatorId(userId);
+
+            newWorkplace.setName("AIP智能体工作台");
+            newWorkplace.setDescription("AIP 智能体工作台集成智能体技术可定制开发，支持多智能体协作提升效率。");
+            newWorkplace.setWorkplaceType(WorkplaceType.PRIVATE.getId());
+            workplaceService.save(newWorkplace) ;
+
+            orgWorkplaceEntity = new OrgWorkplaceEntity() ;
+
+            orgWorkplaceEntity.setWorkplaceId(newWorkplace.getId());
+            orgWorkplaceEntity.setOrgId(orgId);
+            orgWorkplaceEntity.setOperatorId(userId);
+            save(orgWorkplaceEntity) ;
         }
 
-        for(String agentId : dto.getSelectAgentId()) {
-            WorkplaceItemEntity item = new WorkplaceItemEntity() ;
-            item.setWorkplaceId(workspaceId);
-            item.setItemId(Long.parseLong(agentId));
-            item.setItemType(WorkplaceItemTypeEnums.AGENT.getCode());
-            list.add(item) ;
-        }
-
-        workplaceItemService.saveBatch(list) ;
-
-        // 然后保存到OrgWorkplace表中
-        OrgWorkplaceEntity orgWorkplaceEntity = new OrgWorkplaceEntity() ;
-        orgWorkplaceEntity.setWorkplaceId(newWorkplace.getId());
-        orgWorkplaceEntity.setOrgId(dto.getOrgId());
-        save(orgWorkplaceEntity) ;
+        return orgWorkplaceEntity.getWorkplaceId();
     }
 }
