@@ -65,10 +65,12 @@
 </template>
 
 <script setup name="Index">
+
 import {
     isHasWorkplace, 
     getCurrentWorkplace 
 } from "@/api/base/im/workplace"
+
 import BusinessAgentPanel from './businessAgentPanel.vue'
 import CreatePortal from './createPortal.vue'
 import ChannelPanel from './channelPanel.vue'
