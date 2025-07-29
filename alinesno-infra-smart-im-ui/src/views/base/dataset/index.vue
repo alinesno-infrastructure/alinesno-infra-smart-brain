@@ -516,7 +516,7 @@ handleListGroup();
 
 <style lang="scss" scoped>
 .review-page-contaier {
-    padding: 20px 30px ; 
+    padding: 20px 10px ;
     background-color: #fff ;
 
     .rule-item-content {
