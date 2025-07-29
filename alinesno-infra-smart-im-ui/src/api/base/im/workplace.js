@@ -8,14 +8,46 @@ var prefix = '/v1/api/infra/base/im/workplace/';
 
 var managerUrl = {
   isHasWorkplace: prefix + "isHasWorkplace",
+  isHasAccountWorkplace: prefix + "isHasAccountWorkplace",
   listOrgWorkplace: prefix + "listOrgWorkplace",
   getCurrentWorkplace: prefix + "getCurrentWorkplace",
   getWorkplaceItem: prefix + "getWorkplaceItem",
   useWorkplace: prefix + "useWorkplace",
   customWorkplace: prefix + "customWorkplace",
   setHomePage: prefix + "setHomePage",
-  getHomePage: prefix + "getHomePage"
+  getHomePage: prefix + "getHomePage",
+  collectItem: prefix + "collectItem",
+  unCollectItem: prefix + "unCollectItem",
+  getFrequentItem: prefix + "getFrequentItem",
 }
+
+// 获取最近访问的列表
+export function getFrequentItem(data){
+  return request({
+    url: managerUrl.getFrequentItem ,
+    method: 'get'
+  })
+}
+
+//  取消收藏成功
+export function unCollectItem(data) {
+  return request({
+    url: managerUrl.unCollectItem,
+    method: 'post',
+    data: data 
+  });
+}
+
+
+// 收藏
+export function collectItem(data) {
+  return request({
+    url: managerUrl.collectItem,
+    method: 'post',
+    data: data 
+  });
+}
+
 
 // 获取用户默认主页
 export function getHomePage() {
@@ -51,9 +83,17 @@ export function getWorkplaceItem(workplaceId , type) {
   })
 }
 
-export function getCurrentWorkplace(workplaceId) {
+export function getCurrentWorkplace(workplaceId , type) {
   return request({
-    url: managerUrl.getCurrentWorkplace + '?workplaceId=' + parseStrEmpty(workplaceId),
+    url: managerUrl.getCurrentWorkplace + '?workplaceId=' + parseStrEmpty(workplaceId) + '&type=' + type,
+    method: 'get'
+  });
+}
+
+// 查询是否有个人工作台
+export function isHasAccountWorkplace() {
+  return request({
+    url: managerUrl.isHasAccountWorkplace,
     method: 'get'
   });
 }
