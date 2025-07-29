@@ -32,48 +32,6 @@
 
                 </div>
 
-                <!--
-                <div class="banner-container-panel" v-if="recommendRole" style="margin-left:10px;">
-                    <el-row>
-                        <el-col :span="18">
-
-                        <div class="card-container">
-                            <div>
-                            <h1><span>🪡深度结合工作细节场景，精准服务，多场景应用</span></h1>
-                            <p><span>{{ truncateString(recommendRole.responsibilities , 50) }}</span></p>
-                            </div>
-                            <el-button type="primary" bg text size="large" @click="handleRoleChat()">
-                            <span class="semi-button-content">立即聊聊</span>
-                            </el-button>
-                        </div>
-
-
-                        </el-col>
-                        <el-col :span="6">
-
-                        <div class="right-container">
-                            <img :src="agentBg" class="bot-banner-bg" alt="Banner Background Image">
-
-                            <div class="banner-info">
-                            <span class="avatar">
-                                <img :src="imagePathByPath(recommendRole.roleAvatar)"  alt="Avatar Image">
-                            </span>
-                            <div class="info-text">
-                                <p class="category">{{ recommendRole.roleName }}</p>
-                                <h1 class="title">{{ recommendRole.roleName }}</h1>
-                                <div class="author-info">
-                                <div class="author-name"><span>罗小东</span></div>
-                                <div class="at-name"><span>@Easton</span></div>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-
-                        </el-col>
-                    </el-row>
-                </div>
-                -->
-
                 <div class="header">
                     <span style="font-size: 13px;margin-left:10px;color: #a5a5a5;">这里包含所有需要运营的能力服务列表</span>
                 </div>
@@ -81,13 +39,13 @@
                 <div class="channel-container-panel">
                     <el-row>
                         <el-col :span="6" v-for="(item, index) in sceneLists" :key="index" style="padding:8px;">
-                            <div class="scene-card-container" @click="enterScreen(item)">
+                            <div class="scene-card-container" >
                                 <article class="scene-card">
-                                    <div class="scene-image-container">
+                                    <div class="scene-image-container" @click="enterScreen(item)">
                                         <img :src="imagePathByPath(item.sceneBanner)" class="scene-card-image">
                                     </div>
                                     <div class="scene-card-content">
-                                        <div class="scene-header">
+                                        <div class="scene-header" @click="enterScreen(item)">
                                             <span class="scene-title">{{ item.sceneName }}</span>
                                         </div>
                                         <div class="scene-author-info">
@@ -103,20 +61,18 @@
                                     </div>
                                 </article>
                                 <div class="scene-card-footer">
-                                    <el-button type="text" size="small" text bg>
-                                        <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{
-                                        JSON.parse(item.fieldProp)?.sceneName }}
-                                    </el-button>
+                                        <el-check-tag type="text" size="small" text bg>
+                                            <i :class="JSON.parse(item.fieldProp)?.icon"></i>&nbsp;{{ JSON.parse(item.fieldProp)?.sceneName }}
+                                        </el-check-tag>
                                         <div class="scene-footer">
                                             <div class="scene-price">
-                                                <el-tag v-if="item.sceneScope == 'private'" type="danger"><i class="fa-solid fa-lock" /> 私有</el-tag>
-                                                <el-tag v-else-if="item.sceneScope == 'public'" type="warning"><i class="fa-solid fa-globe" /> 公开</el-tag>
-                                                <el-tag v-else type="primary"><i class="fa-solid fa-truck-plane" />组织</el-tag>
+                                                <el-check-tag checked="true" v-if="item.sceneScope == 'private'" size="small" type="danger"><i class="fa-solid fa-lock" /> 私有</el-check-tag>
+                                                <el-check-tag checked="true" v-else-if="item.sceneScope == 'public'" size="small" type="warning"><i class="fa-solid fa-globe" /> 公开</el-check-tag>
+                                                <el-check-tag checked="true" v-else size="small" type="primary"><i class="fa-solid fa-truck-plane" />组织</el-check-tag>
                                             </div>
                                             <div class="scene-tag">
-                                                <div class="scene-stats">
-                                                    <span>{{ item.usage_count }}</span>
-                                                    <span>使用</span>
+                                                <div class="aip-collect-tip" @click="collectionScene(item)">
+                                                  <i class="fa-solid fa-star"></i> 收藏
                                                 </div>
                                             </div>
                                         </div>
@@ -146,13 +102,19 @@ import {
     sceneListByPage
 } from '@/api/base/im/scene';
 
+import {
+    collectItem
+} from "@/api/base/im/workplace"
+
 import SideTypePanel from './sideTypePanel'
 
 import { onMounted } from 'vue';
+
 import learnLogo from '@/assets/icons/tech_01.svg';
 import SnowflakeId from "snowflake-id";
 import AgentBgPng from '@/assets/banner/agent_bg.png';
 
+const { proxy } = getCurrentInstance();
 const snowflake = new SnowflakeId();
 
 const router = useRouter();
@@ -216,6 +178,17 @@ function handleGetRecommendRole() {
     })
 }
 
+const collectionScene = (item) => {
+    console.log('收藏场景')
+    const data = {
+        itemId: item.id, 
+        type: 'scene'
+    }
+    collectItem(data).then(res => {
+        proxy.$modal.msgSuccess("收藏成功.");
+    })
+}
+
 onMounted(() => {
     handleGetRecommendRole();
     handleScreenList();
@@ -235,7 +208,6 @@ onMounted(() => {
 .scene-card-container {
     display: flex;
     flex-grow: 1;
-    border-radius: 8px;
     border-radius: 8px;
     border: 1px solid rgba(6, 7, 9, 0.1);
     background-color: #fff;
@@ -260,7 +232,6 @@ onMounted(() => {
     overflow: hidden;
     padding: 20px;
     padding-bottom: 10px;
-    cursor: pointer;
     transition: box-shadow 0.3s;
 
     &:hover {
@@ -273,6 +244,7 @@ onMounted(() => {
         height: 60px;
         border-radius: 10px;
         overflow: hidden;
+        cursor: pointer;
 
         .scene-card-image {
             width: 100%;
@@ -297,6 +269,7 @@ onMounted(() => {
             gap: 8px;
             margin: 4px 0px;
             margin-top: 0px;
+            cursor: pointer;
             padding-left: 0px;
             flex-direction: column;
 
@@ -408,7 +381,8 @@ onMounted(() => {
     .scene-stats {
         display: flex;
         align-items: center;
-        gap: 4px;
+        cursor: pointer;
+        gap: 1px;
         font-size: 12px;
         line-height: 16px;
         color: var(--coz-fg-secondary);
