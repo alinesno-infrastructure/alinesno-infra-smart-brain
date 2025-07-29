@@ -19,13 +19,17 @@ public class CustomizeWorkbenchDTO extends BaseDto {
     @NotBlank(message = "名称不能为空")
     private String name;
 
-    @NotNull(message = "类型不能为空")
-    @Positive(message = "类型必须为正整数")
-    private Integer type;
+    @NotBlank(message = "描述不能为空")
+    private String description;
 
-    @NotNull(message = "选择的智能体 ID 列表不能为空")
-    private List<String> selectAgentId;
+//    @NotNull(message = "类型不能为空")
+//    @Positive(message = "类型必须为正整数")
+//    private Integer type;
+//
+//    @NotNull(message = "选择的智能体ID列表不能为空")
+//    private List<String> selectAgentId;
+//
+//    @NotNull(message = "选择的场景ID列表不能为空")
+//    private List<String> selectSceneId;
 
-    @NotNull(message = "选择的场景 ID 列表不能为空")
-    private List<String> selectSceneId;
 }    
