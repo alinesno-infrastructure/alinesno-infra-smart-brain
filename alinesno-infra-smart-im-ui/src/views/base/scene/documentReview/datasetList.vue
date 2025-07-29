@@ -452,5 +452,6 @@ getList();
 
 .cart-head-content {
     font-size: 30px;
+    cursor: pointer;
 }
 </style>
