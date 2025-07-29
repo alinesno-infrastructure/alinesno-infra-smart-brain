@@ -147,17 +147,17 @@ public class CloudStorageServiceImpl implements CloudStorageConsumer {
         return fileStorageService.download(fileInfo).setProgressMonitor(new ProgressListener() {
             @Override
             public void start() {
-                log.debug("下载开始");
+                log.trace("下载开始");
             }
 
             @Override
             public void progress(long progressSize,long allSize) {
-                log.debug("已下载 " + progressSize + " 总大小" + allSize);
+                log.trace("已下载 " + progressSize + " 总大小" + allSize);
             }
 
             @Override
             public void finish() {
-                log.debug("下载结束");
+                log.trace("下载结束");
             }
         }).bytes() ;
 
