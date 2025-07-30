@@ -43,7 +43,7 @@
         </div>
     </div>
 
-    <div class="sidebar-section">
+    <!-- <div class="sidebar-section">
         <h2>
             <i class="fa-solid fa-clock-rotate-left"></i>
             <span>历史版本</span>
@@ -56,8 +56,9 @@
                 </div>
                 <div class="version-desc">{{ version.desc }}</div>
             </div>
-        </div>
-    </div>
+        </div> -->
+    <!-- </div> -->
+
 </template>
 
 <script setup>
