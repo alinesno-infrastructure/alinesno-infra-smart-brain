@@ -82,17 +82,25 @@ public class SmartDocumentConsumer {
         return restTemplate.exchange(baseUrl + endpoint, HttpMethod.POST, requestEntity, byte[].class);
     }
 
-//    /**
-//     * 统一文件上传请求方法（返回 String）
-//     */
-//    private ResponseEntity<String> postFileRequest(String endpoint, File file) {
-//        checkConfig();
-//        HttpHeaders headers = createHeaders(MediaType.MULTIPART_FORM_DATA);
-//        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("file", new FileSystemResource(file));
-//        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//        return restTemplate.exchange(baseUrl + endpoint, HttpMethod.POST, requestEntity, String.class);
-//    }
+
+    /**
+     * 统一字符串内容POST请求方法（带参数名）
+     */
+    private ResponseEntity<String> postStringRequest(String endpoint, String paramName, String content) {
+        checkConfig();
+
+        // 1. 创建表单形式的请求体
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add(paramName, content);
+
+        // 2. 设置请求头
+        HttpHeaders headers = createHeaders(MediaType.APPLICATION_FORM_URLENCODED);
+
+        // 3. 构建请求实体
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(body, headers);
+
+        return restTemplate.exchange(baseUrl + endpoint, HttpMethod.POST, requestEntity, String.class);
+    }
 
     /**
      * 01_文档转换 - 获取文档目录结构
@@ -111,15 +119,6 @@ public class SmartDocumentConsumer {
     public ResponseEntity<String> convertToPdf(File file) {
         return postFileRequest("/api/v1/docx/convertToPdf", file);
     }
-
-//    /**
-//     * 01_文档转换 - DOCX转HTML
-//     * @param file 要处理的文件
-//     * @return API响应
-//     */
-//    public ResponseEntity<String> convertToHtml(File file) {
-//        return postFileRequest("/api/v1/docx/convertToHtml", file);
-//    }
 
     /**
      * 01_文档转换 - DOCX转HTML
@@ -182,15 +181,6 @@ public class SmartDocumentConsumer {
         return postFileRequest("/api/v1/docx/replaceText", file);
     }
 
-//    /**
-//     * 01_文档转换 - 将HTML文档转换为DOCX格式
-//     * @param file 要处理的HTML文件
-//     * @return API响应
-//     */
-//    public ResponseEntity<String> convertHtmlToDocx(File file) {
-//        return postFileRequest("/api/v1/docx/convertHtmlToDocx", file);
-//    }
-
     /**
      * 02_文档格式化 - 政务公文格式化/排版化
      * @param file 要处理的文件
@@ -200,55 +190,15 @@ public class SmartDocumentConsumer {
         return postFileRequestForBytes("/api/v1/docx/format/official", file);
     }
 
-//    /**
-//     * 通用的文件上传请求方法
-//     * @param endpoint API端点
-//     * @param file 要上传的文件
-//     * @return API响应
-//     */
-//    private ResponseEntity<String> postFileRequest(String endpoint, File file) {
-//        if (baseUrl == null || baseUrl.isEmpty()) {
-//            throw new IllegalStateException("Base URL is not configured");
-//        }
-//
-//        HttpHeaders headers = createHeaders();
-//        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("file", new FileSystemResource(file));
-//
-//        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//
-//        String url = baseUrl + endpoint;
-//        return restTemplate.exchange(
-//                url,
-//                HttpMethod.POST,
-//                requestEntity,
-//                String.class
-//        );
-//    }
 
-//    /**
-//     * 专门用于获取字节数组响应的文件上传请求方法
-//     * @param endpoint API端点
-//     * @param file 要上传的文件
-//     * @return 包含字节数组的API响应
-//     */
-//    private ResponseEntity<byte[]> postFileRequestForBytes(String endpoint, File file) {
-//        if (baseUrl == null || baseUrl.isEmpty()) {
-//            throw new IllegalStateException("Base URL is not configured");
-//        }
-//
-//        HttpHeaders headers = createHeaders();
-//        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-//        body.add("file", new FileSystemResource(file));
-//
-//        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-//
-//        String url = baseUrl + endpoint;
-//        return restTemplate.exchange(
-//                url,
-//                HttpMethod.POST,
-//                requestEntity,
-//                byte[].class
-//        );
-//    }
+
+    /**
+     * HTML转政务公文
+     * @param htmlContent HTML内容字符串
+     * @return API响应
+     */
+    public ResponseEntity<String> htmlToOfficial(String htmlContent) {
+        return postStringRequest("/api/v1/docx/format/htmlToOfficial", "htmlContent", htmlContent);
+    }
+
 }
