@@ -95,7 +95,8 @@ const init = ({
   selector: "#" + tinymceId.value, //富文本编辑器的id,
   language_url: "/tinymce/langs/zh_CN.js", // 语言包的路径，具体路径看自己的项目
   language: "zh_CN",
-  skin_url: "/tinymce/skins/ui/tinymce-5", // skin路径，具体路径看自己的项目
+  // skin_url: "/tinymce/skins/ui/tinymce-5", // skin路径，具体路径看自己的项目
+  skin_url: "/tinymce/skins/ui/oxide", // skin路径，具体路径看自己的项目
   editable_root: props.editable_root,
   height: 900,
   branding: false, // 是否禁用“Powered by TinyMCE”
