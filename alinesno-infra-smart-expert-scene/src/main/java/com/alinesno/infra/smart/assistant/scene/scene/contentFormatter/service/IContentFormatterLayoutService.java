@@ -5,7 +5,6 @@ import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentFormatDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelParser;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
-import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Map;
@@ -34,4 +33,11 @@ public interface IContentFormatterLayoutService extends IBaseService<ContentForm
      */
     String formatContent(DocumentFormatDTO content, PermissionQuery query);
 
+    /**
+     * 导出为Docx
+     *
+     * @param content
+     * @param query
+     */
+    byte[] exportToDocx(String content, PermissionQuery query);
 }
