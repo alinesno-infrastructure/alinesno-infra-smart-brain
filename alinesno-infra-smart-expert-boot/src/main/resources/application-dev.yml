@@ -51,7 +51,7 @@ spring:
 
 actable:
   table:
-    auto: update
+    auto: none # update
   model:
     pack: com.alinesno.infra.smart.assistant.entity;com.alinesno.infra.smart.assistant.queue.entity;com.alinesno.infra.smart.assistant.plugin.entity;com.alinesno.infra.smart.brain.entity;com.alinesno.infra.smart.inference.agent.entity;com.alinesno.infra.smart.im.entity;com.alinesno.infra.smart.assistant.template.entity;com.alinesno.infra.smart.assistant.scene.core.entity;com.alinesno.infra.base.search.entity;com.alinesno.infra.smart.assistant.workflow.entity;com.alinesno.infra.smart.assistant.publish.entity;com.alinesno.infra.smart.assistant.workplace.entity;com.alinesno.infra.smart.scene.entity;
   database:
