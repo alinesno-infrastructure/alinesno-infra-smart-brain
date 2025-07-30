@@ -8,7 +8,18 @@ var managerUrl = {
   selectOrgLayout: prefix +"selectOrgLayout",
   getLayoutTemplate: prefix +"getLayoutTemplate",
   previewLayoutTemplate: prefix +"previewLayoutTemplate",
-  formatContent: prefix +"formatContent"
+  formatContent: prefix +"formatContent",
+  exportDocx: prefix +"exportDocx"
+}
+
+// 导出docx文档
+export function exportDocx(data) {
+  return request({
+    url: managerUrl.exportDocx,
+    method: 'post',
+    data: data,
+    responseType: 'blob'
+  })
 }
 
 // 文档排版格式化
