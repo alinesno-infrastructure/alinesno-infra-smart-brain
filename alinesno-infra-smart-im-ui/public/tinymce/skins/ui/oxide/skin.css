@@ -5139,3 +5139,17 @@ body.tox-dialog__disable-scroll {
   display: flex;
   flex: 1;
 }
+
+/** 自定义样式 **/
+.tox .tox-editor-header {
+  position: fixed;
+  left: 150px;
+  top: 97px;
+  right: 0px;
+  box-shadow: none !important;
+  border-bottom: 1px solid #e4e7ec !important;
+}
+
+.tox .tox-edit-area::before{
+  border: 0px !important;
+}
