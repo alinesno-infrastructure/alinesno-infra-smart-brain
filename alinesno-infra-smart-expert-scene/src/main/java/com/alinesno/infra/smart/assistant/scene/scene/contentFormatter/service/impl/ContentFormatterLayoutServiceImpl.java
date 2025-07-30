@@ -7,32 +7,32 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ImageCompressionUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.consumer.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentFormatDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutGroupMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutMapper;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterOfficeConfigMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelData;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelParser;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.HtmlUtils;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxHtmlFormatterUtils;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -122,78 +122,101 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
 
     @Override
     public String formatContent(DocumentFormatDTO content, PermissionQuery query) {
-        File tempHtmlFile = null;
-        File tempDocxFile = null;
-        File formattedDocxFile = null;
 
-        try {
-            // 1. 获取办公工具配置
-            ContentFormatterOfficeConfigEntity officeConfig = officeConfigService.getConfig(query.getOrgId());
-            if (officeConfig == null) {
-                throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
-            }
-
-            // 2. 初始化智能文档处理器
-            SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-            smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
-
-            // 3. 将HTML内容保存为临时文件
-            String htmlContent = HtmlUtils.ensureHtmlStructure(content.getContent());
-            tempHtmlFile = File.createTempFile("temp_input_", ".html");
-            Files.write(tempHtmlFile.toPath(), htmlContent.getBytes(StandardCharsets.UTF_8));
-
-            // 4. 将HTML转换为DOCX
-            tempDocxFile = File.createTempFile("temp_converted_", ".docx");
-            ResponseEntity<byte[]> convertResponse = smartDocumentConsumer.convertHtmlToDocx(tempHtmlFile);
-            if (!convertResponse.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("HTML转DOCX失败，状态码：" + convertResponse.getStatusCode());
-            }
-            // 假设返回的是文件内容，需要写入临时文件
-            Files.write(tempDocxFile.toPath(), Objects.requireNonNull(convertResponse.getBody()));
-
-            // 5. 将DOCX格式化为公文格式
-            formattedDocxFile = File.createTempFile("temp_formatted_", ".docx");
-            ResponseEntity<byte[]> formatResponse = smartDocumentConsumer.formatOfficialDocument(tempDocxFile);
-            if (!formatResponse.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("公文格式化失败，状态码：" + formatResponse.getStatusCode());
-            }
-            // 假设返回的是文件内容，需要写入临时文件
-            Files.write(formattedDocxFile.toPath(), Objects.requireNonNull(formatResponse.getBody())) ;
-
-            // 6. 将格式化后的DOCX转回HTML
-            ResponseEntity<String> finalResponse = smartDocumentConsumer.convertToHtml(formattedDocxFile);
-            if (!finalResponse.getStatusCode().is2xxSuccessful() || finalResponse.getBody() == null) {
-                throw new RuntimeException("最终HTML转换失败，状态码：" + finalResponse.getStatusCode());
-            }
-
-            return finalResponse.getBody();
-
-        } catch (IOException e) {
-            throw new RuntimeException("处理文档时发生IO异常", e);
-        } catch (Exception e) {
-            throw new RuntimeException("文档格式化处理失败", e);
-        } finally {
-            // 7. 清理所有临时文件
-//            try {
-//                if (tempHtmlFile != null && !tempHtmlFile.delete()) {
-//                    log.warn("临时HTML文件删除失败：" + tempHtmlFile.getAbsolutePath());
-//                }
-//                if (tempDocxFile != null && !tempDocxFile.delete()) {
-//                    log.warn("临时DOCX文件删除失败：" + tempDocxFile.getAbsolutePath());
-//                }
-//                if (formattedDocxFile != null && !formattedDocxFile.delete()) {
-//                    log.warn("格式化后DOCX文件删除失败：" + formattedDocxFile.getAbsolutePath());
-//                }
-//            } catch (Exception e) {
-//                log.error("删除临时文件时出错", e);
-//            }
-
-           // 打印出所有的问题
-           log.info("tempHtmlFile = {}" , tempHtmlFile);
-           log.info("tempDocxFile = {}" , tempDocxFile);
-           log.info("formattedDocxFile = {}" , formattedDocxFile);
-
+        // 1. 获取办公工具配置
+        ContentFormatterOfficeConfigEntity officeConfig = officeConfigService.getConfig(query.getOrgId());
+        if (officeConfig == null) {
+            throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
         }
+
+        String templateId = content.getTemplateId();
+        ContentFormatterLayoutEntity templateLayout = getById(templateId);
+        if (templateLayout == null) {
+            throw new RuntimeException("未找到模板[" + templateId + "]");
+        }
+
+        DocumentTemplateDTO documentTemplateDTO = DocumentTemplateDTO.fromContentFormatterLayoutDto(templateLayout) ;
+
+        // 2. 初始化智能文档处理器
+        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
+        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
+
+        // 3. 将HTML内容保存为临时文件
+        String htmlContent = DocxHtmlFormatterUtils.ensureHtmlStructure(content.getContent()) ;
+        if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getOfficialHeaderHtml())){
+            htmlContent = DocxHtmlFormatterUtils.addHeaderToBody(htmlContent, documentTemplateDTO.getOfficialHeaderHtml());
+        }
+
+        if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getFooterHtml())){
+            htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
+        }
+
+        ResponseEntity<String> finalResponse = smartDocumentConsumer.htmlToOfficial(htmlContent);
+
+        if (!finalResponse.getStatusCode().is2xxSuccessful() || finalResponse.getBody() == null) {
+            throw new RuntimeException("最终HTML转换失败，状态码：" + finalResponse.getStatusCode());
+        }
+
+        log.debug("最终HTML转换结果: {}", finalResponse.getBody());
+
+        return finalResponse.getBody();
+    }
+
+    @Override
+    public byte[] exportToDocx(String content, PermissionQuery query) {
+        // 1. 获取办公工具配置
+        ContentFormatterOfficeConfigEntity officeConfig = officeConfigService.getConfig(query.getOrgId());
+        if (officeConfig == null) {
+            throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
+        }
+
+        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
+        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
+
+        File tempFile = null;
+        try {
+            // 2. 创建临时HTML文件
+            tempFile = createTempHtmlFile(content);
+
+            // 3. 调用转换工具将HTML转换为DOCX
+            byte[] docxContent = smartDocumentConsumer.convertHtmlToDocx(tempFile).getBody();
+
+            if (docxContent == null || docxContent.length == 0) {
+                throw new RuntimeException("转换DOCX失败，返回内容为空");
+            }
+
+            return docxContent;
+        } catch (Exception e) {
+            throw new RuntimeException("导出DOCX文档失败: " + e.getMessage(), e);
+        } finally {
+            // 4. 确保临时文件被删除
+            if (tempFile != null && tempFile.exists()) {
+                try {
+                    Files.delete(tempFile.toPath());
+                } catch (IOException e) {
+                    // 记录删除失败的日志，但不影响主流程
+                    log.warn("删除临时文件失败: " + tempFile.getAbsolutePath(), e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 创建临时HTML文件并写入内容
+     */
+    private File createTempHtmlFile(String content) throws IOException {
+        // 创建临时文件，后缀为.html
+        Path tempPath = Files.createTempFile("export-", ".html");
+        File tempFile = tempPath.toFile();
+
+        // 设置临时文件在JVM退出时自动删除
+        tempFile.deleteOnExit();
+
+        // 将内容写入临时文件
+        Files.writeString(tempPath, content,
+                StandardOpenOption.TRUNCATE_EXISTING);
+
+        return tempFile;
     }
 
     /**
