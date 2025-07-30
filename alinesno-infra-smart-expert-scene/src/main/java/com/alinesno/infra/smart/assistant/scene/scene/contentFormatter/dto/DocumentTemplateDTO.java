@@ -3,10 +3,12 @@ package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.facade.base.BaseDto;
+import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
 import com.dtflys.forest.annotation.JSONBody;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 
@@ -196,6 +198,15 @@ public class DocumentTemplateDTO extends BaseDto {
         templateDTO.setId(dto.getId());
 
         return templateDTO;
+    }
+
+    /**
+     * 从ContentFormatterLayoutDto转换成DocumentTemplateDTO
+     */
+    public static DocumentTemplateDTO fromContentFormatterLayoutDto(ContentFormatterLayoutEntity entity) {
+        ContentFormatterLayoutDto dto = new ContentFormatterLayoutDto();
+        BeanUtils.copyProperties(entity , dto) ;
+        return DocumentTemplateDTO.fromContentFormatterLayoutDto(dto);
     }
 
 }
