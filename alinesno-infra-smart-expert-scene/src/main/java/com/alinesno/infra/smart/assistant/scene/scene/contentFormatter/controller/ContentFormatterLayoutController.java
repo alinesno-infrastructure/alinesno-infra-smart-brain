@@ -26,6 +26,7 @@ import com.dtflys.forest.annotation.Query;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -36,10 +37,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -259,6 +265,50 @@ public class ContentFormatterLayoutController extends BaseController<ContentForm
         String newContent = service.formatContent(dto , query) ;
         return AjaxResult.success("格式化成功" , newContent);
     }
+
+    /**
+     * 导出文档为docx格式（异步处理，异常直接抛出）
+     */
+    @DataPermissionQuery
+    @SneakyThrows
+    @PostMapping("exportDocx")
+    public void exportDocx(@RequestBody DocumentFormatDTO dto ,
+                           HttpServletResponse response,
+                           PermissionQuery query) {
+        // 设置响应编码和格式
+        response.setCharacterEncoding("UTF-8");
+        response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+
+        // 处理文件名
+        String originalFileName =  "导出文档";
+        String fileName = URLEncoder.encode(originalFileName, StandardCharsets.UTF_8).replaceAll("\\+", "%20");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + ".docx\"");
+        response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+
+        String content = dto.getContent();
+
+        // 参数校验
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("导出内容不能为空");
+        }
+
+        // 调用服务层方法生成docx字节数组
+        byte[] docxBytes = service.exportToDocx(content, query);
+
+        if (docxBytes == null || docxBytes.length == 0) {
+            throw new RuntimeException("文档生成失败，内容为空");
+        }
+
+        // 写入响应流
+        try (OutputStream os = response.getOutputStream()) {
+            response.setContentLength(docxBytes.length);
+            os.write(docxBytes);
+            os.flush();
+        } catch (IOException e) {
+            throw new RuntimeException("响应流写入失败", e);
+        }
+    }
+
 
     @Override
     public IContentFormatterLayoutService getFeign() {
