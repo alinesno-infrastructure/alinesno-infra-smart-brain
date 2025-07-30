@@ -26,16 +26,24 @@
 
           <!-- Utility Buttons -->
           <div class="utility-buttons">
-            <button class="btn-icon">
-              <i class="fa-solid fa-clock-rotate-left"></i>
-            </button>
+            <!-- 自动保存 -->
+            <el-tooltip class="box-item" effect="dark" content="自动保存" placement="top">
+              <button class="btn-icon">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+              </button>
+            </el-tooltip>
             <!-- 保存按钮 -->
-            <button class="btn-icon" @click="saveDocument">
-              <i class="fa-solid fa-cloud-arrow-up"></i>
-            </button>
-            <button class="btn-icon">
-              <i class="fa-solid fa-gear"></i>
-            </button>
+            <el-tooltip class="box-item" effect="dark" content="保存" placement="top">
+              <button class="btn-icon" @click="saveDocument">
+                <i class="fa-solid fa-cloud-arrow-up"></i>
+              </button>
+            </el-tooltip>
+            <!--  导出按钮  -->
+            <el-tooltip class="box-item" effect="dark" content="导出Docx" placement="top">
+              <button class="btn-icon" @click="exportDocument">
+                <i class="fa-solid fa-file-word"></i>
+              </button>
+            </el-tooltip>
           </div>
         </div>
 
@@ -56,6 +64,7 @@
                 <TinyMCEEditor 
                   :minHeight="940" 
                   @setHtml="handleSetHtml"
+                  ref="tinyMCEEditorRef"
                   v-model="customEditorContent"
                   />
             </div>
@@ -77,6 +86,15 @@
         </aside>
       </main>
 
+      <!--   排版过后，用户确认是否要替换当前的html内容 -->
+      <div class="confirmation-banner" v-if="confirmReplaceDialog">
+        <span><i class="fa-solid fa-circle-question"></i> 是否应用当排版</span>
+        <span>
+          <el-button type="warning" size="large" @click="handleTemplateConfirm(false)">弃用</el-button>
+          <el-button type="primary" size="large" @click="handleTemplateConfirm(true)">应用当前模板</el-button>
+        </span>
+      </div>
+
         <!-- 运行抽屉 -->
         <div class="aip-flow-drawer flow-control-panel">
             <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
@@ -95,8 +113,10 @@
 
 import { onBeforeUnmount, ref, shallowRef, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElLoading } from 'element-plus'
 import SnowflakeId from "snowflake-id";
 
+const { proxy } = getCurrentInstance();
 const snowflake = new SnowflakeId();
 const router = useRouter()
 const route = useRoute()
@@ -113,11 +133,14 @@ import TemplateSider from './components/TemplateSider';
 
 import { getScene } from '@/api/base/im/scene/contentFormatter';
 import { 
-  formatContent 
+  formatContent , 
+  exportDocx
 } from '@/api/base/im/scene/contentFormatterLayout';
 
-const currentFunctionId = ref('format')
+const tinyMCEEditorRef = ref(null);
 
+const currentFunctionId = ref('format')
+const confirmReplaceDialog = ref(false);
 
 // 执行面板
 const showDebugRunDialog = ref(false);
@@ -187,6 +210,9 @@ const handleAiFunctionClick = (functionBtn) => {
   }
 };
 
+const preCustomEditorContent = ref(``) ;  // 未排版前的html内容
+
+// 正式的html内容
 const customEditorContent = ref(`
 <html>
 	<body>
@@ -307,9 +333,13 @@ const handleTemplateSelect = (template) => {
     templateId: template.id,
     content:  customEditorContent.value ,
   }
+
+  preCustomEditorContent.value = customEditorContent.value // 临时保存，用户确认之前替换
+
   formatContent(data).then(res => {
     console.log('res = ' + res)
     customEditorContent.value = res.data;
+    confirmReplaceDialog.value = true;
   })
 };
 
@@ -319,6 +349,57 @@ const handleGetScene = () => {
     // chapterEditorRef.value.setData(currentSceneInfo.value.contentPromptContent);
   })
 }
+
+// 确认是否使用当前模板
+const handleTemplateConfirm = (type) => { 
+  if(!type){
+    customEditorContent.value = preCustomEditorContent.value;
+  }
+  confirmReplaceDialog.value = false;
+};
+
+// 导出Document
+const exportDocument = () => { 
+   const loading = ElLoading.service({
+    lock: true,
+    text: '正在导出 ...',
+    background: 'rgba(0, 0, 0, 0.7)',
+  })
+
+  const data = {
+    content: customEditorContent.value
+  }
+
+  // 导出html
+  exportDocx(data).then(res => { 
+    loading.close();
+    
+    // 处理响应，创建下载链接
+    const blob = new Blob([res], { 
+      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+    });
+    
+    // 创建a标签用于下载
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.href = url;
+    
+    // 设置下载文件名
+    link.download = '导出文档.docx';
+    
+    // 触发点击事件开始下载
+    document.body.appendChild(link);
+    link.click();
+    
+    // 清理资源
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }).catch(error => {
+    loading.close();
+    ElMessage.error('导出失败：' + (error.message || '未知错误'));
+  });
+
+};
 
 onMounted(() => {
   // console.log('chapterEditorRef = ', chapterEditorRef.value)
@@ -338,6 +419,27 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 @import '@/assets/styles/document-formatter.scss';
+
+.confirmation-banner {
+    position: fixed;
+    z-index: 1000;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-55%);
+    background: #fff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: flex;
+    gap: 20px;
+    font-size: 15px;
+    align-items: center;
+    color: #777;
+    width: 500px;
+    justify-content: space-between;
+    box-shadow: 0 0 12px rgba(0, 0, 0, .12);
+    border: 1px solid #e4e7ed;
+}
+
 </style>
 
 <style>
