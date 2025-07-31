@@ -14,7 +14,6 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterRuleDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterRuleService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentRuleExcelParser;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.RobustExcelParser;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterRuleEntity;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
