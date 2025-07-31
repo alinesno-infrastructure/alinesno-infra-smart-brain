@@ -66,7 +66,7 @@
 
         <el-table v-loading="loading" :data="SceneList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center"/>
-          <el-table-column label="图标" align="center" width="100" prop="sceneBanner" v-if="columns[0].visible">
+          <el-table-column label="图标" align="center" width="70" prop="sceneBanner" v-if="columns[0].visible">
             <template #default="scope">
               <div class="scene-icon">
                 <img :src="imagePath(scope.row.sceneBanner)" />
