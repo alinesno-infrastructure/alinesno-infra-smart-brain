@@ -7,8 +7,29 @@
         <div class="container">
           <!-- Logo and Title -->
           <div class="logo">
-            <i class="fa-solid fa-file-lines"></i>
-            <h1>AI智能文档</h1>
+            <div class="logo-title">
+              <i class="fa-solid fa-file-lines"></i>
+              <!-- 标题内容 -->
+              <EditableDocTitle 
+                v-model:title="currentDocumentInfo.documentName" 
+                @update:title="handleSaveDocument"
+                class="document-edit-title" />
+            </div> 
+
+            <el-divider direction="vertical" />
+           
+            <el-tooltip class="box-item" effect="dark" content="转换成PDF" placement="top">
+              <button class="btn-icon">
+                 <i class="fa-solid fa-file-pdf"></i>
+              </button>
+            </el-tooltip>
+
+            <el-tooltip class="box-item" effect="dark" content="打印" placement="top">
+              <button class="btn-icon">
+                <i class="fa-solid fa-print"></i>
+              </button>
+            </el-tooltip> 
+
           </div>
 
           <!-- AI Function Buttons -->
@@ -34,7 +55,7 @@
             </el-tooltip>
             <!-- 保存按钮 -->
             <el-tooltip class="box-item" effect="dark" content="保存" placement="top">
-              <button class="btn-icon" @click="saveDocument">
+              <button class="btn-icon" @click="handleSaveDocument">
                 <i class="fa-solid fa-cloud-arrow-up"></i>
               </button>
             </el-tooltip>
@@ -45,6 +66,7 @@
               </button>
             </el-tooltip>
           </div>
+          
         </div>
 
       </header>
@@ -58,7 +80,7 @@
 
         <!-- Main Document Content -->
         <section class="document-content">
-          <el-scrollbar class="document-paper-scroller" style="height:calc(100vh - 175px)">
+          <el-scrollbar class="document-paper-scroller" style="height:calc(100vh - 170px)">
 
             <div class="document-paper">
                 <TinyMCEEditor 
@@ -66,6 +88,7 @@
                   @setHtml="handleSetHtml"
                   ref="tinyMCEEditorRef"
                   v-model="customEditorContent"
+                  :contentMargins="currentMargins"
                   />
             </div>
 
@@ -90,7 +113,7 @@
       <div class="confirmation-banner" v-if="confirmReplaceDialog">
         <span><i class="fa-solid fa-circle-question"></i> 是否应用当排版</span>
         <span>
-          <el-button type="warning" size="large" @click="handleTemplateConfirm(false)">弃用</el-button>
+          <el-button type="danger" size="large" @click="handleTemplateConfirm(false)">弃用</el-button>
           <el-button type="primary" size="large" @click="handleTemplateConfirm(true)">应用当前模板</el-button>
         </span>
       </div>
@@ -104,6 +127,73 @@
                 </div>
             </el-drawer>
         </div>
+ 
+<!-- 边距设置弹窗 -->
+  <el-dialog v-model="showMarginDialog" title="边距设置" width="700px">
+    <div class="margin-settings">
+      <div class="presets">
+        <h4>预设边距</h4>
+        <div class="preset-buttons">
+          <el-button 
+            v-for="preset in marginPresets" 
+            :key="preset.value"
+            @click="selectPreset(preset)"
+            :type="JSON.stringify(currentMargins) === JSON.stringify(preset.margins) ? 'primary' : ''">
+            {{ preset.label }}
+          </el-button>
+        </div>
+      </div>
+      
+      <div class="custom-margins">
+        <h4>自定义边距 (单位: 厘米)</h4>
+        <div class="margin-controls">
+          <div class="margin-control">
+            <label>上边距</label>
+            <el-input-number v-model="currentMargins.top" :min="0" :max="10" :step="0.1" :precision="1" />
+          </div>
+          <div class="margin-control">
+            <label>下边距</label>
+            <el-input-number v-model="currentMargins.bottom" :min="0" :max="10" :step="0.1" :precision="1" />
+          </div>
+          <div class="margin-control">
+            <label>左边距</label>
+            <el-input-number v-model="currentMargins.left" :min="0" :max="10" :step="0.1" :precision="1" />
+          </div>
+          <div class="margin-control">
+            <label>右边距</label>
+            <el-input-number v-model="currentMargins.right" :min="0" :max="10" :step="0.1" :precision="1" />
+          </div>
+        </div>
+      </div>
+      
+      <div class="margin-preview">
+        <h4>边距预览</h4>
+        <div class="preview-box">
+          <div class="margin-visualization top">
+            <span class="margin-label top-label">{{ currentMargins.top }} cm</span>
+          </div>
+          <div class="margin-visualization right">
+            <span class="margin-label right-label">{{ currentMargins.right }} cm</span>
+          </div>
+          <div class="margin-visualization bottom">
+            <span class="margin-label bottom-label">{{ currentMargins.bottom }} cm</span>
+          </div>
+          <div class="margin-visualization left">
+            <span class="margin-label left-label">{{ currentMargins.left }} cm</span>
+          </div>
+          <div class="content-area">
+            内容区域
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <template #footer>
+      <el-button type="danger" @click="showMarginDialog = false">取消</el-button>
+      <el-button type="primary" @click="applyMargins">应用</el-button>
+    </template>
+  </el-dialog>
+        
 
     </div>
   </ContentFormatterContainer>
@@ -113,7 +203,7 @@
 
 import { onBeforeUnmount, ref, shallowRef, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElLoading } from 'element-plus'
+import { ElLoading , ElMessage  } from 'element-plus'
 import SnowflakeId from "snowflake-id";
 
 const { proxy } = getCurrentInstance();
@@ -123,6 +213,7 @@ const route = useRoute()
 
 import ContentFormatterContainer from './common/ContentFormatterContainer';
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import EditableDocTitle from './components/EditableDocTitle'
 
 import TinyMCEEditor from './components/TinyMCEEditor';
 import ChatcherSider from './components/ChatcherSider';
@@ -136,6 +227,11 @@ import {
   formatContent , 
   exportDocx
 } from '@/api/base/im/scene/contentFormatterLayout';
+import { 
+  createNewDocument ,
+  saveDocument ,
+  detail as documentDetail,
+} from '@/api/base/im/scene/contentFormatterDocument';
 
 const tinyMCEEditorRef = ref(null);
 
@@ -146,15 +242,32 @@ const confirmReplaceDialog = ref(false);
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
 
-const sceneId = ref(route.query.sceneId)
+const sceneId = ref(route.query.sceneId) 
+const documentId = ref(route.query.documentId)
 const channelStreamId = ref(route.query.channelStreamId);
-
+const currentDocumentInfo = ref({
+  documentName: '文档标题' 
+});
 const currentSceneInfo = ref({
   sceneName: '政务公文内容排版 业务开发平台'
 })
 
+const showMarginDialog = ref(false);
+// 修改当前边距初始值为Word默认值
+const currentMargins = ref({ top: 1.9, bottom: 1.9, left: 2.5, right: 2.5 }); 
+
+// 修改边距预设值为Word常用值（单位：厘米）
+const marginPresets = ref([
+  { label: '普通', value: 'normal', margins: { top: 2.54, bottom: 2.54, left: 3.17, right: 3.17 } }, // Word默认值
+  { label: '窄', value: 'narrow', margins: { top: 1.27, bottom: 1.27, left: 1.27, right: 1.27 } },
+  { label: '适中', value: 'medium', margins: { top: 2.54, bottom: 2.54, left: 1.91, right: 1.91 } },
+  { label: '宽', value: 'wide', margins: { top: 5.08, bottom: 5.08, left: 5.08, right: 5.08 } },
+  { label: '公文标准', value: 'official', margins: { top: 3.7, bottom: 3.5, left: 2.8, right: 2.6 } } // 中国公文标准
+]);
+
 // AI功能按钮配置数组
 const aiFunctionButtons = ref([
+  { id: 'margin', icon: 'fa-solid fa-ruler', label: '边距设置' },                // 新增边距设置
   { id: 'rewrite', icon: 'fa-solid fa-rotate', label: 'AI重写' },              // AI重写
   { id: 'format', icon: 'fa-solid fa-align-left', label: 'AI排版' },            // AI排版
   { id: 'proofread', icon: 'fa-solid fa-spell-check', label: 'AI校对' },        // 新增：AI校对
@@ -204,6 +317,9 @@ const handleAiFunctionClick = (functionBtn) => {
       // 执行AI问答逻辑
       openChatBox('1920860135564115969');
       break;
+    case 'margin':
+      showMarginDialog.value = true;
+      break;
     default:
       console.warn('未知的AI功能ID:', functionId);
       break;
@@ -211,92 +327,11 @@ const handleAiFunctionClick = (functionBtn) => {
 };
 
 const preCustomEditorContent = ref(``) ;  // 未排版前的html内容
-
-// 正式的html内容
-const customEditorContent = ref(`
-<html>
-	<body>
-		<div>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:16pt">
-				<span style="font-family:宋体; font-weight:bold; color:#4f81bd">关于</span><span style="font-family:宋体; font-weight:bold; color:#4f81bd">高效阅卷，AIP智能体平台让教学反馈更及时</span><span style="font-family:宋体; font-weight:bold; color:#4f81bd">通知</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体>在教育教学过程中，考试是检验学生学习成果和教师教学效果的重要手段。而阅卷作为考试流程中的关键环节，其效率和准确性直接影响到教学反馈的及时性和有效性。传统的人工阅卷方式不仅耗时费力，而且容易出现误差，给教师和学生都带来了一定的困扰。AIP智能体平台凭借其高效的阅卷功能和及时的结果反馈，为教育教学带来了全新的变革。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:14pt">
-				<span style="font-family:宋体; font-weight:bold; color:#4f81bd">快速阅卷</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">AIP智能体平台的阅卷功能具有诸多亮点。首先，平台支持在线阅卷，教师无需再面对堆积如山的纸质试卷，只需在电脑前轻轻点击，即可完成阅卷工作。这大大节省了教师的时间和精力，让他们能够将更多的时间投入到教学研究和学生辅导中。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">其次，平台的阅卷系统具有高度的准确性和客观性。对于客观题，系统能够自动识别答案并进行评分，避免了人工阅卷可能出现的误差和主观因素的影响。对于主观题，平台也提供了详细的评分参考和标准，帮助教师更加准确地进行评分。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">再者，平台能够快速统计学生的考试成绩，并生成详细的成绩分析报告。教师可以通过报告清晰地了解每个学生的得分情况、优势领域和薄弱环节，为后续的教学调整提供有力的依据。同时，平台还能够自动分析学生的错题情况，找出学生在知识掌握方面存在的问题，为教师的教学提供针对性的建议。就像图中展示的那样，平台生成的成绩分析报告清晰展示了考试的总体得分、优势领域、薄弱点以及具体的改进建议等内容，让教师能够一目了然地了解学生的学习情况。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:14pt">
-				<span style="font-family:宋体; font-weight:bold; color:#4f81bd">结果反馈</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">AIP智能体平台的高效阅卷和结果反馈功能为教育教学带来了多方面的价值。对于教师来说，最大的价值在于提高了教学反馈的效率。传统的人工阅卷方式需要花费大量的时间和精力，往往导致教学反馈的滞后，影响了教学效果。而使用AIP智能体平台，教师可以在考试结束后迅速完成阅卷和成绩统计工作，及时将学生的学习情况反馈给他们，让学生能够尽快了解自己的学习成果，调整学习策略。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">同时，平台的成绩分析和错题分析功能为教师提供了丰富的教学参考。教师可以根据学生的考试情况，有针对性地调整教学内容和教学方法，加强对学生薄弱环节的辅导，提高教学质量。例如，如果发现学生在一次函数图像性质方面存在普遍的问题，教师可以在后续的教学中加强这部分内容的讲解和练习。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">对于学生来说，平台的及时反馈功能让他们能够尽快了解自己的学习情况，发现自己的优势和不足。通过分析错题，学生可以明确自己在知识掌握方面存在的问题，有针对性地进行复习和巩固。同时，平台提供的学习建议（也为学生的学习提供了明确的方向，帮助他们制定更加科学合理的学习计划，提高学习效果。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:14pt">
-				<span style="font-family:宋体; font-weight:bold; color:#4f81bd">满足不同需求</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">AIP智能体平台的高效阅卷和结果反馈功能适用于广泛的受众人群。首先是学校教师，无论是小学、中学还是大学的教师，都可以利用平台的这一功能，快速完成阅卷工作，及时反馈学生的学习情况，提高教学效率和质量。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">其次是培训机构，在竞争激烈的培训市场中，培训机构需要不断提高教学质量和服务水平，以吸引更多的学员。AIP智能体平台的高效阅卷和结果反馈功能能够帮助培训机构快速为学员提供详细的学习反馈和建议（如图，从专项练习到巩固各类知识都有清晰指引），提高学员的学习效果和满意度，增强自身的市场竞争力。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">此外，企业内部培训也可以借助AIP智能体平台的这一功能。企业可以通过平台对员工进行培训考核，及时了解员工的学习情况和技能掌握程度，为员工的职业发展提供参考。同时，平台的数据分析功能还能为企业的培训决策提供支持，帮助企业优化培训资源，提高培训效益。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:14pt">
-				<span style="font-family:宋体; font-weight:bold; color:#4f81bd">总结 </span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">AIP智能体平台的高效阅卷和结果反馈功能，以其便捷高效、精准分析的特点，为教育教学带来了全新的变革。它不仅解决了传统阅卷方式中的诸多难题，还为教师和学生提供了更加及时、准确的教学反馈，提高了教学质量和学习效果。</span>
-			</p>
-			<p style="margin-top:0pt; margin-bottom:8pt; line-height:150%; widows:0; orphans:0; font-size:12pt">
-				<span style="font-family:宋体">在未来，随着教育信息化的不断深入，AIP智能体平台的高效阅卷和结果反馈功能将会不断完善和升级，为教育事业的发展做出更大的贡献。让我们一起携手，利用这一强大的工具，开启教学反馈的新时代，为每一个学生提供更加优质的教育，助力他们在学习的道路上不断进步，实现自己的人生价值。</span>
-			</p>
-		</div>
-	</body>
-</html>
-`)
+const customEditorContent = ref(``) // 正式的html内容
 
 const toolbarConfig = {}
 const editorConfig = { placeholder: '请输入内容...' }
 const mode = 'default' // 或 'simple'
-
-// 组件销毁时，也及时销毁编辑器
-onBeforeUnmount(() => {
-  // const editor = editorRef.value
-  // if (editor == null) return
-  // editor.destroy()
-})
-
-const handleCreated = (editor) => {
-  editorRef.value = editor // 记录 editor 实例，重要！
-}
 
 const openChatBox = (roleId) => {
   if (showDebugRunDialog.value) {
@@ -307,12 +342,38 @@ const openChatBox = (roleId) => {
     roleChatPanelRef.value.openChatBoxWithRole(roleId);
   })
 }
+ 
+// 修改应用边距方法，将厘米转换为像素（1cm ≈ 37.8px）
+const applyMargins = () => {
+  const editor = tinyMCEEditorRef.value;
+  if (editor && editor.updateMargins) {
+     editor.updateMargins(currentMargins.value);
+  }
+  showMarginDialog.value = false;
+};
+
+// 选择预设边距
+const selectPreset = (preset) => {
+  currentMargins.value = { ...preset.margins };
+  applyMargins();
+};
 
 
-const saveDocument = () => {
-  const editor = editorRef.value
-  console.log('editor.getHtml()');
-  console.log('saveDocument = ', editor.getHtml())
+// 保存文档
+const handleSaveDocument = () => {
+
+  const data = {
+    ... currentDocumentInfo.value ,
+    documentId: documentId.value ,
+    sceneId: sceneId.value , 
+    documentContent: customEditorContent.value  ,
+  }
+
+  saveDocument(data).then(res => {
+    console.log('res = ' + res) ;
+    ElMessage.success('文档保存成功');
+  })
+
 }
 
 
@@ -354,6 +415,8 @@ const handleGetScene = () => {
 const handleTemplateConfirm = (type) => { 
   if(!type){
     customEditorContent.value = preCustomEditorContent.value;
+  }else{
+    handleSaveDocument();
   }
   confirmReplaceDialog.value = false;
 };
@@ -385,7 +448,14 @@ const exportDocument = () => {
     link.href = url;
     
     // 设置下载文件名
-    link.download = '导出文档.docx';
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const timestamp = now.getTime();
+
+    // 格式：文件名_YYYYMMDD_时间戳.docx
+    link.download = `${currentDocumentInfo.value.documentName}_${year}${month}${day}_${timestamp}.docx`; 
     
     // 触发点击事件开始下载
     document.body.appendChild(link);
@@ -401,18 +471,37 @@ const exportDocument = () => {
 
 };
 
-onMounted(() => {
-  // console.log('chapterEditorRef = ', chapterEditorRef.value)
-  // handleGetScene() ;
-
-  if (!route.query.channelStreamId) {
-    router.replace({
-      query: {
-        ...route.query,
-        channelStreamId: snowflake.generate()
-      }
-    });
+watch(currentMargins, (newVal) => {
+  if (tinyMCEEditorRef.value && tinyMCEEditorRef.value.updateMargins) {
+    tinyMCEEditorRef.value.updateMargins(newVal);
   }
+}, { deep: true });
+
+const handleGetDetail = () => {
+  documentDetail(documentId.value).then(res => {
+    ElMessage.success('文档详情获取成功');  
+    currentDocumentInfo.value = res.data ;
+    customEditorContent.value = res.data.documentContent || '' ;
+  })
+}
+
+// 添加键盘事件处理函数
+const handleKeyDown = (event) => {
+  // 检查是否按下了 Ctrl + S
+  if ((event.ctrlKey || event.metaKey) && event.key === 's') {
+    event.preventDefault(); // 阻止默认保存行为
+    handleSaveDocument(); // 调用你的保存方法
+  }
+};
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  handleGetDetail();
+})
+
+// 组件销毁时，也及时销毁编辑器
+onBeforeUnmount(() => {
+  window.removeEventListener('keydown', handleKeyDown);
 })
 
 </script>
@@ -438,6 +527,172 @@ onMounted(() => {
     justify-content: space-between;
     box-shadow: 0 0 12px rgba(0, 0, 0, .12);
     border: 1px solid #e4e7ed;
+}
+
+.margin-settings {
+  padding: 10px;
+  
+  .presets {
+    margin-bottom: 20px;
+    
+    h4 {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .preset-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      
+      .el-button {
+        flex: 1;
+        min-width: 80px;
+      }
+    }
+  }
+  
+  .custom-margins {
+    margin-top: 25px;
+    
+    h4 {
+      margin-bottom: 15px;
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .margin-controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      
+      .margin-control {
+        display: flex;
+        align-items: center;
+        
+        label {
+          width: 60px;
+          font-size: 13px;
+          color: #606266;
+          margin-right: 10px;
+        }
+        
+        .el-input-number {
+          flex: 1;
+          
+          :deep(.el-input__inner) {
+            text-align: left;
+            padding-left: 8px;
+            padding-right: 30px;
+          }
+        }
+      }
+    }
+  }
+  
+  .margin-preview {
+    margin-top: 25px;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    
+    h4 {
+      margin-bottom: 10px;
+      color: #666;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .preview-box {
+      position: relative;
+      height: 200px;
+      background-color: #fff;
+      border: 1px dashed #dcdfe6;
+      
+      .margin-visualization {
+        position: absolute;
+        background-color: rgba(64, 158, 255, 0.1);
+        border: 1px dashed #409eff;
+        
+        &.top {
+          top: 0;
+          left: 0;
+          right: 0;
+          height: calc(v-bind('currentMargins.top') * 20px); /* 缩放比例显示 */
+        }
+        
+        &.right {
+          top: 0;
+          right: 0;
+          bottom: 0;
+          width: calc(v-bind('currentMargins.right') * 20px); /* 缩放比例显示 */
+        }
+        
+        &.bottom {
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: calc(v-bind('currentMargins.bottom') * 20px); /* 缩放比例显示 */
+        }
+        
+        &.left {
+          top: 0;
+          left: 0;
+          bottom: 0;
+          width: calc(v-bind('currentMargins.left') * 20px); /* 缩放比例显示 */
+        }
+        
+        .margin-label {
+          position: absolute;
+          color: #409eff;
+          font-size: 12px;
+          
+          &.top-label, &.bottom-label {
+            left: 50%;
+            transform: translateX(-50%);
+          }
+          
+          &.left-label, &.right-label {
+            top: 50%;
+            transform: translateY(-50%);
+          }
+          
+          &.top-label {
+            top: 50%;
+          }
+          
+          &.right-label {
+            right: 5px;
+          }
+          
+          &.bottom-label {
+            bottom: 50%;
+          }
+          
+          &.left-label {
+            left: 5px;
+          }
+        }
+      }
+      
+      .content-area {
+        position: absolute;
+        top: calc(v-bind('currentMargins.top') * 20px);
+        right: calc(v-bind('currentMargins.right') * 20px);
+        bottom: calc(v-bind('currentMargins.bottom') * 20px);
+        left: calc(v-bind('currentMargins.left') * 20px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #909399;
+        font-size: 14px;
+      }
+    }
+  }
 }
 
 </style>
