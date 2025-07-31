@@ -14,10 +14,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGene
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools.GeneralAgentTaskExecutionService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
-import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.jsonwebtoken.lang.Assert;
