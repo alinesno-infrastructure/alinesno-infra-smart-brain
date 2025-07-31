@@ -4,7 +4,6 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamInfoPage;
-import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamMarkingDto;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.mapper.ExamInfoMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamInfoService;
 import com.alinesno.infra.smart.scene.entity.ExamInfoEntity;
