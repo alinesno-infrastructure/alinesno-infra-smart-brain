@@ -9,7 +9,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGene
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
-import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
