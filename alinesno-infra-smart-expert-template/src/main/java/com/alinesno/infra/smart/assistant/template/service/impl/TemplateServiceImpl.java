@@ -12,7 +12,6 @@ import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
 import com.alinesno.infra.smart.assistant.template.utils.TemplateProcessor;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.deepoove.poi.XWPFTemplate;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -87,19 +86,19 @@ public class TemplateServiceImpl extends IBaseServiceImpl<TemplateEntity, Templa
      * @param outputName
      */
     public static void generateWord(Map<String , Object> dataMap , String sourcePath,String outputName){
-        XWPFTemplate template = XWPFTemplate
-                .compile(sourcePath)
-                .render(dataMap);
-        FileOutputStream out;
-        try {
-            out = new FileOutputStream(outputName);
-            template.write(out);
-            out.flush();
-            out.close();
-            template.close();
-        } catch (IOException e) {
-            log.error("模板解析异常" , e);
-        }
+//        XWPFTemplate template = XWPFTemplate
+//                .compile(sourcePath)
+//                .render(dataMap);
+//        FileOutputStream out;
+//        try {
+//            out = new FileOutputStream(outputName);
+//            template.write(out);
+//            out.flush();
+//            out.close();
+//            template.close();
+//        } catch (IOException e) {
+//            log.error("模板解析异常" , e);
+//        }
     }
 
     @Override
