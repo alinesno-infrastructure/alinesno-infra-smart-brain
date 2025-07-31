@@ -8,7 +8,7 @@
                             <img :src="imagePath(currentRole.roleAvatar)" class="role-avatar" />
                             {{ currentRole.roleName }} 发布渠道配置
                         </span>
-                        <span class="save-time">保存时间：2025-02-14 23:50:44</span>
+                        <!-- <span class="save-time">保存时间：2025-02-14 23:50:44</span> -->
                     </div>
                 </template>
             </el-page-header>
