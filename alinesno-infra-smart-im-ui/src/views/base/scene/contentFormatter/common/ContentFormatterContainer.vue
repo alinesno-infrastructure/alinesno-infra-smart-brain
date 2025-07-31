@@ -1,7 +1,5 @@
 <template>
     <div class="content-formatter-container exam-pagercontainer">
-
-
         <el-container style="height:calc(100vh - 40px );background-color: #fff;">
 
             <el-aside width="80px" class="exam-pager-aside">
