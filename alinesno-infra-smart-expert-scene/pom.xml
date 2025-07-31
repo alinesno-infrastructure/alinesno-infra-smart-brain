@@ -99,10 +99,28 @@
             <artifactId>fastjson</artifactId>
         </dependency>
 
+		<!-- docx4j 核心库 -->
 		<dependency>
-			<groupId>org.apache.poi</groupId>
-			<artifactId>poi-ooxml</artifactId>
-			<version>4.1.2</version>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-core</artifactId>
+		</dependency>
+
+		<!-- 如果需要使用 JAXB Reference Implementation -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+		</dependency>
+
+		<!-- 如果需要将 Word 转换为 PDF -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-export-fo</artifactId>
+		</dependency>
+
+		<!-- 如果需要支持 XHTML 转换 -->
+		<dependency>
+			<groupId>org.docx4j</groupId>
+			<artifactId>docx4j-ImportXHTML</artifactId>
 		</dependency>
 
 	</dependencies>
