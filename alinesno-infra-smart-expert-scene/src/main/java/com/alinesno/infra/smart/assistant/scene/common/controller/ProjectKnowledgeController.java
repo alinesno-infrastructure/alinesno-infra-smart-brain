@@ -16,7 +16,6 @@ import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.enums.ReviewPositionEnums;
 import com.alinesno.infra.smart.scene.enums.RiskLevelEnums;
 import io.jsonwebtoken.lang.Assert;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
