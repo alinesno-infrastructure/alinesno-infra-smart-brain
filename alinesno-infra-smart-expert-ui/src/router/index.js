@@ -213,6 +213,12 @@ export const constantRoutes = [
         meta: { title: '推送渠道', icon: 'dashboard', affix: true }
       },
       {
+        path: '/expert/smart/assistant/role/welcomePage' , 
+        component: () => import('@/views/smart/assistant/welcome/index'),
+        name: '/expert/smart/assistant/role/welcomePage' , 
+        meta: { title: '欢迎页配置', icon: 'dashboard', affix: true }
+      },
+      {
         path: '/expert/smart/assistant/reviews/index' , 
         component: () => import('@/views/smart/assistant/reviews/index'),
         name: '/expert/smart/assistant/reviews/index' , 
