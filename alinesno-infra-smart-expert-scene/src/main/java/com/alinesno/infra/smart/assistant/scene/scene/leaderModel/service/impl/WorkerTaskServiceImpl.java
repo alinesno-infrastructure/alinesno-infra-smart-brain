@@ -1,14 +1,12 @@
 package com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.json.JSONUtil;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service.IRoleExecuteService;
 import com.alinesno.infra.smart.assistant.scene.scene.leaderModel.service.IWorkerTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.scene.dto.RoleTaskDto;
