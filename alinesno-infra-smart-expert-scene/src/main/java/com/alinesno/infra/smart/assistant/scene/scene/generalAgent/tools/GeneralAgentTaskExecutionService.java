@@ -1,23 +1,21 @@
 package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.scene.dto.*;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.scene.dto.*;
-import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -28,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
