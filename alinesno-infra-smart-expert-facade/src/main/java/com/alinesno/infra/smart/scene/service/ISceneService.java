@@ -3,8 +3,8 @@ package com.alinesno.infra.smart.scene.service;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.dto.*;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 
 import java.util.List;
