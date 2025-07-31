@@ -61,7 +61,7 @@
                                             <div class="agent-description">{{ agent.description }}</div>
                                             <div class="agent-type-tags" >
                                                 <el-check-tag checked="true" type="primary" size="small" v-if="agent.type === 'scene'">场景</el-check-tag>
-                                                <el-check-tag checked="true" type="danger" size="small" v-if="agent.type === 'agent'">智能体</el-check-tag>
+                                                <el-check-tag checked="true" type="success" size="small" v-if="agent.type === 'agent'">智能体</el-check-tag>
                                                 <el-check-tag checked="true" type="warning" size="small" v-if="agent.type === 'channel'">频道</el-check-tag>
                                                 <el-check-tag type="danger" size="small" v-if="agent.sceneTypeName"> <i :class="agent.sceneIcon"></i>  {{ agent.sceneTypeName }} </el-check-tag>
                                             </div>
@@ -279,6 +279,8 @@ body {
                         width: 16px;
                         height: 16px;
                         border-radius: 5px;
+                        object-fit: cover;
+                        object-position: center;
                     }
                 }
             }
