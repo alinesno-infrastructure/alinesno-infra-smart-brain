@@ -4,7 +4,6 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 
 import java.util.List;
 
