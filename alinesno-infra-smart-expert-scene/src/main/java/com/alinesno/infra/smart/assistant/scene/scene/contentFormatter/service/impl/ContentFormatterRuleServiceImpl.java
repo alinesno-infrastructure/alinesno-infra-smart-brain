@@ -2,9 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
-import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
-import com.alinesno.infra.common.facade.enums.DataScopeType;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutGroupMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterRuleMapper;
