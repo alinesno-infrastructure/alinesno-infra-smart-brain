@@ -1,18 +1,13 @@
 <template>
-
     <ContentFormatterContainer>
-
         <div class="document-review-container">
             <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
                 ref="roleSelectPanelRef" />
 
             <div style="padding: 20px;">
-
                 <el-row>
-                    <el-col :span="12">
+                    <el-col :span="24">
                         <div class="review-main-content">
-
-
                             <div class="review-header-content">
                                 <div class="review-title">
                                     <i class="fa-solid fa-file-contract"></i> AI智能文档，提升文件处理效率
@@ -22,33 +17,38 @@
                                 </div>
                             </div>
 
-                            <div class="review-upload-container">
+                            <!-- New Document Creation Card -->
+                            <div class="new-document-card" @click="handleCreateNewDocument">
+                                <div class="new-document-icon">
+                                    <span class="file-icon file-icon--pdf"><i
+                                                class="fa-solid fa-file-powerpoint"></i></span>
+                                </div>
+                                <div class="new-document-text">
+                                    <div class="new-document-title">新建空白文档</div>
+                                    <div class="new-document-subtitle">从空白文档开始创作</div>
+                                </div>
+                            </div>
+
+                            <div class="document-separator">
+                                <span>或</span>
+                            </div>
+
+                            <div class="review-upload-container" style="height: auto;border: 0px;padding:0px;">
                                 <el-upload class="upload-demo" drag :file-list="imageUrl"
                                     :action="upload.url + '?sceneId=' + currentSceneInfo.id" :auto-upload="true"
                                     accept=".doc,.docx,.pdf" :on-success="handleAvatarSuccess"
                                     :before-upload="beforeAvatarUpload" :headers="upload.headers" multiple>
-
-                                    <div class="imgWrapper">
-                                        <span class="file-icon file-icon--pdf"><i
-                                                class="fa-solid fa-file-powerpoint"></i></span>
-                                        <span class="file-icon file-icon--word"><i
-                                                class="fa-solid fa-file-word"></i></span>
-                                        <span class="file-icon file-icon--file"><i
-                                                class="fa-solid fa-file-contract"></i></span>
-                                    </div>
-
                                     <div class="el-upload__text">
                                         <em>点击</em>或将文档拖拽到这里上传
                                     </div>
-
                                     <template #tip>
                                         <div class="el-upload__tip">
                                             单个合同文件的字数不超过10万字，格式支持：pdf/doc/docx
                                         </div>
                                     </template>
-
                                 </el-upload>
                             </div>
+ 
                             <div class="review-knowledge-base" @click="handleOpenDataset()">
                                 <span>
                                     <i class="fa-solid fa-file-signature"></i> 文档审查知识库
@@ -62,17 +62,8 @@
                             服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。
                         </div>
                     </el-col>
-                    <el-col :span="12">
-                        <!-- 最近文件 -->
-                         <RecentFile />
-                    </el-col>
-
                 </el-row>
             </div>
-
-            <!-- 角色选择面板 -->
-            <!-- <ExecuteHandle ref="executeHandleRef" @openChatBox="openChatBox" @handleGetScene="handleGetScene" /> -->
-
         </div>
     </ContentFormatterContainer>
 </template>
@@ -88,6 +79,7 @@ import RecentFile from './components/RecentFile'
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 
 import { getScene, updateChapterPromptContent } from '@/api/base/im/scene/contentFormatter';
+import { createNewDocument } from '@/api/base/im/scene/contentFormatterDocument';
 import SnowflakeId from "snowflake-id";
 
 const snowflake = new SnowflakeId();
@@ -95,7 +87,7 @@ const snowflake = new SnowflakeId();
 // 设置角色
 const roleSelectPanelRef = ref(null)
 
-const uploadLoading = ref(null);
+const uploadLoading = ref(null); 
 
 // 角色信息
 const analysisAgentEngineers = ref([]);
@@ -113,12 +105,12 @@ const imageUrl = ref([])
 const executeHandleRef = ref(null)
 const sceneId = ref(route.query.sceneId)
 
-const historyRecords = [
-    { sceneId: '1', title: '大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件' },
-    { sceneId: '3', title: '广西人工智能产业发展白皮书（2024）' },
-    { sceneId: '4', title: '大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件' },
-    { sceneId: '3', title: '广西人工智能产业发展白皮书（2024）' }
-];
+// const historyRecords = [
+//     { sceneId: '1', title: '大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件' },
+//     { sceneId: '3', title: '广西人工智能产业发展白皮书（2024）' },
+//     { sceneId: '4', title: '大罗市应急管理局首都核心区加油站智能视频监控和物联监测系统项目_招投标文件' },
+//     { sceneId: '3', title: '广西人工智能产业发展白皮书（2024）' }
+// ];
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -133,14 +125,14 @@ const upload = reactive({
     // 设置上传的请求头部
     headers: { Authorization: "Bearer " + getToken() },
     // 上传的地址
-    url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/documentReview/importData",
+    url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/scene/contentFormatterDocument/importData",
     // 显示地址
     display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
 });
 
-historyRecords.forEach(record => {
-    record.hover = false;
-});
+// historyRecords.forEach(record => {
+//     record.hover = false;
+// });
 
 /** 根据场景id和类型获取到角色信息 */
 const handleRoleBySceneIdAndAgentType = async () => {
@@ -159,20 +151,33 @@ const handleAvatarSuccess = (response, uploadFile) => {
     imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
     uploadLoading.value.close();
 
-    const taskId = response.taskId;
-    console.log('taskId = ' + taskId);
+    const documentId = response.data;
+    console.log('documentId = ' + documentId);
 
-    // 上传成功，进入分析界面
     router.push({
-        path: '/scene/documentReview/documentParser',
+        path: '/scene/contentFormatter/contentParser',
         query: {
             sceneId: sceneId.value,
-            taskId: taskId,
-            channelStreamId: snowflake.generate()
+            documentId: documentId ,
+            channelStreamId: snowflake.generate() 
         }
     })
 
 };
+
+const handleCreateNewDocument = () => {
+    createNewDocument(sceneId.value).then(res => {
+        let documentId = res.data ;
+        router.push({
+            path: '/scene/contentFormatter/contentParser',
+            query: {
+                sceneId: sceneId.value,
+                documentId: documentId ,
+                channelStreamId: snowflake.generate() 
+            }
+        })
+    })
+}
 
 /** 图片上传之前 */
 const beforeAvatarUpload = (rawFile) => {
@@ -190,22 +195,22 @@ const beforeAvatarUpload = (rawFile) => {
     return true;
 };
 
-const handleOpenDataset = () => {
-    ElMessage.warning('请从智能体平台后台，全局配置自定义审核清单.');
+const handleOpenDataset = () => { 
+  router.push({
+    path: '/scene/contentFormatter/contentParser',
+    query: {
+      sceneId: sceneId.value,
+      channelStreamId: snowflake.generate()
+    }
+  })
+    
 }
 
 const handleGetScene = () => {
     getScene(sceneId.value).then(res => {
         currentSceneInfo.value = res.data;
 
-        if (currentSceneInfo.value.genStatus == 1 && !isBack.value) {
-            // router.push({
-            //     path: '/scene/documentReview/documentParser',
-            //     query: {
-            //         sceneId: sceneId.value , 
-            //         channelStreamId: snowflake.generate()
-            //     }
-            // })
+        if (currentSceneInfo.value.genStatus == 1 && !isBack.value) { 
             return;
         }
 
@@ -233,6 +238,8 @@ onMounted(() => {
 
 .review-main-content {
     justify-content: flex-start !important;
+    margin-top: 5vh !important;
+    height: calc(90vh - 250px) !important;
 }
 
 .el-upload__text {
@@ -256,16 +263,86 @@ onMounted(() => {
         }
 
         &--pdf {
-            color: #1d75b0; // PDF icon color (red)
+            color: #1d75b0;
         }
 
         &--word {
-            color: #F56C6C; // Word icon color (green)
+            color: #F56C6C;
         }
 
         &--file {
-            color: #E6A23C; // File icon color (gray)
+            color: #E6A23C;
         }
+    }
+}
+
+/* New Document Card Styles */
+.new-document-card {
+    display: flex;
+    align-items: center;
+    padding: 30px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #ebedf3 ; 
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background-color: #f0f7ff;
+        border-color: #409eff;
+        
+        .new-document-icon i {
+            color: #409eff;
+        }
+    }
+}
+
+.new-document-icon {
+    margin-right: 15px;
+    
+    i {
+        font-size: 28px;
+        color: #606266;
+        transition: color 0.3s ease;
+    }
+}
+
+.new-document-text {
+    text-align: left;
+}
+
+.new-document-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #303133;
+    margin-bottom: 4px;
+}
+
+.new-document-subtitle {
+    font-size: 13px;
+    color: #909399;
+}
+
+.document-separator {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    color: #909399;
+    font-size: 14px;
+    
+    &::before, &::after {
+        content: "";
+        flex: 1;
+        border-bottom: 1px solid #dcdfe6;
+    }
+    
+    &::before {
+        margin-right: 15px;
+    }
+    
+    &::after {
+        margin-left: 15px;
     }
 }
 </style>
