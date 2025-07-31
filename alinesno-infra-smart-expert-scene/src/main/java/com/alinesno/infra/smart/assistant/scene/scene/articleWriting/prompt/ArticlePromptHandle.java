@@ -5,12 +5,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.Article
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ImageGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ReWriterArticleGeneratorDTO;
 import com.alinesno.infra.smart.scene.entity.ArticleTemplateEntity;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 public class ArticlePromptHandle {
