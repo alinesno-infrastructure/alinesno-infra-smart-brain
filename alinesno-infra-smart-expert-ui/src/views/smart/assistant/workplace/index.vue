@@ -10,6 +10,7 @@
                       style="width: 240px" @keyup.enter="handleQuery"/>
           </el-form-item>
 
+          <!-- 
           <el-form-item label="数据范围" prop="sceneScope" label-width="100px">
             <el-radio-group v-model="queryParams.workplaceType" label="数据范围" label-width="100px" @change="handleQuery">
               <el-radio v-for="item in workplaceTypesArr" 
@@ -18,7 +19,8 @@
                 {{ item.name }}
               </el-radio>
             </el-radio-group>
-          </el-form-item> 
+          </el-form-item>  
+          -->
           
           <!-- 
           <el-form-item label="工作台类型" prop="toolType" label-width="100px">
@@ -71,13 +73,13 @@
 
         <el-table v-loading="loading" :data="WorkplaceList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center"/>
-          <el-table-column label="图标" align="center" width="130px" prop="icon" v-if="columns[0].visible">
+          <!-- <el-table-column label="图标" align="center" width="130px" prop="icon" v-if="columns[0].visible">
             <template #default="scope">
               <div v-if="scope.row.backgroundImage != null" class="role-icon">
                 <img :src="imagePath(scope.row.backgroundImage)" />
               </div>
             </template>
-          </el-table-column> 
+          </el-table-column>  -->
           <el-table-column label="工作台名称" align="left" key="name" prop="name" v-if="columns[1].visible">
             <template #default="scope">
                 <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
@@ -97,12 +99,12 @@
             </template>
           </el-table-column> 
           -->
-          <el-table-column label="数据范围" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <!-- <el-table-column label="数据范围" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-                <i :class="getWorkplaceNameByType(scope.row.workplaceType).icon" ></i>
-                {{ getWorkplaceNameByType(scope.row.workplaceType).name }}
+                <i :class="getWorkplaceNameByType(scope.row.workplaceType)?.icon" ></i>
+                {{ getWorkplaceNameByType(scope.row.workplaceType)?.name }}
             </template>
-          </el-table-column> 
+          </el-table-column>  -->
           <el-table-column label="智能体" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="primary" @click="configAgent(scope.row)">
