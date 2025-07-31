@@ -9,7 +9,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.mapper.ExamineeM
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamineeService;
 import com.alinesno.infra.smart.scene.entity.ExamineeEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
