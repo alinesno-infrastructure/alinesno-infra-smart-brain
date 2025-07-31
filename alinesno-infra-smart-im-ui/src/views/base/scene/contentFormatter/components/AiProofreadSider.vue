@@ -16,7 +16,7 @@
                 <el-collapse v-model="activeCategories" accordion style="border:0px;">
                     <el-collapse-item 
                         v-for="category in ruleCategories" 
-                        :key="category.id" 
+                :key="category.id" 
                         :name="category.id"
                         class="category-item"
                     >
@@ -69,7 +69,7 @@
         <!-- Step 2: Audit Results -->
         <div v-if="activeStep === 2" class="audit-results-view">
             <div class="header">
-                <h1>AI文档审核结果</h1>
+                <!-- <h1>结果</h1> -->
                 <div class="actions">
                     <el-button type="primary" text bg icon="Download" @click="exportResults">导出审核结果</el-button>
                     <el-button type="info" text bg icon="Refresh" @click="backToSelection">重新选择规则</el-button>
