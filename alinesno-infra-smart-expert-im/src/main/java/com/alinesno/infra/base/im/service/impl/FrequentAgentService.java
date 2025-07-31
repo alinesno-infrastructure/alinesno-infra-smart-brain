@@ -3,7 +3,6 @@ package com.alinesno.infra.base.im.service.impl;
 import com.alinesno.infra.base.im.mapper.FrequentAgentMapper;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.api.IndustryFrequentRoleDto;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
