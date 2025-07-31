@@ -4,13 +4,10 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
-import com.dtflys.forest.annotation.JSONBody;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.beans.BeanUtils;
-
-import java.util.List;
 
 /**
  * 文档模板DTO，用于接收文档模板配置信息
