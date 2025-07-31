@@ -13,7 +13,6 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ExamineeImpo
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.ImportResult;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamineeService;
 import com.alinesno.infra.smart.scene.entity.ExamineeEntity;
-import com.dtflys.forest.annotation.Post;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.Arrays;
