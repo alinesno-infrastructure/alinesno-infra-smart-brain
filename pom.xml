@@ -26,6 +26,10 @@
         <elasticsearch-rest-high-level-client.version>7.17.23</elasticsearch-rest-high-level-client.version>
         <elasticsearch.version>8.7.0</elasticsearch.version>
         <httpclient.version>4.5.13</httpclient.version>
+        <commons-compress.version>1.27.1</commons-compress.version>
+
+        <docx4j.core.version>11.5.4</docx4j.core.version>
+        <docx4j.importxhtml.version>11.4.8</docx4j.importxhtml.version>
     </properties>
 
     <modules>
@@ -43,7 +47,6 @@
         <module>alinesno-infra-smart-expert-memory</module> <!-- 记忆库 -->
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-workflow</module> <!-- 流程编排 -->
-        <module>alinesno-infra-smart-expert-task</module> <!-- 任务服务 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
         <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
@@ -146,6 +149,42 @@
                 <version>${elasticsearch.version}</version>
             </dependency>
             <!-- elasticsearch_java_end -->
+
+            <!-- 确保使用统一的 commons-compress 版本 -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-compress</artifactId>
+                <version>${commons-compress.version}</version>
+            </dependency>
+
+            <!-- docx4j 核心库 -->
+            <dependency>
+                <groupId>org.docx4j</groupId>
+                <artifactId>docx4j-core</artifactId>
+                <version>${docx4j.core.version}</version>
+            </dependency>
+
+            <!-- 如果需要使用 JAXB Reference Implementation -->
+            <dependency>
+                <groupId>org.docx4j</groupId>
+                <artifactId>docx4j-JAXB-ReferenceImpl</artifactId>
+                <version>${docx4j.core.version}</version>
+            </dependency>
+
+            <!-- 如果需要将 Word 转换为 PDF -->
+            <dependency>
+                <groupId>org.docx4j</groupId>
+                <artifactId>docx4j-export-fo</artifactId>
+                <version>${docx4j.core.version}</version>
+            </dependency>
+
+            <!-- 如果需要支持 XHTML 转换 -->
+            <dependency>
+                <groupId>org.docx4j</groupId>
+                <artifactId>docx4j-ImportXHTML</artifactId>
+                <version>${docx4j.importxhtml.version}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
