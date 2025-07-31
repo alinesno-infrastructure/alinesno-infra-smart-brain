@@ -6,7 +6,6 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectManagerDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.mapper.ProjectTaskMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
