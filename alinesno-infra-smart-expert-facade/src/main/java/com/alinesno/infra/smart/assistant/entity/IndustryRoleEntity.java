@@ -155,6 +155,16 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "上传状态")
     private boolean uploadStatus ;
 
+    // 欢迎配置
+    @TableField("welcome_config")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "欢迎配置")
+    private boolean welcomeConfig ;
+
+    // 欢迎配置数据
+    @TableField("welcome_config_data")
+    @Column(type = MySqlTypeConstant.TEXT , isNull = true , comment = "欢迎配置数据")
+    private String welcomeConfigData ;
+
     // 模型
     @TableField("model_id")
     @Column(type = MySqlTypeConstant.BIGINT, length = 32, isNull = true , comment = "模型")
