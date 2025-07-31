@@ -13,7 +13,6 @@ import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemServic
 import com.alinesno.infra.smart.assistant.workplace.tools.DateFormatterUtils;
 import com.alinesno.infra.smart.im.dto.CollectItemDto;
 import com.alinesno.infra.smart.im.dto.CollectItemObjectDto;
-import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.service.IChannelService;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
