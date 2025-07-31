@@ -261,7 +261,7 @@ const goBack = () => {
 const closeUploadDialog = () => {
     if(upload.isUploading){
         ElMessage.warning('正在上传中，请稍后...')
-        return ; 
+        return ;
     }
     upload.open = false;
 }
