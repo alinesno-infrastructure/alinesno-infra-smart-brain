@@ -11,6 +11,14 @@
     </el-menu>
 
     <el-menu style="" class="el-menu-vertical acp-suggest" :collapse="isCollapse" @open="handleOpen" @close="handleClose">
+
+        <el-menu-item index="10" @click="openServiceList('/dataset')" class="aip-menu-item">
+              <i class="fa-solid fa-file-pdf"></i>
+              <span>
+                知识库
+              </span>
+          </el-menu-item>
+
         <el-menu-item index="9" @click="addChannel()" class="aip-menu-item">
           <i class="fa-solid fa-marker"></i>
           <span>
@@ -75,7 +83,7 @@ const menuItems = ref([
   { id: '1', icon: 'fa-solid fa-house-user', link: '/index', desc: '工作台' }, 
   { id: '3', icon: 'fa-solid fa-box', link: '/scene', desc: '场景' },
   { id: '4', icon: 'fa-solid fa-sailboat', link: '/store', desc: '智能体' },
-  { id: '6', icon: 'fa-solid fa-file-pdf', link: '/dataset', desc: '知识库' },
+  // { id: '6', icon: 'fa-solid fa-file-pdf', link: '/dataset', desc: '知识库' },
   { id: '2', icon: 'fa-solid fa-user-tag', link: '/channel', desc: '频道' },
   { id: '5', icon: 'fa-solid fa-masks-theater', link: '/agentList', desc: '组织' },
 ]);
