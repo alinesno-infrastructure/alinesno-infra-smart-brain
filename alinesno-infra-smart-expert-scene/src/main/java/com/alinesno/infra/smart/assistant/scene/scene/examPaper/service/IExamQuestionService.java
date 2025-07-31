@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.examPaper.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.ExamQuestionEntity;
 
 /**
