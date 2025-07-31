@@ -1,8 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.controller;
 
-import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -32,7 +30,6 @@ import com.alinesno.infra.smart.scene.entity.ContentFormatterSceneEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
 import io.swagger.annotations.Api;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
