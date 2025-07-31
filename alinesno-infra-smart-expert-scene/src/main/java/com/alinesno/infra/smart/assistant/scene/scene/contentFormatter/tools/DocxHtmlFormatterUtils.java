@@ -95,4 +95,27 @@ public class DocxHtmlFormatterUtils {
     public static boolean hasText(String headerHtml) {
         return headerHtml != null && !headerHtml.trim().isEmpty() ;
     }
+
+    /**
+     * HTML内容转纯文本，并截取指定字段长度
+     * @param documentContent HTML内容
+     * @param maxLength 最大文本长度
+     * @return 纯文本内容，截取到指定长度
+     */
+    public static String htmlToText(String documentContent, int maxLength) {
+        if (documentContent == null || documentContent.trim().isEmpty()) {
+            return "";
+        }
+
+        // Parse HTML and get text content
+        Document doc = Jsoup.parse(documentContent);
+        String text = doc.text().trim();
+
+        // Truncate if necessary
+        if (maxLength > 0 && text.length() > maxLength) {
+            text = text.substring(0, maxLength) + "...";
+        }
+
+        return text;
+    }
 }
