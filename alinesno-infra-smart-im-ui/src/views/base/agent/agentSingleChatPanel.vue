@@ -13,17 +13,24 @@
               <div class="chat-header-desc">
                 ({{ truncateString(roleInfo.responsibilities, 60) }})
               </div>
+
               <div class="chat-header-desc" style="float: right;margin-top: -10px;">
-                <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true">
-                  <i class="fa-solid fa-truck-fast icon-btn"></i>
+                <el-button type="primary" text bg @click="askFlowDialogVisible = true">
+                   <i class="fa-solid fa-truck"></i>清除对话
                 </el-button>
               </div>
+
             </div>
 
             <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
+
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
+                <!-- 欢迎界面 -->
+                <WelcomePanel v-if="messageList.length == 1" :roleInfo="roleInfo" />
+
+                <!-- 聊天内容 -->
                 <div ref="innerRef">
 
                   <div class="robot-chat-ai-say-box" v-for="(item, index) in messageList" @mouseover="showTools(item)" @mouseleave="hideTools(item)" :key="index">
@@ -34,8 +41,7 @@
                       </div>
                     </div>
 
-                    <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
-                      style="max-width:calc(100% - 135px)">
+                    <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''" style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
                         {{ item.name }}
@@ -200,6 +206,7 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import WelcomePanel from './welcomePanel.vue';
 import AgentSingleRightPanel from './rightPanel.vue'
 import AIVoiceInput from '@/components/aiVoiceInput'
 import ChatAttachmentPanel from '@/components/ChatAttachment/chatAttachmentPanel'
@@ -221,7 +228,7 @@ const channelStreamId = ref(snowflake.generate());
 const { proxy } = getCurrentInstance();
 
 const agentSingleRightPanelRef = ref(null)
-
+const askFlowDialogVisible = ref(false)
 const userQuestionSuggestionsRef = ref(null);
 const attachmentPanelRef = ref(null);
 const heightDiff = ref(218);
@@ -657,10 +664,15 @@ onBeforeUnmount(() => {
 
     .header-images {
       padding: 5px;
+      width: 50px;
+      height: 50px;
 
       img {
-        width: 100%;
         border-radius: 50%;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center;
       }
 
     }
