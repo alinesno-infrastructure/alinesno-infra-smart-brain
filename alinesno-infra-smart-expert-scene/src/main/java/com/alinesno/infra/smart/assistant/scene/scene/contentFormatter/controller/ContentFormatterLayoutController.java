@@ -17,13 +17,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.Docum
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateInfoDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutService;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterParseService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelParser;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentRuleExcelParser;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutGroupEntity;
-import com.dtflys.forest.annotation.Query;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -37,7 +33,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
