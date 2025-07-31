@@ -83,6 +83,7 @@
 <script setup>
 
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 const router = useRouter()
 const route = useRoute()
 const { proxy } = getCurrentInstance();
@@ -97,6 +98,7 @@ import FunctionList from './functionList'
 import axios from "axios";
 import { 
     getScene,
+    getSceneResultList,
     getPreviewDocx
 } from '@/api/base/im/scene/documentReview';
 
@@ -118,7 +120,7 @@ const currentTaskInfo = ref({
 const loadingDocument = ref(true)
 const contentRef = ref(null)
 const currentActive = ref(1)
-
+const checkResultList = ref([])
 const reviewCheckListRef = ref(null)
 
 // 执行面板
@@ -126,6 +128,13 @@ const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
 
 const handleStepClick = (index, auditId) => {
+
+    if(index == 3){
+        if(checkResultList.value.length == 0){
+            ElMessage.warning('当前文档未审核，请先生成审核清单！');
+            return ;
+        }
+    }
     console.log('index = ' + index);
     currentActive.value = index
     showDebugRunDialog.value = false;
@@ -160,13 +169,17 @@ const genSingleChapterContent = (editorRoleId) => {
     })
 }
 
-const handleGetScene = () => {
-    // getScene(sceneId.value).then(res => {
-    //     currentSceneInfo.value = res.data;
-    // })
-    getReviewTask(taskId.value).then(res => {
-        currentTaskInfo.value = res.data;
-    })
+const handleGetScene = async () => {
+    const res = await getReviewTask(taskId.value)
+    currentTaskInfo.value = res.data;
+
+    const res2 = await getSceneResultList(sceneId.value, taskId.value);
+    checkResultList.value = res2.data.reviewListDtos || [] ;
+
+    // 已经有审核结果，则直接跳到3
+    if(checkResultList.value.length > 0){
+        currentActive.value = 3 ;
+    }
 }
 
 nextTick(() => {
