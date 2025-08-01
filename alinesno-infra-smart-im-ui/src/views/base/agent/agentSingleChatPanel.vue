@@ -15,7 +15,7 @@
               </div>
 
               <div class="chat-header-desc" style="float: right;margin-top: -10px;">
-                <el-button type="primary" text bg @click="askFlowDialogVisible = true">
+                <el-button type="primary" text bg @click="cleanChatContext()">
                    <i class="fa-solid fa-truck"></i>清除对话
                 </el-button>
               </div>
@@ -28,7 +28,7 @@
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
                 <!-- 欢迎界面 -->
-                <WelcomePanel v-if="messageList.length == 1" :roleInfo="roleInfo" />
+                <WelcomePanel v-if="messageList.length == 1 && roleInfo.welcomeConfigStatus" :roleInfo="roleInfo" />
 
                 <!-- 聊天内容 -->
                 <div ref="innerRef">
@@ -593,6 +593,26 @@ function showTools(item) {
 /** 隐藏工具条 */
 function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
+}
+
+/** 清除上下文会话 */
+const cleanChatContext = () => {
+  // 如果对话正在生成中，则不允许清除上下文
+  if(chatStreamLoading.value){
+    proxy.$modal.msgError("对话正在生成中，请稍后再试");
+    return;
+  }
+
+  // 关闭当前sse连接
+  handleCloseSse(channelStreamId.value).then(res => {
+    console.log('关闭sse连接成功:' + channelId)
+  })
+
+  // 重新创建sse连接
+  channelStreamId.value = snowflake.generate();
+  handleSseConnect(channelStreamId.value)
+
+  proxy.$modal.msgSuccess("清除上下文对话成功");
 }
 
 onMounted(() => {
