@@ -57,15 +57,6 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
 
         SceneEntity sceneEntity = new SceneEntity();
         BeanUtils.copyProperties(sceneDto, sceneEntity);
-
-//        // 创建频道知识库
-//        R<Long> createDataset = baseSearchConsumer.datasetCreate(
-//                sceneEntity.getSceneDesc() ,
-//                sceneEntity.getSceneName() ,
-//                sceneDto.getOrgId() + "" ,
-//                sceneDto.getOperatorId() + "") ;
-//        sceneEntity.setKnowledgeId(createDataset.getData()+"");
-
         save(sceneEntity);
 
         return sceneEntity ;
@@ -261,11 +252,11 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IProjectResearchSceneService productResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
               productResearchSceneService.updateSceneAgents(dto);
         }
-         // 原型设计
-         else if(sceneTypeCode.equals(SceneEnum.PROTOTYPE_DESIGN.getSceneInfo().getCode())){
-            IPrototypeSceneService prototypeDesignSceneService = SpringUtils.getBean(IPrototypeSceneService.class) ;
-               prototypeDesignSceneService.updateSceneAgents(dto);
-        }
+//         // 原型设计
+//         else if(sceneTypeCode.equals(SceneEnum.PROTOTYPE_DESIGN.getSceneInfo().getCode())){
+//            IPrototypeSceneService prototypeDesignSceneService = SpringUtils.getBean(IPrototypeSceneService.class) ;
+//               prototypeDesignSceneService.updateSceneAgents(dto);
+//        }
 
     }
 
@@ -313,11 +304,6 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IExamPagerSceneService examPagerSceneService = SpringUtils.getBean(IExamPagerSceneService.class) ;
             return examPagerSceneService.getRoleList(dto);
         }
-//        // PPT生成
-//        else if(sceneTypeCode.equals(SceneEnum.PPT_CREATION.getSceneInfo().getCode())){
-//            IPPTGeneratorSceneService pptGeneratorSceneService = SpringUtils.getBean(IPPTGeneratorSceneService.class) ;
-//            return pptGeneratorSceneService.getRoleList(dto);
-//        }
         // 文章编写
         else if(sceneTypeCode.equals(SceneEnum.ARTICLE_WRITING.getSceneInfo().getCode())){
             IArticleWriterSceneService articleWriterSceneService = SpringUtils.getBean(IArticleWriterSceneService.class) ;
@@ -327,11 +313,6 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.PRODUCT_RESEARCH.getSceneInfo().getCode())){
              IProjectResearchSceneService projectResearchSceneService = SpringUtils.getBean(IProjectResearchSceneService.class) ;
              return projectResearchSceneService.getRoleList(dto);
-        }
-        // 原型设计
-         else if(sceneTypeCode.equals(SceneEnum.PROTOTYPE_DESIGN.getSceneInfo().getCode())){
-            IPrototypeSceneService prototypeDesignSceneService = SpringUtils.getBean(IPrototypeSceneService.class) ;
-              return prototypeDesignSceneService.getRoleList(dto);
         }
 
         return null;
