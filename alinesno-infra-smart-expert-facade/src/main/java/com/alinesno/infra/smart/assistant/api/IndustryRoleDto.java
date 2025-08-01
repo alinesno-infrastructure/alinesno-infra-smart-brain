@@ -30,12 +30,14 @@ public class IndustryRoleDto {
     private boolean voicePlayStatus; // 语音播放
     private boolean uploadStatus ; // 文件上传
     private boolean outputFileFormatStatus ; // 输出文件格式
-     private UploadData uploadData; // 文件上传配置
+    private boolean welcomeConfigStatus;  // 欢迎配置
+    private UploadData uploadData; // 文件上传配置
     private VoiceInputData voiceInputData; // 语音输入相关数据配置
     private VoicePlayData voicePlayData; // 语音播放
     private GuessWhatYouAskData guessWhatYouAskData; // 猜测用户问题相关数据配置
     private DatasetSearchConfig datasetSearchConfig ;   // 数据集搜索配置
     private OutputFileFormatData outputFileFormatData; // 输出文件格式
+    private WelcomeConfigData welcomeConfigData ; // 欢迎配置
     private String roleAvatar; // 角色头像
     private String roleName; // 角色名称
     private String backstory; // 角色背景
@@ -107,6 +109,11 @@ public class IndustryRoleDto {
         // 输出文件格式
         if (entity.getOutputFileFormatData() != null) {
             dto.setOutputFileFormatData(JSONObject.parseObject(entity.getOutputFileFormatData(), OutputFileFormatData.class));
+        }
+
+        // 欢迎配置
+        if (entity.getWelcomeConfigData() != null) {
+            dto.setWelcomeConfigData(JSONObject.parseObject(entity.getWelcomeConfigData(), WelcomeConfigData.class));
         }
 
         return dto;
