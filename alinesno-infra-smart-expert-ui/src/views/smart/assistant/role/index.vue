@@ -120,14 +120,15 @@
                   </div>
                   <div class="switch-buttons">
                     <!-- 
-                    <el-switch size="small" v-model="item.hasRecommended" :active-value="true" :inactive-value="false" active-text="推荐" @change="handleRecommended(item.id)"></el-switch> 
                     <el-switch size="small" v-model="item.hasSale" :active-value="1" :inactive-value="0" active-text="分享" :disabled="item.saleFromRoleId" @change="handleChangeSaleField('hasSale', item.hasSale, item.id)"></el-switch>
+                    <el-switch size="small" v-model="item.hasRecommended" :active-value="true" :inactive-value="false" active-text="推荐" @change="handleRecommended(item.id)"></el-switch> 
                     -->
-                    <el-button type="primary" size="small" :disabled="item.saleFromRoleId" text  @click="pushOrg(item)">
+
+                    <el-button type="primary" size="small" :disabled="item.saleFromRoleId" text bg @click="pushOrg(item)">
                       <i class="fa-solid fa-truck-fast"></i> 
                     </el-button>
 
-                    <el-button type="primary" text size="small" @click="editWelcomePage(item)">
+                    <el-button type="primary" text bg size="small" @click="editWelcomePage(item)">
                       <i class="fa-solid fa-computer"></i> 
                     </el-button>
 
