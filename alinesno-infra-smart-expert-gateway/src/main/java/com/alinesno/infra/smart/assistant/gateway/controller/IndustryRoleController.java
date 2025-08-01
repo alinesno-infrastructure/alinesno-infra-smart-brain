@@ -399,6 +399,18 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         return ok() ;
     }
 
+    /**
+     * 更新欢迎配置
+     * @param dto
+     * @return
+     */
+    @PostMapping("/updateWelcomeConfig")
+    public AjaxResult updateWelcomeConfig(@RequestBody @Validated RoleWelcomeDto dto) {
+        log.debug("dto = {}", dto);
+        service.updateRoleWelcome(dto) ;
+        return ok() ;
+    }
+
     @Override
     public AjaxResult detail(@PathVariable String id) {
         IndustryRoleEntity e = service.findById(id) ;
