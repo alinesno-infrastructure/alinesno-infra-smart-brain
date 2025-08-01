@@ -40,6 +40,16 @@ var managerUrl = {
   updateFlowConfig: prefix + "updateFlowConfig",
   publishRole: prefix + "publishRole",
   listPublicRole: prefix + "listPublicRole",
+  updateWelcomeConfig: prefix + "updateWelcomeConfig",
+}
+
+// 更新欢迎界面配置
+export function updateWelcomeConfig(data) {
+  return request({
+    url: managerUrl.updateWelcomeConfig,
+    method: 'post',
+    data: data
+  })
 }
 
 // 列出所有公共商店角色
