@@ -1,5 +1,6 @@
 <template>
     <div class="app-container publish-channel-container">
+
         <div class="page-header-container">
             <el-page-header @back="goBack">
                 <template #content>
@@ -13,6 +14,7 @@
                 </template>
             </el-page-header>
         </div>
+
         <div>
             <el-row :gutter="20">
                 <el-col :span="24" :xs="24">
