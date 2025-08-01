@@ -34,7 +34,7 @@
         <ul class="example-list">
           <li v-for="(example, index) in examples" :key="index" class="example-item">
             <div class="example-image-wrapper">
-              <img v-if="example.image" :src="example.image" alt="示例图片">
+              <img v-if="example.image" :src="imagePath(example.image)" alt="示例图片">
               <div v-else class="image-placeholder">
                 <i class="el-icon-picture-outline"></i>
               </div>
@@ -171,7 +171,7 @@ const props = defineProps({
       padding: 12px;
       border-radius: 8px;
       background-color: #f8fafc;
-      border: 1px solid #e2e8f0;
+      border: 0px solid #e2e8f0;
 
       .feature-icon {
         width: 36px;
@@ -217,7 +217,7 @@ const props = defineProps({
     color: #2c3e50;
     margin-bottom: 16px;
     padding-bottom: 8px;
-    border-bottom: 1px solid #eee;
+    // border-bottom: 1px solid #eee;
   }
 
   .example-list {
@@ -232,7 +232,7 @@ const props = defineProps({
       background: #f8fafc;
       border-radius: 8px;
       overflow: hidden;
-      border: 1px solid #e2e8f0;
+      border: 0px solid #e2e8f0;
 
       .example-image-wrapper {
         width: 100%;
