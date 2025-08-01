@@ -22,6 +22,11 @@ import java.util.concurrent.CompletableFuture;
 public interface IIndustryRoleService extends IBaseService<IndustryRoleEntity> {
 
     /**
+     * 更新角色欢迎信息
+     */
+    void updateRoleWelcome(RoleWelcomeDto dto);
+
+    /**
      * 获取最新的角色
       * @return
      */
