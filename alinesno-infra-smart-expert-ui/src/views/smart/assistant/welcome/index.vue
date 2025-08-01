@@ -30,9 +30,22 @@
 
             <!-- 新增：欢迎界面开关 -->
             <el-form-item label="是否开启欢迎界面" class="enable-switch">
+              <!-- <el-radio-group v-model="welcomeEnabled">
+                <el-radio :label="oneTime" :value="oneTime" size="large">开启一次</el-radio>
+                <el-radio :label="allway" :value="allway" size="large">开启</el-radio>
+                <el-radio :label="close" :value="close" size="large">关闭</el-radio>
+              </el-radio-group> -->
+
               <el-radio-group v-model="welcomeEnabled">
-                <el-radio :label="true" size="large">开启</el-radio>
-                <el-radio :label="false" size="large">关闭</el-radio>
+                <el-radio 
+                  v-for="option in welcomeOptions"
+                  :key="option.value"
+                  :label="option.value"
+                  size="large"
+                >
+                  <i :class="['fa', option.icon]"></i>
+                  {{ option.label }}
+                </el-radio>
               </el-radio-group>
             </el-form-item>
 
@@ -56,26 +69,33 @@
               </div>
             </el-form-item>
 
-            <!-- 使用示例编辑 -->
-            <el-form-item label="使用示例">
-              <div class="example-editor">
-                <div v-for="(example, index) in examples" :key="index" class="example-item-editor">
-                  <el-upload class="image-uploader" action="" :show-file-list="false"
-                    :before-upload="(file) => uploadExampleImage(file, index)">
-                    <img v-if="example.image" :src="example.image" class="example-image">
-                    <div v-else class="uploader-placeholder">
-                      <i class="fas fa-image"></i>
-                      <!-- <span>上传图片</span> -->
-                    </div>
-                  </el-upload>
-                  <el-input v-model="example.label" size="large" placeholder="示例描述" class="example-input" />
-                  <el-button type="danger" icon="Delete" text bg @click="removeExample(index)" />
-                </div>
-                <el-button type="primary" size="large" icon="Plus" text bg @click="addNewExample" class="add-btn">
-                  添加示例
-                </el-button>
+            <!-- 修改后的使用示例编辑部分 -->
+          <el-form-item label="使用示例">
+            <div class="example-editor">
+              <div v-for="(example, index) in examples" :key="index" class="example-item-editor">
+                <el-upload
+                  class="image-uploader"
+                  :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                  :headers="upload.headers"
+                  :show-file-list="false"
+                  :on-success="(res) => handleExampleSuccess(res, index)"
+                  :before-upload="beforeExampleUpload"
+                  :disabled="upload.isUploading"
+                >
+                  <img v-if="example.image" :src="getFullImageUrl(example.image)" class="example-image">
+                  <div v-else class="uploader-placeholder">
+                    <i class="fas fa-image"></i>
+                    <!-- <span>上传图片</span> -->
+                  </div>
+                </el-upload>
+                <el-input v-model="example.label" size="large" placeholder="示例描述" class="example-input" />
+                <el-button type="danger" icon="Delete" text bg @click="removeExample(index)" />
               </div>
-            </el-form-item>
+              <el-button type="primary" size="large" icon="Plus" text bg @click="addNewExample" class="add-btn">
+                添加示例
+              </el-button>
+            </div>
+          </el-form-item> 
 
             <!-- 使用提示编辑 -->
             <el-form-item label="使用提示">
@@ -108,10 +128,11 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
+import { getToken } from "@/utils/auth";
 import WelcomePreview from './WelcomePreview.vue'
 
-import { getRole, changeSaleField } from "@/api/smart/assistant/role";
+import { getRole, updateWelcomeConfig } from "@/api/smart/assistant/role";
 
 const router = useRouter();
 const route = useRoute();
@@ -123,7 +144,13 @@ const currentRole = ref({
 });
 
 // 新增：欢迎界面开关状态
-const welcomeEnabled = ref(true);
+const welcomeEnabled = ref('oneTime');
+
+const welcomeOptions = [
+  { value: 'oneTime', label: '开启一次', icon: 'fa-clock' },
+  { value: 'allway', label: '开启', icon: 'fa-unlock' },
+  { value: 'close', label: '关闭', icon: 'fa-lock' }
+]
 
 // 核心能力数据
 const features = ref([
@@ -164,6 +191,39 @@ const iconOptions = ref([
   { value: 'fas fa-table', label: '表格' },
   { value: 'fas fa-cloud-upload-alt', label: '上传' }
 ])
+
+// 图片上传配置
+const upload = reactive({
+  // 是否显示弹出层
+  open: false,
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已存在的数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: { Authorization: "Bearer " + getToken() },
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
+
+// 获取完整图片URL
+const getFullImageUrl = (url) => {
+  if (!url) return '';
+  return url.startsWith('http') ? url : upload.display + url;
+};
+
+// 示例图片上传成功处理
+const handleExampleSuccess = (response, index) => {
+  if (response.code === 200 && response.data) {
+    examples.value[index].image = response.data;
+    proxy.$modal.msgSuccess("图片上传成功");
+  } else {
+    proxy.$modal.msgError(response.msg || "图片上传失败");
+  }
+  upload.isUploading = false;
+};
 
 // 添加新能力
 const addNewFeature = () => {
@@ -208,15 +268,81 @@ const removeTip = (index) => {
   }
 }
 
-// 上传示例图片
-const uploadExampleImage = (file, index) => {
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    examples.value[index].image = e.target.result
+// 图片压缩方法
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // 计算压缩后的尺寸
+        const MAX_WIDTH = 300;
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > MAX_WIDTH) {
+          height *= MAX_WIDTH / width;
+          width = MAX_WIDTH;
+        }
+        
+        // 设置canvas尺寸
+        canvas.width = width;
+        canvas.height = height;
+        
+        // 绘制压缩后的图片
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // 转换为Blob对象
+        canvas.toBlob((blob) => {
+          resolve(new File([blob], file.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          }));
+        }, 'image/jpeg', 0.8); // 0.8是图片质量
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+};
+
+// 修改后的图片上传前处理
+const beforeExampleUpload = async (rawFile) => {
+  const isJpgOrPng = ['image/jpeg', 'image/png', 'image/gif'].includes(rawFile.type);
+  const isLt2M = rawFile.size / 1024 / 1024 < 10;
+
+  if (!isJpgOrPng) {
+    proxy.$modal.msgError("上传图片只能是 JPG/PNG/GIF 格式!");
+    return false;
   }
-  reader.readAsDataURL(file)
-  return false
-}
+  if (!isLt2M) {
+    proxy.$modal.msgError("上传图片大小不能超过 2MB!");
+    return false;
+  }
+
+  // 压缩图片
+  try {
+    upload.isUploading = true;
+    const compressedFile = await compressImage(rawFile);
+    return compressedFile;
+  } catch (error) {
+    proxy.$modal.msgError("图片压缩失败: " + error.message);
+    return false;
+  }
+};
+
+// 上传示例图片
+// const uploadExampleImage = (file, index) => {
+//   const reader = new FileReader()
+//   reader.onload = (e) => {
+//     examples.value[index].image = e.target.result
+//   }
+//   reader.readAsDataURL(file)
+//   return false
+// }
 
 /** 返回 */
 function goBack() {
@@ -227,6 +353,13 @@ function goBack() {
 function getRoleInfo() {
   getRole(currentRoleId.value).then(response => {
     currentRole.value = response.data;
+    // 解析欢迎界面配置
+    const welcomeConfig = response.data.welcomeConfigData;
+    welcomeEnabled.value = welcomeConfig.welcomeEnabled;
+    features.value = welcomeConfig.features;
+    examples.value = welcomeConfig.examples;
+    tips.value = welcomeConfig.tips;
+    
   });
 }
 
@@ -241,10 +374,10 @@ const saveConfig = async () => {
     };
     
     // 调用API保存配置
-    await changeSaleField({
+    await updateWelcomeConfig({
       roleId: currentRoleId.value,
       field: 'welcomeConfig',
-      value: JSON.stringify(configData)
+      value: configData
     });
     
     proxy.$modal.msgSuccess("配置保存成功");
