@@ -96,6 +96,17 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     private static final Gson gson = new Gson();
 
     @Override
+    public void updateRoleWelcome(RoleWelcomeDto dto) {
+        IndustryRoleEntity role = getById(dto.getRoleId());
+        String welcomeEnabled = dto.getValue().getString("welcomeEnabled") ;
+
+        role.setWelcomeConfigStatus(!"close".equals(welcomeEnabled));
+        role.setWelcomeConfigData(dto.getValue().toJSONString());
+
+        this.update(role);
+    }
+
+    @Override
     public List<IndustryRoleEntity> getNewestRole(PermissionQuery query) {
 
         LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
