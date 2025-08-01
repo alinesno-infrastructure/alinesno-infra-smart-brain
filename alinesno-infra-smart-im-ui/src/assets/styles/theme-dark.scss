@@ -410,4 +410,85 @@ html.dark {
         }
     }
 
+    .scene-card-container{
+        border: 0px !important;
+        background: #262727 !important;
+
+        .scene-card-footer{
+            border-color: #1d1e1f !important;
+            border-width: 0.5px !important;
+        }
+    }
+
+    .workplace {
+        .main-content{
+            background: #1d1e1f !important
+        }
+
+         .workspace-header {
+            .workspace-title {
+                color: $dark-text-color !important;
+            }
+            .workspace-description{
+                color: $dark-text-color !important;
+            }
+         }
+
+         .recent-item{
+            color: $dark-text-color !important;
+
+             &:hover {
+                background-color: #1d1e1f  !important;
+             }
+         }
+
+        .agent-card{
+            background: #262727 !important;
+            border-color: #262727 !important;
+        }
+
+        .agent-description{
+            color: $dark-text-color !important;
+        }
+
+        .sidebar{
+            background: #262727 !important;
+        }
+    }
+
+    .user-integral{
+        background-color: #1d1e1f  !important;
+
+        .integral-level{
+            color: $dark-text-color !important;
+        }
+    }
+
+    .welcome-card{
+        background-color: #1d1e1f  !important;
+
+        .header-text h1 , .welcome-example-section h3{
+            color: $dark-text-color !important;
+        }
+
+         .feature-item{
+            background: #262727 !important;
+         }
+
+         .tip-section{
+            background: #262727 !important;
+
+            .tip-content p{
+                color: $dark-text-color !important;
+            }
+         }
+
+         .welcome-example-item{
+            background: #262727 !important;
+            .text-label {
+               color: $dark-text-color !important;
+            }
+         }
+    }
+
 }
