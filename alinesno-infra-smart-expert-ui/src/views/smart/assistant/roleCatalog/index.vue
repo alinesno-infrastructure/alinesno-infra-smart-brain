@@ -152,7 +152,7 @@ const loading = ref(true);
 const showSearch = ref(true);
 const title = ref("");
 const deptOptions = ref([]);
-const isExpandAll = ref(true);
+const isExpandAll = ref(false);
 const refreshTable = ref(true);
 
 const data = reactive({
