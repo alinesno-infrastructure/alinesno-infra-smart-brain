@@ -55,12 +55,12 @@ public enum SceneEnum {
                     new SceneAgent(20000101L, "文档分析助手", "analysisAgent", "对合同类文档的审核，审核清单生成，还有分析合同目录内容等。" , true),
                     new SceneAgent(20000202L, "文档审核助手", "logicReviewer", "审核文档内容的逻辑是否合理，有无矛盾或不合理之处。")
     ))),
-    // 视频生成
-    VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "0", "", "fa-solid fa-video",
-            List.of(
-                    new SceneAgent(70000701L, "视频脚本生成", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
-                    new SceneAgent(70000702L, "视频内容生成", "videoGenerator", "根据解析的文本内容，生成视频内容。")
-    ))),
+//    // 视频生成
+//    VIDEO_GENERATION(new SceneInfoDto(100000000L, "短视频生成", "videoGeneration", "根据提供的文本内容，自动生成视频内容，并导出为 MP4 文件", "已集成", "0", "", "fa-solid fa-video",
+//            List.of(
+//                    new SceneAgent(70000701L, "视频脚本生成", "textParser", "对提供的文本内容进行解析，提取关键信息。"),
+//                    new SceneAgent(70000702L, "视频内容生成", "videoGenerator", "根据解析的文本内容，生成视频内容。")
+//    ))),
     // 文档阅读
     DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "1", "", "fa-solid fa-book-open-reader",
             List.of(
@@ -79,13 +79,13 @@ public enum SceneEnum {
             Arrays.asList(
                     new SceneAgent(80000801L, "进度采集助手", "progressCollector", "从版本管理系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "项目情况分析助手", "progressAnalyzer", "从版本仓库中提取产品的开发进度信息，并提供数据分析")
-            ))),
-    // 原型设计
-    PROTOTYPE_DESIGN(new SceneInfoDto(170000000L, "原型设计", "prototypeDesign", "根据需求文档进行产品原型设计，完成交互逻辑与界面框架规划", "进行中", "1", "", "fa-solid fa-pencil-ruler",
-                 Arrays.asList(
-                     new SceneAgent(170000001L, "需求分析专员", "requirementAnalyzer", "负责解析需求文档，提炼核心功能点与用户交互逻辑"),
-                     new SceneAgent(170000002L, "原型设计专员", "prototypeDesigner", "基于需求分析结果，使用专业工具完成高保真原型设计")
-        )))
+            )))
+//    // 原型设计
+//    PROTOTYPE_DESIGN(new SceneInfoDto(170000000L, "原型设计", "prototypeDesign", "根据需求文档进行产品原型设计，完成交互逻辑与界面框架规划", "进行中", "1", "", "fa-solid fa-pencil-ruler",
+//                 Arrays.asList(
+//                     new SceneAgent(170000001L, "需求分析专员", "requirementAnalyzer", "负责解析需求文档，提炼核心功能点与用户交互逻辑"),
+//                     new SceneAgent(170000002L, "原型设计专员", "prototypeDesigner", "基于需求分析结果，使用专业工具完成高保真原型设计")
+//        )))
     ;
 
     private final SceneInfoDto sceneInfo;
