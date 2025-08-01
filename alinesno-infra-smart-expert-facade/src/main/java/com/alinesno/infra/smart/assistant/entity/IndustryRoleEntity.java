@@ -156,9 +156,9 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     private boolean uploadStatus ;
 
     // 欢迎配置
-    @TableField("welcome_config")
+    @TableField("welcome_config_status")
     @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "欢迎配置")
-    private boolean welcomeConfig ;
+    private boolean welcomeConfigStatus ;
 
     // 欢迎配置数据
     @TableField("welcome_config_data")
