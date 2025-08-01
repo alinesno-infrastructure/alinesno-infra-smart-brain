@@ -34,7 +34,7 @@
                     <h3>使用示例</h3>
                     <ul class="welcome-example-list">
                         <li v-for="(example, index) in examples" :key="index" class="welcome-example-item">
-                            <img :src="example.image" @error="handleImageError"  />
+                            <img :src="imagePathByPath(example.image)" @error="handleImageError"  />
                             <div class="text-label">{{ example.label }}</div>
                         </li>
                     </ul>
@@ -68,70 +68,47 @@ const props = defineProps({
 
 const dialogVisible = ref(true)
 
-// Feature data
-const features = [
-    {
-        icon: 'fas fa-database',
-        title: '数据智能处理',
-        description: '支持Excel/CSV等多种格式，自动清洗与预处理'
-    },
-    {
-        icon: 'fas fa-chart-bar',
-        title: '可视化分析',
-        description: '自动生成最佳图表，直观呈现数据洞察'
-    },
-    {
-        icon: 'fas fa-project-diagram',
-        title: '趋势预测',
-        description: '基于机器学习算法预测未来趋势'
-    },
-    {
-        icon: 'fas fa-file-export',
-        title: '报告生成',
-        description: '一键生成专业分析报告，支持PDF/PPT导出'
-    }
-]
-
-// Example data
-const examples = [
-    {
-        image: 'https://p3-flow-imagex-sign.byteimg.com/ocean-cloud-tos/image_generation/7b4a0f7eb22c1e0fd84545b424539c41_1753357641410101866.png~tplv-a9rns2rl98-image.png',
-        label: '分析过去6个月的销售额趋势并预测未来3个月'
-    },
-    {
-        image: 'https://p9-flow-imagex-sign.byteimg.com/ocean-cloud-tos/image_generation/8529aa9b1e8a9f4a368c9e79b103430f_1752460962402108797.png~tplv-a9rns2rl98-image.png',
-        label: '客户群体细分与特征分析'
-    },
-    {
-        image: 'https://p3-flow-imagex-sign.byteimg.com/ocean-cloud-tos/image_generation/28a35129026ff5c54507831d76424e14_1752461855457689800.png~tplv-a9rns2rl98-image.png',
-        label: '产品销量关联性分析'
-    }
-]
-
-// Tips data
-const tips = [
-    "提示：使用自然语言描述你的分析需求，我会自动选择最合适的分析方法",
-    "技巧：上传数据后，可以问我'这些数据有什么值得关注的趋势吗？'",
-    "建议：对于复杂分析，可以分步骤提出需求，我会逐步引导完成",
-    "小贴士：点击图表可以查看详细数据，支持下载高清图片"
-]
+const welcomeEnabled = ref(false)
+const features = ref([])
+const examples = ref([])
+const tips = ref([])
 
 const randomTip = computed(() => {
-    return tips[Math.floor(Math.random() * tips.length)]
+    return tips.value[Math.floor(Math.random() * tips.value.length)]
 })
 
 const handleImageError = (event) => {
   event.target.src = defaultDemoPng
 }
 
-// Optional: Show dialog only on first visit
-onMounted(() => {
-    const hasSeenWelcome = localStorage.getItem('hasSeenWelcome_' + props.roleInfo.id)
-    if (!hasSeenWelcome) {
-        dialogVisible.value = true
+onMounted(async() => {
+    try {
+        const welcomeConfig = JSON.parse(props.roleInfo.welcomeConfigData);
+        welcomeEnabled.value = welcomeConfig.welcomeEnabled;
+        features.value = welcomeConfig.features || [];
+        examples.value = welcomeConfig.examples || [];
+        tips.value = welcomeConfig.tips || [];
+        
+        // Debug logging to check the values
+        console.log('Loaded tips:', tips.value);
+        
+        const hasSeenWelcome = localStorage.getItem('hasSeenWelcome_' + props.roleInfo.id)
+
+        if(welcomeEnabled.value === 'close') {
+            dialogVisible.value = false;
+        }else if(welcomeEnabled.value === 'oneTime') {
+            dialogVisible.value = !hasSeenWelcome;
+        }else if(welcomeEnabled.value === 'always') {
+            dialogVisible.value = true;
+        }
+
         localStorage.setItem('hasSeenWelcome_' + props.roleInfo.id, 'true')
-    } else {
-        dialogVisible.value = true
+    } catch (e) {
+        console.error('Error parsing welcome config:', e);
+        // Set default values if parsing fails
+        features.value = [];
+        examples.value = [];
+        tips.value = ['暂无提示'];
     }
 })
 </script>
@@ -307,7 +284,7 @@ onMounted(() => {
                     width: 100%;
                     height: 100px;
                     object-fit: cover;
-                    border-bottom: 1px solid #e2e8f0;
+                    border-bottom: 0px solid #e2e8f0;
                 }
             }
         }
