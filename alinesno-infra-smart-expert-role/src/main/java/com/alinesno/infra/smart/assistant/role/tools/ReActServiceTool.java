@@ -9,7 +9,7 @@ import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.context.ParserDataBean;
+import com.alinesno.infra.smart.im.dto.ParserDataBean;
 import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
 import com.alinesno.infra.smart.assistant.role.utils.OutsideDatasetUtil;
 import com.alinesno.infra.smart.assistant.role.utils.ParserDataUtils;
@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageReferenceDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.enums.FileType;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -67,19 +68,23 @@ public class ReActServiceTool {
     public String handleDocumentContent(String goal,
                                          List<DocumentVectorBean> datasetKnowledgeDocumentList,
                                          MessageEntity workflowMessage,
-                                        MessageTaskInfo taskInfo,
+                                         MessageTaskInfo taskInfo,
                                          HistoriesPrompt historyPrompt,
                                          String oneChatId,
-                                        List<ParserDataBean> datasetMap) {
+                                         List<ParserDataBean> datasetMap) {
 
         StringBuilder sb = new StringBuilder();
 
         // 如果上一个节点有内容，则自动的获取到上一个节点的结果做为知识库内容的一部分
         if(workflowMessage != null && StringUtils.hasLength(workflowMessage.getContent())){
-            sb.append(AgentConstants.Slices.PRE_CONTENT);
+            sb.append(String.format(AgentConstants.Slices.PRE_CONTENT_WITH_HEADER  , taskInfo.getPreBusinessId()));
             sb.append(workflowMessage.getContent()).append("\n");
 
-            datasetMap.add(new ParserDataBean(AgentConstants.Slices.PRE_CONTENT , datasetMap.size() + 1)) ;
+            datasetMap.add(new ParserDataBean(
+                    String.format(AgentConstants.Slices.PRE_CONTENT , taskInfo.getPreBusinessId()) ,
+                    datasetMap.size() + 1 ,
+                    FileType.MESSAGE.getCode() ,
+                    workflowMessage.getContent())) ;
         }
 
         // 添加附件解析 attachments(比如文件或者图片之类的)
@@ -148,7 +153,12 @@ public class ReActServiceTool {
 
                     // 将附件内容同步放到用户消息历史中
                     historyPrompt.addMessage(new HumanMessage(treatmentSb.toString()));
-                    datasetMap.add(new ParserDataBean(fileAttachmentDto.getFileName(), datasetMap.size() + 1));
+                    datasetMap.add(new ParserDataBean(
+                            fileAttachmentDto.getFileName(),
+                            datasetMap.size() + 1 ,
+                            FileType.inferFromFileName(fileAttachmentDto.getFileType()).getCode() ,
+                            fileContent
+                            ));
                 }
 
                 sb.append(treatmentSb);
@@ -161,7 +171,12 @@ public class ReActServiceTool {
             for(DocumentVectorBean bean : datasetKnowledgeDocumentList){
                 sb.append(bean.getDocument_content()).append("\n");
 
-                datasetMap.add(new ParserDataBean(bean.getDocument_title() , datasetMap.size() + 1)) ;
+                datasetMap.add(new ParserDataBean(
+                        bean.getDocument_title() + "#" +  bean.getId() ,
+                        datasetMap.size() + 1 ,
+                        FileType.DOCX.getCode() ,
+                        bean.getDocument_content()
+                )) ;
             }
         }
 
@@ -274,6 +289,7 @@ public class ReActServiceTool {
             List<ParserDataBean> indexDatasetMap = new ArrayList<>();
 
             datasetKnowledgeDocument = outsideDatasetUtil.search(taskInfo.getCollectionIndexName() , goal , indexDatasetMap) ;
+            taskInfo.setDatasetMap(indexDatasetMap);
 
             this.eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(indexDatasetMap)) ;
         }
@@ -297,9 +313,14 @@ public class ReActServiceTool {
                     historyPrompt ,
                     oneChatId ,
                     datasetMap) ;
+            taskInfo.setDatasetMap(datasetMap);
 
             eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(datasetMap)) ;
         }
+
+        // 设置消息引用为空（fix:规避重复生成引用的问题)
+        taskInfo.setFlowStep(null);
+
         return datasetKnowledgeDocument;
     }
 
