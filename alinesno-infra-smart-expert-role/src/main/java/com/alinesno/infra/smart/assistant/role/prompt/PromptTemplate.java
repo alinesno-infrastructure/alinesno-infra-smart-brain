@@ -6,15 +6,15 @@ public interface PromptTemplate {
             %s
 
             请从现有知识库中获取到答案，尽量准确的回答目标问题，如果现有知识不能满足，选择使用合适的工具解决。
-            ###知识库###
+            ##知识库##
             %s
             %s
-            ###工具列表###
+            ##工具列表##
             %s
-            ###问题###
+            ##问题或者任务##
             %s
             
-            ###约束条件####
+            ##约束条件###
             1.所选工具必须是工具列表中的工具之一，每次尽量选择最符合的一个工具,如果有必要，可以使用多个工具，每次只能返回1个json，如果返回两个json结果会导致解析异常。
             2.你不会断的使用工具来解决问题，每次工具的结果会是下一次执行的输入，多次循环（最多不能超过%s次循环）调用工具来执行，直接得到答案
             3.你必须用中文回答；
@@ -40,10 +40,9 @@ public interface PromptTemplate {
             5.如果finalAnswer有值，则不会再执行工具，即使工具有参数。
             6.在进行响应时，若涉及到特殊字符的使用，需按照相关的转义规则进行处理，以确保数据的正确解析和使用，避免因字符问题导致的错误或异常情况，比如`的转义字符是\\\\`
 
-            ###其它####
-            
-            当前时间:%s
-                """;
+            ##其它###
+            - 当前时间:%s
+            """;
 
     String corePromptForEn = """
 You are: %s, Background: %s, Expertise: %s, please obtain the answer from your own knowledge or the existing knowledge base as accurately as possible. If the current knowledge cannot meet the requirements, choose to use appropriate tools to solve the problem.
