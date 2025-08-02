@@ -42,41 +42,19 @@ public class TaskServiceImpl implements ITaskService {
     private ThreadPoolTaskExecutor chatThreadPool;
 
     @Override
-    public void addTask(MessageTaskInfo info) {
-        // 使用线程池异步执行任务
-        chatThreadPool.execute(() -> processTask(info));
-    }
+    public void addTask(MessageTaskInfo taskInfo) {
+        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
-    private void processTask(MessageTaskInfo taskInfo) {
-
-        if (taskInfo != null) {
-            try {
-                log.info("任务处理中: {}", taskInfo);
-
-                CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-                // 处理消息结果
-                genContent.whenComplete((result, ex) -> {
-                    try {
-                        handleWorkflowMessage(taskInfo, result) ;
-                    } catch (Exception e) {
-                        log.error("Failed to handle workflow message", e);
-                    }
-                });
-
-            } catch (Exception e) {
-                log.error("发送消息通知前端失败:", e);
-            } finally {
-                // 在finally块中保证线程结束
-                log.debug("任务处理完成.");
-            }
-        }
+        // 处理消息结果
+        genContent.whenComplete((result, ex) -> {
+            handleWorkflowMessage(taskInfo, result) ;
+        }) ;
     }
 
     @SneakyThrows
     @Override
     public void handleWorkflowMessage(MessageTaskInfo taskInfo, WorkflowExecutionDto genContent) {
 
-        String channelId = String.valueOf(taskInfo.getChannelId()) ;
         String chatStreamId = taskInfo.getChannelStreamId() ;
 
         // 如果是过滤结果词，则不做输出
@@ -104,7 +82,11 @@ public class TaskServiceImpl implements ITaskService {
         queMessage.setBusinessId(messageId);
 
         // 发送到前端
-        sseService.send(chatStreamId, queMessage);
+        if(genContent.isPrint()){
+            sseService.send(chatStreamId, queMessage);
+        }else{
+            sseService.sendDone(chatStreamId) ;
+        }
     }
 
     @Override
