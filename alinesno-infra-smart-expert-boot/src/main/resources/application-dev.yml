@@ -88,8 +88,8 @@ alinesno:
   thread-pool:
     chat:
       core-pool-size: 50
-      max-pool-size: 100
-      queue-capacity: 300
+      max-pool-size: 500
+      queue-capacity: 800
       thread-name-prefix: "smart-chat-"
       keep-alive-seconds: 1200
       wait-for-tasks-on-shutdown: true
