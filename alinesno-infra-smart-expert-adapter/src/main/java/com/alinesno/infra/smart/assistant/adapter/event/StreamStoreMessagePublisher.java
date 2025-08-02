@@ -20,7 +20,7 @@ public class StreamStoreMessagePublisher {
     @Autowired
     private IMessageService messageService ;
 
-    public void doStuffAndPublishAnEvent(final String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
+    public String doStuffAndPublishAnEvent(final String message , IndustryRoleEntity role , MessageTaskInfo taskInfo, long bId) {
 
         // 保存消息
         MessageEntity entity = new MessageEntity();
@@ -53,6 +53,8 @@ public class StreamStoreMessagePublisher {
 
         StreamMessageEvent customEvent = new StreamMessageEvent(this, message , role , taskInfo , bId , messageId);
         applicationEventPublisher.publishEvent(customEvent);
+
+        return  String.valueOf(messageId);
     }
 
 }
