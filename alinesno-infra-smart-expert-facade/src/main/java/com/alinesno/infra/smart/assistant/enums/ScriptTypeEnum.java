@@ -5,8 +5,11 @@ import lombok.Getter;
 @Getter
 public enum ScriptTypeEnum {
     SCRIPT("script", "脚本"),
-    REACT("react", "响应式"),
-    FLOW("flow", "流程");
+    REACT("react", "智能体"),
+    FLOW("flow", "流程"),
+    RAG("rag", "RAG知识库"),
+    SIMPLE("simple", "简单"),
+    DEEPSEARCH("deepsearch", "深度搜索");
 
     private final String code;
     private final String label;
