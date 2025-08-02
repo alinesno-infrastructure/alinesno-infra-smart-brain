@@ -144,7 +144,7 @@ const currentRole = ref({
 });
 
 // 新增：欢迎界面开关状态
-const welcomeEnabled = ref('oneTime');
+const welcomeEnabled = ref('close');
 
 const welcomeOptions = [
   { value: 'oneTime', label: '开启一次', icon: 'fa-clock' },
