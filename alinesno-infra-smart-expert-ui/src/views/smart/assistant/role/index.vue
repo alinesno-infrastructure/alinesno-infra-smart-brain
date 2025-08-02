@@ -39,7 +39,7 @@
 
             <el-row :gutter="10" class="mb8">
               <el-col :span="1.5">
-                <el-button type="primary" plain icon="Plus" @click="handleAdd">新增
+                <el-button type="primary" plain icon="Plus" @click="handleAdd">新建
                 </el-button>
               </el-col>
               <el-col :span="1.5">
@@ -145,12 +145,14 @@
     </el-row>
 
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="800px" append-to-body>
-      <el-form :model="form" :rules="rules" size="large" ref="RoleRef" label-width="80px">
+    <el-dialog :title="title" v-model="open" style="width:80%;max-width:1400px" append-to-body>
 
+    <el-row>
+  <el-col :span="16">
+      <el-form :model="form" :label-position="'right'" :rules="rules" size="large" ref="RoleRef" label-width="80px">
         <el-row>
           <el-col :span="24" class="editor-after-div">
-            <el-form-item label="头像" :rules="[{ required: true, message: '请上传头像', trigger: 'blur', },]">
+            <el-form-item label="头像" prop="roleAvatar">
 
               <el-upload 
                 :file-list="imageUrl" 
@@ -166,8 +168,7 @@
                   <Plus />
                 </el-icon>
                 <template #tip>
-                  <div class="el-upload__tip" style="text-align: left;">
-                    只能上传一张图片
+                  <div class="el-upload__tip" style="text-align: left;"> 
                   </div>
                 </template>
               </el-upload>
@@ -175,7 +176,38 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-col :span="24">
+<el-row>
+
+
+  <el-col :span="24">
+    <el-form-item label="执行类型" prop="scriptType">
+      <el-radio-group v-model="form.scriptType" :disabled="form.id != null">
+        <!-- 自定义每个radio的内容，包含图标、标题和描述 -->
+        <el-radio 
+          v-for="item in executeTypes" 
+          :key="item.code" 
+          :value="item.code"
+          size="large" 
+          border
+          class="custom-radio"
+        >
+          <template #default>
+            <div class="radio-content"> 
+              <div class="radio-info">
+                <div class="radio-title"><i :class="item.icon" class="radio-icon"></i> {{ item.title }}</div>
+                <div class="radio-desc">{{ item.desc }}</div>
+              </div>
+            </div>
+          </template>
+        </el-radio>
+      </el-radio-group>
+    </el-form-item>
+  </el-col>
+</el-row> 
+        
+        <el-row>
+        <!--
+        <el-col :span="12">
           <el-form-item label="角色类型" prop="roleType">
             <el-radio-group v-model="form.roleType">
               <el-radio v-for="item in roleTypes" :key="item.key" :label="item.key" size="large" border>{{ item.name
@@ -183,8 +215,8 @@
             </el-radio-group>
           </el-form-item>
         </el-col>
-        <el-row>
-          <el-col :span="24">
+        -->
+          <el-col :span="12">
             <el-form-item style="width: 100%;" label="业务分类" prop="industryCatalog">
               <el-tree-select v-model="form.industryCatalog" :data="deptOptions"
                 :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属类型"
@@ -194,12 +226,12 @@
         </el-row>
 
         <el-row>
-          <el-col :span="24">
+          <el-col :span="23">
             <el-form-item label="名称" prop="roleName">
               <el-input v-model="form.roleName" placeholder="请输入角色名称" maxlength="50" />
             </el-form-item>
           </el-col>
-          <el-col :span="24">
+          <el-col :span="23">
             <el-form-item label="描述" prop="responsibilities">
               <el-input type="textarea" :rows="2" resize="none" v-model="form.responsibilities" placeholder="请输入角色描述"
                 maxlength="50" />
@@ -207,23 +239,29 @@
           </el-col>
         </el-row>
 
-        <el-row>
-          <el-col :span="24">
-            <el-form-item label="执行类型" prop="scriptType">
-              <el-radio-group v-model="form.scriptType" :disabled="form.id != null">
-                <el-radio v-for="item in executeTypes" :key="item.code" :value="item.code" :label="item.code"
-                  size="large" border>{{ item.title }}</el-radio>
-              </el-radio-group>
-            </el-form-item>
-          </el-col>
-        </el-row>
+        
 
       </el-form>
-      <template #footer>
+      
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
+          <el-button type="primary" size="large" @click="submitForm">确 定</el-button>
         </div>
-      </template>
+      
+        </el-col>
+
+<el-col :span="8" class="agent-siderbar">
+  <div class="sidebar-content">
+    <div class="selected-type-info" v-if="form.scriptType">
+      <h3> <i :class="selectedTypeInfo.icon" class="type-icon"></i> {{ selectedTypeInfo.title }}</h3>
+      <p class="type-description">{{ selectedTypeInfo.desc }}</p>
+    </div>
+    <div class="sidebar-image">
+      <img :src="getAgentIconPath(selectedTypeInfo.code)"/>
+    </div>
+  </div>
+</el-col>
+
+</el-row>
     </el-dialog>
 
     <el-dialog v-model="pushOrgDialogFormVisible" title="请输入推送组织号" width="600px">
@@ -293,6 +331,7 @@
 
 <script setup name="Role">
 import { getToken } from "@/utils/auth";
+import { getAgentIconPath } from "@/utils/llmicons";
 import { ElLoading } from 'element-plus'
 
 import {
@@ -420,7 +459,8 @@ const roleTypes = ref([
 const data = reactive({
   form: {
     roleAvatar: null,
-    scriptType: 'script'
+    scriptType: 'script',
+    roleType: 'single_role',
   },
   queryParams: {
     pageNum: 1,
@@ -433,7 +473,7 @@ const data = reactive({
   },
   rules: {
     roleId: [{ required: true, message: "角色编号不能为空", trigger: "blur" }],
-    roleType: [{ required: true, message: "角色类型不能为空", trigger: "blur" }],
+    // roleType: [{ required: true, message: "角色类型不能为空", trigger: "blur" }],
     scriptType: [{ required: true, message: "脚本类型不能为空", trigger: "blur" }],
     roleName: [{ required: true, message: "角色名称不能为空", trigger: "blur" }, {
       min: 2,
@@ -442,7 +482,7 @@ const data = reactive({
       trigger: "blur"
     }],
     responsibilities: [{ required: true, message: "角色描述不能为空", trigger: "blur" }],
-    domain: [{ required: true, message: "所属领域不能为空", trigger: "blur" }],
+    roleAvatar: [{ required: true, message: "头像不能为空", trigger: "blur" }],
     roleLevel: [{ required: true, message: "角色级别不能为空", trigger: "blur" }],
     storagePath: [{ required: true, message: "安全存储路径不能为空", trigger: "blur" }],
     industryCatalog: [{ required: true, message: "角色类型不能为空", trigger: "blur" }],
@@ -501,6 +541,15 @@ const beforeAvatarUpload = (rawFile) => {
   return true;
 };
 
+// 替换原来的三个方法，只需一个计算属性
+const selectedTypeInfo = computed(() => {
+  return executeTypes.value.find(type => type.code === form.value.scriptType) || {
+    title: '请选择执行类型',
+    desc: '智能体类型',
+    icon: 'fa-solid fa-question'
+  }
+})
+
 /** 推荐组织Hero角色 */
 function handleRecommended(roleId) {
   recommended(roleId).then(res => {
@@ -557,8 +606,6 @@ function handleConfirmPushOrg() {
     pushLoading.value = false;
   })
 }
-
-
 
 // 节点单击事件
 function handleNodeClick(data) {
@@ -689,6 +736,7 @@ function submitForm() {
   proxy.$refs["RoleRef"].validate(valid => {
     if (valid) {
       if (form.value.id != undefined) {
+        form.value.roleType = 'single_role' ; 
         modifyInfo(form.value).then(response => {
           proxy.$modal.msgSuccess("修改成功");
           open.value = false;
@@ -743,6 +791,132 @@ getList();
     width: 56px;
     height: 56px;
   }
+}
+
+$radio-primary-color: #409eff; // 主色调变量
+$radio-margin-bottom: 12px;
+$radio-padding: 5px;
+$title-font-size: 14px;
+$desc-font-size: 12px;
+$desc-color: #606266;
+
+.custom-radio {
+  display: block;
+  margin-bottom: $radio-margin-bottom;
+  padding: $radio-padding !important;
+  height: auto;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  margin-right: 10px !important;
+  &:hover {
+    background-color: rgba($radio-primary-color, 0.05);
+  }
+  
+  .radio-content {
+    display: flex; 
+    align-items: center;
+    width:230px;
+    line-height: 1.5rem;
+    
+    .radio-icon {
+      font-size: 20px; 
+      color: $radio-primary-color;
+      vertical-align: middle;
+      flex-shrink: 0; 
+    }
+    
+    .radio-info {
+      flex-grow: 1;
+      min-width: 0;
+      
+      .radio-title {
+        font-weight: 500;
+        margin-bottom: 4px;
+        font-size: $title-font-size;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .radio-desc {
+        color: $desc-color;
+        font-size: $desc-font-size;
+        line-height: 1.5;
+        max-width: 800px;
+        white-space: normal;
+        
+        // 关键样式：限制最多2行并显示省略号
+        display: -webkit-box;
+        -webkit-line-clamp: 2; // 最多显示2行
+        -webkit-box-orient: vertical;
+        overflow: hidden; // 超出部分隐藏
+        text-overflow: ellipsis; // 显示省略号
+      }
+    }
+  }
+  
+  &.is-checked {
+    .radio-title {
+      color: $radio-primary-color;
+      font-weight: 600;
+    }
+  }
+
+}
+
+.agent-siderbar {
+  border-radius: 8px;
+  background-color: #fafafa; 
+  height: 100%;
+  margin-top:20px;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 30px;
+  
+  .sidebar-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    .selected-type-info { 
+      padding:10px 20px;
+      font-size:14px;
+      
+      h3 {
+        color: #333;
+        font-size: 15px;
+        margin-bottom: 10px;
+      }
+      
+      .type-description {
+        color: #666;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      
+      .type-icon { 
+        font-size: 20px;
+        color: var(--el-color-primary);
+      }
+    }
+    
+    .sidebar-image {
+      margin-top: auto;
+      
+      img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+      }
+    }
+  }
+}
+
+
+  .dialog-footer {
+    text-align: right;
+    margin: 20px;
 }
 
 </style>
