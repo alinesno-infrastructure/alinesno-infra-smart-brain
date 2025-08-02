@@ -90,14 +90,22 @@
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-                      <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
-                        <div>
-                            <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
-                            <el-button type="info" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
-                            <el-button type="info" v-if="item.messageId" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-                            <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                            <el-button type="info" v-if="item.messageId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                      <div class="chat-ai-footer">
+
+                        <div class="chat-ai-msg-info" :class="(item.roleType == 'agent' && index > 1 && !chatStreamLoading) ? 'show-tools' : 'hide-tools' ">
+                          <el-button type="info" link icon="Link" size="small" @click="handleOpenMessageReference(item)">引用</el-button> 
                         </div>
+
+                        <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+                          <div>
+                              <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+                              <el-button type="info" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+                              <el-button type="info" v-if="item.messageId" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">关联</el-button>
+                              <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                              <el-button type="info" v-if="item.messageId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                          </div>
+                        </div>
+
                       </div>
 
                       <!-- 用户问题建议_start ，只要AI最后一条消息下面输出 -->
@@ -180,6 +188,9 @@
       </el-row>
     </div>
 
+    <!-- 消息引用弹出窗 -->
+    <ChatMessageReferencePanel ref="chatMessageReferencePanelRef" />
+
   </div>
 </template>
 
@@ -191,6 +202,7 @@ import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
 import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
+import ChatMessageReferencePanel from '@/views/smart/assistant/llmModel/chatMessageReferencePanel'
 import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
 import ChatAttachmentMessagePanel from '@/views/smart/assistant/llmModel/chatAttachmentMessagePanel'
 import UserQuestionSuggestions from '@/views/smart/assistant/llmModel/userQuestionSuggestionsPanel'
@@ -225,6 +237,7 @@ const visible = ref(false)
 const userQuestionSuggestionsRef = ref(null);
 
 const attachmentPanelRef = ref(null);
+const chatMessageReferencePanelRef = ref(null);
 
 // 定义响应式变量
 const isRecording = ref(false);
@@ -304,6 +317,11 @@ function sendAttachmentActions(actionTxt) {
 /** 是否语音输入 */
 function AudioListener() {
   isSpeaking.value = !isSpeaking.value
+}
+
+// 打开消息引用
+const handleOpenMessageReference = (item) => {
+  chatMessageReferencePanelRef.value.openReferece(item);
 }
 
 // 是否显示调试内容
@@ -445,8 +463,7 @@ const pushResponseMessageList = (newMessage) => {
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].status = newMessage.flowStep.status;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].isPrint = newMessage.flowStep.print;
           messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText += newMessage.flowStep.flowChatText;
-          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText;
-          // console.log('flow chat text = ' + messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowChatText);
+          messageList.value[existingIndex].flowStepArr[existingStepIdIndex].flowReasoningText += newMessage.flowStep.flowReasoningText; 
         } else {
           messageList.value[existingIndex].flowStepArr.push(newMessage.flowStep);
         }
@@ -545,10 +562,7 @@ function handleSseConnect(channelStreamId) {
 // }
 
 // 获取businessId并放到提问框架里面
-function handleBusinessIdToMessageBox(item) {
-  // const businessIdMessage = ' #' + item.businessId + ' ';
-  // businessId.value = item.businessId;
-  // message.value += businessIdMessage;
+function handleBusinessIdToMessageBox(item) { 
 
   const businessIdMessage = ' #' + item.messageId + ' ';
   businessId.value = item.messageId;
@@ -742,6 +756,15 @@ html pre code.hljs {
 
     }
 
+  }
+
+  .chat-ai-footer{
+    display: flex;
+    justify-content: space-between;
+
+    .chat-ai-msg-info{
+      display: flex;
+    }
   }
 
   .chat-ai-say-tools{
