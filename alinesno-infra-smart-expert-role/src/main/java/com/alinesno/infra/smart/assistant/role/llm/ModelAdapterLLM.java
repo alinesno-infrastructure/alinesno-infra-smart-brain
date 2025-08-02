@@ -53,9 +53,6 @@ public class ModelAdapterLLM extends BaseModelAdapter {
     @SneakyThrows
     public String processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , boolean isSave) {
 
-//        long workflowId = IdUtil.getSnowflakeNextId() ;
-
-//        CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo, workflowId+"") ;
         CompletableFuture<AiMessage> future = getAiChatResultAsync(llm, role, prompt, taskInfo) ; //, getNode().getId()) ;
 
         AiMessage message = future.get();
@@ -110,50 +107,24 @@ public class ModelAdapterLLM extends BaseModelAdapter {
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @SneakyThrows
     public String processStreamSingle(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
-
-        long messageId = IdUtil.getSnowflakeNextId() ;
-        CompletableFuture<AiMessage> future = getSingleAiChatResultAsync(llm, role, prompt, taskInfo , messageId) ;
-
-        AiMessage message = future.get();
-        log.debug("output = {}" , message.getFullContent());
-
-        MessageEntity entity = new MessageEntity();
-
-        entity.setTraceBusId(taskInfo.getTraceBusId());
-        entity.setId(messageId) ;
-        entity.setContent(message.getFullContent()) ;
-        entity.setReasoningContent(message.getFullReasoningContent());
-        entity.setFormatContent(message.getFullContent());
-        entity.setName(role.getRoleName());
-
-        entity.setRoleType("agent");
-        entity.setReaderType("html");
-
-        entity.setAddTime(new Date());
-        entity.setIcon(role.getRoleAvatar());
-
-        entity.setChannelId(taskInfo.getChannelId()) ;
-        entity.setChannelStreamId(taskInfo.getChannelStreamId());
-        entity.setRoleId(role.getId()) ;
-
-        // 权限配置
-        entity.setOrgId(taskInfo.getOrgId());
-        entity.setDepartmentId(taskInfo.getDepartmentId());
-        entity.setOperatorId(taskInfo.getOperatorId());
-
-        messageService.save(entity);
-
-        return message.getFullContent() ;
-
+        throw new UnsupportedOperationException("脚本使用过时的方法，请重新调整!");
     }
 
     // 移除同步等待，返回CompletableFuture而非String
     public CompletableFuture<String> processStreamSingleAsync(Llm llm, IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
-        long messageId = IdUtil.getSnowflakeNextId();
-        return getSingleAiChatResultAsync(llm, role, prompt, taskInfo, messageId)
+        return getSingleAiChatResultAsync(llm, role, prompt, taskInfo, IdUtil.getSnowflakeNextId())
                 .thenApply(aiMessage -> {
+
+                    String messageId = aiMessage.getMetadata(MESSAGE_ID) + "" ;
                     MessageEntity entity = getMessageEntity(role, taskInfo, aiMessage);
+                    entity.setId(Long.valueOf(messageId));
+
+                    // 保存消息
                     messageService.save(entity);
+
+                    // 保存消息引用
+                    messageReferenceService.saveMessageReference(taskInfo.getDatasetMap() , messageId);
+
                     return aiMessage.getFullContent();
                 });
     }
