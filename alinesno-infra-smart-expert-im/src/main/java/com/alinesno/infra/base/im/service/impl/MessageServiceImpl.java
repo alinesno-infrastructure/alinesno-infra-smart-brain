@@ -164,10 +164,6 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
         entity.setRoleId(personDto.getRoleId());
         entity.setAccountId(personDto.getAccountId());
 
-//        entity.setOrgId(message.getOrgId());
-//        entity.setDepartmentId(message.getDepartmentId());
-//        entity.setOperatorId(message.getOperatorId());
-
         save(entity);
 
         return entity.getId() ;
