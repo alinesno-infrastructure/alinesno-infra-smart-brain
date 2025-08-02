@@ -5,7 +5,7 @@ import com.agentsflex.core.store.SearchWrapper;
 import com.agentsflex.store.pgvector.PgvectorVectorStore;
 import com.agentsflex.store.pgvector.PgvectorVectorStoreConfig;
 import com.alinesno.infra.base.search.vector.utils.DashScopeEmbeddingUtils;
-import com.alinesno.infra.smart.assistant.role.context.ParserDataBean;
+import com.alinesno.infra.smart.im.dto.ParserDataBean;
 import com.alinesno.infra.smart.scene.constants.SceneConstants;
 import jakarta.annotation.PostConstruct;
 import lombok.SneakyThrows;
