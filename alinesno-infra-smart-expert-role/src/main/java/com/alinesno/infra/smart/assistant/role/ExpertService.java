@@ -13,7 +13,6 @@ import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.utils.StringUtils;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
@@ -38,6 +37,7 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IChannelService;
+import com.alinesno.infra.smart.im.service.IMessageReferenceService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
@@ -55,7 +55,6 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Semaphore;
@@ -109,14 +108,14 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     protected QianWenLLM qianWenLLM;
 
-//    @Autowired
-//    protected AgentFlexLLM agentFlexLLM ;
-
     @Autowired
     protected QianWenAuditLLM qianWenAuditLLM;
 
     @Autowired
     protected IMessageService messageService;
+
+    @Autowired
+    protected IMessageReferenceService messageReferenceService;
 
     @Autowired
     private ITemplateService templateService ;
@@ -155,13 +154,13 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         if (taskInfo.isFunctionCall()) {
             record.setChatType(TYPE_FUNCTION);
-            contentFuture = handleFunctionCallAsync(role, workflowExecution, taskInfo);
+            contentFuture = handleFunctionCallAsync(role, workflowExecution, taskInfo , record);
         } else if (taskInfo.isModify()) {
             record.setChatType(TYPE_MODIFY);
-            contentFuture = handleModifyCallAsync(role, workflowExecution, taskInfo);
+            contentFuture = handleModifyCallAsync(role, workflowExecution, taskInfo , record);
         } else {
             record.setChatType(TYPE_ROLE);
-            contentFuture = handleRoleAsync(role, workflowExecution, taskInfo); // 调用异步版handleRole
+            contentFuture = handleRoleAsync(role, workflowExecution, taskInfo , record); // 调用异步版handleRole
         }
 
         // 3. 处理结果并返回CompletableFuture
@@ -201,57 +200,39 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     /**
      * 异步处理FunctionCall类型任务
      */
-    private CompletableFuture<String> handleFunctionCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+    private CompletableFuture<String> handleFunctionCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo, WorkflowExecutionDto record) {
         // 快速失败校验
         if (StringUtils.isEmpty(role.getFunctionCallbackScript())) {
+            record.setPrint(true);
             return CompletableFuture.completedFuture("未配置执行能力.");
         }
 
-        // 异步执行业务逻辑
-//        return CompletableFuture.supplyAsync(() -> {
-////            if (workflowExecution == null) {
-////                return "请选择操作业务.";
-////            }
-//            String gentContent = workflowExecution.getContent();
-//            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//            return handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
-//        }, chatThreadPool);
-
         if (workflowExecution == null) {
+            record.setPrint(true);
             return CompletableFuture.completedFuture("请选择操作业务.");
         }
+
         String gentContent = workflowExecution.getContent();
         List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
+
         return handleFunctionCall(role, workflowExecution, codeContentList, taskInfo) ;
     }
 
     /**
      * 异步处理Modify类型任务
      */
-    private CompletableFuture<String> handleModifyCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+    private CompletableFuture<String> handleModifyCallAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo, WorkflowExecutionDto record) {
         // 快速失败校验
         if (StringUtils.isEmpty(role.getAuditScript())) {
+            record.setPrint(true);
             return CompletableFuture.completedFuture("未配置审核修改能力.");
         }
-
-        // 异步执行业务逻辑
-//        return CompletableFuture.supplyAsync(() -> {
-//            if (!taskInfo.isModifyPreBusinessId()) {
-//                return handleModifyCall(role, workflowExecution, null, taskInfo);
-//            } else {
-//                if (workflowExecution == null) {
-//                    return "请选择操作业务.";
-//                }
-//                String gentContent = workflowExecution.getContent();
-//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//                return handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
-//            }
-//        }, chatThreadPool);
 
         if (!taskInfo.isModifyPreBusinessId()) {
             return handleModifyCall(role, workflowExecution, null, taskInfo);
         } else {
             if (workflowExecution == null) {
+                record.setPrint(true);
                 return CompletableFuture.completedFuture("请选择操作业务.");
             }
             String gentContent = workflowExecution.getContent();
@@ -263,131 +244,17 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     /**
      * 异步处理Role类型任务（适配之前改造的handleRole异步方法）
      */
-    private CompletableFuture<String> handleRoleAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+    private CompletableFuture<String> handleRoleAsync(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo, WorkflowExecutionDto record) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // 调用之前改造的返回CompletableFuture<String>的handleRole方法
-                return handleRole(role, workflowExecution, taskInfo).get(); // 注意：这里的handleRole已改造为返回CompletableFuture
+                return handleRole(role, workflowExecution, taskInfo).get();
             } catch (Exception e) {
                 log.error("handleRole执行异常", e);
+                record.setPrint(true);
                 return "执行异常:" + e.getMessage();
             }
         }, chatThreadPool);
     }
-
-//    /**
-//     * 执行角色
-//     *
-//     * @param role              角色信息
-//     * @param workflowExecution 工作流执行实体
-//     * @param taskInfo          消息任务信息
-//     * @return
-//     */
-//    @Override
-//    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
-//
-//        WorkflowExecutionDto record = new WorkflowExecutionDto();
-//
-//        // 设置业务跟踪
-//        long traceBusId = IdUtil.getSnowflakeNextId();
-//        taskInfo.setTraceBusId(traceBusId);
-//        record.setTraceBusId(traceBusId);
-//
-//        // 任务开始记录
-//        record.setRoleId(role.getId());
-//        record.setChannelId(taskInfo.getChannelId());
-//
-//        record.setBuildNumber(1);
-//        record.setStartTime(System.currentTimeMillis());
-//
-//        record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
-//
-//        this.setRole(role);
-//        this.setTaskInfo(taskInfo);
-//        this.setMsgUuid(IdUtil.getSnowflakeNextId());
-//        this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
-//
-//        if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
-//           taskInfo.setHasExecuteTool(true);
-//        }
-//
-//        if (taskInfo.isFunctionCall()) {  // 执行方法
-//
-//            record.setChatType(TYPE_FUNCTION);
-//
-//            if(StringUtils.isEmpty(role.getFunctionCallbackScript())){
-//                record.setGenContent("未配置执行能力.");
-//
-//                return record ;
-//            }
-//
-//            String result = null;
-//            if (workflowExecution == null) {
-//                result = "请选择操作业务.";
-//                record.setGenContent(result);
-//            } else {
-//                // 执行任务并记录
-//                String gentContent = workflowExecution.getContent();
-//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//
-//                result = handleFunctionCall(role, workflowExecution, codeContentList, taskInfo);
-//                record.setGenContent(result);
-//            }
-//
-//        } else if (taskInfo.isModify()) {
-//
-//            record.setChatType(TYPE_MODIFY);
-//
-//            if(StringUtils.isEmpty(role.getAuditScript())){
-//                record.setGenContent("未配置审核修改能力.");
-//
-//                return record ;
-//            }
-//
-//            String result = null;
-//
-//            if(!taskInfo.isModifyPreBusinessId()){
-//                result = handleModifyCall(role, workflowExecution, null , taskInfo);
-//            }else{
-//                if (workflowExecution == null) {
-//                    result = "请选择操作业务.";
-//                } else {
-//                    // 执行任务并记录
-//                    String gentContent = workflowExecution.getContent();
-//                    List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//
-//                    result = handleModifyCall(role, workflowExecution, codeContentList, taskInfo);
-//                }
-//            }
-//
-//            record.setGenContent(result);
-//        } else {
-//
-//            record.setChatType(TYPE_ROLE);
-//
-//
-//            try {
-//                // 处理业务
-//                String gentContent = handleRole(role, workflowExecution, taskInfo);
-//                // 解析出生成的内容
-//                record.setGenContent(gentContent);
-//
-//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//
-//                record.setCodeContent(codeContentList);
-//            } catch (Exception e) {
-//                log.error("解析代码块异常:{}", e.getMessage());
-//                record.setGenContent("执行异常:" + e.getMessage());
-//            }
-//        }
-//
-//        // 处理完成之后记录更新
-//        record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
-//        record.setEndTime(System.currentTimeMillis());
-//        record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
-//
-//        return record;
-//    }
 
     /**
      * 通过channelId获取渠道信息
@@ -400,18 +267,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         }
         return null ;
     }
-
-//    /**
-//     * 场景唯一标识
-//     * @param channelId
-//     * @return
-//     */
-//    public SceneEntity getScreenInfo(long channelId) {
-//        if (channelId > 0){
-//            return screenService.getById(channelId) ;
-//        }
-//        return null ;
-//    }
 
     /**
      * 获取到任务执行详情
@@ -573,34 +428,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         return result.toString();
     }
 
-    /**
-     * 生成语音mp3并上传到oss
-     */
-    public String generateAudio(String voice, String text) {
-
-        File file = qianWenAuditLLM.generateAudit(voice, text);
-
-        R<String> r = cloudStorageConsumer.upload(file) ;
-
-        return r.getData();
-    }
-
-    /**
-     * 上传文件到存储平台
-     */
-    public String uploadFile(String fileAbcPath) {
-        File f = new File(fileAbcPath);
-
-        log.info("uploadFile:{}", f.getAbsolutePath());
-
-        if(!f.exists()){
-            return "文件"+fileAbcPath+"不存在.";
-        }
-
-        R<String> r = cloudStorageConsumer.uploadCallbackUrl(f, "qiniu-kodo-pub");
-        return r.getData();
-    }
-
     @SneakyThrows
     public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
 
@@ -662,40 +489,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         }
 
         processStreamCallback(role, taskInfo, msgManager);
-    }
-
-    /**
-     * 同步任务完成之后回调
-     * @param role 角色
-     * @param taskInfo 任务信息
-     * @param content 回调内容
-     */
-    public void processSyncCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo , String content){
-
-        MessageEntity entity = new MessageEntity();
-
-        entity.setTraceBusId(taskInfo.getTraceBusId());
-
-        entity.setContent(content) ;
-        entity.setFormatContent(content);
-        entity.setName(role.getRoleName());
-
-        entity.setRoleType("agent");
-        entity.setReaderType("html");
-
-        entity.setAddTime(new Date());
-        entity.setIcon(role.getRoleAvatar());
-
-        entity.setChannelId(taskInfo.isScreen()?taskInfo.getSceneId():taskInfo.getChannelId());
-        entity.setRoleId(role.getId()) ;
-
-        messageService.save(entity);
-        taskInfo.setBusinessId(entity.getId()+"");
-
-        streamMessagePublisher.doStuffAndPublishAnEvent("同步任务完成.",
-                getRole() ,
-                getTaskInfo(),
-                IdUtil.getSnowflakeNextId()) ;
     }
 
     protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
@@ -803,7 +596,7 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         // TODO 待处理消息过滤的问题
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByDesc(MessageEntity::getAddTime)
+                .orderByAsc(MessageEntity::getAddTime)
                 .last("limit " + maxHistory);;
         List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
 
@@ -858,9 +651,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
      */
     protected void handleHistoryMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId , int maxLength) {
 
-        // 假设这是你想要设置的最大字符数
-        // maxLength = ; // 或者其他你认为合适的最大值
-
         log.debug("历史记录：");
 
         LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
@@ -875,8 +665,6 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         for (MessageEntity dto : chatMessageDtoList) {
             String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
             tokenLength = chatText.length();
-
-            log.debug("-->> {}({}):{} (Token Length: {})", dto.getName(), dto.getRoleType(), chatText, tokenLength);
 
             // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
             if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
