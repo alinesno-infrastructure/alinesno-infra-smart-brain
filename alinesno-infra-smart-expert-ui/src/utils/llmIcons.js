@@ -27,6 +27,18 @@ const getAipStyle = (type) => {
   return new URL(`/src/assets/icons/aip-style/${fileName}`, import.meta.url).href;
 };
 
+const getAgentIconPath = (type) => {
+  const iconMap = {
+    'rag': 'rag.png',
+    'flow': 'flow.png',
+    'script': 'script.png',
+    'deepsearch': 'deepsearch.png',
+    'react': 'react.png',
+  };
+  
+  const fileName = iconMap[type] || 'rag.png';
+  return new URL(`/src/assets/icons/agent/${fileName}`, import.meta.url).href;
+};
 
 const getOutlineSvg = (type) => {
   const iconMap = {
@@ -43,6 +55,7 @@ const getOutlineSvg = (type) => {
 
 export { 
   getLlmIconPath,
-  getAipStyle , 
+  getAipStyle, 
+  getAgentIconPath,
   getOutlineSvg
 };
