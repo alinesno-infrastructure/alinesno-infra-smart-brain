@@ -36,8 +36,8 @@ public class Prompt {
                 datasetKnowledgeDocument,
                 thought.toString() ,
                 parsePlugins(tools , agent.isAskHumanHelp() ,  hasOutsideKnowledge),
-                maxLoop ,
                 taskPrompt(goal),
+                maxLoop ,
                 getCurrentTime()
 
         );
