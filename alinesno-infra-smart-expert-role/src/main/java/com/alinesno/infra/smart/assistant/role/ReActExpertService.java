@@ -113,6 +113,9 @@ public class ReActExpertService extends ExpertService {
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
         String datasetKnowledgeDocument = reActServiceTool.getDatasetKnowledgeDocument(queryText , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
+        // 历史对话
+        handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
+
         boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getCollectionIndexName()) ;
         boolean isCompleted = false ;  // 是否已经完成
         boolean isToolCompleted = false ;  // 是否已经完成
@@ -138,8 +141,6 @@ public class ReActExpertService extends ExpertService {
 
             reActServiceTool.eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
-            // 历史对话
-            handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
             historyPrompt.addMessage(new HumanMessage(prompt));
 
             CompletableFuture<String> future = getAiChatResultAsync(llm, historyPrompt , taskInfo , oneChatId , modelConfig) ;
@@ -304,10 +305,14 @@ public class ReActExpertService extends ExpertService {
             }
         } while (!isCompleted);
 
-        streamStoreMessagePublisher.doStuffAndPublishAnEvent(answer == null ? "" : answer,
+        // 返回消息的ID
+        String messageId = streamStoreMessagePublisher.doStuffAndPublishAnEvent(answer == null ? "" : answer,
                 role,
                 taskInfo,
                 taskInfo.getTraceBusId()) ;
+
+        // 保存内容引用
+        messageReferenceService.saveMessageReference(taskInfo.getDatasetMap() , messageId);
 
         return CompletableFuture.completedFuture(StringUtils.hasLength(answer)?
                 AgentConstants.ChatText.CHAT_FINISH :
@@ -365,17 +370,15 @@ public class ReActExpertService extends ExpertService {
         return null;
     }
 
-    protected CompletableFuture<String> getAiChatResultAsync(Llm llm, HistoriesPrompt historyPrompt  , MessageTaskInfo taskInfo , String oneChatId, ModelConfig modelConfig) {
+    protected CompletableFuture<String> getAiChatResultAsync(Llm llm, HistoriesPrompt historyPrompt,
+                                                             MessageTaskInfo taskInfo, String oneChatId, ModelConfig modelConfig) {
+
         CompletableFuture<String> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
-
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
-        final MessageTaskInfo localTaskInfo = taskInfo;
         long startTime = System.currentTimeMillis();
 
         ChatOptions chatOptions = new ChatOptions();
-
-        if(modelConfig != null && modelConfig.isEnabled()){
+        if (modelConfig != null && modelConfig.isEnabled()) {
             chatOptions.setMaxTokens(modelConfig.getReplyLimit());
             chatOptions.setTemperature(Float.parseFloat(modelConfig.getTemperature()));
             chatOptions.setTopP(Float.parseFloat(modelConfig.getTopP()));
@@ -384,69 +387,48 @@ public class ReActExpertService extends ExpertService {
         llm.chatStream(historyPrompt, new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
+                AiMessage message = response.getMessage();
 
-                    AiMessage message = response.getMessage();
+                FlowStepStatusDto stepDto = new FlowStepStatusDto();
+                stepDto.setMessage("任务进行中...");
+                stepDto.setStepId(oneChatId);
+                stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                stepDto.setFlowChatText(message.getContent());
+                stepDto.setFlowReasoningText(message.getReasoningContent());
+                stepDto.setPrint(true);
 
-                    System.out.println(">>>> " + message);
+                // 移除了 synchronized 块
+                taskInfo.setFlowStep(stepDto);
 
-                    FlowStepStatusDto stepDto = new FlowStepStatusDto();
-                    stepDto.setMessage("任务进行中...");
-                    stepDto.setStepId(oneChatId);
-                    stepDto.setStatus(AgentConstants.STEP_PROCESS);
+                try {
+                    streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), taskInfo, taskInfo.getTraceBusId());
 
-                    if(StringUtils.hasLength(message.getContent())) {
-                        stepDto.setFlowChatText(message.getContent());
+                    if (message.getStatus() == MessageStatus.END) {
+                        outputStr.set(message.getFullContent());
+                        stepDto.setStatus(AgentConstants.STEP_FINISH);
+
+                        long endTime = System.currentTimeMillis();
+                        int totalToken = reActServiceTool.getTotalToken(message);
+
+                        usage.setTime(endTime - startTime);
+                        usage.setToken(totalToken);
+                        taskInfo.setUsage(usage);
+
+                        future.complete(outputStr.get());
                     }
-
-                    if(StringUtils.hasLength(message.getReasoningContent())){
-                        stepDto.setFlowReasoningText(message.getReasoningContent());
-                    }
-
-                    stepDto.setPrint(true);
-
-                    synchronized (localTaskInfo) {
-                        localTaskInfo.setFlowStep(stepDto);
-                    }
-
-                    try {
-                        boolean isEnd = false;
-                        synchronized (localTaskInfo) {
-                            if (message.getStatus() == MessageStatus.END) {
-                                outputStr.set(message.getFullContent());
-                                stepDto.setStatus(AgentConstants.STEP_FINISH);
-                                isEnd = true;
-                            }
-                        }
-
-                        streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), localTaskInfo, localTaskInfo.getTraceBusId());
-
-                        if (isEnd) {
-                            long endTime = System.currentTimeMillis();
-                            int totalToken = reActServiceTool.getTotalToken(message) ;
-
-                            taskInfo.setUsage(usage);
-
-                            usage.setTime(endTime - startTime);
-                            usage.setToken(totalToken);
-                            taskInfo.setUsage(usage);
-
-                            future.complete(outputStr.get());
-                        }
-                    } catch (Exception e) {
-                        // 处理发布事件时的异常
-                        log.error(e.getMessage());
-                        future.completeExceptionally(e);
-                    }
+                } catch (Exception e) {
+                    log.error("消息处理失败", e);
+                    future.completeExceptionally(e);
+                }
             }
 
             @Override
             public void onFailure(ChatContext context, Throwable throwable) {
-                log.error("消息处理失败" , throwable);
-                reActServiceTool.eventStepMessage("消息处理失败", AgentConstants.STEP_FINISH , oneChatId , taskInfo) ;
+                log.error("消息处理失败", throwable);
+                reActServiceTool.eventStepMessage("消息处理失败", AgentConstants.STEP_FINISH, oneChatId, taskInfo);
                 future.completeExceptionally(throwable);
             }
-
-        } , chatOptions) ;
+        }, chatOptions);
 
         return future;
     }
