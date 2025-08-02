@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.service.IMessageReferenceService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +23,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @Data
 public class BaseModelAdapter {
+
+    protected static final String MESSAGE_ID = "messageId";
 
     private IndustryRoleEntity role ;  // 角色信息
 
@@ -37,6 +40,9 @@ public class BaseModelAdapter {
 
     @Autowired
     protected IMessageService messageService;
+
+    @Autowired
+    protected IMessageReferenceService messageReferenceService ;
 
     /**
      * 消息提示
@@ -142,9 +148,15 @@ public class BaseModelAdapter {
 
                 try {
                     boolean isEnd = message.getStatus() == MessageStatus.END;
-                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent(), role, localTaskInfo, localTaskInfo.getTraceBusId(), messageId);
+
+                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent(),
+                            role,
+                            localTaskInfo,
+                            localTaskInfo.getTraceBusId(),
+                            messageId);
 
                     if (isEnd) {
+                        message.addMetadata(MESSAGE_ID , messageId);
                         future.complete(message);
                     }
                 } catch (Exception e) {
