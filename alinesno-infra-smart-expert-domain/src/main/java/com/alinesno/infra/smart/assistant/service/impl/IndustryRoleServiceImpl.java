@@ -59,6 +59,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import static com.alinesno.infra.smart.assistant.constants.DefaultScriptConstants.DEFAULT_GROOVY_SCRIPT_DEMO;
+
 /**
  * 应用构建Service业务层处理
  *
@@ -152,38 +154,6 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         e.setPromptContent(gson.toJson(messageDto));
         this.update(e);
     }
-
-//    @Transactional(propagation = Propagation.NOT_SUPPORTED)
-//    @Override
-//    public WorkflowExecutionDto runRoleAgent(MessageTaskInfo taskInfo) {
-//
-//        long roleId = taskInfo.getRoleId();
-//        IndustryRoleEntity role = getById(roleId);
-//        Assert.notNull(role, "角色不存在");
-//
-//        // 更新角色会话次数
-//        role.setChatCount(role.getChatCount()==null?0L:role.getChatCount() + 1);
-//        update(role) ;
-//
-//        taskInfo.setRoleDto(role);
-//
-//        // 获取到节点的执行内容信息
-//        MessageEntity message = null;
-//
-//        String preBusinessId = taskInfo.getPreBusinessId();  // 获取到前一个节点的业务ID
-//
-//        if (StringUtils.hasLength(preBusinessId)) {
-//            IMessageService messageService = SpringUtils.getBean(IMessageService.class);
-//            message = messageService.getById(preBusinessId);
-//        }
-//
-//        IBaseExpertService expertService = getiBaseExpertService(role.getChainId());
-//
-//        WorkflowExecutionDto dto = expertService.runRoleAgent(role, message, taskInfo);
-//        workflowExecutionService.saveRecord(dto);
-//
-//        return dto ;
-//    }
 
     @Transactional(propagation = Propagation.NOT_SUPPORTED)
     @Override
@@ -329,8 +299,14 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
     public void createRole(IndustryRoleEntity e) {
 
         switch (e.getScriptType()) {
-            case "script" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
+            case "script" -> {
+                e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
+                e.setExecuteScript(DEFAULT_GROOVY_SCRIPT_DEMO);  // 默认执行脚本
+                e.setAuditScript(DEFAULT_GROOVY_SCRIPT_DEMO);  // 意见审核脚本
+                e.setFunctionCallbackScript(DEFAULT_GROOVY_SCRIPT_DEMO);  // 功能回调脚本
+            }
             case "react" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
+            case "rag" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_RAG);
             case "flow" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
             case "simple" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_SIMPLE);
             case "deepsearch" -> e.setChainId(AssistantConstants.PREFIX_ASSISTANT_DEEP_SEARCH); // 深度搜索
