@@ -104,7 +104,7 @@
                 <i :class="getWorkplaceNameByType(scope.row.workplaceType)?.icon" ></i>
                 {{ getWorkplaceNameByType(scope.row.workplaceType)?.name }}
             </template>
-          </el-table-column>  -->
+          </el-table-column>  
           <el-table-column label="智能体" align="center" key="workplaceType" width="180" prop="workplaceType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="primary" @click="configAgent(scope.row)">
@@ -126,6 +126,7 @@
               </el-button>
             </template>
           </el-table-column>
+          -->
           <!-- 
           <el-table-column label="状态" align="center" width="100" key="hasStatus" prop="hasStatus" v-if="columns[1].visible" :show-overflow-tooltip="true" >
               <template #default="scope">
