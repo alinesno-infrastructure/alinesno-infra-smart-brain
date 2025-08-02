@@ -3,10 +3,7 @@ package com.alinesno.infra.smart.im.service;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatMessageDto;
-import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.dto.WebMessageDto;
+import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 
 import java.util.List;
@@ -97,4 +94,5 @@ public interface IMessageService extends IBaseService<MessageEntity> {
      * @return
      */
     List<ChatMessageDto> listByChannel(ChatSendMessageDto chatMessage);
+
 }
