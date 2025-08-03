@@ -331,7 +331,7 @@
 
 <script setup name="Role">
 import { getToken } from "@/utils/auth";
-import { getAgentIconPath } from "@/utils/llmicons";
+import { getAgentIconPath } from "@/utils/llmIcons";
 import { ElLoading } from 'element-plus'
 
 import {
