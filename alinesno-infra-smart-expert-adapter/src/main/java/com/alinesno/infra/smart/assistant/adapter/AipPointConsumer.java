@@ -14,7 +14,7 @@ import java.util.List;
  * AipPoint积分系统消费端，通过消费端获取到积分的管理和统一配置
  */
 @BaseRequest(
-        baseURL = "#{alinesno.point.server-url}" ,
+        baseURL = "#{alinesno.infra.gateway.point-server}" ,
         connectTimeout = 30000,
         readTimeout = 60000)
 public interface AipPointConsumer {
