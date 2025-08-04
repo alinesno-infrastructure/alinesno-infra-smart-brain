@@ -20,14 +20,14 @@ public interface DefaultScriptConstants {
             modelAdapterLLM.setNode(modelNode)
                         
             def config = new DeepseekLlmConfig(
-                endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1",
+                endpoint: "https://dashscope.aliyuncs.com/compatible-mode/v1",  // 更换成对应的API接口地址
                 apiKey: secretKey?.qwen_key, // 请在全局配置，密钥配置中设置token apiKey
-                model: "qwen-turbo"
+                model: "qwen-turbo"  // 指定的模型名称
             )
                         
             Llm llm = new DeepseekLlm(config)
                         
-            def prompt = expertService.clearMessage(datasetKnowledgeDocument + taskInfo.getText())\s
+            def prompt = expertService.clearMessage(datasetKnowledgeDocument + taskInfo.getText())
                         
             // 使用异步方法并返回CompletableFuture
             CompletableFuture<String> future = modelAdapterLLM.processStreamSingleAsync(llm, role, prompt, taskInfo)
