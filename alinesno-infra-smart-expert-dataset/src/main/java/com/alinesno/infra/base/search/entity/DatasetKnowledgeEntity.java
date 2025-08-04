@@ -103,4 +103,20 @@ public class DatasetKnowledgeEntity extends InfraBaseEntity {
     @ColumnComment("是否自动导入(1自动导入|0手动导入)")
     @TableField
     private Integer hasAutoImport ;
+
+    @TableField
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("Embedding模型ID")
+    private Long embeddingModelId ;
+
+    @TableField
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("OCR模型ID")
+    private Long ocrModelId ;
+
+    @TableField
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("Rerank模型ID")
+    private Long rerankModelId ;
+
 }
