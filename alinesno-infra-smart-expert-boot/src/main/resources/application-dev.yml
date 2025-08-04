@@ -128,12 +128,7 @@ alinesno:
       milvus:
         ip-addr: 127.0.0.1
         port: 19530
-      assistant:
-        plugin:
-          central: http://data.linesno.com/plugins/
-          path: ${user.home}/.smart-assistant/plugins
       brain:
-        role-template-sync-url: http://data.linesno.com/aip-role/alinesno-infra-smart-brain-role-templates.zip
         qianwen:
           key:  sk-xxxxxxxxx
 
