@@ -19,17 +19,21 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
+import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.MediaType;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -64,6 +68,10 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
+
+    @Autowired
+    @Qualifier("chatThreadPool") // 注入配置的线程池
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -109,7 +117,13 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
     public AjaxResult uploadTmpFileByDatasetId(@Valid @RequestBody DataProcessingDto dto) throws Exception {
         log.debug("dto = {}" , dto);
 
-        service.dataUploadToVectorDataset(dto) ;
+        threadPoolTaskExecutor.execute(() -> {
+            try {
+                service.dataUploadToVectorDataset(dto) ;
+            } catch (Exception e) {
+                log.error("文件上传解析失败", e);
+            }
+        });
 
         return AjaxResult.success("解析成功") ;
     }
@@ -120,7 +134,15 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
     @DataPermissionQuery
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public AjaxResult upload(@RequestPart("file") MultipartFile file, Long datasetId , PermissionQuery query) throws Exception {
+
         String fileName = file.getOriginalFilename();
+
+        LambdaQueryWrapper<DatasetKnowledgeEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DatasetKnowledgeEntity::getDatasetId, datasetId)
+                .eq(DatasetKnowledgeEntity::getDocumentName , fileName);
+
+        // 在同一个数据集,如果是同名的文件,则不允许上传
+        Assert.isTrue(service.count(wrapper) == 0 , "文件["+fileName+"]已存在,请删除原文件重新导入.");
 
         // 新生成的文件名称
         String fileSuffix = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf(".")+1);
@@ -135,7 +157,7 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
         service.saveDatasetTmpFile(datasetId, fileName, targetFile , fileType, fileSuffix , query) ;
 
         // 处理完成之后删除文件
-        // FileUtils.forceDeleteOnExit(targetFile);
+         FileUtils.forceDeleteOnExit(targetFile);
 
         return AjaxResult.success("上传成功") ;
     }
@@ -219,6 +241,15 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
                                         @RequestParam int pageSize) {
         DatasetKnowledgeEntity entity = service.getById(id) ;
         return service.queryDocumentPage(entity, pageNum , pageSize);
+    }
+
+    /**
+     * 删除知识库文档
+     */
+    @DeleteMapping("/deleteDocument")
+    public AjaxResult deleteDocument(@RequestParam Long documentId) {
+        service.deleteDocument(documentId);
+        return ok() ;
     }
 
     /**
