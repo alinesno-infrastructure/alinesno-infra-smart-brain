@@ -117,4 +117,14 @@ public class MilvusVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatas
 
     }
 
+    @Override
+    public void deleteDocument(Long datasetId, String documentName) {
+
+    }
+
+    @Override
+    public void deleteDataset(String datasetId) {
+
+    }
+
 }
