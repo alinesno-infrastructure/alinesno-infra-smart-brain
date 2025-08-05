@@ -120,9 +120,7 @@ alinesno:
     enabled: false
   infra:
     gateway:
-      host: http://alinesno-infra-base-authority-boot.beta.base.infra.linesno.com
-      embedding: https://dashscope.aliyuncs.com/compatible-mode/v1
-      reranker: https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank
+      host: http://alinesno-infra-base-gateway-proxy-application.beta.base.infra.linesno.com
     smart:
       # milvus 向量数据库
       milvus:
