@@ -28,9 +28,5 @@ public class AjaxResultEventStreamConverter extends AbstractHttpMessageConverter
 
     @Override
     protected void writeInternal(AjaxResult ajaxResult, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
-//        OutputStream out = outputMessage.getBody();
-//        String content = "data: " + ajaxResult.toString() + "\n\n";
-//        out.write(content.getBytes(StandardCharsets.UTF_8));
-//        out.flush();
     }
 }
