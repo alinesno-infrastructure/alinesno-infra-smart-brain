@@ -109,6 +109,12 @@ public class DatasetKnowledgeEntity extends InfraBaseEntity {
     @ColumnComment("Embedding模型ID")
     private Long embeddingModelId ;
 
+    // 文档识别模型,比如pdf之类
+    @TableField
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("文档识别模型ID")
+    private Long documentRecognitionModelId ;
+
     @TableField
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @ColumnComment("OCR模型ID")
