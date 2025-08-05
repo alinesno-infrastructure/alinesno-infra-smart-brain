@@ -64,11 +64,11 @@
         <el-table v-loading="loading" :data="DatasetList" @selection-change="handleSelectionChange">
           <el-table-column type="selection" width="50" align="center" />
 
-          <el-table-column width="50px" align="center" label="图标" v-if="columns[0].visible">
+          <el-table-column width="70px" align="center" label="图标" v-if="columns[0].visible">
             <template #default="scope">
-              <div style="font-size: 26px;color:#1d75b0">
-                <i v-if="scope.row.icon" :class="scope.row.icon"></i>  
-                <i v-else class="fa-solid fa-file-pdf"></i>
+              <div class="doc-icon">
+                <i v-if="scope.row.icon" :class="scope.row.icon"></i>   
+                <i v-else class="fa-solid fa-file-word"></i> 
               </div>
             </template>
           </el-table-column>
@@ -86,17 +86,7 @@
               </div>
             </template>
           </el-table-column>
-
-          <!--
-          <el-table-column label="描述信息" align="left" key="description" prop="description" v-if="columns[3].visible">
-            <template #default="scope">
-              <div class="dataset-description">
-                {{ scope.row.description }}
-              </div>
-            </template>
-          </el-table-column>
-          -->
-
+  
           <el-table-column label="访问权限" align="center" width="130" key="accessPermission" prop="accessPermission"
             v-if="columns[5].visible" :show-overflow-tooltip="true">
             <template #default="scope">
@@ -108,8 +98,9 @@
                 </el-button>
             </template>
           </el-table-column>
-          <el-table-column label="数据总量" align="center" width="130" key="datasetSize" prop="datasetSize"
-            v-if="columns[6].visible" :show-overflow-tooltip="true" />
+
+
+          <el-table-column label="数据总量" align="center" width="130" key="datasetSize" prop="datasetSize"  v-if="columns[6].visible" :show-overflow-tooltip="true" />
           <el-table-column label="创建时间" align="center" prop="addTime" v-if="columns[7].visible" width="160">
 
             <template #default="scope">
@@ -137,8 +128,31 @@
     </el-row>
 
     <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="600px" append-to-body>
-      <el-form :model="form" :rules="rules" ref="DatasetRef" label-width="100px" size="large">
+    <el-dialog :title="title" v-model="open" width="980px" append-to-body :close-on-click-modal="false">
+      <el-form :model="form" :rules="rules" :label-position="labelPosition" ref="DatasetRef" label-width="100px" size="large">
+
+                  <el-row>
+          <el-col :span="24">
+            <el-form-item label="配置模式" prop="configType">
+              <el-radio-group v-model="form.configType" size="large" >
+                <el-radio v-for="option in configTypeOptions" :key="option.code" :value="option.code" :label="option.label" border class="custom-radio" >
+              
+
+                               <template #default>
+            <div class="radio-content"> 
+              <div class="radio-info">
+                <div class="radio-title">{{ option.text }}</div>
+                <div class="radio-desc">{{ option.desc }}</div>
+              </div>
+            </div>
+          </template>
+
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <el-row>
           <el-col :span="24">
             <el-form-item label="图标" prop="icon">
@@ -155,7 +169,7 @@
           </el-col>
 
           <el-col :span="24">
-            <el-form-item label="数据集名称" prop="name">
+            <el-form-item label="名称" prop="name">
               <el-input v-model="form.name" placeholder="请输入应用名称" maxlength="50" />
             </el-form-item>
           </el-col>
@@ -165,22 +179,58 @@
           <el-col :span="24">
             <el-form-item label="访问权限" prop="accessPermission">
               <el-radio-group v-model="form.accessPermission" size="large">
-                <el-radio v-for="option in dataScopeOptions" :key="option.code" :value="option.code" :label="option.label">
-                    <el-tooltip class="box-item" effect="dark" :content="option.desc" placement="top-start">
-                  <div style="display: flex;align-items: center;gap: 6px;">
-                      {{ option.text }} <el-icon><QuestionFilled /></el-icon>
-                  </div>
-                    </el-tooltip>
+                <el-radio v-for="option in dataScopeOptions" :key="option.code" :value="option.code" :label="option.label" border
+          class="custom-radio">
+
+                <template #default>
+            <div class="radio-content"> 
+              <div class="radio-info">
+                <div class="radio-title">{{ option.text }}</div>
+                <div class="radio-desc">{{ option.desc }}</div>
+              </div>
+            </div>
+          </template>
+               
                 </el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
         </el-row>
 
+
+ 
+         <!-- 向量模型模板选择项 -->
+            <el-row v-if="form.configType == 'constom'">
+          <el-col :span="17">
+        <el-form-item label="向量模型" prop="embeddingModelId">
+          <LLMSelector :modelType="'vector_model'" v-model="form.embeddingModelId" />
+        </el-form-item>
+        </el-col>
+      
+
+        <!-- 文档识别模板选择项 -->
+        
+          <el-col :span="17">
+        <el-form-item label="文档识别" prop="documentRecognitionModelId">
+          <LLMSelector :modelType="'large_language_model'" v-model="form.documentRecognitionModelId" />
+        </el-form-item>
+        </el-col>
+    <!-- OCR模型选择项 -->
+          <el-col :span="17">
+
+        <el-form-item label="图片识别" prop="ocrModelId">
+          <LLMSelector :modelType="'ocr_model'" v-model="form.ocrModelId" />
+        </el-form-item> 
+        </el-col> 
+
+     
+        
+        </el-row>
+
         <el-row>
           <el-col :span="24">
             <el-form-item label="描述信息" prop="description">
-              <el-input v-model="form.description" placeholder="请输入描述信息" maxlength="100" />
+              <el-input v-model="form.description" type="textarea" :rows="3" resize="none" placeholder="请输入描述信息" maxlength="100" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -188,8 +238,8 @@
       </el-form>
       <template #footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="submitForm">确 定</el-button>
-          <el-button @click="cancel">取 消</el-button>
+          <el-button type="primary" size="large" @click="submitForm">确 定</el-button>
+          <el-button size="large"  @click="cancel">取 消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -208,6 +258,9 @@ import {
   addDataset,
 } from "@/api/base/search/vectorDataset";
 import { reactive } from "vue";
+
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
+import { getLlmIconPath } from '@/utils/llmIcons';
 
 const router = useRouter();
 const { proxy } = getCurrentInstance();
@@ -231,15 +284,21 @@ const title = ref("");
 const dateRange = ref([]);
 const deptName = ref("");
 const deptOptions = ref(undefined);
+const labelPosition = ref("right")
 
 const dataScopeOptions = ref([
   { value: 'person', label: 'person', text: '私有', desc: '此数据仅你个人可见和使用' },
   { value: 'org', label: 'org', text: '组织', desc: '此数据可在组织内部共享和使用' },
   { value: 'public', label: 'public', text: '公开', desc: '此数据可被所有人访问和查看' }
 ]);
+ 
+const configTypeOptions = ref([
+  { value: 'default', label: 'default', text: '默认', desc: '将使用系统默认的模型配置' },
+  { value: 'constom', label: 'constom', text: '高级', desc: '通过高级配置可以自定义识别模型' }, 
+]);
 
 const icons = ref([
-  { id: 1, icon: 'fa-solid fa-charging-station'} ,
+  { id: 1, icon: 'fa-solid fa-file-word'} ,
   { id: 1, icon: 'fa-solid fa-truck'} ,
   { id: 2, icon: 'fa-solid fa-paper-plane'} ,
   { id: 2, icon: 'fa-solid fa-ship'} ,
@@ -283,7 +342,9 @@ const columns = ref([
 ]);
 
 const data = reactive({
-  form: {},
+  form: {
+    configType: 'default',
+  },
   queryParams: {
     pageNum: 1,
     pageSize: 10,
@@ -308,6 +369,11 @@ const data = reactive({
     datasetStatus: [{ required: true, message: "域名不能为空", trigger: "blur" }],
     accessPermission: [{ required: true, message: "数据范围不能为空", trigger: "blur" }],
     datasetSize: [{ required: true, message: "应用目标不能为空", trigger: "blur" }],
+
+    configType: [{ required: true, message: "配置模式不能为空", trigger: "blur" }],
+    embeddingModelId: [{ required: true, message: "向量模型不能为空", trigger: "blur" }],
+    documentRecognitionModelId: [{ required: true, message: "文档识别不能为空", trigger: "blur" }],
+    ocrModelId: [{ required: true, message: "图片识别不能为空", trigger: "blur" }],
   }
 });
 
@@ -367,6 +433,7 @@ function reset() {
   form.value = {
     applicationId: undefined,
     name: undefined,
+    configType: 'default',
     ownerId: undefined,
     description: undefined,
     datasetStatus: undefined,
@@ -478,6 +545,19 @@ getList();
   }
 }
 
+.doc-icon {
+  font-size: 22px;
+  background: #1d75b0;
+  color: #fff;
+  border-radius: 25%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0px 12px rgba(0, 0, 0, .12);
+}
+
 .dataset-description {
   width: 100%;
   display: -webkit-box;
@@ -486,4 +566,47 @@ getList();
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.custom-radio {
+    display: block;
+    margin-bottom: 12px;
+    padding: 5px !important;
+    height: auto;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    width: 250px ; 
+    margin-right: 10px !important; 
+}
+
+  .radio-content {
+    display: flex; 
+    align-items: center;
+    width:230px;
+    line-height: 1.5rem;
+  
+    .radio-info {
+      flex-grow: 1;
+      min-width: 0;
+      
+      .radio-title {
+        font-weight: 500;
+        margin-bottom: 4px; 
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      
+      .radio-desc { 
+        line-height: 1.5;
+        max-width: 800px;
+        white-space: normal; 
+        display: -webkit-box;
+        -webkit-line-clamp: 2; // 最多显示2行
+        -webkit-box-orient: vertical;
+        overflow: hidden; // 超出部分隐藏
+        text-overflow: ellipsis; // 显示省略号
+      }
+    }
+  }
 </style>
