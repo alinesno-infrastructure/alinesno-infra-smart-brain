@@ -12,11 +12,10 @@
 
                 <el-form :model="queryParams" style="padding-left:10px;" ref="queryRef" :inline="true"  label-width="68px">
                         <el-form-item label="角色名称" prop="roleName">
-                            <el-input v-model="queryParams['condition[roleName|like]']" placeholder="请输入角色名称" clearable
-                            style="width: 240px" @keyup.enter="handleQuery" />
+                            <el-input v-model="queryParams.roleName" placeholder="请输入角色名称" clearable style="width: 240px" />
                         </el-form-item>
                         <el-form-item>
-                            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
+                            <el-button type="primary" icon="Search" @click="handleAgentStoreRole">搜索</el-button>
                             <el-button icon="Refresh" @click="resetQuery">重置</el-button>
                         </el-form-item>
                 </el-form>
@@ -226,6 +225,7 @@ const roleChatUri = ref("")
 const publicRoleList = ref([])
 const orgRoleList = ref([])
 const demoProductList = ref([])
+const dateRange = ref([]);
 
 const data = reactive({
   form: {
@@ -234,7 +234,7 @@ const data = reactive({
   },
   queryParams: {
     pageNum: 1,
-    pageSize: 10,
+    pageSize: 50,
     roleName: undefined,
     roleName: undefined,
     responsibilities: undefined,
@@ -294,8 +294,8 @@ const handleCollectAgent = (item) => {
     })
 }
 
-const handleAgentStoreRole = () => {
-    getAgentStoreRole().then(response => {
+const handleAgentStoreRole = () => { 
+    getAgentStoreRole(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
         console.log('response = ' + response);
         publicRoleList.value = response.data.publicRoleList || [];
         orgRoleList.value = response.data.orgRoleList || [];
