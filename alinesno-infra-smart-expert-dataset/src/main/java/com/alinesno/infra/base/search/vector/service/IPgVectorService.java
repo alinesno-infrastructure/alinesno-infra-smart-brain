@@ -110,4 +110,17 @@ public interface IPgVectorService {
      * @return
      */
     DocumentVectorBean getVectorById(long segmentId);
+
+    /**
+     * 删除向量数据
+     * @param datasetId
+     * @param documentName
+     */
+    void deleteVectorDocument(Long datasetId, String documentName);
+
+    /**
+     * 删除向量数据集，通过数据集直接删除
+     * @param datasetId
+     */
+    void deleteVectorDataset(String datasetId);
 }
