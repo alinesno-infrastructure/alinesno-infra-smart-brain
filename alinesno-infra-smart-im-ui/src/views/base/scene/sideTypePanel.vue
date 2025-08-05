@@ -2,10 +2,19 @@
     <div class="side-type-container">
         <div class="title">场景类型</div>
         <div class="type-list" v-if="sceneList.length > 0">
+            <!-- Add All Types option -->
+            <div
+                :class="{ 'active': activeItem === '' }"
+                @mouseover="handleMouseOver('')"
+                @mouseout="handleMouseOut('')"
+                @click="handleClick('')">
+                <i class="fa-solid fa-box"></i> 全部类型
+            </div> 
+
             <div
                 v-for="item in sceneList"
                 :key="item.id"
-                :class="{ 'active': activeItem === item.id }"
+                :class="{ 'active': activeItem === item.code }"
                 @mouseover="handleMouseOver(item.id)"
                 @mouseout="handleMouseOut(item.id)"
                 @click="handleClick(item.code)">
@@ -80,7 +89,8 @@ handleAgentStoreType();
         div {
             padding: 8px 5px;
             cursor: pointer;
-            border-radius: 5px;
+            border-radius: 5px; 
+            padding-left: 15px;
 
             i{
                 color: #d33233;
@@ -89,7 +99,8 @@ handleAgentStoreType();
 
             &:hover,
             &.active {
-                background: #f5f5f5;
+                background-color: var(--el-color-primary-light-8);
+                color: var(--el-color-primary);
             }
         }
     }
