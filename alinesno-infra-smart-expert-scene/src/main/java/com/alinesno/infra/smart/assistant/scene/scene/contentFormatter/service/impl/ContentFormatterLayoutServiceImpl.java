@@ -3,9 +3,9 @@ package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.
 import cn.hutool.core.bean.BeanUtil;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ImageCompressionUtil;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.consumer.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentFormatDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
@@ -44,6 +44,9 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
 
     @Autowired
     private CloudStorageConsumer cloudStorageConsumer;
+
+    @Autowired
+    private SmartDocumentConsumer smartDocumentConsumer ;
 
     @Autowired
     private IContentFormatterOfficeConfigService officeConfigService;
@@ -137,8 +140,8 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
         DocumentTemplateDTO documentTemplateDTO = DocumentTemplateDTO.fromContentFormatterLayoutDto(templateLayout) ;
 
         // 2. 初始化智能文档处理器
-        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
+//        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
+//        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
 
         // 3. 将HTML内容保存为临时文件
         String htmlContent = DocxHtmlFormatterUtils.ensureHtmlStructure(content.getContent()) ;
@@ -150,15 +153,7 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
         }
 
-        ResponseEntity<String> finalResponse = smartDocumentConsumer.htmlToOfficial(htmlContent);
-
-        if (!finalResponse.getStatusCode().is2xxSuccessful() || finalResponse.getBody() == null) {
-            throw new RuntimeException("最终HTML转换失败，状态码：" + finalResponse.getStatusCode());
-        }
-
-        log.debug("最终HTML转换结果: {}", finalResponse.getBody());
-
-        return finalResponse.getBody();
+        return smartDocumentConsumer.htmlToOfficial(htmlContent).getData();
     }
 
     @Override
@@ -169,8 +164,8 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
         }
 
-        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
+//        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
+//        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
 
         File tempFile = null;
         try {
@@ -178,7 +173,7 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             tempFile = createTempHtmlFile(content);
 
             // 3. 调用转换工具将HTML转换为DOCX
-            byte[] docxContent = smartDocumentConsumer.convertHtmlToDocx(tempFile).getBody();
+            byte[] docxContent = smartDocumentConsumer.convertHtmlToDocx(tempFile).getData();
 
             if (docxContent == null || docxContent.length == 0) {
                 throw new RuntimeException("转换DOCX失败，返回内容为空");
