@@ -11,7 +11,7 @@ import com.dtflys.forest.annotation.Post;
  * 文本排序消费者接口
  */
 @BaseRequest(
-        baseURL = "#{alinesno.infra.gateway.reranker}" ,
+        baseURL = "#{alinesno.infra.gateway.host}/base-embedding" ,
         connectTimeout = 30000,
         readTimeout = 60000)
 public interface RerankConsumer {
@@ -22,7 +22,7 @@ public interface RerankConsumer {
      * @param request 请求对象
      * @return 响应字符串
      */
-    @Post(url = "/text-rerank" , contentType = "application/json")
+    @Post(url = "/v1/text-rerank" , contentType = "application/json")
     String rerank(@Body TextRerankRequest request , @Header("Authorization") String authorization);
 
 }
