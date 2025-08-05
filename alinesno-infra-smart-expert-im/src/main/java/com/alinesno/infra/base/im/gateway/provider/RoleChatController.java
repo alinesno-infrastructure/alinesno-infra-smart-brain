@@ -14,11 +14,14 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.ChatSendMessageDto;
+import com.alinesno.infra.smart.im.dto.MessageFeedbackDto;
 import com.alinesno.infra.smart.im.enums.FrequentTypeEnums;
 import com.alinesno.infra.smart.im.service.IFrequentAgentService;
+import com.alinesno.infra.smart.im.service.IMessageFeedbackService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.utils.AgentUtils;
+import jakarta.validation.Valid;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +54,9 @@ public class RoleChatController extends SuperController {
     private IMessageService messageService;
 
     @Autowired
+    private IMessageFeedbackService messageFeedbackService; ;
+
+    @Autowired
     private IIndustryRoleService industryRoleService;
 
     @Autowired
@@ -64,6 +70,19 @@ public class RoleChatController extends SuperController {
 
     @Autowired
     private IFrequentAgentService frequentAgentService ;
+
+    /**
+     * 保存用户消息评价 messageFeedback
+     */
+    @PostMapping("/messageFeedback")
+    public AjaxResult messageFeedback(@RequestBody @Valid MessageFeedbackDto dto) {
+
+        long userId = CurrentAccountJwt.getUserId() ;
+        String userName = CurrentAccountJwt.get().getName() ;
+
+        messageFeedbackService.messageFeedback(dto , userId , userName) ;
+        return ok() ;
+    }
 
     /**
      * 获取角色信息
