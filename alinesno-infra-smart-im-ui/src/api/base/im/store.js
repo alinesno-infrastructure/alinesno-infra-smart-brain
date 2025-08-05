@@ -29,14 +29,14 @@ export function getAgentStoreType() {
 }
 
 // 获取所有商店里面的角色
-export function getAgentStoreRole(page) {
+export function getAgentStoreRole(query) {
     return request({
         url: managerUrl.getAgentStoreRole,
         headers: {
-            isEncrypt: true
+            isEncrypt: false
         },
         method: 'get',
-        params: page
+        params: query
     })
 }
     
