@@ -3,6 +3,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.wrapper.RpcWrapper;
 import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
@@ -13,9 +14,12 @@ import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
 import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
 import com.alinesno.infra.smart.im.enums.AgentStoreTypeEnum;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -62,57 +66,14 @@ public class RoleStoreController {
         return AjaxResult.success(AgentStoreTypeEnum.getList());
     }
 
-//    /**
-//     * 获取到所有商店里面的角色
-//     */
-//    @GetMapping("/getAgentStoreRole")
-//    public AjaxResult getAgentStoreRole(DatatablesPageBean page) {
-//
-//        List<IndustryRoleEntity> publicRole = agentStoreService.findRoleFromStore(page);
-//        List<IndustryRoleEntity> orgRole = agentStoreService.findRoleFromStoreByOrgId(page , CurrentAccountJwt.get().getOrgId());
-//
-//        // 获取角色ID列表
-//        List<Long> roleIds = publicRole.stream()
-//                .map(IndustryRoleEntity::getId)
-//                .toList();
-//
-//        // 批量获取角色信息
-//        List<IndustryRoleEntity> roles = industryRoleService.listByIds(roleIds);
-//
-//        // 收集所有组织ID
-//        Set<Long> orgIds = roles.stream()
-//                .map(IndustryRoleEntity::getOrgId)
-//                .collect(Collectors.toSet());
-//
-//        // 批量获取组织信息
-//        Map<Long, OrganizationDto> orgMap = new HashMap<>();
-//        if(!orgIds.isEmpty()) {
-//            List<OrganizationDto> orgList = organizationConsumer.findOrgByIds(new ArrayList<>(orgIds)).getData();
-//            orgList.forEach(org -> orgMap.put(org.getOrgId(), org));
-//        }
-//
-//        // 组装结果DTO
-//        List<IndustryRoleOrgDto> publicRoleOrgList = roles.stream()
-//                .map(role -> {
-//                    IndustryRoleOrgDto dto = new IndustryRoleOrgDto();
-//                    BeanUtils.copyProperties(role, dto);
-//                    dto.setOrgName(orgMap.getOrDefault(role.getOrgId(), new OrganizationDto()).getOrgName());
-//                    return dto;
-//                })
-//                .toList();
-//
-//        Map<String , Object> hashMap = new HashMap<>();
-//        hashMap.put("publicRoleList", publicRoleOrgList);
-//        hashMap.put("orgRoleList", orgRole);
-//
-//        return AjaxResult.success(hashMap);
-//    }
-
     /**
      * 获取商店中的所有角色（公共角色和当前组织角色）
      */
     @GetMapping("/getAgentStoreRole")
-    public AjaxResult getAgentStoreRole(DatatablesPageBean page) {
+    public AjaxResult getAgentStoreRole(DatatablesPageBean page , HttpServletRequest request) {
+
+        page.buildWrapper(request) ;
+
         // 并行获取公共角色和组织角色
         List<IndustryRoleEntity> publicRole = agentStoreService.findRoleFromStore(page);
         List<IndustryRoleEntity> orgRole = agentStoreService.findRoleFromStoreByOrgId(page, CurrentAccountJwt.get().getOrgId());
