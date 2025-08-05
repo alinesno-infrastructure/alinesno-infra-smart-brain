@@ -3,15 +3,18 @@ package com.alinesno.infra.base.search.service.vector;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
 import com.alinesno.infra.base.search.api.SegmentUpdateDto;
+import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
 import com.alinesno.infra.base.search.enums.SearchType;
 import com.alinesno.infra.base.search.mapper.VectorDatasetMapper;
+import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.base.search.vector.service.IPgVectorService;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.RerankConsumer;
 import com.alinesno.infra.smart.assistant.adapter.dto.*;
 import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
@@ -380,5 +383,28 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
             log.error("更新片段内容失败，片段ID: " + dto.getId(), e);
             throw new RuntimeException("更新片段内容失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public void deleteDocument(Long datasetId, String documentName) {
+        pgVectorService.deleteVectorDocument(datasetId , documentName) ;
+    }
+
+    @Override
+    public void deleteDataset(String datasetId) {
+
+        //  先判断数据集下面是否还有文档，如果还有则不允许删除
+
+        IDatasetKnowledgeService datasetKnowledgeService = SpringUtils.getBean(IDatasetKnowledgeService.class);
+
+        LambdaQueryWrapper<DatasetKnowledgeEntity> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(DatasetKnowledgeEntity::getDatasetId, datasetId);
+        if (datasetKnowledgeService.count(queryWrapper) > 0) {
+            throw new RuntimeException("数据集下面文档，请先清空数据集.");
+        }
+
+        pgVectorService.deleteVectorDataset(datasetId) ;
+
+        removeById(datasetId) ;
     }
 }
