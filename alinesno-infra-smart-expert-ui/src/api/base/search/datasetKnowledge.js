@@ -19,7 +19,7 @@ var managerUrl = {
     statusUrl: prefix +"changeStatus" ,
     cleanUrl: prefix + "clean",
     detailUrl: prefix +"detail",
-    removeUrl: prefix + "delete" ,
+    removeUrl: prefix + "deleteDocument" ,
     exportUrl: prefix + "exportExcel",
     changeField: prefix + "changeField",
     downloadfile: prefix + "downloadfile",
@@ -127,7 +127,7 @@ export function updateDatasetKnowledge(data) {
 // 删除数据库
 export function delDatasetKnowledge(id) {
   return request({
-    url: managerUrl.removeUrl + '/' + parseStrEmpty(id),
+    url: managerUrl.removeUrl + '?documentId=' + parseStrEmpty(id),
     method: 'delete'
   })
 }
