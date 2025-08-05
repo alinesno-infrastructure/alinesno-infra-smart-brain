@@ -14,6 +14,7 @@ public enum ModelTypeEnums {
 
     LARGE_LANGUAGE_MODEL("大语言模型", "large_language_model"),
     VECTOR_MODEL("向量模型", "vector_model"),
+    OFFICE_RECOGNITION("文档识别", "office_recognition"),
     RE_RANKING_MODEL("重排模型", "re_ranking_model"),
     SPEECH_RECOGNITION("语音识别", "speech_recognition"),
     SPEECH_SYNTHESIS("语音合成", "speech_synthesis"),
