@@ -24,6 +24,7 @@ import jodd.util.StringUtil;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
@@ -45,6 +46,7 @@ public class LongTextTaskExecutionService {
     private final ConcurrentMap<Long, Future<?>> chapterTaskFutures = new ConcurrentHashMap<>();
 
     @Autowired
+    @Qualifier("chatThreadPool")
     private ThreadPoolTaskExecutor chatThreadPool;
 
     // 存储任务进度
@@ -373,7 +375,7 @@ public class LongTextTaskExecutionService {
             ));
 
             // 执行角色生成
-            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get() ;
+            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get();
             log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
 
             // 更新章节内容
