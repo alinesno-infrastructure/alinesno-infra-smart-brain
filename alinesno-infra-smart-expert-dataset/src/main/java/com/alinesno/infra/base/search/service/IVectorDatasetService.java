@@ -101,4 +101,17 @@ public interface IVectorDatasetService extends IBaseService<VectorDatasetEntity>
      * @param dto
      */
     void updateSegmentContent(SegmentUpdateDto dto);
+
+    /**
+     * 删除向量数据库数据
+     * @param datasetId
+     * @param documentName
+     */
+    void deleteDocument(Long datasetId, String documentName);
+
+    /**
+     * 删除整个向量数据集
+     * @param datasetId
+     */
+    void deleteDataset(String datasetId);
 }
