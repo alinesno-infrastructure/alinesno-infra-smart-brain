@@ -13,6 +13,7 @@ import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
+import com.alinesno.infra.smart.im.service.IMessageFeedbackService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
@@ -45,6 +46,9 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
     @Autowired
     private ISSEService sseService ;
+
+    @Autowired
+    private IMessageFeedbackService messageFeedbackService ;
 
     @Override
     public void saveUserMessage(List<WebMessageDto> parsedMessages, Long channelId) {
@@ -400,6 +404,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
 
         return list;
     }
+
 
     /**
      * 获取消息实体
