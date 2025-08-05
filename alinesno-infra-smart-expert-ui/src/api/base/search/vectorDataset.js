@@ -13,7 +13,7 @@ var managerUrl = {
   statusUrl: prefix +"changeStatus" ,
   cleanUrl: prefix + "clean",
   detailUrl: prefix +"detail",
-  removeUrl: prefix + "delete" ,
+  removeUrl: prefix + "deleteDataset" ,
   exportUrl: prefix + "exportExcel",
   search: prefix + "search",
   changeField: prefix + "changeField",
@@ -95,7 +95,7 @@ export function updateDataset(data) {
 // 删除应用
 export function delDataset(datasetId) {
   return request({
-    url: managerUrl.removeUrl + '/' + parseStrEmpty(datasetId),
+    url: managerUrl.removeUrl + '?datasetId=' + parseStrEmpty(datasetId),
     method: 'delete'
   })
 }
