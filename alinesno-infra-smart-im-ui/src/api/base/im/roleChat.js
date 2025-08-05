@@ -11,10 +11,19 @@ var managerUrl = {
   chatRole: prefix + "chatRole",
   uploadFile: prefix + "uploadFile",
   getRoleQuestionSuggestion: prefix + "getRoleQuestionSuggestion",
-
+  messageFeedback: prefix + "messageFeedback",
   recognizeForm: speechPrefix + "recognizeFormData" ,
   recognize: speechPrefix + "recognize" ,
   playGenContent: speechPrefix + "playGenContent" ,
+}
+
+// 提交用户反馈
+export function messageFeedback(data) {
+  return request({
+    url: managerUrl.messageFeedback , 
+    method: 'post',
+    data: data 
+  })
 }
 
 // 获取角色智能问答建议
