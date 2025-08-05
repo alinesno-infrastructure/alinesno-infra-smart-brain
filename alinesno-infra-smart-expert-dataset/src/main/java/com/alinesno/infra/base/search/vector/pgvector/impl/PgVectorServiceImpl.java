@@ -530,4 +530,48 @@ public class PgVectorServiceImpl implements IPgVectorService {
         // 5. 返回第一个结果(唯一结果)
         return result.get(0);
     }
+
+    @Override
+    public void deleteVectorDocument(Long datasetId, String documentName) {
+        // 参数校验
+        if (datasetId == null || documentName == null) {
+            throw new IllegalArgumentException("datasetId和documentName不能为空");
+        }
+
+        // 构建删除SQL
+        String deleteSql = "DELETE FROM " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME +
+                " WHERE dataset_id = ? AND document_title = ?";
+
+        // 执行删除操作
+        int deletedCount = jdbcTemplate.update(deleteSql, datasetId, documentName);
+
+        // 记录日志
+        if (deletedCount > 0) {
+            log.info("成功删除数据集ID[{}]下文档名为[{}]的{}条向量记录", datasetId, documentName, deletedCount);
+        } else {
+            log.warn("未找到数据集ID[{}]下文档名为[{}]的向量记录", datasetId, documentName);
+        }
+    }
+
+    @Override
+    public void deleteVectorDataset(String datasetId) {
+        // 参数校验
+        if (datasetId == null) {
+            throw new IllegalArgumentException("datasetId不能为空");
+        }
+
+        // 构建删除SQL
+        String deleteSql = "DELETE FROM " + ALINESNO_SEARCH_VECTOR_DOCUMENT_INDEX_NAME +
+                " WHERE dataset_id = ?";
+
+        // 执行删除操作
+        int deletedCount = jdbcTemplate.update(deleteSql, Long.parseLong(datasetId));
+
+        // 记录日志
+        if (deletedCount > 0) {
+            log.info("成功删除数据集ID[{}]{}条向量记录", datasetId, deletedCount);
+        } else {
+            log.warn("未找到数据集ID[{}]的向量记录", datasetId);
+        }
+    }
 }
