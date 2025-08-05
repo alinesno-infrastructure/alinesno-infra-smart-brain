@@ -81,4 +81,9 @@ public interface IDatasetKnowledgeService extends IBaseService<DatasetKnowledgeE
      */
     void updateSegmentContent(SegmentUpdateDto dto);
 
+    /**
+     * 删除知识库文档
+     * @param documentId
+     */
+    void deleteDocument(Long documentId);
 }
