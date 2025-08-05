@@ -1,5 +1,5 @@
 <template>
-    <div class="app-container">
+    <div class="app-container upload-dataset-container">
         <el-page-header @back="goBack">
             <template #content>
                 <span class="text-large font-600 mr-3" style="font-size: 16px;"> [测试数据集] 上传</span>
@@ -167,6 +167,7 @@
 import { getToken } from "@/utils/auth";
 import { nextTick, ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import { getParam } from "@/utils/ruoyi";
 import { 
     queryTmpFileByDatasetId,
@@ -303,8 +304,17 @@ const handleFileUploadProgress = (event, file, fileList) => {
 
 /** 文件上传成功处理 */
 const handleFileSuccess = (response, file, fileList) => {
+
     upload.open = false;
     upload.isUploading = false;
+
+    console.log('response = ' + response.code)
+    if(response.code != 200){ 
+        ElMessage.error(response.msg?response.msg:'文件上传异常，请重新进入再次上传。');
+        return ; 
+    }
+
+    
     proxy.$refs["uploadRef"].handleRemove(file);
     handleQueryTmpFileByDatasetId();
 };
@@ -407,6 +417,11 @@ nextTick(() => {
  
 
 <style scoped lang="scss">
+
+.upload-dataset-container{
+    margin: auto;
+    max-width:1400px;
+}
 .step-container {
     background: #F7F8FA;
     padding: 5px;
