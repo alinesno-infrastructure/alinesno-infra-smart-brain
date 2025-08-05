@@ -99,15 +99,25 @@
 
                       <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
                       <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
+  
+                      <div class="chat-ai-footer">
 
-                      <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
-                        <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
-                        <el-button type="info" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
-                        <el-button type="info" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-                        <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-                        <el-button type="info" v-if="item.messageId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                        <div class="chat-ai-msg-info" :class="(item.roleType == 'agent' && index > 1 && !chatStreamLoading) ? 'show-tools' : 'hide-tools' ">
+                          <el-button type="info" link icon="Link" size="small" @click="handleOpenMessageReference(item)">引用</el-button> 
+                          <UserFeelbackButton :feel="true" :message="item" @submit="handleFeedback" />
+                          <UserFeelbackButton :feel="false" :message="item" @submit="handleFeedback" /> 
+                        </div>
+
+                        <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+                          <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+                          <el-button type="info" v-if="!item.isPlaySpeaking && roleInfo.voicePlayStatus" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+                          <el-button type="info" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">关联</el-button>
+                          <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+                          <el-button type="info" v-if="item.messageId && item.roleId && roleInfo.functionCallbackScript" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+                        </div>
+
                       </div>
-
+  
                       <!-- 用户问题建议_start ，只要AI最后一条消息下面输出 -->
                       <UserQuestionSuggestions 
                         ref="userQuestionSuggestionsRef" 
@@ -196,6 +206,9 @@
       <ChatMessageEditor :businessId="currentBusinessId" />
     </el-dialog>
 
+    <!-- 消息引用弹出窗 -->
+    <ChatMessageReferencePanel ref="chatMessageReferencePanelRef" />
+
   </div>
 </template>
 
@@ -210,10 +223,12 @@ import WelcomePanel from './welcomePanel.vue';
 import AgentSingleRightPanel from './rightPanel.vue'
 import AIVoiceInput from '@/components/aiVoiceInput'
 import ChatAttachmentPanel from '@/components/ChatAttachment/chatAttachmentPanel'
+import ChatMessageReferencePanel from '@/components/ChatAttachment/chatMessageReferencePanel'
 import ChatAttachmentMessagePanel from '@/components/ChatAttachment/chatAttachmentMessagePanel'
-import UserQuestionSuggestions from '@/components/ChatAttachment/userQuestionSuggestionsPanel'
+import UserQuestionSuggestions from '@/components/ChatAttachment/userQuestionSuggestionsPanel' 
+import UserFeelbackButton from "@/components/ChatAttachment/userFeelbackButton"
 
-import { getInfo, chatRole , playGenContent  } from '@/api/base/im/roleChat'
+import { getInfo, chatRole , playGenContent , messageFeedback } from '@/api/base/im/roleChat'
 import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { nextTick, onMounted } from "vue";
@@ -231,6 +246,8 @@ const agentSingleRightPanelRef = ref(null)
 const askFlowDialogVisible = ref(false)
 const userQuestionSuggestionsRef = ref(null);
 const attachmentPanelRef = ref(null);
+const chatMessageReferencePanelRef = ref(null); 
+
 const heightDiff = ref(218);
 
 const loading = ref(true)
@@ -400,6 +417,13 @@ function handleExecutorMessage(item){
 
 }
 
+// 打开消息引用
+const handleOpenMessageReference = (item) => {
+  chatMessageReferencePanelRef.value.openReferece(item);
+}
+
+
+
 // 是否显示调试内容
 const handleShowDebuggerContent = (messageIndex, stepIndex) => {
   console.log('handleShowDebuggerContent messageIndex = ' + messageIndex + ' , stepIndex = ' + stepIndex);
@@ -434,6 +458,9 @@ function handleSseConnect(channelStreamId) {
 }
 
 function handleBusinessIdToMessageBox(item) {
+  if(!item.messageId){
+    return ; 
+  }
   const businessIdMessage = ' #' + item.messageId + ' ';
   businessId.value = item.messageId;
   message.value += businessIdMessage;
@@ -531,13 +558,7 @@ const sendMessage = (type) => {
     proxy.$modal.msgError("请输入消息内容.");
     return;
   }
-
-  // streamLoading.value = ElLoading.service({
-  //   lock: true,
-  //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.2)',
-  // })
-
+ 
   chatStreamLoading.value = true ;
 
   let formData = {
@@ -562,13 +583,7 @@ const sendMessage = (type) => {
 // 发送音频数据到后端
 const sendAudioToBackend = async (voiceMessage) => {
   try {
-
-    // streamLoading.value = ElLoading.service({
-    //   lock: true,
-    //   text: '语音识别中...',
-    //   background: 'rgba(0, 0, 0, 0.2)',
-    // })
-
+ 
     chatStreamLoading.value = true ;
     
     message.value = voiceMessage ; 
@@ -615,6 +630,14 @@ const cleanChatContext = () => {
   proxy.$modal.msgSuccess("清除上下文对话成功");
 }
 
+// 提交用户消息反馈
+const handleFeedback = (data) => {
+  messageFeedback(data).then(res => {
+    console.log('res = xx' + res); 
+    proxy.$modal.msgSuccess("评价成功，非常感谢你的反馈。");
+  })
+}
+ 
 onMounted(() => {
   initChatBoxScroll();
 
@@ -697,6 +720,19 @@ onBeforeUnmount(() => {
 
     }
 
+  }
+
+    .chat-ai-footer{
+    display: flex;
+    justify-content: space-between;
+
+    .chat-ai-msg-info{
+      display: flex;
+      margin-right:6px;
+      .el-button+.el-button {
+          margin-left: 6px;
+      }
+    }
   }
 
   .chat-ai-say-tools{
