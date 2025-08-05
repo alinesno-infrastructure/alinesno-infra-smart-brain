@@ -1,25 +1,26 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
+import com.alinesno.infra.common.core.utils.StringUtils;
+import com.alinesno.infra.common.facade.pageable.ConditionDto;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
+import com.alinesno.infra.common.facade.wrapper.RpcWrapper;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.mapper.AgentStoreMapper;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
-import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
 import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -60,6 +61,17 @@ public class AgentStoreServiceImpl extends IBaseServiceImpl<AgentStoreEntity, Ag
 
     @Override
     public List<IndustryRoleEntity> findRoleFromStore(DatatablesPageBean page) {
+
+        String roleName = "" ;
+
+        List<ConditionDto>  conditionList =  page.getConditionList();
+        if(conditionList != null && !conditionList.isEmpty()){
+           for(ConditionDto conditionDto : conditionList) {
+               if("roleName".equals(conditionDto.getColumn())){
+                   roleName = conditionDto.getValue() ;
+               }
+           }
+        }
 
         // 使用 MyBatis-Plus 的分页插件
         if(page.getPageSize() == 0){
