@@ -3,7 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.consumer.SmartDocumentConsumer;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.DocumentSourceEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
@@ -37,6 +37,9 @@ public class ContentFormatterDocumentServiceImpl extends IBaseServiceImpl<Conten
     @Autowired
     private IContentFormatterOfficeConfigService officeConfigService;
 
+    @Autowired
+    private SmartDocumentConsumer smartDocumentConsumer;
+
     @Override
     public Long saveUploadDocument(String fileName, File targetFile, long sceneId, PermissionQuery query) {
 
@@ -51,11 +54,7 @@ public class ContentFormatterDocumentServiceImpl extends IBaseServiceImpl<Conten
             throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
         }
 
-        // 2. 初始化智能文档处理器
-        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
-
-         String htmlContent =smartDocumentConsumer.convertToHtml(targetFile).getBody() ;
+        String htmlContent =smartDocumentConsumer.convertToHtml(targetFile).getData() ;
 
         ContentFormatterDocumentEntity entity = new ContentFormatterDocumentEntity();
 
