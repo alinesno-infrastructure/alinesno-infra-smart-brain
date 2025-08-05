@@ -233,4 +233,20 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
     public void updateSegmentContent(SegmentUpdateDto dto) {
         vectorDatasetService.updateSegmentContent(dto);
     }
+
+    @Override
+    public void deleteDocument(Long documentId) {
+        DatasetKnowledgeEntity entity = getById(documentId) ;
+
+        Long datasetId = entity.getDatasetId() ;
+        String documentName = entity.getDocumentName() ;
+
+        vectorDatasetService.deleteDocument(datasetId, documentName);  // 删除向量数据数据
+        removeById(documentId);  // 删除数据
+
+        // 数据集更新文件大小
+        VectorDatasetEntity vectorDatasetEntity = vectorDatasetService.getById(datasetId) ;
+        vectorDatasetEntity.setDatasetSize(vectorDatasetEntity.getDatasetSize() - entity.getDocumentCount());
+        vectorDatasetService.update(vectorDatasetEntity) ;
+    }
 }
