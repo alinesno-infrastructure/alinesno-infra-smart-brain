@@ -12,7 +12,7 @@ import com.dtflys.forest.annotation.Post;
  * 文本嵌入接口
  */
 @BaseRequest(
-        baseURL = "#{alinesno.infra.gateway.embedding}" ,
+        baseURL = "#{alinesno.infra.gateway.host}/base-embedding" ,
         connectTimeout = 30000,
         readTimeout = 60000)
 public interface EmbeddingConsumer {
@@ -23,7 +23,7 @@ public interface EmbeddingConsumer {
      * @param request 请求对象
      * @return 响应字符串
      */
-    @Post(url = "/embeddings" , contentType = "application/json")
+    @Post(url = "/v1/embeddings" , contentType = "application/json")
     TextEmbeddingResponse embeddings(@Body TextEmbeddingRequest request , @Header("Authorization") String authorization);
 
 }
