@@ -135,6 +135,16 @@ public class VectorDatasetController extends BaseController<VectorDatasetEntity,
         return AjaxResult.success("success" , catalogService.catalogManifestTreeSelect(query , type)) ;
     }
 
+    /**
+     * 删除数据集
+     * @return
+     */
+    @DeleteMapping("/deleteDataset")
+    public AjaxResult deleteDataset(@RequestParam String datasetId){
+        service.deleteDataset(datasetId);
+        return AjaxResult.success("success") ;
+    }
+
     @Override
     public IVectorDatasetService getFeign() {
         return this.service;
