@@ -305,24 +305,13 @@ const genStreamContentByMessage = async (roleIdVal , messageVal) => {
 
 /** 生成内容 */
 const genStreamContent = async(text) => {
-
-//   if (!message.value) {
-//     proxy.$modal.msgError("请输入消息内容.");
-//     return;
-//   }
-
-//   console.log('channelStreamId = ' + channelStreamId.value);
-
-//   if(!channelStreamId.value){
-//     proxy.$modal.msgError("请先创建场景.");
-//     return;
-//   }
-
+ 
   streamLoading.value = ElLoading.service({
     lock: true,
     text: '规划任务执行中，请勿操作其它界面 ...',
+
     background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
+    customClass: 'custom-loading' 
   })
 
   if(text){
@@ -330,30 +319,7 @@ const genStreamContent = async(text) => {
   }
 
   emit('openChatBox' , person.value.id) ; 
-
-//   let formData = {
-//     sceneId: currentSceneId.value,
-//     channelStreamId: channelStreamId.value ,
-//     message: message.value,
-//     taskId: taskId.value,
-//     roleId: person.value.id ,
-//   }
-
-//   const response = await chatRole(formData)
-//   console.log('response = ' + response)
-
-//   proxy.$modal.msgSuccess("发送成功");
-//   chaterDialogVisible.value = false ;
-//   message.value = '';
-
-//   // 合并数组
-//   Array.prototype.push.apply(outline.value, response.data);
-//   closeStreamDialog();
-
-//   // 自动保存章节
-//   getOutlineJson();
-
-
+ 
 };
 
 const addChapter = () => {
