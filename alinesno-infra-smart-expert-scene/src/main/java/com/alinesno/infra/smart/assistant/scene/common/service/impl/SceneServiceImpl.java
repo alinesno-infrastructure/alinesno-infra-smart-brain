@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.service.IExamPag
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.MarkdownBuilder;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.prototypeDesign.service.IPrototypeSceneService;
 import com.alinesno.infra.smart.im.enums.ChannelType;
@@ -30,6 +31,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -96,29 +98,7 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             }
         }
 
-        StringBuilder markdownBuilder = new StringBuilder();
-
-        for (ChapterEntity chapter : topChapters) {
-            buildMarkdownForChapter(chapter, markdownBuilder, 1);
-        }
-
-        return markdownBuilder.toString();
-
-    }
-
-    private void buildMarkdownForChapter(ChapterEntity chapter, StringBuilder markdownBuilder, int level) {
-        // 根据层级添加标题符号
-        markdownBuilder.append("#".repeat(Math.max(0, level)));
-        markdownBuilder.append(" ").append(chapter.getChapterName()).append("\n\n");
-        if (chapter.getContent() != null) {
-            markdownBuilder.append(chapter.getContent()).append("\n\n");
-        }
-
-        if (chapter.getSubtitles() != null) {
-            for (ChapterEntity subChapter : chapter.getSubtitles()) {
-                buildMarkdownForChapter(subChapter, markdownBuilder, level + 1);
-            }
-        }
+        return MarkdownBuilder.toMarkdownText(topChapters);
     }
 
     @Override
