@@ -5,11 +5,11 @@
                 <div class="card-header">
                     <div style="display: flex;align-items: center;gap: 5px;width: calc(100% - 250px);">
                         <i class="fa-solid fa-file-pdf"></i> 
-                        <!-- {{ taskInfo.taskName }} -->
 
                         <!-- 标题内容 -->
                         <EditableTitle 
                             v-model:title="taskInfo.taskName" 
+                            @save="handleTitleSave"
                             class="article-edit-title" 
                         />
 
@@ -23,35 +23,34 @@
                             </span>
                         </el-tooltip>
 
-                        <!-- 
-                        <el-tooltip class="box-item" effect="dark" content="添加章节编写人员" placement="top">
-                            <span class="edit-header-avatar"  @click="configAgent('chapter')">
-                                <i class="fa-solid fa-user-plus"></i>
-                            </span>
-                        </el-tooltip> 
-                        -->
-
                     </div>
-                    <span>
-
+                    <span class="chapter-actions">
+                        <el-tooltip class="box-item" effect="dark" content=" 展开或者收缩菜单" placement="top">
+                            <el-button type="primary" text bg  @click="expandTree()">
+                                <i class="fa-solid fa-up-down"></i>  &nbsp; {{ isTreeExpanded ? '收缩' : '展开' }}
+                            </el-button>
+                        </el-tooltip>
+                        
                         <el-tooltip class="box-item" effect="dark" content="添加章节" placement="top">
-                            <el-button type="primary" text bg size="large" @click="addChapter">
+                            <el-button type="primary" text bg  @click="addChapter">
                                 <i class="fa-solid fa-plus-minus"></i>  &nbsp; 添加
                             </el-button>
                         </el-tooltip>
 
                         <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
-                            <el-button type="success" text bg size="large" @click="getOutlineJsonSingle">
+                            <el-button type="success" text bg  @click="getOutlineJsonSingle">
                                 <i class="fa-solid fa-file-shield"></i> &nbsp; 保存
                             </el-button>
-                        </el-tooltip>
+                        </el-tooltip> 
 
                     </span>
                 </div>
             </template>
             <el-scrollbar style="height:calc(100vh - 140px)">
                 <div class="chapter-tree-content">
-                    <el-tree :data="outline" 
+                    <el-tree 
+                        ref="treeRef"
+                        :data="outline" 
                         node-key="id" 
                         default-expand-all 
                         draggable 
@@ -61,7 +60,7 @@
                         @node-click="handleNodeClick" 
                         @node-contextmenu="handleNodeContextMenu">
                         <template #default="{ node, data }">
-                            <div class="custom-tree-node" style="height:auto;">
+                            <div class="custom-tree-node" :class="(selectNodeItem && selectNodeItem.id === node.id)?'active':''" style="height:auto;">
                                 <div style="display: flex;flex-direction: column;">
                                     <div style="font-size: 16px;font-weight: bold;">
                                         {{ node.label }}
@@ -74,8 +73,8 @@
                                     <el-avatar v-if="data.chapterEditor" :size="20" :src="imagePathByPath(data.chapterEditorAvatar)" style="margin-right:10px"></el-avatar>
 
                                     <el-button type="text" icon="Plus" bg size="mini" @click.stop="append(data)"></el-button>
-                                    <el-button type="text" icon="Edit" bg size="mini" @click.stop="edit(node, data)"></el-button>
-                                    <el-button type="text" icon="EditPen" bg size="mini" @click.stop="editContent(node, data)"></el-button>
+                                    <el-button type="text" icon="EditPen" bg size="mini" @click.stop="edit(node, data)"></el-button>
+                                    <el-button type="text" icon="Position" bg size="mini" @click.stop="editContent(node, data)"></el-button>
 
                                     <el-popconfirm title="确认要删除章节么?" @confirm="remove(node, data)">
                                         <template #reference>
@@ -141,6 +140,13 @@
         <TransferAgentPanel ref="transferAgentPanel" @handleCloseAgentConfig="handleCloseAgentConfig" />
         <!-- Agent选择组件_end -->
 
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef" 
+            :back-to-path="'/scene/longText/longTextManager'"
+            :route-params="{ sceneId: sceneId }" 
+        />
+
     </div>
 </template>
 
@@ -152,29 +158,34 @@ import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
 import EditableTitle from './components/EditableTitle.vue'
 import { getParam } from '@/utils/ruoyi'
 import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 
 import {
     updateChapterEditor, 
     updateSceneGenStatus ,
-    getScene,
-    saveChapter,
-    // chatRole,
+    getScene, 
+    saveChapter, 
 } from '@/api/base/im/scene/longText'
 
 import {
     getLongTextTask,
     submitTask,
+    updateTaskTitle ,
     submitChapterTask,
     updateTaskGenStatus
 } from '@/api/base/im/scene/longTextTask'
-
+import SnowflakeId from "snowflake-id";
+ 
+const snowflake = new SnowflakeId();
 const route = useRoute();
 const { proxy } = getCurrentInstance();
-
-// const route = useRoute();
+ 
 const channelStreamId = ref(route.query.channelStreamId);
 const taskId = ref(route.query.taskId);
 const sceneId = ref(route.query.sceneId);
+
+const treeRef = ref(null); // 获取 tree 实例的引用
+const isTreeExpanded = ref(true); // 跟踪树节点的展开状态
 
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
 const emit = defineEmits([
@@ -188,7 +199,8 @@ const emit = defineEmits([
 
 // 选择Agent组件
 const transferAgentPanel = ref(null)
-
+const generatingStatusRef = ref(null)
+const selectNodeItem = ref(null)
 const streamLoading = ref(null)
 
 const taskInfo = ref({
@@ -256,9 +268,16 @@ const handleNodeContextMenu = (event, data, node) => {
 };
 
 const append = (data) => {
-    const newChild = { id: Date.now(), label: '新节点', description: '节点内容描述信息', children: [] };
+    const newChild = { 
+        id: snowflake.generate(), 
+        label: '新节点', 
+        description: '节点内容描述信息', 
+        sortOrder: data.children ? `${data.sortOrder}.${data.children.length + 1}` : `${data.sortOrder}.1`,
+        children: [] 
+    };
+    
     if (!data.children) {
-        data.children = []; // 直接赋值，避免使用 this.$set
+        data.children = [];
     }
     data.children.push(newChild);
 };
@@ -279,7 +298,15 @@ const edit = (node, data) => {
 
 /** 编辑内容 */
 const editContent = (node , data) => {
+    selectNodeItem.value = node ;
     emit('editContent' , node , data)
+}
+
+const handleTitleSave = (newTitle) => {
+  // 调用API保存标题
+  updateTaskTitle(newTitle, taskId.value).then(res => {
+    proxy.$modal.msgSuccess("更新标题成功");
+  })
 }
 
 // 保存编辑节点
@@ -305,21 +332,30 @@ const genStreamContentByMessage = async (roleIdVal , messageVal) => {
 
 /** 生成内容 */
 const genStreamContent = async(text) => {
- 
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    text: '规划任务执行中，请勿操作其它界面 ...',
 
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading' 
-  })
-
+  generatingStatusRef.value.loading()
   if(text){
-    streamLoading.value.setText(text) ;
+    generatingStatusRef.value.setText(text) ;
   }
 
   emit('openChatBox' , person.value.id) ; 
  
+};
+
+// 目录收缩与打开 
+const expandTree = () => {
+    if (!treeRef.value) return;
+    
+    // 获取所有节点
+    const nodes = treeRef.value.store.nodesMap;
+    
+    // 切换所有节点的展开状态
+    Object.values(nodes).forEach(node => {
+        node.expanded = !isTreeExpanded.value;
+    });
+    
+    // 更新状态
+    isTreeExpanded.value = !isTreeExpanded.value; 
 };
 
 const addChapter = () => {
@@ -353,8 +389,7 @@ function configAgent(type){
         channelAgentList.value = currentSceneInfo.value.contentEditors.map(item => item.id); 
     }
 
-    transferAgentPanel.value.handleOpendAgent(title , channelAgentList.value)
-
+    transferAgentPanel.value.handleOpendAgent(title , channelAgentList.value) 
 }
 
 
@@ -370,6 +405,14 @@ function handleCloseAgentConfig(selectAgentList){
 
 /** 获取到场景详情 */
 const handleGetScene = async() => {
+
+    streamLoading.value = ElLoading.service({
+        lock: true,
+        text: '正在加载数据模块中', 
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading' 
+    })
+
     await getScene(currentSceneId.value , taskId.value).then(res => {
       currentSceneInfo.value = res.data
       person.value = currentSceneInfo.value.chapterEditors[0];
@@ -383,19 +426,42 @@ const handleGetScene = async() => {
         const item = outline.value[0];
         if(item && item.children && item.children.length > 0){
           const node = {
-              label: item.children[0].label ,
-              data: { chapterEditor:  item.children[0].chapterEditor ,  description: item.children[0].description }
+              label: item.label ,
+              data: { chapterEditor:  item.chapterEditor ,  description: item.description }
           }
-          const data = { id: item.children[0].id }
+          const data = { id: item.id }
           editContent(node , data)
         }
-
+        streamLoading.value.close();
       })
 
     })
 }
 
 const getOutlineJson = () => {
+
+    streamLoading.value = ElLoading.service({
+        lock: true,
+        text: '数据正在保存中...', 
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading' 
+    })
+
+    // 生成安全的整数排序值（确保无小数点、无null）
+    const generateSafeSortOrder = (nodes, baseOrder = 0) => {
+        nodes.forEach((node, index) => {
+            // 当前节点的顺序 = 父节点顺序 * 100 + (当前索引 + 1)
+            // 示例：父节点是1，当前是第2个子节点 => 1 * 100 + 2 = 102
+            node.sortOrder = (baseOrder || 0) * 100 + (index + 1); // 强制为整数
+            if (node.children?.length) {
+                generateSafeSortOrder(node.children, node.sortOrder);
+            }
+        });
+    };
+
+    // 为所有节点生成排序值
+    generateSafeSortOrder(outline.value);
+
     const jsonResult = JSON.stringify(outline.value, null, 2);
 
     saveChapter(jsonResult , sceneId.value , taskId.value).then(res => {
@@ -408,16 +474,38 @@ const getOutlineJson = () => {
 };
 
 const getOutlineJsonSingle = () => {
+
+    streamLoading.value = ElLoading.service({
+        lock: true,
+        text: '数据正在保存中...', 
+        background: 'rgba(255, 255, 255, 0.5)',
+        customClass: 'custom-loading' 
+    })
+
+    // 生成安全的整数排序值（确保无小数点、无null）
+    const generateSafeSortOrder = (nodes, baseOrder = 0) => {
+        nodes.forEach((node, index) => {
+            // 当前节点的顺序 = 父节点顺序 * 100 + (当前索引 + 1)
+            // 示例：父节点是1，当前是第2个子节点 => 1 * 100 + 2 = 102
+            node.sortOrder = (baseOrder || 0) * 100 + (index + 1); // 强制为整数
+            if (node.children?.length) {
+                generateSafeSortOrder(node.children, node.sortOrder);
+            }
+        });
+    };
+
+    // 为所有节点生成排序值
+    generateSafeSortOrder(outline.value);
+
     const jsonResult = JSON.stringify(outline.value, null, 2);
 
-    saveChapter(jsonResult , route.query.sceneId).then(res => {
+    saveChapter(jsonResult , sceneId.value , taskId.value).then(res => {
         proxy.$modal.msgSuccess("保存成功");
         handleGetTask()
     })
 }
 
-const closeStreamDialog = () => {
-  console.log('child method. ' + streamLoading.value)
+const closeStreamDialog = () => { 
   if(streamLoading.value){
     streamLoading.value.close()
   }
@@ -429,14 +517,6 @@ const setOutline = (outlineVal) => {
     outline.value = outlineVal
 }
 
-// 主动暴露childMethod方法
-defineExpose({ 
-    closeStreamDialog ,
-    handleGetScene,
-    genStreamContentByMessage,
-    configAgent , 
-    setOutline
-})
 
 // 点击当前的chapter
 const openCurrentChapter = (currentChapterId) => {
@@ -477,42 +557,7 @@ const openCurrentChapter = (currentChapterId) => {
         // 可添加默认处理逻辑
     }
 };
-
-// const handleGetTask = async () => {
-//     await getLongTextTask(taskId.value).then(res => {
-//         taskInfo.value = res.data
-
-//         const taskStatus = taskInfo.value.taskStatus  // 生成大纲状态
-//         const chapterStatus = taskInfo.value.chapterStatus  // 生成章节状态
-
-//         const currentChapterLabel = taskInfo.value.currentChapterLabel // 生成章节信息
-//         const currentChapterId = taskInfo.value.currentChapterId // 生成章节ID
-
-//         // 未生成章节
-//         if(taskStatus == 0 || taskStatus == null){  
-//             // 提交任务
-//             submitTask(taskId.value , channelStreamId.value).then(res => {
-//                 genStreamContent() ;
-//             })
-//         }else if(taskStatus == 2){ // 运行中，则直接打开窗口
-//             genStreamContent() ;
-//         }else if(taskStatus == 1) {  // 大纲已运行成功
-//             // 判断章节状态
-//             person.value = currentSceneInfo.value.contentEditors[0];
-
-//             if(chapterStatus == 0 || chapterStatus == null){
-//                 submitChapterTask(taskId.value , channelStreamId.value).then(res => {
-//                     genStreamContent("开始生成章节内容.") ; 
-//                 }) ;
-//             }else if(chapterStatus == 2){  // 章节生成中
-//                 openCurrentChapter(currentChapterId);
-//                 genStreamContent(currentChapterLabel) ; 
-//             }else if(chapterStatus == 1){  // 章节生成完成 
-
-//             }
-//         }
-//     })
-// }
+ 
 
 const handleGetTask = async () => {
 
@@ -596,6 +641,15 @@ nextTick( async () => {
 onUnmounted(() => {
   stopPolling() // 组件卸载时清除定时器
 })
+
+// 主动暴露childMethod方法
+defineExpose({ 
+    closeStreamDialog ,
+    handleGetScene,
+    genStreamContentByMessage,
+    configAgent , 
+    setOutline
+}) 
 
 </script>
 
