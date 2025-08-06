@@ -32,9 +32,6 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
     @Autowired
     private IIndustryRoleService roleService ;
 
-//    @Autowired
-//    private ISceneService sceneService;
-
     @Override
     public void saveChaptersWithHierarchy(List<TreeNodeDto> chapters,
                                           Long parentId,
@@ -43,11 +40,6 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                                           long longTextSceneId,
                                           PermissionQuery query,
                                           LongTextTaskEntity longTextTaskEntity) {
-
-        // 先删除当前场景下的所有章节
-//        LambdaUpdateWrapper<ChapterEntity> wrapper = new LambdaUpdateWrapper<>();
-//        wrapper.eq(ChapterEntity::getSceneId, sceneId);
-//        remove(wrapper);
 
         if (chapters == null || chapters.isEmpty()) {
             return;
@@ -73,6 +65,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             return;
         }
 
+        int order = 0; // 初始化顺序
         for (TreeNodeDto chapter : chapters) {
 
             ChapterEntity entity = new ChapterEntity();
@@ -84,6 +77,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
             entity.setTaskId(longTextTaskEntity.getId());
             entity.setLongTextSceneId(longTextSceneId);
             entity.setIsLeaf(chapter.getChildren() == null || chapter.getChildren().isEmpty());
+            entity.setChapterSort(order++); // 设置排序字段
 
             // 生成标题
             String title = chapter.getLabel();
@@ -132,6 +126,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         wrapper.eq(ChapterEntity::getSceneId, sceneId);
         wrapper.eq(ChapterEntity::getTaskId, taskId);
         wrapper.eq(ChapterEntity::getLongTextSceneId, longTextSceneId);
+        wrapper.orderByAsc(ChapterEntity::getChapterSort); // 按排序字段升序排列
 
         List<ChapterEntity> allChapters = this.list(wrapper);
         List<TreeNodeDto> treeNodes = new ArrayList<>();
@@ -202,13 +197,6 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         SceneEntity entity = sceneService.getById(id);
 
         String agentTypeCode = dto.getAgentTypeCode() ;
-
-//        if("chapterEditor".equals(agentTypeCode) && entity.getChapterEditor() != null){
-//            return roleService.listByIds(Arrays.asList(entity.getChapterEditor().split(",")));
-//        }else if("contentEditor".equals(agentTypeCode) && entity.getContentEditor() != null){
-//            return roleService.listByIds(Arrays.asList(entity.getContentEditor().split(",")));
-//        }
-
         return Collections.emptyList() ;
     }
 
@@ -246,28 +234,22 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
         StringBuilder contentBuilder = new StringBuilder();
 
         for (ChapterEntity chapter : topChapters) {
-            buildChapterContent(chapter, contentBuilder, 0);
+            buildChapterContent(chapter, contentBuilder, 1); // 从第一级开始
         }
 
         return contentBuilder.toString();
     }
 
-    @Override
-    public List<ChapterEntity> getChaptersByTaskId(Long taskId) {
-        LambdaQueryWrapper<ChapterEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ChapterEntity::getTaskId, taskId); // 假设ChapterEntity有taskId字段
-        return this.list(wrapper);
-    }
-
     private void buildChapterContent(ChapterEntity chapter, StringBuilder contentBuilder, int level) {
-        // 根据层级添加缩进
-        String indent = "  ".repeat(level);
-        contentBuilder.append(indent).append("章节名称: ").append(chapter.getChapterName()).append("\n");
+        // 根据层级添加标题前缀
+        String prefix = getLevelPrefix(level);
+        contentBuilder.append(prefix).append(" ").append(chapter.getChapterName()).append("\n");
+
         if (chapter.getChapterRequire() != null) {
-            contentBuilder.append(indent).append("编写要求: ").append(chapter.getChapterRequire()).append("\n");
+            contentBuilder.append("  编写要求: ").append(chapter.getChapterRequire()).append("\n");
         }
         if (chapter.getChapterAdditionalRequire() != null) {
-            contentBuilder.append(indent).append("附加要求: ").append(chapter.getChapterAdditionalRequire()).append("\n");
+            contentBuilder.append("  附加要求: ").append(chapter.getChapterAdditionalRequire()).append("\n");
         }
         contentBuilder.append("\n");
 
@@ -276,6 +258,24 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                 buildChapterContent(subChapter, contentBuilder, level + 1);
             }
         }
+    }
+
+    private String getLevelPrefix(int level) {
+        return switch (level) {
+            case 1 -> "第1级";
+            case 2 -> "  第2级";
+            case 3 -> "    第3级";
+            case 4 -> "      第4级";
+            case 5 -> "        第5级";
+            default -> "       第" + level + "级";
+        };
+    }
+
+    @Override
+    public List<ChapterEntity> getChaptersByTaskId(Long taskId) {
+        LambdaQueryWrapper<ChapterEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ChapterEntity::getTaskId, taskId); // 假设ChapterEntity有taskId字段
+        return this.list(wrapper);
     }
 
     private void buildTree(List<ChapterEntity> allChapters, Long parentId, List<TreeNodeDto> treeNodes) {
@@ -289,6 +289,7 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                 node.setId(chapter.getId());
                 node.setLabel(chapter.getChapterName());
                 node.setDescription(chapter.getChapterRequire()); // 或者使用其他字段作为描述
+                node.setSortOrder(chapter.getChapterSort()); // 设置排序字段
 
                 // 获取到用户的id
                 Long roleId = chapter.getChapterEditor() ;
