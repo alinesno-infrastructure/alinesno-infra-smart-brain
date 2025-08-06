@@ -12,6 +12,24 @@ var managerUrl = {
   deleteById: prefix + "deleteById",
   submitTask: prefix + "submitTask",
   submitChapterTask: prefix + "submitChapterTask",
+  updateTaskTitle: prefix + "updateTaskTitle", 
+  getMarkdownContent: prefix + "getMarkdownContent"
+}
+
+// 获取任务的所有markdown内容
+export function getMarkdownContent(sceneId , taskId) {
+  return request({
+    url: managerUrl.getMarkdownContent + '?sceneId=' + parseStrEmpty(sceneId) + '&taskId=' + parseStrEmpty(taskId),
+    method: 'get',
+  })
+}
+
+// 更新标题任务
+export function updateTaskTitle(newTitle , taskId) {
+  return request({
+    url: managerUrl.updateTaskTitle + '?taskTitle=' + parseStrEmpty(newTitle) + '&taskId=' + parseStrEmpty(taskId),
+    method: 'get',
+  })
 }
 
 // 提交生成章节任务
