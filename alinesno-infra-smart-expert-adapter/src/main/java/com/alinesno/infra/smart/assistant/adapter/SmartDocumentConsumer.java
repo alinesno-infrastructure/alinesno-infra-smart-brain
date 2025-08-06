@@ -13,11 +13,6 @@ import java.util.List;
  */
 @BaseRequest(
         baseURL = "#{alinesno.infra.gateway.host}/base-office",
-        contentType = "multipart/form-data",
-        headers = {
-                "Accept: application/json",
-                "Authorization: ${authorization}"  // 统一配置授权头
-        },
         connectTimeout = 30000,
         readTimeout = 60000
 )
@@ -100,8 +95,8 @@ public interface SmartDocumentConsumer {
      * @param markdownFile 上传的Markdown文件
      * @return 包含转换后DOCX文件的响应
      */
-    @Post(url = "/markdownToDocx")
-    R<byte[]> markdownToDocx(@DataFile("file") File markdownFile);
+    @Post(url = "/api/v1/docx/markdownToDocx")
+    byte[] markdownToDocx(@DataFile("file") File markdownFile);
 
     /**
      * 添加单条批注信息
@@ -111,7 +106,7 @@ public interface SmartDocumentConsumer {
      * @param author 批注作者
      * @return 包含添加批注后DOCX文件的响应
      */
-    @Post(url = "/addComment", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Post(url = "/api/v1/docx/addComment", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
     R<byte[]> addComment(
             @DataFile("file") File file,
             @Query("selectedText") String selectedText,
@@ -124,7 +119,7 @@ public interface SmartDocumentConsumer {
      * @param comments 批注数据列表
      * @return 包含添加批注后DOCX文件的响应
      */
-    @Post(url = "/addComments", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Post(url = "/api/v1/docx/addComments", contentType = MediaType.MULTIPART_FORM_DATA_VALUE)
     R<byte[]> addComments(
             @DataFile("file") File file,
             @Body List<CommentData> comments);
