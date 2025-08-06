@@ -30,9 +30,18 @@ var managerUrl = {
   listAllScene: prefix + "listAllScene" ,
   listPublicScene: prefix + "listPublicScene" ,
   updateGreetingQuestion: prefix + "updateGreetingQuestion" ,
-
+  supportAllScene: prefix +"supportAllScene",
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+}
+
+
+// 获取所有场景列表
+export function supportAllScene() {
+  return request({
+    url: managerUrl.supportAllScene,
+    method: 'get'
+  })
 }
 
 // 更新场景开场白
