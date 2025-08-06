@@ -38,7 +38,7 @@ const props = defineProps({
   }
 })
 
-const emit = defineEmits(['update:title'])
+const emit = defineEmits(['update:title', 'save'])
 
 const isEditing = ref(false)
 const editTitle = ref('')
@@ -58,7 +58,9 @@ const startEditing = () => {
 
 const saveTitle = () => {
   if (editTitle.value.trim() !== '') {
-    emit('update:title', editTitle.value.trim())
+    const newTitle = editTitle.value.trim()
+    emit('update:title', newTitle)
+    emit('save', newTitle)  // 新增保存事件
   }
   isEditing.value = false
 }
