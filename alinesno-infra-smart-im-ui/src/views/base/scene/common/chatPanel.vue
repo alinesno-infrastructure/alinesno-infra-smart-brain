@@ -7,7 +7,7 @@
         <el-col :span="24">
           <div class="robot-chat-windows">
 
-            <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
+            <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px - 10px)'">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
 
@@ -137,7 +137,7 @@
                 </div>
 
                 <div class="message-btn-box">
-
+ 
                   <div style="display: flex;align-items: center;justify-content: flex-end;">
 
                         <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
@@ -161,6 +161,7 @@
                         </el-tooltip>
 
                   </div>
+                  
 
                 </div>
               </div>
@@ -633,9 +634,9 @@ function openChatBoxWithRole(roleIdVal){
 }
 
 onMounted(() => {
-  channelId.value = getParam('sceneId') ; // snowflake.generate()
-  // handleSseConnect(channelId.value)
-  handleSseConnect(channelStreamId.value)
+  channelId.value = getParam('sceneId') ;  
+  handleSseConnect(channelStreamId.value);
+  console.log("connection channelStreamId --->>> " + channelStreamId.value);
 })
 
 // 销毁信息
