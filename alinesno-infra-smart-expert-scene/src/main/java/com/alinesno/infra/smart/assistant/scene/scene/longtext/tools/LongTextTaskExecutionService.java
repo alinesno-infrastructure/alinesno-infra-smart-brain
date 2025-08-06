@@ -100,13 +100,22 @@ public class LongTextTaskExecutionService {
                 }, chatThreadPool)
                 // 5. 整体完成处理
                 .whenCompleteAsync((result, ex) -> {
+
+                    // 更新任务的EndTime时间
+                    LongTextTaskEntity taskEntity = taskService.getById(taskId);
+                    taskEntity.setTaskEndTime(new Date());
+
                     if (ex != null) {
                         log.error("任务链执行失败", ex);
+                        taskEntity.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_FAILED.getCode()));
                         mainFuture.completeExceptionally(ex);
                     } else {
                         log.info("任务链执行完成，taskId={}", taskId);
+                        taskEntity.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
                         mainFuture.complete(null);
                     }
+
+                    taskService.update(taskEntity) ;
                 }, chatThreadPool);
 
     }
