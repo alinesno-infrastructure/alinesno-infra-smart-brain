@@ -10,6 +10,7 @@ import com.alinesno.infra.smart.assistant.role.context.ContextManager;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
+import com.alinesno.infra.smart.assistant.role.utils.FutureDebugger;
 import com.alinesno.infra.smart.assistant.role.utils.GroovySandbox;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -204,10 +206,14 @@ public class ScriptExpertService extends ReActExpertService {
 		if (result instanceof CompletableFuture<?>) {
 			@SuppressWarnings("unchecked")  // 明确告诉编译器这是安全的
 			CompletableFuture<String> futureResult = (CompletableFuture<String>) result;
-			return futureResult;
-		}
 
-		return CompletableFuture.completedFuture(String.valueOf(result));
+			FutureDebugger.printDependents(futureResult);
+
+			return futureResult;
+		}else{
+			// 直接抛出异常(中文)
+			throw new RuntimeException("脚本执行结果对象不兼容，请检查脚本是否正确！");
+		}
 
 	}
 
