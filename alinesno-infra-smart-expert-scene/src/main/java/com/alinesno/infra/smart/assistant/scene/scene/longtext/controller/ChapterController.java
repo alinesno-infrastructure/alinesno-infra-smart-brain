@@ -42,6 +42,7 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.util.Arrays;
 import java.util.List;
@@ -141,23 +142,27 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
     }
 
     /**
-     * 异步生成章节内容
+     * 异步生成章节内容 (使用DeferredResult)
      */
     @Deprecated
     @PostMapping("/chatRoleSync")
-    @Async
-    public CompletableFuture<AjaxResult> chatRoleSyncAsync(@RequestBody @Validated ChapterGenFormDto dto, PermissionQuery query) {
+    public DeferredResult<AjaxResult> chatRoleSyncAsync(@RequestBody @Validated ChapterGenFormDto dto, PermissionQuery query) {
+        // 设置超时时间(毫秒)，这里设置为120秒
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(120_000L);
+
         try {
             log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
 
             ChapterEntity chapterEntity = service.getById(dto.getChapterId());
             if (chapterEntity == null) {
-                return CompletableFuture.completedFuture(AjaxResult.error("章节不存在"));
+                deferredResult.setResult(AjaxResult.error("章节不存在"));
+                return deferredResult;
             }
 
             Long roleId = chapterEntity.getChapterEditor();
             if (roleId == null) {
-                return CompletableFuture.completedFuture(AjaxResult.success("此章节未指定编辑人员"));
+                deferredResult.setResult(AjaxResult.success("此章节未指定编辑人员"));
+                return deferredResult;
             }
 
             LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(dto.getTaskId());
@@ -191,21 +196,112 @@ public class ChapterController extends BaseController<ChapterEntity, IChapterSer
             ));
 
             // 执行角色生成
-            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
-            log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
-
-            // 更新章节内容
-            chapterEntity.setContent(taskInfo.getFullContent());
-            service.update(chapterEntity);
-
-            return CompletableFuture.completedFuture(AjaxResult.success("生成成功", chapterEntity.getContent()));
+            roleService.runRoleAgent(taskInfo).whenComplete((result, ex) -> {
+                if (ex != null) {
+                    log.error("生成章节内容时发生异常", ex);
+                    deferredResult.setErrorResult(
+                            AjaxResult.error("生成失败: " + ex.getMessage())
+                    );
+                } else {
+                    try {
+                        log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
+                        // 更新章节内容
+                        chapterEntity.setContent(taskInfo.getFullContent());
+                        service.update(chapterEntity);
+                        deferredResult.setResult(AjaxResult.success("生成成功", chapterEntity.getContent()));
+                    } catch (Exception e) {
+                        log.error("处理生成结果时发生异常", e);
+                        deferredResult.setErrorResult(
+                                AjaxResult.error("处理生成结果失败: " + e.getMessage())
+                        );
+                    }
+                }
+            });
 
         } catch (Exception e) {
-            log.error("生成章节内容时发生异常", e);
-            return CompletableFuture.completedFuture(
-                    AjaxResult.error("生成失败: " + e.getMessage()));
+            log.error("处理请求时发生异常", e);
+            deferredResult.setErrorResult(
+                    AjaxResult.error("处理请求失败: " + e.getMessage())
+            );
         }
+
+        // 设置超时回调
+        deferredResult.onTimeout(() -> {
+            log.warn("章节内容生成超时，chapterId: {}", dto.getChapterId());
+            deferredResult.setErrorResult(
+                    AjaxResult.error("生成超时，请稍后再试")
+            );
+        });
+
+        return deferredResult;
     }
+
+//    /**
+//     * 异步生成章节内容
+//     */
+//    @Deprecated
+//    @PostMapping("/chatRoleSync")
+//    @Async
+//    public CompletableFuture<AjaxResult> chatRoleSyncAsync(@RequestBody @Validated ChapterGenFormDto dto, PermissionQuery query) {
+//        try {
+//            log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
+//
+//            ChapterEntity chapterEntity = service.getById(dto.getChapterId());
+//            if (chapterEntity == null) {
+//                return CompletableFuture.completedFuture(AjaxResult.error("章节不存在"));
+//            }
+//
+//            Long roleId = chapterEntity.getChapterEditor();
+//            if (roleId == null) {
+//                return CompletableFuture.completedFuture(AjaxResult.success("此章节未指定编辑人员"));
+//            }
+//
+//            LongTextTaskEntity longTextTaskEntity = longTextTaskService.getById(dto.getTaskId());
+//            LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(dto.getSceneId(), query);
+//
+//            // 准备任务信息
+//            MessageTaskInfo taskInfo = new MessageTaskInfo();
+//            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+//            taskInfo.setRoleId(roleId);
+//            taskInfo.setChannelId(dto.getSceneId());
+//            taskInfo.setSceneId(dto.getSceneId());
+//            taskInfo.setQueryText(dto.getChapterTitle() + ":" + dto.getChapterDescription());
+//
+//            // 处理附件
+//            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+//                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+//                        .map(Long::parseLong)
+//                        .toList();
+//                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+//                taskInfo.setAttachments(attachments);
+//            }
+//
+//            // 准备章节内容
+//            String allChapterContent = service.getAllChapterContent(dto.getSceneId());
+//            String chapterPromptContent = longTextTaskEntity.getTaskName();
+//            taskInfo.setText(FormatMessageTool.getChapterPrompt(
+//                    allChapterContent,
+//                    dto,
+//                    chapterPromptContent,
+//                    taskInfo
+//            ));
+//
+//            // 执行角色生成
+//            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
+//            log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
+//
+//            // 更新章节内容
+//            chapterEntity.setContent(taskInfo.getFullContent());
+//            service.update(chapterEntity);
+//
+//            return CompletableFuture.completedFuture(AjaxResult.success("生成成功", chapterEntity.getContent()));
+//
+//        } catch (Exception e) {
+//            log.error("生成章节内容时发生异常", e);
+//            return CompletableFuture.completedFuture(
+//                    AjaxResult.error("生成失败: " + e.getMessage()));
+//        }
+//    }
 
     /**
      * 通过ID查询章节内容
