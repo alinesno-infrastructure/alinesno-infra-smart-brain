@@ -42,15 +42,15 @@
                                             <div>
                                                 <el-tooltip class="box-item" effect="dark" content="执行文档生成(已生成的会跳过)"
                                                     placement="top">
-                                                    <el-button type="primary" text bg size="large"
+                                                    <el-button type="primary" text bg 
                                                         @click="genChapterContent()">
-                                                        <i class="fa-solid fa-ferry"></i>&nbsp; 生成文档
+                                                        <i class="fa-solid fa-ferry"></i>&nbsp; 重新生成
                                                     </el-button>
                                                 </el-tooltip>
 
                                                 <el-tooltip class="box-item" effect="dark" content="重新生成章节"
                                                     placement="top">
-                                                    <el-button type="primary" text bg size="large"
+                                                    <el-button type="primary" text bg
                                                         @click="genSingleChapterContent()">
                                                         <i class="fa-brands fa-firefox-browser"></i>&nbsp; 章节生成
                                                     </el-button>
@@ -66,28 +66,28 @@
 
                                                 <el-tooltip class="box-item" effect="dark" content="保存章节"
                                                     placement="top">
-                                                    <el-button type="primary" text bg size="large"
+                                                    <el-button type="primary" text bg
                                                         @click="onSubmitChapter">
                                                         <i class="fa-solid fa-floppy-disk"></i>&nbsp; 保存
                                                     </el-button>
                                                 </el-tooltip>
 
-                                                <el-tooltip class="box-item" effect="dark" content="预览导出文档"
-                                                    placement="top">
-                                                    <el-button type="primary" text bg size="large" @click="expertScene">
-                                                        <i class="fa-solid fa-display"></i>&nbsp; 预览
-                                                    </el-button>
+                                                <el-tooltip class="box-item" effect="dark" content="预览导出文档" placement="top"> 
+                                                    <EditorDocument :taskId="taskId" :sceneId="sceneId" />
                                                 </el-tooltip>
-
+ 
                                             </div>
                                             <!-- 执行按钮_end -->
                                         </div>
                                     </template>
                                     <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
-                                        <el-form-item>
+                                        <div class="chapter-title">
+                                            {{ form.title }}
+                                        </div>
+                                        <!-- <el-form-item>
                                             <el-input disabled="disabled" v-model="form.title"
                                                 placeholder="在执行当中的章节名称"></el-input>
-                                        </el-form-item>
+                                        </el-form-item> -->
                                         <el-form-item label="章节内容" class="chapter-content">
                                             <ChapterEditor v-model:articleData="articleData" ref="chapterEditorRef" />
                                         </el-form-item>
@@ -177,6 +177,15 @@
 
             </el-main>
         </el-container>
+
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef" 
+            :close-enable="false"
+            :back-to-path="'/scene/longText/longTextManager'"
+            :route-params="{ sceneId: sceneId }" 
+        />
+
     </div>
 
 </template>
@@ -185,12 +194,14 @@
 
 import { ElLoading } from 'element-plus'
 
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 import ChapterEditor from './chapterEditor'
 import SceneUploadFile from './sceneUploadFile.vue'
 import OutlineEditor from './outlineEditor.vue'
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import ExecuteHandle from './executeHandle'
 import FunctionList from './functionList'
+import EditorDocument from './components/EditorDocument'
 
 import {
     updateChapterContentEditor,
@@ -226,7 +237,7 @@ const editorRoleId = ref(null);
 // 执行面板
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
-
+const generatingStatusRef = ref(null)
 const executeHandleRef = ref(null)
 
 const chapterEditorRef = ref(null)
@@ -304,8 +315,7 @@ function expertScene() {
     showPdfDialog.value = true;
     loadingDocument.value = true;
 
-    uploadOss(sceneId.value , taskId.value).then(res => {
-        // window.open(res.data)
+    uploadOss(sceneId.value , taskId.value).then(res => { 
         const storegeId = res.data;
         currentStoreId.value = storegeId;
 
@@ -317,15 +327,7 @@ function expertScene() {
         })
     })
 }
-
-// /** 上传文档文件 */
-// function handleUploadFile() {
-//     uploadChildComp.value.handleOpenUpload(true);
-// }
-
-// function configAgent() {
-//     OutlineEditorRef.value.configAgent('content');
-// }
+ 
 
 function setCurrentSceneInfo(data) {
     currentSceneInfo.value = data
@@ -363,20 +365,13 @@ const genSingleChapterContent = async () => {
     if (!form.id) {
         ElMessage.error('请先选择指定章节！');
         return;
-    }
-
-
-    // 开始生成
-    streamLoading.value = ElLoading.service({
-        lock: true,
-        background: 'rgba(255, 255, 255, 0.2)',
-        customClass: 'custom-loading'
-    });
-
-    showDebugRunDialog.value = true;
+    } 
+ 
+    showDebugRunDialog.value = true; 
+    generatingStatusRef.value.loading()
 
     let text = '正在重新生成【' + form.title + '】内容，请稍等.';
-    streamLoading.value.setText(text)
+    generatingStatusRef.value.setText(text)
 
     let formData = {
         sceneId: sceneId.value,
@@ -392,14 +387,14 @@ const genSingleChapterContent = async () => {
     })
 
     try{
-        const result = await chatRoleSync(formData);
-        // chapterEditorRef.value.setData(result.data);
+        const result = await chatRoleSync(formData); 
         articleData.value.content = result.data;
 
-        streamLoading.value.close();
+        generatingStatusRef.value.close();
         showDebugRunDialog.value = false;
     }catch(e){
-        streamLoading.value.close();
+        console.log('e = ' + e)
+        generatingStatusRef.value.close();
         showDebugRunDialog.value = false;
     }
 
@@ -417,7 +412,7 @@ const genChapterContentByAgent = async () => {
                 OutlineEditorRef.value.setOutline(res.data.chapterTree) ;
             }
 
-            genChapterContent();
+            // genChapterContent();
             showDebugRunDialog.value = true;
         })
 
@@ -432,85 +427,76 @@ const handleGetChannelStreamId = () => {
 
 // 定义一个异步函数来调用 chatRoleSync
 const genChapterContent = async () => {
+ try {
+     totalNodes.value = countNodes(outline.value);
+     console.log('文档总数量 = ' + totalNodes.value);
 
-    // try {
-    //     totalNodes.value = countNodes(outline.value);
-    //     console.log('文档总数量 = ' + totalNodes.value);
+     // 将树转换成列表形式
+     const nodeList = [];
+     const flattenTree = (nodes) => {
+         for (let node of nodes) {
+             console.log('--->>> node = ' + JSON.stringify(node));
+             nodeList.push(node);
+             if (node.children && node.children.length) {
+                 flattenTree(node.children);
+             }
+         }
+     };
+     flattenTree(outline.value);
 
-    //     // 将树转换成列表形式
-    //     const nodeList = [];
-    //     const flattenTree = (nodes) => {
-    //         for (let node of nodes) {
-    //             console.log('--->>> node = ' + JSON.stringify(node));
-    //             nodeList.push(node);
-    //             if (node.children && node.children.length) {
-    //                 flattenTree(node.children);
-    //             }
-    //         }
-    //     };
-    //     flattenTree(outline.value);
+     // 开始生成
+     generatingStatusRef.value.loading() 
+     showDebugRunDialog.value = true;
 
-    //     // 开始生成
-    //     streamLoading.value = ElLoading.service({
-    //         lock: true,
-    //         background: 'rgba(255, 255, 255, 0.5)',
-    //         customClass: 'custom-loading'
-    //     });
+     // 遍历输出每个节点的信息
+     for (let i = 0; i < nodeList.length; i++) {
 
-    //     showDebugRunDialog.value = true;
+         const node = nodeList[i];
+         console.log('节点 = ' + JSON.stringify(node));
+         console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
 
-    //     // 遍历输出每个节点的信息
-    //     for (let i = 0; i < nodeList.length; i++) {
+         // 先判断当前章节是否已经生成有内容
+         const chapterId = node.id;
+         const chapterContent = await getChapterById(chapterId);
+         if(chapterContent.data.content){
+             // 跳过
+             continue;
+         }
 
-    //         const node = nodeList[i];
-    //         console.log('节点 = ' + JSON.stringify(node));
-    //         console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
+         let processMsg = ` ${i + 1}: 章节:${node.label}`;
 
-    //         // 先判断当前章节是否已经生成有内容
-    //         const chapterId = node.id;
-    //         const chapterContent = await getChapterById(chapterId);
-    //         if(chapterContent.data.content){
-    //             // 跳过
-    //             continue;
-    //         }
+         let text = processMsg + ' 任务生成中，还有【' + (totalNodes.value - i) + '】篇';
+         generatingStatusRef.value.setText(text)
 
-    //         let processMsg = ` ${i + 1}: 章节:${node.label}`;
+         form.title = node.label;
 
-    //         let text = processMsg + ' 任务生成中，还有【' + (totalNodes.value - i) + '】篇';
-    //         streamLoading.value.setText(text)
+         let formData = {
+             sceneId: sceneId.value,
+             taskId: taskId.value,
+             channelStreamId: channelStreamId.value,
+             chapterTitle: node.label,
+             chapterDescription: node.description,
+             chapterId: node.id,
+         }
 
-    //         form.title = node.label;
+         nextTick(() => { 
+             roleChatPanelRef.value.openChatBox(node.chapterEditor, node.label);
+         })
 
-    //         let formData = {
-    //             sceneId: sceneId.value,
-    //             taskId: taskId.value,
-    //             channelStreamId: channelStreamId.value,
-    //             chapterTitle: node.label,
-    //             chapterDescription: node.description,
-    //             chapterId: node.id,
-    //         }
+         const result = await chatRoleSync(formData); 
+         articleData.value.content = result.data;
 
-    //         nextTick(() => {
-    //             console.log('--->> editorRoleId = ' + node.chapterEditor)
-    //             roleChatPanelRef.value.openChatBox(node.chapterEditor, node.label);
-    //         })
+     }
+ } catch (error) {
+     console.error('--->>>> Error fetching data:', error); 
+     generatingStatusRef.value.close();
+ }
 
-    //         const result = await chatRoleSync(formData);
-    //         // chapterEditorRef.value.setData(result.data);
-    //         articleData.value.content = result.data;
+ generatingStatusRef.value.close();
+ showDebugRunDialog.value = false;
 
-    //     }
-    // } catch (error) {
-    //     console.error('Error fetching data:', error);
-    //     proxy.$modal.msgError("生成失败");
-    //     streamLoading.value.close();
-    // }
-
-    // streamLoading.value.close();
-    // showDebugRunDialog.value = false;
-    // // 编写完成之后，直接可以预览
-    // expertScene();
-
+ // 编写完成之后，直接可以预览
+ //expertScene();
 };
 
 // 计算总节点数
@@ -550,6 +536,12 @@ const editContent = (node, data) => {
     let chapterId = data.id;
 
     editorRoleId.value = node.data.chapterEditor;
+
+    if(!editorRoleId.value){
+        proxy.$modal.msgError("章节未分配编辑人员.");
+        return ; 
+    }
+
     console.log('editorRoleId = ' + editorRoleId.value)
 
     form.id = data.id;
@@ -558,9 +550,7 @@ const editContent = (node, data) => {
     form.description = node.data.description;
 
     getChapterContent(chapterId).then(res => {
-        console.log('res = ' + JSON.stringify(res))
-        // form.content = res.data ;
-        // chapterEditorRef.value.setData(res.data == null ? '' : res.data, editorRoleId.value);
+        console.log('res = ' + JSON.stringify(res)) 
         articleData.value.content = res.data == null ? '' : res.data;
         loading.value = false;
     })
@@ -581,6 +571,7 @@ const assignChaptersToUser = () => {
     let data = {
         sceneId: sceneId.value,
         roleId: currentUser.value.id,
+        taskId: taskId.value,
         chapters: currentUser.value.selectedChapters
     }
 
@@ -617,10 +608,7 @@ const openChatBox = (roleId, message) => {
     console.log('roleId = ' + roleId + ' , message = ' + message);
 
     nextTick(() => {
-        roleChatPanelRef.value.openChatBoxWithRole(roleId) ; 
-        // roleChatPanelRef.value.openChatBox(roleId, message);
-        // OutlineEditorRef.value.genStreamContentByMessage(roleId, message);
-        console.log('-->>> 编写任务完成');
+        roleChatPanelRef.value.openChatBoxWithRole(roleId) ;   
     })
 
 }
@@ -1019,6 +1007,16 @@ $avatar-size: 30px;
   }
 }
 
+.chapter-title {
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 2.8;
+    border-radius: 5px;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    background: #f5f5f5;
+    margin-top: -10px;
+}
 
 </style>
 
