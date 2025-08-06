@@ -2,13 +2,17 @@ package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.common.web.adapter.utils.file.FileUtils;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextTaskGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
@@ -17,17 +21,31 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTas
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.dtflys.forest.annotation.Get;
+import com.dtflys.forest.annotation.Post;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.lang.exception.RpcServiceRuntimeException;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,10 +67,16 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
     private ILongTextTaskService service;
 
     @Autowired
+    private ISceneService sceneService;
+
+    @Autowired
     private ILongTextSceneService generalAgentSceneService ;
 
     @Autowired
     private LongTextTaskExecutionService taskExecutionService;
+
+    @Autowired
+    private SmartDocumentConsumer smartOfficeConsumer;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -70,6 +94,95 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         return this.toPage(model, this.getFeign(), page);
     }
 
+
+    /**
+     * 获取到内容的markdown数据
+     */
+    @DataPermissionQuery
+    @GetMapping("/getMarkdownContent")
+    public AjaxResult getMarkdownContent(
+            @RequestParam("sceneId") Long sceneId ,
+            @RequestParam("taskId") Long taskId,
+            PermissionQuery query) {
+
+        LongTextSceneEntity longTextSceneEntity = generalAgentSceneService.getBySceneId(sceneId , query) ;
+        String markdownContent = sceneService.genMarkdownContent(sceneId ,query , longTextSceneEntity.getId() , taskId);
+
+        return AjaxResult.success("操作成功" , markdownContent);
+    }
+
+    /**
+     * 下载导出word文档
+     */
+    @DataPermissionQuery
+    @PostMapping("/exportWord")
+    public void exportWord(String fileName, String content, HttpServletResponse response,
+                           HttpServletRequest request, PermissionQuery query) {
+        try {
+            log.debug("fileName = {}", fileName);
+            log.debug("content = {}", content);
+
+//            if (!FileUtils.checkAllowDownload(fileName)) {
+//                throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
+//            }
+
+            // 1. 将Markdown内容写入临时文件
+            File tempFile = File.createTempFile("markdown_", ".md");
+            try {
+                Files.writeString(tempFile.toPath(), content);
+
+                // 2. 调用服务进行转换
+                byte[] result = smartOfficeConsumer.markdownToDocx(tempFile);
+
+                // 3. 设置响应头
+                // 创建日期时间格式化器
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+                String timeStamp = dateFormat.format(new Date());
+
+                // 处理原始文件名
+                String baseName = fileName.contains("_") ? fileName.substring(fileName.indexOf("_") + 1) : fileName;
+                baseName = baseName.replaceAll("\\.md$", ""); // 移除已有的.md后缀
+
+                // 构建最终文件名
+                String realFileName = String.format("%s_%s.docx", baseName, timeStamp);
+
+                response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+                response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(realFileName, StandardCharsets.UTF_8));
+                response.setContentLength(result.length);
+
+                // 4. 写入响应流
+                try (OutputStream out = response.getOutputStream()) {
+                    out.write(result);
+                    out.flush();
+                }
+            } finally {
+                // 5. 删除临时文件
+                if (tempFile.exists()) {
+                    Files.delete(tempFile.toPath());
+                }
+            }
+        } catch (Exception e) {
+            log.error("下载文件失败", e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getWriter().write("文件下载失败: " + e.getMessage());
+            } catch (IOException ex) {
+                log.error("写入错误响应失败", ex);
+            }
+        }
+    }
+
+    /**
+     * 更新任务标题
+     */
+    @DataPermissionQuery
+    @GetMapping("/updateTaskTitle")
+    public AjaxResult updateTaskTitle(@RequestParam Long taskId, @RequestParam String taskTitle) {
+        LongTextTaskEntity taskEntity = service.getById(taskId) ;
+        taskEntity.setTaskName(taskTitle);
+        service.updateById(taskEntity);
+        return AjaxResult.success("更新成功");
+    }
 
     /**
      * 更新chapterPromptContent内容
