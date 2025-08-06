@@ -137,7 +137,11 @@ public class BaseModelAdapter {
         final MessageTaskInfo localTaskInfo = taskInfo;
 
         try {
+            long start = System.currentTimeMillis();
             llm.chatStream(prompt, (context, response) -> {
+
+                log.debug("Received chunk after {}ms", System.currentTimeMillis()-start);
+
                 AiMessage message = response.getMessage();
 
                 if(StringUtils.isNotBlank(message.getReasoningContent())){
