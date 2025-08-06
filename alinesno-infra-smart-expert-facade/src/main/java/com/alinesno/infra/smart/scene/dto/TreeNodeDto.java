@@ -35,6 +35,11 @@ public class TreeNodeDto {
     private String chapterEditorAvatar ;
 
     /**
+     * 子节点的排序顺序
+     */
+    private Integer sortOrder;
+
+    /**
      * 子节点列表，表示当前节点下的子节点
      */
     private List<TreeNodeDto> children;
