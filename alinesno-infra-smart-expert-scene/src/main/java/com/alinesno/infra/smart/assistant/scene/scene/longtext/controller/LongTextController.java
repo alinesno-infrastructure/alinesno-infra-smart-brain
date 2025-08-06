@@ -118,47 +118,6 @@ public class LongTextController extends SuperController {
         return ok() ;
     }
 
-//    /**
-//     * 分配智能助手到每个章节内容
-//     * @return
-//     */
-//    @DataPermissionQuery
-//    @GetMapping("/dispatchAgent")
-//    public AjaxResult dispatchAgent(@RequestParam Long sceneId , @RequestParam Long taskId , PermissionQuery query) {
-//
-//        SceneEntity entity = service.getById(sceneId) ;
-//        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
-//
-//        ChatContentEditDto dto = new ChatContentEditDto() ;
-//        dto.setSceneId(sceneId);
-//        dto.setRoleId(Long.parseLong(longTextSceneEntity.getContentEditor().split(",")[0]));
-//
-//        LambdaQueryWrapper<ChapterEntity> lambdaQueryWrapper =  new LambdaQueryWrapper<ChapterEntity>()
-//                .eq(ChapterEntity::getSceneId, sceneId)
-//                .eq(ChapterEntity::getTaskId, taskId)
-//                .eq(ChapterEntity::getLongTextSceneId, longTextSceneEntity.getId());
-//
-//        List<ChapterEntity> chapters = chapterService.list(lambdaQueryWrapper) ;
-//        List<Long> chapterIds = chapters.stream()
-//                .map(ChapterEntity::getId)
-//                .toList();
-//
-//        List<String> chapterIdsStr = chapterIds.stream()
-//                .map(String::valueOf)
-//                .toList();
-//
-//        dto.setChapters(chapterIdsStr);
-//        chapterService.updateChapterEditor(dto, longTextSceneEntity.getId() , taskId);
-//
-//        SceneDto sceneEntity = new SceneDto();
-//        BeanUtils.copyProperties(entity, sceneEntity);
-//
-//        AjaxResult result = AjaxResult.success("操作成功");
-//        result.put("sceneInfo", sceneEntity) ;
-//
-//        return result ;
-//    }
-
 
     /**
      * 下载文件并返回文件下载
@@ -212,9 +171,7 @@ public class LongTextController extends SuperController {
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam String storageId) {
 
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
-
-        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+        byte[] fileBytes;
 
         try (InputStream inputStream = new URL(previewUrl).openStream()) {
             fileBytes = IOUtils.toByteArray(inputStream);
