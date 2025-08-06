@@ -131,6 +131,16 @@ const props = defineProps({
       content: ''
     })
   },
+  // 相对高度
+  abcHeight: {
+    type: Number , 
+    default: 220
+  },
+  // 是否显示大纲
+  outlineEnable: {
+    type: Boolean,
+    default: false
+  },
   // 是否自动聚焦编辑器
   autoFocus: {
     type: Boolean,
@@ -558,7 +568,7 @@ const handleSendPrompt = async () => {
 
 onMounted(() => {
   contentEditor.value = new Vditor('vditor', {
-    height: 'calc(100vh - 220px)',
+    height: 'calc(100vh - '+props.abcHeight+'px)',
     width: '100%',
     mode: "wysiwyg",
     cdn: '/vditor',
@@ -593,7 +603,7 @@ onMounted(() => {
       }
     },
     outline: {
-      "enable": false,
+      "enable": props.outlineEnable ,
       "position": "left"
     },
     input: debounce(() => {
@@ -609,9 +619,9 @@ onMounted(() => {
     }
   });
 
-  nextTick(() => {
-    handleSseConnect(channelStreamId.value);
-  });
+   nextTick(() => {
+     // handleSseConnect(channelStreamId.value);
+   });
 });
 
 onUnmounted(() => {
