@@ -491,4 +491,106 @@ html.dark {
          }
     }
 
+    .exam-pager-card{
+        background: #262727 !important;
+
+        .semi-divider-horizontal{ 
+            border-color: #1d1e1f !important
+        }
+    }
+
+     .exam-pager-main{
+        background-color: $dark-bg-panel !important ;
+     }
+
+     .exam-pagercontainer{
+
+        .exam-pager-aside { 
+            border-right: 1px solid  $dark-bg-panel;
+            background: #262727 !important; 
+        }
+     } 
+
+     .article-function-panel{
+        background: #262727 !important; 
+
+        .title {
+            color: $dark-text-color !important;
+        }
+
+         .task-item , .item-status{
+            background: #1d1e1f !important;
+            color: $dark-text-color !important;
+         }
+     }
+
+     .el-container{
+        background: #262727 !important; 
+     }
+
+     .editable-title-container{
+        .title-display {
+            background: $dark-bg-panel !important; 
+        }
+
+     } 
+
+     .ppt-pager-container{
+        .ppt-pager-aside {
+            border-right: 1px solid  $dark-bg-panel;
+            background: #262727 !important; 
+        } 
+
+         .long-text-container {
+            background: #1d1e1f !important;
+
+             .title-section .title{
+                color: $dark-text-color !important;
+             }
+         }
+
+         .example-item{
+            background: #262727 !important; 
+
+            .example-text{
+                color: $dark-text-color !important;
+            }
+            
+         }
+
+         .input-button-section{
+            background: #262727 !important;
+            border:1px solid #262727  !important;
+         }
+
+          .pager-gen-result-panel .pager-container{
+             background: #262727 !important;
+          }
+
+          .review-question-preview-title {
+            background: #262727 !important;
+            color: $dark-text-color !important;
+          }
+
+          .research-template-type-item{
+            background: #1d1e1f !important;
+            color: $dark-text-color !important;
+          }
+ 
+     }
+
+     .research-template-container .research-template-list .research-template-item {
+        background: #1d1e1f !important; 
+
+
+        .research-template-item-title ,  .research-template-item-content{
+            color: $dark-text-color !important;
+        }
+     }
+
+     .research-template-container .research-template-list .research-template-item.active {
+            background: #409eff !important;
+        }
+
+
 }
