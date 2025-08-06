@@ -73,7 +73,7 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="场景名称" align="left" key="name" prop="name" v-if="columns[1].visible" :show-overflow-tooltip="true">
+          <el-table-column label="场景名称" align="left" key="name" prop="name" v-if="columns[1].visible">
             <template #default="scope">
               <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                {{ scope.row.sceneName }}
@@ -261,7 +261,7 @@ import {
   addScene,
   updateSceneAgent,
   updateGreetingQuestion,
-  supportScene
+  supportAllScene
 } from "@/api/smart/assistant/scene";
 
 import {
@@ -581,7 +581,7 @@ const getSceneScopeByType = (type) => {
 
 /** 支持的场景列表 */
 const handleSupportScene = () => {
-  supportScene().then(res => {
+  supportAllScene().then(res => {
     supportSceneList.value = res.data ;
   })
 }
