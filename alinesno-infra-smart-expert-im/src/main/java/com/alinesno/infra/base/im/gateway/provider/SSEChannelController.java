@@ -26,6 +26,7 @@ import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 /**
  * SSEController 类，主要用于处理服务器发送的事件（SSE）的请求。
