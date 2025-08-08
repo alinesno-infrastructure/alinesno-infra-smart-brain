@@ -25,15 +25,15 @@
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
-    <el-input 
-      v-model="searchQuery" 
-      style="width: 400px" 
-      size="large" 
-      placeholder="搜索任务"
-      :suffix-icon="Search"
-      @input="filterTasks" 
-    />
-  </div>
+                        <el-input 
+                          v-model="searchQuery" 
+                          style="width: 400px" 
+                          size="large" 
+                          placeholder="搜索任务"
+                          :suffix-icon="Search"
+                          @input="filterTasks" 
+                        />
+                      </div>
                     </div>
                   </el-col>
                 </el-row>
@@ -56,49 +56,23 @@
                           <div class="scene-description">
                             {{ item.taskDescription }}
                           </div>
-                          <div class="semi-divider semi-divider-horizontal"></div>
+                          <div class="semi-divider semi-divider-horizontal longtext-divider"></div>
                           <div class="scene-footer">
+
                             <div class="scene-price">
-                              <!-- 大纲状态 -->
-                              <el-button text bg v-if="item.taskStatus === '0' || item.taskStatus === null" type="warning">
-                                <i class="fa-solid fa-hourglass-start" /> 大纲未开始
+                              <el-button 
+                                text 
+                                bg 
+                                :type="getStatusConfig(item).type"
+                              >
+                                <i :class="`fa-solid ${getStatusConfig(item).icon}`" /> 
+                                {{ typeof getStatusConfig(item).text === 'function' 
+                                   ? getStatusConfig(item).text(item) 
+                                   : getStatusConfig(item).text 
+                                }}
                               </el-button>
-
-                              <el-button text bg  v-else-if="item.taskStatus === '2'" type="primary">
-                                <i class="fa-solid fa-spinner fa-spin" /> 大纲生成中
-                              </el-button>
-
-                              <el-button text bg 
-                                v-else-if="item.taskStatus === '1' && (item.chapterStatus === '0' || item.chapterStatus === null)"
-                                type="warning">
-                                <i class="fa-solid fa-list-check" /> 章节未开始
-                              </el-button>
-
-                              <!-- 章节状态 -->
-                              <el-button text bg  v-else-if="item.chapterStatus === '2'" type="primary">
-                                <i class="fa-solid fa-spinner fa-spin" /> 
-                               {{ truncateString(item.currentChapterLabel,12) || '当前章节' }} 
-                              </el-button>
-
-                              <el-button text bg  v-else-if="item.chapterStatus === '1'" type="success">
-                                <i class="fa-solid fa-check-circle" /> 全部完成
-                              </el-button>
-
-                              <!-- 未知状态 -->
-                              <el-button text bg  v-else type="info">
-                                <i class="fa-solid fa-question-circle" /> 未知状态
-                              </el-button>
-                            </div>
-                            <!-- 
-                            <div class="scene-price">
-                              <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" />
-                                私有</el-tag>
-                              <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
-                                  class="fa-solid fa-globe" /> 公开</el-tag>
-                              <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
-                                组织</el-tag>
                             </div> 
-                            -->
+                     
                             <div class="scene-tag">
                               <div class="scene-stats">
                                 <span>用时</span>
@@ -147,7 +121,7 @@ import {
   deleteById
 } from '@/api/base/im/scene/longTextTask';
 
-// import SideTypePanel from './articleType.vue'
+import { truncateString } from '@/utils/ruoyi'
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
@@ -163,6 +137,26 @@ const sceneId = ref(route.query.sceneId)
 const sceneLoading = ref(true)
 const searchQuery = ref('')
 const pagerList = ref([]) // 原始数据 
+
+// 在script setup部分添加状态配置 
+const statusConfig = [
+  { condition: (item) => item.taskStatus === 'not_run' || item.taskStatus === null, type: "warning", icon: "fa-hourglass-start", text: "大纲未开始" },
+  { condition: (item) => item.taskStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: "大纲生成中" },
+  { condition: (item) => item.taskStatus === 'cancelling', type: "warning", icon: "fa-ban fa-spin", text: "任务取消中" },
+  { condition: (item) => item.taskStatus === 'cancelled', type: "info", icon: "fa-ban", text: "任务已取消" },
+  { condition: (item) => item.taskStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "任务失败" },
+  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'not_run' || item.chapterStatus === null), type: "warning", icon: "fa-list-check", text: "章节未开始" },
+  { condition: (item) => item.chapterStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '正在生成章节' },
+  { condition: (item) => item.chapterStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '当前章节' },
+  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'cancelled' || item.chapterStatus === null), type: "warning", icon: "fa-check-circle", text: "章节完成" },
+  { condition: (item) => item.chapterStatus === 'completed', type: "success", icon: "fa-check-circle", text: "全部完成" },
+  { condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态" },
+]
+
+// 查找匹配的状态配置
+const getStatusConfig = (item) => {
+  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
+}
 
 /** 进入长文本编辑界面 */
 function enterExamPager(item) {
@@ -434,17 +428,20 @@ onMounted(() => {
   .scene-tags{
     display:flex ;
       span.scene-tag-time {
-        font-size: 13px;
-        padding: 3px;
+        font-size: 13px; 
         border-radius: 5px;
         background: #fafafa;
         opacity: 0.7;
-        margin-top:5px;
-        margin-buttom: 5px;
+        margin-top:5px; 
+        padding: 5px;
       }
 
   }
 
+  .longtext-divider{
+    margin-top:8px;
+    margin-buttom: 8px;
+  }
 
 }
 </style>
