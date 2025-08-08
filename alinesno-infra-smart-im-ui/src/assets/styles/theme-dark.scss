@@ -593,4 +593,80 @@ html.dark {
         }
 
 
+        .exam-pager-card .scene-tags span.scene-tag-time{
+            color: $dark-text-color !important;
+            opacity: 1;
+            background: #1d1e1f !important; 
+        }
+
+        .chapter-title{
+            background: #262727 !important; 
+        }
+
+        .long-text-editor{
+            .context-menu {
+                    background: #262727 !important; 
+                    border: 1px solid #262727 !important; 
+
+                    .input-section input {
+                        background: #1d1e1f !important; 
+                    }
+            } 
+
+            .ai-output-panel {
+
+                .ai-output-header{
+                    border-bottom: 1px solid #262727;
+                    background: #1d1e1f;
+                }
+
+                 .ai-output-content{
+                    background: #262727;
+                 }
+
+                .ai-output-actions{
+                    border-top: 1px solid #262727;
+                    background: #1d1e1f;
+                }
+            }
+        }
+
+    .contract-review-container{ 
+        background: color-mix(in srgb, #262727 70%, black 10%);
+
+        .review-methods-container , .contract-overview-container{
+        background: #262727;
+
+            .contract-info-value{
+                color: $dark-text-color !important;
+                background: #1d1e1f !important; 
+            }
+        }
+
+        .review-methods-title , .contract-overview-title{
+            color: $dark-text-color !important;
+            background: #1d1e1f !important; 
+        }
+    }
+
+    .review-checklist-container {
+        .review-checklist-item-content , .review-checklist-rule-title {
+           color: $dark-text-color !important;
+           background: #262727 !important; 
+        }
+    }
+
+    .document-review-container {
+        background: #1d1e1f;
+
+        .review-upload-container {
+            border: 1px solid #262727 !important; 
+        }
+
+        .review-knowledge-base{
+            background: #262727 !important; 
+            color: $dark-text-color !important;
+            border: 1px solid #262727 !important; 
+        }
+    }
 }
