@@ -68,6 +68,10 @@ public class ChapterEntity extends InfraBaseEntity {
     @Column(name = "content", type = MySqlTypeConstant.LONGTEXT, comment = "本章节文本内容")
     private String content ;
 
+    @TableField
+    @Column(name = "error_msg", type = MySqlTypeConstant.VARCHAR, length = 512, comment = "错误信息")
+    private String errorMsg ;
+
     // 子组件
     @TableField(exist = false)
     private List<ChapterEntity> subtitles ;
