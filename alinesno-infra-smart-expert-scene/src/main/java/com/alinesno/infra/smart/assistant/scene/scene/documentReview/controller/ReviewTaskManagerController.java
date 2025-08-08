@@ -9,8 +9,12 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewGenReviewDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewTaskDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.TaskGeneratorDTO;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
@@ -48,6 +52,9 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
     @Autowired
     private IDocReviewSceneService docReviewSceneService ;
 
+    @Autowired
+    private DocReviewListGeneratorService docReviewListGeneratorService ;
+
     /**
      * 获取BusinessLogEntity的DataTables数据。
      *
@@ -82,7 +89,6 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
         taskEntity.setSceneId(dto.getSceneId());
         taskEntity.setDocumentReviewSceneId(sceneEntity.getId());
         taskEntity.setTaskStartTime(new Date());
-        taskEntity.setGenStatus(0);
 
         if(dto.getAttachments() != null){
             String attachments = dto.getAttachments().stream().map(String::valueOf).collect(Collectors.joining(",")) ;
@@ -104,6 +110,30 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
         return AjaxResult.success("操作成功." ,list);
     }
 
+
+    /**
+     * 生成审核清单
+     */
+    @DataPermissionQuery
+    @PostMapping("/genReviewList")
+    public AjaxResult genReviewList(@RequestBody @Validated DocReviewGenReviewDto dto, PermissionQuery query) {
+
+        // 如果任务的状态是在生成中，则返回正在生成中
+        DocReviewTaskEntity entity = service.getById(dto.getTaskId());
+
+        if (ReviewRuleGenStatusEnums.GENERATING.getCode().equals(entity.getReviewGenStatus())) {
+            return AjaxResult.error("任务正在生成中，请稍后再试");
+        }
+
+        if (ReviewRuleGenStatusEnums.SUCCESS.getCode().equals(entity.getReviewGenStatus())) {
+            return AjaxResult.success("任务已生成，请勿重复生成");
+        }
+
+        docReviewListGeneratorService.startGenerateReviewList(dto, query) ;
+
+        return AjaxResult.success();
+    }
+
     /**
      * 通过任务id获取到任务详情
      * @return
@@ -119,7 +149,8 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
         wrapper.eq(DocReviewTaskEntity::getOrgId, query.getOrgId());
 
         DocReviewTaskEntity entity = service.getOne(wrapper) ;
-        return AjaxResult.success("操作成功." ,entity);
+
+        return AjaxResult.success("操作成功." , DocReviewTaskDto.fromEntity(entity));
     }
 
     @Override
