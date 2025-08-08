@@ -54,7 +54,7 @@ public class ContentFormatterDocumentServiceImpl extends IBaseServiceImpl<Conten
             throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
         }
 
-        String htmlContent =smartDocumentConsumer.convertToHtml(targetFile).getData() ;
+        String htmlContent =smartDocumentConsumer.convertToHtml(targetFile) ; //.getData() ;
 
         ContentFormatterDocumentEntity entity = new ContentFormatterDocumentEntity();
 
