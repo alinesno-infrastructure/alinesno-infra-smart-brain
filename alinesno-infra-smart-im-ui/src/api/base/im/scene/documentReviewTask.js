@@ -7,8 +7,9 @@ var prefix = '/api/infra/smart/assistant/scene/docReviewTaskManager/' ;
 var managerUrl = {
   pagerListByPage: prefix +"pagerListByPage",
   getReviewTask: prefix +"getReviewTask",
-  addTask: prefix + "addTask",
-  deleteById: prefix + "deleteById",
+  addTask: prefix + "addTask", 
+  genReviewList: prefix +"genReviewList" , 
+  deleteById: prefix + "deleteById", 
 }
 
 // 删除任务
@@ -16,6 +17,16 @@ export function deleteById(taskId) {
   return request({
     url: managerUrl.deleteById + '?id=' + parseStrEmpty(taskId),
     method: 'get',
+  })
+}
+
+
+// 生成文档审核场景信息
+export function genReviewList(data) {
+  return request({
+    url: managerUrl.genReviewList , 
+    method: 'post' , 
+    data: data
   })
 }
 
