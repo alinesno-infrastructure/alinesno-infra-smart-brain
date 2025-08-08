@@ -13,7 +13,45 @@ var managerUrl = {
   submitTask: prefix + "submitTask",
   submitChapterTask: prefix + "submitChapterTask",
   updateTaskTitle: prefix + "updateTaskTitle", 
-  getMarkdownContent: prefix + "getMarkdownContent"
+  getMarkdownContent: prefix + "getMarkdownContent",
+  chatEditorRole: prefix + "chatEditorRole" ,
+  generateImages: prefix + "generateImages" ,
+  takeOver: prefix + "takeOver",
+  stopTask: prefix + "stopTask",
+}  
+
+// 人工接管任务
+export function takeOver(taskId) {
+  return request({
+    url: managerUrl.takeOver + "?taskId=" + taskId,
+    method: 'get'
+  })
+}
+
+// 停止生成任务
+export function stopTask(taskId) {
+    return request({
+    url: managerUrl.stopTask + "?taskId=" + taskId,
+    method: 'get'
+  })
+}
+
+// 生成图片
+export function generateImages(data) {
+  return request({
+    url: managerUrl.generateImages,
+    method: 'post',
+    data: data
+  })
+}
+
+// 文章编辑角色
+export function chatEditorRole(data) {
+  return request({
+    url: managerUrl.chatEditorRole,
+    method: 'post',
+    data: data
+  })
 }
 
 // 获取任务的所有markdown内容
