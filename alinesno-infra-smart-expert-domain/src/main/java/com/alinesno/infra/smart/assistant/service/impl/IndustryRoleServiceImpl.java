@@ -191,7 +191,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
                 .exceptionally(ex -> {
                     log.error("执行角色代理失败", ex);
                     // 可以在这里处理异常情况，返回默认值或抛出特定异常
-                    throw new RuntimeException("执行角色代理失败", ex);
+                    throw new RuntimeException(ex);
                 });
     }
 
