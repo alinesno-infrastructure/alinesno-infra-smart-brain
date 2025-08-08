@@ -39,8 +39,8 @@ public interface SmartDocumentConsumer {
      * @param file 要处理的文件
      * @return API响应（UTF-8 编码的 HTML）
      */
-    @Post(url = "/api/v1/docx/convertToHtml", contentType = MediaType.TEXT_HTML_VALUE)
-    R<String> convertToHtml(@DataFile("file") File file);
+    @Post(url = "/api/v1/docx/convertToHtml")
+    String convertToHtml(@DataFile("file") File file);
 
     /**
      * 01_文档转换 - 将HTML文档转换为DOCX格式
@@ -87,8 +87,8 @@ public interface SmartDocumentConsumer {
      * @param htmlContent HTML内容字符串
      * @return API响应
      */
-    @Post(url = "/api/v1/docx/format/htmlToOfficial", contentType = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    R<String> htmlToOfficial(@Body("htmlContent") String htmlContent);
+    @Post(url = "/api/v1/docx/format/htmlToOfficial")
+    String htmlToOfficial(@Body("htmlContent") String htmlContent);
 
     /**
      * Markdown转换成DOCX
