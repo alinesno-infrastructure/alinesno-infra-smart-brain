@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.assistant.role.llm;
 
+import com.agentsflex.core.llm.ChatContext;
 import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.StreamResponseListener;
+import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.alinesno.infra.common.core.utils.StringUtils;
@@ -11,6 +14,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.im.exception.RateLimitException;
 import com.alinesno.infra.smart.im.service.IMessageReferenceService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import lombok.Data;
@@ -134,40 +138,64 @@ public class BaseModelAdapter {
                                                                    long messageId) {
 
         CompletableFuture<AiMessage> future = new CompletableFuture<>();
-        final MessageTaskInfo localTaskInfo = taskInfo;
 
         try {
             long start = System.currentTimeMillis();
-            llm.chatStream(prompt, (context, response) -> {
 
-                log.debug("Received chunk after {}ms", System.currentTimeMillis()-start);
+            llm.chatStream(prompt, new StreamResponseListener() {
+                @Override
+                public void onMessage(ChatContext context, AiMessageResponse response) {
+                    log.debug("Received chunk after {}ms", System.currentTimeMillis()-start);
 
-                AiMessage message = response.getMessage();
+                    AiMessage message = response.getMessage();
 
-                if(StringUtils.isNotBlank(message.getReasoningContent())){
-                    taskInfo.setReasoningText(message.getReasoningContent());
-                } else {
-                    taskInfo.setReasoningText(StringUtils.EMPTY);
-                }
-
-                try {
-                    boolean isEnd = message.getStatus() == MessageStatus.END;
-
-                    streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent(),
-                            role,
-                            localTaskInfo,
-                            localTaskInfo.getTraceBusId(),
-                            messageId);
-
-                    if (isEnd) {
-                        message.addMetadata(MESSAGE_ID , messageId);
-                        future.complete(message);
+                    if(StringUtils.isNotBlank(message.getReasoningContent())){
+                        taskInfo.setReasoningText(message.getReasoningContent());
+                    } else {
+                        taskInfo.setReasoningText(StringUtils.EMPTY);
                     }
-                } catch (Exception e) {
-                    log.error(e.getMessage());
-                    future.completeExceptionally(e);
+
+                    try {
+                        boolean isEnd = message.getStatus() == MessageStatus.END;
+                        streamMessagePublisher.doStuffAndPublishAnEvent(message.getContent(),
+                                role,
+                                taskInfo,
+                                taskInfo.getTraceBusId(),
+                                messageId);
+
+                        if (isEnd) {
+                            message.addMetadata(MESSAGE_ID, messageId);
+                            future.complete(message);
+                        }
+                    } catch (Exception e) {
+                        log.error(e.getMessage());
+                        future.completeExceptionally(e);
+                    }
                 }
+
+                @Override
+                public void onFailure(ChatContext context, Throwable throwable) {
+                    log.error("Stream processing failed", throwable);
+
+                    // 处理限流情况
+                    if (throwable != null && throwable.getMessage().contains("429")) {
+                        taskInfo.setErrorMessage("请求过于频繁，请稍后再试");
+
+                        // 创建自定义限流异常
+                        RateLimitException rateLimitEx = new RateLimitException("API请求频率超限(429 Too Many Requests)", throwable);
+
+                        // 设置重试建议时间（可根据实际情况调整）
+                        rateLimitEx.setRetryAfterSeconds(60);
+
+                        future.completeExceptionally(rateLimitEx);
+                    } else {
+                        // 其他异常情况
+                        future.completeExceptionally(throwable);
+                    }
+                }
+
             });
+
         } catch (Exception e) {
             log.error(e.getMessage());
             future.completeExceptionally(e);
