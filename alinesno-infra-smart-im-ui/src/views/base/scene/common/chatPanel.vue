@@ -5,8 +5,7 @@
     <div class="smart-container inner-smart-container">
       <el-row>
         <el-col :span="24">
-          <div class="robot-chat-windows">
-
+          <div class="robot-chat-windows"> 
             <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px - 10px)'">
               <!-- 聊天窗口_start -->
               <el-scrollbar class="scroll-panel" ref="scrollbarRef" loading always wrap-style="padding:10px">
@@ -204,6 +203,10 @@ const props = defineProps({
   heightDiff: {
     type: Number,
     default: 280 
+  },
+  showDebugRunDialog: {
+    type: Boolean , 
+    default: false
   }
 })
 
@@ -624,6 +627,11 @@ function openChatBox(roleIdVal , messageVal){
   roleId.value = roleIdVal ; // getParam('roleId')
   handleGetInfo(roleId.value);
 }
+ 
+const getChannelStreamId = () => {
+  return channelStreamId.value ;
+}
+
 
 /** 打开运行聊天界面 */
 function openChatBoxWithRole(roleIdVal){
@@ -635,8 +643,8 @@ function openChatBoxWithRole(roleIdVal){
 
 onMounted(() => {
   channelId.value = getParam('sceneId') ;  
-  handleSseConnect(channelStreamId.value);
-  console.log("connection channelStreamId --->>> " + channelStreamId.value);
+  // handleSseConnect(channelStreamId.value);
+  // console.log("connection channelStreamId --->>> " + channelStreamId.value);
 })
 
 // 销毁信息
@@ -646,9 +654,18 @@ onBeforeUnmount(() => {
   })
 });
 
-const getChannelStreamId = () => {
-  return channelStreamId.value ;
-}
+watch(
+  () => props.showDebugRunDialog,
+  (newVal) => {
+    if (newVal) {
+      channelId.value = getParam('sceneId');  
+      handleSseConnect(channelStreamId.value); // 抽屉打开时连接
+    } else {
+      handleCloseSse(channelStreamId.value);  // 抽屉关闭时断开
+    }
+  },
+  { immediate: true } // 初始化时检查一次抽屉状态
+);
 
 defineExpose({
   setRoleInfo, 
