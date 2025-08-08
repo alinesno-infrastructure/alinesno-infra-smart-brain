@@ -9,6 +9,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterS
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
 import com.alinesno.infra.smart.scene.entity.ChapterEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
+import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
@@ -29,43 +30,6 @@ public class LongTextTaskServiceImpl extends IBaseServiceImpl<LongTextTaskEntity
 
     @Autowired
     private IChapterService chapterService ;
-
-//    @Override
-//    public List<LongTextTaskEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query , Long sceneId) {
-//
-//        page.setPageNum(0);
-//        page.setPageSize(20);
-//
-//        Page<LongTextTaskEntity> pageBean = new Page<>(page.getPageNum(), page.getPageSize());
-//
-//        LambdaQueryWrapper<LongTextTaskEntity> wrapper = new LambdaQueryWrapper<>();
-//        wrapper.eq(LongTextTaskEntity::getOrgId, query.getOrgId()) ;
-//        wrapper.eq(LongTextTaskEntity::getSceneId, sceneId);
-//        wrapper.orderByDesc(LongTextTaskEntity::getAddTime) ;
-//
-//        pageBean = page(pageBean, wrapper);
-//
-//        List<LongTextTaskEntity> list = pageBean.getRecords();
-//
-//        // 查询出第一章节的内容，并以此内容为描述内容
-//        for (LongTextTaskEntity entity : list) {
-//            LambdaQueryWrapper<ChapterEntity>  lambdaQueryWrapper = new LambdaQueryWrapper<>() ;
-//            lambdaQueryWrapper.eq(ChapterEntity::getTaskId, entity.getId()) ;
-//            lambdaQueryWrapper.eq(ChapterEntity::getSceneId, sceneId) ;
-//
-//            List<ChapterEntity> chapterEntities = chapterService.list(lambdaQueryWrapper) ;
-//            if (chapterEntities != null && !chapterEntities.isEmpty()) {
-//                entity.setTaskDescription(chapterEntities.get(0).getContent()); // 这样处理可能第1个的内容为空
-//            }else{
-//                // 没有描述时描述长一些，并且人性化一些
-//                String noDesc = "当前还没有执行任务，暂时无任务描述。";
-//                entity.setTaskDescription(noDesc);
-//            }
-//
-//        }
-//
-//        return list ;
-//    }
 
     @Override
     public List<LongTextTaskEntity> pagerListByPage(DatatablesPageBean page, PermissionQuery query, Long sceneId) {
@@ -120,6 +84,16 @@ public class LongTextTaskServiceImpl extends IBaseServiceImpl<LongTextTaskEntity
     @Override
     public TaskProgressDto getProgress(Long taskId) {
         return null;
+    }
+
+    @Override
+    public void takeOver(Long taskId) {
+        LongTextTaskEntity task = getById(taskId);
+
+        task.setTaskStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
+        task.setChapterStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
+
+        updateById(task);
     }
 
 }
