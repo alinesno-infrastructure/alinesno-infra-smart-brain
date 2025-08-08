@@ -42,8 +42,7 @@ export function genAuditResult(data) {
 // 获取预览文档
 export function getPreviewDocx(taskId) {
   return request({
-    url: managerUrl.getPreviewDocx + '?taskId=' + parseStrEmpty(taskId),
-    responseType: 'blob', // 显式声明返回二进制流
+    url: managerUrl.getPreviewDocx + '?taskId=' + parseStrEmpty(taskId), 
     method: 'get'
   })
 }
