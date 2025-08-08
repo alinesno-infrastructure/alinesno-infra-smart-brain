@@ -40,6 +40,11 @@ public class TreeNodeDto {
     private Integer sortOrder;
 
     /**
+     * 是否有内容
+     */
+    private Boolean hasContent ;
+
+    /**
      * 子节点列表，表示当前节点下的子节点
      */
     private List<TreeNodeDto> children;
