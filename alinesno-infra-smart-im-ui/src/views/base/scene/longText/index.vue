@@ -64,6 +64,7 @@
                     </div>
                   </div>
                 </div>
+
               </div>
               <div class="review-footer-message">
                 <div class="footer-message">服务生成的所有内容均由人工智能模型生成，其生成内容的准确性和完整性无法保证，不能代表我们的态度和观点。</div>
@@ -127,14 +128,14 @@ const channelStreamId = ref(route.query.channelStreamId || snowflake.generate())
 const promptText = ref('');
 
 const greetingQuestionList = ref([
-  { text: "健康生活方式的趋势" },
-  { text: "虚拟货币市场的发展历程与未来展望" },
-  { text: "新能源汽车市场现状与发展预测" },
-  { text: "人工智能的发展趋势与未来展望" },
-  { text: "公益事业与企业社会责任的结合" },
-  { text: "2025在线教育的发展与挑战" },
-  { text: "企业数字化执行阻力突破" },
-  { text: "年度工作回顾与未来规划" }
+  { text: "区块链跨境支付结算系统架构技术方案" },   
+  { text: "实时个性化推荐系统性能优化解决方案" },  
+  { text: "医疗影像AI辅助诊断模型优化方案" },  
+  { text: "工业物联网维护技术方案" },  
+  { text: "交通大数据调度平台建设方案" },  
+  { text: "新能源电网智能调度与储能优化方案" },  
+  { text: "大模型驱动个性化在线学习系统解决方案" },  
+  { text: "无人机精准农业测技术方案" }, 
 ]);
 
 // 场景表单信息
