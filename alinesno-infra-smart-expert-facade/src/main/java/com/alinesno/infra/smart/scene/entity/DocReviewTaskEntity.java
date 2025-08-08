@@ -31,6 +31,10 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     private Long documentReviewSceneId;
 
     @TableField
+    @Column(name = "channel_stream_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "渠道流ID")
+    private Long channelStreamId ;
+
+    @TableField
     @Column(name = "task_description", type = MySqlTypeConstant.LONGTEXT, comment = "任务描述")
     private String taskDescription;
 
@@ -53,10 +57,6 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "document_name", type = MySqlTypeConstant.VARCHAR, comment = "审核文档名称")
     private String documentName;
-
-    @TableField
-    @Column(name = "gen_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "生成状态(1已生成|0未生成)")
-    private Integer genStatus = 0;
 
     // 审核清单生成方式
     @TableField("review_list_option")
@@ -87,7 +87,6 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.TEXT, comment = "合同概览")
     private String contractOverview;
 
-
     // 新增字段：合同类型
     @TableField("contract_type")
     @Column(type = MySqlTypeConstant.VARCHAR, length = 32, comment = "合同类型")
@@ -97,5 +96,28 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     @TableField("review_position")
     @Column(type = MySqlTypeConstant.VARCHAR, length = 2, comment = "审核立场")
     private String reviewPosition;
+
+    // 合同元数据
+    @TableField("contract_metadata")
+    @Column(type = MySqlTypeConstant.TEXT, comment = "合同元数据，以KEY-VALUE格式保存")
+    private String contractMetadata;
+
+    // >>>>>>>>>>>>>>>>>>>>>>>>---------------- 状态管理_start -------------------------
+
+    @TableField
+    @Column(name = "review_gen_status", type = MySqlTypeConstant.VARCHAR, length = 16, comment = "生成状态审核清单生成状态")
+    private String reviewGenStatus;
+
+    // 审核结果生成状态
+    @TableField("result_gen_status")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "审核结果生成状态")
+    private String resultGenStatus ;
+
+    // 文档内容解析状态
+    @TableField("document_parse_status")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "文档内容解析状态")
+    private String documentParseStatus ;
+    // >>>>>>>>>>>>>>>>>>>>>>>>---------------- 状态管理_end -------------------------
+
 
 }
