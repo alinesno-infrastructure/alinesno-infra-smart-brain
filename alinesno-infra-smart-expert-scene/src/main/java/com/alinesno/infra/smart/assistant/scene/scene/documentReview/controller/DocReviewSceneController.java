@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -17,10 +18,12 @@ import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.GenPdfTool;
 import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
@@ -39,6 +42,7 @@ import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
@@ -76,9 +80,6 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
     @Autowired
     private IIndustryRoleService roleService ;
 
-    @Autowired
-    private AnalysisTool analysisTool;
-
     /**
      * 获取BusinessLogEntity的DataTables数据。
      *
@@ -97,76 +98,15 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
     }
 
     /**
-     * 生成审核清单
+     * 获取生成状态
      */
-    @DataPermissionQuery
-    @PostMapping("/genReviewList")
-    public AjaxResult genReviewList(@RequestBody @Validated DocReviewGenReviewDto dto , PermissionQuery query){
-
-        long sceneId = dto.getSceneId() ;
-
-        DocReviewSceneEntity sceneEntity = service.getBySceneId(sceneId, query) ;
-        DocReviewTaskEntity entity = docReviewTaskService.getById(dto.getTaskId());
-        entity.setGenStatus(1) ;
-        docReviewTaskService.update(entity);
-
-        entity.setContractType(dto.getContractType());
-        entity.setReviewPosition(dto.getReviewPosition());
-        entity.setReviewListKnowledgeBase(dto.getReviewListKnowledgeBase());
-        entity.setReviewListOption(dto.getReviewListOption());
-
-        if(dto.getReviewListOption().equals("aigen")){  // 如果是aigen则直接调用agent生成内容
-
-            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-
-            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-            taskInfo.setRoleId(sceneEntity.getAnalysisAgentEngineer());
-            taskInfo.setChannelId(sceneId);
-            taskInfo.setSceneId(sceneId) ;
-            taskInfo.setText("合同类型的审查清单项");
-
-            String documentInfo = """
-                    合同名称：%s
-                    合同类型：%s
-                    合同概述: %s
-                    """ ;
-
-            ContractTypeEnum contractType = ContractTypeEnum.getByScenarioId(entity.getContractType()) ;
-            if(contractType == null){
-                throw new RpcServiceRuntimeException("合同类型不正确，请点击重新生成.") ;
-            }
-
-            taskInfo.setText(String.format(documentInfo ,
-                    entity.getDocumentName() ,
-                    contractType.getTitle() + ":" + contractType.getDesc() ,
-                    entity.getContractOverview() == null ?"":entity.getContractOverview()));
-
-            // 优先获取到结果内容
-            CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-
-//            // 获取到格式化的内容
-//            analysisTool.handleFormatRuleMessage(genContent , taskInfo);
-//
-//            // 解析得到代码内容
-//            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-//                String codeContent = genContent.getCodeContent().get(0).getContent() ;
-//                // 验证是否可以正常解析json
-//                try{
-//                    List<DocReviewRulesDto> nodeDtos = JSON.parseArray(codeContent, DocReviewRulesDto.class);
-//                    log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-//                    for(DocReviewRulesDto d : nodeDtos){
-//                        d.setId(IdUtil.getSnowflakeNextId());
-//                    }
-//                    entity.setReviewList(JSONUtil.toJsonStr(nodeDtos));
-//                }catch (Exception e){
-//                    throw new RpcServiceRuntimeException("生成审核规则格式不正确，请点击重新生成.") ;
-//                }
-//
-//            }
+    @GetMapping("/getGenStatus")
+    public AjaxResult getGenStatus(@RequestParam Long taskId) {
+        DocReviewTaskEntity entity = docReviewTaskService.getById(taskId);
+        if (entity == null) {
+            return AjaxResult.error("任务不存在");
         }
-
-        docReviewTaskService.updateById(entity) ;
-        return AjaxResult.success();
+        return AjaxResult.success("查询成功." , entity.getReviewGenStatus());
     }
 
     /**
@@ -190,10 +130,6 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
 
         DocReviewTaskEntity entity = docReviewTaskService.getById(dto.getTaskId());
 
-//        entity.setOperatorId(dto.getOperatorId());
-//        entity.setOrgId(dto.getOrgId()) ;
-//        entity.setDepartmentId(dto.getDepartmentId()) ;
-
         List<DocReviewRulesDto> nodeDtos = new ArrayList<>() ;
 
         List<DocReviewRulesEntity> rules = reviewAuditService.getRulesByAuditId(dto.getAuditId()) ;
@@ -212,7 +148,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
             nodeDtos.add(dto1);
         }
 
-        entity.setGenStatus(1) ;
+        entity.setReviewGenStatus(ReviewRuleGenStatusEnums.SUCCESS.getCode()); ;
         entity.setAuditId(dto.getAuditId()) ;
         entity.setSceneId(dto.getSceneId());
         entity.setReviewList(JSONUtil.toJsonStr(nodeDtos));
