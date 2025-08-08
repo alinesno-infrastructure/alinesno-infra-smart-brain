@@ -126,7 +126,7 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
         }
 
         // 检查任务状态是否可执行
-        if (task.getTaskStatus() != null && !(TaskStatusEnum.NOT_RUN.getCode() == Integer.parseInt(task.getTaskStatus()))) {
+        if (task.getTaskStatus() != null && !(TaskStatusEnum.NOT_RUN.getCode().equals(task.getTaskStatus()))) {
             return AjaxResult.error("任务状态不允许执行");
         }
 
@@ -155,7 +155,7 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
         }
 
         // 检查任务状态是否可执行
-        if (task.getChapterStatus() != null && TaskStatusEnum.RUN_COMPLETED.getCode() == Integer.parseInt(task.getChapterStatus())) {
+        if (task.getChapterStatus() != null && TaskStatusEnum.RUN_COMPLETED.getCode().equals(task.getChapterStatus())) {
             return AjaxResult.error("章节任务已生成完成.");
         }
 
