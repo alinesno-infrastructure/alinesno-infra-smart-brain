@@ -24,6 +24,9 @@ public class WorkflowExecutionDto implements Serializable {
     private boolean isCoding ; // 是否是代码编辑
     private String chatType ;
 
+    private boolean hasException = false;  // 是否有异常
+    private String exceptionMsg ; // 异常信息
+
     private Long traceBusId ; // 消息业务跟踪ID
     private boolean isPrint = false ; // 是否打印消息
     private boolean isSync = false; // 是否同步，默认是异步(同步true|异步false)
