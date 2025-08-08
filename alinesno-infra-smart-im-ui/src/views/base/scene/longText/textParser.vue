@@ -55,15 +55,7 @@
                                                         <i class="fa-brands fa-firefox-browser"></i>&nbsp; 章节生成
                                                     </el-button>
                                                 </el-tooltip>
-
-                                                <!-- 
-                                                <el-tooltip class="box-item" effect="dark" content="上传文档文件" placement="top">
-                                                    <el-button type="danger" text bg size="large" @click="handleUploadFile">
-                                                        <i class="fa-solid fa-file-word icon-btn"></i> 
-                                                    </el-button>
-                                                </el-tooltip> 
-                                                -->
-
+  
                                                 <el-tooltip class="box-item" effect="dark" content="保存章节"
                                                     placement="top">
                                                     <el-button type="primary" text bg
@@ -82,12 +74,8 @@
                                     </template>
                                     <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
                                         <div class="chapter-title">
-                                            {{ form.title }}
-                                        </div>
-                                        <!-- <el-form-item>
-                                            <el-input disabled="disabled" v-model="form.title"
-                                                placeholder="在执行当中的章节名称"></el-input>
-                                        </el-form-item> -->
+                                            {{ form.title?form.title:'未生成章节.' }}
+                                        </div> 
                                         <el-form-item label="章节内容" class="chapter-content">
                                             <ChapterEditor v-model:articleData="articleData" ref="chapterEditorRef" />
                                         </el-form-item>
@@ -148,7 +136,7 @@
                         <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
                             title="预览与调试" :with-header="true">
                             <div style="margin-top: 0px;">
-                                <RoleChatPanel ref="roleChatPanelRef" />
+                                <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
                             </div>
                         </el-drawer>
                     </div>
@@ -455,6 +443,13 @@ const genChapterContent = async () => {
          console.log('节点 = ' + JSON.stringify(node));
          console.log(`节点 ${i + 1}: ID = ${node.id}, Label = ${node.label}`);
 
+         if(!node.chapterEditor){
+            proxy.$modal.msgError(`[${node.label}]未分配编辑人员。`);
+             generatingStatusRef.value.close();
+             showDebugRunDialog.value = false;
+            return ; 
+        }
+
          // 先判断当前章节是否已经生成有内容
          const chapterId = node.id;
          const chapterContent = await getChapterById(chapterId);
@@ -530,11 +525,9 @@ const findNodeById = (nodes, id) => {
 
 /** 编辑章节内容 */
 const editContent = (node, data) => {
-    console.log('node = ' + JSON.stringify(node.data))
-    console.log('data = ' + data)
+    console.log('node = ' + JSON.stringify(node.data)) 
 
-    let chapterId = data.id;
-
+    let chapterId = data.id; 
     editorRoleId.value = node.data.chapterEditor;
 
     if(!editorRoleId.value){
@@ -549,8 +542,7 @@ const editContent = (node, data) => {
     form.chapterEditor = node.chapterEditor;
     form.description = node.data.description;
 
-    getChapterContent(chapterId).then(res => {
-        console.log('res = ' + JSON.stringify(res)) 
+    getChapterContent(chapterId).then(res => { 
         articleData.value.content = res.data == null ? '' : res.data;
         loading.value = false;
     })
@@ -620,6 +612,10 @@ const downloadWordDocument = () => {
 }
 
 const closeShowDebugRunDialog = () => {
+    console.log("--->>>> closeShowDebugRunDialog");
+    if(generatingStatusRef.value?.isLoading()){
+        return ; 
+    }
     showDebugRunDialog.value = false;
 }
 
