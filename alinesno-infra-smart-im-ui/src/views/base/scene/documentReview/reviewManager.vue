@@ -1,15 +1,7 @@
-<template>
-  <div class="exam-pagercontainer">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="exam-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="exam-pager-main">
-        <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
+<template> 
+      <DocumentReviewContainer>
+        <el-scrollbar style="height:calc(100vh - 40px)">
+          <div class="tpl-app" style="display: flex;height:calc(100vh - 40px);margin-left: 0px;width:100%;background-color: #fff;">
 
             <!-- <SideTypePanel /> -->
 
@@ -90,9 +82,8 @@
 
           </div>
         </el-scrollbar>
-      </el-main>
-    </el-container>
-  </div>
+      </DocumentReviewContainer>
+ 
 </template>
 
 <script setup>
@@ -109,7 +100,7 @@ import {
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 import SnowflakeId from "snowflake-id";
-
+import DocumentReviewContainer from "./DocumentReviewContainer"
 const snowflake = new SnowflakeId();
 
 const router = useRouter();
@@ -129,7 +120,7 @@ function enterExamPager(item) {
           sceneId: sceneId.value , 
           genStatus: true,
           taskId: item.id,
-          channelStreamId: snowflake.generate()
+          channelStreamId: item.channelStreamId
       }
   })
 
@@ -240,6 +231,7 @@ onMounted(() => {
         text-overflow: ellipsis;  /* 超出部分显示省略号 */
         display: block;          /* 或 inline-block，取决于你的布局需求 */
         width: 100%;             /* 需要指定一个宽度 */
+        font-weight: bold ;
       }
 
       .scene-tag {
