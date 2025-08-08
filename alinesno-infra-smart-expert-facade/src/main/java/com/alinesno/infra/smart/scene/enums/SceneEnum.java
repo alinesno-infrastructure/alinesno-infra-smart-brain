@@ -47,7 +47,7 @@ public enum SceneEnum {
     LONG_TEXT(new SceneInfoDto(10000000L, "长文档编写", "longText", "主要用于论文、合同、方案、招投标书编写等超长文本场景", "已集成", "1", "", "fa-solid fa-signature",
             List.of(
                     new SceneAgent(10000102L, "大纲编辑助手", "chapterEditor", "对长文本的大纲进行编辑和优化，使其逻辑更加清晰。" , true),
-                    new SceneAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。")
+                    new SceneAgent(10000103L, "内容编写助手", "contentEditor", "根据规划和大纲，生成具体的文本内容。" , true)
     ))),
     // 文档审核
     DOCUMENT_REVIEW(new SceneInfoDto(40000000L, "文档审核", "documentReview", "上传一份文档进行文档审核和修改建议，给出审核的意见和内容", "已集成", "1", "", "fa-solid fa-file-pen",
