@@ -35,7 +35,7 @@ public class ProjectTaskEntity extends InfraBaseEntity {
 
     @TableField
     @Column(name = "task_status", type = MySqlTypeConstant.INT, length = 2, comment = "任务状态(0未运行|1已运行|2运行中|9运行失败)")
-    private Integer taskStatus;
+    private String taskStatus;
 
     @TableField
     @Column(name = "task_start_time", type = MySqlTypeConstant.DATETIME, comment = "任务开始时间")
