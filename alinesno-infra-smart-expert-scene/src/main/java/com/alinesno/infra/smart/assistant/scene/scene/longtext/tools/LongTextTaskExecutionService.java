@@ -21,7 +21,6 @@ import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jodd.util.StringUtil;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,21 +28,12 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.lang.exception.RpcServiceRuntimeException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.*;
 
 @Slf4j
 @Service
 public class LongTextTaskExecutionService {
-
-    // 存储任务及其Future的映射
-    private final ConcurrentMap<Long, Future<?>> taskFutures = new ConcurrentHashMap<>();
-
-    // 存储章节任务及其Future的映射
-    private final ConcurrentMap<Long, Future<?>> chapterTaskFutures = new ConcurrentHashMap<>();
 
     @Autowired
     @Qualifier("chatThreadPool")
@@ -51,6 +41,12 @@ public class LongTextTaskExecutionService {
 
     // 存储任务进度
     private final ConcurrentHashMap<Long, Integer> taskProgress = new ConcurrentHashMap<>();
+
+    // 存储主任务的 Future
+    private final ConcurrentHashMap<Long, Future<?>> mainTaskFutures = new ConcurrentHashMap<>();
+
+    // 存储章节任务的 Future
+    private final ConcurrentHashMap<Long, Future<?>> chapterTaskFutures = new ConcurrentHashMap<>();
 
     @Autowired
     private ISceneService service;
@@ -76,140 +72,136 @@ public class LongTextTaskExecutionService {
     @Autowired
     private IIndustryRoleService roleService;
 
+    // 限流相关常量
+    private static final String RATE_LIMIT_PREFIX = "longtext:ratelimit:";
+    private static final int RATE_LIMIT_INTERVAL = 60; // 60秒(1分钟)
+
     /**
      * 异步执行任务（包含主任务和章节任务）
      */
     public void executeTaskAsync(Long taskId, Long channelStreamId, PermissionQuery query) {
-        // 1. 创建主CompletableFuture
-        CompletableFuture<Void> mainFuture = new CompletableFuture<>();
-
-        // 2. 提交主任务到线程池
-        CompletableFuture<Void> combinedFuture = CompletableFuture
-                // 3. 执行主任务（生成大纲）
-                .supplyAsync(() -> internalExecuteTask(taskId, channelStreamId, query), chatThreadPool)
-                // 4. 主任务完成后，异步执行章节任务
-                .thenComposeAsync(taskEntityFuture -> {
-                    LongTextTaskEntity taskEntity = null; // 或者使用get()
+        // 提交主任务并保存 Future
+        CompletableFuture<LongTextTaskEntity> mainFuture = CompletableFuture
+                .supplyAsync(() -> {
                     try {
-                        taskEntity = taskEntityFuture.get();
-                        log.info("大纲生成完成，开始执行章节任务，taskId={}", taskId);
-                        return executeChapterTaskAsync(taskId, query ,taskEntity);
-                    } catch (InterruptedException | ExecutionException e) {
-                        throw new RuntimeException(e);
+                        return internalExecuteTask(taskId, channelStreamId, query);
+                    } catch (Exception e) {
+                        throw new CompletionException(e);
                     }
-                }, chatThreadPool)
-                // 5. 整体完成处理
-                .whenCompleteAsync((result, ex) -> {
+                }, chatThreadPool);
 
-                    // 更新任务的EndTime时间
+        mainTaskFutures.put(taskId, mainFuture);
+
+        CompletableFuture<Void> chapterFuture = mainFuture
+                .thenComposeAsync(taskEntity -> {
+                    log.info("大纲生成完成，开始执行章节任务，taskId={}", taskId);
+
+                    // 创建一个新的CompletableFuture来包装章节任务
+                    CompletableFuture<Void> chapterTaskFuture = new CompletableFuture<>();
+
+                    // 同步执行章节任务
+                    internalExecuteChapterTask(taskId, query);
+                    chapterTaskFuture.complete(null); // 标记为完成
+
+                    return chapterTaskFuture;
+                }, chatThreadPool)
+                .whenCompleteAsync((result, ex) -> {
+                    // 清理Future对象
+                    mainTaskFutures.remove(taskId);
+                    chapterTaskFutures.remove(taskId);
+
+                    // 更新任务的结束时间
                     LongTextTaskEntity taskEntity = taskService.getById(taskId);
                     taskEntity.setTaskEndTime(new Date());
 
-                    if (ex != null) {
-                        log.error("任务链执行失败", ex);
-                        taskEntity.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_FAILED.getCode()));
-                        mainFuture.completeExceptionally(ex);
-                    } else {
-                        log.info("任务链执行完成，taskId={}", taskId);
-                        taskEntity.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
-                        mainFuture.complete(null);
-                    }
+                    log.info("任务链执行完成，taskId={}", taskId);
+                    taskEntity.setTaskStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
+                    taskEntity.setChapterStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
 
-                    taskService.update(taskEntity) ;
+                    taskService.update(taskEntity);
                 }, chatThreadPool);
 
-    }
-
-    /**
-     * 内部执行任务方法（生成大纲）
-     */
-    private CompletableFuture<LongTextTaskEntity> internalExecuteTask(Long taskId, Long channelStreamId, PermissionQuery query) {
-        return CompletableFuture.supplyAsync(() -> {
-            LongTextTaskEntity task = taskService.getById(taskId);
-            if (task == null) {
-                throw new IllegalArgumentException("Task not found");
-            }
-
-            try {
-                // 检查中断状态
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException("任务被取消");
-                }
-
-                LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(task.getSceneId(), query);
-                ChatRoleDto dto = new ChatRoleDto();
-
-                dto.setTaskId(taskId);
-                dto.setChannelStreamId(String.valueOf(channelStreamId));
-                dto.setSceneId(task.getSceneId());
-                dto.setRoleId(Long.parseLong(longTextSceneEntity.getChapterEditor()));
-                dto.setMessage(task.getTaskDescription() == null ? task.getTaskName() : task.getTaskDescription());
-
-                List<TreeNodeDto> treeNodeDtos = chatRoleAsync(dto);
-
-                chapterService.saveChaptersWithHierarchy(treeNodeDtos,
-                        null,
-                        1,
-                        task.getSceneId(),
-                        longTextSceneEntity.getId(),
-                        query,
-                        task);
-
-                // 分发任务
-                dispatchAgent(task.getSceneId(), taskId, query);
-
-                // 再次检查中断状态
-                if (Thread.currentThread().isInterrupted()) {
-                    throw new InterruptedException("任务被取消");
-                }
-
-                // 更新任务状态
-                task.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
-                task.setOutline(JSONArray.toJSONString(treeNodeDtos));
-                task.setTaskEndTime(new Date());
-                taskService.updateById(task);
-
-                return task;
-            } catch (Exception e) {
-                log.error("大纲生成失败", e);
-                // 更新任务状态为失败
-                task.setTaskStatus(e instanceof InterruptedException ?
-                        String.valueOf(TaskStatusEnum.CANCELLED.getCode()) :
-                        String.valueOf(TaskStatusEnum.RUN_FAILED.getCode()));
-                task.setTaskEndTime(new Date());
-                taskService.updateById(task);
-                throw new CompletionException(e);
-            }
-        }, chatThreadPool);
-    }
-
-    /**
-     * 异步执行章节任务
-     */
-    public CompletableFuture<Void> executeChapterTaskAsync(Long taskId, PermissionQuery query, LongTextTaskEntity task) {
-        // 1. 创建章节任务的Future
-        CompletableFuture<Void> chapterFuture = internalExecuteChapterTask(taskId, query);
-
-        // 2. 存储Future用于可能的取消操作
         chapterTaskFutures.put(taskId, chapterFuture);
+    }
 
-        // 3. 返回Future
-        return chapterFuture.whenComplete((result, ex) -> {
-            chapterTaskFutures.remove(taskId);
-        });
+    /**
+     * 内部执行任务方法（生成大纲） - 现在直接返回实体而不是 CompletableFuture
+     */
+    private LongTextTaskEntity internalExecuteTask(Long taskId, Long channelStreamId, PermissionQuery query) {
+        // 检查是否被中断
+        if (Thread.interrupted()) {
+            log.info("任务已被取消，taskId={}", taskId);
+            throw new CancellationException("任务已被取消");
+        }
+
+        LongTextTaskEntity task = taskService.getById(taskId);
+        if (task == null) {
+            throw new IllegalArgumentException("任务不存在.");
+        }
+
+        try {
+
+            // 更新任务状态为"生成中"
+            task.setTaskStatus(TaskStatusEnum.RUNNING.getCode());
+            taskService.updateById(task);
+
+            LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(task.getSceneId(), query);
+            ChatRoleDto dto = new ChatRoleDto();
+
+            dto.setTaskId(taskId);
+            dto.setChannelStreamId(String.valueOf(channelStreamId));
+            dto.setSceneId(task.getSceneId());
+            dto.setRoleId(Long.parseLong(longTextSceneEntity.getChapterEditor()));
+            dto.setMessage(task.getTaskDescription() == null ? task.getTaskName() : task.getTaskDescription());
+
+            // 异步调用并等待结果
+            List<TreeNodeDto> treeNodeDtos = chatRoleAsync(dto).get();
+
+            chapterService.saveChaptersWithHierarchy(treeNodeDtos,
+                    null,
+                    1,
+                    task.getSceneId(),
+                    longTextSceneEntity.getId(),
+                    query,
+                    task);
+
+            // 分发任务
+            dispatchAgent(task.getSceneId(), taskId, query);
+
+            // 更新任务状态
+            task.setTaskStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
+            task.setOutline(JSONArray.toJSONString(treeNodeDtos));
+            task.setTaskEndTime(new Date());
+            taskService.updateById(task);
+
+            return task;
+        } catch (Exception e) {
+            log.error("大纲生成失败", e);
+            // 更新任务状态为失败
+            task.setTaskStatus(TaskStatusEnum.RUN_FAILED.getCode());
+            task.setTaskEndTime(new Date());
+            taskService.updateById(task);
+
+            if (e instanceof CancellationException) {
+                Thread.currentThread().interrupt();
+                throw new CompletionException("任务被取消", e);
+            }
+            throw new CompletionException(e);
+        }
     }
 
     /**
      * 内部执行章节任务方法（完全异步版本）
      */
-    private CompletableFuture<Void> internalExecuteChapterTask(Long taskId, PermissionQuery query) {
+    private void internalExecuteChapterTask(Long taskId, PermissionQuery query) {
         LongTextTaskEntity task = taskService.getById(taskId);
         if (task == null) {
-            return CompletableFuture.failedFuture(new IllegalArgumentException("任务不存在"));
+            CompletableFuture.failedFuture(new IllegalArgumentException("任务不存在"));
+            return;
         }
 
         // 更新任务状态到章节生成中
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        task.setChapterStatus(TaskStatusEnum.RUNNING.getCode());
         taskService.updateById(task);
 
         // 获取任务的所有章节
@@ -220,16 +212,12 @@ public class LongTextTaskExecutionService {
         taskProgress.put(taskId, 0);
 
         // 创建顺序执行的CompletableFuture链
-        CompletableFuture<Void> chain = CompletableFuture.completedFuture(null);
-
         for (int i = 0; i < totalChapters; i++) {
-            final int index = i;
             final ChapterEntity chapter = chapters.get(i);
-
-            chain = chain.thenComposeAsync(ignored -> {
-                // 检查中断状态
-                if (Thread.currentThread().isInterrupted()) {
-                    return CompletableFuture.failedFuture(new InterruptedException("章节任务被取消"));
+                // 检查是否被中断
+                if (Thread.interrupted()) {
+                    log.info("章节任务已被取消，taskId={}, chapterId={}", taskId, chapter.getId());
+                    throw new CancellationException("任务被取消");
                 }
 
                 // 构建章节生成DTO
@@ -241,162 +229,67 @@ public class LongTextTaskExecutionService {
                 genFormDto.setChapterDescription(chapter.getChapterRequire());
                 genFormDto.setChannelStreamId(Long.valueOf(task.getChannelStreamId()));
 
-                String processMsg = (index + 1) + ": 章节:" + genFormDto.getChapterTitle() + "任务生成中，还有【" + (chapters.size() - index) + "】篇";
+                String processMsg = (i + 1) + ": 章节:" + genFormDto.getChapterTitle() + "任务生成中，还有【" + (chapters.size() - i) + "】篇";
                 task.setCurrentChapterLabel(processMsg);
 
-                // 异步执行章节生成
-                return chatRoleSyncAsync(genFormDto, query)
-                        .thenAcceptAsync(content -> {
-                            chapter.setContent(content);
-                            chapterService.update(chapter);
+                // 调整为同步处理
+                chatRoleSync(genFormDto , query) ;
 
-                            // 更新进度
-                            int progress = (int) (((index + 1.0) / totalChapters) * 100);
-                            taskProgress.put(taskId, progress);
+                // 更新进度
+                int progress = (int) (((i + 1.0) / totalChapters) * 100);
+                taskProgress.put(taskId, progress);
 
-                            task.setCurrentChapterId(chapter.getId());
-                            taskService.updateById(task);
-                        }, chatThreadPool);
-            }, chatThreadPool);
+                task.setCurrentChapterId(chapter.getId());
+                task.setTaskEndTime(new Date());  // 任务更新时间
+
+                taskService.updateById(task);
         }
 
-        return chain
-                .thenRunAsync(() -> {
-                    task.setChapterStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
-                    taskService.updateById(task);
-                }, chatThreadPool)
-                .exceptionally(ex -> {
-                    if (ex.getCause() instanceof InterruptedException) {
-                        task.setChapterStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-                    } else {
-                        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUN_FAILED.getCode()));
-                    }
-                    taskService.updateById(task);
-                    return null;
-                });
     }
 
     /**
-     * 生成大纲
-     *
-     * @param chatRole
-     * @return
+     * 取消任务
      */
-    @SneakyThrows
-    public List<TreeNodeDto> chatRoleAsync(ChatRoleDto chatRole) {
-        log.info("开始处理chatRole异步请求，taskId: {}", chatRole.getTaskId());
-
-        Long taskId = chatRole.getTaskId();
-        LongTextTaskEntity longTextTaskEntity = taskService.getById(taskId);
-
-        // 构建任务信息
-        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo();
-
-        // 处理附件（如果有）
-        if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
-            List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
-                    .map(Long::parseLong)
-                    .toList();
-            List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
-            taskInfo.setAttachments(attachments);
+    public boolean cancelTask(Long taskId) {
+        // 1. 获取任务实体
+        LongTextTaskEntity task = taskService.getById(taskId);
+        if (task == null) {
+            return false;
         }
 
-        taskInfo.setRoleId(chatRole.getRoleId());
-        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
-        taskInfo.setChannelId(chatRole.getSceneId());
-        taskInfo.setSceneId(chatRole.getSceneId());
-        taskInfo.setText(chatRole.getMessage());
-        taskInfo.setQueryText(chatRole.getMessage());
+        // 2. 尝试取消主任务
+        boolean mainCancelled = cancelFuture(taskId, mainTaskFutures, "主任务");
 
-        // 调用角色服务生成内容
-        WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get();
-        log.info("角色服务调用完成，taskId: {}", taskId);
+        // 3. 尝试取消章节任务
+        boolean chapterCancelled = cancelFuture(taskId, chapterTaskFutures, "章节任务");
 
-        // 获取模板信息
-        LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+        // 4. 更新任务状态
+        task.setTaskStatus(TaskStatusEnum.CANCELLED.getCode());
+        task.setChapterStatus(TaskStatusEnum.CANCELLED.getCode());
+        task.setTaskEndTime(new Date());
+        taskService.updateById(task);
 
-        // 格式化内容
-        formatMessageTool.handleChapterMessage(genContent, taskInfo, template);
+        log.info("任务取消完成，taskId={}, 主任务取消={}, 章节任务取消={}",
+                taskId, mainCancelled, chapterCancelled);
 
-        // 处理代码内容（如果有）
-        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
-            String codeContent = genContent.getCodeContent().get(0).getContent();
+        return mainCancelled || chapterCancelled;
+    }
 
-            // 验证JSON格式
-            try {
-                JSONArray.parseArray(codeContent);
-                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
-
-                return nodeDtos ;
-            } catch (Exception e) {
-                log.error("JSON解析失败", e);
-                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
-            }
+    private boolean cancelFuture(Long taskId, ConcurrentMap<Long, Future<?>> futureMap, String taskType) {
+        Future<?> future = futureMap.remove(taskId);
+        if (future != null) {
+            boolean cancelled = future.cancel(true); // true 表示中断正在执行的任务
+            log.info("{}取消结果: taskId={}, cancelled={}", taskType, taskId, cancelled);
+            return cancelled;
         }
-        return Collections.emptyList() ;
+        return false;
     }
 
     /**
-     * 异步生成章节内容
+     * 获取任务进度
      */
-    public CompletableFuture<String> chatRoleSyncAsync(ChapterGenFormDto dto, PermissionQuery query) {
-        try {
-            log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
-
-            ChapterEntity chapterEntity = chapterService.getById(dto.getChapterId());
-            if (chapterEntity == null) {
-                return CompletableFuture.completedFuture("章节不存在");
-            }
-
-            Long roleId = chapterEntity.getChapterEditor();
-            if (roleId == null) {
-                return CompletableFuture.completedFuture("此章节未指定编辑人员");
-            }
-
-            LongTextTaskEntity longTextTaskEntity = taskService.getById(dto.getTaskId());
-
-            // 准备任务信息
-            MessageTaskInfo taskInfo = new MessageTaskInfo();
-            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-            taskInfo.setRoleId(roleId);
-            taskInfo.setChannelId(dto.getSceneId());
-            taskInfo.setSceneId(dto.getSceneId());
-            taskInfo.setQueryText(dto.getChapterTitle() + ":" + dto.getChapterDescription());
-
-            // 处理附件
-            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
-                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
-                        .map(Long::parseLong)
-                        .toList();
-                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
-                taskInfo.setAttachments(attachments);
-            }
-
-            // 准备章节内容
-            String allChapterContent = chapterService.getAllChapterContent(dto.getSceneId());
-            String chapterPromptContent = longTextTaskEntity.getTaskName();
-            taskInfo.setText(FormatMessageTool.getChapterPrompt(
-                    allChapterContent,
-                    dto,
-                    chapterPromptContent,
-                    taskInfo
-            ));
-
-            // 执行角色生成
-            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get();
-            log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
-
-            // 更新章节内容
-            chapterEntity.setContent(taskInfo.getFullContent());
-            chapterService.update(chapterEntity);
-
-            return CompletableFuture.completedFuture(chapterEntity.getContent());
-
-        } catch (Exception e) {
-            log.error("生成章节内容时发生异常", e);
-            return CompletableFuture.completedFuture("生成失败: " + e.getMessage());
-        }
+    public int getTaskProgress(Long taskId) {
+        return taskProgress.getOrDefault(taskId, 0);
     }
 
     /**
@@ -430,52 +323,199 @@ public class LongTextTaskExecutionService {
         chapterService.updateChapterEditor(dto, longTextSceneEntity.getId() , taskId);
     }
 
+//    /**
+//     * 智能助手生成章节内容
+//     * @param dto
+//     * @param query
+//     * @return
+//     */
+//    public CompletableFuture<String> chatRoleSyncAsync(ChapterGenFormDto dto, PermissionQuery query) {
+//        try {
+//            log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
+//
+//            ChapterEntity chapterEntity = chapterService.getById(dto.getChapterId());
+//            if (chapterEntity == null) {
+//                return CompletableFuture.completedFuture("章节不存在");
+//            }
+//
+//            Long roleId = chapterEntity.getChapterEditor();
+//            if (roleId == null) {
+//                return CompletableFuture.completedFuture("此章节未指定编辑人员");
+//            }
+//
+//            LongTextTaskEntity longTextTaskEntity = taskService.getById(dto.getTaskId());
+//
+//            // 准备任务信息
+//            MessageTaskInfo taskInfo = new MessageTaskInfo();
+//            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+//            taskInfo.setRoleId(roleId);
+//            taskInfo.setChannelId(dto.getSceneId());
+//            taskInfo.setSceneId(dto.getSceneId());
+//            taskInfo.setQueryText(dto.getChapterTitle() + ":" + dto.getChapterDescription());
+//
+//            // 处理附件
+//            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+//                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+//                        .map(Long::parseLong)
+//                        .toList();
+//                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+//                taskInfo.setAttachments(attachments);
+//            }
+//
+//            // 准备章节内容
+//            String allChapterContent = chapterService.getAllChapterContent(dto.getSceneId());
+//            String chapterPromptContent = longTextTaskEntity.getTaskName();
+//            taskInfo.setText(FormatMessageTool.getChapterPrompt(
+//                    allChapterContent,
+//                    dto,
+//                    chapterPromptContent,
+//                    taskInfo
+//            ));
+//
+//            // 修改为完全异步的方式
+//            return roleService.runRoleAgent(taskInfo)
+//                    .thenApply(genContent -> {
+//                        log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
+//                        chapterEntity.setContent(taskInfo.getFullContent());
+//                        chapterService.update(chapterEntity);
+//                        return chapterEntity.getContent();
+//                    })
+//                    .exceptionally(ex -> {
+//                        log.error("生成章节内容时发生异常", ex);
+//                        return "生成失败: " + ex.getMessage();
+//                    });
+//
+//        } catch (Exception e) {
+//            log.error("准备章节内容时发生异常", e);
+//            return CompletableFuture.completedFuture("生成失败: " + e.getMessage());
+//        }
+//    }
+
     /**
-     * 取消任务执行
-     * @param taskId 任务ID
-     * @return 是否取消成功
-     */
-    public boolean cancelTask(Long taskId) {
-        boolean cancelled = false;
-
-        // 1. 取消主任务
-        Future<?> mainTaskFuture = taskFutures.get(taskId);
-        if (mainTaskFuture != null) {
-            cancelled = mainTaskFuture.cancel(true);
-            taskFutures.remove(taskId);
-            log.info("主任务取消结果: taskId={}, cancelled={}", taskId, cancelled);
-        }
-
-        // 2. 取消章节任务
-        Future<?> chapterTaskFuture = chapterTaskFutures.get(taskId);
-        if (chapterTaskFuture != null) {
-            boolean chapterCancelled = chapterTaskFuture.cancel(true);
-            chapterTaskFutures.remove(taskId);
-            log.info("章节任务取消结果: taskId={}, cancelled={}", taskId, chapterCancelled);
-            cancelled = cancelled || chapterCancelled;
-        }
-
-        // 3. 更新数据库状态
-        if (cancelled) {
-            LongTextTaskEntity task = taskService.getById(taskId);
-            if (task != null) {
-                task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-                task.setChapterStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-                task.setTaskEndTime(new Date());
-                taskService.updateById(task);
-            }
-        }
-
-        return cancelled;
-    }
-
-    /**
-     * 获取任务进度
+     * 智能助手生成章节内容
      *
-     * @param taskId 任务ID
-     * @return 进度百分比 (0-100)
+     * @param dto
+     * @param query
+     * @return
      */
-    public int getTaskProgress(Long taskId) {
-        return taskProgress.getOrDefault(taskId, 0);
+    public void chatRoleSync(ChapterGenFormDto dto, PermissionQuery query) {
+        try {
+            log.info("开始异步生成章节内容，chapterId: {}, sceneId: {}", dto.getChapterId(), dto.getSceneId());
+
+            ChapterEntity chapterEntity = chapterService.getById(dto.getChapterId());
+            if (chapterEntity == null) {
+               log.error("章节不存在");
+               return ;
+            }
+
+            Long roleId = chapterEntity.getChapterEditor();
+            if (roleId == null) {
+                String error = "此章节未指定编辑人员";
+                chapterEntity.setContent( error);
+                chapterService.update(chapterEntity);
+                return  ;
+            }
+
+            LongTextTaskEntity longTextTaskEntity = taskService.getById(dto.getTaskId());
+
+            // 准备任务信息
+            MessageTaskInfo taskInfo = new MessageTaskInfo();
+            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+            taskInfo.setRoleId(roleId);
+            taskInfo.setChannelId(dto.getSceneId());
+            taskInfo.setSceneId(dto.getSceneId());
+            taskInfo.setQueryText(dto.getChapterTitle() + ":" + dto.getChapterDescription());
+
+            // 处理附件
+            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+                        .map(Long::parseLong)
+                        .toList();
+                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+                taskInfo.setAttachments(attachments);
+            }
+
+            // 准备章节内容
+            String allChapterContent = chapterService.getAllChapterContent(dto.getSceneId());
+            String chapterPromptContent = longTextTaskEntity.getTaskName();
+            taskInfo.setText(FormatMessageTool.getChapterPrompt(
+                    allChapterContent,
+                    dto,
+                    chapterPromptContent,
+                    taskInfo
+            ));
+
+            WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get() ;
+
+           chapterEntity.setContent(taskInfo.getFullContent());
+            chapterService.update(chapterEntity);
+
+        } catch (Exception e) {
+           log.error("章节内容生成失败: " + e.getMessage());
+        }
     }
+
+
+    /**
+     * 生成大纲 - 异步版本
+     */
+    public CompletableFuture<List<TreeNodeDto>> chatRoleAsync(ChatRoleDto chatRole) {
+        log.info("开始处理chatRole异步请求，taskId: {}", chatRole.getTaskId());
+
+        Long taskId = chatRole.getTaskId();
+        LongTextTaskEntity longTextTaskEntity = taskService.getById(taskId);
+
+        try {
+            // 构建任务信息
+            MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo();
+
+            // 处理附件（如果有）
+            if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
+                List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+                        .map(Long::parseLong)
+                        .toList();
+                List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+                taskInfo.setAttachments(attachments);
+            }
+
+            taskInfo.setRoleId(chatRole.getRoleId());
+            taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
+            taskInfo.setChannelId(chatRole.getSceneId());
+            taskInfo.setSceneId(chatRole.getSceneId());
+            taskInfo.setText(chatRole.getMessage());
+            taskInfo.setQueryText(chatRole.getMessage());
+
+            // 获取模板信息
+            LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+
+            // 完全异步处理
+            return roleService.runRoleAgent(taskInfo)
+                    .thenApply(genContent -> {
+                        log.info("角色服务调用完成，taskId: {}", taskId);
+
+                        // 格式化内容
+                        formatMessageTool.handleChapterMessage(genContent, taskInfo, template);
+
+                        // 处理代码内容（如果有）
+                        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+                            String codeContent = genContent.getCodeContent().get(0).getContent();
+
+                            try {
+                                JSONArray.parseArray(codeContent); // 验证JSON格式
+                                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+                                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
+                                return nodeDtos;
+                            } catch (Exception e) {
+                                log.error("JSON解析失败", e);
+                                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
+                            }
+                        }
+                        return Collections.<TreeNodeDto>emptyList();
+                    });
+        } catch (Exception e) {
+            log.error("处理chatRole异步请求时发生异常", e);
+            return CompletableFuture.failedFuture(e);
+        }
+    }
+
 }
