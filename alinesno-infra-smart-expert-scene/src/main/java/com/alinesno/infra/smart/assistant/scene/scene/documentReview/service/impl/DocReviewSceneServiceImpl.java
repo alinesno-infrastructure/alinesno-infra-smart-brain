@@ -173,6 +173,9 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
 
                 docSceneInfoDto.setReviewList(taskEntity.getReviewList());
                 docSceneInfoDto.setReviewListDtos(JSONArray.parseArray(taskEntity.getReviewList(), DocReviewRulesDto.class));
+
+                docSceneInfoDto.setReviewGenStatus(taskEntity.getReviewGenStatus());
+                docSceneInfoDto.setResultGenStatus(taskEntity.getResultGenStatus());
             }
         }
 
