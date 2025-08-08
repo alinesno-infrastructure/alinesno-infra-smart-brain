@@ -1,11 +1,11 @@
 <template>
-  <div style="width:100%">
+  <div class="long-text-editor" style="width:100%">
     <div id="vditor" @contextmenu.prevent="showContextMenu"></div>
 
     <div v-if="contextMenu.visible" class="context-menu"
       :style="{ left: contextMenu.x + 'px', top: contextMenu.y + 'px' }" @click.stop>
-      <div class="input-section">
-        <input v-model="promptText" type="text" placeholder="告诉 AI 下一步应该如何？比如：帮我翻译成英语" @keyup.enter="handleSendPrompt" @keyup.esc="closeContextMenu" ref="promptInput" />
+      <div class="input-section"> 
+        <input v-model="promptText" type="text" placeholder="告诉 AI 下一步应该如何？比如：帮我翻译成英语" @keyup.enter="handleSendPrompt" ref="promptInput" />
         <button @click="handleSendPrompt">
           <i class="fa-solid fa-paper-plane"></i>发送
         </button>
@@ -16,6 +16,9 @@
       <div class="menu-item" @click="improveWriting">
         <i class="fa-solid fa-pen-fancy"></i> 改进写作
       </div>
+      <div class="menu-item" @click="polishContent">
+       <i class="fa-solid fa-wand-magic-sparkles"></i> 润色
+      </div>
       <div class="menu-item" @click="simplifyContent">
         <i class="fa-solid fa-scissors"></i> 简化内容
       </div>
@@ -25,13 +28,15 @@
       <div class="menu-item" @click="summarizeContent">
         <i class="fa-solid fa-file-contract"></i> 总结
       </div>
+      <!--
       <div class="menu-item" @click="generateImage">
         <i class="fa-solid fa-image"></i> 生成图片
       </div>
+      -->
     </div>
 
     <!-- AI 输出面板 -->
-    <div v-if="showAIPanel" class="ai-output-panel" :style="aiPanelPosition">
+    <div v-if="showAIPanel" class="ai-output-panel" :style="aiPanelPosition"> 
       <div class="ai-output-header">
         <span>AI 处理结果</span>
         <el-button class="close-button" type="text" @click="closeAIPanel">
@@ -88,13 +93,13 @@ import 'vditor/dist/index.css';
 import { getToken } from "@/utils/auth";
 
 import { ElMessage } from 'element-plus';
-import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import { openSseConnectChannel, handleCloseSse } from "@/api/base/im/chatsse";
 import SnowflakeId from "snowflake-id";
 
 import {
   chatEditorRole,
   generateImages
-} from '@/api/base/im/scene/articleWriting';
+} from '@/api/base/im/scene/longTextTask';
 
 // 定义组件可能触发的事件
 const emit = defineEmits([
@@ -104,10 +109,12 @@ const emit = defineEmits([
 ]);
 
 const route = useRoute();
+
 const chatStreamLoading = ref(false);
 const snowflake = new SnowflakeId();
 const channelStreamId = ref(snowflake.generate());
-const articleId = ref(route.query.articleId)
+
+const taskId = ref(route.query.taskId)
 const sceneId = ref(route.query.sceneId)
 
 const contentEditor = ref(null);
@@ -158,6 +165,9 @@ const aiOutput = ref('');
 const aiOutputContent = ref(null);
 const aiPanelPosition = ref({});
 let aiStreamInterval = null;
+
+// sseSource 响应式引用
+const sseSource = ref(null);
 
 // 图片生成相关状态
 const isImageGeneration = ref(false);
@@ -245,6 +255,7 @@ const showContextMenu = (e) => {
     highlightSelection();
   }
 
+
   nextTick(() => {
     if (promptInput.value) {
       promptInput.value.focus();
@@ -253,12 +264,28 @@ const showContextMenu = (e) => {
 };
 
 const closeContextMenu = () => {
+ 
+  // 如果在生成当中不允许关闭
+  if (chatStreamLoading.value) {
+    ElMessage.warning('正在生成中，请稍后...');
+    return;
+  }
+ 
   removeHighlight();
-  contextMenu.visible = false;
+  contextMenu.visible = false; 
 };
 
 const handleKeyDown = (e) => {
-  if (e.key === 'Escape') {
+  if (e.key === 'Escape') { 
+
+
+    // 如果在生成当中不允许关闭
+    if (chatStreamLoading.value) {
+      ElMessage.warning('正在生成中，请稍后...');
+      return;
+    }
+ 
+
     closeContextMenu();
     closeAIPanel();
   }
@@ -364,6 +391,15 @@ const improveWriting = () => {
     promptInput.value?.focus();
   });
 };
+
+// 润色内容
+const polishContent = () => {
+  promptText.value = "请润色以下内容，使其更加优雅流畅";
+  nextTick(() => {
+    promptInput.value?.focus();
+  });
+};
+
 // 继写
 const addContinuation = () => {
   promptText.value = "请续写文本";
@@ -519,12 +555,17 @@ const handleSendPrompt = async () => {
   aiOutput.value = '';
   chatStreamLoading.value = true;
 
+  // 确保SSE连接已建立
+  if (!sseSource.value) {
+    handleSseConnect(channelStreamId.value);
+  }
+
   if (isImageGeneration.value) {
     // 调用生成图片的API
     try {
       const response = await generateImages({
         prompt: contextMenu.selectedText || promptText.value,
-        articleId: articleId.value,
+        taskId: taskId.value,
         sceneId: sceneId.value,
         count: 2 // 默认生成2张图片
       });
@@ -544,7 +585,7 @@ const handleSendPrompt = async () => {
   } else {
     // 原来的文本处理逻辑
     let formData = {
-      articleId: articleId.value,
+      taskId: taskId.value,
       sceneId: sceneId.value,
       modifyText: contextMenu.selectedText || '', // Use selected text or empty string 
       articleContent: props.articleData.content,
@@ -555,6 +596,7 @@ const handleSendPrompt = async () => {
     chatEditorRole(formData).then(res => {
       proxy.$modal.msgSuccess("发送成功");
     }).catch(error => {
+      console.log('error = ' + error)
       chatStreamLoading.value = false
     })
   }
@@ -564,6 +606,23 @@ const handleSendPrompt = async () => {
     left: `${contextMenu.x}px`,
     top: `${contextMenu.y + 5}px`
   };
+};
+
+// 提取关闭 SSE 的公共方法
+const closeSSEConnection = async () => {
+  if (sseSource.value) {
+    sseSource.value.close();
+    sseSource.value = null;
+  }
+  
+  if (channelStreamId.value) {
+    try {
+      await handleCloseSse(channelStreamId.value);
+      console.log('SSE连接已关闭:', channelStreamId.value);
+    } catch (error) {
+      console.error('关闭SSE连接失败:', error);
+    }
+  }
 };
 
 onMounted(() => {
@@ -616,48 +675,64 @@ onMounted(() => {
           contentEditor.value.focus();
         }
       });
-    }
+    },
+    blur (md) {
+      console.log('用户离开了编辑器，Markdown 内容为：\n')
+      closeSSEConnection();
+    },
+    focus (md) {
+      console.log('用户选中了编辑器，Markdown 内容为：\n') 
+      // 打开菜单时建立SSE连接
+      handleSseConnect(channelStreamId.value);
+    }, 
   });
 
-   nextTick(() => {
-     // handleSseConnect(channelStreamId.value);
-   });
+
 });
 
 onUnmounted(() => {
   document.removeEventListener('click', closeContextMenu);
   document.removeEventListener('keydown', handleKeyDown);
+  closeSSEConnection();
 });
 
 // 销毁信息
 onBeforeUnmount(() => {
-  handleCloseSse(channelStreamId.value).then(res => {
-    console.log('关闭sse连接成功:' + channelStreamId.value)
-  })
+  closeSSEConnection();
 });
 
-/** 连接sse */
-function handleSseConnect(channelStreamId) {
+// handleSseConnect
+const handleSseConnect = (channelStreamId) => {
+
   nextTick(() => {
+
+    if(sseSource.value){
+      return ;
+    }
+
     if (channelStreamId) {
-      let sseSource = openSseConnect(channelStreamId);
-      // 接收到数据
-      sseSource.onmessage = function (event) {
+      sseSource.value = openSseConnectChannel(channelStreamId);
+      
+      sseSource.value.onmessage = function (event) {
         if (!event.data.includes('[DONE]')) {
           let resData = event.data;
-          if (resData != 'ping') {  // 非心跳消息
-            const data = JSON.parse(resData);
-            // pushResponseMessageList(data);
-            simulateSSEStream(data)
+          if (resData != 'ping') {
+            const data = JSON.parse(resData); 
+            simulateSSEStream(data);
           }
         } else if (event.data.includes('[DONE]')) {
-          console.log('消息接收结束.')
-          chatStreamLoading.value = false; // 关闭流式结束
+          console.log('消息接收结束.');
+          chatStreamLoading.value = false;
         }
-      }
+      };
+
+      sseSource.value.onerror = function() {
+        console.log('SSE连接错误');
+        closeSSEConnection();
+      };
     }
-  })
-}
+  });
+};
 
 // 监听 articleData 变化
 watch(() => props.articleData, (newVal) => {
