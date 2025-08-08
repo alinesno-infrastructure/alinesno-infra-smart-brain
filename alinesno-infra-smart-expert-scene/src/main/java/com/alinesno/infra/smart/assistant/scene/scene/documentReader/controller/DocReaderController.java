@@ -195,7 +195,7 @@ public class DocReaderController extends SuperController {
         DocReaderSceneEntity docReviewSceneEntity = docReaderSceneService.getBySceneId(sceneId) ;
 
         // 获取到文档的基础内容
-        String content =  analysisTool.analysisDocumentBaseContent(targetFile) ;
+//        String content =  analysisTool.analysisDocumentBaseContent(targetFile) ;
 
 //        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 //        taskInfo.setRoleId(docReviewSceneEntity.getAnalysisAgentEngineer());
