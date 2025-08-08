@@ -36,7 +36,7 @@ public class LongTextTaskEntity extends InfraBaseEntity {
     private String taskDescription;
 
     @TableField
-    @Column(name = "task_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "任务状态(0未运行|1已运行|2运行中|9运行失败)")
+    @Column(name = "task_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "任务状态(not_run未运行|completed已运行|running运行中|generating生成中|cancelling取消中|cancelled已取消|failed运行失败)")
     private String taskStatus;
 
     @TableField
@@ -68,7 +68,7 @@ public class LongTextTaskEntity extends InfraBaseEntity {
     private String outline ;
 
     @TableField
-    @Column(name = "chapter_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "章节生成状态(0未生成|1已生成|2生成中|9生成失败)")
+    @Column(name = "chapter_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "章节生成状态(not_run未生成|completed已生成|running生成中|generating生成中|cancelled已取消|failed生成失败)")
     private String chapterStatus ;
 
     @TableField
@@ -78,5 +78,11 @@ public class LongTextTaskEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "current_chapter_label", type = MySqlTypeConstant.TEXT, comment = "当前章节标签")
     private String currentChapterLabel ;
+
+    // 生成章节限流
+    @TableField
+    @Column(name = "gen_chapter_limit", type = MySqlTypeConstant.INT, length = 32, comment = "生成章节限流(大于0则表示每分钟限流次数|0不限流)")
+    private Integer genChapterLimit = 10;
+
 
 }
