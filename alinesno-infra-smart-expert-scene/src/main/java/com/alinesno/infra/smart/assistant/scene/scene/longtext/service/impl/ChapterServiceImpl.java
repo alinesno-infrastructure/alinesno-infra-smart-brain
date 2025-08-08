@@ -291,6 +291,9 @@ public class ChapterServiceImpl extends IBaseServiceImpl<ChapterEntity, ChapterM
                 node.setDescription(chapter.getChapterRequire()); // 或者使用其他字段作为描述
                 node.setSortOrder(chapter.getChapterSort()); // 设置排序字段
 
+                // 设置是否有内容
+                node.setHasContent(chapter.getContent() != null && !chapter.getContent().isEmpty());
+
                 // 获取到用户的id
                 Long roleId = chapter.getChapterEditor() ;
                 if(roleId != null){
