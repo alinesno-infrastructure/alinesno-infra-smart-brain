@@ -11,6 +11,15 @@ public interface AgentConstants {
     long ORG_AGENT_STORE_TYPE_ID = 9527L ;  // 角色类型ID
     long STORE_EMPTY_ORG_ID = 0L ;  // 商店组织为空
 
+    /**
+     * 操作成功
+     */
+    String SUCCESS = "SUCCESS" ;
+
+    /**
+     * 操作失败
+     */
+    String FAIL = "FAIL" ;
 
     interface Role {
         String LEADER = "leader";
