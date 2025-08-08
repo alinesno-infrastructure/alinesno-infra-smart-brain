@@ -10,6 +10,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.AddCommentToCharacters;
@@ -19,11 +20,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.For
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewRulesService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.ParserDocumentTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -100,6 +103,12 @@ public class DocumentReviewController extends SuperController {
 
     @Autowired
     private ParserDocumentTool parserDocumentTool ;
+
+    @Autowired
+    private SmartDocumentConsumer smartDocumentConsumer ;
+
+    @Autowired
+    private DocReviewListGeneratorService docReviewListGeneratorService ;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -213,89 +222,36 @@ public class DocumentReviewController extends SuperController {
         return AjaxResult.success("操作成功." ,  storageConsumer.getPreviewUrl(storageId).getData()) ;
     }
 
-
     @SneakyThrows
     @DataPermissionQuery
     @GetMapping("/getPreviewDocx")
-    public ResponseEntity<Resource> getPreviewDocx(@RequestParam Long taskId, PermissionQuery query) {
+    public AjaxResult getPreviewDocx(@RequestParam Long taskId, PermissionQuery query) {
         Assert.notNull(taskId, "任务ID不能为空");
 
+        // 获取任务实体
         DocReviewTaskEntity entity = docReviewTaskService.getById(taskId);
-        String previewUrl = storageConsumer.getPreviewUrl(entity.getDocumentId()).getData();
-
-        String fileName = entity.getDocumentName();
-
-        log.debug("previewUrl= {}", previewUrl);
-        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
-
-        try (InputStream inputStream = new URL(previewUrl).openStream()) {
-            fileBytes = IOUtils.toByteArray(inputStream);
-            // 使用 fileBytes 进行后续处理
+        if (entity == null) {
+            return AjaxResult.error("未找到对应的任务");
         }
 
-        if (fileBytes == null) {
-            // 文件下载失败，返回合适的错误信息
-            return ResponseEntity.notFound().build();
+        // 直接下载文件内容
+        byte[] fileBytes = storageConsumer.download(entity.getDocumentId(), null);
+        if (fileBytes == null || fileBytes.length == 0) {
+            return AjaxResult.error("文件下载失败");
         }
 
-        // 检查文件字节数组长度是否合理，这里只是简单示例，你可能需要更准确的判断
-        if (fileBytes.length < 1024) { // 假设小于 1KB 的文件不太可能是有效的.docx
-            return ResponseEntity.badRequest().build();
-        }
-
-        boolean isPdf = fileName.toLowerCase().endsWith(".pdf");
-
-        File docFile = null;
-        File pdfFile = null;
+        // 创建临时文件
+        File tempFile = File.createTempFile("temp-", ".docx");
         try {
-            if (isPdf) {
+            Files.write(tempFile.toPath(), fileBytes);
 
-                pdfFile = File.createTempFile("temp-pdf", ".pdf");
-                Files.write(pdfFile.toPath(), fileBytes);
-
-                byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
-
-                HttpHeaders headers = new HttpHeaders();
-                // 设置正确的 MIME 类型
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                headers.add("Content-Disposition", "inline; filename=preview.pdf");
-
-                ByteArrayResource resource = new ByteArrayResource(pdfBytes);
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource);
-            } else {
-                // 创建临时 docx 文件
-                docFile = File.createTempFile("temp-docx", ".docx");
-                Files.write(docFile.toPath(), fileBytes);
-
-                // 创建临时 pdf 文件
-                pdfFile = File.createTempFile("temp-pdf", ".pdf");
-                WordToPdfConverter.convertToPdf(docFile, pdfFile);
-
-                // 读取 PDF 文件内容
-                byte[] pdfBytes = Files.readAllBytes(pdfFile.toPath());
-
-                HttpHeaders headers = new HttpHeaders();
-                // 设置正确的 MIME 类型
-                headers.setContentType(MediaType.APPLICATION_PDF);
-                headers.add("Content-Disposition", "inline; filename=preview.pdf");
-
-                ByteArrayResource resource = new ByteArrayResource(pdfBytes);
-                return ResponseEntity.ok()
-                        .headers(headers)
-                        .body(resource);
-            }
-        } catch (IOException e) {
-            log.error("文件处理出错", e);
-            return ResponseEntity.status(500).build();
+            // 将DOCX转换为HTML
+            String htmlContent = smartDocumentConsumer.convertToHtml(tempFile);
+            return AjaxResult.success("获取预览成功" , htmlContent) ;
         } finally {
             // 删除临时文件
-            if (docFile != null) {
-                docFile.delete();
-            }
-            if (pdfFile != null) {
-                pdfFile.delete();
+            if (!tempFile.delete()) {
+                log.warn("临时文件删除失败: {}", tempFile.getAbsolutePath());
             }
         }
     }
@@ -333,21 +289,29 @@ public class DocumentReviewController extends SuperController {
         BeanUtil.copyProperties(query , taskEntity);
 
         taskEntity.setTaskName(fileName);
-        taskEntity.setTaskDescription(content);
         taskEntity.setSceneId(sceneId);
+        taskEntity.setTaskDescription(content);
         taskEntity.setDocumentReviewSceneId(sceneId);
         taskEntity.setTaskStartTime(new Date());
-        taskEntity.setGenStatus(0);
 
         String attachments = r.getData() ;
         taskEntity.setDocumentId(attachments); // 审核附件ID号，以逗号进行分隔
         taskEntity.setDocumentName(fileName);
 
+        taskEntity.setReviewGenStatus(ReviewRuleGenStatusEnums.NOT_GENERATED.getCode());
+        taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.NOT_GENERATED.getCode());
+        taskEntity.setDocumentParseStatus(ReviewRuleGenStatusEnums.GENERATING.getCode()); // 正在解析生成中
+
+        taskEntity.setChannelStreamId(IdUtil.getSnowflakeNextId());  // 渠道流ID
+
         docReviewTaskService.save(taskEntity);
+
+        docReviewListGeneratorService.startParseDocument(taskEntity , sceneId ,  query) ;
 
         log.debug("ajaxResult= {}" , r);
         AjaxResult result = AjaxResult.success("上传成功." , r.getData()) ;
         result.put("taskId" , taskEntity.getId());
+        result.put("channelStreamId" , taskEntity.getChannelStreamId());
 
         return result ;
     }
