@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +30,7 @@ public class SSEServiceImpl implements ISSEService {
     public SseEmitter getConn(@NotBlank String clientId) {
         final SseEmitter sseEmitter = SSE_CACHE.get(clientId);
 
-        log.debug("获取SSE连接，clientId = {} ,sseEmitter = {}", clientId , sseEmitter);
+        log.trace("获取SSE连接，clientId = {} ,sseEmitter = {}", clientId , sseEmitter);
 
         if (sseEmitter != null) {
             return sseEmitter;
@@ -54,14 +55,14 @@ public class SSEServiceImpl implements ISSEService {
         final SseEmitter emitter = new SseEmitter(0L);
         // 注册超时回调，超时后触发
         emitter.onTimeout(() -> {
-            log.info("连接已超时，正准备关闭，clientId = {}", clientId);
+            log.trace("连接已超时，正准备关闭，clientId = {}", clientId);
             SSE_CACHE.remove(clientId);
         });
         // 注册完成回调，调用 emitter.complete() 触发
         emitter.onCompletion(() -> {
-            log.info("连接已关闭，正准备释放，clientId = {}", clientId);
+            log.trace("连接已关闭，正准备释放，clientId = {}", clientId);
             SSE_CACHE.remove(clientId);
-            log.info("连接已释放，clientId = {}", clientId);
+            log.trace("连接已释放，clientId = {}", clientId);
         });
         return emitter;
     }
@@ -88,8 +89,11 @@ public class SSEServiceImpl implements ISSEService {
     @Override
     public void send(@NotBlank String clientId , String message) throws IOException {
         final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
+        if(emitter == null){
+            log.trace("客户端：【{}】 断开成功，当前剩余客户端总数为【{}】",clientId,SSE_CACHE.size());
+            return ;
+        }
 
-        Assert.notNull(emitter, "客户端不存在，clientId = " + clientId);
         Assert.notNull(message, "推送消息为空");
 
         emitter.send(message) ;
@@ -103,38 +107,42 @@ public class SSEServiceImpl implements ISSEService {
     public void sendDone(String clientId) throws IOException {
         final SseEmitter emitter = SSE_CACHE.get(clientId);      // 推流内容到客户端
         if(emitter == null){
-            log.warn("客户端：【{}】 断开成功，当前剩余客户端总数为【{}】",clientId,SSE_CACHE.size());
+            log.trace("客户端：【{}】 断开成功，当前剩余客户端总数为【{}】",clientId,SSE_CACHE.size());
             return ;
         }
         emitter.send("[DONE]");
     }
 
     /**
-     *  定时任务 用于测试后端推送的数据
+     * 定时任务 用于测试后端推送的数据
      */
-    @Scheduled(fixedDelay = 60, initialDelay = 1,timeUnit = TimeUnit.SECONDS)
-    public void job(){
-        if (!SSE_CACHE.isEmpty()){
-
-            // 输出客户端口连接情况，包括链接客户端口还有连接情况
+    @Scheduled(fixedDelay = 60, initialDelay = 1, timeUnit = TimeUnit.SECONDS)
+    public void job() {
+        if (!SSE_CACHE.isEmpty()) {
             log.trace("当前客户端总数为：{}", SSE_CACHE.size());
 
-            String msg = "ping" ;
-            for (Map.Entry<String, SseEmitter> entry : SSE_CACHE.entrySet()) {
-                SseEmitter sseEmitter =SSE_CACHE.get(entry.getKey());
+            String msg = "ping";
+            Iterator<Map.Entry<String, SseEmitter>> iterator = SSE_CACHE.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, SseEmitter> entry = iterator.next();
+                SseEmitter emitter = entry.getValue();
                 try {
-                    log.trace("推送心跳数据，clientId:{} , msg:{} " , entry.getKey(), msg);
-                    sseEmitter.send(SseEmitter.event()
+                    log.trace("推送心跳数据，clientId:{} , msg:{}", entry.getKey(), msg);
+                    emitter.send(SseEmitter.event()
                             .reconnectTime(1000)
                             .id(entry.getKey())
                             .data(msg));
-                }catch (Exception e){
-                    log.debug("推送心跳数据异常，clientId:{} , msg:{} " , entry.getKey(), e.getMessage());
-                    SSE_CACHE.remove(entry.getKey());
+                } catch (Exception e) {
+                    log.trace("客户端【{}】连接异常，已自动移除，原因：{}", entry.getKey(), e.getMessage());
+                    try {
+                        emitter.complete();  // 先完成emitter
+                    } catch (Exception ex) {
+                        // 忽略complete时的异常
+                    }
+                    iterator.remove();      // 再从缓存中移除
                 }
             }
         }
-
     }
 
     @Override
