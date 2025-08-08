@@ -125,12 +125,6 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
     @Override
     public String formatContent(DocumentFormatDTO content, PermissionQuery query) {
 
-        // 1. 获取办公工具配置
-        ContentFormatterOfficeConfigEntity officeConfig = officeConfigService.getConfig(query.getOrgId());
-        if (officeConfig == null) {
-            throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
-        }
-
         String templateId = content.getTemplateId();
         ContentFormatterLayoutEntity templateLayout = getById(templateId);
         if (templateLayout == null) {
@@ -138,10 +132,6 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
         }
 
         DocumentTemplateDTO documentTemplateDTO = DocumentTemplateDTO.fromContentFormatterLayoutDto(templateLayout) ;
-
-        // 2. 初始化智能文档处理器
-//        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-//        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
 
         // 3. 将HTML内容保存为临时文件
         String htmlContent = DocxHtmlFormatterUtils.ensureHtmlStructure(content.getContent()) ;
@@ -153,7 +143,7 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
         }
 
-        return smartDocumentConsumer.htmlToOfficial(htmlContent).getData();
+        return smartDocumentConsumer.htmlToOfficial(htmlContent);
     }
 
     @Override
@@ -163,9 +153,6 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
         if (officeConfig == null) {
             throw new RuntimeException("未找到机构[" + query.getOrgId() + "]的办公工具配置");
         }
-
-//        SmartDocumentConsumer smartDocumentConsumer = new SmartDocumentConsumer();
-//        smartDocumentConsumer.configure(officeConfig.getToolPath(), officeConfig.getRequestToken());
 
         File tempFile = null;
         try {
