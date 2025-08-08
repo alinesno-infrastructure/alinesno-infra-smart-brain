@@ -71,7 +71,7 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
         taskEntity.setTaskDescription(dto.getPromptText());
         taskEntity.setSceneId(dto.getSceneId());
         taskEntity.setTaskStartTime(new Date());
-        taskEntity.setTaskStatus(0);
+        taskEntity.setTaskStatus(TaskStatusEnum.NOT_RUN.getCode());
         taskEntity.setOutline(JSONObject.toJSONString(dto.getOutline()));
 
         taskEntity.setProjectResearchSceneId(sceneEntity.getId());
@@ -101,11 +101,11 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
             return AjaxResult.error("任务不存在");
         }
 
-        if (taskEntity.getTaskStatus() == TaskStatusEnum.RUNNING.getCode()) {
+        if (taskEntity.getTaskStatus().equals(TaskStatusEnum.RUNNING.getCode())) {
             return AjaxResult.success("任务正在执行中" , taskEntity);
         }
 
-        if (taskEntity.getTaskStatus() == TaskStatusEnum.RUN_COMPLETED.getCode()) {
+        if (taskEntity.getTaskStatus().equals(TaskStatusEnum.RUN_COMPLETED.getCode())) {
             return AjaxResult.success("任务已完成" , taskEntity);
         }
 
