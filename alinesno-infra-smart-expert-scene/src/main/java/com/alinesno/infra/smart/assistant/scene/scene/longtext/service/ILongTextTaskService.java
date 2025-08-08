@@ -31,4 +31,10 @@ public interface ILongTextTaskService extends IBaseService<LongTextTaskEntity> {
      * @return
      */
     TaskProgressDto getProgress(Long taskId);
+
+    /**
+     * 手工接管任务，即将任务全部设置成完成的状态，由人工处理
+     * @param taskId
+     */
+    void takeOver(Long taskId);
 }
