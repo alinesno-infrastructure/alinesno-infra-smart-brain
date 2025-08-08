@@ -10,9 +10,10 @@
     <div class="ai-generating-content">
       <div class="ai-generating-text"> 
         <span>{{ currentText }}</span>
-        <span> 
+        <span v-if="props.showActions">  
           <el-button v-if="props.closeEnable" type="primary"  icon="Position" @click="backTo">返回管理界面</el-button>
-          <el-button v-else type="danger" icon="Warning">请勿关闭界面</el-button>
+          <el-button v-else type="danger" icon="Warning">请勿关闭界面</el-button> 
+          <el-button v-if="props.takeOverEnable" type="danger" icon="Pointer" @click="takeOver">接管任务</el-button>
         </span>
       </div>
       <el-progress 
@@ -39,12 +40,21 @@ const props = defineProps({
   // 返回路径
   backToPath: {
     type: String,
-    required: true
+    required: false 
   },
   // 是否允许关闭
   closeEnable: {
     type: Boolean , 
     default: true
+  },
+  // 是否接管
+  takeOverEnable: {
+    type: Boolean , 
+    default: false
+  },
+  showActions: {
+    type: Boolean , 
+    default: true, 
   },
   // 路由参数
   routeParams: {
@@ -55,6 +65,13 @@ const props = defineProps({
 
 const visible = ref(false)
 const currentText = ref('AI 正在生成内容，请稍候...')
+
+const emit = defineEmits(['stopTask','takeOver'])
+
+// 检查是否在加载状态
+const isLoading = () => {
+  return visible.value
+}
 
 // 打开加载状态
 const loading = () => {
@@ -68,6 +85,17 @@ const backTo = () => {
     query: props.routeParams
   })
   close()
+}
+
+
+// 接管任务
+const takeOver = () => {
+  emit('takeOver')
+}
+
+// 停止任务
+const stopTask = () => {
+  emit('stopTask')
 }
 
 // 关闭组件
@@ -84,7 +112,8 @@ const setText = (text) => {
 defineExpose({
   loading,
   close,
-  setText
+  setText,
+  isLoading  // 暴露isLoading方法
 })
 </script>
 
