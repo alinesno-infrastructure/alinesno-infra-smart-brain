@@ -57,6 +57,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.*;
@@ -182,13 +183,20 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
                     result.setStatus(ex != null ? WorkflowStatusEnum.FAILED.getStatus() : WorkflowStatusEnum.COMPLETED.getStatus());
                     result.setEndTime(System.currentTimeMillis());
                     result.setUsageTimeSeconds(RoleUtils.formatTime(result.getStartTime(), result.getEndTime()));
+                    if(ex != null){
+                        record.setExceptionMsg(ex.getMessage());
+                        record.setHasException(true);
+                    }
                 })
                 .exceptionally(ex -> {
                     // 异常处理
                     record.setStatus(WorkflowStatusEnum.FAILED.getStatus());
-                    record.setGenContent("执行异常:" + ex.getMessage());
                     record.setEndTime(System.currentTimeMillis());
                     record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+
+                    record.setExceptionMsg(ex.getMessage());
+                    record.setHasException(true);
+
                     return record;
                 });
     }
