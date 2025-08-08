@@ -2,6 +2,9 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto;
 
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
+import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -39,6 +42,10 @@ public class DocReviewSceneInfoDto extends SceneInfoDto {
     private String reviewListKnowledgeBase;  // 审核列表知识库
     private String contractOverview;  // 合同概述
     private Integer genStatus ; // 生成状态
+
+    private String reviewGenStatus; // 审核清单生成状态
+    private String resultGenStatus ; // 审核结果生成状态
+    private String documentParseStatus ; // 文档内容解析状态
 
     private List<Map<String , String>> contractTypes ;   // 合同类型列表，每项包含合同类型的有关信息
 }
