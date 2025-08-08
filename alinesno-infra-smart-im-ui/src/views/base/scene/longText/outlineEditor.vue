@@ -63,7 +63,7 @@
                             <div class="custom-tree-node" :class="(selectNodeItem && selectNodeItem.id === node.id)?'active':''" style="height:auto;">
                                 <div style="display: flex;flex-direction: column;">
                                     <div style="font-size: 16px;font-weight: bold;">
-                                        {{ node.label }}
+                                        {{ node.label }} <i v-if="!data.hasContent" class="fa-solid fa-triangle-exclamation"></i>
                                     </div>
                                     <div class="description">
                                         <span style="color: #777;">{{ data.description }}</span>
@@ -145,6 +145,8 @@
             ref="generatingStatusRef" 
             :back-to-path="'/scene/longText/longTextManager'"
             :route-params="{ sceneId: sceneId }" 
+            :takeOverEnable="takeOverEnable"
+            @takeOver="handleTakeOver"
         />
 
     </div>
@@ -172,13 +174,16 @@ import {
     submitTask,
     updateTaskTitle ,
     submitChapterTask,
-    updateTaskGenStatus
+    updateTaskGenStatus,
+    takeOver
 } from '@/api/base/im/scene/longTextTask'
 import SnowflakeId from "snowflake-id";
  
 const snowflake = new SnowflakeId();
 const route = useRoute();
 const { proxy } = getCurrentInstance();
+
+const takeOverEnable = ref(false)
  
 const channelStreamId = ref(route.query.channelStreamId);
 const taskId = ref(route.query.taskId);
@@ -333,7 +338,7 @@ const genStreamContentByMessage = async (roleIdVal , messageVal) => {
 /** 生成内容 */
 const genStreamContent = async(text) => {
 
-  generatingStatusRef.value.loading()
+  generatingStatusRef.value?.loading()
   if(text){
     generatingStatusRef.value.setText(text) ;
   }
@@ -427,7 +432,7 @@ const handleGetScene = async() => {
         if(item && item.children && item.children.length > 0){
           const node = {
               label: item.label ,
-              data: { chapterEditor:  item.chapterEditor ,  description: item.description }
+              data: { chapterEditor:  item.chapterEditor ,  description: item.description , hasContent: item.hasContent }
           }
           const data = { id: item.id }
           editContent(node , data)
@@ -509,12 +514,27 @@ const closeStreamDialog = () => {
   if(streamLoading.value){
     streamLoading.value.close()
   }
+
+  if(generatingStatusRef.value){
+    generatingStatusRef.value.close();
+  }
+
   emit('closeShowDebugRunDialog')
 }
 
 // 设置主目录
 const setOutline = (outlineVal) => {
     outline.value = outlineVal
+}
+
+// 接管任务
+const handleTakeOver = () => {
+    console.log("handleTaskOver")
+    takeOver(taskId.value).then(res => {
+        handleGetTask();
+        // 接管成功
+        proxy.$modal.msgSuccess("任务接管成功，请手工生成章节内容。");
+    })
 }
 
 
@@ -569,9 +589,10 @@ const handleGetTask = async () => {
       const chapterStatus = taskInfo.value.chapterStatus
       const currentChapterId = taskInfo.value.currentChapterId
       const currentChapterLabel = taskInfo.value.currentChapterLabel
-      
+      const taskEndTime = taskInfo.value.taskEndTime // 获取任务开始时间
+
       // 检查是否满足停止条件（大纲和章节都完成）
-      if (taskStatus === '1' && chapterStatus === '1') {
+      if (taskStatus === 'completed' && chapterStatus === 'completed') {
         // 关闭dialog
         closeStreamDialog();
 
@@ -582,14 +603,14 @@ const handleGetTask = async () => {
       }
       
       // 原有逻辑保持不变
-      if (taskStatus == 0 || taskStatus == null) {
+      if (taskStatus == 'not_run' || taskStatus == null) {
         submitTask(taskId.value, channelStreamId.value).then(res => {
           genStreamContent()
         })
-      } else if (taskStatus == 2) {
+      } else if (taskStatus == 'running') {
         genStreamContent()
-      } else if (taskStatus == 1) {  // 章节生成完成
-
+      } else if (taskStatus == 'completed') {  // 章节生成完成
+ 
         if(outline.value.length == 0 ){
            getScene(currentSceneId.value , taskId.value).then(res => {
                 outline.value = res.data.chapterTree
@@ -598,14 +619,25 @@ const handleGetTask = async () => {
 
         person.value = currentSceneInfo.value.contentEditors[0]
         
-        if (chapterStatus == 0 || chapterStatus == null) {
+        if (chapterStatus == 'not_run' || chapterStatus == null) {
           submitChapterTask(taskId.value, channelStreamId.value).then(res => {
             genStreamContent("开始生成章节内容.")
           })
-        } else if (chapterStatus == 2) {
+        } else if (chapterStatus == 'running') {
           openCurrentChapter(currentChapterId)
           genStreamContent(currentChapterLabel)
-        } else if (chapterStatus == 1) {
+
+          const now = new Date();
+          const start = new Date(taskEndTime);
+          const durationMinutes = (now - start) / (1000 * 60);
+
+          // 如果状态是running而且运行超过半个小时的，则显示人工接入takeOverEnable为true          
+          if (durationMinutes > 30) {
+            console.log("运行超过半个小时，显示人工接管按钮.")
+            takeOverEnable.value = true;
+          }
+
+        } else if (chapterStatus == 'completed') {
           // 章节生成完成
         }
       }
