@@ -13,15 +13,22 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.common.web.adapter.utils.file.FileUtils;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
+import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextTaskGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTaskExecutionService;
+import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.dtflys.forest.annotation.Get;
 import com.dtflys.forest.annotation.Post;
@@ -70,10 +77,16 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
     private ISceneService sceneService;
 
     @Autowired
-    private ILongTextSceneService generalAgentSceneService ;
+    private ILongTextSceneService longTextSceneService ;
 
     @Autowired
     private LongTextTaskExecutionService taskExecutionService;
+
+    @Autowired
+    private LongTextChatRoleUtil longTextChatRoleUtil ;
+
+    @Autowired
+    private IIndustryRoleService roleService ;
 
     @Autowired
     private SmartDocumentConsumer smartOfficeConsumer;
@@ -105,7 +118,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
             @RequestParam("taskId") Long taskId,
             PermissionQuery query) {
 
-        LongTextSceneEntity longTextSceneEntity = generalAgentSceneService.getBySceneId(sceneId , query) ;
+        LongTextSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
         String markdownContent = sceneService.genMarkdownContent(sceneId ,query , longTextSceneEntity.getId() , taskId);
 
         return AjaxResult.success("操作成功" , markdownContent);
@@ -121,10 +134,6 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         try {
             log.debug("fileName = {}", fileName);
             log.debug("content = {}", content);
-
-//            if (!FileUtils.checkAllowDownload(fileName)) {
-//                throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
-//            }
 
             // 1. 将Markdown内容写入临时文件
             File tempFile = File.createTempFile("markdown_", ".md");
@@ -192,7 +201,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
     @PostMapping("/addTask")
     public AjaxResult addTask(@RequestBody @Validated LongTextTaskGeneratorDTO dto , PermissionQuery query) {
 
-        LongTextSceneEntity sceneEntity = generalAgentSceneService.getBySceneId(dto.getSceneId() , query) ;
+        LongTextSceneEntity sceneEntity = longTextSceneService.getBySceneId(dto.getSceneId() , query) ;
 
         LongTextTaskEntity taskEntity = new LongTextTaskEntity() ;
         BeanUtil.copyProperties(query , taskEntity);
@@ -278,7 +287,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         }
 
         // 检查任务状态是否可执行
-        if (task.getTaskStatus() != null && !(TaskStatusEnum.NOT_RUN.getCode() == Integer.parseInt(task.getTaskStatus()))) {
+        if (task.getTaskStatus() != null && !(TaskStatusEnum.NOT_RUN.getCode().equals(task.getTaskStatus()))) {
             return AjaxResult.error("任务状态不允许执行");
         }
 
@@ -294,35 +303,6 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
 
         return AjaxResult.success("任务已开始执行");
     }
-
-    /**
-     * 提交章节任务
-     */
-    @DataPermissionQuery
-    @GetMapping("/submitChapterTask")
-    public AjaxResult submitChapterTask(@RequestParam Long taskId, @RequestParam Long channelStreamId ,  PermissionQuery query) {
-        LongTextTaskEntity task = service.getById(taskId);
-        if (task == null) {
-            return AjaxResult.error("任务不存在");
-        }
-
-        // 检查任务状态是否可执行
-        if (task.getChapterStatus() != null && !(TaskStatusEnum.RUN_COMPLETED.getCode() == Integer.parseInt(task.getChapterStatus()))) {
-            return AjaxResult.error("单节任务已生成完成.");
-        }
-
-        // 更新任务状态为运行中
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
-        task.setTaskStartTime(new Date());
-
-        service.updateById(task);
-
-        // 异步执行任务
-        taskExecutionService.executeChapterTaskAsync(taskId, query, task);
-
-        return AjaxResult.success("章节任务已开始执行");
-    }
-
 
     /**
      * 查询任务状态
@@ -357,13 +337,39 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         boolean cancelled = taskExecutionService.cancelTask(taskId);
 
         if (cancelled) {
-            // 更新数据库状态
-            LongTextTaskEntity task = service.getById(taskId);
-            task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-            service.updateById(task);
             return AjaxResult.success("任务已停止");
         }
+
         return AjaxResult.error("停止任务失败，任务可能已完成或不存在");
+    }
+
+    /**
+     * 人工接管任务
+     */
+    @DataPermissionQuery
+    @GetMapping("/takeOver")
+    public AjaxResult takeOver(@RequestParam Long taskId) {
+        service.takeOver(taskId);
+        return AjaxResult.success("");
+    }
+
+
+    /**
+     * 与编辑角色沟通
+     * @param dto
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/chatEditorRole")
+    public AjaxResult chatEditorRole(@RequestBody @Validated TextChatEditorDto dto , PermissionQuery query){
+
+        LongTextSceneEntity entity = longTextSceneService.getBySceneId(dto.getSceneId(), query) ;
+        String articleWriterEngineer = entity.getContentEditor() ;
+
+        IndustryRoleDto roleDto =  RoleUtils.getEditors(roleService , articleWriterEngineer).get(0) ;
+        longTextChatRoleUtil.chat(roleDto , dto , query) ;
+
+        return AjaxResult.success("操作成功") ;
     }
 
     @Override
