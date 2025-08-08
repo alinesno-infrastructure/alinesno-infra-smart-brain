@@ -34,6 +34,8 @@
 import { ElMessageBox } from 'element-plus'
 import ChapterEditor from '../chapterEditor'
 
+import { truncateString } from '@/utils/ruoyi'
+
 import {
     getLongTextTask ,
     getMarkdownContent
@@ -69,7 +71,7 @@ const expertScene = () => {
 }
  
 const handleClose = () => {
-  ElMessageBox.confirm('你确认要退出么?')
+  ElMessageBox.confirm('你确认要退出么，退出之后，当前的修改将不再保存，如需要保留，可以直接导出本地。')
     .then(() => {
       dialogVisible.value = false ; 
     })
@@ -84,7 +86,7 @@ const exportWord = () => {
 	proxy.download(
 	  "/api/infra/smart/assistant/scene/longTextTask/exportWord",
 	  { ...articleData.value },
-	  `${taskInfo.value.taskName}_${new Date().getTime()}.docx`  // 如：任务名称_1712345678901.docx
+	  `${truncateString(taskInfo.value.taskName , 30)}_${new Date().getTime()}.docx`  // 如：任务名称_1712345678901.docx
 	);
 }; 
 
@@ -93,7 +95,7 @@ const handleGetTask = async () => {
   try {
     await getLongTextTask(props.taskId).then(res => {
       taskInfo.value = res.data
-      title.value = "编辑：" + taskInfo.value.taskName ;
+      title.value = truncateString("编辑：" + taskInfo.value.taskName , 30);
      }) ; 
 
      await getMarkdownContent(props.sceneId , props.taskId).then(res => {
