@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.List;
+
 /**
  * 进行审核
  */
@@ -22,6 +24,8 @@ public class GenAuditResultDto extends BaseDto {
     private Long channelStreamId ;
 
     @NotNull(message = "规则ID不能为空")
+    private List<Long> ruleIds ;
+
     private Long ruleId ;
 
     @NotNull(message = "审核清单ID不能为空")
