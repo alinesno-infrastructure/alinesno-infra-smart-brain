@@ -28,11 +28,12 @@ public class DocReviewAuditResultServiceImpl extends IBaseServiceImpl<DocReviewA
     }
 
     @Override
-    public List<DocReviewAuditResultEntity> getAuditResultByRuleId(long ruleId, long sceneId) {
+    public List<DocReviewAuditResultEntity> getAuditResultByRuleId(long ruleId, long sceneId, long taskId) {
 
         LambdaQueryWrapper<DocReviewAuditResultEntity> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(DocReviewAuditResultEntity::getRuleId, ruleId) ;
         wrapper.eq(DocReviewAuditResultEntity::getSceneId, sceneId) ;
+        wrapper.eq(DocReviewAuditResultEntity::getTaskId, taskId) ;
 
         return list(wrapper) ;
     }
