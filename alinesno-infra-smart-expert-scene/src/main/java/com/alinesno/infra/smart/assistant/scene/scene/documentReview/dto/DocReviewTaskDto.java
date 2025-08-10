@@ -47,6 +47,7 @@ public class DocReviewTaskDto extends BaseDto {
     private String reviewGenStatus;
     private String resultGenStatus ;
     private String documentParseStatus ;
+    private String currentStepInfo ;
 
     public static DocReviewTaskDto fromEntity(DocReviewTaskEntity entity){
         DocReviewTaskDto dto = new DocReviewTaskDto();
