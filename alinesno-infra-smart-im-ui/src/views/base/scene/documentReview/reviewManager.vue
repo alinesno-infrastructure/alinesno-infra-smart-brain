@@ -139,24 +139,35 @@ function enterExamPager(item) {
 
 }
 
-// 在script setup部分添加状态配置 
 const statusConfig = [ 
-  {condition: (item) => item.reviewGenStatus === 'not_generated' || item.reviewGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核清单"},
+  // 文档解析状态
+  {condition: (item) => item.documentParseStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "文档解析中"},
+  {condition: (item) => item.documentParseStatus === 'not_generated' || item.documentParseStatus === null, type: "warning", icon: "fa-hourglass-start", text: "文档未解析"},
+  
+  // 审核清单生成状态
   {condition: (item) => item.reviewGenStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "审核清单生成中"},
-  {condition: (item) => item.reviewGenStatus === 'success', type: "success", icon: "fa-check-circle", text: "审核清单生成"},
   {condition: (item) => item.reviewGenStatus === 'failed_no_content', type: "danger", icon: "fa-circle-xmark", text: "生成失败(无内容)"},
   {condition: (item) => item.reviewGenStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "审核清单生成失败"},
   {condition: (item) => item.reviewGenStatus === 'timeout', type: "danger", icon: "fa-clock", text: "生成超时"},
-  {condition: (item) => item.resultGenStatus === 'not_generated' || item.resultGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核结果"},
+  {condition: (item) => item.reviewGenStatus === 'not_generated' || item.reviewGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核清单"},
+  
+  // 审核结果生成状态 (放在最后，因为这是最终状态)
   {condition: (item) => item.resultGenStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "审核结果生成中"},
-  {condition: (item) => item.documentParseStatus === 'not_generated' || item.documentParseStatus === null, type: "warning", icon: "fa-hourglass-start", text: "文档未解析"},
-  {condition: (item) => item.documentParseStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "文档解析中"},
+  {condition: (item) => item.resultGenStatus === 'not_generated' || item.resultGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核结果"},
+  
+  // 成功状态 (放在更后面)
+  {condition: (item) => item.reviewGenStatus === 'success' && item.resultGenStatus === 'success', type: "success", icon: "fa-check-circle", text: "审核完成"},
+  {condition: (item) => item.reviewGenStatus === 'success', type: "success", icon: "fa-check-circle", text: "审核清单生成"},
+  
+  // 默认状态
   {condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态"},
 ]
 
 // 查找匹配的状态配置
 const getStatusConfig = (item) => {
-  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
+  const matchedConfig = statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
+  console.log('Matching status for item:', item, 'Matched config:', matchedConfig.text)
+  return matchedConfig
 }
 
 const handleDelete = (item) => {
