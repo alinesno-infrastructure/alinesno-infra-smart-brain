@@ -43,6 +43,7 @@ import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
  * 审核清单生成服务
@@ -310,26 +311,15 @@ public class DocReviewListGeneratorService {
      * @param query 权限查询
      */
     public void startGenerateAuditList(DocReviewTaskEntity taskEntity, GenAuditResultDto dto, PermissionQuery query, List<DocumentInfoBean> contentList) {
-        // 使用 CompletableFuture 链式调用确保顺序执行
-        CompletableFuture<Void> future = CompletableFuture.completedFuture(null);
 
-        for (Long rule : dto.getRuleIds()) {
-            final Long currentRule = rule; // 需要 final 或 effectively final
-            future = future.thenCompose(ignored -> {
-                dto.setRuleId(currentRule);
-                return CompletableFuture.runAsync(() -> {
-                    asyncGenerateAuditList(taskEntity, dto, query, contentList);
-                }, chatThreadPool);
-            });
-        }
-
-        // 异常处理
-        future.exceptionally(ex -> {
-            log.error("规则审核任务执行失败", ex);
-            taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
-            docReviewTaskService.updateById(taskEntity);
-            return null;
+        // 使用线程池执行生成任务
+        chatThreadPool.execute(() -> {
+            for (Long rule : dto.getRuleIds()) {
+                dto.setRuleId(rule);
+                asyncGenerateAuditList(taskEntity, dto, query, contentList);
+            }
         });
+
     }
 
     /**
@@ -364,7 +354,7 @@ public class DocReviewListGeneratorService {
                 DocReviewRulesEntity rule = getRule(rules , dto.getRuleId()) ;
                 if(rule != null){
                     count ++ ;
-                    String text = "正在进行["+rule.getRuleName()+"]检查，当前是第"+count+"条，还剩"+(dto.getRuleIds().size() - 1)+"条";
+                    String text = "正在进行["+rule.getRuleName()+"]检查，当前是第"+count+"条，还剩"+(dto.getRuleIds().size() - count)+"条";
 
                     taskEntity.setCurrentStepInfo(text);
                     docReviewTaskService.updateById(taskEntity);
@@ -378,7 +368,7 @@ public class DocReviewListGeneratorService {
                 DocReviewRulesEntity rule = ruleService.getById(dto.getRuleId()) ;
 
                 count ++ ;
-                String text = "正在进行["+rule.getRuleName()+"]检查，当前是第"+count+"条，还剩"+(dto.getRuleIds().size() - 1)+"条";
+                String text = "正在进行["+rule.getRuleName()+"]检查，当前是第"+count+"条，还剩"+(dto.getRuleIds().size() - count)+"条";
                 taskEntity.setCurrentStepInfo(text);
                 docReviewTaskService.updateById(taskEntity);
 
@@ -460,24 +450,13 @@ public class DocReviewListGeneratorService {
 
         taskInfo.setText(prompt);
 
+        // 获取当前任务实体
+        DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId());
+
         // 异步执行审核任务
-        CompletableFuture<WorkflowExecutionDto> genContentFuture = roleService.runRoleAgent(taskInfo);
-
-        // 处理审核任务完成后的回调
-        genContentFuture.whenComplete((result, ex) -> {
-            // 获取当前任务实体
-            DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId());
-
-            // 处理异常情况
-            if (ex != null) {
-                log.error("生成审核结果失败", ex);
-                if (taskEntity != null) {
-                    // 更新任务状态为失败
-                    taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
-                    docReviewTaskService.updateById(taskEntity);
-                }
-                return;
-            }
+        WorkflowExecutionDto result;
+        try {
+            result = roleService.runRoleAgent(taskInfo).get();
 
             try {
                 // 设置生成的内容和解析后的代码块
@@ -533,7 +512,16 @@ public class DocReviewListGeneratorService {
                     docReviewTaskService.updateById(taskEntity);
                 }
             }
-        });
+
+        } catch (InterruptedException | ExecutionException e) {
+            log.error("生成审核结果失败", e);
+            if (taskEntity != null) {
+                // 更新任务状态为失败
+                taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
+                docReviewTaskService.updateById(taskEntity);
+            }
+        }
+
     }
 
 }
