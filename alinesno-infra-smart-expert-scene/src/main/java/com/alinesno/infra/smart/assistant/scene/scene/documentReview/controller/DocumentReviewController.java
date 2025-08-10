@@ -66,6 +66,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 /**
  * 文档审核场景控制
@@ -324,10 +325,16 @@ public class DocumentReviewController extends SuperController {
 
         DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId()) ;
 
+        // 如果选择的审核规则为空，则提示用户选择审核规则
+        if(CollectionUtils.isEmpty(dto.getRuleIds())){
+            return AjaxResult.error("请选择审核规则");
+        }
+
         if(ReviewRuleGenStatusEnums.GENERATING.getCode().equals(taskEntity.getResultGenStatus())){
             return AjaxResult.error("任务正在生成中，请稍后再试");
         }
 
+        taskEntity.setReviewRules(dto.getRuleIds().stream().map(String::valueOf).collect(Collectors.joining(",")));
         taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.GENERATING.getCode()) ;
         docReviewTaskService.updateById(taskEntity);
 
