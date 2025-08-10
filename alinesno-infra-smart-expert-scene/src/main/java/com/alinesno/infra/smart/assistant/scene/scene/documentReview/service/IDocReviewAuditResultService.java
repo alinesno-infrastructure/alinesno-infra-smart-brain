@@ -24,11 +24,13 @@ public interface IDocReviewAuditResultService extends IBaseService<DocReviewAudi
 
     /**
      * 根据规则ID和场景ID获取审核结果
+     *
      * @param ruleId
      * @param sceneId
+     * @param taskId
      * @return
      */
-    List<DocReviewAuditResultEntity> getAuditResultByRuleId(long ruleId, long sceneId);
+    List<DocReviewAuditResultEntity> getAuditResultByRuleId(long ruleId, long sceneId, long taskId);
 
     /**
      * 通过场景id标识获取到所有的审核结果
