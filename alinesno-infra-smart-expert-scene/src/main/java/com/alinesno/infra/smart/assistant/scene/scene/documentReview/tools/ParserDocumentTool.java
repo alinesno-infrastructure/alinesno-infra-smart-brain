@@ -3,16 +3,20 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools;
 import cn.hutool.core.io.FileUtil;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.document.parser.PdfBoxDocumentParser;
+import com.alinesno.infra.common.facade.response.AjaxResult;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -34,6 +38,9 @@ public class ParserDocumentTool {
     @Autowired
     private CloudStorageConsumer storageConsumer;
 
+    @Autowired
+    private SmartDocumentConsumer smartDocumentConsumer ;
+
     // 定义每个拆分块的最大字符数
     private static final int MAX_CHUNK_SIZE = 5000;
 
@@ -52,7 +59,15 @@ public class ParserDocumentTool {
 
         log.debug("previewUrl= {}", previewUrl);
 
-        byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
+        // 直接下载文件内容
+        byte[] fileBytes = storageConsumer.download(taskEntity.getDocumentId(), null);
+        if (fileBytes == null || fileBytes.length == 0) {
+            throw new RpcServiceRuntimeException("文件下载失败");
+        }
+
+        // 创建临时文件
+        File tempFile = File.createTempFile("temp-", ".docx");
+        Files.write(tempFile.toPath(), fileBytes);
 
         try (InputStream inputStream = new URL(previewUrl).openStream()) {
             fileBytes = IOUtils.toByteArray(inputStream);
@@ -66,26 +81,12 @@ public class ParserDocumentTool {
         File file = File.createTempFile("temp-file", "." + fileType);
         Files.write(file.toPath(), fileBytes);
 
-        String content = getString(fileType, file);
-
+        String content = smartDocumentConsumer.convertMarkdown(file) ;
         splitContent(content, documentInfoBeans);
+
+        FileUtils.delete(tempFile);
+
         return documentInfoBeans;
-    }
-
-    private static String getString(String fileType, File file) throws FileNotFoundException {
-        String content = "" ;
-        if ("pdf".equals(fileType)) {
-            // PDF 文件处理逻辑
-            FileInputStream stream = new FileInputStream(file);
-            PdfBoxDocumentParser parser = new PdfBoxDocumentParser();
-            Document document = parser.parse(stream);
-
-             content = document.getContent();
-        }else if("docx".equals(fileType) || "doc".equals(fileType)){
-            //TODO 加载包含目录的Word文档
-
-        }
-        return content;
     }
 
     /**
@@ -101,10 +102,7 @@ public class ParserDocumentTool {
             while (endIndex > startIndex && content.charAt(endIndex - 1) != '\n') {
                 endIndex--;
             }
-            if (endIndex == startIndex) {
-                // 如果没有找到段落结束符，按最大字符数拆分
-                endIndex = Math.min(startIndex + MAX_CHUNK_SIZE, content.length());
-            }
+            // 如果没有找到段落结束符，按最大字符数拆分
             String chunk = content.substring(startIndex, endIndex);
             documentInfoBeans.add(new DocumentInfoBean(chunk));
             startIndex = endIndex;
