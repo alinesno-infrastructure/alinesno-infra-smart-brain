@@ -39,11 +39,23 @@
                 </div>
             </el-scrollbar>
             <div class="review-checklist-button-section">
-                <el-button type="primary" size="large" @click="submitAuditForm">
+
+                <el-button v-if="props.currentTaskInfo?.resultGenStatus != 'success'" type="primary" size="large" @click="submitAuditForm('check')">
                     <i class="fa-solid fa-rocket"></i> 发起文档审核 
                     <span style="font-weight:bold;" v-if="checkList.length > 0">  
                         （选择审核规则{{checkList.length}}条）
                     </span>
+                </el-button>
+            
+                <el-button v-if="props.currentTaskInfo?.resultGenStatus == 'success'" type="primary" size="large" @click="submitAuditForm('reCheck')">
+                    <i class="fa-solid fa-repeat"></i> 重新发起审核
+                    <span style="font-weight:bold;" v-if="checkList.length > 0">  
+                        （选择审核规则{{checkList.length}}条）
+                    </span>
+                </el-button>
+
+                <el-button :disabled="props.currentTaskInfo?.resultGenStatus != 'success'" type="success" size="large" @click="showResult()">
+                    <i class="fa-brands fa-phoenix-framework"></i> 查看审核结果
                 </el-button>
             </div>
         </div>
@@ -51,8 +63,7 @@
 </template>
 
 <script setup>
-import { 
-    getScene, 
+import {  
     genAuditResult 
 } from '@/api/base/im/scene/documentReview';
 
@@ -60,7 +71,22 @@ import { useRoute } from 'vue-router';
 import { ElLoading, ElMessage } from 'element-plus';
 import { ref, onMounted } from 'vue';
 
-const emit = defineEmits(['handleStepClick' , 'genSingleChapterContent'])
+const emit = defineEmits([
+    'handleStepClick', 
+    'genSingleChapterContent', 
+    'closeGeneratorStatus',
+    'generatorStatus'])
+  
+const props = defineProps({
+  currentSceneInfo: {
+    type: Object, 
+    required: false 
+  },
+  currentTaskInfo: {
+    type: Object, 
+    required: false 
+  }
+})    
 
 const streamLoading = ref(null);
 const route = useRoute();
@@ -70,9 +96,14 @@ const sceneId = ref(route.query.sceneId);
 const taskId = ref(route.query.taskId);
 const channelStreamId = ref(route.query.channelStreamId);
 const auditId = ref(null)
+const currentTaskInfo = ref(null);
 
 const contractReviewList = ref([]);
 const checkList = ref([]);
+
+// 定义轮询相关变量
+const pollingInterval = ref(null); // 轮询定时器引用
+const pollingIntervalTime = 10000; // 轮询间隔时间设为10秒
 
 const selectAll = () => { 
   checkList.value = contractReviewList.value.map(item => item.id);
@@ -82,23 +113,7 @@ const selectAll = () => {
 const cancelSelection = () => { 
   checkList.value = [];
 };
-
-const handleGetScene = () => {
-    getScene(sceneId.value , taskId.value).then(res => {
-        currentSceneInfo.value = res.data; 
-        contractReviewList.value = res.data.reviewListDtos || [] ;
-
-        if(currentSceneInfo.value.reviewListOption === 'aigen'){
-            auditId.value = 0 ; 
-        }else if(currentSceneInfo.value.reviewListOption === 'dataset'){
-            auditId.value = currentSceneInfo.value.auditId ;
-        }
-
-        // 将所有选项的 ruleName 赋值给 checkList 实现全选
-        // checkList.value = contractReviewList.value.map(item => item.id);
-    });
-};
-
+ 
 const submitAuditForm = async () => {
 
     if(checkList.value.length == 0){
@@ -109,72 +124,53 @@ const submitAuditForm = async () => {
     // 获取所有选择的id
     const selectedIds = checkList.value;
     const totalCount = selectedIds.length;
-
-    // 开始生成
-    streamLoading.value = ElLoading.service({
-        lock: true,
-        background: 'rgba(255, 255, 255, 0.4)',
-        customClass: 'custom-loading'
-    });
-
-    emit('genSingleChapterContent', currentSceneInfo.value.logicReviewerEngineer);
-
-    // 遍历选择的id列表，依次调用genAuditResult方法
-    for (let index = 0; index < selectedIds.length; index++) {
-        const id = selectedIds[index];
-        const ruleName = contractReviewList.value.find(item => item.id === id).ruleName;
-        console.log('ruleName = ' + ruleName);
-
-        const currentCount = index + 1;
-        const remainingCount = totalCount - currentCount;
-        const text = `正在进行[${ruleName}]检查，当前是第${currentCount}条，还剩${remainingCount}条`;
-        streamLoading.value.setText(text);
-
+  
         const data = {
             sceneId: sceneId.value,
             channelStreamId: channelStreamId.value,
             taskId: taskId.value,
-            ruleId: id,
+            ruleIds: selectedIds,
             auditId: auditId.value,
-            roleId: currentSceneInfo.value.logicReviewerEngineer
+            roleId: props.currentSceneInfo.logicReviewerEngineer
         };
 
         try {
             const res = await genAuditResult(data);
+            if(res.code != 200){
+                ElMessage.error(res.msg);
+                return ;
+            }
+
+            emit('genSingleChapterContent', props.currentSceneInfo.logicReviewerEngineer);
+            emit('generatorStatus' , '正在进行检查中.'); 
+
             console.log('res = ' + res);
         } catch (error) {
-            console.error(`处理规则 ${ruleName} (ID: ${id}) 时出错:`, error);
-            // 可以选择继续处理下一个，或者根据错误类型决定是否继续
-            // 如果需要特定错误才忽略，可以在这里添加条件判断
-            continue;
+            console.error(`处理规则时出错:`, error); 
         }
-    }
 
-    streamLoading.value.close();
-
-    emit('handleStepClick', 3);
 };
-
-const setCurrentTaskInfo = (info) => {
-    currentSceneInfo.value = info; 
-        contractReviewList.value = info.reviewListDtos || [] ;
-
-        if(currentSceneInfo.value.reviewListOption === 'aigen'){
-            auditId.value = 0 ; 
-        }else if(currentSceneInfo.value.reviewListOption === 'dataset'){
-            auditId.value = currentSceneInfo.value.auditId ;
-        }
+ 
+const showResult = () => {
+    emit('handleStepClick', 3);
 }
 
-onMounted(() => {
-    handleGetScene();
-});
+watch(
+  () => props.currentSceneInfo,
+  (newValue, oldValue) => { 
+    if (newValue) {  
+      contractReviewList.value = newValue.reviewListDtos || [] ;
 
-defineExpose({
-  setCurrentTaskInfo,
-  handleGetScene
-})
-
+      if(newValue.reviewListOption === 'aigen'){
+        auditId.value = 0 ; 
+      }else if(newValue.reviewListOption === 'dataset'){
+        auditId.value = newValue.auditId ;
+      }
+    }
+  },
+  { deep: true, immediate: true }
+);
+ 
 </script>
 
 <style lang="scss" scoped>
@@ -263,7 +259,7 @@ margin-bottom: 15px;
 }
 
 .review-checklist-button-section .el-button {
-    width: 100%;
+    width: 49%;
 }
 
 .check-actions {
