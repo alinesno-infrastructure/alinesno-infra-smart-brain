@@ -2,9 +2,8 @@
     <div class="review-result-container">
         <div style="display: flex;flex-direction: row;justify-content: space-between;">
             <div>
-                <el-button type="primary" text bg @click="handleGenDocxReport">
-                    <i class="fa-solid fa-download"></i> &nbsp; 导出审核报告
-                </el-button>
+                <ReviewResultExpertButton :currentTaskInfo="props.currentTaskInfo" />
+                &nbsp;
                 <el-button type="primary" :loading="getMarkLoading" text bg @click="handleGenMarkDocxReport">
                     <i class="fa-solid fa-file-word"></i> &nbsp; 导出标注文档
                 </el-button>
@@ -14,8 +13,7 @@
                                     <el-checkbox
                                         v-for="item in availableCheckboxOptions"
                                         :key="item.value"
-                                        :label="item.value"
-                                    >
+                                        :label="item.value" >
                                         {{ item.label }}
                                     </el-checkbox>
                                 </el-checkbox-group>
@@ -31,7 +29,7 @@
                 </div>
  
                 <div v-if="checkResultList.length > 0">
-                    <el-scrollbar class="scrollable-area" style="height: calc(100vh - 210px);padding-right:0px">
+                    <el-scrollbar class="scrollable-area">
                         <el-collapse v-model="activeNames" accordion>
                             <el-collapse-item
                                 v-for="(item, index) in filteredResults"
@@ -74,8 +72,11 @@
                                                 <p>{{ result.suggestedContent }}</p>
                                             </div>
                                             <div class="action-buttons">
-                                                <el-button type="primary" text bg size="small" @click.stop="handlePointTo(result)">
+                                                <el-button type="primary" size="small" @click.stop="handlePointTo(result)">
                                                     <i class="fa-solid fa-hand-pointer"></i>&nbsp;定位
+                                                </el-button> 
+                                                <el-button type="danger" size="small" @click.stop="handlePointToReplace(result)">
+                                                    <i class="fa-brands fa-pinterest-p"></i>&nbsp;替换
                                                 </el-button>
                                             </div>
                                         </div>
@@ -87,32 +88,29 @@
                             </el-collapse-item>
                         </el-collapse>
                     </el-scrollbar>
+
+                    <div class="review-checklist-button-section">
+
+                        <el-button style="width:100%" type="primary" size="large" @click="updateDocument">
+                            <i class="fa-solid fa-rocket"></i> 保存最新的文档
+                        </el-button>
+            
+                 
+                    </div>
+
                 </div>
             </div>
         </div>
 
-        <!-- 显示pdf文件 -->
-        <el-dialog v-model="showPdfDialog" :title="pdfTitle" width="1300px" :before-close="handleClosePdfDialog" :show-close="true">
-            <div class="document-wrapper" v-loading="loadingDocument">
-                <el-scrollbar class="scrollable-area" style="height: calc(70vh);margin-top:20px; padding-right:0px">
-                    <iframe
-                        :src="iframeUrl"
-                        style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
-                    </iframe>
-                </el-scrollbar>
-            </div>
-            <!-- 显示下载word文档按钮 -->
-            <div class="word-download-button">
-                <el-button type="primary" size="large" :loading="loadingDocument" @click="downloadWordDocument">
-                    <i class="el-icon-download"></i> 下载Word文档
-                </el-button>
-            </div>
-        </el-dialog>
+        
     </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick } from 'vue';
+
+import ReviewResultExpertButton from "./components/ReviewResultExpert.vue"
+
 import { useRoute } from 'vue-router';
 import { getCurrentInstance } from 'vue';
 import { saveAs } from 'file-saver'
@@ -130,6 +128,24 @@ import {
     getPreviewUrl
 } from '@/api/base/im/scene/documentReviewSceneInfo';
 
+const emit = defineEmits([
+    'handleStepClick', 
+    'searchAndReplace',
+    'genSingleChapterContent', 
+    'closeGeneratorStatus',
+    'generatorStatus'])
+
+const props = defineProps({
+  currentSceneInfo: {
+    type: Object, 
+    required: false 
+  },
+  currentTaskInfo: {
+    type: Object, 
+    required: false 
+  }
+})  
+
 const { proxy } = getCurrentInstance();
 const route = useRoute();
 const currentSceneInfo = ref(null);
@@ -139,10 +155,6 @@ const taskId = ref(route.query.taskId)
 const activeNames = ref([]); // 手风琴当前激活项
 const getMarkLoading = ref(false);
 
-const showPdfDialog = ref(false);
-const pdfTitle = ref('')
-const iframeUrl = ref('')
-const loadingDocument = ref(false);
 const currentStoreId = ref(null)
 
 const checkboxOptions = [
@@ -220,30 +232,6 @@ const handleGetScene = async () => {
 };
 
 
-
-// 导出审核报告
-const handleGenDocxReport = () => {
-    pdfTitle.value = '审核报告预览'
-    showPdfDialog.value = true;
-    loadingDocument.value = true;
-
-    genDocxReport(sceneId.value, taskId.value).then(res => {
-        const storegeId = res.data;
-        currentStoreId.value = storegeId;
-
-        nextTick(async () => {
-            try {
-                const response = await getPreviewReportDocx(storegeId, taskId.value);
-                iframeUrl.value = window.URL.createObjectURL(response);
-                loadingDocument.value = false;
-            } catch (error) {
-                console.error('Error:', error);
-                loadingDocument.value = false;
-            }
-        })
-    })
-}
-
 const downloadWordDocument = () => {
     getPreviewUrl(currentStoreId.value).then(res => {
         window.open(res.data);
@@ -267,10 +255,15 @@ const handleGenMarkDocxReport = () => {
     }
 }
 
-const handlePointTo = (item) => {
-    // 实现定位功能
-    console.log('定位到:', item);
+const handlePointTo = (item) => { 
+    console.log('定位到:', item); 
+    emit("searchAndReplace" , item.originalContent);
 }
+
+const handlePointToReplace = (item) => { 
+    console.log('定位到:', item); 
+    emit("searchAndReplace" , item.originalContent , item.suggestedContent);
+} 
 
 onMounted(() => {
     handleGetScene();
@@ -351,11 +344,6 @@ onMounted(() => {
     }
 }
 
-.word-download-button {
-    margin-top: 20px;
-    margin-bottom: 20px;
-    text-align: right;
-}
 
 // 风险等级样式
 .item-alert-high {
@@ -380,5 +368,17 @@ onMounted(() => {
     :deep(.el-collapse-item__header) {
         border-left: 3px solid #67c23a;
     }
+}
+
+.review-checklist-button-section{
+    margin-top: 20px;
+}
+
+.scrollable-area{
+    height: calc(-260px + 100vh);
+    padding-right: 0px;
+    border-bottom: 1px solid rgb(230, 230, 230);
+    border-top: 1px solid rgb(230, 230, 230);
+    border-radius: 5px;
 }
 </style>
