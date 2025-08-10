@@ -3,6 +3,7 @@
         <div class="review-checklist-header">
             审查清单：智能生成
         </div>
+ 
         <div class="review-checklist-rule-section">
             <div class="review-checklist-rule-title">
                 全部规则({{ contractReviewList.length }})
@@ -165,6 +166,11 @@ watch(
         auditId.value = 0 ; 
       }else if(newValue.reviewListOption === 'dataset'){
         auditId.value = newValue.auditId ;
+      }
+
+      // 如果当前任务有reviewRuleList，则默认选中这些规则
+      if (props.currentTaskInfo?.reviewRuleList?.length > 0) {
+        checkList.value = props.currentTaskInfo.reviewRuleList;
       }
     }
   },
