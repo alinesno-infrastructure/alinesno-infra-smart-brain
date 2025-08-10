@@ -185,21 +185,7 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
 
         DocReviewSceneEntity longTextSceneEntity = service.getBySceneId(sceneId , query) ;
         String markdownContent = service.genMarkdownReport(sceneId , query , longTextSceneEntity.getId() , taskId) ;
-        String filename = IdUtil.fastSimpleUUID() ;
-
-        log.debug("markdownContent = {}", markdownContent);
-        Assert.notNull(markdownContent, "markdownContent为空") ;
-
-        String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
-        Assert.notNull(filePath, "文件路径为空") ;
-
-        R<String> r = storageConsumer.upload(new File(filePath)) ;
-        String storageId = r.getData() ;
-
-        // 删除文件
-        FileUtil.del(filePath);
-
-        return AjaxResult.success("操作成功" , storageId);
+        return AjaxResult.success("操作成功" , markdownContent);
     }
 
     /**
@@ -213,17 +199,17 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
         return AjaxResult.success("操作成功" , previewUrl);
     }
 
-    /**
-     * 获取预览文件
-     * @param storageId
-     * @return
-     */
-    @DataPermissionQuery
-    @GetMapping("/getPreviewReportDocx")
-    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId , Long taskId) {
-        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl , taskId);
-    }
+//    /**
+//     * 获取预览文件
+//     * @param storageId
+//     * @return
+//     */
+//    @DataPermissionQuery
+//    @GetMapping("/getPreviewReportDocx")
+//    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId , Long taskId) {
+//        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+//        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl , taskId);
+//    }
 
     @Override
     public IDocReviewSceneService getFeign() {
