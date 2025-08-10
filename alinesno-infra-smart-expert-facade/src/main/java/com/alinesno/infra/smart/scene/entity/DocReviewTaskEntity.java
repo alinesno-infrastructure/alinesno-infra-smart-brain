@@ -82,6 +82,10 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.LONGTEXT , comment = "审核结果")
     private String reviewResult;
 
+    @TableField("review_rules")
+    @Column(type = MySqlTypeConstant.TEXT, comment = "选择审核的规则ID列表,以逗号做分隔")
+    private String reviewRules ;
+
     // 新增字段：合同概览
     @TableField("contract_overview")
     @Column(type = MySqlTypeConstant.TEXT, comment = "合同概览")
