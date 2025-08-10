@@ -29,7 +29,7 @@
                       <el-button type="primary" text bg size="large" @click="handleGenDocxReport" icon="Plus">返回审核</el-button>
                     </el-empty>
                 </div>
-
+ 
                 <div v-if="checkResultList.length > 0">
                     <el-scrollbar class="scrollable-area" style="height: calc(100vh - 210px);padding-right:0px">
                         <el-collapse v-model="activeNames" accordion>
@@ -166,9 +166,9 @@ const availableCheckboxOptions = computed(() => {
 });
 
 // 计算过滤后的结果
-const filteredResults = computed(() => {
+const filteredResults = computed(() => { 
     return checkResultList.value.filter(item =>
-        checkList.value.includes(item.riskLevel) && item.auditResultCount > 0
+       checkList.value.includes(item.riskLevel) && item.auditResultCount > 0
     );
 });
 
@@ -202,7 +202,8 @@ const handleGetScene = async () => {
 
         // 为每个规则项加载审计结果
         for (const item of checkResultList.value) {
-            const resultRes = await getAuditResultByRuleId(item.id, sceneId.value);
+            console.log('taskId.id = ' + taskId.id)
+            const resultRes = await getAuditResultByRuleId(item.id, sceneId.value , taskId.value);
             item.auditResults = resultRes.data.map(r => ({
                 ...r,
                 showDetails: false
