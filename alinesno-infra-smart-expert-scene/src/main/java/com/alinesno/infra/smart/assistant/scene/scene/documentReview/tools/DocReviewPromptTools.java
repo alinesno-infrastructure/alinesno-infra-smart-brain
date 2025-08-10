@@ -30,7 +30,7 @@ public class DocReviewPromptTools {
                     {
                         "id": 0 ,
                         "modificationReason": "为什么修改原因",
-                        "originalContent": "原内容，需要跟原内容一模一样，方便查找",
+                        "originalContent": "原内容，需要跟原内容一模一样，不要添加其它任何说明，只需要输出要修改的原内容，便于文档定位",
                         "riskLevel": "风险高中低,使用high/medium/low表示",
                         "suggestedContent": "建议修改的内容"
                     }
