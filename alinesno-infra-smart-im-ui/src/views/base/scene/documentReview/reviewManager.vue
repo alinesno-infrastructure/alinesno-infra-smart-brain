@@ -28,30 +28,43 @@
               <div class="channel-container-panel" style="margin-top:20px">
                 <el-row>
                   <el-col :span="6" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
-                    <div class="exam-pager-card-container" @click="enterExamPager(item)">
+                    <div class="exam-pager-card-container" >
                       <article class="exam-pager-card">
                         <div class="exam-pager-card-content">
-                          <div class="scene-header">
+                          <div class="scene-header" @click="enterExamPager(item)">
                             <span class="scene-title">{{ item.taskName }}</span>
+                            <div class="scene-datetime">
+                             <i class="fa-solid fa-calendar-check" /> {{ item.addTime }} 
+                            </div>
                           </div>
-
+                        
                           <div class="scene-description">
                             {{ item.taskDescription }}
                           </div>
                           <div class="semi-divider semi-divider-horizontal"></div>
+
+                          
+
                           <div class="scene-footer">
+
                             <div class="scene-price">
-                              <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" />
-                                私有</el-tag>
-                              <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
-                                  class="fa-solid fa-globe" /> 公开</el-tag>
-                              <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
-                                组织</el-tag>
-                            </div>
+                              <el-button 
+                                text 
+                                bg 
+                                :type="getStatusConfig(item).type"
+                              >
+                                <i :class="`fa-solid ${getStatusConfig(item).icon}`" /> 
+                                {{ typeof getStatusConfig(item).text === 'function' 
+                                   ? getStatusConfig(item).text(item) 
+                                   : getStatusConfig(item).text 
+                                }}
+                              </el-button>
+                            </div> 
+
                             <div class="scene-tag">
                               <div class="scene-stats">
-                                <span>时间</span>
-                                <span>{{ item.updateTime? item.updateTime : item.addTime }}</span>
+                                <span>用时</span>
+                                <span>{{ taskUseTime(item.taskStartTime , item.taskEndTime) }}</span>
                               </div>
 
                               <div class="article-delete-btn" @click.stop>
@@ -126,6 +139,26 @@ function enterExamPager(item) {
 
 }
 
+// 在script setup部分添加状态配置 
+const statusConfig = [ 
+  {condition: (item) => item.reviewGenStatus === 'not_generated' || item.reviewGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核清单"},
+  {condition: (item) => item.reviewGenStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "审核清单生成中"},
+  {condition: (item) => item.reviewGenStatus === 'success', type: "success", icon: "fa-check-circle", text: "审核清单生成"},
+  {condition: (item) => item.reviewGenStatus === 'failed_no_content', type: "danger", icon: "fa-circle-xmark", text: "生成失败(无内容)"},
+  {condition: (item) => item.reviewGenStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "审核清单生成失败"},
+  {condition: (item) => item.reviewGenStatus === 'timeout', type: "danger", icon: "fa-clock", text: "生成超时"},
+  {condition: (item) => item.resultGenStatus === 'not_generated' || item.resultGenStatus === null, type: "warning", icon: "fa-hourglass-start", text: "未生成审核结果"},
+  {condition: (item) => item.resultGenStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "审核结果生成中"},
+  {condition: (item) => item.documentParseStatus === 'not_generated' || item.documentParseStatus === null, type: "warning", icon: "fa-hourglass-start", text: "文档未解析"},
+  {condition: (item) => item.documentParseStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: "文档解析中"},
+  {condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态"},
+]
+
+// 查找匹配的状态配置
+const getStatusConfig = (item) => {
+  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
+}
+
 const handleDelete = (item) => {
   deleteById(item.id).then(res => {
     handlePagerListByPage()
@@ -137,7 +170,7 @@ function handlePagerListByPage() {
 
   const data = {
     page: 1,
-    limit: 100
+    limit: 30
   }
 
   pagerListByPage(data , sceneId.value).then(res => {
@@ -305,6 +338,15 @@ onMounted(() => {
       -moz-line-clamp: 2;
       line-clamp: 2;
     }
+
+    .scene-datetime {
+      font-size: 13px;
+      border-radius: 5px;
+      background: #fafafa;
+      opacity: 0.7;
+      margin-top: 5px;
+      padding: 5px;
+  }
 
     .scene-footer {
       margin-top: 4px;
