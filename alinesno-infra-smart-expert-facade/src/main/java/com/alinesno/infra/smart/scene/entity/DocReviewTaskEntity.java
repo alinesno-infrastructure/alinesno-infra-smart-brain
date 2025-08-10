@@ -102,20 +102,25 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.TEXT, comment = "合同元数据，以KEY-VALUE格式保存")
     private String contractMetadata;
 
+    // 审核当前步骤信息
+    @TableField("current_step_info")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 128, comment = "审核当前步骤信息")
+    private String currentStepInfo;
+
     // >>>>>>>>>>>>>>>>>>>>>>>>---------------- 状态管理_start -------------------------
 
     @TableField
-    @Column(name = "review_gen_status", type = MySqlTypeConstant.VARCHAR, length = 16, comment = "生成状态审核清单生成状态")
+    @Column(name = "review_gen_status", type = MySqlTypeConstant.VARCHAR, length = 36, comment = "生成状态审核清单生成状态")
     private String reviewGenStatus;
 
     // 审核结果生成状态
     @TableField("result_gen_status")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "审核结果生成状态")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 36, comment = "审核结果生成状态")
     private String resultGenStatus ;
 
     // 文档内容解析状态
     @TableField("document_parse_status")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 16, comment = "文档内容解析状态")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 36, comment = "文档内容解析状态")
     private String documentParseStatus ;
     // >>>>>>>>>>>>>>>>>>>>>>>>---------------- 状态管理_end -------------------------
 
