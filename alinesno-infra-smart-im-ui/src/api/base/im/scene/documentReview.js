@@ -23,9 +23,9 @@ export function downloadMarkDocx(sceneId , taskId) {
 }
 
 // 通过规则ID获取审核结果
-export function getAuditResultByRuleId(ruleId , sceneId) {
+export function getAuditResultByRuleId(ruleId , sceneId, taskId) {
   return request({
-    url: managerUrl.getAuditResultByRuleId + '?ruleId=' + parseStrEmpty(ruleId) + '&sceneId=' + parseStrEmpty(sceneId),
+    url: managerUrl.getAuditResultByRuleId + '?ruleId=' + parseStrEmpty(ruleId) + '&sceneId=' + parseStrEmpty(sceneId) + '&taskId=' + parseStrEmpty(taskId),
     method: 'get'
   })
 }
