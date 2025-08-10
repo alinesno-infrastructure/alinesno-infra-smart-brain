@@ -218,7 +218,6 @@ public class DocReviewSceneServiceImpl extends IBaseServiceImpl<DocReviewSceneEn
     @Override
     public String genMarkdownReport(long sceneId, PermissionQuery query, Long docReviewSceneId, long taskId) {
 
-//        DocReviewSceneEntity docReviewSceneEntity = getById(docReviewSceneId) ;
         DocReviewTaskEntity taskEntity = SpringUtils.getBean(IDocReviewTaskService.class).getById(taskId);
 
         // 获取到所有的审核结果
