@@ -8,6 +8,9 @@
 import { computed, reactive, watch, ref, nextTick, onMounted } from "vue"; //全屏
 import { uploadFile } from "@/api/base/im/scene/contentFormatterDocument";
 
+import { Pattern as PolarisPattern } from '@ephox/polaris';
+ 
+
 import tinymce from "tinymce/tinymce";
 // import "tinymce/skins/content/default/content.css";
 import Editor from "@tinymce/tinymce-vue";
@@ -65,14 +68,14 @@ const props = defineProps({
   },
   plugins: {
     type: [String, Array],
-    default: "importcss autoresize searchreplace autolink directionality code visualblocks visualchars fullscreen image link codesample table charmap nonbreaking anchor insertdatetime advlist lists wordcount charmap quickbars emoticons accordion",
+    default: "importcss autoresize searchreplace autolink directionality code visualblocks visualchars fullscreen image link codesample table charmap nonbreaking anchor insertdatetime advlist lists wordcount charmap quickbars emoticons accordion ",
   },
   knwlgId: {
     type: String,
   },
   toolbar: {
     type: [String, Array, Boolean],
-    default: "undo redo | accordion accordionremove bold italic underline strikethrough ltr rtl indent",
+    default: "undo redo | accordion accordionremove bold italic underline strikethrough ltr rtl indent searchreplace",
   },
   readonly: {
     type: Boolean,
@@ -421,6 +424,19 @@ const showAnnotationPopup = (editor, container, annotation, marker) => {
     container.style.display = 'none';
   });
 };
+ 
+// 搜索和替换
+const searchAndReplace = (searchText, replaceText = '') => {
+  const editor = tinymce.get(tinymceId.value);
+  if (editor) {  
+    if(replaceText){
+      editor.plugins.searchreplace.find(searchText) ;
+      editor.plugins.searchreplace.replace(replaceText)
+    }else{
+      editor.plugins.searchreplace.find(searchText) ;
+    } 
+  }
+};
 
 const findTextRanges = (editor, text) => {
   const body = editor.getBody();
@@ -428,7 +444,7 @@ const findTextRanges = (editor, text) => {
   const walker = document.createTreeWalker(body, NodeFilter.SHOW_TEXT);
   
   // 标准化搜索文本（合并连续空格）
-  const searchText = text.replace(/\s+/g, ' ').trim();
+  const searchText = text ; // escapeSearchText(text, true).trim();
   const regex = new RegExp(escapeRegExp(searchText), 'gi');
 
   let node;
@@ -650,6 +666,7 @@ defineExpose({
   handleSetContent,
   handleGetContent,
   updateMargins,
+  searchAndReplace
 });
 </script>
 
