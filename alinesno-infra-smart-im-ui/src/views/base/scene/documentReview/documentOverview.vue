@@ -58,31 +58,33 @@
         </div>
 
         </el-scrollbar>
-
-        <div class="gen-overview-container" style="margin-top: 10px;"> 
-            <el-button style="width:100%" 
-                v-if="ruleForm.reviewListOption == 'aigen' && reviewListDtos.length == 0" 
+ 
+        <div class="gen-overview-container review-checklist-button-section" style="margin-top: 10px;"> 
+            <el-button 
+                v-if="ruleForm.reviewListOption == 'aigen'" 
+                :disabled="props.currentTaskInfo?.reviewGenStatus == 'success'" 
                 type="primary" 
                 size="large" 
                 @click="submitForm">
                 <i class="fa-solid fa-robot"></i> &nbsp; AI生成审查清单
             </el-button>
-
-            <el-button style="width:100%" 
-                v-if="ruleForm.reviewListOption == 'aigen' && reviewListDtos.length > 0" 
-                type="primary" 
-                size="large" 
-                @click="enterReviewList">
-                <i class="fa-solid fa-robot"></i> &nbsp; 查看AI生成的审查清单
-            </el-button>
-
-            <el-button style="width:100%" 
+ 
+            <el-button 
                 v-if="ruleForm.reviewListOption == 'dataset'" 
                 type="primary" 
                 size="large" 
                 @click="submitForm">
                 <i class="fa-solid fa-paper-plane"></i> &nbsp; 查看审查清单
             </el-button>
+
+            <el-button 
+                :disabled="props.currentTaskInfo?.reviewGenStatus != 'success'" 
+                type="success" 
+                size="large" 
+                @click="enterReviewList">
+                <i class="fa-solid fa-list-check"></i> &nbsp; 查看审核规则清单
+            </el-button>
+
         </div>
 
     </div>
@@ -125,9 +127,16 @@ const emit = defineEmits([
     'closeGeneratorStatus',
     'generatorStatus'])
 
-// 定义轮询相关变量
-const pollingInterval = ref(null); // 轮询定时器引用
-const pollingIntervalTime = 10000; // 轮询间隔时间设为10秒
+const props = defineProps({
+  currentSceneInfo: {
+    type: Object, 
+    required: false 
+  },
+  currentTaskInfo: {
+    type: Object, 
+    required: false 
+  }
+})   
 
 // 定义表单数据
 const ruleForm = reactive({
@@ -198,7 +207,7 @@ const submitForm = async () => {
             if(ruleForm.reviewListOption == 'dataset'){
 
                 ruleForm.sceneId = currentSceneInfo.value.id ;
-                ruleForm.taskId = taskId.value ; // currentSceneInfo.value.id ;
+                ruleForm.taskId = taskId.value ;  
                 ruleForm.channelStreamId = channelStreamId.value ;
 
                 genReviewListByDataset(ruleForm).then(res => {
@@ -207,28 +216,15 @@ const submitForm = async () => {
 
             }else if(ruleForm.reviewListOption == 'aigen'){
 
-                ruleForm.sceneId = currentSceneInfo.value.id ;
-                ruleForm.taskId = taskId.value ; // currentSceneInfo.value.id ;
+                ruleForm.sceneId = props.currentSceneInfo.id ;
+                ruleForm.taskId = taskId.value ;  
                 ruleForm.channelStreamId = channelStreamId.value ;
- 
-                if(ruleForm.reviewListOption == 'aigen'){
-                    let text = '正在使用AI生成校验规则内容，请稍等.'; 
-                    emit('genSingleChapterContent', currentSceneInfo.value.analysisAgentEngineer) ; 
-                    emit('generatorStatus' , text);
-                }
-
+  
                 genReviewList(ruleForm).then(res => {
-                    console.log('res = ' + res.data);
-
-                    // 生成成功，开始轮询检查状态
-                    startPolling();
-
-                    // if(res.data != 'success'){
-                    //     ElMessage.warning("未生成审核清单.")
-                    //     return ;
-                    // }
-                    // emit('handleStepClick', 2);
-                    // generatingStatusRef.value.close();
+                    console.log('res = ' + res.data);  
+                    let text = '正在使用AI生成校验规则内容，请稍等.'; 
+                    emit('genSingleChapterContent', props.currentSceneInfo.analysisAgentEngineer) ; 
+                    emit('generatorStatus' , text);
                 })
             }
 
@@ -244,37 +240,6 @@ const resetForm = () => {
     if (!formEl) return;
     formEl.resetFields();
 };
-
-// 提取重复逻辑到一个单独的函数
-const fetchSceneData = async () => {
-  const res = await getScene(sceneId.value, taskId.value);
-  currentSceneInfo.value = res.data;
-  contractTypeList.value = res.data.contractTypes; 
-  reviewListDtos.value = res.data.reviewListDtos || [];
-  
-  if (currentSceneInfo.value) { 
-    if (currentSceneInfo.value.contractType) {
-      ruleForm.contractType = currentSceneInfo.value.contractType; 
-    } 
-    if (currentSceneInfo.value.reviewPosition) {
-      ruleForm.reviewPosition = currentSceneInfo.value.reviewPosition;
-    } 
-    if (currentSceneInfo.value.reviewListOption) {
-      ruleForm.reviewListOption = currentSceneInfo.value.reviewListOption;
-    } 
-    if (currentSceneInfo.value.auditId) {
-      ruleForm.auditId = currentSceneInfo.value.auditId;
-    } 
-    
-    handleReviewListOptionChange();
-  }
-  return res;
-};
-
-const handleGetScene = async () => {
-    await fetchSceneData();
-    startPolling();
-}
 
 const handleGetAuditList = () => {
     getAuditList(sceneId.value).then(res => {
@@ -300,60 +265,46 @@ const getValue = (item) => {
   return item[key];
 };
 
-// 获取审查任务详情，并检查AI生成状态
-const handleGetReviewTask = async() => {
-    try {
-        // 调用API获取任务详情
-        const res = await getReviewTask(taskId.value);
-        currentTaskInfo.value = res.data;
-        contractMetadataMap.value = res.data.contractMetadataMap || [];
-        
-        // 检查生成状态是否已完成
-        if (currentTaskInfo.value?.reviewGenStatus === 'success') {
-            stopPolling(); // 停止轮询
-            // emit('handleStepClick', 2); // 跳转到下一步   
-            emit('closeGeneratorStatus')
-            await fetchSceneData(); // 使用提取的函数
-        }else if(currentTaskInfo.value?.reviewGenStatus === 'generating'){ // 生成中
-            let text = '正在使用AI生成校验规则内容，请稍等.' ; //  + currentSceneInfo.value.analysisAgentEngineer; 
-            emit('genSingleChapterContent', currentSceneInfo.value.analysisAgentEngineer) ; 
-            emit('generatorStatus' , text);
-        }
-    } catch (error) {
-        console.error('获取审查任务出错:', error);
-        stopPolling(); // 出错时也停止轮询
+
+watch(
+  () => props.currentSceneInfo,
+  (newValue, oldValue) => { 
+    if (newValue) { 
+
+          contractTypeList.value = newValue.contractTypes; 
+          reviewListDtos.value = newValue.reviewListDtos || [];
+          
+          if (currentSceneInfo.value) { 
+            if (newValue.contractType) {
+              ruleForm.contractType = newValue.contractType; 
+            } 
+            if (newValue.reviewPosition) {
+              ruleForm.reviewPosition = newValue.reviewPosition;
+            } 
+            if (newValue.reviewListOption) {
+              ruleForm.reviewListOption = newValue.reviewListOption;
+            } 
+            if (newValue.auditId) {
+              ruleForm.auditId = newValue.auditId;
+            } 
+            
+            handleReviewListOptionChange();
+          }
     }
-};
+  },
+  { deep: true, immediate: true }
+);
 
-// 开始轮询函数
-const startPolling = () => {
-    // 先清除可能存在的旧定时器
-    stopPolling();
-    
-    // 设置新的定时器，每隔10秒检查一次状态
-    pollingInterval.value = setInterval(handleGetReviewTask, pollingIntervalTime);
-    
-    // 立即执行一次检查，不用等待第一个间隔
-    handleGetReviewTask();
-};
-
-// 停止轮询函数
-const stopPolling = () => {
-    if (pollingInterval.value) {
-        clearInterval(pollingInterval.value); // 清除定时器
-        pollingInterval.value = null; // 重置引用
+watch(
+  () => props.currentTaskInfo,
+  (newValue, oldValue) => {
+    console.log('currentTaskInfo changed:', newValue); 
+    if (newValue) {
+      contractMetadataMap.value = newValue.contractMetadataMap || []; 
     }
-};
-
-onMounted(() => {
-    handleGetScene(); 
-});
-
-// 组件卸载时清除定时器
-onUnmounted(() => {
-    stopPolling(); // 确保组件销毁时清理定时器
-});
-
+  },
+  { deep: true, immediate: true }
+);
  
 </script>
 
@@ -416,4 +367,8 @@ onUnmounted(() => {
     border-radius: 5px;
         }
     }
+
+    .review-checklist-button-section .el-button {
+    width: 49%;
+}
 </style>
