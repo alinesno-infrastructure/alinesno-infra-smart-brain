@@ -1,6 +1,6 @@
 <template>
   <div class="document-editor">
-    <TinyMCEEditor 
+    <TinyMCEEditor  
       :minHeight="editorHeight"  
       @setHtml="handleSetHtml"
       :annotations="annotations" 
@@ -19,58 +19,7 @@ const tinyMCEEditorRef = ref(null);
 const customEditorContent = ref('');
 const editorHeight = ref(20); // 初始化为0，将在mounted中计算
 
-const annotations = ref([
-  {
-    selectText: "集团旗下有现拥有广西",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "易涝点监控等功能于一体",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "立方米；环卫作业",
-    comment: "这是一个示例批这是一个示例批注这是一个示例批注这是一个示例批注这是一个示例批注这是一个示例批注注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "数据中台",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "36个供水加压站",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "发电量约5.77亿度/年",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "DeepSeeK模型",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "来水生产、污水处理、排水运维",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "一、南宁建宁",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  },
-  {
-    selectText: "（1）预测用水需求，爆管分析预警",
-    comment: "这是一个示例批注",
-    suggestion: "示例内容"
-  }
-]);
+const annotations = ref([]);
 
 // 计算编辑器高度
 const calculateEditorHeight = () => {
@@ -84,13 +33,19 @@ const handleSetHtml = (textContent, htmlContent) => {
 
 // 暴露 setContent 方法
 const setContent = (content) => { 
-  customEditorContent.value = content ;
+  customEditorContent.value = content ;  
+};
+
+// 在父组件中调用搜索替换方法
+const handleSearchReplace = (searchText , replaceText) => {
+  tinyMCEEditorRef.value?.searchAndReplace(searchText , replaceText);  
 };
 
 // 组件挂载时计算高度并添加resize监听
 onMounted(() => {
   calculateEditorHeight();
   window.addEventListener('resize', calculateEditorHeight);
+
 });
 
 // 组件卸载前移除resize监听
@@ -101,6 +56,7 @@ onBeforeUnmount(() => {
 // 暴露方法给父组件
 defineExpose({
   setContent,
+  handleSearchReplace
 });
 
 </script>
