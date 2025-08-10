@@ -312,3 +312,40 @@ export const handleCopyGenContent = async (item) => {
     ElMessage.error('复制失败，请稍后重试。');
   }
 };
+
+// 计算任务用时
+export const taskUseTime = (startTime, endTime) => {
+  if (!startTime || !endTime) {
+    return '--';
+  }
+  
+  // 将时间字符串转换为Date对象
+  const start = new Date(startTime);
+  const end = new Date(endTime);
+  
+  // 计算毫秒差
+  const diffMs = end - start;
+  
+  // 转换为秒数
+  const diffSec = Math.floor(diffMs / 1000);
+  
+  // 不足1分钟显示秒
+  if (diffSec < 60) {
+    return `${diffSec}秒`;
+  }
+  
+  // 计算分钟和秒
+  const minutes = Math.floor(diffSec / 60);
+  const seconds = diffSec % 60;
+  
+  // 不足1小时显示分和秒
+  if (minutes < 60) {
+    return `${minutes}分${seconds}秒`;
+  }
+  
+  // 计算小时、分钟和秒
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  return `${hours}时${remainingMinutes}分${seconds}秒`;
+}
