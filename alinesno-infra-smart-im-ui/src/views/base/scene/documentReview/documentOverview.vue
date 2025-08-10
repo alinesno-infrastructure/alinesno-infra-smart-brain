@@ -2,6 +2,7 @@
     <div >
 
         <el-scrollbar class="contract-review-container" style="height:calc(100vh - 190px)" >
+ 
         <div class="review-methods-container">
             <div class="review-methods-title">审查方式</div> 
             <div class="form-container">
@@ -94,6 +95,9 @@
 
 import { ref, reactive } from 'vue';
 import { ElLoading } from 'element-plus';
+
+import ReviewResultStaticPanel from "./components/ReviewResultStaticPanel.vue"
+
 import { getScene } from '@/api/base/im/scene/documentReview';
 
 
