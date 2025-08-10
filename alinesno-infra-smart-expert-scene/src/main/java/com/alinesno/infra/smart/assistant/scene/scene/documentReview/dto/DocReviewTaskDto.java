@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto;
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.base.BaseDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
@@ -12,9 +13,11 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 文档审核任务数据传输对象
@@ -48,26 +51,37 @@ public class DocReviewTaskDto extends BaseDto {
     private String resultGenStatus ;
     private String documentParseStatus ;
     private String currentStepInfo ;
+    private String reviewRules ;
+    private List<Long> reviewRuleList;
 
-    public static DocReviewTaskDto fromEntity(DocReviewTaskEntity entity){
+    public static DocReviewTaskDto fromEntity(DocReviewTaskEntity entity) {
         DocReviewTaskDto dto = new DocReviewTaskDto();
-        BeanUtil.copyProperties(entity , dto);
+        BeanUtil.copyProperties(entity, dto);
 
         if(entity.getContractMetadata() != null) {
-            // Convert JSON string to List<Map>
             try {
                 List<Map<String, String>> metadataMap = JSON.parseObject(
                         entity.getContractMetadata(),
-                        new TypeReference<List<Map<String, String>>>() {}
+                        new TypeReference<>() {}
                 );
                 dto.setContractMetadataMap(metadataMap);
             } catch (Exception e) {
-                // Handle parsing exception appropriately
                 log.error("Error parsing contract metadata", e);
             }
         }
 
-        return dto ;
+        if(StringUtils.isNotEmpty(entity.getReviewRules())) {
+            // 以逗号作为分隔符，获取所有的规则ID
+            String[] ruleIds = entity.getReviewRules().split(",");
+            List<Long> ruleIdList = Arrays.stream(ruleIds)
+                    .map(String::trim)  // 去除前后空格
+                    .filter(StringUtils::isNotEmpty)  // 过滤空字符串
+                    .map(Long::valueOf)  // 转换为Long类型
+                    .collect(Collectors.toList());
+            dto.setReviewRuleList(ruleIdList);
+        }
+
+        return dto;
     }
 
 }
