@@ -35,6 +35,7 @@ import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -159,8 +160,9 @@ public class DocumentReviewController extends SuperController {
     @GetMapping("/getAuditResultByRuleId")
     public AjaxResult getAuditResultByRuleId(@RequestParam("ruleId") long ruleId ,
                                              @RequestParam("sceneId") long sceneId,
+                                             @RequestParam("taskId") long taskId,
                                              PermissionQuery query) {
-        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getAuditResultByRuleId(ruleId, sceneId);
+        List<DocReviewAuditResultEntity> auditResultList = auditResultService.getAuditResultByRuleId(ruleId, sceneId , taskId);
         return AjaxResult.success("操作成功." , auditResultList)  ;
     }
 
@@ -184,9 +186,6 @@ public class DocumentReviewController extends SuperController {
         Assert.isTrue(!isPdf, "当前文件不支持PDF批注.");
 
         log.debug("previewUrl= {}", previewUrl);
-
-//        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
-
         byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
 
         try (InputStream inputStream = new URL(previewUrl).openStream()) {
@@ -324,123 +323,19 @@ public class DocumentReviewController extends SuperController {
     public AjaxResult genAuditResult(@RequestBody @Validated GenAuditResultDto dto , PermissionQuery query){
 
         DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId()) ;
+
+        if(ReviewRuleGenStatusEnums.GENERATING.getCode().equals(taskEntity.getResultGenStatus())){
+            return AjaxResult.error("任务正在生成中，请稍后再试");
+        }
+
+        taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.GENERATING.getCode()) ;
+        docReviewTaskService.updateById(taskEntity);
+
         List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(taskEntity) ;
 
-        List<DocReviewAuditResultEntity> auditResultList = new ArrayList<>() ;
-
-        if(contentList == null){
-            return AjaxResult.error("解析文档内容失败.") ;
-        }
-
-        log.debug("contentList = {}" , contentList.size());
-        int count = 0 ;
-
-        // 如果是aigen处理的审核
-        if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.AIGEN.getValue())){
-
-            // 解析获取得到审核内容
-            List<DocReviewRulesEntity> rules = JSONArray.parseArray(taskEntity.getReviewList(), DocReviewRulesEntity.class) ;
-
-            for(DocumentInfoBean bean : contentList){
-                String contentPromptContent = bean.getContent() ;
-
-                // 从rules中找到
-                DocReviewRulesEntity rule = getRule(rules , dto.getRuleId()) ;
-                if(rule != null){
-                    generateTask(contentPromptContent , dto, query , rule , auditResultList);
-                }
-            }
-        }else if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())){
-            for(DocumentInfoBean bean : contentList){
-                String contentPromptContent = bean.getContent() ;
-                DocReviewRulesEntity rule = ruleService.getById(dto.getRuleId()) ;
-                generateTask(contentPromptContent , dto, query , rule , auditResultList);
-            }
-        }
-
-        if(!CollectionUtils.isEmpty(auditResultList)){
-
-            CopyOptions options = CopyOptions.create()
-                    .setIgnoreNullValue(true)  // 忽略源对象属性为空的情况
-                    .setIgnoreError(true);     // 忽略复制过程中出现的错误
-
-            for(DocReviewAuditResultEntity entity : auditResultList){
-                log.debug("entity = {}" , entity);
-
-                entity.setId(null);
-                entity.setAuditId(dto.getRuleId());
-                entity.setRuleId(dto.getRuleId());
-                entity.setSceneId(dto.getSceneId());
-                entity.setDocReviewSceneId(dto.getSceneId());
-                entity.setTaskId(taskEntity.getId());
-
-                BeanUtil.copyProperties(query , entity , options);
-            }
-            log.debug("文档解析完成，审核意见为:{}" , auditResultList.size());
-            auditResultService.saveAuditResult(auditResultList , dto);
-        }
+        docReviewListGeneratorService.startGenerateAuditList(taskEntity ,  dto , query , contentList) ;
 
         return AjaxResult.success() ;
-    }
-
-    /**
-     * 获取规则
-     * @param rules
-     * @param ruleId
-     * @return
-     */
-    private DocReviewRulesEntity getRule(List<DocReviewRulesEntity> rules, Long ruleId) {
-        for (DocReviewRulesEntity rule : rules) {
-            if (rule.getId().equals(ruleId)) {
-                return rule;
-            }
-        }
-        return null;
-    }
-
-    private void generateTask(String contentPromptContent ,
-                              GenAuditResultDto dto,
-                              PermissionQuery query,
-                              DocReviewRulesEntity rule ,
-                              List<DocReviewAuditResultEntity> auditResultList) {
-
-        MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-
-        Long roleId = dto.getRoleId() ;
-
-        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-        taskInfo.setRoleId(roleId);
-        taskInfo.setChannelId(dto.getSceneId());
-        taskInfo.setSceneId(dto.getSceneId());
-
-        String prompt = DocReviewPromptTools.buildReviewPrompt(
-                contentPromptContent ,
-                dto,
-                docReviewSceneService.getBySceneId(dto.getSceneId() , query) ,
-                rule ,
-                taskInfo) +
-                FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT ;
-
-        taskInfo.setText(prompt);
-
-        CompletableFuture<WorkflowExecutionDto> genContent  = industryRoleService.runRoleAgent(taskInfo) ;
-
-//        genContent.setGenContent(taskInfo.getFullContent());
-//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-//
-//        // 解析得到代码内容
-//        try{
-//            if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-//
-//                String codeContent = genContent.getCodeContent().get(0).getContent() ;
-//                List<DocReviewAuditResultEntity> dataObject = JSONArray.parseArray(codeContent , DocReviewAuditResultEntity.class) ;
-//
-//                log.debug("codeContent = {}", JSONUtil.toJsonPrettyStr(dataObject));
-//                auditResultList.addAll(dataObject);
-//            }
-//        }catch (Exception e){
-//            log.warn("解析代码块出错:{}", e.getMessage());
-//        }
     }
 
 }
