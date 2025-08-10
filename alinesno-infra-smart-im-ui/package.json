@@ -13,7 +13,7 @@
   "dependencies": {
     "@codemirror/lang-markdown": "6.3.0",
     "@codemirror/theme-one-dark": "6.1.2",
-    "@element-plus/icons-vue": "2.0.10",
+    "@element-plus/icons-vue": "2.0.10", 
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@tinymce/tinymce-vue": "^6.2.0",
     "@traptitech/markdown-it-katex": "^3.6.0",
