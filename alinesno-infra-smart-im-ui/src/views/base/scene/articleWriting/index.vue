@@ -1,13 +1,5 @@
 <template>
-  <div class="ppt-pager-container">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="ppt-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="ppt-pager-main">
+  <ArticleWriterContainer>
 
         <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
           ref="roleSelectPanelRef" />
@@ -101,26 +93,15 @@
 
         </div>
 
-      </el-main>
-    </el-container>
 
-    <!-- 运行抽屉 -->
-    <div class="aip-flow-drawer flow-control-panel">
-        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
-            :with-header="true">
-            <div style="margin-top: 0px;">
-                <RoleChatPanel ref="roleChatPanelRef" />
-            </div>
-        </el-drawer>
-    </div>
-
-  </div>
+  </ArticleWriterContainer>
 </template>
 
 <script setup>
 import { nextTick, ref } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
+import ArticleWriterContainer from "./articleWriterContainer"
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
 import ArticleTemplatePanel  from './articleTemplate'
