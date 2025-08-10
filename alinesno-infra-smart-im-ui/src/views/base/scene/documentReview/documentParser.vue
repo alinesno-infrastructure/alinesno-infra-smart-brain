@@ -56,7 +56,11 @@
                                         @generatorStatus="generatorStatus"
                                         @genSingleChapterContent="genSingleChapterContent" />
 
-                                    <ReviewResult v-if="currentActive == 3" @handleStepClick="handleStepClick"
+                                    <ReviewResult v-if="currentActive == 3" 
+                                        :currentSceneInfo="currentSceneInfo"
+                                        :currentTaskInfo="currentTaskInfo"
+                                        @handleStepClick="handleStepClick"
+                                        @searchAndReplace="searchAndReplace"
                                         @genSingleChapterContent="genSingleChapterContent" />
                                 </el-collapse-transition>
                             </div>
@@ -212,7 +216,10 @@ const closeGeneratorStatus = () => {
     generatingStatusRef.value?.close(); 
 }
 
-
+// 搜索和替换
+const searchAndReplace = (searchText , replaceText) => {
+    tinyMceEditorRef.value.handleSearchReplace(searchText , replaceText);
+}
 
 // 提取重复逻辑到一个单独的函数
 const fetchSceneData = async () => {
@@ -231,6 +238,7 @@ const handleGetReviewTask = async() => {
             && (currentTaskInfo.value?.resultGenStatus === 'success' 
                 || currentTaskInfo.value?.resultGenStatus === 'failed_no_content')) {
             stopPolling(); // 出错时也停止轮询
+            closeGeneratorStatus(); 
             return ;
         }
         
