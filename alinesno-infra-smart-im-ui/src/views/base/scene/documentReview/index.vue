@@ -60,6 +60,7 @@
                 <!-- AI生成状态 -->
                 <AIGeneratingStatus 
                     ref="generatingStatusRef" 
+                    :closeEnable="false"
                     :showActions="false"
                     @takeOver="handleTakeOver"
                 /> 
@@ -204,6 +205,7 @@ const handleGetReviewTask = () => {
         }else if(res.data.documentParseStatus == 'generating'){  // 文档解析中
             generatingStatusRef.value?.loading();
             generatingStatusRef.value?.setText(res.data.taskName + " 文档解析中");
+
         }
 
     }).catch(err => {
