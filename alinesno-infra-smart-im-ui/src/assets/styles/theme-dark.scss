@@ -669,4 +669,30 @@ html.dark {
             border: 1px solid #262727 !important; 
         }
     }
+
+    .exam-pager-card {
+        .exam-pager-card-content {
+            .scene-datetime {
+                color: $dark-text-color !important;
+            opacity: 1;
+            background: #1d1e1f !important; 
+        } 
+    } 
+    
+}
+
+.ppt-pager-main {
+    background: #1d1e1f !important; 
+
+    .title-section{
+        .title  {
+color: $dark-text-color !important;
+        }
+       
+    }
+
+    span.static-text {
+       color: $dark-text-color !important; 
+    }
+}
 }
