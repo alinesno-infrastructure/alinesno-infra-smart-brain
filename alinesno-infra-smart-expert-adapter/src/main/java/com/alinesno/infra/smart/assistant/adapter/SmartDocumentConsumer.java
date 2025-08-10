@@ -19,6 +19,12 @@ import java.util.List;
 public interface SmartDocumentConsumer {
 
     /**
+     * 文档转换成Markdown
+     */
+    @Post(url = "/api/v1/docx/convertToMarkdown")
+    String convertMarkdown(@DataFile("file") File file);
+
+    /**
      * 01_文档转换 - 获取文档目录结构
      * @param file 要处理的文件
      * @return API响应
