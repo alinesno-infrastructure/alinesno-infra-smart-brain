@@ -1,11 +1,6 @@
 <template>
-  <div class="article-edit-container edit-display-container">
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="article-edit-aside">
-        <FunctionList />
-      </el-aside>
-
+  <ArticleWriterContainer class="article-edit-container edit-display-container">
+    <el-container style="height:calc(100vh - 40px );background-color: #fff;"> 
       <el-main class="article-edit-main">
 
         <div class="article-edit-content">
@@ -36,7 +31,7 @@
       <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
-          <RoleChatPanel ref="roleChatPanelRef" />
+          <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
         </div>
       </el-drawer>
     </div>
@@ -48,7 +43,13 @@
       @confirm="handlePreviewConfirm"
       @regenerate="handlePreviewRegenerate" />
 
-  </div>
+                <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef"  
+            :close-enable="false" 
+        />
+
+  </ArticleWriterContainer>
 </template>
 
 <script setup>
@@ -62,12 +63,15 @@ import {
   getScene
 } from '@/api/base/im/scene/articleWriting';
 
+import ArticleWriterContainer from "./articleWriterContainer"
 import EditableTitle from './components/EditableTitle.vue'
 import MarkdownPreview from './components/MarkdownPreview.vue';
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
 import AgentContentDisplay from './agentContentDisplay'
 import EditorFunctionPanel from './components/editorFunctionPanel'
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
+
 import { ElMessage, ElLoading, ElMessageBox } from 'element-plus';
 
 const { proxy } = getCurrentInstance();
@@ -83,6 +87,8 @@ const sceneId = ref(route.query.sceneId)
 const channelStreamId = ref(route.query.channelStreamId)
 const articleId = ref(route.query.articleId)
 const contentEditor = ref(null);
+
+const generatingStatusRef = ref(null)
 
 const currentSceneInfo = ref({
   sceneName: '通用智能体服务',
@@ -173,12 +179,9 @@ const generaterText = async (promptText) => {
     roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.articleWriterEngineer);
   });
 
-  // 开始生成
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  });
+ 
+  generatingStatusRef.value?.loading()
+  generatingStatusRef.value?.setText("正在重新生成中...") ;
   
   try {
     const articleData = {
@@ -192,7 +195,7 @@ const generaterText = async (promptText) => {
     previewContent.value = res.data;
     
     // 关闭加载状态
-    streamLoading.value.close();
+    generatingStatusRef.value?.close();
     showDebugRunDialog.value = false;
     
     // 显示预览 - 现在使用正确的引用和方法
@@ -202,9 +205,7 @@ const generaterText = async (promptText) => {
     console.error('内容处理失败:', err);
     ElMessage.error('内容生成失败');
   } finally {
-    if (streamLoading.value) {
-      streamLoading.value.close();
-    }
+    generatingStatusRef.value?.close();
     showDebugRunDialog.value = false;
   }
 };
