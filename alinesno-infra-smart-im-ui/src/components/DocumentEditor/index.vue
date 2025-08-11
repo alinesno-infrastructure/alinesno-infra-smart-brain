@@ -29,12 +29,18 @@ const calculateEditorHeight = () => {
 
 // 处理内容变化
 const handleSetHtml = (textContent, htmlContent) => { 
+  console.log("handleSetHtml =  " + htmlContent)
 };
 
 // 暴露 setContent 方法
 const setContent = (content) => { 
   customEditorContent.value = content ;  
 };
+
+// 暴露 getContent 方法
+const getContent = () => {
+  return tinyMCEEditorRef.value?.handleGetContent();
+}
 
 // 在父组件中调用搜索替换方法
 const handleSearchReplace = (searchText , replaceText) => {
@@ -56,6 +62,7 @@ onBeforeUnmount(() => {
 // 暴露方法给父组件
 defineExpose({
   setContent,
+  getContent,
   handleSearchReplace
 });
 
