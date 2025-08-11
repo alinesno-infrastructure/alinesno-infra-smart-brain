@@ -12,6 +12,7 @@ import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.common.Role;
 import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
@@ -747,6 +748,21 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
         });
 
+    }
+
+
+    /**
+     * 获取参数
+     * @param key
+     * @return
+     */
+    public String getParam(String key , MessageTaskInfo taskInfo){
+        Map<String, Object> params = taskInfo.getParams() ;
+        if(params != null){
+            log.debug("params = {}" , JSONObject.toJSONString(params));
+            return params.get(key) + StringUtils.EMPTY ;
+        }
+        return StringUtils.EMPTY;
     }
 
 }
