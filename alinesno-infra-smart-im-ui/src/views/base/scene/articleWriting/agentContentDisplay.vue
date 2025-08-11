@@ -25,9 +25,11 @@
       <div class="menu-item" @click="summarizeContent">
         <i class="fa-solid fa-file-contract"></i> 总结
       </div>
+      <!--
       <div class="menu-item" @click="generateImage">
         <i class="fa-solid fa-image"></i> 生成图片
       </div>
+      -->
     </div>
 
     <!-- AI 输出面板 -->
