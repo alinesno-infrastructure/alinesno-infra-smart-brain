@@ -199,18 +199,6 @@ public class DocReviewSceneController extends BaseController<DocReviewSceneEntit
         return AjaxResult.success("操作成功" , previewUrl);
     }
 
-//    /**
-//     * 获取预览文件
-//     * @param storageId
-//     * @return
-//     */
-//    @DataPermissionQuery
-//    @GetMapping("/getPreviewReportDocx")
-//    public ResponseEntity<Resource> getPreviewReportDocx(@RequestParam String storageId , Long taskId) {
-//        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-//        return GenPdfTool.getResourceResponseEntity(storageId , previewUrl , taskId);
-//    }
-
     @Override
     public IDocReviewSceneService getFeign() {
         return this.service;
