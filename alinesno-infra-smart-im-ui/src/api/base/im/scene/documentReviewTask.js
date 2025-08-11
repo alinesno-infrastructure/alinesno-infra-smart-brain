@@ -10,6 +10,26 @@ var managerUrl = {
   addTask: prefix + "addTask", 
   genReviewList: prefix +"genReviewList" , 
   deleteById: prefix + "deleteById", 
+  saveDocumentContent: prefix + "saveDocumentContent" ,  // 保存文档内容 
+  updateDocumentName: prefix + "updateDocumentName" // 更新任务名称
+}
+
+// 更新任务名称
+export function updateDocumentName(data) {
+  return request({
+    url: managerUrl.updateDocumentName , 
+    method: 'post' , 
+    data: data
+  })
+}
+
+// 保存文档内容
+export function saveDocumentContent(data) {
+  return request({
+    url: managerUrl.saveDocumentContent , 
+    method: 'post' , 
+    data: data
+  })
 }
 
 // 删除任务
