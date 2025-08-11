@@ -30,7 +30,7 @@ public class GroovySandbox {
         // 1. 安全AST定制器
         SecureASTCustomizer secure = new SecureASTCustomizer();
         secure.setClosuresAllowed(true);
-        secure.setMethodDefinitionAllowed(false);
+        secure.setMethodDefinitionAllowed(true);
         secure.setIndirectImportCheckEnabled(true);
 
         // 允许的语句类型(白名单方式更安全)
