@@ -41,7 +41,7 @@
                           <div class="scene-description">
                             {{ item.taskDescription }}
                           </div>
-                          <div class="semi-divider semi-divider-horizontal"></div>
+                          <div class="semi-divider semi-divider-horizontal" style="margin-top:10px;margin-bottom:8px;"></div>
 
                           
 
