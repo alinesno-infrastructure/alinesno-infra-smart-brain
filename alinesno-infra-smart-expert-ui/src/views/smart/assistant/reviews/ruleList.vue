@@ -63,7 +63,7 @@
             <el-col :span="8">
                 <div class="review-group-add">
                     规则详细
-                    <el-button type="primary" icon="EditPen" bg text @click="batchDeleteRules">编辑</el-button>
+                    <el-button type="primary" icon="EditPen" bg text @click="editorRule">编辑</el-button>
                 </div>
                 <div class="review-item-detail" >
                     <div style="display: flex;flex-direction: column;">
@@ -401,25 +401,32 @@ const deleteGroup = (groupIndex) => {
 
 }
 
-// 保存新规则
+// 修改后的 submitForm 方法
 const submitForm = () => {
     formRef.value.validate((valid) => {
         if (valid) {
             saveOrUpdateRule(newRule.value).then(res => {
-
                 addRuleDialogVisible.value = false;
+                // 重置表单
                 newRule.value = {
                     ruleName: '',
-                    // groupId: null,
                     ruleContent: '',
                     riskLevel: '',
                     reviewPosition: ''
                 };
-
+                
+                // 刷新数据
                 handleListGroup();
-            })
-
-            ElMessage.success('规则保存成功');
+                
+                // 如果编辑的是当前选中的规则，更新显示
+                if (currentItem.value.id === newRule.value.id) {
+                    currentItem.value = res.data; // 假设返回更新后的规则数据
+                }
+                
+                ElMessage.success(newRule.value.id ? '规则更新成功' : '规则保存成功');
+            }).catch(error => {
+                ElMessage.error('操作失败: ' + error.message);
+            });
         } else {
             ElMessage.error('请填写完整信息');
         }
@@ -443,6 +450,27 @@ const saveRule = () => {
         };
     }
 }
+
+// 编辑规则
+const editorRule = () => {
+    if (!currentItem.value || !currentItem.value.id) {
+        ElMessage.warning('请先选择要编辑的规则');
+        return;
+    }
+    
+    // 将当前选中的规则数据填充到表单中
+    newRule.value = {
+        id: currentItem.value.id,
+        ruleName: currentItem.value.ruleName,
+        groupId: currentItem.value.groupId,
+        ruleContent: currentItem.value.ruleContent,
+        riskLevel: currentItem.value.riskLevel,
+        reviewPosition: currentItem.value.reviewPosition
+    };
+    
+    // 打开添加/编辑对话框
+    addRuleDialogVisible.value = true;
+};
 
 // 删除规则
 const deleteRule = (groupIndex, ruleIndex) => {
