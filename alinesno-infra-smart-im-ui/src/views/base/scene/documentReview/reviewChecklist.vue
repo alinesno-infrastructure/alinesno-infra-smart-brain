@@ -74,6 +74,7 @@ import { ref, onMounted } from 'vue';
 
 const emit = defineEmits([
     'handleStepClick', 
+    'reCheck',
     'genSingleChapterContent', 
     'closeGeneratorStatus',
     'generatorStatus'])
@@ -115,7 +116,7 @@ const cancelSelection = () => {
   checkList.value = [];
 };
  
-const submitAuditForm = async () => {
+const submitAuditForm = async (type) => {
 
     if(checkList.value.length == 0){
         ElMessage.warning("发起审核之前请先选择审核规则")
@@ -137,6 +138,11 @@ const submitAuditForm = async () => {
 
         try {
             const res = await genAuditResult(data);
+
+            if('reCheck' == type){
+                emit("reCheck");
+            }
+
             if(res.code != 200){
                 ElMessage.error(res.msg);
                 return ;
