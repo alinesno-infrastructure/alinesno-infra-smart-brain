@@ -433,6 +433,10 @@ public class DocReviewListGeneratorService {
         MessageTaskInfo taskInfo = new MessageTaskInfo();
         Long roleId = dto.getRoleId();
 
+        // 获取当前任务实体
+        DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId());
+        DocReviewTaskDto taskDto = DocReviewTaskDto.fromEntity(taskEntity);
+
         // 设置任务基本信息
         taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
         taskInfo.setRoleId(roleId);
@@ -445,13 +449,11 @@ public class DocReviewListGeneratorService {
                 dto,
                 docReviewSceneService.getBySceneId(dto.getSceneId(), query),
                 rule,
-                taskInfo) +
+                taskInfo ,
+                taskDto) +
                 FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT;
 
         taskInfo.setText(prompt);
-
-        // 获取当前任务实体
-        DocReviewTaskEntity taskEntity = docReviewTaskService.getById(dto.getTaskId());
 
         // 异步执行审核任务
         WorkflowExecutionDto result;
