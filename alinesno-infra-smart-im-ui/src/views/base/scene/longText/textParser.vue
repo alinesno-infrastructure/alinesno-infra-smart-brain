@@ -13,12 +13,14 @@
                     <el-row>
                         <el-col :span="10">
                             <!-- 目录大纲编辑界面 -->
-                            <OutlineEditor ref="OutlineEditorRef" @openChatBox="openChatBox"
+                            <OutlineEditor ref="OutlineEditorRef" 
+                                @openChatBox="openChatBox"
                                 @handleExecuteHandle="handleExecuteHandle"
                                 @handleGetChannelStreamId="handleGetChannelStreamId"
                                 @closeShowDebugRunDialog="closeShowDebugRunDialog"
                                 @genChapterContentByAgent="genChapterContentByAgent"
-                                @setCurrentSceneInfo="setCurrentSceneInfo" @editContent="editContent" />
+                                @setCurrentSceneInfo="setCurrentSceneInfo" 
+                                @editContent="editContent" />
                         </el-col>
                         <el-col :span="14">
 
