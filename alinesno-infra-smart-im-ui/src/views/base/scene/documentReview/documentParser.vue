@@ -4,19 +4,12 @@
                     <el-row>
                         <el-col :span="14">
                             <div style="font-size: 16px;font-weight: bold;display: flex;align-items: center;gap:20px; justify-content: flex-start;">
-                                <!-- 
-                                <el-button type="primary" text bg @click="onClickLeft()">
-                                    <i class="fa-solid fa-arrow-left"></i>
-                                </el-button> 
-                                <span>
-                                    {{ currentSceneInfo?.documentName }}
-                                </span> 
-                                -->
-
+                         
                                 <!-- 标题内容 -->
                                 <EditableTitle 
                                     v-if="currentTaskInfo"    
                                     v-model:title="currentTaskInfo.taskName" 
+                                    @update:title="handleTitleSave"
                                     class="article-edit-title" 
                                 />
 
@@ -43,6 +36,7 @@
                                         :currentSceneInfo="currentSceneInfo"
                                         :currentTaskInfo="currentTaskInfo"
                                         @handleStepClick="handleStepClick"
+                                        @fetchSceneData="fetchSceneData"
                                         @closeGeneratorStatus="closeGeneratorStatus"
                                         @generatorStatus="generatorStatus"
                                         @genSingleChapterContent="genSingleChapterContent" />
@@ -54,13 +48,16 @@
                                         @handleStepClick="handleStepClick"
                                         @closeGeneratorStatus="closeGeneratorStatus"
                                         @generatorStatus="generatorStatus"
+                                        @reCheck="reCheck"
                                         @genSingleChapterContent="genSingleChapterContent" />
 
                                     <ReviewResult v-if="currentActive == 3" 
                                         :currentSceneInfo="currentSceneInfo"
                                         :currentTaskInfo="currentTaskInfo"
                                         @handleStepClick="handleStepClick"
+                                        @handleUpdateDocumentContent="handleUpdateDocumentContent"
                                         @searchAndReplace="searchAndReplace"
+                                        @downloadWordDocument="downloadWordDocument"
                                         @genSingleChapterContent="genSingleChapterContent" />
                                 </el-collapse-transition>
                             </div>
@@ -119,7 +116,9 @@ import {
 
 import {
   getReviewTask,
-  pagerListByPage
+  pagerListByPage,
+  updateDocumentName,
+  saveDocumentContent
 } from '@/api/base/im/scene/documentReviewTask';
 
 import { nextTick } from 'vue'
@@ -148,7 +147,7 @@ const tinyMceEditorRef = ref(null);
 
 // 定义轮询相关变量
 const pollingInterval = ref(null); // 轮询定时器引用
-const pollingIntervalTime = 10000; // 轮询间隔时间设为10秒
+const pollingIntervalTime = 1000; // 轮询间隔时间设为1秒
 
 // 执行面板
 const showDebugRunDialog = ref(false);
@@ -221,6 +220,37 @@ const searchAndReplace = (searchText , replaceText) => {
     tinyMceEditorRef.value.handleSearchReplace(searchText , replaceText);
 }
 
+const downloadWordDocument = () => { 
+  
+    proxy.download(
+      "/api/infra/smart/assistant/scene/docReviewTaskManager/downloadDocument",
+      { taskId: taskId.value },
+      `${currentTaskInfo.value?.taskName }_${new Date().getTime()}.docx`  // 如：任务名称_1712345678901.docx
+    );
+}; 
+
+// 更新文档内容
+const handleUpdateDocumentContent = () => {
+    const htmlContent = tinyMceEditorRef.value.getContent();
+    console.log("html content = " + htmlContent);
+    const data = {
+        htmlContent: htmlContent , 
+        taskId: taskId.value
+    };
+    saveDocumentContent(data).then(res => {
+        ElMessage.success("文档更新成功.")
+    })
+}
+
+// 更新审核标题
+const handleTitleSave = (newTitle) => {
+    console.log('newTitle = ' + newTitle)
+    updateDocumentName({taskId:taskId.value , taskName: newTitle }).then(res => {
+       ElMessage.success("标题修改成功.")
+    })
+}
+
+
 // 提取重复逻辑到一个单独的函数
 const fetchSceneData = async () => {
     const res = await getScene(sceneId.value, taskId.value);
@@ -279,6 +309,13 @@ const handleGetReviewTask = async() => {
         stopPolling(); // 出错时也停止轮询
     }
 };
+
+// 重新检查
+const reCheck = async () => {
+    console.log('reCheck = true')
+    await fetchSceneData();
+    startPolling();
+}
 
 // 开始轮询函数
 const startPolling = () => {
