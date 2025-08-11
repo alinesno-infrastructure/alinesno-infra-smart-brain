@@ -1,5 +1,5 @@
 <template>
-    <div class="review-page-contaier">
+    <div class="dataset-page-contaier">
 
         <div class="search-container-panel">
             <el-row>
@@ -14,29 +14,43 @@
         </div>
 
         <el-row :gutter="20">
-            <el-col :span="5">
-                <div class="review-group-add">
-                    分类
-                    <el-button type="primary" text bg icon="Plus" @click="openAddGroupDialog">新建</el-button>
+            <el-col :span="4">
+                <div class="siderbar-type-list" style="
+
+">
+                    <div class="review-group-add" style="margin-top:0px;">
+                        分类
+                        <el-button type="primary" text bg icon="Plus" @click="openAddGroupDialog">新建</el-button>
+                    </div>
+                    <el-scrollbar style="height:calc(100vh - 200px); width:100%">
+                        <ul style="padding: 0px;margin:0px;">
+                            <li v-for="(group, groupIndex) in ruleGroups" :key="groupIndex" class="group-item"
+                                :class="{ 'group-selected': currentGroupIndex === groupIndex, 'group-hover': groupHoverIndex === groupIndex }"
+                                @mouseenter="groupMouseEnter(groupIndex)" @mouseleave="groupMouseLeave(groupIndex)"
+                                @click="selectGroup(groupIndex, group)">
+
+                                <div style="
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+">
+                                    <span class="filename"> {{ group.groupName }} </span>
+                                    <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;"> 业务知识库，集成配置管理 </span>
+                                </div>
+                               
+
+                                <div v-if="groupButtonVisible[groupIndex]" style="display: inline-block;">
+                                    <el-button type="primary" size="small" text bg
+                                        @click="openEditGroupDialog(groupIndex)">编辑</el-button>
+                                    <el-button type="danger" style="margin-left:0px;" size="small" text bg
+                                        @click="deleteGroup(groupIndex)">删除</el-button>
+                                </div>
+                            </li>
+                        </ul>
+                    </el-scrollbar>
                 </div>
-                <el-scrollbar style="height:calc(100vh - 200px); width:100%">
-                    <ul style="padding: 0px;margin:0px;">
-                        <li v-for="(group, groupIndex) in ruleGroups" :key="groupIndex" class="group-item"
-                            :class="{ 'group-selected': currentGroupIndex === groupIndex, 'group-hover': groupHoverIndex === groupIndex }"
-                            @mouseenter="groupMouseEnter(groupIndex)" @mouseleave="groupMouseLeave(groupIndex)"
-                            @click="selectGroup(groupIndex, group)">
-                            {{ group.groupName }}
-                            <div v-if="groupButtonVisible[groupIndex]" style="display: inline-block;">
-                                <el-button type="primary" size="small" text bg
-                                    @click="openEditGroupDialog(groupIndex)">编辑</el-button>
-                                <el-button type="danger" size="small" text bg
-                                    @click="deleteGroup(groupIndex)">删除</el-button>
-                            </div>
-                        </li>
-                    </ul>
-                </el-scrollbar>
             </el-col>
-            <el-col :span="19">
+            <el-col :span="20">
                 <div class="review-group-add">
                     文档列表
                     <span>
@@ -54,22 +68,36 @@
                         <el-empty description="当前未生成项目检索的规划，你可以选择自定义的知识库来进行检索，生成项目检索的规划" />
                     </div>
 
-                    <div style="display: flex;flex-direction: column;gap: 5px;">
+                    <div class="main-container-list">
                         <div v-for="(rule, ruleIndex) in currentGroup.rules" :key="ruleIndex" class="rule-item"
                             :class="{ 'rule-selected': currentItem.id === rule.id, 'rule-hover': ruleHoverIndex === ruleIndex }"
                             @mouseenter="ruleMouseEnter(ruleIndex)" @mouseleave="ruleMouseLeave(ruleIndex)"
                             @click="selectRuleItem(rule)">
                             <div class="rule-item-content">
-                                <span class="rule-item-icon">
-                                    <i class="fa-solid fa-file-pdf"></i>
+                                <span class="rule-item-icon"> 
+                                    <i :class="`fa-solid ${getFileIcon(rule.docName)}`"></i>
                                 </span>
-                                <span style="cursor: pointer;">{{ rule.docName }}</span>
-                            </div>
-                            <div>
-                                <el-button type="danger" bg text icon="Remove" size="default"
+                                <div style="cursor: pointer;display: flex;gap: 7px;flex-direction: column;line-height: 1.3rem;">
+                                    <span class="filename">
+                                        {{ rule.docName }}
+                                    </span>
+                                    <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;">
+                                        纳瓦尔宝典由埃里克·乔根森编著。本书围绕财富与幸福两大主题，集结纳瓦尔智慧。书中指出积累财富
+                                    </span>
+                                    <div class="file-list-footer"> 
+                                    <el-button type="info" bg text size="small" >
+                                        时间:2024-12-21 12:21:33  
+                                        </el-button>
+                                             
+                                <el-button type="info" bg text icon="Remove" size="small"
                                     @click="removeRuleItem(rule.id)">删除文档</el-button>
+                            
+                                    </div>
+                                </div>
                             </div>
+                            
                         </div>
+ 
                     </div>
                 </el-scrollbar>
             </el-col>
@@ -221,6 +249,32 @@ const rules = ref({
         { required: true, message: '请选择审查立场', trigger: 'change' }
     ]
 });
+
+// 文件类型图标映射
+const fileTypeIcons = {
+  pdf: 'fa-file-pdf',
+  doc: 'fa-file-word',
+  docx: 'fa-file-word',
+  xls: 'fa-file-excel',
+  xlsx: 'fa-file-excel',
+  jpg: 'fa-file-image',
+  jpeg: 'fa-file-image',
+  png: 'fa-file-image',
+  txt: 'fa-file-lines',
+  ppt: 'fa-file-powerpoint',
+  pptx: 'fa-file-powerpoint',
+  csv: 'fa-file-csv',
+  // 可以继续添加其他类型...
+  default: 'fa-file' // 默认图标
+}
+
+// 获取文件对应的图标
+const getFileIcon = (fileName) => {
+  if (!fileName) return fileTypeIcons.default
+  
+  const extension = fileName.split('.').pop().toLowerCase()
+  return fileTypeIcons[extension] || fileTypeIcons.default
+}
 
 // 当前选中的分类
 const currentItem = ref({});
@@ -515,9 +569,9 @@ handleListGroup();
 </script>
 
 <style lang="scss" scoped>
-.review-page-contaier {
+.dataset-page-contaier {
     padding: 20px 10px ;
-    background-color: #fff ;
+    background-color: #fafafa ;
 
     .rule-item-content {
         display: flex;
@@ -526,12 +580,14 @@ handleListGroup();
         line-height: 1rem;
         flex-direction: row;
         align-content: center;
+        padding-top: 5px;
+        paddingn-bottom: 5px;
 
         .rule-item-icon {
             width: 30px;
             height: 30px;
             flex-shrink: 0;
-            color: #f05e5b;
+            color: #1d75b0;
             font-size: 25px;
         }
 
@@ -543,7 +599,7 @@ handleListGroup();
 .group-item {
     list-style: none;
     padding: 10px;
-    height: 40px;
+    height: auto;
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -557,13 +613,18 @@ handleListGroup();
 
 .review-group-add {
     margin: 10px;
+    margin-left: 0px;
+    margin-right: 0px;
     font-size: 15px;
     font-weight: bold;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #f5f5f5;
-    padding-bottom: 10px;
+    padding: 5px 10px;
+    background: #f5f5f5;
+    border-radius: 8px;
 }
 
 .group-selected {
@@ -574,13 +635,16 @@ handleListGroup();
 }
 
 .rule-item {
-    display: flex;
+        display: flex;
     align-items: center;
     justify-content: space-between;
     flex-direction: row;
     font-size: 14px;
-    padding: 5px;
-    border-radius: 3px;
+    border-radius: 8px;
+    width: calc(25% - 15px); 
+    background: #fff;
+    padding: 10px;
+        border: 1px solid rgba(6, 7, 9, 0.1);
 }
 
 
@@ -605,12 +669,29 @@ handleListGroup();
 
 }
 
+.main-container-list {
+    display: flex; gap: 20px; flex-flow: wrap;
+    margin-top:10px;
+}
+
+
+    .siderbar-type-list{
+        padding: 10px;
+    border-radius: 10px;
+    margin-top: 10px; 
+    background-color: #fff;
+    }
+
+    .file-list-footer {
+    font-size: 12px; color: rgb(165, 165, 165); font-weight: lighter; margin-top: 5px; border-top: 1px solid rgb(245, 245, 245); padding-top: 10px;
+    }
+
 .group-hover {
     background-color: #f0f9ff;
 }
 
 .rule-selected {
-    background-color: #e6f7ff;
+    // background-color: #e6f7ff;
 }
 
 .rule-hover {
@@ -620,4 +701,7 @@ handleListGroup();
 .item-field {
     padding: 10px;
 }
+
+.filename {  
+  }
 </style>
