@@ -5,12 +5,15 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.Revie
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.BusinessScenarioEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.CheckRulesEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.DocumentTypeEnum;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewTaskDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
 import com.alinesno.infra.smart.assistant.template.entity.TemplateEntity;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterSceneEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
+import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
+import com.alinesno.infra.smart.scene.enums.ReviewPositionEnums;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.HashMap;
@@ -85,17 +88,20 @@ public class DocReviewPromptTools {
 
     /**
      * 构建内容检查的Prompt
+     *
      * @param dto
      * @param scene
      * @param rule
      * @param taskInfo
+     * @param taskDto
      * @return
      */
     public static String buildReviewPrompt(String contentPromptContent ,
                                            GenAuditResultDto dto,
                                            DocReviewSceneEntity scene,
                                            DocReviewRulesEntity rule,
-                                           MessageTaskInfo taskInfo) {
+                                           MessageTaskInfo taskInfo,
+                                           DocReviewTaskDto taskDto) {
 
         String ruleText = rule.getRuleName() + ":" + rule.getRuleContent() ;
 
@@ -108,16 +114,23 @@ public class DocReviewPromptTools {
                 ### 需要审查内容=%s
                 """;
 
-
         String formatPrompt = String.format(prompt , ruleText, contentPromptContent) ;
         log.debug(formatPrompt);
 
         // 设置参数到Agent中，使得Agent可以更灵活定制Prompt
         Map<String , Object> params = new HashMap<>() ;
 
-        params.put("ruleText" , ruleText) ;
-        params.put("contentPromptContent" , contentPromptContent) ;
+        ContractTypeEnum  contractType = ContractTypeEnum.getByScenarioId(taskDto.getContractType()) ;
+        ReviewPositionEnums reviewPositionEnums =  ReviewPositionEnums.getByValue(taskDto.getContractType()) ;
 
+        params.put("documentMeta" , taskDto.getContractMetadata()) ;
+        params.put("ruleText" , ruleText) ;
+        params.put("documentName" , taskDto.getDocumentName()) ;
+
+        params.put("contractType" , contractType == null ? "通用合同" : contractType.getTitle() + ":" + contractType.getDesc()) ;  // 合同类型
+        params.put("reviewPosition" , reviewPositionEnums == null ? "中立" :  reviewPositionEnums.getLabel()) ;  // 审核立场
+
+        params.put("contentPromptContent" , contentPromptContent) ;
         taskInfo.setParams(params);
 
         return formatPrompt ;
