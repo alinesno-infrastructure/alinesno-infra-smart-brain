@@ -2,6 +2,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.bean.copier.CopyOptions;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
@@ -234,26 +235,9 @@ public class DocumentReviewController extends SuperController {
             return AjaxResult.error("未找到对应的任务");
         }
 
-        // 直接下载文件内容
-        byte[] fileBytes = storageConsumer.download(entity.getDocumentId(), null);
-        if (fileBytes == null || fileBytes.length == 0) {
-            return AjaxResult.error("文件下载失败");
-        }
-
-        // 创建临时文件
-        File tempFile = File.createTempFile("temp-", ".docx");
-        try {
-            Files.write(tempFile.toPath(), fileBytes);
-
-            // 将DOCX转换为HTML
-            String htmlContent = smartDocumentConsumer.convertToHtml(tempFile);
-            return AjaxResult.success("获取预览成功" , htmlContent) ;
-        } finally {
-            // 删除临时文件
-            if (!tempFile.delete()) {
-                log.warn("临时文件删除失败: {}", tempFile.getAbsolutePath());
-            }
-        }
+        // 将DOCX转换为HTML
+        String htmlContent = entity.getHtmlContent() ;
+        return AjaxResult.success("获取预览成功" , htmlContent) ;
     }
 
     /**
@@ -281,14 +265,15 @@ public class DocumentReviewController extends SuperController {
         R<String> r = storageConsumer.upload(targetFile) ;
 
         // 获取到文档的基础内容
-        String content = analysisTool.analysisDocumentBaseContent(targetFile) ;
+        String htmlContent = smartDocumentConsumer.convertToHtml(targetFile);  // 获取HTML内容
+        String content = analysisTool.analysisDocumentBaseContent(targetFile) ;  // 获取基础内容
 
         // 保存到任务清单里面
         DocReviewTaskEntity taskEntity = new DocReviewTaskEntity() ;
 
         BeanUtil.copyProperties(query , taskEntity);
 
-        taskEntity.setTaskName(fileName);
+        taskEntity.setTaskName(FileUtil.getPrefix(fileName));
         taskEntity.setSceneId(sceneId);
         taskEntity.setTaskDescription(content);
         taskEntity.setDocumentReviewSceneId(sceneId);
@@ -303,6 +288,7 @@ public class DocumentReviewController extends SuperController {
         taskEntity.setDocumentParseStatus(ReviewRuleGenStatusEnums.GENERATING.getCode()); // 正在解析生成中
 
         taskEntity.setChannelStreamId(IdUtil.getSnowflakeNextId());  // 渠道流ID
+        taskEntity.setHtmlContent(htmlContent);
 
         docReviewTaskService.save(taskEntity);
 
