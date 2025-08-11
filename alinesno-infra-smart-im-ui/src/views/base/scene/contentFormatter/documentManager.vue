@@ -300,7 +300,7 @@ onMounted(() => {
   }
   
   .document-title {
-    font-weight: 500;
+    font-weight: bold;
     margin-top: 10px;
     font-size: 16px;
     white-space: nowrap;
