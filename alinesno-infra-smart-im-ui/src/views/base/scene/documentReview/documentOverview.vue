@@ -15,9 +15,7 @@
                     </el-form-item>
                     <el-form-item label="选择审查立场" prop="reviewPosition">
                         <el-radio-group v-model="ruleForm.reviewPosition">
-                            <el-radio  value="1" label="甲方立场">甲方立场</el-radio>
-                            <el-radio  value="2" label="乙方立场">乙方立场</el-radio>
-                            <el-radio  value="9" label="中立立场">中立立场</el-radio>
+                            <el-radio v-for="(standpoint, index) in reviewPositions" :key="index" :label="standpoint.value">{{ standpoint.label }}</el-radio> 
                         </el-radio-group>
                     </el-form-item>
                     <el-form-item label="选择审查清单">
@@ -127,9 +125,17 @@ const currentTaskInfo = ref(null);
  
 const emit = defineEmits([
     'handleStepClick', 
+    'fetchSceneData',
     'genSingleChapterContent', 
     'closeGeneratorStatus',
     'generatorStatus'])
+
+// 审查立场数组
+const reviewPositions = ref([
+    { label: '甲方立场', value: 'party_a' },
+    { label: '乙方立场', value: 'party_b' },
+    { label: '中立立场', value: 'neutral' }
+]);
 
 const props = defineProps({
   currentSceneInfo: {
@@ -145,7 +151,7 @@ const props = defineProps({
 // 定义表单数据
 const ruleForm = reactive({
     contractType: '73',
-    reviewPosition: '1',
+    reviewPosition: 'neutral',
     reviewListOption: 'aigen',
     reviewListKnowledgeBase: '',
 });
@@ -210,11 +216,12 @@ const submitForm = async () => {
             // 如果是数据集
             if(ruleForm.reviewListOption == 'dataset'){
 
-                ruleForm.sceneId = currentSceneInfo.value.id ;
+                ruleForm.sceneId = props.currentSceneInfo.id ;
                 ruleForm.taskId = taskId.value ;  
                 ruleForm.channelStreamId = channelStreamId.value ;
 
                 genReviewListByDataset(ruleForm).then(res => {
+                    emit('fetchSceneData');
                     emit('handleStepClick', 2);
                 })
 
