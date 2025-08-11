@@ -9,10 +9,12 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.common.utils.FileTool;
 import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.prompt.ArticlePromptHandle;
@@ -52,6 +54,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -88,6 +91,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
     @Autowired
     private CloudStorageConsumer cloudStorageConsumer ;
+
+    @Autowired
+    private SmartDocumentConsumer smartDocumentConsumer ;
 
     @Autowired
     private ISceneService sceneService;
@@ -172,58 +178,139 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      * @param query
      * @return
      */
+    /**
+     * 聊天提示内容
+     * @param dto
+     * @param query
+     * @return
+     */
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
-    public AjaxResult chatPromptContent(@RequestBody @Validated ArticleGeneratorDTO dto , PermissionQuery query) {
+    public DeferredResult<AjaxResult> chatPromptContent(@RequestBody @Validated ArticleGeneratorDTO dto, PermissionQuery query) {
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(300_000L);
 
-        log.debug("dto = {}" , dto);
+        deferredResult.onTimeout(() -> {
+            deferredResult.setErrorResult(AjaxResult.error("请求超时"));
+        });
 
-        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+        log.debug("dto = {}", dto);
 
-        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+        try {
+            ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+            Long articleWriterEngineer = entity.getArticleWriterEngineer();
 
-        // 引用附件不为空，则引入和解析附件
-        if(!CollectionUtils.isEmpty(dto.getAttachments())){
-            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-            taskInfo.setAttachments(attachmentList);
+            MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
+
+            // 引用附件不为空，则引入和解析附件
+            if(!CollectionUtils.isEmpty(dto.getAttachments())){
+                List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+                taskInfo.setAttachments(attachmentList);
+            }
+
+            ArticleTemplateEntity templateEntity = null;
+            if(dto.getSelectedTemplateId() != null){
+                templateEntity = articleTemplateService.getById(dto.getSelectedTemplateId());
+            }
+            Asserts.notNull(templateEntity, "未找到对应的模板实体");
+
+            String promptText = ArticlePromptHandle.generatorPrompt(dto, templateEntity);
+
+            taskInfo.setRoleId(articleWriterEngineer);
+            taskInfo.setChannelStreamId(dto.getChannelStreamId());
+            taskInfo.setChannelId(dto.getSceneId());
+            taskInfo.setSceneId(dto.getSceneId());
+            taskInfo.setText(promptText);
+
+            // 使用异步处理
+            roleService.runRoleAgent(taskInfo).thenAccept(genContent -> {
+                log.debug("genContent = {}", genContent.getGenContent());
+
+                try {
+                    // 获取文章内容并保存
+                    String articleContent;
+                    if(TaskResultTypeEnums.SUMMARY.getCode().equals(taskInfo.getResultType())){ // 总结性结果输出
+                        articleContent = taskInfo.getFullContent();
+                    } else {
+                        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent());
+                        articleContent = contentList.isEmpty() ? taskInfo.getFullContent() : contentList.get(0).getContent();
+                    }
+
+                    Long articleId = articleManagerSceneService.saveArticle(
+                            articleContent,
+                            dto,
+                            entity,
+                            query);
+
+                    deferredResult.setResult(AjaxResult.success("操作成功", articleId));
+                } catch (Exception e) {
+                    log.error("Error processing article content", e);
+                    deferredResult.setErrorResult(AjaxResult.error("处理文章内容时出错"));
+                }
+            }).exceptionally(ex -> {
+                log.error("Error in role agent execution", ex);
+                deferredResult.setErrorResult(AjaxResult.error("角色代理执行出错"));
+                return null;
+            });
+        } catch (Exception e) {
+            log.error("Error in chatPromptContent", e);
+            deferredResult.setErrorResult(AjaxResult.error("处理请求时出错"));
         }
 
-        ArticleTemplateEntity templateEntity = null ;
-        if(dto.getSelectedTemplateId() != null){
-            templateEntity =  articleTemplateService.getById(dto.getSelectedTemplateId()) ;
-        }
-        Asserts.notNull(templateEntity , "未找到对应的模板实体");
-
-        String promptText = ArticlePromptHandle.generatorPrompt(dto , templateEntity) ;
-
-        taskInfo.setRoleId(articleWriterEngineer);
-        taskInfo.setChannelStreamId(dto.getChannelStreamId());
-        taskInfo.setChannelId(dto.getSceneId());
-        taskInfo.setSceneId(dto.getSceneId());
-        taskInfo.setText(promptText);
-
-        // 优先获取到结果内容
-        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("genContent = {}", genContent.getGenContent());
-
-        // 获取文章内容并保存
-        String articleContent;
-        if(TaskResultTypeEnums.SUMMARY.getCode().equals(taskInfo.getResultType())){ // 总结性结果输出
-            articleContent = taskInfo.getFullContent() ;
-        }else{
-            List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
-            articleContent = contentList.isEmpty()?  taskInfo.getFullContent() : contentList.get(0).getContent() ;
-        }
-
-        Long articleId = articleManagerSceneService.saveArticle(
-                articleContent ,
-                dto ,
-                entity ,
-                query) ;
-
-        return AjaxResult.success("操作成功" , articleId) ;
+        return deferredResult;
     }
+
+//    @DataPermissionQuery
+//    @PostMapping("/chatPromptContent")
+//    public AjaxResult chatPromptContent(@RequestBody @Validated ArticleGeneratorDTO dto , PermissionQuery query) {
+//
+//        log.debug("dto = {}" , dto);
+//
+//        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+//        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+//
+//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+//
+//        // 引用附件不为空，则引入和解析附件
+//        if(!CollectionUtils.isEmpty(dto.getAttachments())){
+//            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+//            taskInfo.setAttachments(attachmentList);
+//        }
+//
+//        ArticleTemplateEntity templateEntity = null ;
+//        if(dto.getSelectedTemplateId() != null){
+//            templateEntity =  articleTemplateService.getById(dto.getSelectedTemplateId()) ;
+//        }
+//        Asserts.notNull(templateEntity , "未找到对应的模板实体");
+//
+//        String promptText = ArticlePromptHandle.generatorPrompt(dto , templateEntity) ;
+//
+//        taskInfo.setRoleId(articleWriterEngineer);
+//        taskInfo.setChannelStreamId(dto.getChannelStreamId());
+//        taskInfo.setChannelId(dto.getSceneId());
+//        taskInfo.setSceneId(dto.getSceneId());
+//        taskInfo.setText(promptText);
+//
+//        // 优先获取到结果内容
+//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo).get() ;
+//        log.debug("genContent = {}", genContent.getGenContent());
+//
+//        // 获取文章内容并保存
+//        String articleContent;
+//        if(TaskResultTypeEnums.SUMMARY.getCode().equals(taskInfo.getResultType())){ // 总结性结果输出
+//            articleContent = taskInfo.getFullContent() ;
+//        }else{
+//            List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
+//            articleContent = contentList.isEmpty()?  taskInfo.getFullContent() : contentList.get(0).getContent() ;
+//        }
+//
+//        Long articleId = articleManagerSceneService.saveArticle(
+//                articleContent ,
+//                dto ,
+//                entity ,
+//                query) ;
+//
+//        return AjaxResult.success("操作成功" , articleId) ;
+//    }
 
     /**
      * 重新润色文章
@@ -231,36 +318,105 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      * @param query
      * @return
      */
+    /**
+     * 重新润色文章（异步高并发版）
+     * @param dto 请求参数
+     * @param query 权限查询条件
+     * @return DeferredResult 异步响应结果
+     */
     @DataPermissionQuery
     @PostMapping("/reChatPromptContent")
-    public AjaxResult reChatPromptContent(@RequestBody @Validated ReWriterArticleGeneratorDTO dto , PermissionQuery query) {
+    public DeferredResult<AjaxResult> reChatPromptContent(
+            @RequestBody @Validated ReWriterArticleGeneratorDTO dto,
+            PermissionQuery query) {
 
-        log.debug("dto = {}" , dto);
+        // 1. 初始化DeferredResult，设置5分钟超时
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(300_000L); // 5分钟=300秒
 
-        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+        // 超时回调处理
+        deferredResult.onTimeout(() -> {
+            log.warn("文章润色请求超时，articleId={}", dto.getArticleId());
+            deferredResult.setErrorResult(AjaxResult.error("文章润色处理超时，请稍后重试"));
+        });
 
-        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+        log.debug("dto = {}", dto);
 
-        ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId()) ;
-        String promptText = ArticlePromptHandle.generatorReWriterPrompt(dto , articleManagerEntity.getContent()) ;
+        try {
+            // 2. 同步查询部分（快速操作）
+            ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+            Long articleWriterEngineer = entity.getArticleWriterEngineer();
+            ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId());
 
-        taskInfo.setRoleId(articleWriterEngineer);
-        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-        taskInfo.setChannelId(dto.getSceneId());
-        taskInfo.setSceneId(dto.getSceneId());
-        taskInfo.setText(promptText);
+            // 3. 构建任务信息
+            MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
+            String promptText = ArticlePromptHandle.generatorReWriterPrompt(dto, articleManagerEntity.getContent());
 
-        // 优先获取到结果内容
-        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-        log.debug("genContent = {}", genContent);
+            taskInfo.setRoleId(articleWriterEngineer);
+            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+            taskInfo.setChannelId(dto.getSceneId());
+            taskInfo.setSceneId(dto.getSceneId());
+            taskInfo.setText(promptText);
 
-        // 获取文章内容
-        String articleContent = taskInfo.getFullContent() ;
-        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
+            // 4. 异步执行核心逻辑
+            roleService.runRoleAgent(taskInfo)
+                    .thenApplyAsync(genContent -> {
+                        log.debug("润色结果生成完成，articleId={}", dto.getArticleId());
 
-        return AjaxResult.success("操作成功" , contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ) ;
+                        // 5. 结果解析（保持与原逻辑一致）
+                        String articleContent = taskInfo.getFullContent();
+                        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent);
+
+                        return contentList.isEmpty() ? articleContent : contentList.get(0).getContent();
+                    })
+                    .thenAccept(resultContent -> {
+                        // 6. 成功响应
+                        deferredResult.setResult(AjaxResult.success("操作成功", resultContent));
+                    })
+                    .exceptionally(ex -> {
+                        // 7. 异常处理
+                        log.error("文章润色失败，articleId={}", dto.getArticleId(), ex);
+                        deferredResult.setErrorResult(AjaxResult.error("文章润色失败: " + ex.getMessage()));
+                        return null;
+                    });
+
+        } catch (Exception e) {
+            // 同步部分的异常捕获
+            log.error("文章润色预处理失败", e);
+            deferredResult.setErrorResult(AjaxResult.error("请求处理异常"));
+        }
+
+        return deferredResult;
     }
+//    @DataPermissionQuery
+//    @PostMapping("/reChatPromptContent")
+//    public AjaxResult reChatPromptContent(@RequestBody @Validated ReWriterArticleGeneratorDTO dto , PermissionQuery query) {
+//
+//        log.debug("dto = {}" , dto);
+//
+//        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
+//        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+//
+//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+//
+//        ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId()) ;
+//        String promptText = ArticlePromptHandle.generatorReWriterPrompt(dto , articleManagerEntity.getContent()) ;
+//
+//        taskInfo.setRoleId(articleWriterEngineer);
+//        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+//        taskInfo.setChannelId(dto.getSceneId());
+//        taskInfo.setSceneId(dto.getSceneId());
+//        taskInfo.setText(promptText);
+//
+//        // 优先获取到结果内容
+//        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
+//        log.debug("genContent = {}", genContent);
+//
+//        // 获取文章内容
+//        String articleContent = taskInfo.getFullContent() ;
+//        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
+//
+//        return AjaxResult.success("操作成功" , contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ) ;
+//    }
 
     /**
      * 重新润色文章
@@ -427,12 +583,12 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
             throw new RuntimeException("文章不存在，ID: " + articleId);
         }
 
-        String filePath = null;
+        File tempFile = null;
         try {
             String title = String.valueOf(examPager.getId());
 
-            filePath = MarkdownToWord.convertMdToDocx(examPager.getContent(), title) ; // articleManagerSceneService.generateToFile(articleId, showAnswer);
-            byte[] fileContent = Files.readAllBytes(Paths.get(filePath));
+            tempFile = FileTool.createTempHtmlFile(examPager.getContent()) ;
+            byte[] fileContent = smartDocumentConsumer.markdownToDocx(tempFile) ;
 
             // 使用RFC 5987标准编码文件名（支持中文和特殊字符）
             String fileName = title + ".docx";
@@ -457,8 +613,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         } finally {
             // 5. 删除临时文件
             try {
-                assert filePath != null;
-                FileUtils.forceDeleteOnExit(new java.io.File(filePath));
+                if(tempFile != null){
+                    FileUtils.forceDeleteOnExit(tempFile) ;
+                }
             } catch (IOException e) {
                 log.error("删除临时文件失败", e);
             }
