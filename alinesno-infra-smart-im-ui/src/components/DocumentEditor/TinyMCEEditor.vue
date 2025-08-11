@@ -7,10 +7,7 @@
 <script setup>
 import { computed, reactive, watch, ref, nextTick, onMounted } from "vue"; //全屏
 import { uploadFile } from "@/api/base/im/scene/contentFormatterDocument";
-
-import { Pattern as PolarisPattern } from '@ephox/polaris';
- 
-
+  
 import tinymce from "tinymce/tinymce";
 // import "tinymce/skins/content/default/content.css";
 import Editor from "@tinymce/tinymce-vue";
@@ -75,7 +72,7 @@ const props = defineProps({
   },
   toolbar: {
     type: [String, Array, Boolean],
-    default: "undo redo | accordion accordionremove bold italic underline strikethrough ltr rtl indent searchreplace",
+    default: "undo redo | accordion accordionremove bold italic underline strikethrough ltr rtl indent searchreplace fullscreen",
   },
   readonly: {
     type: Boolean,
@@ -659,6 +656,7 @@ const handleSetContent = (content) => {
 
 // 获取值
 const handleGetContent = () => {
+  console.log("tinymce.activeEditor.getContent() = " + tinymce.activeEditor.getContent());
   return tinymce.activeEditor.getContent();
 };
 
