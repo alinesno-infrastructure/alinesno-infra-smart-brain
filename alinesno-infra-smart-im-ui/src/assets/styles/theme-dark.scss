@@ -1,698 +1,791 @@
-@import 'element-plus/theme-chalk/dark/css-vars.css';
+@import "element-plus/theme-chalk/dark/css-vars.css";
 
 $dark-bg-color: #1d1e1f;
 $dark-bg-panel: #262727;
-$dark-text-color: #E5EAF3;
+$dark-text-color: #e5eaf3;
 $dark-border-color: rgba(204, 204, 220, 0.12);
 
 html.dark {
-    /* 自定义深色背景颜色 */
-    --el-bg-color: #1d1e1f;
-    background: #1d1e1f;
+  /* 自定义深色背景颜色 */
+  --el-bg-color: #1d1e1f;
+  background: #1d1e1f;
 
-    #app {
-        background-color: $dark-bg-color ;
+  #app {
+    background-color: $dark-bg-color;
+  }
+
+  .aip-appinfo-header {
+    .title,
+    .title-desc {
+      color: $dark-text-color !important;
     }
 
-    .aip-appinfo-header {
+    .header-icon-banner {
+      color: $dark-text-color !important;
+    }
+  }
 
-        .title,
-        .title-desc {
-            color: $dark-text-color !important;
-        }
+  .panel-title {
+    color: $dark-text-color !important;
+  }
 
-        .header-icon-banner {
-            color: $dark-text-color !important;
-        }
+  .top-headers {
+    background-color: $dark-bg-color;
+    border-bottom: 1px solid #000;
+
+    .header-logo-label {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .dashboard-home {
+    background-color: $dark-bg-color;
+    color: $dark-text-color !important;
+  }
+
+  .siderbar {
+    background-color: $dark-bg-color !important;
+    border-right: 1px solid #000 !important;
+    top: 0px;
+  }
+
+  .acp-dashboard {
+    background-color: $dark-bg-color !important;
+
+    .panel-header {
+      background-color: $dark-bg-color !important;
+      border-bottom: 1px solid $dark-border-color;
     }
 
-    .panel-title {
-        color: $dark-text-color !important;
-    }
+    .panel-body {
+      background: $dark-bg-color !important;
 
-    .top-headers {
-        background-color: $dark-bg-color ;
-        border-bottom: 1px solid #000;
-
-        .header-logo-label {
-            color: $dark-text-color !important;
-        }
-    }
-
-    .dashboard-home {
-        background-color: $dark-bg-color ;
-        color: $dark-text-color !important;
-    }
-
-    .siderbar {
-        background-color: $dark-bg-color !important;
-        border-right: 1px solid #000 !important;
-        top: 0px;
-    }
-
-    .acp-dashboard {
-        background-color: $dark-bg-color !important;
-
-        .panel-header {
-            background-color: $dark-bg-color !important;
-            border-bottom: 1px solid $dark-border-color ;
-        }
-
-        .panel-body {
-            background: $dark-bg-color !important;
-
-            ul.panel-item-text li {
-                background: $dark-bg-panel !important;
-                border-radius: 2px;
-                border-bottom: 0px solid $dark-border-color !important;
-            }
-        }
-
-        li.app-items {
-            border-bottom: 0px solid $dark-border-color !important;
-        }
-
-        .app-item-title {
-            color: $dark-text-color !important;
-        }
-    }
-
-    .top-headers .header-text .header-label-text {
-        color: $dark-text-color !important;
-    }
-
-    .info-h {
-        border-top: 0px;
-        border-bottom: 0px;
-        background: $dark-bg-color !important;
-    }
-
-    .direct-box li.box-item {
-        border-left: 0px !important;
-
-        .panel-describe {
-            color: $dark-text-color !important;
-        }
-    }
-
-    .circle-wave {
-        .circle-wave-inner {
-            background: $dark-bg-color !important;
-            color: $dark-text-color !important;
-        }
-    }
-
-    .learn-container {
-        background: $dark-bg-color !important;
-
-        .learn-setions {
-            background: $dark-bg-color !important;
-
-            ul.setion-box-ul li.setion-box-li {
-                background: $dark-bg-panel !important;
-                border: 0px;
-            }
-        }
-
-        .title-desc {
-            color: $dark-text-color !important;
-        }
-    }
-
-    .acp-support-container {
-        background: $dark-bg-color !important;
-
-        ul li .yysyycon {
-            background: $dark-bg-panel !important;
-
-            h1,
-            h2 {
-                color: $dark-text-color !important;
-            }
-        }
-    }
-
-    .acp-dashboard .acp-app-list ul li.app-items .app-item.desc {
-        color: $dark-text-color !important;
-    }
-
-    .splitpanes.default-theme .splitpanes__splitter {
-        background: $dark-bg-color !important;
-    }
-
-    .default-theme.splitpanes--vertical>.splitpanes__splitter,
-    .default-theme .splitpanes--vertical>.splitpanes__splitter {
-        border: 1px solid $dark-bg-color !important;
-    }
-
-    .splitpanes.default-theme .splitpanes__pane {
-        background: $dark-bg-color !important;
-    }
-
-    .pagination-container {
-        background: $dark-bg-color !important;
-    }
-
-    .el-table .el-table__header-wrapper th,
-    .el-table .el-table__fixed-header-wrapper th {
-        background: $dark-bg-color !important;
-        color: $dark-text-color !important;
-    }
-
-    .monitor-item-type-box {
-        font-size: 14px;
+      ul.panel-item-text li {
         background: $dark-bg-panel !important;
         border-radius: 2px;
-        padding: 10px;
-        margin-bottom: 5px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 5px;
-
-        &:hover {
-            background: $dark-bg-color !important;
-        }
-    }
-
-    .el-tree-node {
-        padding-top: 3px !important;
-        padding-bottom: 3px !important;
-    }
-
-    .custom-tree-node {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 14px;
-        padding-right: 8px;
-
-        .desc {
-            color: #999; // 设置描述文字颜色
-            font-size: 12px;
-            margin-left: 10px;
-        }
-    }
-
-    .acp-support-container .cttll {
-        color: $dark-text-color !important;
-    }
-
-    .smart-container {
-
-        .robot-chat-body,
-        .robot-chat-header,
-        .robot-chat-footer {
-            background: #262727 !important;
-            border-bottom: 0px !important;
-            border-radius: 10px;
-        }
-        .robot-chat-footer {
-            box-shadow: 1px 0px 6px rgb(0 0 0 / 55%);
-            border: 1px solid #1d1e1f ;
-        }
-    }
-
-    .robot-chat-ai-say-box .chat-ai-say-body .say-message-body {
-        background: #1d1e1f !important;
-    }
-
-    .chat-container .input-chat-box {
-        background: #1d1e1f !important;
-
-        .el-input__wrapper {
-            background: #1d1e1f !important;
-        }
-    }
-
-
-    .agent-single-right-panel {
-        border-left: 1px solid $dark-border-color;
-        background-color: $dark-bg-color;
-
-        .content-area {
-            background-color: $dark-bg-color;
-        }
-    }
-
-    .robot-chat-help-panel {
-        background-color: $dark-bg-color !important;
-    }
-
-    .robot-chat-help-title {
         border-bottom: 0px solid $dark-border-color !important;
+      }
     }
 
-    li.item-process {
-        background: #262727 !important;
-        // .item-process-content {
-        // }
+    li.app-items {
+      border-bottom: 0px solid $dark-border-color !important;
     }
 
-    .agent-single-right-panel .stat-item {
-        color: $dark-text-color ;
+    .app-item-title {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .top-headers .header-text .header-label-text {
+    color: $dark-text-color !important;
+  }
+
+  .info-h {
+    border-top: 0px;
+    border-bottom: 0px;
+    background: $dark-bg-color !important;
+  }
+
+  .direct-box li.box-item {
+    border-left: 0px !important;
+
+    .panel-describe {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .circle-wave {
+    .circle-wave-inner {
+      background: $dark-bg-color !important;
+      color: $dark-text-color !important;
+    }
+  }
+
+  .learn-container {
+    background: $dark-bg-color !important;
+
+    .learn-setions {
+      background: $dark-bg-color !important;
+
+      ul.setion-box-ul li.setion-box-li {
+        background: $dark-bg-panel !important;
+        border: 0px;
+      }
     }
 
-    .tpl-app {
-        color: $dark-text-color;
+    .title-desc {
+      color: $dark-text-color !important;
     }
+  }
 
-    .tpl-app,
-    .app-main {
-        background-color: $dark-bg-color !important;
+  .acp-support-container {
+    background: $dark-bg-color !important;
+
+    ul li .yysyycon {
+      background: $dark-bg-panel !important;
+
+      h1,
+      h2 {
+        color: $dark-text-color !important;
+      }
     }
+  }
 
-    .semi-card-container {
-        background: #262727 !important;
+  .acp-dashboard .acp-app-list ul li.app-items .app-item.desc {
+    color: $dark-text-color !important;
+  }
 
-        .card-title,
-        .card-desc {
-            color: $dark-text-color !important;
+  .splitpanes.default-theme .splitpanes__splitter {
+    background: $dark-bg-color !important;
+  }
+
+  .default-theme.splitpanes--vertical > .splitpanes__splitter,
+  .default-theme .splitpanes--vertical > .splitpanes__splitter {
+    border: 1px solid $dark-bg-color !important;
+  }
+
+  .splitpanes.default-theme .splitpanes__pane {
+    background: $dark-bg-color !important;
+  }
+
+  .pagination-container {
+    background: $dark-bg-color !important;
+  }
+
+  .el-table .el-table__header-wrapper th,
+  .el-table .el-table__fixed-header-wrapper th {
+    background: $dark-bg-color !important;
+    color: $dark-text-color !important;
+  }
+
+  .monitor-item-type-box {
+    font-size: 14px;
+    background: $dark-bg-panel !important;
+    border-radius: 2px;
+    padding: 10px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+
+    &:hover {
+      background: $dark-bg-color !important;
+    }
+  }
+
+  .el-tree-node {
+    padding-top: 3px !important;
+    padding-bottom: 3px !important;
+  }
+
+  .custom-tree-node {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    padding-right: 8px;
+
+    .desc {
+      color: #999; // 设置描述文字颜色
+      font-size: 12px;
+      margin-left: 10px;
+    }
+  }
+
+  .acp-support-container .cttll {
+    color: $dark-text-color !important;
+  }
+
+  .smart-container {
+    .robot-chat-body,
+    .robot-chat-header,
+    .robot-chat-footer {
+      background: #262727 !important;
+      border-bottom: 0px !important;
+      border-radius: 10px;
+    }
+    .robot-chat-footer {
+      box-shadow: 1px 0px 6px rgb(0 0 0 / 55%);
+      border: 1px solid #1d1e1f;
+    }
+  }
+
+  .robot-chat-ai-say-box .chat-ai-say-body .say-message-body {
+    background: #1d1e1f !important;
+  }
+
+  .chat-container .input-chat-box {
+    background: #1d1e1f !important;
+
+    .el-input__wrapper {
+      background: #1d1e1f !important;
+    }
+  }
+
+  .agent-single-right-panel {
+    border-left: 1px solid $dark-border-color;
+    background-color: $dark-bg-color;
+
+    .content-area {
+      background-color: $dark-bg-color;
+    }
+  }
+
+  .robot-chat-help-panel {
+    background-color: $dark-bg-color !important;
+  }
+
+  .robot-chat-help-title {
+    border-bottom: 0px solid $dark-border-color !important;
+  }
+
+  li.item-process {
+    background: #262727 !important;
+    // .item-process-content {
+    // }
+  }
+
+  .agent-single-right-panel .stat-item {
+    color: $dark-text-color;
+  }
+
+  .tpl-app {
+    color: $dark-text-color;
+  }
+
+  .tpl-app,
+  .app-main {
+    background-color: $dark-bg-color !important;
+  }
+
+  .semi-card-container {
+    background: #262727 !important;
+
+    .card-title,
+    .card-desc {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .card-container {
+    h1,
+    p {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .semi-card-container .semi-divider {
+    border-color: $dark-bg-color;
+  }
+
+  .app-container {
+    background: $dark-bg-color !important;
+  }
+
+  .scene-card {
+    background: #262727 !important;
+    color: $dark-text-color !important;
+  }
+
+  .scene-app-container {
+    .app-row,
+    .right-chatbox-contain {
+      background: $dark-bg-color !important;
+    }
+  }
+
+  .feature-team-box h1 {
+    color: $dark-text-color !important;
+  }
+
+  .popular-item,
+  .section-title {
+    color: $dark-text-color !important;
+  }
+
+  .chat-agent-right-panel {
+    background: $dark-bg-color !important;
+  }
+
+  .scene-app-container
+    .app-row
+    .el-col:first-child
+    .avatar-title-container
+    .title,
+  .scene-app-container
+    .middle-section
+    .subordinate-roles
+    ul
+    li
+    .role-info
+    .role-title,
+  .scene-app-container .middle-section .triggers ul li .role-info .role-title,
+  .scene-app-container
+    .middle-section
+    .introduction
+    ul
+    li
+    .role-info
+    .role-title {
+    color: $dark-text-color !important;
+  }
+
+  #custom-context-menu {
+    background: $dark-bg-color !important;
+    border-color: $dark-border-color !important;
+  }
+
+  .semi-card-container .semi-avatar-square {
+    border: 1px solid #262727 !important;
+  }
+
+  .org-management {
+    background-color: $dark-bg-color !important;
+
+    .join-form {
+      background-color: #262727 !important;
+      border: 1px solid #1d1e1f !important;
+    }
+  }
+
+  .list-group-item {
+    border-top: 0px !important;
+    border-bottom: 1px solid $dark-border-color !important;
+  }
+
+  html .hljs {
+    color: $dark-text-color !important;
+  }
+
+  .miedia-editor-panel {
+    border-left: 1px solid $dark-border-color !important;
+  }
+
+  .exam-info-col .exam-info {
+    background-color: transparent !important;
+  }
+
+  .question-section-col .question-detail {
+    background-color: transparent !important;
+  }
+
+  .robot-chat-ai-say-box .chat-ai-say-body .chat-debugger {
+    background-color: #1d1e1f !important;
+
+    .chat-debugger-item {
+      color: #a5a5a5;
+      background: #1d1e1f;
+    }
+  }
+
+  .task-item-message {
+    color: #a5a5a5;
+    background: #1d1e1f;
+  }
+
+  .user-question-suggestions-container span.user-question-suggestions-item {
+    background: #1d1e20;
+    color: rgb(201, 209, 217);
+  }
+
+  .chat-attachment-wrapper .chat-attachment-container .file-item {
+    background: #1d1e20;
+  }
+
+  .chat-fileds-reference {
+    background: #1d1e20;
+  }
+  .chat-attachment-action-btn {
+    background-color: #1d1e20 !important;
+  }
+
+  .dialog-content .scene-list .box-card .scene-item {
+    background-color: $dark-bg-panel !important;
+
+    .scene-title {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .side-type-container {
+    .type-list {
+      div {
+        &:hover,
+        &.active {
+          background: #262727 !important;
         }
+      }
+    }
+  }
+
+  .scene-card-container {
+    border: 0px !important;
+    background: #262727 !important;
+
+    .scene-card-footer {
+      border-color: #1d1e1f !important;
+      border-width: 0.5px !important;
+    }
+  }
+
+  .workplace {
+    .main-content {
+      background: #1d1e1f !important;
     }
 
-    .card-container {
-
-        h1,
-        p {
-            color: $dark-text-color !important;
-        }
-    }
-
-    .semi-card-container .semi-divider {
-        border-color: $dark-bg-color;
-    }
-
-    .app-container {
-        background: $dark-bg-color !important;
-    }
-
-    .scene-card {
-        background: #262727 !important;
+    .workspace-header {
+      .workspace-title {
         color: $dark-text-color !important;
-    }
-
-    .scene-app-container {
-
-        .app-row,
-        .right-chatbox-contain {
-            background: $dark-bg-color !important;
-        }
-    }
-
-    .feature-team-box h1 {
+      }
+      .workspace-description {
         color: $dark-text-color !important;
+      }
     }
 
-    .popular-item,
-    .section-title {
-        color: $dark-text-color !important;
-    }
+    .recent-item {
+      color: $dark-text-color !important;
 
-    .chat-agent-right-panel {
-        background: $dark-bg-color !important;
-    }
-
-    .scene-app-container .app-row .el-col:first-child .avatar-title-container .title,
-    .scene-app-container .middle-section .subordinate-roles ul li .role-info .role-title,
-    .scene-app-container .middle-section .triggers ul li .role-info .role-title,
-    .scene-app-container .middle-section .introduction ul li .role-info .role-title {
-        color: $dark-text-color !important;
-    }
-
-    #custom-context-menu {
-        background: $dark-bg-color !important;
-        border-color: $dark-border-color !important;
-    }
-
-    .semi-card-container .semi-avatar-square {
-        border: 1px solid #262727 !important;
-    }
-
-    .org-management {
-        background-color: $dark-bg-color !important;
-
-        .join-form {
-            background-color: #262727 !important;
-            border: 1px solid #1d1e1f !important;
-        }
-    }
-
-    .list-group-item {
-        border-top: 0px !important;
-        border-bottom: 1px solid $dark-border-color !important;
-    }
-
-    html .hljs {
-        color: $dark-text-color !important;
-    }
-
-    .miedia-editor-panel {
-        border-left: 1px solid $dark-border-color !important;
-    }
-
-    .exam-info-col .exam-info {
-        background-color: transparent !important;
-    }
-
-    .question-section-col .question-detail {
-        background-color: transparent !important;
-    }
-
-    .robot-chat-ai-say-box .chat-ai-say-body .chat-debugger {
+      &:hover {
         background-color: #1d1e1f !important;
-
-        .chat-debugger-item {
-            color: #a5a5a5;
-            background: #1d1e1f;
-        }
+      }
     }
 
-    .task-item-message{
-        color: #a5a5a5;
+    .agent-card {
+      background: #262727 !important;
+      border-color: #262727 !important;
+    }
+
+    .agent-description {
+      color: $dark-text-color !important;
+    }
+
+    .sidebar {
+      background: #262727 !important;
+    }
+  }
+
+  .user-integral {
+    background-color: #1d1e1f !important;
+
+    .integral-level {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .welcome-card {
+    background-color: #1d1e1f !important;
+
+    .header-text h1,
+    .welcome-example-section h3 {
+      color: $dark-text-color !important;
+    }
+
+    .feature-item {
+      background: #262727 !important;
+    }
+
+    .tip-section {
+      background: #262727 !important;
+
+      .tip-content p {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .welcome-example-item {
+      background: #262727 !important;
+      .text-label {
+        color: $dark-text-color !important;
+      }
+    }
+  }
+
+  .exam-pager-card {
+    background: #262727 !important;
+
+    .semi-divider-horizontal {
+      border-color: #1d1e1f !important;
+    }
+  }
+
+  .exam-pager-main {
+    background-color: $dark-bg-panel !important ;
+  }
+
+  .exam-pagercontainer {
+    .exam-pager-aside {
+      border-right: 1px solid $dark-bg-panel;
+      background: #262727 !important;
+    }
+  }
+
+  .article-function-panel {
+    background: #262727 !important;
+
+    .title {
+      color: $dark-text-color !important;
+    }
+
+    .task-item,
+    .item-status {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+  }
+
+  .el-container {
+    background: #262727 !important;
+  }
+
+  .editable-title-container {
+    .title-display {
+      background: $dark-bg-panel !important;
+    }
+  }
+
+  .ppt-pager-container {
+    .ppt-pager-aside {
+      border-right: 1px solid $dark-bg-panel;
+      background: #262727 !important;
+    }
+
+    .long-text-container {
+      background: #1d1e1f !important;
+
+      .title-section .title {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .example-item {
+      background: #262727 !important;
+
+      .example-text {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .input-button-section {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+    }
+
+    .pager-gen-result-panel .pager-container {
+      background: #262727 !important;
+    }
+
+    .review-question-preview-title {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+    }
+
+    .research-template-type-item {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+  }
+
+  .research-template-container .research-template-list .research-template-item {
+    background: #1d1e1f !important;
+
+    .research-template-item-title,
+    .research-template-item-content {
+      color: $dark-text-color !important;
+    }
+  }
+
+  .research-template-container
+    .research-template-list
+    .research-template-item.active {
+    background: #409eff !important;
+  }
+
+  .exam-pager-card .scene-tags span.scene-tag-time {
+    color: $dark-text-color !important;
+    opacity: 1;
+    background: #1d1e1f !important;
+  }
+
+  .chapter-title {
+    background: #262727 !important;
+  }
+
+  .long-text-editor {
+    .context-menu {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+
+      .input-section input {
+        background: #1d1e1f !important;
+      }
+    }
+
+    .ai-output-panel {
+      .ai-output-header {
+        border-bottom: 1px solid #262727;
         background: #1d1e1f;
-    }
+      }
 
-    .user-question-suggestions-container span.user-question-suggestions-item{
-        background: #1d1e20;
-        color: rgb(201, 209, 217);
-    }
-
-    .chat-attachment-wrapper .chat-attachment-container .file-item{
-        background: #1d1e20;
-    }
-
-    .chat-fileds-reference{
-        background: #1d1e20;
-    }
-    .chat-attachment-action-btn{
-        background-color: #1d1e20 !important;
-    }
-
-    .dialog-content .scene-list .box-card .scene-item {
-        background-color: $dark-bg-panel !important;
-
-        .scene-title{
-            color: $dark-text-color !important;
-        }
-    }
-
-    .side-type-container {
-
-        .type-list {
-            div {
-                &:hover,
-                &.active {
-                    background: #262727 !important;
-                }
-            }
-        }
-    }
-
-    .scene-card-container{
-        border: 0px !important;
-        background: #262727 !important;
-
-        .scene-card-footer{
-            border-color: #1d1e1f !important;
-            border-width: 0.5px !important;
-        }
-    }
-
-    .workplace {
-        .main-content{
-            background: #1d1e1f !important
-        }
-
-         .workspace-header {
-            .workspace-title {
-                color: $dark-text-color !important;
-            }
-            .workspace-description{
-                color: $dark-text-color !important;
-            }
-         }
-
-         .recent-item{
-            color: $dark-text-color !important;
-
-             &:hover {
-                background-color: #1d1e1f  !important;
-             }
-         }
-
-        .agent-card{
-            background: #262727 !important;
-            border-color: #262727 !important;
-        }
-
-        .agent-description{
-            color: $dark-text-color !important;
-        }
-
-        .sidebar{
-            background: #262727 !important;
-        }
-    }
-
-    .user-integral{
-        background-color: #1d1e1f  !important;
-
-        .integral-level{
-            color: $dark-text-color !important;
-        }
-    }
-
-    .welcome-card{
-        background-color: #1d1e1f  !important;
-
-        .header-text h1 , .welcome-example-section h3{
-            color: $dark-text-color !important;
-        }
-
-         .feature-item{
-            background: #262727 !important;
-         }
-
-         .tip-section{
-            background: #262727 !important;
-
-            .tip-content p{
-                color: $dark-text-color !important;
-            }
-         }
-
-         .welcome-example-item{
-            background: #262727 !important;
-            .text-label {
-               color: $dark-text-color !important;
-            }
-         }
-    }
-
-    .exam-pager-card{
-        background: #262727 !important;
-
-        .semi-divider-horizontal{ 
-            border-color: #1d1e1f !important
-        }
-    }
-
-     .exam-pager-main{
-        background-color: $dark-bg-panel !important ;
-     }
-
-     .exam-pagercontainer{
-
-        .exam-pager-aside { 
-            border-right: 1px solid  $dark-bg-panel;
-            background: #262727 !important; 
-        }
-     } 
-
-     .article-function-panel{
-        background: #262727 !important; 
-
-        .title {
-            color: $dark-text-color !important;
-        }
-
-         .task-item , .item-status{
-            background: #1d1e1f !important;
-            color: $dark-text-color !important;
-         }
-     }
-
-     .el-container{
-        background: #262727 !important; 
-     }
-
-     .editable-title-container{
-        .title-display {
-            background: $dark-bg-panel !important; 
-        }
-
-     } 
-
-     .ppt-pager-container{
-        .ppt-pager-aside {
-            border-right: 1px solid  $dark-bg-panel;
-            background: #262727 !important; 
-        } 
-
-         .long-text-container {
-            background: #1d1e1f !important;
-
-             .title-section .title{
-                color: $dark-text-color !important;
-             }
-         }
-
-         .example-item{
-            background: #262727 !important; 
-
-            .example-text{
-                color: $dark-text-color !important;
-            }
-            
-         }
-
-         .input-button-section{
-            background: #262727 !important;
-            border:1px solid #262727  !important;
-         }
-
-          .pager-gen-result-panel .pager-container{
-             background: #262727 !important;
-          }
-
-          .review-question-preview-title {
-            background: #262727 !important;
-            color: $dark-text-color !important;
-          }
-
-          .research-template-type-item{
-            background: #1d1e1f !important;
-            color: $dark-text-color !important;
-          }
- 
-     }
-
-     .research-template-container .research-template-list .research-template-item {
-        background: #1d1e1f !important; 
-
-
-        .research-template-item-title ,  .research-template-item-content{
-            color: $dark-text-color !important;
-        }
-     }
-
-     .research-template-container .research-template-list .research-template-item.active {
-            background: #409eff !important;
-        }
-
-
-        .exam-pager-card .scene-tags span.scene-tag-time{
-            color: $dark-text-color !important;
-            opacity: 1;
-            background: #1d1e1f !important; 
-        }
-
-        .chapter-title{
-            background: #262727 !important; 
-        }
-
-        .long-text-editor{
-            .context-menu {
-                    background: #262727 !important; 
-                    border: 1px solid #262727 !important; 
-
-                    .input-section input {
-                        background: #1d1e1f !important; 
-                    }
-            } 
-
-            .ai-output-panel {
-
-                .ai-output-header{
-                    border-bottom: 1px solid #262727;
-                    background: #1d1e1f;
-                }
-
-                 .ai-output-content{
-                    background: #262727;
-                 }
-
-                .ai-output-actions{
-                    border-top: 1px solid #262727;
-                    background: #1d1e1f;
-                }
-            }
-        }
-
-    .contract-review-container{ 
-        background: color-mix(in srgb, #262727 70%, black 10%);
-
-        .review-methods-container , .contract-overview-container{
+      .ai-output-content {
         background: #262727;
+      }
 
-            .contract-info-value{
-                color: $dark-text-color !important;
-                background: #1d1e1f !important; 
-            }
-        }
-
-        .review-methods-title , .contract-overview-title{
-            color: $dark-text-color !important;
-            background: #1d1e1f !important; 
-        }
-    }
-
-    .review-checklist-container {
-        .review-checklist-item-content , .review-checklist-rule-title {
-           color: $dark-text-color !important;
-           background: #262727 !important; 
-        }
-    }
-
-    .document-review-container {
+      .ai-output-actions {
+        border-top: 1px solid #262727;
         background: #1d1e1f;
+      }
+    }
+  }
 
-        .review-upload-container {
-            border: 1px solid #262727 !important; 
-        }
+  .contract-review-container {
+    background: color-mix(in srgb, #262727 70%, black 10%);
 
-        .review-knowledge-base{
-            background: #262727 !important; 
-            color: $dark-text-color !important;
-            border: 1px solid #262727 !important; 
-        }
+    .review-methods-container,
+    .contract-overview-container {
+      background: #262727;
+
+      .contract-info-value {
+        color: $dark-text-color !important;
+        background: #1d1e1f !important;
+      }
     }
 
-    .exam-pager-card {
-        .exam-pager-card-content {
-            .scene-datetime {
-                color: $dark-text-color !important;
-            opacity: 1;
-            background: #1d1e1f !important; 
-        } 
-    } 
-    
-}
+    .review-methods-title,
+    .contract-overview-title {
+      color: $dark-text-color !important;
+      background: #1d1e1f !important;
+    }
+  }
 
-.ppt-pager-main {
-    background: #1d1e1f !important; 
+  .review-checklist-container {
+    .review-checklist-item-content,
+    .review-checklist-rule-title {
+      color: $dark-text-color !important;
+      background: #262727 !important;
+    }
+  }
 
-    .title-section{
-        .title  {
-color: $dark-text-color !important;
-        }
-       
+  .document-review-container {
+    background: #1d1e1f;
+
+    .review-upload-container {
+      border: 1px solid #262727 !important;
+    }
+
+    .review-knowledge-base {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+      border: 1px solid #262727 !important;
+    }
+  }
+
+  .exam-pager-card {
+    .exam-pager-card-content {
+      .scene-datetime {
+        color: $dark-text-color !important;
+        opacity: 1;
+        background: #1d1e1f !important;
+      }
+    }
+  }
+
+  .ppt-pager-main {
+    background: #1d1e1f !important;
+
+    .title-section {
+      .title {
+        color: $dark-text-color !important;
+      }
     }
 
     span.static-text {
-       color: $dark-text-color !important; 
+      color: $dark-text-color !important;
     }
-}
+  }
+
+  .dataset-page-contaier {
+    background: #1d1e1f;
+
+    .rule-item {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+      border: 1px solid #262727 !important;
+    }
+
+    .siderbar-type-list {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+
+      .group-item {
+        background: #1d1e1f;
+
+        .filename {
+          color: $dark-text-color !important;
+        }
+      }
+    }
+
+    .file-list-footer {
+      border-top: 1px solid #1d1e1f !important;
+    }
+
+    .review-group-add {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+    }
+  }
+
+  .article-template-container .article-template-list .article-template-item {
+    background: #1d1e1f;
+    border: 1px solid #1d1e1f;
+    &.active {
+      .article-template-item-title {
+        color: #333 !important;
+      }
+    }
+  }
+
+  .article-template-item-title {
+    color: $dark-text-color !important;
+  }
+
+  .article-edit-container {
+    .article-edit-main {
+      background: #1d1e1f !important;
+    }
+
+    .article-edit-right-aside {
+      background: #1d1e1f !important;
+      border: 1px solid #1d1e1f !important;
+    }
+  }
+
+  .article-edit-content-display{
+
+      .ai-output-panel {
+      .ai-output-header {
+        border-bottom: 1px solid #262727;
+        background: #1d1e1f;
+      }
+
+      .ai-output-content {
+        background: #262727;
+      }
+
+      .ai-output-actions {
+        border-top: 1px solid #262727;
+        background: #1d1e1f;
+      }
+    }
+    .context-menu {
+        background: #1d1e1f !important;
+      border: 1px solid #1d1e1f !important;
+
+      .input-section input{
+        background: #262727 !important;
+      }
+    }
+  }
 }
