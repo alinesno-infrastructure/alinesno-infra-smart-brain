@@ -22,6 +22,20 @@ public enum ReviewPositionEnums {
     }
 
     /**
+     * 根据value获取枚举
+     * @param value
+     * @return
+     */
+    public static ReviewPositionEnums getByValue(String value) {
+        for (ReviewPositionEnums enums : ReviewPositionEnums.values()) {
+            if (enums.getValue().equals(value)) {
+                return enums;
+            }
+        }
+        return null;
+    }
+
+    /**
      * 判断立场是否在枚举中
      */
     public static boolean contains(String value) {
