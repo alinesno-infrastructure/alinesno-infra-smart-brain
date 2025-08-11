@@ -98,7 +98,7 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
 
     // 新增字段：审核立场
     @TableField("review_position")
-    @Column(type = MySqlTypeConstant.VARCHAR, length = 2, comment = "审核立场")
+    @Column(type = MySqlTypeConstant.VARCHAR, length = 10 , comment = "审核立场")
     private String reviewPosition;
 
     // 合同元数据
@@ -128,5 +128,8 @@ public class DocReviewTaskEntity extends InfraBaseEntity {
     private String documentParseStatus ;
     // >>>>>>>>>>>>>>>>>>>>>>>>---------------- 状态管理_end -------------------------
 
+    @TableField("html_content")
+    @Column(type = MySqlTypeConstant.LONGTEXT, comment = "文档HTML内容")
+    private String htmlContent ;
 
 }
