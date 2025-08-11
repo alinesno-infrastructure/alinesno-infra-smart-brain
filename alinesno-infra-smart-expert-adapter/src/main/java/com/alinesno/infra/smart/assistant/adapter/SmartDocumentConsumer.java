@@ -54,7 +54,7 @@ public interface SmartDocumentConsumer {
      * @return 包含DOCX文件字节数组的响应实体
      */
     @Post(url = "/api/v1/docx/convertHtmlToDocx")
-    R<byte[]> convertHtmlToDocx(@DataFile("file") File file);
+    byte[] convertHtmlToDocx(@DataFile("file") File file);
 
     /**
      * 01_文档转换 - 提取DOCX中的图片
@@ -90,11 +90,11 @@ public interface SmartDocumentConsumer {
 
     /**
      * HTML转政务公文
-     * @param htmlContent HTML内容字符串
+     * @param file HTML内容字符串
      * @return API响应
      */
     @Post(url = "/api/v1/docx/format/htmlToOfficial")
-    String htmlToOfficial(@Body("htmlContent") String htmlContent);
+    String htmlToOfficial(@DataFile("file") File file);
 
     /**
      * Markdown转换成DOCX
