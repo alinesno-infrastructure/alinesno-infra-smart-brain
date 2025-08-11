@@ -150,7 +150,7 @@
                                         </div>
 
                                         <div class="platform-container-YOpW3B">
-                                            <div class="semi-space semi-space-align-center semi-space-horizontal" style="font-size:14px;gap: 4px;display: flex;color: #1d75b0;" v-if="item.roleType">
+                                            <div class="semi-space semi-space-align-center semi-space-horizontal" style="font-size:14px;gap:  4px;display: flex;color: #1d75b0;">
                                                 <span v-if="item.roleType == 'single_role'">
                                                     <i class="fa-solid fa-user-ninja"></i>
                                                 </span>
