@@ -11,6 +11,8 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewGenReviewDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewTaskDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.ModifyDocumentDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.UpdateTaskNameDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
@@ -21,14 +23,21 @@ import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.HttpStatus;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -151,6 +160,79 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
         DocReviewTaskEntity entity = service.getOne(wrapper) ;
 
         return AjaxResult.success("操作成功." , DocReviewTaskDto.fromEntity(entity));
+    }
+
+    /**
+     * 保存修改后的文档
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/saveDocumentContent")
+    public AjaxResult saveDocument(@Validated @RequestBody ModifyDocumentDto dto) {
+
+        DocReviewTaskEntity entity = service.getById(dto.getTaskId());
+        entity.setHtmlContent(dto.getHtmlContent());
+        service.update(entity);
+
+        return AjaxResult.success("保存成功");
+    }
+
+    /**
+     * 下载文档
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/downloadDocument")
+    public void downloadDocument(@RequestParam Long taskId , HttpServletResponse response , PermissionQuery query) {
+        try {
+
+            DocReviewTaskEntity entity = service.getById(taskId);
+            String content = entity.getHtmlContent();
+
+            // 2. 调用服务进行转换
+            byte[] result = content.getBytes(StandardCharsets.UTF_8) ;
+
+            // 3. 设置响应头
+            // 创建日期时间格式化器
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmmss");
+            String timeStamp = dateFormat.format(new Date());
+
+            // 构建最终文件名
+            String realFileName = String.format("%s_%s.docx", taskId, timeStamp);
+
+            response.setContentType("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+            response.setHeader("Content-Disposition", "attachment; filename=" + URLEncoder.encode(realFileName, StandardCharsets.UTF_8));
+            response.setContentLength(result.length);
+
+            // 4. 写入响应流
+            try (OutputStream out = response.getOutputStream()) {
+                out.write(result);
+                out.flush();
+            }
+        } catch (Exception e) {
+            log.error("下载文件失败", e);
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            try {
+                response.getWriter().write("文件下载失败: " + e.getMessage());
+            } catch (IOException ex) {
+                log.error("写入错误响应失败", ex);
+            }
+        }
+    }
+
+    /**
+     * 更新文档名称
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/updateDocumentName")
+    public AjaxResult updateDocumentName(@RequestBody @Validated UpdateTaskNameDto dto , PermissionQuery query) {
+
+        DocReviewTaskEntity entity = service.getById(dto.getTaskId());
+        entity.setTaskName(dto.getTaskName());
+        service.update(entity);
+
+        return AjaxResult.success("更新成功");
     }
 
     @Override
