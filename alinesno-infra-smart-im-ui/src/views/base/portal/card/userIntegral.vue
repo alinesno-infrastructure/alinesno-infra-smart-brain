@@ -52,6 +52,7 @@ const userIcon = computed(() => {
     padding: 12px;
     border-radius: 8px;
     background-color: #f8f9fa;
+    margin-bottom: 8px;
 
     .integral-title {
         font-size: 15px;
