@@ -93,6 +93,21 @@
 
         </div>
 
+<!-- 运行抽屉 -->
+    <div class="aip-flow-drawer flow-control-panel">
+        <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+            :with-header="true">
+            <div style="margin-top: 0px;">
+                <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
+            </div>
+        </el-drawer>
+    </div>
+
+            <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef"  
+            :close-enable="false" 
+        />
 
   </ArticleWriterContainer>
 </template>
@@ -101,6 +116,7 @@
 import { nextTick, ref } from 'vue';
 import { ElMessage , ElLoading } from 'element-plus';
 
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 import ArticleWriterContainer from "./articleWriterContainer"
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
@@ -143,12 +159,10 @@ const topics = [
     { text: "年度工作回顾与未来规划" }
 ];
 
+const generatingStatusRef = ref(null)
+
 const outline = ref(null)
-
-// const pptId = ref(null)
-// const pagerGenContainerPanelRef = ref(null)
-// const dataAnalysisDisplayRef = ref(null)
-
+ 
 // 执行面板
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
@@ -157,11 +171,7 @@ const currentPromptTemplate = ref('帮我写一篇文章')
 const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
 const showArticleOutput = ref(false)
-
-// // 表单引用
-// const dialogVisible = ref(false);
-// const formRef = ref(null)
-
+  
 const channelStreamId= ref(route.query.channelStreamId || snowflake.generate())
 
 // 场景表单信息
@@ -197,33 +207,11 @@ const handleUpload = () => {
   if (attachmentPanelRef.value) {
     attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
   }
-};
-
-// 生成PPT
-// const generatorPPT = () => {
-//   savePPTOutline(sceneId.value , 
-//       outline.value , 
-//       pptId.value , 
-//       formData.value.pptConfig,
-//       formData.value.promptText
-//     ).then(res => {
-//     pptId.value = res.data ;
-//     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
-//   }).catch(error => {
-//     ElMessage.error(error.message)
-//   })
-// }
-
-// // 计算总题目数和总分
-// const updateTotalStats = (stats) => {
-//   totalQuestions.value = stats.totalQuestions
-//   totalScore.value = stats.totalScore
-// }
+}; 
 
 const handleGetScene = () => {
   getScene(sceneId.value).then(res => {
-    currentSceneInfo.value = res.data;
-    // handleRoleBySceneIdAndAgentType();
+    currentSceneInfo.value = res.data; 
 
     if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) {
 
@@ -245,49 +233,10 @@ const handleGetScene = () => {
   })
 }
 
-// // 关闭对话框前的处理
-// const handleClose = (done) => {
-//   // 可以在这里添加关闭前的确认逻辑
-//   done()
-// }
-
+ 
 const handleExampleClick = (item) => {
-  formData.value.promptText = item.text;
-  // generaterText();
-}
-
-// // 保存试卷题目信息
-// const handleSavePagerQuestion = async () => {
-
-//   try {
-//     // 验证表单
-//     await formRef.value.validate()
-//     console.log('保存文章数据:', formData.value)
-
-//     const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
-
-//     const data = {
-//       sceneId: sceneId.value,
-//       channelStreamId: channelStreamId.value,
-//       pagerType: formData.value.pagerType,
-//       difficulty: formData.value.difficultyLevel,
-//       examStructure: formData.value.examStructure,
-//       questionList: questionList,
-//     }
-
-//     savePagerQuestion(data).then(res => {
-//       console.log('保存成功:', res)
-//     })
-    
-//     ElMessage.success('试卷保存成功')
-//     dialogVisible.value = false
-
-//   } catch (error) {
-//     console.error('保存失败:', error)
-//     ElMessage.error('请填写完整的试卷信息')
-//   }
-
-// }
+  formData.value.promptText = item.text; 
+} 
 
 const generaterText = async () => {
 
@@ -320,13 +269,11 @@ const generaterText = async () => {
   })
 
   // 开始生成
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  });
-  let text = '文案正在生成，请稍等...' ; 
-  streamLoading.value.setText(text)
+ 
+  let text = '文案正在生成，请稍等...' ;  
+
+  generatingStatusRef.value?.loading()
+  generatingStatusRef.value?.setText(text) ;
   
   try {
 
@@ -357,7 +304,7 @@ const generaterText = async () => {
     return;
   } finally {
     // 无论成功或失败都关闭loading
-    streamLoading.value.close();
+    generatingStatusRef.value?.close();
     showDebugRunDialog.value = false ;
   }
 
