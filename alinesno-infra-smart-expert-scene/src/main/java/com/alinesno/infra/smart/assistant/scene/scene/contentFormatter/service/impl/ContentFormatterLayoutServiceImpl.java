@@ -5,6 +5,7 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.scene.common.utils.FileTool;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ImageCompressionUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentFormatDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
@@ -27,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -143,7 +145,13 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
         }
 
-        return smartDocumentConsumer.htmlToOfficial(htmlContent);
+        File tempFile;
+        try {
+            tempFile = FileTool.createTempHtmlFile(htmlContent);
+            return smartDocumentConsumer.htmlToOfficial(tempFile);
+        } catch (IOException e) {
+            throw new RpcServiceRuntimeException("格式化失败:" + e.getMessage());
+        }
     }
 
     @Override
@@ -157,10 +165,10 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
         File tempFile = null;
         try {
             // 2. 创建临时HTML文件
-            tempFile = createTempHtmlFile(content);
+            tempFile = FileTool.createTempHtmlFile(content);
 
             // 3. 调用转换工具将HTML转换为DOCX
-            byte[] docxContent = smartDocumentConsumer.convertHtmlToDocx(tempFile).getData();
+            byte[] docxContent = smartDocumentConsumer.convertHtmlToDocx(tempFile) ;
 
             if (docxContent == null || docxContent.length == 0) {
                 throw new RuntimeException("转换DOCX失败，返回内容为空");
@@ -182,23 +190,7 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
         }
     }
 
-    /**
-     * 创建临时HTML文件并写入内容
-     */
-    private File createTempHtmlFile(String content) throws IOException {
-        // 创建临时文件，后缀为.html
-        Path tempPath = Files.createTempFile("export-", ".html");
-        File tempFile = tempPath.toFile();
 
-        // 设置临时文件在JVM退出时自动删除
-        tempFile.deleteOnExit();
-
-        // 将内容写入临时文件
-        Files.writeString(tempPath, content,
-                StandardOpenOption.TRUNCATE_EXISTING);
-
-        return tempFile;
-    }
 
     /**
      * 检查导入数据中的重复排版名称
