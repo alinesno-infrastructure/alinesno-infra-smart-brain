@@ -91,11 +91,21 @@
 
                     <div class="review-checklist-button-section">
 
-                        <el-button style="width:100%" type="primary" size="large" @click="updateDocument">
-                            <i class="fa-solid fa-rocket"></i> 保存最新的文档
+                        <el-button :disabled="props.currentTaskInfo.resultGenStatus != 'success'" 
+                                style="width:49%" 
+                                type="primary" 
+                                size="large" 
+                                @click="handleUpdateDocumentContent">
+                            <i class="fa-solid fa-floppy-disk"></i> 保存修改后的文档
                         </el-button>
             
-                 
+                        <el-button :disabled="props.currentTaskInfo.resultGenStatus != 'success'" 
+                                style="width:49%" 
+                                type="warning" 
+                                size="large" 
+                                @click="handleDownloadDocument">
+                            <i class="fa-solid fa-download"></i> 下载文档
+                        </el-button>
                     </div>
 
                 </div>
@@ -110,7 +120,7 @@
 import { ref, onMounted, nextTick } from 'vue';
 
 import ReviewResultExpertButton from "./components/ReviewResultExpert.vue"
-
+ 
 import { useRoute } from 'vue-router';
 import { getCurrentInstance } from 'vue';
 import { saveAs } from 'file-saver'
@@ -131,6 +141,7 @@ import {
 const emit = defineEmits([
     'handleStepClick', 
     'searchAndReplace',
+    'handleUpdateDocumentContent',
     'genSingleChapterContent', 
     'closeGeneratorStatus',
     'generatorStatus'])
@@ -236,6 +247,16 @@ const downloadWordDocument = () => {
     getPreviewUrl(currentStoreId.value).then(res => {
         window.open(res.data);
     })
+}
+
+// 更新文档内容
+const handleUpdateDocumentContent = () => {
+    emit("handleUpdateDocumentContent")
+}
+
+// 文档下载
+const handleDownloadDocument = () => {
+    emit("downloadWordDocument")
 }
 
 // 导出标注文档
