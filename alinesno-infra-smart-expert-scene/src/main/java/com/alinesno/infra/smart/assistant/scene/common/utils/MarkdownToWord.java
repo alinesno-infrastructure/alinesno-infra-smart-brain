@@ -31,9 +31,9 @@ public class MarkdownToWord {
 
             // 构建 Pandoc 命令
             ProcessBuilder processBuilder = new ProcessBuilder(
-                    "pandoc", 
-                    tempMdFile.getAbsolutePath(), 
-                    "-o", 
+                    "pandoc",
+                    tempMdFile.getAbsolutePath(),
+                    "-o",
                     outputDocxFile.getAbsolutePath() ,
                     "--from" ,
                     "markdown-yaml_metadata_block");
