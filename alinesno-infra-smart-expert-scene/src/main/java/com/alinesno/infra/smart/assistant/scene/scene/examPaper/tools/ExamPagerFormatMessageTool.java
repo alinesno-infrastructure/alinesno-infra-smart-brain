@@ -210,66 +210,144 @@ public class ExamPagerFormatMessageTool {
         examScore.setExamStatus(ExamineeExamEnums.REVIEW.getCode());
         examScoreService.updateById(examScore);
 
-        try {
+        JSONArray questions = JSONArray.parseArray(examScore.getQuestions()); // 传入题目JSON数组
+        JSONObject answers = JSONObject.parseObject(examScore.getAnswers());   // 传入答案JSON对象
 
-            JSONArray questions = JSONArray.parseArray(examScore.getQuestions()); // 传入题目JSON数组
-            JSONObject answers = JSONObject.parseObject(examScore.getAnswers());   // 传入答案JSON对象
+        String markdownAnswer = QuestionAnswerFormatter.formatToMarkdown(questions, answers);
+        String markdownAnswerPrompt = ExamPagerPromptHandle.generatorMarkPrompt(markdownAnswer);
 
-            String markdownAnswer = QuestionAnswerFormatter.formatToMarkdown(questions , answers) ;
-            String markdownAnswerPrompt = ExamPagerPromptHandle.generatorMarkPrompt(markdownAnswer) ;
+        Long taskId = examScore.getId();
+        Long channelStreamId = examScore.getId();
 
-            Long taskId = examScore.getId();
-            Long channelStreamId = examScore.getId();
+        // 构建任务信息
+        MessageTaskInfo taskInfo = new MessageTaskInfo();
+        taskInfo.setRoleId(industryRole.getId());
+        taskInfo.setChannelStreamId(String.valueOf(channelStreamId));
+        taskInfo.setChannelId(examScore.getSceneId());
+        taskInfo.setSceneId(examScore.getSceneId());
+        taskInfo.setText(markdownAnswerPrompt);
 
-            // 构建任务信息
-            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+        // 调用角色服务生成内容
+        roleService.runRoleAgent(taskInfo)
+                .thenAccept(workflowExecutionDto -> {
+                    try {
+                        log.info("角色服务调用完成，taskId: {}", taskId);
+                        log.info("角色服务输出内容：{}", taskInfo.getFullContent());
 
-            taskInfo.setRoleId(industryRole.getId());
-            taskInfo.setChannelStreamId(String.valueOf(channelStreamId)) ;
-            taskInfo.setChannelId(examScore.getSceneId());
-            taskInfo.setSceneId(examScore.getSceneId());
-            taskInfo.setText(markdownAnswerPrompt);
+                        List<CodeContent> codeContent = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent());
 
-            // 调用角色服务生成内容
-            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
-            log.info("角色服务调用完成，taskId: {}", taskId);
-            log.info("角色服务输出内容：{}", taskInfo.getFullContent());
+                        // 生成分数 (实际应该根据评分逻辑计算)
+                        String jsonResult = codeContent.get(0).getContent();
+                        JSONObject jsonResultObject = JSONObject.parseObject(jsonResult);
+                        JSONArray examResults = jsonResultObject.getJSONArray("examResults");
 
-            List<CodeContent> codeContent = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
+                        Long score = examResults.stream()
+                                .map(item -> (JSONObject) item)
+                                .map(item -> item.getLong("score"))
+                                .reduce(0L, Long::sum);
 
-            // 生成分数 (实际应该根据评分逻辑计算)
-            String jsonResult = codeContent.get(0).getContent() ;
-            JSONObject jsonResultObject = JSONObject.parseObject(jsonResult);
-            JSONArray examResults = jsonResultObject.getJSONArray("examResults") ;
+                        boolean isPass = score >= 60;
 
-            Long score = examResults
-                    .stream()
-                    .map(item -> (JSONObject) item)
-                    .map(item -> item.getLong("score"))
-                    .reduce(0L, Long::sum);
+                        // 更新成绩信息
+                        examScore.setScore(score);
+                        examScore.setIsPass(isPass ? 1 : 0);
+                        examScore.setReviewTime(LocalDateTime.now());
+                        examScore.setAnalysisResult(jsonResultObject.toJSONString());
+                        examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
 
-            boolean isPass = score >= 60;
+                        examScore.setReviewerId(industryRole.getId());
+                        examScore.setReviewerName(industryRole.getRoleName());
+                        examScore.setReviewResult(examResults.toJSONString());
+                        examScore.setFieldProp("ai"); // 设置来源为AI
 
-            // 更新成绩信息
-            examScore.setScore(score);
-            examScore.setIsPass(isPass ? 1 : 0);
-            examScore.setReviewTime(LocalDateTime.now());
-            examScore.setAnalysisResult(jsonResultObject.toJSONString());
-            examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
-
-            examScore.setReviewerId(industryRole.getId());
-            examScore.setReviewerName(industryRole.getRoleName());
-            examScore.setReviewResult(examResults.toJSONString());
-            examScore.setFieldProp("ai"); // 设置来源为AI
-
-            examScoreService.updateById(examScore);
-
-        } catch (Exception e) {
-            log.error("阅卷出错", e);
-            // 出错时更新状态
-            examScore.setExamStatus(ExamineeExamEnums.CANCELED.getCode());
-            examScoreService.updateById(examScore);
-        }
+                        examScoreService.updateById(examScore);
+                    } catch (Exception e) {
+                        log.error("阅卷出错", e);
+                        // 出错时更新状态
+                        examScore.setExamStatus(ExamineeExamEnums.CANCELED.getCode());
+                        examScoreService.updateById(examScore);
+                    }
+                })
+                .exceptionally(ex -> {
+                    log.error("角色服务调用失败", ex);
+                    examScore.setExamStatus(ExamineeExamEnums.CANCELED.getCode());
+                    examScoreService.updateById(examScore);
+                    return null;
+                });
     }
+
+//    /**
+//     * 成绩结果评分，主要分两步:
+//     * 1. 先AI角色阅卷
+//     * @param examScore
+//     */
+//    @Async
+//    public void markExamScore(ExamScoreEntity examScore, IndustryRoleEntity industryRole, ExamPagerSceneEntity examPagerScene) {
+//
+//        // 更新状态为阅卷中
+//        examScore.setExamStatus(ExamineeExamEnums.REVIEW.getCode());
+//        examScoreService.updateById(examScore);
+//
+//        try {
+//
+//            JSONArray questions = JSONArray.parseArray(examScore.getQuestions()); // 传入题目JSON数组
+//            JSONObject answers = JSONObject.parseObject(examScore.getAnswers());   // 传入答案JSON对象
+//
+//            String markdownAnswer = QuestionAnswerFormatter.formatToMarkdown(questions , answers) ;
+//            String markdownAnswerPrompt = ExamPagerPromptHandle.generatorMarkPrompt(markdownAnswer) ;
+//
+//            Long taskId = examScore.getId();
+//            Long channelStreamId = examScore.getId();
+//
+//            // 构建任务信息
+//            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
+//
+//            taskInfo.setRoleId(industryRole.getId());
+//            taskInfo.setChannelStreamId(String.valueOf(channelStreamId)) ;
+//            taskInfo.setChannelId(examScore.getSceneId());
+//            taskInfo.setSceneId(examScore.getSceneId());
+//            taskInfo.setText(markdownAnswerPrompt);
+//
+//            // 调用角色服务生成内容
+//            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
+//            log.info("角色服务调用完成，taskId: {}", taskId);
+//            log.info("角色服务输出内容：{}", taskInfo.getFullContent());
+//
+//            List<CodeContent> codeContent = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
+//
+//            // 生成分数 (实际应该根据评分逻辑计算)
+//            String jsonResult = codeContent.get(0).getContent() ;
+//            JSONObject jsonResultObject = JSONObject.parseObject(jsonResult);
+//            JSONArray examResults = jsonResultObject.getJSONArray("examResults") ;
+//
+//            Long score = examResults
+//                    .stream()
+//                    .map(item -> (JSONObject) item)
+//                    .map(item -> item.getLong("score"))
+//                    .reduce(0L, Long::sum);
+//
+//            boolean isPass = score >= 60;
+//
+//            // 更新成绩信息
+//            examScore.setScore(score);
+//            examScore.setIsPass(isPass ? 1 : 0);
+//            examScore.setReviewTime(LocalDateTime.now());
+//            examScore.setAnalysisResult(jsonResultObject.toJSONString());
+//            examScore.setExamStatus(ExamineeExamEnums.REVIEW_END.getCode());
+//
+//            examScore.setReviewerId(industryRole.getId());
+//            examScore.setReviewerName(industryRole.getRoleName());
+//            examScore.setReviewResult(examResults.toJSONString());
+//            examScore.setFieldProp("ai"); // 设置来源为AI
+//
+//            examScoreService.updateById(examScore);
+//
+//        } catch (Exception e) {
+//            log.error("阅卷出错", e);
+//            // 出错时更新状态
+//            examScore.setExamStatus(ExamineeExamEnums.CANCELED.getCode());
+//            examScoreService.updateById(examScore);
+//        }
+//    }
 
 }
