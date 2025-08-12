@@ -199,7 +199,7 @@ onMounted(() => {
     max-width: 500px;
     padding: 20px;
     border-radius: 10px;
-    margin-top: 5vh;
+    margin-top: calc( 50vh - 320px);
     box-sizing: border-box;
 
     h2 {
