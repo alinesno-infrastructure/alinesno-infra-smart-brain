@@ -22,13 +22,13 @@ public enum SceneEnum {
             )
     )),
     // 深度搜索场景(DeepSearch)
-    DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "1", "", "fa-solid fa-magnifying-glass", true,
+    DEEP_SEARCH(new SceneInfoDto(120000000L, "深度搜索", "deepSearch", "深度搜索场景，聊天窗口的升级版本，用于智能搜索和知识库问答", "已集成", "0", "", "fa-solid fa-magnifying-glass", true,
             List.of(
                     new SceneAgent(120000001L, "深度检索专员", "searchPlanner", "规划专员负责规划并确定问题的优先级，并确定问题的解决方式。")
             )
     )),
     // 通用智能体
-    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用场景", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "1", "", "fa-solid fa-cogs",
+    GENERAL_AGENT(new SceneInfoDto(110000000L, "通用场景", "generalAgent", "多行业的通用业务处理和结果展示场景，数据分析、行业分析、报告编写等", "已集成", "0", "", "fa-solid fa-cogs",
             List.of(
                     new SceneAgent(110000001L, "解决方案助手", "businessProcessor", "业务处理助手负责处理通用业务流程中的各类任务，为后续的结果展示提供准确的数据支持。" , true),
                     new SceneAgent(110000002L, "业务执行助手", "businessExecute", "针对用于处理业务并执行业务指定的内容场景，包括分析业务内容。"),
@@ -63,13 +63,13 @@ public enum SceneEnum {
             )
     )),
     // 项目检索
-    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "知识库检索", "productResearch", "接入企业不同知识库进行内容深度检索，文档报告分析，预测规划等", "已集成", "1", "", "fa-solid fa-chart-line",
+    PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "知识库检索", "productResearch", "接入企业不同知识库进行内容深度检索，文档报告分析，预测规划等", "已集成", "0", "", "fa-solid fa-chart-line",
             Arrays.asList(
                     new SceneAgent(80000801L, "进度采集助手", "progressCollector", "从版本管理系统中提取产品的进度信息。"),
                     new SceneAgent(80000802L, "项目情况分析助手", "progressAnalyzer", "从版本仓库中提取产品的开发进度信息，并提供数据分析")
             ))),
     // 文档阅读
-    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "1", "", "fa-solid fa-book-open-reader",
+    DOCUMENT_READER(new SceneInfoDto(50000000L, "文档阅读", "documentReader", "针对于大文档类型的阅读，归纳总结等，查询内容，或者提供对应的建议等 ", "已集成", "0", "", "fa-solid fa-book-open-reader",
                     List.of(
                             new SceneAgent(30000301L, "内容分析助手", "summaryAgent", "对大文档的内容进行归纳总结，提取关键信息。"),
                     new SceneAgent(30000302L, "案例查询助手", "caseQueryAgent", "根据用户输入的关键词，在文档中查询相关案例内容。")
