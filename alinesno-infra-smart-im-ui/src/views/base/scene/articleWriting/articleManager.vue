@@ -247,6 +247,7 @@ onMounted(() => {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        font-weight:bold;
       }
 
       .scene-tag {
