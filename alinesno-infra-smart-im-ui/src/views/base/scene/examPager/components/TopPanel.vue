@@ -1,8 +1,6 @@
 <template>
-    <div class="top-panel">
-
-        <div
-            style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgb(232, 232, 232); padding: 0px 24px; height: 45px;">
+    <div class="top-panel"> 
+        <div class="top-panel-header">
             <div style="display: flex;align-items: center;">
                 <div style="display: flex;gap: 10px;align-items: center;margin-right:10px;">
                     <el-button text bg type="primary" @click="handleBack()">
@@ -91,5 +89,13 @@ const handleBack = () => {
 <style lang="scss" scoped>
 .top-panel {
     background: #fff;
+
+    .top-panel-header {
+        display: flex; 
+        align-items: center; 
+        justify-content: space-between; 
+        border-bottom: 1px solid rgb(232, 232, 232); 
+        padding: 0px 24px; height: 45px;
+    }
 }
 </style>
