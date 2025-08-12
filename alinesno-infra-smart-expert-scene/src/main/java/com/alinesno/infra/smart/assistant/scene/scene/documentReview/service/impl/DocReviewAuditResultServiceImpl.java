@@ -21,6 +21,7 @@ public class DocReviewAuditResultServiceImpl extends IBaseServiceImpl<DocReviewA
         // 先删除sceneId下面的所有审核结果
         LambdaUpdateWrapper<DocReviewAuditResultEntity> wrapper = new LambdaUpdateWrapper<>();
         wrapper.eq(DocReviewAuditResultEntity::getSceneId, dto.getSceneId()) ;
+        wrapper.eq(DocReviewAuditResultEntity::getTaskId, dto.getTaskId()) ;
         wrapper.eq(DocReviewAuditResultEntity::getRuleId, dto.getRuleId()) ;
         remove(wrapper) ;
 
