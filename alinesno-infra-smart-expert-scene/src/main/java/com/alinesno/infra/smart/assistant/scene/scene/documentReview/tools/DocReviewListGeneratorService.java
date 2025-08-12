@@ -6,10 +6,8 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
-import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
@@ -40,10 +38,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import javax.lang.exception.RpcServiceRuntimeException;
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 审核清单生成服务
@@ -314,9 +312,24 @@ public class DocReviewListGeneratorService {
 
         // 使用线程池执行生成任务
         chatThreadPool.execute(() -> {
+            Map<String , String> errorMap = new HashMap<>();
+            AtomicInteger successCount = new AtomicInteger(0);
+
             for (Long rule : dto.getRuleIds()) {
                 dto.setRuleId(rule);
-                asyncGenerateAuditList(taskEntity, dto, query, contentList);
+                asyncGenerateAuditList(taskEntity, dto, query, contentList , errorMap , successCount);
+            }
+
+            log.debug("获取到审核意见结果数:{}" , successCount);
+
+            if (successCount.get() == 0) {
+                taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
+                taskEntity.setTaskEndTime(new Date());  // 设置任务结束时间
+                docReviewTaskService.updateById(taskEntity);
+            }else {
+                taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.SUCCESS.getCode());
+                taskEntity.setTaskEndTime(new Date());  // 设置任务结束时间
+                docReviewTaskService.updateById(taskEntity);
             }
         });
 
@@ -324,10 +337,18 @@ public class DocReviewListGeneratorService {
 
     /**
      * 异步生成审核结果清单
+     *
      * @param dto
      * @param query
+     * @param errorMap
+     * @param successCount
      */
-    private void asyncGenerateAuditList(DocReviewTaskEntity taskEntity, GenAuditResultDto dto, PermissionQuery query, List<DocumentInfoBean> contentList) {
+    private void asyncGenerateAuditList(DocReviewTaskEntity taskEntity,
+                                        GenAuditResultDto dto,
+                                        PermissionQuery query,
+                                        List<DocumentInfoBean> contentList,
+                                        Map<String, String> errorMap,
+                                        AtomicInteger successCount) {
 
         taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.GENERATING.getCode());
         docReviewTaskService.updateById(taskEntity);
@@ -359,7 +380,7 @@ public class DocReviewListGeneratorService {
                     taskEntity.setCurrentStepInfo(text);
                     docReviewTaskService.updateById(taskEntity);
 
-                    generateTask(contentPromptContent , dto, query , rule , auditResultList);
+                    generateTask(contentPromptContent , dto, query , rule , auditResultList , errorMap , successCount);
                 }
             }
         } else if(taskEntity.getReviewListOption().equals(ReviewListOptionEnum.DATASET.getValue())){
@@ -372,7 +393,7 @@ public class DocReviewListGeneratorService {
                 taskEntity.setCurrentStepInfo(text);
                 docReviewTaskService.updateById(taskEntity);
 
-                generateTask(contentPromptContent , dto, query , rule , auditResultList);
+                generateTask(contentPromptContent , dto, query , rule , auditResultList , errorMap , successCount);
             }
         }
 
@@ -417,17 +438,22 @@ public class DocReviewListGeneratorService {
 
     /**
      * 生成审核任务并处理结果
+     *
      * @param contentPromptContent 待审核的文档内容
-     * @param dto 生成审核结果的参数DTO
-     * @param query 权限查询对象
-     * @param rule 审核规则实体
-     * @param auditResultList 用于存储生成的审核结果列表
+     * @param dto                  生成审核结果的参数DTO
+     * @param query                权限查询对象
+     * @param rule                 审核规则实体
+     * @param auditResultList      用于存储生成的审核结果列表
+     * @param errorMap
+     * @param successCount
      */
     private void generateTask(String contentPromptContent,
                               GenAuditResultDto dto,
                               PermissionQuery query,
                               DocReviewRulesEntity rule,
-                              List<DocReviewAuditResultEntity> auditResultList) {
+                              List<DocReviewAuditResultEntity> auditResultList,
+                              Map<String, String> errorMap,
+                              AtomicInteger successCount) {
 
         // 初始化任务信息对象
         MessageTaskInfo taskInfo = new MessageTaskInfo();
@@ -489,39 +515,20 @@ public class DocReviewListGeneratorService {
 
                         // 将结果添加到集合中
                         auditResultList.addAll(auditResults);
-                        log.debug("文档解析完成，审核意见为:{}" , auditResults.size());
                         auditResultService.saveAuditResult(auditResultList, dto);
 
-                        // 更新任务状态为成功
-                        if (taskEntity != null) {
-                            taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.SUCCESS.getCode());
-                            taskEntity.setTaskEndTime(new Date());  // 设置任务结束时间
-                            docReviewTaskService.updateById(taskEntity);
-                        }
-                    }
-                } else {
-                    // 处理无内容生成的情况
-                    if (taskEntity != null) {
-                        taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED_NO_CONTENT.getCode());
-                        docReviewTaskService.updateById(taskEntity);
+                        successCount.addAndGet(auditResults.size()) ;
+
+                        log.debug("文档解析完成，审核意见为:{}" , auditResults.size());
+                        log.debug("成功生成审核结果，当前成功数量为:{}" , successCount.get());
                     }
                 }
             } catch (Exception e) {
                 log.error("解析审核结果失败", e);
-                // 处理解析异常情况
-                if (taskEntity != null) {
-                    taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
-                    docReviewTaskService.updateById(taskEntity);
-                }
             }
 
         } catch (InterruptedException | ExecutionException e) {
             log.error("生成审核结果失败", e);
-            if (taskEntity != null) {
-                // 更新任务状态为失败
-                taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.FAILED.getCode());
-                docReviewTaskService.updateById(taskEntity);
-            }
         }
 
     }
