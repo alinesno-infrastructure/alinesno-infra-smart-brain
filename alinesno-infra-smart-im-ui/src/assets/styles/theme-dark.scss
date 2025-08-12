@@ -515,10 +515,52 @@ html.dark {
   }
 
   .exam-pagercontainer {
-    .exam-pager-aside {
+    .exam-pager-aside,
+    .exam-function-panel {
       border-right: 1px solid $dark-bg-panel;
       background: #262727 !important;
+
+      .title {
+        color: $dark-text-color !important;
+      }
     }
+
+    .exam-code { 
+      background: #262727 !important;
+      color: $dark-text-color !important;
+    }
+
+    .pager-container {
+      background: #262727 !important;
+    }
+
+    .title-section .title {
+      color: $dark-text-color !important;
+    }
+
+    .task-item {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+
+    .input-button-section {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+    }
+
+    .exam-pager-manager {
+      background: #1d1e1f !important;
+    }
+  }
+
+  .review-question-preview-title {
+    background: #262727 !important;
+    color: $dark-text-color !important;
+  }
+
+  .review-footer {
+    background: #262727 !important;
+    color: $dark-text-color !important;
   }
 
   .article-function-panel {
@@ -694,6 +736,10 @@ html.dark {
   .ppt-pager-main {
     background: #1d1e1f !important;
 
+    .article-template-container{
+      background: #262727;
+    }
+
     .title-section {
       .title {
         color: $dark-text-color !important;
@@ -762,9 +808,8 @@ html.dark {
     }
   }
 
-  .article-edit-content-display{
-
-      .ai-output-panel {
+  .article-edit-content-display {
+    .ai-output-panel {
       .ai-output-header {
         border-bottom: 1px solid #262727;
         background: #1d1e1f;
@@ -780,12 +825,287 @@ html.dark {
       }
     }
     .context-menu {
-        background: #1d1e1f !important;
+      background: #1d1e1f !important;
       border: 1px solid #1d1e1f !important;
 
-      .input-section input{
+      .input-section input {
         background: #262727 !important;
       }
+    }
+  }
+
+  .exam-pager-container,
+  .exam-main {
+    background: #262727 !important;
+    .top-panel {
+      background: #262727 !important;
+
+      .top-panel-header {
+        border-bottom: 1px solid #1d1e1f !important;
+      }
+    }
+
+    .pager-body-item {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+
+      .radio-item {
+        background: #1d1e1f !important;
+        color: $dark-text-color !important;
+        border: 1px solid #1d1e1f !important;
+      }
+    }
+
+    .el-tabs__item {
+      color: $dark-text-color !important;
+    }
+
+    .pager-container {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+
+    .menu-panel .menu-item {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+    }
+
+    .left-panel-container,
+    .exam-settings-panel {
+      background: #1d1e1f !important;
+
+      .pager-settings-title {
+        background: #262727 !important;
+        color: $dark-text-color !important;
+      }
+
+      .item {
+        background: #262727 !important;
+        color: $dark-text-color !important;
+      }
+    }
+  }
+
+  .question-bank-box {
+    background: #262727 !important;
+    color: $dark-text-color !important;
+  }
+
+  .exam-result-container {
+    background: #1d1e1f !important;
+    color: $dark-text-color !important;
+
+    .stat-item,
+    .knowledge-item,
+    .suggestion-item {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+
+      h4 {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .question-section {
+      .title {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .question-container {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+
+    .el-table tr {
+      background: #1d1e1f !important;
+    }
+
+    .container {
+      background: #262727 !important;
+    }
+
+    .exam-summary-card {
+      background: #262727 !important;
+    }
+
+    .exam-info-card,
+    .answer-details-card,
+    .weak-knowledge-card,
+    .suggestions-card {
+      background: #262727 !important;
+    }
+
+    .summary-header h2 {
+      color: $dark-text-color !important;
+    }
+
+    .summary-header {
+      border-bottom: 1px solid #1d1e1f !important;
+    }
+
+    .summary-footer {
+      border-top: 1px dashed #1d1e1f !important;
+    }
+
+    .answer-details-section {
+      .answer-details-header {
+        background: #1d1e1f !important;
+        h3 {
+          color: $dark-text-color !important;
+        }
+      }
+
+      .question-content,
+      .question-analysis,
+      .question-comment {
+        margin-bottom: 15px;
+
+        p {
+          color: $dark-text-color !important;
+        }
+      }
+
+      .question-comment {
+        p {
+          color: $dark-text-color !important;
+        }
+      }
+    }
+
+    .question-item {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+    }
+  }
+
+  .online-exam-container {
+    .timer-container {
+      color: $dark-text-color !important;
+      background: #262727 !important;
+    }
+
+    .exam-content {
+      background: #1d1e1f !important;
+      padding: 10px;
+      border-radius: 10px;
+    }
+
+    .exam-sidebar {
+      background: #1d1e1f !important;
+      color: $dark-text-color !important;
+      border-right: 1px solid #1d1e1f !important;
+    }
+
+    .question-wrapper {
+      background: #262727 !important;
+      color: $dark-text-color !important;
+
+      .radio-item {
+        background: #1d1e1f !important;
+        color: $dark-text-color !important;
+        border: 1px solid #1d1e1f !important;
+      }
+    }
+  }
+
+  .review-result-container {
+    .result-item {
+      border-color: #1d1e1f !important;
+
+      .result-details {
+        background-color: #1d1e1f !important;
+
+        .detail-section p {
+          color: $dark-text-color;
+          background-color: #262727 !important;
+          border-color: #1d1e1f !important;
+        }
+      }
+      .result-header {
+        color: $dark-text-color;
+        background-color: #262727 !important;
+      }
+    }
+
+    .scrollable-area {
+      border-bottom: 1px solid #262727 !important;
+      border-top: 1px solid #262727 !important;
+    }
+
+    .el-collapse-item__header {
+      color: $dark-text-color;
+      background-color: #262727 !important;
+    }
+
+    // 风险等级样式
+    .item-alert-high {
+      :deep(.el-collapse-item__header) {
+        border-left: 3px solid #f56c6c;
+      }
+
+      color: $dark-text-color;
+      background-color: #262727 !important;
+      border-color: #262727 !important;
+    }
+
+    .item-alert-medium {
+      :deep(.el-collapse-item__header) {
+        border-left: 3px solid #e6a23c;
+      }
+
+      color: $dark-text-color;
+      background-color: #262727 !important;
+      border-color: #262727 !important;
+    }
+
+    .item-alert-low {
+      :deep(.el-collapse-item__header) {
+        border-left: 3px solid #909399;
+      }
+    }
+
+    .item-alert-passed {
+      :deep(.el-collapse-item__header) {
+        border-left: 3px solid #67c23a;
+      }
+    }
+  }
+
+  .validate-container {
+    background-color: #262727 !important;
+
+    .validate-card {
+      .exam-info-card {
+        background-color: #1d1e1f !important;
+        border: 1px solid var(--el-card-border-color);
+      }
+    }
+
+     .exam-info-item {
+        color: $dark-text-color;
+     }
+  }
+
+  .user-integral {
+
+
+    .package-container {
+      background-color: #262727 !important;
+
+      .package-title {
+        color: $dark-text-color;
+      }
+
+      .package-price{
+        color: $dark-text-color;
+      }
+
+       .package-features {
+        li {
+          color: $dark-text-color;
+        }
+       }
     }
   }
 }
