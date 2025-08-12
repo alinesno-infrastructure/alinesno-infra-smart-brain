@@ -124,58 +124,55 @@
           </div>
         </div>
       </section>
-
+ 
       <!-- 答题详情 -->
-      <section class="answer-details-section">
-        <div class="answer-details-card">
-          <div class="answer-details-header">
-            <h3>答题详情</h3>
-          </div>
+<section class="answer-details-section">
+  <div class="answer-details-card">
+    <div class="answer-details-header">
+      <h3>答题详情</h3>
+      <div class="filter-buttons">
+        <el-button type="primary" text bg>全部</el-button>
+        <el-button text bg>正确</el-button>
+        <el-button text bg>错误</el-button>
+        <el-button text bg>未答</el-button>
+      </div>
+    </div>
 
-          <el-table :data="analysisResult.examResults" style="width: 100%" :size="large"
-            :cell-style="{ 'font-size': '15px' }" class="answer-table">
-            <!-- <el-table-column type="index" align="center" label="题号" width="50" /> -->
-            <el-table-column prop="comment" label="知识点">
-              <template #default="scope">
-                <div class="question-container">
-                  <div class="question-section">
-                    <h4 class="title">{{ scope.$index + 1 }}. 题目：
-                    <span :class="{
-                      'zero-score': scope.row.score === 0,
-                      'full-score': scope.row.score === scope.row.maxScore,
-                      'partial-score': scope.row.score > 0 && scope.row.score < scope.row.maxScore 
-                      }">
-                      ( {{ scope.row.score }}/{{ scope.row.maxScore }} )
-                    </span>
-                    </h4>
-                    <p class="content">{{ getQuestionById(scope.row.id)?.question }}</p>
-                  </div>
-
-                  <div class="analysis-section">
-                    <h4 class="title">考核分析：</h4>
-                    <p class="content">{{ getQuestionById(scope.row.id)?.answerAnalysis }}</p>
-                  </div>
-
-                  <div class="comment-section">
-                    <h4 class="title">教师点评：</h4>
-                    <p class="content">{{ scope.row.comment || "暂无点评" }}</p>
-                  </div>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <div class="answer-details-footer">
-            <div class="filter-buttons">
-              <el-button type="primary" text bg>全部</el-button>
-              <el-button text bg>正确</el-button>
-              <el-button text bg>错误</el-button>
-              <el-button text bg>未答</el-button>
-            </div>
-          </div>
-
+    <div class="questions-list">
+      <div 
+        v-for="(result, index) in analysisResult.examResults" 
+        :key="result.id" 
+        class="question-item"
+      >
+        <div class="question-header">
+          <span class="question-number">{{ index + 1 }}.</span>
+          <span class="question-score" :class="{
+            'zero-score': result.score === 0,
+            'full-score': result.score === result.maxScore,
+            'partial-score': result.score > 0 && result.score < result.maxScore 
+          }">
+            ({{ result.score }}/{{ result.maxScore }})
+          </span>
         </div>
-      </section>
+        
+        <div class="question-content">
+          <h4 class="question-title">题目：</h4>
+          <p>{{ getQuestionById(result.id)?.question }}</p>
+        </div>
+        
+        <div class="question-analysis">
+          <h4 class="analysis-title">考核分析：</h4>
+          <p>{{ getQuestionById(result.id)?.answerAnalysis }}</p>
+        </div>
+        
+        <div class="question-comment">
+          <h4 class="comment-title">教师点评：</h4>
+          <p>{{ result.comment || "暂无点评" }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 
       <!-- 薄弱知识点分析 -->
@@ -273,7 +270,7 @@
         title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
-          <RoleChatPanel ref="roleChatPanelRef" />
+          <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
         </div>
       </el-drawer>
     </div>
@@ -607,43 +604,116 @@ onMounted(() => {
 
 .answer-details-section {
   margin-top: 20px;
-
+  
   .answer-details-card {
     background-color: #fff;
     border-radius: 8px;
     padding: 20px;
-
-    .answer-details-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 20px;
-
-      .filter-buttons {
-        display: flex;
-        gap: 10px;
-      }
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .answer-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px; 
+    background-color: #f9f9f9 ;
+    padding: 10px;
+    border-radius: 5px;
+    border-bottom: 0px;
+    
+    h3 {
+      margin: 0;
+      font-size: 18px;
+      color: #333;
     }
-
-    .answer-details-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 00px;
-
-      .filter-buttons {
-        display: flex;
-        gap: 10px;
-      }
+  }
+  
+  .questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+  }
+  
+  .question-item {
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background-color: #f0f0f0;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     }
-
-    .answer-table {
-      margin-top: 16px;
-
-      &:deep(.el-table__cell) {
-        padding: 12px 0;
-      }
+  }
+  
+  .question-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    
+    .question-number {
+      font-size: 16px;
+      color: #333;
+      margin-right: 8px;
     }
+    
+    .question-score {
+      font-size: 14px;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  }
+  
+  .question-content,
+  .question-analysis,
+  .question-comment {
+    margin-bottom: 15px;
+    
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 15px;
+      font-weight: bold;
+      color: #555;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 15px;
+
+      line-height: 1.6;
+      color: #666;
+    }
+  }
+  
+  .question-comment {
+    p {
+      font-style: italic;
+      color: #888;
+    }
+  }
+  
+  // 分数样式
+  .zero-score {
+    color: #ff4d4f;
+    background-color: rgba(255, 77, 79, 0.1);
+  }
+  
+  .full-score {
+    color: #52c41a;
+    background-color: rgba(82, 196, 26, 0.1);
+  }
+  
+  .partial-score {
+    color: #faad14;
+    background-color: rgba(250, 173, 20, 0.1);
+  }
+  
+  .filter-buttons {
+    display: flex;
+    gap: 10px;
   }
 }
 
