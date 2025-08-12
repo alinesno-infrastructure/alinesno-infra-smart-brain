@@ -1,16 +1,13 @@
 <template>
   <div class="exam-pagercontainer">
-
     <el-container style="height:calc(100vh - 40px );background-color: #fff;">
       <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside> 
 
       <el-main class="exam-pager-main">
-        <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
-
-            <!-- <SideTypePanel /> -->
+        <el-scrollbar style="">
+          <div class="tpl-app" >
 
             <div style="width: calc(100% - 0px);margin-top: 10px;" v-loading="sceneLoading">
 
@@ -21,12 +18,19 @@
                       <div style="gap: 12px;">
                         <h1
                           style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                         试卷列表 
+                          试卷列表 
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
-                        <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                          :suffix-icon="Search" />
+                        <el-input 
+                          v-model="searchQuery" 
+                          style="width: 400px" 
+                          size="large" 
+                          placeholder="搜索试卷名称" 
+                          :suffix-icon="Search"
+                          @input="handleSearch"
+                          clearable
+                        />
                       </div>
                     </div>
                   </el-col>
@@ -35,7 +39,7 @@
 
               <div class="channel-container-panel" style="margin-top:20px">
                 <el-row>
-                  <el-col :span="6" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
+                  <el-col :span="6" v-for="(item, index) in filteredPagerList" :key="index" style="padding:8px;">
                     <div class="exam-pager-card-container" @click="enterExamPager(item)">
                       <article class="exam-pager-card">
                         <div class="exam-pager-card-content">
@@ -79,8 +83,8 @@
                     </div>
                   </el-col>
 
-                  <el-col :span="24" v-if="pagerList.length == 0">
-                    <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
+                  <el-col :span="24" v-if="filteredPagerList.length == 0">
+                    <el-empty :image-size="400" :image="learnLogo" description="没有找到匹配的试卷" />
                   </el-col>
 
                 </el-row>
@@ -95,25 +99,35 @@
 </template>
 
 <script setup>
-
 import FunctionList from './functionList'
-
-import {
-  pagerListByPage
-} from '@/api/base/im/scene/examPaper';
-
-import SideTypePanel from './examType.vue'
-
-import { onMounted } from 'vue';
+import { pagerListByPage } from '@/api/base/im/scene/examPaper';
+import { ref, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import learnLogo from '@/assets/icons/tech_01.svg';
+import { Search } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const route = useRoute();
 
-const sceneId = ref(route.query.sceneId)
+const sceneId = ref(route.query.sceneId);
+const sceneLoading = ref(true);
+const pagerList = ref([]);
+const searchQuery = ref('');
 
-const sceneLoading = ref(true)
-const pagerList = ref([])
+// 计算属性：过滤后的试卷列表
+const filteredPagerList = computed(() => {
+  if (!searchQuery.value) {
+    return pagerList.value;
+  }
+  return pagerList.value.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.value.toLowerCase())
+  );
+});
+
+// 搜索处理函数
+const handleSearch = () => {
+  // 计算属性会自动更新，这里不需要额外处理
+};
 
 /** 进入长文本编辑界面 */
 function enterExamPager(item) {
@@ -121,34 +135,44 @@ function enterExamPager(item) {
   router.push({
     path: path,
     query: { 
-      'pagerId': item.id ,
+      'pagerId': item.id,
       'sceneId': sceneId.value
     }
-  })
+  });
 }
 
 /** 获取场景列表 */
 function handlePagerListByPage() {
   pagerListByPage(sceneId.value).then(res => {
-    pagerList.value = res.data
-    sceneLoading.value = false
+    pagerList.value = res.data;
+    sceneLoading.value = false;
   }).catch(err => {
-    sceneLoading.value = false
-  })  
+    sceneLoading.value = false;
+  });  
 }
 
 onMounted(() => {
-  handlePagerListByPage()
-})
-
+  handlePagerListByPage();
+});
 </script>
 
 <style lang="scss" scoped>
+/* 保持原有的样式不变 */
 .exam-pager-card-container {
   display: flex;
   flex-grow: 1;
   border-radius: 8px;
+
+
 }
+
+  .tpl-app{
+    display: flex;
+    margin-left: 0px;
+    width:100%;
+    background-color: #fff;
+    height:calc(100vh - 40px)
+  }
 
 .exam-pager-card {
   display: flex;
@@ -172,7 +196,6 @@ onMounted(() => {
     position: relative;
     width: 100%;
     height: 10px;
-    // border-radius: 8px;
     overflow: hidden;
 
     .exam-pager-card-image {
@@ -195,14 +218,14 @@ onMounted(() => {
     .scene-header {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
+      gap: 8px; 
       margin: 8px 0px;
       margin-top: 0px;
       padding-left: 0px;
       flex-direction: column;
 
       .scene-title {
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 22px;
         color: var(--coz-fg-primary);
