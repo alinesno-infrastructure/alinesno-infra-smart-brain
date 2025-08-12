@@ -103,7 +103,7 @@
         </el-drawer>
     </div>
 
-            <!-- AI生成状态 -->
+        <!-- AI生成状态 -->
         <AIGeneratingStatus 
             ref="generatingStatusRef"  
             :close-enable="false" 
