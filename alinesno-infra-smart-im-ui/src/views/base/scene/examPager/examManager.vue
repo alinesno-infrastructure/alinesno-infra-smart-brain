@@ -111,24 +111,7 @@
       </el-main>
     </el-container>
 
-    <!-- 试卷码弹窗 -->
-    <!-- <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="500px" center>
-      <div style="text-align: center;">
-        <div style="margin-bottom: 20px; font-size: 16px; color: #666;">
-         复制【{{ currentExamName }}】试卷码
-        </div>
-        <div style="font-size: 42px; font-weight: bold; letter-spacing: 8px; 
-            color: #1d75b0; margin: 20px 0; padding: 15px; background: #f5f7fa;
-            border-radius: 8px; display: inline-block;">
-          {{ currentExamCode }}
-        </div>
-        <div style="margin-top: 30px;">
-          <el-button type="primary" @click="copyExamCode" size="large" text bg style="width: 120px;">
-            <i class="fa-solid fa-copy"></i> 复制试卷码
-          </el-button>
-        </div>
-      </div>
-    </el-dialog> -->
+    <!-- 试卷码弹窗 --> 
 
     <!-- 试卷码弹窗 -->
     <el-dialog v-model="examCodeDialogVisible" title="试卷码" width="600px" center>
@@ -136,9 +119,7 @@
         <div style="margin-bottom: 20px; font-size: 16px; color: #666;">
           复制【{{ currentExamName }}】试卷码
         </div>
-        <div style="font-size: 42px; font-weight: bold; letter-spacing: 8px; 
-            color: #1d75b0; margin: 20px 0; padding: 15px; background: #f5f7fa;
-            border-radius: 8px; display: inline-block;">
+        <div class="exam-code">
           {{ currentExamCode }}
         </div>
         
@@ -428,6 +409,18 @@ getList();
   .exam-pager-aside {
     background-color: #f5f7fa;
     border-right: 1px solid #e6e6e6;
+  }
+
+  .exam-code {
+    font-size: 42px; 
+    font-weight: bold; 
+    letter-spacing: 8px; 
+    color: #1d75b0; 
+    margin: 20px 0; 
+    padding: 15px; 
+    background: #f5f7fa;
+    border-radius: 8px; 
+    display: inline-block;
   }
 
   .exam-pager-manager {
