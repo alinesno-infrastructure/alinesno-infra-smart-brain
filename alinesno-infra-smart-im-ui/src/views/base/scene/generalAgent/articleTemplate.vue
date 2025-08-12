@@ -2,7 +2,7 @@
   <div class="article-template-container">
 
     <!-- 模型列表 -->
-    <el-scrollbar style="height:calc(100vh - 230px)">
+    <el-scrollbar style="height:calc(100vh - 200px)">
       <div class="article-template-list" v-if="filteredTemplateList.length > 0">
 
         <div class="article-template-item" v-for="item in filteredTemplateList" :key="item.id"
@@ -111,6 +111,9 @@ watch(() => props.modelValue, (newVal) => {
 
 <style lang="scss" scoped>
 .article-template-container {
+  padding: 10px;
+  background-color: #fff ;
+  border-radius:10px;
   margin-top: 10px;
   display: grid;
 
@@ -120,7 +123,7 @@ watch(() => props.modelValue, (newVal) => {
     margin-bottom: 10px;
 
     .article-template-type-item {
-      background: #f2f3f7;
+      background: #f5f5f5;
       width: auto;
       border-radius: 10px;
       padding: 5px 10px;
