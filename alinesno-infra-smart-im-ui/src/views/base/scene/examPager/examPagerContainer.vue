@@ -6,15 +6,8 @@
         <FunctionList />
       </el-aside>
 
-      <el-main class="exam-pager-manager" style="padding: 10px !important">
-
-         <!-- 顶部导航栏 -->
-         <el-page-header @back="goBack" class="page-header">
-            <template #content>
-            <span class="header-title">[{{ currentExam?.examName}}]在线阅卷</span>
-            </template>
-         </el-page-header>
-
+      <el-main class="exam-pager-manager" style="padding: 0px !important">
+ 
          <!-- 阅读界面 -->
           <slot></slot>
 
