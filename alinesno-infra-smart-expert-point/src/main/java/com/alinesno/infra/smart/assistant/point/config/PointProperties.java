@@ -8,7 +8,5 @@ import org.springframework.stereotype.Component;
 @Component
 @ConfigurationProperties(prefix = "alinesno.point")
 public class PointProperties {
-    private boolean enabled = false;
-    private String serviceUrl;
-    private long cacheDuration = 300;
+    private boolean enabled = false; // 是否启用积分功能
 }
