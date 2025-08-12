@@ -130,4 +130,19 @@ public interface SmartDocumentConsumer {
             @DataFile("file") File file,
             @Body List<CommentData> comments);
 
+    /**
+     * HTML转Markdown
+     * @param file
+     * @return
+     */
+    @Post(url = "/api/v1/docx/convertHtmlToMarkdown")
+    String convertHtmlToMarkdown(@DataFile("file")File file , @Query("isFilterImg")boolean isFilterImg);
+
+    /**
+     * HTML转PlainTxt
+     * @param file
+     * @return
+     */
+    @Post(url = "/api/v1/docx/convertHtmlToPlainText")
+    String convertHtmlToPlainText(@DataFile("file")File file , @Query("isFilterImg")boolean isFilterImg);
 }
