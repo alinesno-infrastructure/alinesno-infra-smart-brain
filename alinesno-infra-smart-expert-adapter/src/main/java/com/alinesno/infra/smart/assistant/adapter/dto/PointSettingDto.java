@@ -7,8 +7,9 @@ import lombok.Data;
  */
 @Data
 public class PointSettingDto {
-    private String uri;        // 请求路径
-    private String method;     // HTTP方法 (GET/POST等)
-    private int pointValue;    // 所需积分
-    private String pointName;  // 积分名称
+    private Integer maxSceneCount; // 最大场景数
+    private Integer maxTaskCount; // 最大任务数
+    private Integer currentPoint; // 当前积分
+    private Integer remainingPoint; // 剩余积分
+    private Integer totalConsumption; // 总消耗
 }
