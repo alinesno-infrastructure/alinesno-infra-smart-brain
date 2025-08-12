@@ -78,95 +78,9 @@ public class PointInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String requestUrl = request.getRequestURI();
-
-        // 1. 获取所需积分（从Redis）
-        int requiredPoints = getRequiredPoints(requestUrl);
-        if (requiredPoints <= 0) {
-            return true;
-        }
-
-        // 2. 检查登录状态
-        if (!StpUtil.isLogin()) {
-            log.warn("Unauthorized access attempt: {}", requestUrl);
-            throw new RpcServiceRuntimeException("请先登录系统");
-        }
-
         Long userId = Long.parseLong(StpUtil.getLoginId().toString());
 
-        try {
-            // 3. 检查用户积分
-            R<UserPointDto> pointResult = aipPointConsumer.getUserPoint(userId);
-            if (R.isError(pointResult)) {
-                log.error("Failed to get user points - userId: {}, error: {}",  userId, pointResult.getMsg());
-                throw new RpcServiceRuntimeException("积分服务暂不可用");
-            }
-
-            int currentPoints = Optional.ofNullable(pointResult.getData())
-                    .map(UserPointDto::getPoints)
-                    .orElse(0);
-
-            if (currentPoints < requiredPoints) {
-                log.warn("Insufficient points - userId: {}, required: {}, current: {}",  userId, requiredPoints, currentPoints);
-                throw new RpcServiceRuntimeException(String.format("积分不足，需要%d积分，当前剩余%d积分", requiredPoints, currentPoints));
-            }
-
-            // 4. 扣减积分
-            R<Boolean> deductResult = aipPointConsumer.reducePoint(userId, requiredPoints);
-            if (R.isError(deductResult)) {
-                log.error("Failed to deduct points - userId: {}, points: {}, error: {}", userId, requiredPoints, deductResult.getMsg());
-                throw new RpcServiceRuntimeException("积分扣减失败");
-            }
-
-            log.info("Points deducted - userId: {}, points: {}, uri: {}", userId, requiredPoints, requestUrl);
-            return true;
-
-        } catch (RpcServiceRuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            log.error("Point system error - uri: {}", requestUrl, e);
-            throw new RpcServiceRuntimeException("系统繁忙，请稍后重试");
-        }
+        return true;
     }
 
-    private int getRequiredPoints(String requestUrl) {
-        // 检查缓存是否需要刷新
-        if (isCacheExpired()) {
-            refreshPointRules();
-        }
-
-        // 从Redis获取积分规则
-        Map<String, Integer> rules = RedisUtils.getCacheMap(POINT_RULES_KEY);
-        return rules.getOrDefault(requestUrl, 0);
-    }
-
-    private boolean isCacheExpired() {
-        long lastLoadTime = RedisUtils.getAtomicValue(RULE_LOAD_TIME_KEY);
-        return System.currentTimeMillis() - lastLoadTime >
-                TimeUnit.SECONDS.toMillis(pointProperties.getCacheDuration());
-    }
-
-    private synchronized void refreshPointRules() {
-        // 双重检查锁
-        if (!isCacheExpired()) {
-            return;
-        }
-
-        try {
-            R<List<PointSettingDto>> result = aipPointConsumer.getAllPointSetting();
-            if (R.isSuccess(result) && result.getData() != null) {
-                Map<String, Integer> newRules = new ConcurrentHashMap<>();
-                result.getData().forEach(dto ->
-                        newRules.put(dto.getUri(), dto.getPointValue()));
-
-                // 更新Redis缓存
-                RedisUtils.setCacheMap(POINT_RULES_KEY, newRules);
-                RedisUtils.setAtomicValue(RULE_LOAD_TIME_KEY, System.currentTimeMillis());
-
-                log.info("Point rules refreshed, loaded {} rules", newRules.size());
-            }
-        } catch (Exception e) {
-            log.error("Failed to refresh point rules", e);
-        }
-    }
 }
