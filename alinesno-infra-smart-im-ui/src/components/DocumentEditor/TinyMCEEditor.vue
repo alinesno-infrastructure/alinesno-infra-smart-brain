@@ -72,7 +72,7 @@ const props = defineProps({
   },
   toolbar: {
     type: [String, Array, Boolean],
-    default: "undo redo | accordion accordionremove bold italic underline strikethrough ltr rtl indent searchreplace fullscreen",
+    default: "undo redo   fontfamily fontsize underline strikethrough ltr rtl indent lineheight outdent indent accordionremove",
   },
   readonly: {
     type: Boolean,
@@ -496,6 +496,7 @@ const init = ({
   paste_data_images: true, //允许粘贴图像
   image_dimensions: false, //去除宽高属性
   plugins: props.plugins, //这里的数据是在props里面就定义好了的
+  // contextmenu: 'bold italic underline | customOption', 
   // 取消图片资源路径转换
   convert_urls: false,
   // table边框位0是否展示网格线
