@@ -404,7 +404,7 @@ defineExpose({
 .pager-container {
   background-color: #fff;
   margin: 10px 10px;
-  margin-right: 0px;
+  margin-right: 10px;
   border-radius: 8px;
   height: calc(100vh - 110px);
 }
@@ -452,7 +452,7 @@ defineExpose({
 .pager-body-item {
   /* 添加可拖拽的视觉提示 */
   cursor: grab;
-  // margin-bottom: 15px;
+  margin: 5px;
   padding: 5px;
   border-radius: 4px;
   background-color: white;
