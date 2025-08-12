@@ -1,13 +1,5 @@
 <template>
-  <div class="exam-pagercontainer">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="exam-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="exam-pager-main">
+  <ExamPagerContainer>
 
         <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
           ref="roleSelectPanelRef" />
@@ -100,8 +92,7 @@
 
         </div>
 
-      </el-main>
-    </el-container>
+       
 
     <!-- 试卷信息 -->
     <el-dialog
@@ -136,12 +127,18 @@
         <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
             :with-header="true">
             <div style="margin-top: 0px;">
-                <RoleChatPanel ref="roleChatPanelRef" />
+                <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
             </div>
         </el-drawer>
     </div>
 
-  </div>
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef"  
+            :close-enable="false" 
+        />
+
+  </ExamPagerContainer>
 </template>
 
 <script setup>
@@ -154,6 +151,8 @@ import QuestionTypeConfig from './questionTypeConfig.vue';
 import PagerGenResultPanel from './pagerGenResultPanel.vue';
 import PagerGenContainerPanel from './components/PagerGenContainer.vue';
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
+import ExamPagerContainer from "./examPagerContainer"
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 
 import FunctionList from './functionList'
 
@@ -170,6 +169,7 @@ const snowflake = new SnowflakeId();
 const route = useRoute();
 const router = useRouter();
 
+const generatingStatusRef = ref(null) 
 const pagerGenContainerPanelRef = ref(null)
 
 // 执行面板
@@ -313,22 +313,10 @@ const handleGetScene = () => {
       });
     }
 
-    if (!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer) { // 选择配置角色
-      // roleSelectPanelRef.value.configAgent();
+    if (!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer) { // 选择配置角色 
       return;
     }
-
-    // if (res.data.genStatus == 1 && !isBack.value) {
-    //   router.push({
-    //     path: '/scene/generalAgent/agentParser',
-    //     query: {
-    //       sceneId: sceneId.value,
-    //       genStatus: true,
-    //       channelStreamId: snowflake.generate()
-    //     }
-    //   })
-    // }
-
+ 
   })
 }
 
@@ -409,12 +397,10 @@ const generaterText = async () => {
     roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.questionGeneratorEngineer);
   })
 
-  // 开始生成
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  });
+  let text = '题目正在生成，请稍等...' ;  
+
+  generatingStatusRef.value?.loading()
+  
 
   const totalNodes = formData.value.examStructure.length;
   
@@ -422,7 +408,7 @@ const generaterText = async () => {
     for (let i = 0; i < formData.value.examStructure.length; i++) {
       const item = formData.value.examStructure[i];
       const text = '任务正在生成题目【' + item.typeName + '】生成中，还有【' + (totalNodes - i) + '】篇';
-      streamLoading.value.setText(text);
+      generatingStatusRef.value?.setText(text) ;
       
       formData.value.examStructureItem = item;
       
@@ -430,8 +416,7 @@ const generaterText = async () => {
       const res = await chatPromptContent(formData.value);
       console.log('res = ' + res);
 
-      pagerGenContainerPanelRef.value.addQuestion(res.data);
-
+      pagerGenContainerPanelRef.value.addQuestion(res.data); 
     }
     
     ElMessage.success('处理完成');
@@ -441,7 +426,7 @@ const generaterText = async () => {
     return;
   } finally {
     // 无论成功或失败都关闭loading
-    streamLoading.value.close();
+    generatingStatusRef.value?.close();
     showDebugRunDialog.value = false ;
   }
 };
