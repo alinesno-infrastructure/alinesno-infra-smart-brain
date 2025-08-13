@@ -8,8 +8,8 @@
       </el-aside>
 
       <el-main class="exam-pager-main">
-        <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
+        <el-scrollbar style="height:calc(100vh - 40px)">
+          <div class="tpl-app" style="display: flex;height:calc(100vh - 40px );margin-left: 0px;width:100%;background-color: #fff;">
 
             <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
 
@@ -23,8 +23,16 @@
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
-                        <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索项目"
-                          :suffix-icon="Search" />
+                        <el-input 
+                          v-model="searchQuery" 
+                          style="width: 400px" 
+                          size="large" 
+                          placeholder="搜索项目"
+                          :suffix-icon="Search"
+                          clearable
+                          @input="handleSearchInput"
+                          @clear="handleSearchClear"
+                        />
                       </div>
                     </div>
                   </el-col>
@@ -33,15 +41,13 @@
 
               <div class="channel-container-panel" style="margin-top:20px">
                 <el-row>
-                  <el-col :span="6" v-for="(item, index) in pagerList" :key="index">
+                  <el-col :span="6" v-for="(item, index) in filteredPagerList" :key="index">
                     <div class="exam-pager-card-container">
                       <article class="exam-pager-card">
                         <div class="exam-pager-card-content">
                           <div class="scene-header">
 
-                            <span class="scene-title" @click="enterProductParser(item)">
-                              <i v-if="index%2==0" class="fa-brands fa-github"></i>
-                              <i v-if="index%2==1" class="fa-brands fa-square-gitlab"></i>
+                            <span class="scene-title" @click="enterProductParser(item)"> 
                               {{ item.taskName || "名称未解析" }}
                             </span>
 
@@ -55,25 +61,49 @@
                             </span>
 
                           </div>
+ 
+                          <div class="scene-tags">
+                            <span class="scene-tag-time"><i class="fa-solid fa-calendar-check"></i> {{ item.addTime }}</span>
+                          </div>
+
                           <div class="scene-author-info">
                             <span class="scene-name">
-                              {{ item.outline }}
+                              {{ generateDocumentSummary(item.outline) }}
                             </span>
                           </div>
-                          <div style="padding: 10px 0px;"></div>
+                          <div class="semi-divider semi-divider-horizontal product-search-divider"></div>
                           <div class="scene-footer">
+
+
                             <div class="scene-price">
-                              <el-button text bg
-                                  :type="getStatusType(item.status)" 
-                                  abled="item.status === 'PROCESSING' || item.status === 'QUEUED'"
-                                  size="default">
-                                  <i :class="getStatusIcon(item.status)" class="mr-1"></i>&nbsp;{{ getStatusText(item.status) }}
-                                </el-button>
-                            </div>
-                            <div class="scene-tag">
-                              <div class="scene-stats" v-if="item.addTime">
-                                 <i class="fa-solid fa-clock"></i> 最后更新: <span>{{ item.addTime }}</span>
+                              <el-button 
+                                text 
+                                bg 
+                                :type="getStatusConfig(item).type"
+                              >
+                                <i :class="`fa-solid ${getStatusConfig(item).icon}`" /> 
+                                {{ typeof getStatusConfig(item).text === 'function' 
+                                   ? getStatusConfig(item).text(item) 
+                                   : getStatusConfig(item).text 
+                                }}
+                              </el-button>
+                            </div> 
+                             <div class="scene-tag">
+                              <div class="scene-stats">
+                                <span>用时</span>
+                                <span>{{ taskUseTime(item) }}</span>
                               </div>
+
+                              <div class="article-delete-btn" @click.stop>
+                                <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(item)">
+                                  <template #reference>
+                                    <el-button type="info" text bg size="small" @click.stop>
+                                      <i class="fa-solid fa-trash"></i>&nbsp;删除
+                                    </el-button>
+                                  </template>
+                                </el-popconfirm>
+                              </div>
+
                             </div>
                           </div>
                         </div>
@@ -101,7 +131,8 @@
 import FunctionList from './functionList'
 
 import {
-  pagerListByPage
+  pagerListByPage, 
+  deleteTaskById
 } from '@/api/base/im/scene/productResearch';
 
 // import SideTypePanel from './pptType.vue'
@@ -117,6 +148,26 @@ const sceneId = ref(route.query.sceneId)
 const sceneLoading = ref(true)
 const pagerList = ref([])
 
+const searchQuery = ref('')
+
+// 计算属性：过滤后的项目列表
+const filteredPagerList = computed(() => {
+  if (!searchQuery.value) {
+    return pagerList.value;
+  }
+  
+  const query = searchQuery.value.toLowerCase();
+  return pagerList.value.filter(item => {
+    return (item.taskName && item.taskName.toLowerCase().includes(query));
+  });
+});
+
+
+// 清除搜索
+const handleSearchClear = () => {
+  searchQuery.value = '';
+};
+
 /** 进入长文本编辑界面 */
 function enterProductParser(item) {
   const path = '/scene/productResearch/productParser';
@@ -124,7 +175,8 @@ function enterProductParser(item) {
     path: path,
     query: { 
       'taskId': item.id ,
-      'sceneId': sceneId.value
+      'sceneId': sceneId.value , 
+      'channelStreamId': item.channelStreamId
     }
   })
 }
@@ -141,6 +193,23 @@ const getStatusType = (status) => {
   };
   return typeMap[status] || "default";
 };
+
+// 在script setup部分添加状态配置 
+const statusConfig = [
+  { condition: (item) => item.taskStatus === 'not_run' || item.taskStatus === null, type: "warning", icon: "fa-hourglass-start", text: "任务未开始" },
+  { condition: (item) => item.taskStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: "任务生成中" },
+  { condition: (item) => item.taskStatus === 'cancelling', type: "warning", icon: "fa-ban fa-spin", text: "任务取消中" },
+  { condition: (item) => item.taskStatus === 'cancelled', type: "info", icon: "fa-ban", text: "任务已取消" },
+  { condition: (item) => item.taskStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "任务失败" }, 
+  { condition: (item) => item.taskStatus === 'completed', type: "success", icon: "fa-check-circle", text: "全部完成" },
+  { condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态" },
+]
+
+// 查找匹配的状态配置
+const getStatusConfig = (item) => {
+  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
+}
+
 
 // 状态文本映射
 const getStatusText = (status) => {
@@ -176,6 +245,72 @@ function handlePagerListByPage() {
   }).catch(err => {
     sceneLoading.value = false
   })  
+}
+
+const handleDelete = (item) => {
+  deleteTaskById(item.id).then(res => {
+    handlePagerListByPage()
+  })
+}
+
+const generateDocumentSummary = (jsonData) => {
+  // 解析 JSON 字符串（如果输入是字符串）
+  const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+  
+  // 收集所有 label 和 description
+  let allText = '';
+  
+  function extractText(node) {
+    if (node.label) allText += node.label + ' ';
+    if (node.description) allText += node.description + ' ';
+    
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(child => extractText(child));
+    }
+  }
+  
+  // 遍历所有节点
+  data.forEach(item => extractText(item));
+  
+  // 截取前100个字符，确保不截断单词
+  const summary = allText.trim().substring(0, 200);
+  const lastSpace = summary.lastIndexOf(' ');
+  
+  return lastSpace > 0 ? summary.substring(0, lastSpace) + '...' : summary + '...';
+}
+
+// 任务用时
+const taskUseTime = (item) => {
+  if (!item.taskStartTime || !item.taskEndTime) {
+    return '--';
+  }
+  
+  const startTime = new Date(item.taskStartTime);
+  const endTime = new Date(item.taskEndTime);
+  
+  // Calculate the difference in milliseconds
+  const diffMs = endTime - startTime;
+  
+  // Convert to seconds
+  const diffSec = Math.floor(diffMs / 1000);
+  
+  if (diffSec < 60) {
+    return `${diffSec}秒`;
+  }
+  
+  // Convert to minutes and seconds
+  const minutes = Math.floor(diffSec / 60);
+  const seconds = diffSec % 60;
+  
+  if (minutes < 60) {
+    return `${minutes}分${seconds}秒`;
+  }
+  
+  // Convert to hours, minutes and seconds
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  return `${hours}时${remainingMinutes}分${seconds}秒`;
 }
 
 onMounted(() => {
@@ -224,21 +359,14 @@ onMounted(() => {
   }
 
   .exam-pager-card-content {
-    margin-top: 10px;
+    margin-top: 0px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     width: calc(100%);
     padding: 20px;
 
-    .scene-header {
-      // display: flex;
-      // align-items: flex-start;
-      // gap: 8px;
-      // margin: 8px 0px;
-      // margin-top: 0px;
-      // padding-left: 0px;
-      // flex-direction: column;
+    .scene-header { 
 
       display: flex;
       align-items: center;
@@ -252,6 +380,7 @@ onMounted(() => {
       .scene-title {
         font-weight: 500;
         font-size: 16px;
+        font-weight: bold;
         line-height: 22px;
         color: var(--coz-fg-primary);
         cursor: pointer;
@@ -291,7 +420,7 @@ onMounted(() => {
       display: flex;
       align-items: center;
       gap: 4px;
-      margin-top: 4px;
+      margin-top: 10px;
 
       .scene-avatar {
         width: 14px;
@@ -360,5 +489,28 @@ onMounted(() => {
       }
     }
   }
+
+    .scene-tags{
+    display:flex ;
+      span.scene-tag-time {
+        font-size: 13px; 
+        border-radius: 5px;
+        background: #fafafa;
+        opacity: 0.7;
+        margin-top:5px; 
+        padding: 5px;
+      }
+
+  }
+
+.semi-divider.semi-divider-horizontal {
+  margin-top:16px;
+  margin-bottom: 15px;
+  border-bottom: 0.5px solid #f0f0f5;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--semi-color-text-0);
+} 
 }
 </style>
