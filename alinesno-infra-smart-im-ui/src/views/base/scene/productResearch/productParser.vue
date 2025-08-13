@@ -1,13 +1,5 @@
 <template>
-  <div class="exam-pagercontainer">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="exam-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="exam-pager-main">
+  <ProductResearchContainer>
         <!-- 文件知识库列表 -->
         <div class="product-parser-container">
           <el-row>
@@ -16,9 +8,14 @@
                 <span>
                   <i class="fa-solid fa-file-pdf"></i> 知识库检索规划预览
                 </span>
-                <el-button type="warning" text bg :disabled="!outline" @click="executeTaskJob('reGenerate')">
-                  <i class="fa-solid fa-paper-plane"></i>&nbsp;开始生成
+                <span>
+                <el-button type="primary" :disabled="!outline" @click="saveOutline()">
+                  <i class="fa-solid fa-floppy-disk"></i>&nbsp;保存
                 </el-button>
+                <el-button type="primary" :disabled="!outline" @click="executeTaskJob('reGenerate')">
+                  <i class="fa-solid fa-rotate"></i>&nbsp;重新生成
+                </el-button>
+              </span>
               </div>
 
               <!-- 大纲生成预览 -->
@@ -28,12 +25,7 @@
                   <el-empty description="当前未生成项目检索的规划，你可以选择自定义的知识库来进行检索，生成项目检索的规划" />
                 </div>
 
-                <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef">
-                  <!-- 
-                  <div style="font-size:13px;text-align: left;margin-bottom: 10px;color:#888">
-                      确认下方内容大纲（点击编辑内容，右键添加/删除大纲项），开始选择模板
-                  </div> 
-                  -->
+                <el-scrollbar v-if="outline" class="pager-container" ref="scrollbarRef"> 
                   <div ref="innerRef">
                     <OutlineGenContainerPanel ref="pagerGenContainerPanelRef" :value="outline" />
                   </div>
@@ -41,37 +33,51 @@
               </div>
             </el-col>
 
-            <el-col :span="16" style="padding:0px 1%">
+            <el-col :span="16">
 
-              <!-- 头部显示信息-->
-              <div class="article-edit-header">
-                <!-- 标题内容 -->
-                <EditableTitle v-model:title="articleData.title" class="article-edit-title" />
-              </div>
+              <div style="max-width:1025px;margin:auto;">
+                <!-- 头部显示信息-->
+                <div class="article-edit-header">
+                  <!-- 标题内容 -->
+                  <EditableTitle 
+                    v-model:title="articleData.title" 
+                    @update:title="handleTitleSave"
+                    class="article-edit-title" />
+                </div>
 
-              <!-- 编辑内容 -->
-              <div class="article-edit-content-display">
-                <AgentContentDisplay v-model:articleData="articleData" @content-change="handleContentChange"
-                  ref="contentEditor" />
+                <!-- 编辑内容 -->
+                <div class="article-edit-content-display">
+                  <AgentContentDisplay v-model:articleData="articleData" @content-change="handleContentChange"
+                    ref="contentEditor" />
+                </div>
               </div>
             </el-col>
 
           </el-row>
-        </div>
-      </el-main>
-    </el-container>
+        </div> 
 
     <!-- 运行抽屉 -->
     <div class="aip-flow-drawer flow-control-panel">
       <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
-          <RoleChatPanel ref="roleChatPanelRef" />
+          <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
         </div>
       </el-drawer>
     </div>
 
-  </div>
+
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef" 
+            :back-to-path="'/scene/productResearch/projectManagement'"
+            :route-params="{ sceneId: sceneId }" 
+            :takeOverEnable="takeOverEnable"
+            @takeOver="handleTakeOver"
+        />
+
+
+  </ProductResearchContainer>
 </template>
 
 <script setup>
@@ -79,17 +85,18 @@ import { nextTick, onMounted, onUnmounted , ref } from 'vue';
 import { ElMessage, ElLoading } from 'element-plus';
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
-import FunctionList from './functionList'
-// import DatasetList from './components/ruleList.vue'
-// import MarkdownPreview from './components/MarkdownPreview.vue'
+import FunctionList from './functionList' 
 import OutlineGenContainerPanel from './components/OutlineEditor.vue';
+import ProductResearchContainer from './productResearchContainer'
 
 import EditableTitle from './components/EditableTitle.vue'
 import AgentContentDisplay from './components/agentContentDisplay'
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 
 import {
   getScene,
   getTaskById,
+  updateTaskName,
   executeTask
 } from '@/api/base/im/scene/productResearch';
 
@@ -109,6 +116,8 @@ const showDebugRunDialog = ref(false);
 const previewDialogRef = ref(null)
 const roleChatPanelRef = ref(null)
 const pagerGenContainerPanelRef = ref(null)
+
+const generatingStatusRef = ref(null)
 
 const outline = ref('')
 
@@ -145,11 +154,10 @@ const executeTaskJob = async (type) => {
     const task = res.data;
     const taskStatus = task.taskStatus;
 
-    // 如果任务状态为0(准备中)，则开始执行
-    if (taskStatus == 0 || type == 'reGenerate') {
+    // 如果任务状态为 running (准备中)，则开始执行
+    if (taskStatus == '0' || type == 'reGenerate') {
       isTaskRunning.value = true;
-      executeStatus();
-      startPolling(); // 开始轮询检查任务状态
+      executeStatus(); 
     }
   } catch (error) {
     console.error('任务执行错误:', error);
@@ -160,21 +168,20 @@ const executeTaskJob = async (type) => {
 
 const executeStatus = () => {
 
+  if(showDebugRunDialog.value){
+    return ;
+  }
+
   // 打开流容器
   showDebugRunDialog.value = true;
   nextTick(() => {
     roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.progressAnalyzerEngineer);
   })
 
-  // 开始生成
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  });
-
+  // 开始生成 
   let text = '内容分析正在生成，请稍等...';
-  streamLoading.value.setText(text)
+  generatingStatusRef.value?.loading();
+  generatingStatusRef.value?.setText(text)
 }
 
 const handleGetScene = async () => {
@@ -187,6 +194,8 @@ const handleGetScene = async () => {
     
     // 获取任务信息
     await handleTaskInfo();
+
+    startPolling(); // 开始轮询检查任务状态
   } catch (error) {
     console.error('Error fetching scene or task:', error);
     ElMessage.error('获取场景或任务信息失败');
@@ -229,6 +238,11 @@ const handleTaskInfo = async () => {
   try {
     const taskResponse = await getTaskById(taskId.value);
     const taskData = taskResponse.data;
+    const currentStepLabel = taskData.currentStepLabel;
+
+    if(currentStepLabel){
+        generatingStatusRef.value?.setText(currentStepLabel);
+    } 
     
     // 更新文章标题
     articleData.value.title = taskData.taskName;
@@ -240,20 +254,18 @@ const handleTaskInfo = async () => {
     
     // 处理详细内容
     if (taskData.detailedContent) {
-      articleData.value.content = taskData.detailedContent;
+      articleData.value.content = taskData.summarizedContent;
     }
     
     // 检查任务状态
-    if (taskData.taskStatus === 2) { // 任务进行中
+    if (taskData.taskStatus === 'running') { // 任务进行中
       if (!isTaskRunning.value) {
         executeStatus();
         isTaskRunning.value = true;
       }
-    } else if (taskData.taskStatus === 1) { // 任务已完成
+    } else if (taskData.taskStatus === 'completed' || taskData.taskStatus === 'failed' || taskData.taskStatus === 'cancelled') { // 任务已完成
       stopPolling(); // 停止轮询
-      if (streamLoading.value) {
-        streamLoading.value.close(); // 关闭加载状态
-      }
+      generatingStatusRef.value?.close(); // 关闭加载状态
       showDebugRunDialog.value = false ;
     }
   } catch (error) {
@@ -261,6 +273,15 @@ const handleTaskInfo = async () => {
     throw error;
   }
 }
+
+// 更新内容标题
+const handleTitleSave = (newTitle) => {
+    console.log('newTitle = ' + newTitle)
+    updateTaskName({taskId:taskId.value , taskName: newTitle }).then(res => {
+       ElMessage.success("标题修改成功.")
+    })
+}
+
 
 onMounted(() => {
 
@@ -286,7 +307,7 @@ onUnmounted(() => {
 
 <style lang="scss" scoped>
 .product-parser-container {
-  padding: 10px;
+  padding: 5px 10px;
 
   .product-parser-chat-box {
     margin-left: 20px;
@@ -313,19 +334,17 @@ onUnmounted(() => {
 }
 
 .pager-gen-result-panel {
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   margin-left: 0px;
   margin-right: 10px;
   text-align: left;
 
   .pager-container {
-    background-color: #fafafa;
+    background-color: #fff;
     margin: 10px 10px;
     margin-right: 0px;
     border-radius: 8px;
-    height: calc(100vh - 160px);
-    // padding: 10px;
-    // padding-left: 10px;
+    height: calc(100vh - 135px); 
     margin-left: 20px;
     margin-bottom: 0px;
   }
