@@ -1,8 +1,6 @@
 <template>
   <div class="chapter-tree-content">
-
-    <!-- outline: {{ outline }} -->
-
+ 
     <el-tree :data="outline" 
         node-key="id" 
         default-expand-all 
@@ -49,37 +47,15 @@ import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
 import { getParam } from '@/utils/ruoyi'
 // import TransferAgentPanel from '@/views/base/scene/common/transferAgent'
 
-import {
-    // updateChapterEditor, 
-    // updateSceneGenStatus ,
-    // getScene,
-    saveChapter,
-    // chatRole,
+import { 
+    saveChapter, 
 } from '@/api/base/im/scene/productResearch'
-
-// const props = defineProps({
-//   value: String
-// })
-
+ 
 const route = useRoute();
 const { proxy } = getCurrentInstance();
-
-// const route = useRoute();
-// const channelStreamId = ref(route.query.channelStreamId);
-
+ 
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
-
-// const emit = defineEmits(['update:value'])
-
-// const emit = defineEmits([
-//     'setCurrentSceneInfo' , 
-//     'getChannelStreamId',
-//     'openChatBox' ,
-//     'closeShowDebugRunDialog',
-//     'genChapterContentByAgent',
-//     'editContent' , 
-//     'handleExecuteHandle'])
-
+ 
 // 选择Agent组件
 const transferAgentPanel = ref(null)
 
@@ -191,128 +167,13 @@ const genStreamContentByMessage = async (roleIdVal , messageVal) => {
     await genStreamContent();
 
 }
-
-// /** 生成内容 */
-// const genStreamContent = async() => {
-
-//   if (!message.value) {
-//     proxy.$modal.msgError("请输入消息内容.");
-//     return;
-//   }
-
-// //   const channelStreamId = emit('getChannelStreamId');
-//   console.log('channelStreamId = ' + channelStreamId.value);
-
-//   if(!channelStreamId.value){
-//     proxy.$modal.msgError("请先创建场景.");
-//     return;
-//   }
-
-//   streamLoading.value = ElLoading.service({
-//     lock: true,
-//     text: '任务执行中，请勿操作其它界面 ...',
-//     background: 'rgba(0, 0, 0, 0.2)',
-//   })
-
-
-//   let formData = {
-//     sceneId: currentSceneId.value,
-//     channelStreamId: channelStreamId.value ,
-//     message: message.value,
-//     roleId: person.value.id ,
-//   }
-
-//   const response = await chatRole(formData)
-//   console.log('response = ' + response)
-
-//   proxy.$modal.msgSuccess("发送成功");
-//   chaterDialogVisible.value = false ;
-//   message.value = '';
-
-//   // 合并数组
-//   Array.prototype.push.apply(outline.value, response.data);
-//   closeStreamDialog();
-
-//   // 自动保存章节
-//   getOutlineJson();
-
-// };
+ 
 
 const addChapter = () => {
     const newChapter = { id: Date.now(), label: `第${outline.value.length + 1}章`, description: '节点内容描述信息', children: [] };
     outline.value.push(newChapter);
 };
-
-// /** 选择角色生成目录 */
-// function selectChaterGenerator(item) {
-//     chaterDialogVisible.value = true;
-//     console.log('selectChaterGenerator')
-//     // console.log(' personCardRef.value = ' +  personCardRef.value)
-//     person.value = item ;
-//     person.value.email =  'zhangsan@example.com';
-// }
-
-// /** 配置成员 */
-// function configAgent(type){
-
-//     configAgentDialogVisible.value = true ;
-
-
-//     console.log('configAgent')
-
-//     currentAgentConfigType.value = type 
-//     const title = type == 'chapter'?'选择大纲生成专员':'选择内容生成专员' ; 
-
-//     if(type === 'chapter'){
-//         channelAgentList.value = currentSceneInfo.value.chapterEditors.map(item => item.id); 
-//     }else if(type === 'content'){
-//         channelAgentList.value = currentSceneInfo.value.contentEditors.map(item => item.id); 
-//     }
-
-//     transferAgentPanel.value.handleOpendAgent(title , channelAgentList.value)
-
-// }
-
-
-// /** 关闭选择角色弹窗 */
-// function handleCloseAgentConfig(selectAgentList){
-//   configAgentDialogVisible.value = false ;
-
-//   updateChapterEditor(currentSceneId.value , selectAgentList , currentAgentConfigType.value).then(res => {
-//     proxy.$modal.msgSuccess("更新成功");
-//     handleGetScene() ;
-//   })
-// }
-
-// /** 获取到场景详情 */
-// function handleGetScene() {
-//     getScene(currentSceneId.value).then(res => {
-//       currentSceneInfo.value = res.data
-//       outline.value = res.data.chapterTree
-//       emit('setCurrentSceneInfo' , res.data)
-
-//       const genStatus = currentSceneInfo.value.genStatus ;
-
-//       if(genStatus == 0 && isCheckGenStatus.value){ // 未生成章节
-//         ElMessageBox.confirm( '检测到生成指令['+ currentSceneInfo.value.chapterPromptContent +']是否要生成章节大纲？', '提示', {
-//             confirmButtonText: '确定',
-//             cancelButtonText: '取消',
-//             type: 'warning'
-//         })
-//         .then(() => {
-//             updateSceneGenStatus(currentSceneId.value , 1).then(res => {
-//                 person.value = currentSceneInfo.value.chapterEditors[0];
-//                 message.value = currentSceneInfo.value.chapterPromptContent;
-//                 openChatBoxStreamContent();
-//             })
-//         })
-//         .catch(() => {
-//             console.log('用户取消了生成章节操作');
-//         });
-//       }
-//     })
-// }
-
+ 
 const getOutlineJson = () => {
     const jsonResult = JSON.stringify(outline.value, null, 2);
 
@@ -333,15 +194,7 @@ const getOutlineJsonSingle = () => {
         handleGetScene()
     })
 }
-
-// const closeStreamDialog = () => {
-//   console.log('child method. ' + streamLoading.value)
-//   if(streamLoading.value){
-//     streamLoading.value.close()
-//   }
-//   emit('closeShowDebugRunDialog')
-// }
-
+ 
 const setOutlineJson = (outlineVal) => {
     console.log("outline = " + outlineVal);
     outline.value = outlineVal
@@ -355,14 +208,7 @@ defineExpose({
     // configAgent
     setOutlineJson
 })
-
-
-// nextTick(() => {
-//     console.log('sceneId = ' + route.query.sceneId) ;
-//     // handleListAllRole()
-//     handleGetScene() 
-// })
-
+ 
 </script>
 
 <style lang="scss" scoped>
@@ -441,6 +287,10 @@ defineExpose({
     margin-bottom: 20px;
     margin-top:20px;
     border-radius: 5px;
+}
+
+.chapter-tree-content{
+    padding-right: 20px;
 }
 
 </style>
