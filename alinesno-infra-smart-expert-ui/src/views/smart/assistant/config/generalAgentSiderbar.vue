@@ -33,10 +33,10 @@
     <el-dialog 
       v-model="showAddModal" 
       :title="editingCategory ? '编辑分类' : '添加分类'"
-      width="400px"
+      width="500px"
     >
-      <el-form :model="categoryForm" size="large" label-width="80px">
-        <el-form-item label="图标">
+      <el-form :model="categoryForm" size="large" :rules="rules" label-width="80px" ref="formRef">
+        <el-form-item label="图标" prop="icon">
           <el-select v-model="categoryForm.icon" placeholder="请选择图标">
             <el-option
               v-for="icon in iconOptions"
@@ -51,14 +51,17 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="分类名称">
+        <el-form-item label="分类名称"  prop="name">
           <el-input v-model="categoryForm.name" placeholder="请输入分类名称"></el-input>
+        </el-form-item>
+        <el-form-item label="分类描述"  prop="remark">
+          <el-input v-model="categoryForm.remark" placeholder="请输入分类描述"></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button size="large" @click="showAddModal = false">取消</el-button>
-          <el-button size="large" type="primary" @click="submitCategory">
+          <el-button size="large" type="primary" @click="submitForm">
             {{ editingCategory ? '更新' : '确认' }}
           </el-button>
         </span>
@@ -84,6 +87,9 @@ const props = defineProps({
 
 const emit = defineEmits(['update:activeCategory', 'update:categories'])
 
+// 表单引用
+const formRef = ref(null)
+
 // 分类表单
 const showAddModal = ref(false)
 const editingCategory = ref(null)
@@ -91,6 +97,20 @@ const categoryForm = ref({
   id: '',
   name: '',
   icon: ''
+})
+
+// 表单校验规则
+const rules = ref({
+  name: [
+    { required: true, message: '请输入分类名称', trigger: 'blur' },
+    { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  remark: [
+    { required: true, message: '请输入分类描述', trigger: 'blur' } 
+  ],
+  icon: [
+    { required: true, message: '请选择分类图标', trigger: 'change' }
+  ]
 })
 
 // 图标选项
@@ -134,6 +154,15 @@ const deleteCategory = (id) => {
     }
   }).catch(() => {
     // 取消操作
+  })
+}
+
+// 提交表单校验
+const submitForm = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      submitCategory()
+    }
   })
 }
 
