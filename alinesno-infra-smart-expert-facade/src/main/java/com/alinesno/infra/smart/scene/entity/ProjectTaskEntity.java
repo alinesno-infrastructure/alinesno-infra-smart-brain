@@ -30,11 +30,15 @@ public class ProjectTaskEntity extends InfraBaseEntity {
     private String taskName;
 
     @TableField
+    @Column(name = "task_goal", type = MySqlTypeConstant.TEXT, comment = "任务目标")
+    private String taskGoal ;
+
+    @TableField
     @Column(name = "task_description", type = MySqlTypeConstant.LONGTEXT, comment = "任务描述")
     private String taskDescription;
 
     @TableField
-    @Column(name = "task_status", type = MySqlTypeConstant.INT, length = 2, comment = "任务状态(0未运行|1已运行|2运行中|9运行失败)")
+    @Column(name = "task_status", type = MySqlTypeConstant.VARCHAR, length = 16 , comment = "任务状态")
     private String taskStatus;
 
     @TableField
@@ -72,4 +76,9 @@ public class ProjectTaskEntity extends InfraBaseEntity {
     @TableField("summarized_content")
     @Column(name = "summarized_content", type = MySqlTypeConstant.LONGTEXT, comment = "总结内容")
     private String summarizedContent;
+
+    @TableField("current_step_label")
+    @Column(name = "current_step_label", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "当前步骤标签")
+    private String currentStepLabel ;
+
 }
