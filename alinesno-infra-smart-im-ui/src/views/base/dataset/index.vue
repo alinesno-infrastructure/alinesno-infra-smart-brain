@@ -29,11 +29,7 @@
                                 @mouseenter="groupMouseEnter(groupIndex)" @mouseleave="groupMouseLeave(groupIndex)"
                                 @click="selectGroup(groupIndex, group)">
 
-                                <div style="
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-">
+                                <div style="display: flex;flex-direction: column;gap: 5px;">
                                     <span class="filename"> {{ group.groupName }} </span>
                                     <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;"> 业务知识库，集成配置管理 </span>
                                 </div>
@@ -249,33 +245,7 @@ const rules = ref({
         { required: true, message: '请选择审查立场', trigger: 'change' }
     ]
 });
-
-// 文件类型图标映射
-const fileTypeIcons = {
-  pdf: 'fa-file-pdf',
-  doc: 'fa-file-word',
-  docx: 'fa-file-word',
-  xls: 'fa-file-excel',
-  xlsx: 'fa-file-excel',
-  jpg: 'fa-file-image',
-  jpeg: 'fa-file-image',
-  png: 'fa-file-image',
-  txt: 'fa-file-lines',
-  ppt: 'fa-file-powerpoint',
-  pptx: 'fa-file-powerpoint',
-  csv: 'fa-file-csv',
-  // 可以继续添加其他类型...
-  default: 'fa-file' // 默认图标
-}
-
-// 获取文件对应的图标
-const getFileIcon = (fileName) => {
-  if (!fileName) return fileTypeIcons.default
   
-  const extension = fileName.split('.').pop().toLowerCase()
-  return fileTypeIcons[extension] || fileTypeIcons.default
-}
-
 // 当前选中的分类
 const currentItem = ref({});
 
