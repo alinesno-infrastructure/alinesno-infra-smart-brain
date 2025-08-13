@@ -1,92 +1,39 @@
 <template>
     <div class="integral-display">
-           <el-row :gutter="16">
-    <el-col :span="8">
-      <div class="statistic-card">
-        <el-statistic :value="98500">
-          <template #title>
-            <div style="display: inline-flex; align-items: center">
-              Daily active users
-              <el-tooltip
-                effect="dark"
-                content="Number of users who logged into the product in one day"
-                placement="top"
-              >
-                <el-icon style="margin-left: 4px" :size="12">
-                  <Warning />
+    <el-row :gutter="16">
+      <el-col v-for="(stat, index) in statisticsData" :key="index" :span="8">
+        <div class="statistic-card">
+          <el-statistic :value="stat.value">
+            <template #title>
+              <div style="display: inline-flex; align-items: center">
+                {{ stat.title }}
+                <el-tooltip
+                  v-if="stat.tooltip"
+                  effect="dark"
+                  :content="stat.tooltip"
+                  placement="top"
+                >
+                  <el-icon style="margin-left: 4px" :size="12">
+                    <Warning />
+                  </el-icon>
+                </el-tooltip>
+              </div>
+            </template>
+          </el-statistic>
+          <div class="statistic-footer">
+            <div class="footer-item">
+              <span>{{ stat.footerLabel }}</span>
+              <span v-if="stat.trend" :class="stat.trend.color">
+                {{ stat.trend.value }}
+                <el-icon>
+                  <component :is="stat.trend.icon" />
                 </el-icon>
-              </el-tooltip>
+              </span>
             </div>
-          </template>
-        </el-statistic>
-        <div class="statistic-footer">
-          <div class="footer-item">
-            <span>than yesterday</span>
-            <span class="green">
-              24%
-              <el-icon>
-                <CaretTop />
-              </el-icon>
-            </span>
           </div>
         </div>
-      </div>
-    </el-col>
-    <el-col :span="8">
-      <div class="statistic-card">
-        <el-statistic :value="693700">
-          <template #title>
-            <div style="display: inline-flex; align-items: center">
-              Monthly Active Users
-              <el-tooltip
-                effect="dark"
-                content="Number of users who logged into the product in one month"
-                placement="top"
-              >
-                <el-icon style="margin-left: 4px" :size="12">
-                  <Warning />
-                </el-icon>
-              </el-tooltip>
-            </div>
-          </template>
-        </el-statistic>
-        <div class="statistic-footer">
-          <div class="footer-item">
-            <span>month on month</span>
-            <span class="red">
-              12%
-              <el-icon>
-                <CaretBottom />
-              </el-icon>
-            </span>
-          </div>
-        </div>
-      </div>
-    </el-col>
-    <el-col :span="8">
-      <div class="statistic-card">
-        <el-statistic :value="72000" title="New transactions today">
-          <template #title>
-            <div style="display: inline-flex; align-items: center">
-              New transactions today
-            </div>
-          </template>
-        </el-statistic>
-        <div class="statistic-footer">
-          <div class="footer-item">
-            <span>than yesterday</span>
-            <span class="green">
-              16%
-              <el-icon>
-                <CaretTop />
-              </el-icon>
-            </span>
-          </div>
-           
-        </div>
-      </div>
-    </el-col>
-  </el-row>
+      </el-col>
+    </el-row>
 
   <div style="
     padding: 10px;
@@ -133,6 +80,33 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
+const statisticsData = ref([
+  {
+    title: '当前剩余积分',
+    value: '98,500',
+    tooltip: '您账户中当前可使用的积分余额',
+    footerLabel: '积分有效期至2024-12-31',
+    trend: null  // 不需要趋势
+  },
+  {
+    title: '今日消耗积分',
+    value: '670',
+    tooltip: '今日使用积分的情况',
+    footerLabel: '较昨日',
+    trend: {
+      value: '-5%', 
+      color: 'red',
+      icon: null
+    }
+  },
+  {
+    title: '本月累计消耗',
+    value: '12,800',
+    tooltip: '本月已使用的积分总量',
+    footerLabel: '剩余可用天数',
+    trend: null
+  }
+]);
 
 const tableData = ref([
     {"taskName":"产品需求调研","taskType":"场景","point":20,"addTime":"2024-05-01 09:30"},
