@@ -1,14 +1,6 @@
 <template>
-  <div class="ppt-pager-container">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="ppt-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="ppt-pager-main">
-
+  <ProductResearchContainer>
+  
         <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
           ref="roleSelectPanelRef" />
 
@@ -58,13 +50,7 @@
                   </el-button>
                 </div>
               </div>
-
-              <!-- 选择题型
-              <div class="example-select-section">
-                <ArticleTypeConfig v-model="formData.pptConfig" />
-              </div>
-              -->
-
+ 
               <div class="example-section">
                 <div class="example-title">你可以这样提问</div>
                 <div class="example-list">
@@ -119,21 +105,25 @@
           </el-row>
 
         </div>
-
-      </el-main>
-    </el-container>
-
+  
     <!-- 运行抽屉 -->
     <div class="aip-flow-drawer flow-control-panel">
       <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
-          <RoleChatPanel ref="roleChatPanelRef" />
+          <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
         </div>
       </el-drawer>
     </div>
 
-  </div>
+
+                <!-- AI生成状态 -->
+                <AIGeneratingStatus 
+                    ref="generatingStatusRef" 
+                    :closeEnable="false" 
+                /> 
+
+  </ProductResearchContainer>
 </template>
 
 <script setup>
@@ -143,9 +133,11 @@ import { ElMessage, ElLoading } from 'element-plus';
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
 import DatasetTemplatePanel from './datasetTemplate'
-// import ArticleTypeConfig from './articleTypeConfig.vue';
+import ProductResearchContainer from './productResearchContainer'
 import ZshLog from "./ZshLog";
 import OutlineGenContainerPanel from './components/OutlineEditor.vue';
+
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
@@ -183,6 +175,8 @@ const pptId = ref(null)
 const logStreamArr = ref([])
 const pagerGenContainerPanelRef = ref(null)
 const dataAnalysisDisplayRef = ref(null)
+
+const generatingStatusRef = ref(null)
 
 // 执行面板
 const showDebugRunDialog = ref(false);
@@ -242,7 +236,12 @@ const handleUpload = () => {
 // 生成业务集成大纲
 const generaterOutlineText = async () => {
   if (!formData.value.promptText) {
-    ElMessage.error('请输入内容');
+    ElMessage.error('请输入内容.');
+    return;
+  }
+
+  if(!formData.value.datasetGroupId){
+    ElMessage.error('请选择知识库.');
     return;
   }
 
@@ -253,19 +252,13 @@ const generaterOutlineText = async () => {
     console.log('roleChatPanelRef.value = ' + roleChatPanelRef.value)
     roleChatPanelRef.value.openChatBoxWithRole(currentSceneInfo.value.processCollectorEngineer);
   })
-
-  // 开始生成
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  });
-
+ 
   
   try {
 
     let text = 'AI规划正在生成，请稍等...' ; 
-    streamLoading.value.setText(text)
+    generatingStatusRef.value?.loading();
+    generatingStatusRef.value?.setText(text)
 
     // 使用await等待异步操作完成
     const res = await chatPromptContent(formData.value);
@@ -285,34 +278,12 @@ const generaterOutlineText = async () => {
     return;
   } finally {
     // 无论成功或失败都关闭loading
-    streamLoading.value.close();
+    generatingStatusRef.value?.close();
     showDebugRunDialog.value = false ;
   }
 
 };
-
-// // 生成PPT
-// const generatorPPT = () => {
-//   savePPTOutline(sceneId.value,
-//     outline.value,
-//     pptId.value,
-//     formData.value.pptConfig,
-//     formData.value.promptText
-//   ).then(res => {
-//     pptId.value = res.data;
-//     window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
-//   }).catch(error => {
-//     ElMessage.error(error.message)
-//   })
-// }
-
-// // 计算总题目数和总分
-// const updateTotalStats = (stats) => {
-//   totalQuestions.value = stats.totalQuestions
-//   totalScore.value = stats.totalScore
-// }
-
-
+  
 const handleGetScene = () => {
   getScene(sceneId.value).then(res => {
     currentSceneInfo.value = res.data;
