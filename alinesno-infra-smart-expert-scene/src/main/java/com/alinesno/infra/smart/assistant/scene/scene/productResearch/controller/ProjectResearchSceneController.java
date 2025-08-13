@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.productResearch.controller;
 
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
@@ -8,6 +11,7 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectManagerDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectResearchSceneDTO;
@@ -20,6 +24,7 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
+import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectResearchSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
@@ -27,6 +32,7 @@ import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.ExamQuestionTypeEnum;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
+import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import io.swagger.annotations.Api;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +45,7 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -179,68 +186,102 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
     }
 
     /**
-     * 聊天提示内容
-     * @param dto
-     * @param query
-     * @return
+     * 聊天提示内容（异步版本）
+     * @param dto 请求参数
+     * @param query 权限查询
+     * @return DeferredResult 异步结果
      */
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
-    public AjaxResult chatPromptContent(@RequestBody @Validated ProjectSearchDTO dto , PermissionQuery query) {
+    public DeferredResult<AjaxResult> chatPromptContentAsync(@RequestBody @Validated ProjectSearchDTO dto, PermissionQuery query) {
+        // 设置超时时间（毫秒）
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(300_000L);
 
-        log.debug("dto = {}" , dto);
+        // 设置超时回调
+        deferredResult.onTimeout(() -> {
+            deferredResult.setErrorResult(AjaxResult.error("请求处理超时，请稍后重试"));
+        });
 
-        ProjectResearchSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-        Long pptPlannerEngineer = entity.getProcessCollectorEngineer() ;
+        // 异步处理逻辑
+        CompletableFuture.runAsync(() -> {
+            try {
+                log.debug("dto = {}", dto);
 
-        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
+                ProjectResearchSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+                Long pptPlannerEngineer = entity.getProcessCollectorEngineer();
 
-        // 引用附件不为空，则引入和解析附件
-        if(!CollectionUtils.isEmpty(dto.getAttachments())){
-            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-            taskInfo.setAttachments(attachmentList);
-        }
+                MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
 
-        String promptText = ProjectPromptHandle.generatorPrompt(dto) ;
+                // 引用附件不为空，则引入和解析附件
+                if (!CollectionUtils.isEmpty(dto.getAttachments())) {
+                    List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+                    taskInfo.setAttachments(attachmentList);
+                }
 
-        taskInfo.setRoleId(pptPlannerEngineer);
-        taskInfo.setChannelStreamId(dto.getChannelStreamId());
-        taskInfo.setChannelId(dto.getSceneId());
-        taskInfo.setSceneId(dto.getSceneId());
-        taskInfo.setText(promptText);
-        taskInfo.setQueryText(dto.getPromptText());
+                String promptText = ProjectPromptHandle.generatorPrompt(dto);
 
-        Long datasetGroupId = dto.getDatasetGroupId() ;
-        ProjectKnowledgeGroupEntity groupEntity =  projectKnowledgeGroupService.getById(datasetGroupId) ;
+                taskInfo.setRoleId(pptPlannerEngineer);
+                taskInfo.setChannelStreamId(dto.getChannelStreamId());
+                taskInfo.setChannelId(dto.getSceneId());
+                taskInfo.setSceneId(dto.getSceneId());
+                taskInfo.setText(promptText);
+                taskInfo.setQueryText(dto.getPromptText());
 
-        taskInfo.setCollectionIndexName(groupEntity.getVectorDatasetName());
-        taskInfo.setCollectionIndexLabel(groupEntity.getGroupName());
+                Long datasetGroupId = dto.getDatasetGroupId();
+                ProjectKnowledgeGroupEntity groupEntity = projectKnowledgeGroupService.getById(datasetGroupId);
 
-        // 优先获取到结果内容
-        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("genContent = {}", genContent.getGenContent());
-//
-//        genContent.setGenContent(taskInfo.getFullContent());
-//        genContent.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
-//
-//        // 解析得到代码内容
-//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-//
-//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-//
-//            // 验证是否可以正常解析json
-//            try{
-//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-//                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-//            }catch (Exception e){
-//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
-//            }
-//
-//            return AjaxResult.success("操作成功" , dataObject) ;
-//        }
+                taskInfo.setCollectionIndexName(groupEntity.getVectorDatasetName());
+                taskInfo.setCollectionIndexLabel(groupEntity.getGroupName());
 
-        return AjaxResult.success("操作成功") ;
+                // 异步执行角色服务并处理结果
+                roleService.runRoleAgent(taskInfo)
+                        .thenAccept(workflowExecutionDto -> {
+                            try {
+                                // 处理生成的内容
+                                String fullContent = taskInfo.getFullContent();
+                                workflowExecutionDto.setGenContent(fullContent);
+
+                                // 解析代码块
+                                List<CodeContent> codeBlocks = CodeBlockParser.parseCodeBlocks(fullContent);
+                                workflowExecutionDto.setCodeContent(codeBlocks);
+
+                                // 如果有代码内容，尝试解析JSON
+                                if (!CollectionUtils.isEmpty(codeBlocks)) {
+                                    String codeContent = codeBlocks.get(0).getContent();
+                                    try {
+                                        JSONArray dataObject = JSONArray.parseArray(codeContent);
+                                        List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+                                        log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
+
+                                        // 返回解析后的JSON数据
+                                        deferredResult.setResult(AjaxResult.success("操作成功", dataObject));
+                                    } catch (Exception e) {
+                                        log.error("解析生成内容失败", e);
+                                        deferredResult.setErrorResult(
+                                                AjaxResult.error("生成大纲格式不正确，请点击重新生成"));
+                                    }
+                                } else {
+                                    // 没有代码内容的情况
+                                    deferredResult.setResult(AjaxResult.success("操作成功"));
+                                }
+                            } catch (Exception e) {
+                                log.error("处理生成内容时出错", e);
+                                deferredResult.setErrorResult(AjaxResult.error("处理生成内容时出错: " + e.getMessage()));
+                            }
+                        })
+                        .exceptionally(ex -> {
+                            log.error("执行角色服务时出错", ex);
+                            deferredResult.setErrorResult(AjaxResult.error("执行角色服务时出错: " + ex.getMessage()));
+                            return null;
+                        });
+
+            } catch (Exception e) {
+                log.error("处理请求时发生错误", e);
+                deferredResult.setErrorResult(AjaxResult.error("处理请求时发生错误: " + e.getMessage()));
+            }
+        });
+
+        return deferredResult;
     }
 
 }
