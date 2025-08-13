@@ -2,28 +2,33 @@ package com.alinesno.infra.smart.assistant.scene.scene.productResearch.controlle
 
 import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ExecuteTaskDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectTaskGeneratorDTO;
+import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.UpdateProjectReSearchTaskNameDto;
+import com.alinesno.infra.smart.assistant.scene.scene.productResearch.tools.ProductResearchChatRoleUtil;
+import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.job.ProjectTaskExecutorService;
+import com.alinesno.infra.smart.assistant.scene.scene.productResearch.tools.ProjectTaskExecutorService;
 import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.entity.ProjectResearchSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Date;
 import java.util.stream.Collectors;
@@ -54,6 +59,9 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
     @Autowired
     private ProjectTaskExecutorService projectTaskExecutorService ;
 
+    @Autowired
+    private ProductResearchChatRoleUtil productResearchChatRoleUtil ;
+
     /**
      * 更新chapterPromptContent内容
      * @return
@@ -68,6 +76,7 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
         BeanUtil.copyProperties(query , taskEntity);
 
         taskEntity.setTaskName(dto.getPromptText());
+        taskEntity.setTaskGoal(dto.getPromptText());
         taskEntity.setTaskDescription(dto.getPromptText());
         taskEntity.setSceneId(dto.getSceneId());
         taskEntity.setTaskStartTime(new Date());
@@ -109,12 +118,65 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
             return AjaxResult.success("任务已完成" , taskEntity);
         }
 
+        if(TaskStatusEnum.RUN_FAILED.getCode().equals(taskEntity.getTaskStatus())){
+            return AjaxResult.success("任务运行已失败，请勿重复执行" , taskEntity) ;
+        }
+
         taskEntity.setChannelStreamId(dto.getChannelStreamId());
         projectTaskService.updateById(taskEntity);
 
         projectTaskExecutorService.executeTaskAsync(dto, query, taskEntity);
 
         return AjaxResult.success("任务已开始执行" , taskEntity);
+    }
+
+    /**
+     * 更新任务名称
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/updateTaskName")
+    public AjaxResult updateTaskName(@RequestBody @Validated UpdateProjectReSearchTaskNameDto dto , PermissionQuery query) {
+
+        ProjectTaskEntity task = projectTaskService.getById(dto.getTaskId());
+
+        if(task == null){
+            return AjaxResult.error("任务不存在");
+        }
+
+        task.setTaskName(dto.getTaskName());
+        projectTaskService.updateById(task);
+
+        return AjaxResult.success("任务名称已更新");
+    }
+
+    /**
+     * 根据id删除任务
+     * @return
+     */
+    @DataPermissionQuery
+    @DeleteMapping("/deleteTaskById")
+    public AjaxResult deleteTaskById(@RequestParam Long taskId) {
+        projectTaskService.removeById(taskId);
+        return AjaxResult.success("操作成功") ;
+    }
+
+    /**
+     * 与编辑角色沟通
+     * @param dto
+     * @return
+     */
+    @DataPermissionQuery
+    @PostMapping("/chatEditorRole")
+    public AjaxResult chatEditorRole(@RequestBody @Validated TextChatEditorDto dto , PermissionQuery query){
+
+        ProjectResearchSceneEntity entity = projectResearchSceneService.getBySceneId(dto.getSceneId(), query) ;
+        String articleWriterEngineer = entity.getProgressAnalyzerEngineer() + StringUtils.EMPTY;
+
+        IndustryRoleDto roleDto =  RoleUtils.getEditors(roleService , articleWriterEngineer).get(0) ;
+        productResearchChatRoleUtil.chat(roleDto , dto , query) ;
+
+        return AjaxResult.success("操作成功") ;
     }
 
     @Override
