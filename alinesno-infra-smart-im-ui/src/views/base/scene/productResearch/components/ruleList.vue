@@ -11,8 +11,7 @@
                             </h1>
                         </div>
                         <div class="search-container-weDuEn">
-                            <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索项目"
-                                :suffix-icon="Search" />
+                            <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索项目" :suffix-icon="Search" />
                         </div>
                     </div>
                 </el-col>
