@@ -44,6 +44,35 @@ var managerUrl = {
   getTaskById: prefixTask + "detail",
   executeTask: prefixTask +"executeTask",
   saveChapter: prefixTask +"saveChapters",
+  chatEditorRole: prefixTask + "chatEditorRole",
+  updateTaskName: prefixTask + "updateTaskName" , 
+  deleteTaskById: prefixTask + "deleteTaskById"
+}
+
+// 文章编辑角色
+export function chatEditorRole(data) {
+  return request({
+    url: managerUrl.chatEditorRole,
+    method: 'post',
+    data: data
+  })
+}
+
+// 获取角色
+export function updateTaskName(data) {
+  return request({
+    url: managerUrl.updateTaskName,
+    method: 'post' , 
+    data: data
+  })
+}
+
+// 删除任务
+export function deleteTaskById(taskId) {
+  return request({
+    url: managerUrl.deleteTaskById + "?taskId=" + parseStrEmpty(taskId) , 
+    method: 'delete' 
+  })
 }
 
 // 执行任务
