@@ -17,7 +17,9 @@ var managerUrl = {
   getRoleBySceneIdAndAgentType: prefix +"getRoleBySceneIdAndAgentType",
   getRoleList: prefix +"getRoleList",
   getRecommendRole: prefix +"getRecommendRole",
+
 }
+
 
 // 获取到推荐角色
 export function getRecommendRole() {
