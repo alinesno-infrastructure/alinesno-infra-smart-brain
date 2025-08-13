@@ -22,7 +22,7 @@
 
           <div class="template-content">
             <div class="research-template-item-title">
-              {{ truncateString(item.docName, 10) }}
+              {{ truncateString(item.docName, 13) }}
             </div>
             <div class="research-template-item-content">
               {{ truncateString(item.docContent, 17) }}
