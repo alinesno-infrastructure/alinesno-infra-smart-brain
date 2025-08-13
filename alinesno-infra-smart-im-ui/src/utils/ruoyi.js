@@ -349,3 +349,29 @@ export const taskUseTime = (startTime, endTime) => {
   
   return `${hours}时${remainingMinutes}分${seconds}秒`;
 }
+
+// 文件类型图标映射
+const fileTypeIcons = {
+  pdf: 'fa-file-pdf',
+  doc: 'fa-file-word',
+  docx: 'fa-file-word',
+  xls: 'fa-file-excel',
+  xlsx: 'fa-file-excel',
+  jpg: 'fa-file-image',
+  jpeg: 'fa-file-image',
+  png: 'fa-file-image',
+  txt: 'fa-file-lines',
+  ppt: 'fa-file-powerpoint',
+  pptx: 'fa-file-powerpoint',
+  csv: 'fa-file-csv',
+  // 可以继续添加其他类型...
+  default: 'fa-file' // 默认图标
+}
+
+// 获取文件对应的图标
+export const getFileIcon = (fileName) => {
+  if (!fileName) return fileTypeIcons.default
+  
+  const extension = fileName.split('.').pop().toLowerCase()
+  return fileTypeIcons[extension] || fileTypeIcons.default
+}
