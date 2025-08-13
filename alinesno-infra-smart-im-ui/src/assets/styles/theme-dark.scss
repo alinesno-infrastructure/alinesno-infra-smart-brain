@@ -624,13 +624,18 @@ html.dark {
     }
 
     .research-template-type-item {
-      background: #1d1e1f !important;
+      background: #262727 !important;
       color: $dark-text-color !important;
+
+      &.active {
+        background: #409eff !important;
+        color: $dark-text-color !important;
+      }
     }
   }
 
   .research-template-container .research-template-list .research-template-item {
-    background: #1d1e1f !important;
+    background: #262727 !important;
 
     .research-template-item-title,
     .research-template-item-content {
@@ -1106,6 +1111,37 @@ html.dark {
           color: $dark-text-color;
         }
        }
+    }
+  }
+
+  .ppt-function-panel{
+    background-color: #262727 !important;
+
+    .title{
+      color: $dark-text-color;
+    }
+
+     .task-list .task-item {
+        background-color: #1d1e1f !important;
+        color: $dark-text-color;
+     }
+  }
+
+  .message-referece-panel {
+ 
+    .reference-item , .reference-header{
+        background-color: #262727 !important;
+        color: $dark-text-color;
+
+        .content-preview {
+      color: $dark-text-color;
+    }
+
+    }
+
+
+    .el-drawer__header {
+      border-bottom: 1px solid #262727 !important;
     }
   }
 }
