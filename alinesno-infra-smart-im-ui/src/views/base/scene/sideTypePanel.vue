@@ -8,7 +8,7 @@
                 @mouseover="handleMouseOver('')"
                 @mouseout="handleMouseOut('')"
                 @click="handleClick('')">
-                <i class="fa-solid fa-box"></i> 全部类型
+                <i class="fa-solid fa-box"></i> 全部场景类型
             </div> 
 
             <div
@@ -94,7 +94,7 @@ handleAgentStoreType();
             border-radius: 5px;  
 
             i{
-                color: #d33233;
+                color: #1d75b0;
                 width:22px
             }
 
