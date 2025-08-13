@@ -24,7 +24,7 @@ import elementIcons from '@/components/SvgIcon/svgicon'
 import './permission' // permission control
 
 import { useDict } from '@/utils/dict'
-import { parseTime, truncateString ,resetForm, addDateRange, handleTree, selectDictLabel, selectDictLabels , taskUseTime } from '@/utils/ruoyi'
+import { parseTime, truncateString ,resetForm, getFileIcon, addDateRange, handleTree, selectDictLabel, selectDictLabels , taskUseTime } from '@/utils/ruoyi'
 import { formatMessage , imagePath ,imagePathByPath , toggleTheme } from './utils/chat'
 
 // 分页组件
@@ -62,7 +62,7 @@ app.config.globalProperties.handleTree = handleTree
 app.config.globalProperties.addDateRange = addDateRange
 app.config.globalProperties.selectDictLabel = selectDictLabel
 app.config.globalProperties.selectDictLabels = selectDictLabels
-
+app.config.globalProperties.getFileIcon = getFileIcon  
 
 // 全局组件挂载
 app.component('DictTag', DictTag)
