@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.im.service.IFrequentAgentService;
 import com.alinesno.infra.smart.im.service.IMessageFeedbackService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -119,6 +120,7 @@ public class RoleChatController extends SuperController {
         return result;
     }
 
+    @AgentPointAnnotation
     @SneakyThrows
     @PostMapping("/chatRole")
     public DeferredResult<AjaxResult> chatRole(@RequestBody ChatSendMessageDto chatMessage, long roleId) {
