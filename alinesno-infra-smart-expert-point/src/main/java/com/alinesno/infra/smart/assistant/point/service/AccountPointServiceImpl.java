@@ -1,9 +1,8 @@
 package com.alinesno.infra.smart.assistant.point.service;
 
-import com.alinesno.infra.smart.assistant.point.config.PointProperties;
 import com.alinesno.infra.smart.point.service.IAccountPointService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,12 +12,12 @@ import org.springframework.stereotype.Service;
 @Service
 public class AccountPointServiceImpl implements IAccountPointService {
 
-    @Autowired
-    private PointProperties pointProperties; // 积分配置
+    @Value("${alinesno.point.enable:false}")
+    private boolean pointEnable ;
 
     @Override
     public boolean isOpenPoint() {
-        return pointProperties.isEnabled() ;
+        return pointEnable ;
     }
 
 }
