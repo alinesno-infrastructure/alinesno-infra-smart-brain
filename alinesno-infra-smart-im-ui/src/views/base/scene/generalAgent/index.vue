@@ -1,20 +1,12 @@
 <template>
-  <div class="ppt-pager-container">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="ppt-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="ppt-pager-main">
+  <GeneralAgentContainer>
 
         <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
           ref="roleSelectPanelRef" />
 
         <div class="main-content">
           <el-row>
-            <el-col :span="13">
+            <el-col :span="12">
 
               <div class="title-section">
                 <span class="title">
@@ -80,7 +72,7 @@
               </div>
 
             </el-col>
-            <el-col :span="11">
+            <el-col :span="12">
               <div class="review-question-preview-title">
                 <span>
                   <i class="fa-solid fa-file-pdf"></i> 它可以帮你完成这些事情
@@ -114,10 +106,7 @@
           </el-row>
 
         </div>
-
-      </el-main>
-    </el-container>
-
+ 
     <!-- 运行抽屉 -->
     <div class="aip-flow-drawer flow-control-panel">
         <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
@@ -128,7 +117,7 @@
         </el-drawer>
     </div>
 
-  </div>
+  </GeneralAgentContainer>
 </template>
 
 <script setup>
@@ -140,6 +129,7 @@ import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/atta
 import ArticleTemplatePanel  from './articleTemplate'
 import ArticleTypeConfig from './articleTypeConfig.vue';
 
+import GeneralAgentContainer from './generalAgentContainer'
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
 import FunctionList from './functionList'
 
