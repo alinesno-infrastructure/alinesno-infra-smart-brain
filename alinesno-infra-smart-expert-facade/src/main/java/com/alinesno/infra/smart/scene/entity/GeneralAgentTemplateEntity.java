@@ -42,8 +42,8 @@ public class GeneralAgentTemplateEntity extends InfraBaseEntity {
 
     @ColumnComment("模板类型")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 50)
-    @TableField(value = "long_text_template_type")
-    private String longTextTemplateType;
+    @TableField(value = "template_group_id")
+    private String templateGroupId ;
 
     // 模板脚本(groovy)
     @ColumnComment("模板脚本")
