@@ -25,6 +25,10 @@ public class GeneralAgentTemplateGroupEntity extends InfraBaseEntity {
     private String name;
 
     @TableField
+    @Column(comment = "分组描述" , length = 128 , type = MySqlTypeConstant.VARCHAR)
+    private String remark;
+
+    @TableField
     @Column(comment = "分组图标" , length = 128 , type = MySqlTypeConstant.VARCHAR)
     private String icon;
 
