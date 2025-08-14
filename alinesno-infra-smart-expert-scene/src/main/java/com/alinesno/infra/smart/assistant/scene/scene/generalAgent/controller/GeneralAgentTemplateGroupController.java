@@ -10,6 +10,8 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateGroupService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentTemplateEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTemplateGroupEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +40,9 @@ public class GeneralAgentTemplateGroupController extends BaseController<GeneralA
     @Autowired
     private IGeneralAgentTemplateGroupService service;
 
+    @Autowired
+    private IGeneralAgentTemplateService templateService;
+
     /**
      * 获取BusinessLogEntity的DataTables数据。
      *
@@ -60,7 +65,7 @@ public class GeneralAgentTemplateGroupController extends BaseController<GeneralA
      * @return
      */
     @DataPermissionQuery
-    @GetMapping("/getAllLongTextTemplateGroup")
+    @GetMapping("/getAllTemplateGroup")
     public AjaxResult getAllLongTextTemplate(PermissionQuery query) {
 
         LambdaQueryWrapper<GeneralAgentTemplateGroupEntity> queryWrapper = new LambdaQueryWrapper<>();
@@ -78,7 +83,7 @@ public class GeneralAgentTemplateGroupController extends BaseController<GeneralA
      * @return
      */
     @DataPermissionSave
-    @PostMapping("/saveLongTextTemplateGroup")
+    @PostMapping("/saveTemplateGroup")
     public AjaxResult saveLongTextTemplateGroup(@RequestBody GeneralAgentTemplateGroupEntity entity) {
         boolean save = service.save(entity);
         return save ? AjaxResult.success() : AjaxResult.error();
@@ -89,12 +94,28 @@ public class GeneralAgentTemplateGroupController extends BaseController<GeneralA
      * @return
      */
     @DataPermissionSave
-    @PutMapping("/updateLongTextTemplateGroup")
+    @PutMapping("/updateTemplateGroup")
     public AjaxResult updateLongTextTemplateGroup(@RequestBody GeneralAgentTemplateGroupEntity entity) {
         boolean update = service.updateById(entity);
         return update ? AjaxResult.success() : AjaxResult.error();
     }
 
+    /**
+     * 删除分类
+     * @return
+     */
+    @DataPermissionSave
+    @DeleteMapping("/deleteTemplateGroup")
+    public AjaxResult deleteTemplateGroup(@RequestParam(value = "id") Long id) {
+
+        // 如果分类下面有模板，则不允许删除
+        long count = templateService.count(new LambdaQueryWrapper<GeneralAgentTemplateEntity>().eq(GeneralAgentTemplateEntity::getTemplateGroupId, id));
+        if (count > 0) {
+            return AjaxResult.error("该分类下有模板，不允许删除");
+        }
+
+        return service.removeById(id) ? AjaxResult.success() : AjaxResult.error();
+    }
 
     @Override
     public IGeneralAgentTemplateGroupService getFeign() {
