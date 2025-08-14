@@ -20,18 +20,12 @@
               :prefix-icon="Search" />
             <div>
 
-              <el-button type="primary" size="large" text bg class="add-button" @click="showAddModal = true">
+              <el-button type="primary" size="large" text bg class="add-button" @click="handleOpenModel">
                 <el-icon class="el-icon--left">
                   <Plus />
                 </el-icon>
                 添加新模板
-              </el-button>
-              <!-- 添加分类按钮 -->
-              <el-button class="add-category" type="primary" text bg size="large" @click="addCategory()">
-                <el-icon>
-                  <Plus />
-                </el-icon> 添加分类
-              </el-button>
+              </el-button> 
 
             </div>
           </div>
@@ -73,7 +67,7 @@
             </div>
 
             <!-- 添加新模板卡片 -->
-            <el-card class="add-template-card" shadow="hover" @click="showAddModal = true">
+            <el-card class="add-template-card" shadow="hover" @click="handleOpenModel">
               <div class="add-card-content">
                 <div class="add-icon-container">
                   <el-icon class="add-icon">
@@ -89,46 +83,87 @@
       </div>
     </main>
 
-    <!-- 添加/编辑模板模态框 -->
-    <el-dialog v-model="showAddModal" :title="editingTemplate ? '编辑模板' : '添加新模板'" width="600px" class="template-dialog">
-      <el-form :model="templateForm" size="large" label-width="100px">
-        <el-form-item label="上传图标">
-          <el-upload action="https://jsonplaceholder.typicode.com/posts/" list-type="picture-card"
-            :on-preview="handlePreview" :on-remove="handleRemove" :on-success="handleUploadSuccess">
-            <el-icon>
-              <Plus />
-            </el-icon>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="模板名称">
-          <el-input v-model="templateForm.name" placeholder="请输入模板名称"></el-input>
-        </el-form-item>
-        <el-form-item label="分类">
-          <el-select v-model="templateForm.category" placeholder="请选择分类">
-            <el-option v-for="tab in tabs" :key="tab.id" :label="tab.name" :value="tab.name"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input v-model="templateForm.description" type="textarea" :rows="3" placeholder="请输入模板描述"></el-input>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button size="large" @click="showAddModal = false">取消</el-button>
-          <el-button size="large" type="primary" @click="submitTemplate">
-            {{ editingTemplate ? '更新' : '确认' }}
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <!-- 添加/编辑模板模态框 --> 
+  <el-dialog v-model="showAddModal" :title="editingTemplate ? '编辑模板' : '添加新模板'" width="760px" class="template-dialog">
+    <el-form 
+      :model="templateForm" 
+      size="large" 
+      label-width="100px"
+      :rules="formRules"
+      ref="templateFormRef"
+    >
+      <el-form-item label="上传图标" prop="image">
+        <el-upload 
+          :file-list="imageUrl" 
+          accept=".png,.jpeg,.jpg" 
+          :action="upload.url + '?type=image'"
+          list-type="picture-card" 
+          :auto-upload="true" 
+          :on-success="handleAvatarSuccess"
+          :before-upload="beforeAvatarUpload" 
+          :headers="upload.headers" 
+          :disabled="upload.isUploading"
+          :on-progress="handleFileUploadProgress"
+        >
+          <el-icon class="avatar-uploader-icon">
+            <Plus />
+          </el-icon>
+        </el-upload>
+      </el-form-item>
+      
+      <el-form-item label="模板名称" prop="name">
+        <el-input v-model="templateForm.name" placeholder="请输入模板名称"></el-input>
+      </el-form-item>
+
+      <el-form-item label="模板类型" prop="templateGroupId">
+        <el-radio-group v-model="templateForm.templateGroupId" size="large">
+          <el-radio 
+            v-for="item in templateTypeOptions" 
+            style="margin-top: 0px;margin-bottom: 0px;" 
+            :key="item.code" 
+            :value="item.code"
+            :label="item.name" 
+            size="large"
+          >
+            <div style="padding:0px; display: flex;flex-direction: column;line-height: 1.5rem;">
+              <span style="font-size:15px;font-weight: bold;">
+                <i :class="item.icon"></i> {{ item.name }}
+              </span>
+            </div>
+          </el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <el-form-item label="描述" prop="description">
+        <el-input 
+          v-model="templateForm.description" 
+          type="textarea" 
+          :rows="3" 
+          placeholder="请输入模板描述"
+        ></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button size="large" @click="showAddModal = false">取消</el-button>
+        <el-button size="large" type="primary" @click="handleSubmit">
+          {{ editingTemplate ? '更新' : '确认' }}
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+
+import { ElMessage, ElMessageBox } from 'element-plus'
+
 import CategorySidebar from './generalAgentSiderbar.vue'
 import defaultImage from '@/assets/icons/outline/example_banner.png';
+import { getToken } from "@/utils/auth";
 
 const router = useRouter()
 
@@ -138,18 +173,30 @@ const goBack = () => {
 }
 
 // 标签页数据
-const tabs = ref([
-  { id: 'all', name: '全部场景', icon: 'fa-solid fa-layer-group' },
-  { id: 'data', name: '数据分析', icon: 'fa-solid fa-chart-line' },
-  { id: 'content', name: '内容生成', icon: 'fa-solid fa-pen-fancy' },
-  { id: 'service', name: '客户服务', icon: 'fa-solid fa-headset' },
-  { id: 'automation', name: '自动化流程', icon: 'fa-solid fa-robot' },
-  { id: 'system', name: '系统管理', icon: 'fa-solid fa-gear' },
-])
+const templateTypeOptions = ref([])
 
 const activeTab = ref('all')
 const searchQuery = ref('')
 const categorySidebarRef = ref(null)
+const imageUrl = ref([])
+
+/*** 应用导入参数 */
+const upload = reactive({
+  // 是否显示弹出层（应用导入）
+  open: false,
+  // 弹出层标题（应用导入）
+  title: "",
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的应用数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: { Authorization: "Bearer " + getToken() },
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/api/infra/smart/assistant/template/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
 
 // 模板数据
 const templates = ref([
@@ -162,6 +209,27 @@ const templates = ref([
     image: 'xxx'
   }
 ])
+
+// 表单引用
+const templateFormRef = ref(null)
+
+// 表单验证规则
+const formRules = reactive({
+  image: [
+    { required: true, message: '请上传模板图标', trigger: 'blur' }
+  ],
+  name: [
+    { required: true, message: '请输入模板名称', trigger: 'blur' },
+    { min: 2, max: 20, message: '长度在2到20个字符', trigger: 'blur' }
+  ],
+  templateGroupId: [
+    { required: true, message: '请选择模板类型', trigger: 'change' }
+  ],
+  description: [
+    { required: true, message: '请输入模板描述', trigger: 'blur' },
+    { min: 10, max: 200, message: '长度在10到200个字符', trigger: 'blur' }
+  ]
+})
 
 // 过滤模板
 const filteredTemplates = computed(() => {
@@ -193,12 +261,7 @@ const editTemplate = (template) => {
   templateForm.value = { ...template }
   showAddModal.value = true
 }
-
-// 添加分类
-const addCategory = () => { 
-  categorySidebarRef.value.addCategory()
-}
-
+  
 // 删除模板
 const deleteTemplate = (id) => {
   ElMessageBox.confirm('确定要删除此模板吗?', '提示', {
@@ -228,8 +291,53 @@ const handlePreview = (file) => {
   // 预览图片逻辑
 }
 
-const handleUploadSuccess = (response, file) => {
-  templateForm.value.image = URL.createObjectURL(file.raw)
+// 图片上传处理
+const beforeAvatarUpload = (file) => {
+  const isImage = file.type.includes('image/')
+  const isLt2M = file.size / 1024 / 1024 < 2
+
+  if (!isImage) {
+    ElMessage.error('上传文件只能是图片格式!')
+    return false
+  }
+  if (!isLt2M) {
+    ElMessage.error('上传图片大小不能超过 2MB!')
+    return false
+  }
+  
+  upload.isUploading = true
+  return true
+}
+
+/**文件上传中处理 */
+const handleFileUploadProgress = (event, file, fileList) => {
+  upload.isUploading = true;
+
+  if (response.code === 200) {
+    templateForm.value.image = response.data
+    // 清除验证错误
+    templateFormRef.value?.clearValidate('image')
+  } else {
+    ElMessage.error(response.msg || '上传失败')
+  }
+};
+/** 文件上传成功处理 */
+const handleFileSuccess = (response, file, fileList) => {
+  console.log('response = ' + response);
+//   upload.open = false;
+  upload.isUploading = false;
+  form.value.storageFileId = response.data ; 
+};
+
+// 提交表单
+const handleSubmit = () => {
+  templateFormRef.value.validate((valid) => {
+    if (!valid) { 
+      return
+    }
+    
+    submitTemplate()
+  })
 }
 
 // 提交表单
@@ -264,6 +372,12 @@ const submitTemplate = () => {
 const handleImageError = (event) => {
   event.target.src = defaultImage
   event.target.classList.add('error-image') // 可选：添加错误样式
+}
+
+// 添加场景分类
+const handleOpenModel = () => {
+  templateTypeOptions.value = categorySidebarRef.value.getAllTemplate();
+  showAddModal.value = true;
 }
 
 // 重置表单
