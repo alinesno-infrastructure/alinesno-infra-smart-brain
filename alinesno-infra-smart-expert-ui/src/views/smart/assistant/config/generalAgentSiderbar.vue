@@ -1,6 +1,27 @@
 <template>
   <div class="category-sidebar">
+
+    <div class="category-header" style="">  
+        <span>
+          模板分类
+        </span>
+                <!-- 添加分类按钮 -->
+              <el-button class="add-category" type="primary" text bg size="large" @click="addCategory()">
+                <el-icon>
+                  <Plus />
+                </el-icon> 添加分类
+              </el-button> 
+
+
+    </div>
+
     <!-- 分类列表 -->
+    <div  
+      class="category-item" 
+      :class="{ 'active': activeCategory === '' }"
+      @click="selectCategory('')">
+      <i class="fa-solid fa-house"></i> &nbsp; 所有场景分类 
+    </div>
     <div 
       v-for="category in categories" 
       :key="category.id"
@@ -27,6 +48,12 @@
           <el-icon><Delete /></el-icon>
         </el-button>
       </div>
+    </div>
+
+    <div v-if="categories.length == 0">
+      <el-empty  
+         image-size="100"
+         description="当前并没有集成分类，请点击右上角添加分类。" />
     </div>
     
     <!-- 添加/编辑分类对话框 -->
@@ -74,21 +101,19 @@
 import { ref, defineProps, defineExpose , defineEmits } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
-const props = defineProps({
-  categories: {
-    type: Array,
-    required: true
-  },
-  activeCategory: {
-    type: String,
-    required: true
-  }
-})
+import {
+  addTemplateGroup , 
+  updateTemplateGroup , 
+  getAllTemplateGroup ,
+  deleteTemplateGroup
+} from "@/api/smart/scene/generalAgentTemplate"
 
 const emit = defineEmits(['update:activeCategory', 'update:categories'])
 
 // 表单引用
 const formRef = ref(null)
+const categories = ref([])
+const activeCategory = ref(null)
 
 // 分类表单
 const showAddModal = ref(false)
@@ -128,6 +153,7 @@ const iconOptions = ref([
 // 选择分类
 const selectCategory = (id) => {
   emit('update:activeCategory', id)
+  activeCategory.value = id ;
 }
 
 // 编辑分类
@@ -143,15 +169,13 @@ const deleteCategory = (id) => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    const updatedCategories = props.categories.filter(c => c.id !== id)
-    emit('update:categories', updatedCategories)
-    ElMessage.success('删除成功')
+  }).then(() => { 
     
-    // 如果删除的是当前选中的分类，则切换到"全部"分类
-    if (props.activeCategory === id) {
-      emit('update:activeCategory', 'all')
-    }
+    deleteTemplateGroup(id).then(res => {
+      ElMessage.success('分类删除成功.');
+      handleGetAllTemplateGroup();
+    })
+  
   }).catch(() => {
     // 取消操作
   })
@@ -168,37 +192,35 @@ const submitForm = () => {
 
 // 提交分类
 const submitCategory = () => {
-  if (!categoryForm.value.name || !categoryForm.value.icon) {
-    ElMessage.warning('请填写完整信息')
-    return
-  }
+ 
+  console.log("categoryForm.value = " + JSON.stringify(categoryForm.value))
 
-  let updatedCategories = [...props.categories]
-  
-  if (editingCategory.value) {
-    // 更新分类
-    const index = updatedCategories.findIndex(c => c.id === editingCategory.value)
-    if (index !== -1) {
-      updatedCategories[index] = { ...categoryForm.value }
-    }
-    ElMessage.success('分类更新成功')
-  } else {
-    // 添加新分类
-    const newCategory = {
-      ...categoryForm.value,
-      id: `custom-${Date.now()}`
-    }
-    updatedCategories.push(newCategory)
-    ElMessage.success('分类添加成功')
+  if(categoryForm.value.id){
+    updateTemplateGroup(categoryForm.value).then(res => {
+      ElMessage.success('分类更新成功');
+      handleGetAllTemplateGroup();
+    })
+  }else {
+    addTemplateGroup(categoryForm.value).then(res => {
+      ElMessage.success('分类添加成功');
+      handleGetAllTemplateGroup();
+    })
   }
-
-  emit('update:categories', updatedCategories)
+ 
   showAddModal.value = false
   resetForm()
 }
 
 const addCategory = () => {
+  resetForm();
   showAddModal.value = true
+}
+
+const handleGetAllTemplateGroup = () => {
+  getAllTemplateGroup().then(res => {
+    console.log('res = ' + res);
+      categories.value = res.data ;
+  })
 }
 
 // 重置表单
@@ -206,13 +228,22 @@ const resetForm = () => {
   categoryForm.value = {
     id: '',
     name: '',
+    remark: '',
     icon: ''
   }
   editingCategory.value = null
 }
 
+// 获取到大模型能力信息
+const getAllTemplate = () => {
+  return categories.value; 
+}
+
+handleGetAllTemplateGroup();
+
 defineExpose({
-  addCategory
+  addCategory, 
+  getAllTemplate
 })
 
 </script>
@@ -224,6 +255,7 @@ defineExpose({
   background-color: var(--el-bg-color);
   border-radius: var(--el-border-radius-base);
   padding: 8px 0;
+  padding-top: 0px;
 
   .category-item {
     position: relative;
@@ -233,6 +265,9 @@ defineExpose({
     font-size: 14px;
     display: flex;
     align-items: center;
+    background-color: #fafafa;
+    margin-bottom: 6px;
+    border-left: 3px solid #fafafa;
 
     &:hover {
       background-color: #f5f5f5;
@@ -248,6 +283,7 @@ defineExpose({
       background-color: #f5f5f5;
       border-radius: 5px;
       color: var(--el-color-primary);
+      border-left: 3px solid #1d75b0;
     }
 
     .category-actions {
@@ -268,12 +304,12 @@ defineExpose({
     }
   }
 
+
   .add-category {
     padding: 12px 16px;
     cursor: pointer;
     color: var(--el-color-primary);
-    font-size: 14px;
-    margin-top: 20px;
+    font-size: 14px; 
     display: flex;
     align-items: center;
     gap: 8px;
@@ -282,5 +318,14 @@ defineExpose({
       background-color: #f5f5f5;
     }
   }
+
+.category-header{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    align-items: center;
+    font-size: 14px;
+}
+
 }
 </style>
