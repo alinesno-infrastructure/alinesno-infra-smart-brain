@@ -58,7 +58,7 @@ public class GeneralAgentTemplateServiceImpl extends IBaseServiceImpl<GeneralAge
 
         // 再添加 typeCode 条件（如果有）
         if (typeCode != null && !typeCode.isEmpty()) {
-            wrapper.eq(GeneralAgentTemplateEntity::getLongTextTemplateType, typeCode);
+            wrapper.eq(GeneralAgentTemplateEntity::getTemplateGroupId, typeCode);
         } else {
             wrapper.last("LIMIT 100");
         }
@@ -197,7 +197,7 @@ public class GeneralAgentTemplateServiceImpl extends IBaseServiceImpl<GeneralAge
                                                         PermissionQuery query) {
         GeneralAgentTemplateEntity templateEntity = new GeneralAgentTemplateEntity();
         BeanUtil.copyProperties(query, templateEntity);
-        templateEntity.setLongTextTemplateType(String.valueOf(templateGroup.getId())); // 设置分组ID
+        templateEntity.setTemplateGroupId(String.valueOf(templateGroup.getId())); // 设置分组ID
         templateEntity.setLongTextTemplatePermission(template.getPermission()); // 设置权限
 
         templateEntity.setIcon(getIconId(template.getIcon()));       // 设置图标
