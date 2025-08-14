@@ -78,20 +78,20 @@
                <el-form-item label="模板图片" prop="templateImage" style="float:right;margin-right:30px">
 
                   <el-upload 
-                  :file-list="imageUrl" 
-                  accept=".png,.jpeg,.jpg" 
-                  :action="upload.url + '?type=image'"
-                  list-type="picture-card" 
-                  :auto-upload="true" 
-                  :on-success="handleAvatarSuccess"
-                  :before-upload="beforeAvatarUpload" 
-                  :headers="upload.headers" 
-                  :disabled="upload.isUploading"
-                  :on-progress="handleFileUploadProgress">
-                  <el-icon class="avatar-uploader-icon">
-                     <Plus />
-                  </el-icon>
-               </el-upload>
+                     :file-list="imageUrl" 
+                     accept=".png,.jpeg,.jpg" 
+                     :action="upload.url + '?type=image'"
+                     list-type="picture-card" 
+                     :auto-upload="true" 
+                     :on-success="handleAvatarSuccess"
+                     :before-upload="beforeAvatarUpload" 
+                     :headers="upload.headers" 
+                     :disabled="upload.isUploading"
+                     :on-progress="handleFileUploadProgress">
+                     <el-icon class="avatar-uploader-icon">
+                        <Plus />
+                     </el-icon>
+                  </el-upload>
 
                </el-form-item>
                </el-col>
