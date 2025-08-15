@@ -9,10 +9,8 @@
 
       <el-main class="exam-pager-main">
         <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
-
-            <!-- <SideTypePanel /> -->
-
+          <div class="tpl-app" style="display: flex;height:calc(100vh - 50px);margin-left: 0px;width:100%;background-color: #fff;">
+ 
             <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
 
               <div class="search-container-panel">
