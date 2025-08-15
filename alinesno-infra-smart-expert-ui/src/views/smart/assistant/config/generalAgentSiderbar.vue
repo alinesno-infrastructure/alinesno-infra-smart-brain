@@ -110,6 +110,13 @@ import {
 
 const emit = defineEmits(['update:activeCategory', 'update:categories'])
 
+const props = defineProps({
+  categories: {
+    type: Object,
+    required: true 
+  } 
+});
+
 // 表单引用
 const formRef = ref(null)
 const categories = ref([])
@@ -219,7 +226,8 @@ const addCategory = () => {
 const handleGetAllTemplateGroup = () => {
   getAllTemplateGroup().then(res => {
     console.log('res = ' + res);
-      categories.value = res.data ;
+    categories.value = res.data ;
+    emit('update:categories' , res.data)
   })
 }
 
