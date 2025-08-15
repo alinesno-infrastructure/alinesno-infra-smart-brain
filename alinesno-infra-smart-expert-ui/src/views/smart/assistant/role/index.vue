@@ -238,9 +238,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-
-        
-
+ 
       </el-form>
       
         <div class="dialog-footer">
@@ -383,7 +381,7 @@ const pushOrgInfo = ref({
 
 const pushOptions = ref([
   { value: 'shop', label: '推送商店', description: '角色只可被组织引用不可修改' },
-  { value: 'market', label: '推送市场', description: '角色能复制修改并单独定义' }
+  // { value: 'market', label: '推送市场', description: '角色能复制修改并单独定义' }
 ])
 
 const chainOpen = ref(false);
