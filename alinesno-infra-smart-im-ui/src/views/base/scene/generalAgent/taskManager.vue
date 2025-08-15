@@ -40,7 +40,11 @@
                           <div class="scene-header">
                             <span class="scene-title">{{ item.taskName }}</span>
                           </div>
-
+ 
+                          <div class="scene-tags">
+                            <span class="scene-tag-time"><i class="fa-solid fa-calendar-check"></i> {{ item.addTime }}</span>
+                          </div>
+ 
                           <div class="scene-description">
                             {{ item.taskDescription }}
                           </div>
@@ -75,8 +79,7 @@
                               <!-- 章节状态 -->
                               <el-button text bg  v-else-if="item.chapterStatus === '2'" type="primary">
                                 <i class="fa-solid fa-spinner fa-spin" />
-                                生成章节中
-                                <!-- : {{ item.currentChapterLabel || '当前章节' }} -->
+                                生成章节中 
                               </el-button>
 
                               <el-button text bg  v-else-if="item.chapterStatus === '1'" type="success">
@@ -90,8 +93,8 @@
                             </div>
                             <div class="scene-tag">
                               <div class="scene-stats">
-                                <span>时间</span>
-                                <span>{{ item.updateTime? item.updateTime : item.addTime }}</span>
+                                <span>用时</span>
+                                <span>{{ taskUseTime(item.taskStartTime , item.taskEndTime) }}</span>
                               </div>
 
                               <div class="article-delete-btn" @click.stop>
@@ -135,12 +138,10 @@ import {
   deleteById
 } from '@/api/base/im/scene/generalAgent';
 
-// import SideTypePanel from './articleType.vue'
-
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 import SnowflakeId from "snowflake-id";
-
+ 
 const snowflake = new SnowflakeId();
 
 const router = useRouter();
@@ -206,8 +207,8 @@ onMounted(() => {
   }
   
 .semi-divider.semi-divider-horizontal {
-    margin-top: 20px;
-    margin-bottom: 16px;
+    margin-top: 10px;
+    margin-bottom: 8px;
     border-bottom: 0.5px solid #f0f0f5;
     display: flex;
     width: 100%;
@@ -257,7 +258,7 @@ onMounted(() => {
     padding-left: 10px;
 
     .scene-header {
-      display: flex;
+      display: flex; 
       align-items: flex-start;
       gap: 8px;
       margin: 8px 0px;
@@ -266,13 +267,10 @@ onMounted(() => {
       flex-direction: column;
 
       .scene-title {
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 22px;
-        color: var(--coz-fg-primary);
-        // white-space: nowrap;
-        // overflow: hidden;
-        // text-overflow: ellipsis;
+        color: var(--coz-fg-primary); 
       }
 
       .scene-tag {
@@ -369,6 +367,18 @@ onMounted(() => {
         color: var(--coz-fg-secondary);
       }
     }
+  }
+  .scene-tags{
+    display:flex ;
+      span.scene-tag-time {
+        font-size: 13px; 
+        border-radius: 5px;
+        background: #fafafa;
+        opacity: 0.7;
+        margin-top:5px; 
+        padding: 5px;
+      }
+
   }
 
   .article-delete-btn{
