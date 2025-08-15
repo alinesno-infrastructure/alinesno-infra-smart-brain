@@ -454,6 +454,21 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         return AjaxResult.success(industryRoleEntity) ;
     }
 
+    /**
+     * 更新场景配置 updateSceneConfigData
+     * @return
+     */
+    @DataPermissionSave
+    @PostMapping("/updateSceneConfigData")
+    public AjaxResult updateSceneConfigData(@Validated @RequestBody UpdateSceneConfigDto dto){
+
+        SceneEntity entity = service.getById(dto.getSceneId());
+        entity.setConfigData(dto.getConfig().toJSONString());
+        service.updateById(entity);
+
+        return AjaxResult.success();
+    }
+
     @Override
     public ISceneService getFeign() {
         return this.service;
