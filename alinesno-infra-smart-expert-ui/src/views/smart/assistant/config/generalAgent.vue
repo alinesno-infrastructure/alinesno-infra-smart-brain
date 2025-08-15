@@ -10,7 +10,7 @@
     <main class="main-content">
       <div class="content-wrapper">
         <!-- 场景分类侧边栏 -->
-        <CategorySidebar ref="categorySidebarRef" v-model:activeCategory="activeTab" v-model:categories="tabs" />
+        <CategorySidebar ref="categorySidebarRef" v-model:activeCategory="activeTab" v-model:categories="templateTypeOptions" />
 
         <!-- 右侧内容区域保持不变 -->
         <div class="right-content">
@@ -32,39 +32,6 @@
 
           <!-- 场景模板网格 -->
           <div class="template-grid">
-            <!-- 模板卡片 -->
-            <div v-for="template in filteredTemplates" :key="template.id" class="template-card" shadow="hover">
-              <div class="card-image-container">
-                <img :src="template.image" :alt="template.name + '图标'" class="card-image" @error="handleImageError" />
-                <div class="card-actions">
-                  <el-button circle class="action-button" @click.stop="editTemplate(template)">
-                    <el-icon>
-                      <Edit />
-                    </el-icon>
-                  </el-button>
-                  <el-button circle class="action-button" @click.stop="deleteTemplate(template.id)">
-                    <el-icon>
-                      <Delete />
-                    </el-icon>
-                  </el-button>
-                </div>
-              </div>
-              <div class="card-content">
-                <div class="card-header">
-                  <h3 class="card-title">{{ template.name }}</h3>
-                  <el-tag type="info" size="small">{{ template.category }}</el-tag>
-                </div>
-                <p class="card-description">{{ template.description }}</p>
-                <div class="card-footer">
-                  <span class="update-time">更新于 {{ template.updatedAt }}</span>
-                  <el-button link type="primary" class="config-button" @click="configureTemplate(template.id)">
-                    配置 <el-icon>
-                      <ArrowRight />
-                    </el-icon>
-                  </el-button>
-                </div>
-              </div>
-            </div>
 
             <!-- 添加新模板卡片 -->
             <el-card class="add-template-card" shadow="hover" @click="handleOpenModel">
@@ -78,6 +45,44 @@
                 <p class="add-card-description">点击创建新的场景模板，上传自定义图标</p>
               </div>
             </el-card>
+
+            <!-- 模板卡片 -->
+            <div v-for="template in templates" :key="template.id" class="template-card" shadow="hover">
+              <div class="card-image-container">
+                <img :src="imagePath(template.icon)" :alt="template.name + '图标'" class="card-image" @error="handleImageError" />
+                <div class="card-actions">
+                  <el-button circle class="action-button" @click.stop="editTemplate(template)">
+                    <el-icon>
+                      <Edit />
+                    </el-icon>
+                  </el-button>
+                  <el-button circle class="action-button" @click.stop="deleteTemplate(template?.id)">
+                    <el-icon>
+                      <Delete />
+                    </el-icon>
+                  </el-button>
+                </div>
+              </div>
+              <div class="card-content">
+                <div class="card-header">
+                  <h3 class="card-title">{{ template.name }}</h3> 
+                </div>
+                <p class="card-description">{{ template.description }}</p>
+                <div class="card-footer">
+                  <span class="category-name"> 
+                      <i :class="getCategoryName(template.templateGroupId)?.icon" />
+                     {{ getCategoryName(template.templateGroupId)?.name }}
+                  </span>
+                  <el-button link type="primary" class="config-button" @click="configureTemplate(template)">
+                    配置 <el-icon>
+                      <ArrowRight />
+                    </el-icon>
+                  </el-button>
+                </div>
+              </div>
+            </div>
+
+
           </div>
         </div>
       </div>
@@ -92,14 +97,14 @@
       :rules="formRules"
       ref="templateFormRef"
     >
-      <el-form-item label="上传图标" prop="image">
+      <el-form-item label="上传图标" prop="icon">
         <el-upload 
           :file-list="imageUrl" 
           accept=".png,.jpeg,.jpg" 
           :action="upload.url + '?type=image'"
           list-type="picture-card" 
           :auto-upload="true" 
-          :on-success="handleAvatarSuccess"
+          :on-success="handleFileSuccess"
           :before-upload="beforeAvatarUpload" 
           :headers="upload.headers" 
           :disabled="upload.isUploading"
@@ -120,14 +125,14 @@
           <el-radio 
             v-for="item in templateTypeOptions" 
             style="margin-top: 0px;margin-bottom: 0px;" 
-            :key="item.code" 
-            :value="item.code"
+            :key="item.id" 
+            :value="item.id"
             :label="item.name" 
             size="large"
           >
             <div style="padding:0px; display: flex;flex-direction: column;line-height: 1.5rem;">
               <span style="font-size:15px;font-weight: bold;">
-                <i :class="item.icon"></i> {{ item.name }}
+                <i :class="item.icon"></i> {{ item.name }} 
               </span>
             </div>
           </el-radio>
@@ -152,6 +157,71 @@
       </span>
     </template>
   </el-dialog>
+
+  <!-- 模板配置项目 -->
+  <el-dialog v-model="showConfigModal" :title="eiditConfigTemplate" width="760px" class="template-dialog">
+
+    <el-alert 
+        type="info"
+        description="模板配置需要结合业务形成单独的规划内容生成模板"
+        show-icon 
+        :closable="false"
+      />
+
+    <el-form 
+      style="margin-top:15px;"
+      :model="templateConfigForm" 
+      :label-position="'top'"
+      size="large" 
+      label-width="100px"
+      :rules="configFormRules"
+      ref="templateConfigFormRef"> 
+
+      <el-form-item label="规划模板" prop="config.planTemplate" >
+        <el-input 
+            v-model="templateConfigForm.config.planTemplate" 
+            :rows="3" 
+            placeholder="配置规划解析的模板内容，可以是菜单或者目录"
+            resize="none" 
+            type="textarea" />
+      </el-form-item>
+
+      <el-form-item label="内容模板" prop="config.contentTemplate" >
+        <el-input 
+            v-model="templateConfigForm.config.contentTemplate" 
+            :rows="3" 
+            resize="none" 
+            placeholder="配置内容生成的模板内容，会添加一些特殊的要求，比如生成表格或者图表"
+            type="textarea" />
+      </el-form-item>
+
+      <el-form-item label="结果配置" prop="resultConfig.config">
+        <el-radio-group v-model="templateConfigForm.resultConfig.enable">
+          <el-radio :value="true" label="true">开启</el-radio>
+          <el-radio :value="false" label="false">关闭</el-radio>
+        </el-radio-group>
+      </el-form-item> 
+
+      <el-form-item v-if="templateConfigForm.resultConfig.enable" label="结果模板" prop="resultConfig.config">
+        <el-input 
+            v-model="templateConfigForm.resultConfig.config" 
+            :rows="3" 
+            resize="none" 
+            placeholder="结果可以是网页或者文档，可以配置模板要求"
+            type="textarea" />
+      </el-form-item>
+
+    </el-form>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button size="large" @click="showConfigModal = false">取消</el-button>
+        <el-button size="large" type="primary" @click="handleConfigSubmit">
+          确认
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
+
   </div>
 </template>
 
@@ -161,10 +231,20 @@ import { useRouter } from 'vue-router'
 
 import { ElMessage, ElMessageBox } from 'element-plus'
 
+import {
+  listTemplate , 
+  getTemplate , 
+  addTemplate ,
+  updateTemplate , 
+  updateTemplateConfig ,
+  delTemplate , 
+} from "@/api/smart/scene/generalAgentTemplate"
+
 import CategorySidebar from './generalAgentSiderbar.vue'
 import defaultImage from '@/assets/icons/outline/example_banner.png';
 import { getToken } from "@/utils/auth";
 
+const { proxy } = getCurrentInstance();
 const router = useRouter()
 
 // 返回
@@ -172,13 +252,32 @@ const goBack = () => {
   router.push({ path: "/global/config" })
 }
 
+// 模板配置
+const showConfigModal = ref(false)
+const eiditConfigTemplate = ref('')
+const templateConfigForm = ref({ 
+  resultConfig: {   // 结果配置
+    enable: true , 
+    config: null
+  }, 
+  config: {         // 结果配置
+    planTemplate: null ,   // 规划配置
+    contentTemplate: null , // 内容配置
+  }, 
+})
+const currentEditTemplateId = ref(null)
+const templateConfigFormRef = ref(null)
+
 // 标签页数据
 const templateTypeOptions = ref([])
 
-const activeTab = ref('all')
+const loading = ref(true);
+const activeTab = ref('')
 const searchQuery = ref('')
 const categorySidebarRef = ref(null)
 const imageUrl = ref([])
+const dateRange = ref([]);
+const total = ref(0);
 
 /*** 应用导入参数 */
 const upload = reactive({
@@ -199,16 +298,17 @@ const upload = reactive({
 });
 
 // 模板数据
-const templates = ref([
-  {
-    id: 1,
-    name: '数据可视化分析',
-    category: '数据分析',
-    description: '基于历史数据生成多种可视化图表，帮助用户直观理解数据趋势和模式。',
-    updatedAt: '2025-06-15',
-    image: 'xxx'
-  }
-])
+const templates = ref([])
+
+const queryParams = ref({
+    pageNum: 1,
+    pageSize: 12,
+    roleName: undefined,
+    roleName: undefined,
+    responsibilities: undefined,
+    status: undefined,
+    industryCatalog: undefined
+})
 
 // 表单引用
 const templateFormRef = ref(null)
@@ -231,20 +331,31 @@ const formRules = reactive({
   ]
 })
 
-// 过滤模板
-const filteredTemplates = computed(() => {
-  return templates.value.filter(template => {
-    // 按标签过滤
-    const tabMatch = activeTab.value === 'all' || template.category === tabs.value.find(t => t.id === activeTab.value)?.name
-
-    // 按搜索查询过滤
-    const searchMatch = template.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.value.toLowerCase())
-
-    return tabMatch && searchMatch
-  })
+// 模板配置
+const configFormRules = reactive({
+  'config.planTemplate': [
+    { required: true, message: '请填写规划模板内容', trigger: 'blur' },
+    { min: 10, message: '规划模板内容至少10个字符', trigger: 'blur' }
+  ],
+  'config.contentTemplate': [
+    { required: true, message: '请填写内容模板', trigger: 'blur' },
+    { min: 10, message: '内容模板至少10个字符', trigger: 'blur' }
+  ],
+  'resultConfig.config': [
+    { 
+      required: computed(() => templateConfigForm.value.resultConfig.enable === 'true'),
+      message: '请填写结果模板内容', 
+      trigger: 'blur' 
+    },
+    { 
+      min: 10, 
+      message: '结果模板内容至少10个字符', 
+      trigger: 'blur',
+      when: () => templateConfigForm.value.resultConfig.enable === 'true'
+    }
+  ]
 })
-
+  
 // 模板表单
 const showAddModal = ref(false)
 const editingTemplate = ref(null)
@@ -257,9 +368,16 @@ const templateForm = ref({
 
 // 编辑模板
 const editTemplate = (template) => {
+  templateTypeOptions.value = categorySidebarRef.value.getAllTemplate();
   editingTemplate.value = template.id
   templateForm.value = { ...template }
   showAddModal.value = true
+
+  const item = {
+      url: upload.display + template.icon  
+    }
+    imageUrl.value = []; // 清空数组
+    imageUrl.value.push(item) ; 
 }
   
 // 删除模板
@@ -269,17 +387,44 @@ const deleteTemplate = (id) => {
     cancelButtonText: '取消',
     type: 'warning'
   }).then(() => {
-    templates.value = templates.value.filter(t => t.id !== id)
-    ElMessage.success('删除成功')
+
+    delTemplate(id).then(res => {
+        ElMessage.success('删除成功');
+        getList();
+    })
+ 
   }).catch(() => {
     // 取消操作
   })
 }
 
 // 配置模板
-const configureTemplate = (id) => {
-  ElMessage.info(`配置模板 ${id}`)
+const configureTemplate = (item) => { 
+  console.log("item.id = " + item.id)
+
+  templateConfigForm.value.resultConfig.config = null ; 
+  templateConfigForm.value.resultConfig.enable = true ; 
+  templateConfigForm.value.config.planTemplate = null ; 
+  templateConfigForm.value.config.contentTemplate = null ; 
+
   // 实际项目中这里可以跳转到配置页面
+  showConfigModal.value = true ;
+  currentEditTemplateId.value = item.id;
+  eiditConfigTemplate.value = "编辑:" + item.name
+ 
+  // 转换 resultConfig 字符串
+  if(item.resultConfig){
+    const resultConfigStr = item.resultConfig ;  
+    templateConfigForm.value.resultConfig = JSON.parse(resultConfigStr);
+    templateConfigForm.value.resultConfig.enable = templateConfigForm.value.resultConfig.enable === "true";
+  } 
+
+  // 转换 config 字符串
+  if(item.config){
+    const configStr = item.config ; 
+    templateConfigForm.value.config = JSON.parse(configStr);
+  } 
+
 }
 
 // 上传图片处理
@@ -311,22 +456,17 @@ const beforeAvatarUpload = (file) => {
 
 /**文件上传中处理 */
 const handleFileUploadProgress = (event, file, fileList) => {
-  upload.isUploading = true;
-
-  if (response.code === 200) {
-    templateForm.value.image = response.data
-    // 清除验证错误
-    templateFormRef.value?.clearValidate('image')
-  } else {
-    ElMessage.error(response.msg || '上传失败')
-  }
+  upload.isUploading = true; 
 };
+
+
 /** 文件上传成功处理 */
 const handleFileSuccess = (response, file, fileList) => {
-  console.log('response = ' + response);
-//   upload.open = false;
+  console.log('response = ' + response); 
   upload.isUploading = false;
-  form.value.storageFileId = response.data ; 
+  templateForm.value.icon = response.data ; 
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
+
 };
 
 // 提交表单
@@ -341,30 +481,17 @@ const handleSubmit = () => {
 }
 
 // 提交表单
-const submitTemplate = () => {
-  if (!templateForm.value.name || !templateForm.value.category) {
-    ElMessage.warning('请填写完整信息')
-    return
-  }
+const submitTemplate = async () => { 
 
   if (editingTemplate.value) {
-    // 更新模板
-    const index = templates.value.findIndex(t => t.id === editingTemplate.value)
-    if (index !== -1) {
-      templates.value[index] = { ...templateForm.value, id: editingTemplate.value }
-    }
+    await updateTemplate(templateForm.value) ; 
     ElMessage.success('模板更新成功')
   } else {
-    // 添加新模板
-    const newTemplate = {
-      ...templateForm.value,
-      id: templates.value.length + 1,
-      updatedAt: new Date().toISOString().split('T')[0]
-    }
-    templates.value.unshift(newTemplate)
+    await addTemplate(templateForm.value) ;   
     ElMessage.success('模板添加成功')
   }
 
+  getList();
   showAddModal.value = false
   resetForm()
 }
@@ -378,6 +505,7 @@ const handleImageError = (event) => {
 const handleOpenModel = () => {
   templateTypeOptions.value = categorySidebarRef.value.getAllTemplate();
   showAddModal.value = true;
+  resetForm()
 }
 
 // 重置表单
@@ -389,7 +517,51 @@ const resetForm = () => {
     image: ''
   }
   editingTemplate.value = null
+  imageUrl.value = [];
 }
+
+// 添加获取分类名称的方法
+const getCategoryName = (templateGroupId) => {
+  const category = templateTypeOptions.value.find(item => item.id === templateGroupId);
+  return category ; // ? category.name : '未分类';
+};
+
+// 查询模板列表 
+function getList() {
+  loading.value = true;
+  listTemplate(proxy.addDateRange(queryParams.value, dateRange.value)).then(res => {
+    loading.value = false;
+    templates.value = res.rows;
+    total.value = res.total;
+  });
+};
+
+const handleConfigSubmit = () => {
+  templateConfigFormRef.value.validate((valid) => {
+    if (valid) {
+      templateConfigForm.value.templateId = currentEditTemplateId ;
+      updateTemplateConfig(templateConfigForm.value).then(res => {
+        ElMessage.success('配置更新成功');
+        getList();
+      }) 
+    } else {
+      ElMessage.warning('请填写完整的配置信息');
+      return false;
+    }
+  });
+}
+
+
+getList();
+
+// 添加 watch 监听 activeTab 变化
+watch(activeTab, (newVal, oldVal) => { 
+  if (newVal !== oldVal) {
+    queryParams.value.templateGroupId = newVal ; 
+    getList()
+  }
+})
+
 </script>
 
 <style lang="scss" scoped>
@@ -435,8 +607,13 @@ const resetForm = () => {
           .template-card {
             height: 100%;
             transition: all 0.3s var(--el-transition-function-ease-in-out-bezier);
-            border: 1px solid #f5f5f5;
+            border: 1px solid #e4e7ed;
             border-radius: 8px;
+
+            &:hover { 
+              border: 1px solid #409EFF; 
+              box-shadow: 0px 0px 6px rgba(0, 0, 0, .12);
+            }
 
             .card-image-container {
               position: relative;
@@ -469,16 +646,17 @@ const resetForm = () => {
             }
 
             .card-content {
-              padding: 16px;
+              padding: 8px;
+              padding-top: 10px;
 
               .card-header {
                 display: flex;
                 justify-content: space-between;
                 align-items: flex-start;
-                margin-bottom: 12px;
+                margin-bottom: 5px;
 
                 .card-title {
-                  font-size: 16px;
+                  font-size: 15px;
                   font-weight: 500;
                   color: var(--el-text-color-primary);
                   margin: 0;
@@ -489,16 +667,25 @@ const resetForm = () => {
               .card-description {
                 font-size: 14px;
                 color: var(--el-text-color-secondary);
-                margin-bottom: 16px;
+                margin-bottom: 10px;
                 display: -webkit-box;
+                -webkit-line-clamp: 2; /* 限制两行 */
                 -webkit-box-orient: vertical;
                 overflow: hidden;
+                text-overflow: ellipsis;
+                min-height: 40px; /* 保持两行高度一致 */
+                line-height: 20px; /* 行高设置为字体大小的1.4倍左右 */
               }
 
               .card-footer {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+
+                .category-name {
+                  font-size: 12px;
+                  color: var(--el-text-color-placeholder);
+                }
 
                 .update-time {
                   font-size: 12px;
