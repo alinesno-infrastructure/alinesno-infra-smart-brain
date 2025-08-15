@@ -202,15 +202,15 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
     @DataPermissionQuery
     @GetMapping("/stopTask")
     public AjaxResult stopTask(@RequestParam Long taskId) {
-        boolean cancelled = taskExecutionService.cancelTask(taskId);
-
-        if (cancelled) {
-            // 更新数据库状态
-            GeneralAgentTaskEntity task = service.getById(taskId);
-            task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-            service.updateById(task);
-            return AjaxResult.success("任务已停止");
-        }
+//        boolean cancelled = taskExecutionService.cancelTask(taskId);
+//
+//        if (cancelled) {
+//            // 更新数据库状态
+//            GeneralAgentTaskEntity task = service.getById(taskId);
+//            task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
+//            service.updateById(task);
+//            return AjaxResult.success("任务已停止");
+//        }
         return AjaxResult.error("停止任务失败，任务可能已完成或不存在");
     }
 
@@ -219,8 +219,8 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
      * @return
      */
     @DataPermissionQuery
-    @GetMapping("/getLongTextTask")
-    public AjaxResult getLongTextTask(@RequestParam Long taskId , PermissionQuery query) {
+    @GetMapping("/getGeneralAgentTask")
+    public AjaxResult getGeneralAgentTask(@RequestParam Long taskId , PermissionQuery query) {
 
         Assert.notNull(taskId, "任务ID不能为空");
 
