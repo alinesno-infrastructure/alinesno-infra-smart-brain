@@ -74,4 +74,9 @@ public class GeneralAgentSceneDto extends SceneDto {
      */
     private List<TreeNodeDto> chapterTree = new ArrayList<>();
 
+    /**
+     * 通用智能体模板模板信息
+     */
+    private List<GeneralTemplateDto> templates = new ArrayList<>();
+
 }
