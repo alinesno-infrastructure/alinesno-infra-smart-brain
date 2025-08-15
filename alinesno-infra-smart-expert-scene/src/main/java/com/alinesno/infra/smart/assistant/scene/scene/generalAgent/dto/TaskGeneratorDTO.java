@@ -21,6 +21,7 @@ public class TaskGeneratorDTO extends BaseDto {
     @NotNull(message = "场景ID不能为空")
     private Long sceneId;
 
+    @NotNull(message = "模板ID不能为空")
     private String selectedTemplateId ;
 
     @Valid
