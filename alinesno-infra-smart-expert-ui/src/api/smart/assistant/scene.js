@@ -31,10 +31,20 @@ var managerUrl = {
   listPublicScene: prefix + "listPublicScene" ,
   updateGreetingQuestion: prefix + "updateGreetingQuestion" ,
   supportAllScene: prefix +"supportAllScene",
+  updateSceneConfigData: prefix + "updateSceneConfigData",
+
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
 }
 
+// 新增频道
+export function updateSceneConfigData(data) {
+  return request({
+    url: managerUrl.updateSceneConfigData ,
+    method: 'post',
+    data: data
+  })
+}
 
 // 获取所有场景列表
 export function supportAllScene() {
