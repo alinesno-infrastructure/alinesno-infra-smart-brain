@@ -3,9 +3,9 @@
 
     <!-- 模型列表 -->
     <el-scrollbar style="height:calc(100vh - 200px)">
-      <div class="article-template-list" v-if="filteredTemplateList.length > 0">
+      <div class="article-template-list" v-if="props.seceneTemplates.length > 0">
 
-        <div class="article-template-item" v-for="item in filteredTemplateList" :key="item.id"
+        <div class="article-template-item" v-for="item in props.seceneTemplates" :key="item.id"
           :class="{ 'active': selectedTemplateCode === item.id }" @click="selectTemplate(item)">
 
           <div class="template-content">
@@ -22,8 +22,8 @@
 
         </div>
       </div>
-
-      <div style="justify-content: center;" v-if="filteredTemplateList.length == 0">
+ 
+      <div style="justify-content: center;" v-if="props.seceneTemplates.length == 0">
         <el-empty style="padding: 10px;" description="此类型还没有模板，请选项其它类型的模板" image-size="70" />
       </div>
     </el-scrollbar>
@@ -32,17 +32,17 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import {
-  getAllArticleTemplateType,
-  getTemplateByType
-} from '@/api/base/im/scene/articleWriting';
+import { ref, computed, onMounted } from 'vue'; 
 
 // 接收选中的模板类型
 const props = defineProps({
   modelValue: {
     type: String,
     default: ''
+  },
+  seceneTemplates: {
+    type: Array,
+    default: []
   }
 });
 
@@ -92,15 +92,7 @@ const selectTemplate = (item) => {
 // };
 
 onMounted(() => {
-  // 获取所有模板类型
-  getAllArticleTemplateType().then(res => {
-    templateTypeList.value = res.data;
-  });
-
-  // 获取默认模板列表（全部类型）
-  getTemplateByType(0).then(res => {
-    templateList.value = res.data;
-  });
+  
 });
 
 // 监听外部传入的模板值变化
@@ -161,7 +153,7 @@ watch(() => props.modelValue, (newVal) => {
       margin-bottom: 10px;
       background-color: #fafafa;
       gap: 10px;
-      height: 140px;
+      height: 100px;
       overflow: hidden;
       width: calc(33% - 10px);
       cursor: pointer;
@@ -169,21 +161,21 @@ watch(() => props.modelValue, (newVal) => {
       align-items: flex-start;
       line-height: 23px;
       border-radius: 12px;
+      border: 0px;
+       border: 1px solid #fafafa;
 
       &:hover {
-        background: #e8f3ff;
-        border: 0px solid #409eff;
+        background: #e8f3ff; 
       }
 
       &.active {
-        background: #e8f3ff;
-        border: 0px solid #409eff;
+        background: #e8f3ff; 
       }
 
       .template-icon {
-        width: 50%;
-        max-width: 157px;
-        height: 102px;
+        width: 30%;
+        max-width: 87px;
+        height: 82px;
         flex-shrink: 0;
         box-shadow: 0 -2.7px 16.2px 0 rgba(56, 49, 80, .12);
         position: relative;
