@@ -6,7 +6,7 @@ var prefix = '/api/infra/smart/assistant/scene/taskManager/' ;
 
 var managerUrl = {
   pagerListByPage: prefix +"pagerListByPage",
-  getLongTextTask: prefix +"getLongTextTask",
+  getGeneralAgentTask: prefix +"getGeneralAgentTask",
   addTask: prefix + "addTask",
   updateTaskGenStatus: prefix + "updateTaskGenStatus",
   deleteById: prefix + "deleteById",
@@ -48,9 +48,9 @@ export function deleteById(taskId) {
 }
 
 // 获取到审核任务
-export function getLongTextTask(taskId) {
+export function getGeneralAgentTask(taskId) {
   return request({
-    url: managerUrl.getLongTextTask+ '?taskId=' + parseStrEmpty(taskId),
+    url: managerUrl.getGeneralAgentTask+ '?taskId=' + parseStrEmpty(taskId),
     method: 'get',
   })
 }
