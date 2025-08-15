@@ -535,8 +535,7 @@ const handleTakeOver = () => {
         // 接管成功
         proxy.$modal.msgSuccess("任务接管成功，请手工生成章节内容。");
     })
-}
-
+} 
 
 // 点击当前的chapter
 const openCurrentChapter = (currentChapterId) => {
