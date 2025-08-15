@@ -22,7 +22,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralAg
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools.GeneralAgentFormatMessageTool;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools.GeneralAgentTemplateTool;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
@@ -82,6 +84,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
     private IGeneralAgentSceneService service;
 
     @Autowired
+    private IGeneralAgentTemplateService generalAgentTemplateService ;
+
+    @Autowired
     private CloudStorageConsumer cloudStorageConsumer ;
 
     @Autowired
@@ -98,9 +103,6 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
 
     @Autowired
     private GeneralAgentFormatMessageTool formatMessageTool;
-
-    @Autowired
-    private CloudStorageConsumer storageConsumer ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -158,6 +160,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
             dto.setBusinessExecuteEngineers(RoleUtils.getEditors(roleService, dataAnalysisSceneEntity.getBusinessExecuteEngineer()));
 
             dto.setChapterTree(generalAgentPlanService.getPlanTree(entity.getId() , dataAnalysisSceneEntity.getId())); // 数据分析树信息
+            dto.setTemplates(GeneralAgentTemplateTool.getTemplates(entity.getConfigData()));
         }
 
         return AjaxResult.success("操作成功.", dto);
@@ -473,7 +476,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
         String filePath = MarkdownToWord.convertMdToDocx(markdownContent, filename) ;
         Assert.notNull(filePath, "文件路径为空") ;
 
-        R<String> r = storageConsumer.upload(new File(filePath)) ;
+        R<String> r = cloudStorageConsumer.upload(new File(filePath)) ;
         String storageId = r.getData() ;
 
         // 删除文件
@@ -489,7 +492,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
      */
     @GetMapping("/getPreviewUrl")
     public AjaxResult getPreviewUrl(@RequestParam String storageId) {
-        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+        String previewUrl = cloudStorageConsumer.getPreviewUrl(storageId).getData();
         return AjaxResult.success("操作成功" , previewUrl);
     }
 
@@ -503,7 +506,7 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
     @GetMapping("/getPreviewDocx")
     public ResponseEntity<Resource> getPreviewDocx(@RequestParam String storageId) {
 
-        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
+        String previewUrl = cloudStorageConsumer.getPreviewUrl(storageId).getData();
 //        byte[] fileBytes = restTemplate.getForObject(previewUrl, byte[].class);
 
         byte[] fileBytes; // restTemplate.getForObject(previewUrl, byte[].class);
