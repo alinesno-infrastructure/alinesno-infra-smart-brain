@@ -788,9 +788,22 @@ html.dark {
     }
   }
 
+  .example-section .example-title{
+    color: $dark-text-color !important;
+  }
+
   .article-template-container .article-template-list .article-template-item {
     background: #1d1e1f;
     border: 1px solid #1d1e1f;
+
+
+
+    &:hover {
+      .article-template-item-title {
+        color: #333 !important;
+      }
+    }
+
     &.active {
       .article-template-item-title {
         color: #333 !important;
@@ -1134,14 +1147,24 @@ html.dark {
         color: $dark-text-color;
 
         .content-preview {
-      color: $dark-text-color;
-    }
+          color: $dark-text-color;
+        }
 
     }
 
 
     .el-drawer__header {
       border-bottom: 1px solid #262727 !important;
+    }
+  }
+
+  .attachment-section {
+    .attachment-item {
+      background: #1d1e1f;
+
+      .attachment-item-name-text {
+        color: $dark-text-color !important;
+      }
     }
   }
 }
