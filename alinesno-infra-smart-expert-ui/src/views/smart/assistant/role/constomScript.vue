@@ -142,38 +142,6 @@ function setCurrentRoleId(id) {
     currentRoleId.value = id;
 }
 
-/** 验证脚本任务 */
-// const handleValidateTask = () => {
-//     let type = scriptType.value?scriptType.value:'execute' ;
-//     const scriptCode = getCode()[type];
-//     const roleId = currentRoleId.value;
-
-//     loading.value = true
-
-//     const agentConfigParams = paramsConfigRef.value.getAgentConfigParams();
-//     console.log('agentConfigParmas = ' + JSON.stringify(agentConfigParams));
-
-//     if(!agentConfigParams){
-//         return ;
-//     }
-
-//     validateRoleScript({
-//         'agentConfigParams': agentConfigParams,
-//         'script': scriptCode,
-//         'roleId': roleId,
-//         'type': type,
-//         'message': chatMessage.value
-//     }).then(res => {
-//         console.log('res = ' + res);
-//         loading.value = false
-//         genContent.value = res.data.genContent
-//         proxy.$modal.msgSuccess("验证成功");
-//     }).catch(err => {
-//         console.log('err = ' + err);
-//         loading.value = false
-//     })
-// }
-
 /** 提交脚本任务 */
 const submitModelConfig = async() => {
 
