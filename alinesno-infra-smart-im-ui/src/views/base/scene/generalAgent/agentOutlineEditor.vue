@@ -3,8 +3,7 @@
         <el-card class="box-card" shadow="never">
             <template #header>
                 <div class="card-header">
-                    <div style="display: flex;align-items: center;gap: 10px;">
-
+                    <div style="display: flex;align-items: center;gap: 10px;"> 
                         <span style="display: flex;gap: 5px;align-items: center;">
                             <i class="fa-solid fa-file-pdf"></i>
 
@@ -24,24 +23,29 @@
                             <span class="edit-header-avatar">
                                 <img :src="imagePathByPath(item.roleAvatar)" @click="selectChaterGenerator(item)" />
                             </span>
+                        </el-tooltip> 
+                    </div>
+
+                    <span class="chapter-actions">
+                        <el-tooltip class="box-item" effect="dark" content=" 展开或者收缩菜单" placement="top">
+                            <el-button type="primary" text bg  @click="expandTree()">
+                                <i class="fa-solid fa-up-down"></i>  &nbsp; {{ isTreeExpanded ? '收缩' : '展开' }}
+                            </el-button>
                         </el-tooltip>
 
-                    </div>
-                    <span>
-
                         <el-tooltip class="box-item" effect="dark" content="添加章节" placement="top">
-                            <el-button type="primary" text bg size="large" @click="addChapter">
+                            <el-button type="primary" text bg @click="addChapter">
                                 <i class="fa-solid fa-plus-minus"></i>  &nbsp; 添加
                             </el-button>
                         </el-tooltip>
 
                         <el-tooltip class="box-item" effect="dark" content="保存章节" placement="top">
-                            <el-button type="success" text bg size="large" @click="getOutlineJsonSingle">
+                            <el-button type="success" text bg @click="getOutlineJsonSingle">
                                 <i class="fa-solid fa-file-shield"></i> &nbsp; 保存
                             </el-button>
-                        </el-tooltip>
-
+                        </el-tooltip> 
                     </span>
+
                 </div>
             </template>
             <el-scrollbar style="height:calc(100vh - 150px)">
@@ -130,12 +134,16 @@
                 <el-button size="large" @click="chaterDialogVisible = false">取 消</el-button>
                 <el-button size="large" type="primary" @click="openChatBoxStreamContent()">开始规划</el-button>
             </div>
-        </el-dialog>
+        </el-dialog> 
 
-        <!-- Agent选择组件_start -->
-        <!-- <TransferAgentPanel ref="transferAgentPanel" @handleCloseAgentConfig="handleCloseAgentConfig" /> -->
-        <!-- Agent选择组件_end -->
-
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef" 
+            :back-to-path="'/scene/generalAgent/taskManager'"
+            :route-params="{ sceneId: sceneId }" 
+            :takeOverEnable="takeOverEnable"
+            @takeOver="handleTakeOver"
+        />
     </div>
 </template>
 
@@ -145,6 +153,7 @@ import { ref, reactive, nextTick } from 'vue';
 import { ElMessage , ElMessageBox , ElLoading } from 'element-plus';
 
 import EditableTitle from './components/EditableTitle.vue'
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 import { getParam } from '@/utils/ruoyi'
 
 import {
@@ -157,7 +166,7 @@ import {
 } from '@/api/base/im/scene/generalAgent'
 
 import {
-    getLongTextTask,
+    getGeneralAgentTask,
     submitTask,
     updateTaskStatus ,
     submitChapterTask,
@@ -169,6 +178,11 @@ const { proxy } = getCurrentInstance();
 
 // const route = useRoute();
 const channelStreamId = ref(route.query.channelStreamId);
+const taskId = ref(route.query.taskId);
+const sceneId = ref(route.query.sceneId);
+
+const treeRef = ref(null); // 获取 tree 实例的引用
+const isTreeExpanded = ref(true); // 跟踪树节点的展开状态
 
 const treeEmptyText = ref("你先还没有生成章节内容,请点击智能体头像生成章节内容")
 const emit = defineEmits([
@@ -181,9 +195,11 @@ const emit = defineEmits([
     'handleExecuteHandle'
 ])
 
+const takeOverEnable = ref(false)
+
 // 选择Agent组件
 const transferAgentPanel = ref(null)
-
+const generatingStatusRef = ref(null)
 const streamLoading = ref(null)
 
 // 定义人物信息
@@ -201,8 +217,7 @@ const taskInfo = ref({
 const outline = ref([]);
 
 const dialogVisible = ref(false)
-const timer = ref(null) // 定时器引用
-const sceneId = ref(route.query.sceneId)
+const timer = ref(null) // 定时器引用 
 const channelAgentConfigTitle = ref("")
 const configAgentDialogVisible = ref(false)
 const channelAgentList = ref([])
@@ -217,8 +232,7 @@ const currentSceneInfo = ref({
     chapterEditors: [],
     contentEditors: []
 })
-const currentSceneId = ref(route.query.sceneId)
-const taskId = ref(route.query.taskId)
+const currentSceneId = ref(route.query.sceneId) 
 const isCheckGenStatus = ref(route.query.genStatus)
 
 const agentList = ref([])
@@ -300,6 +314,16 @@ const genStreamContentByMessage = async (roleIdVal , messageVal) => {
 
 }
 
+// 接管任务
+const handleTakeOver = () => {
+    console.log("handleTaskOver")
+    takeOver(taskId.value).then(res => {
+        handleGetTask();
+        // 接管成功
+        proxy.$modal.msgSuccess("任务接管成功，请手工生成章节内容。");
+    })
+} 
+
 const onClickLeft = () => {
     proxy.$router.push({
         path: '/scene/generalAgent/index' ,
@@ -312,57 +336,14 @@ const onClickLeft = () => {
 
 /** 生成内容 */
 const genStreamContent = async(text) => {
-
-//   if (!message.value) {
-//     proxy.$modal.msgError("请输入消息内容.");
-//     return;
-//   }
-
-// //   const channelStreamId = emit('getChannelStreamId');
-//   console.log('channelStreamId = ' + channelStreamId.value);
-
-//   if(!channelStreamId.value){
-//     proxy.$modal.msgError("请先创建场景.");
-//     return;
-//   }
-
-  streamLoading.value = ElLoading.service({
-    lock: true,
-    text: '规划任务执行中，请勿操作其它界面 ...',
-    background: 'rgba(255, 255, 255, 0.5)',
-    customClass: 'custom-loading'
-  })
-
+  
+  generatingStatusRef.value?.loading()
   if(text){
-    streamLoading.value.setText(text) ;
+    generatingStatusRef.value.setText(text) ;
   }
-
-
-//   let formData = {
-//     sceneId: currentSceneId.value,
-//     channelStreamId: channelStreamId.value ,
-//     taskId: taskId.value ,
-//     message: message.value,
-//     roleId: person.value.id ,
-//   }
-
+  
   console.log('outline.value = ' + outline.value);
-  emit('openChatBox' , person.value.id) ; 
-
-//   const response = await chatRole(formData)
-//   console.log('response = ' + response)
-
-//   proxy.$modal.msgSuccess("发送成功");
-//   chaterDialogVisible.value = false ;
-//   message.value = '';
-
-//   // 合并数组
-//   Array.prototype.push.apply(outline.value, response.data);
-//   closeStreamDialog();
-
-  // 自动保存章节
-//   getOutlineJson();
-
+  emit('openChatBox' , person.value.id) ;  
 };
 
 const addChapter = () => {
@@ -410,56 +391,33 @@ function handleCloseAgentConfig(selectAgentList){
 
 /** 获取到场景详情 */
 const handleGetScene = async () => {
-
-    await getGeneralAgentScene(currentSceneId.value , taskId.value).then(res => {
-      currentSceneInfo.value = res.data
-      person.value = currentSceneInfo.value.businessProcessorEngineers[0];
-
-      outline.value = res.data.chapterTree || [];
-
-      emit('setCurrentSceneInfo' , res.data)
-
-    //   const genStatus = currentSceneInfo.value.genStatus ;
-    //   message.value = currentSceneInfo.value.promptContent;
-
-    //   if(genStatus == 0 && isCheckGenStatus.value && currentSceneInfo.value.promptContent){ // 未生成章节
-    //     ElMessageBox.confirm( '检测到数据分析指令['+ currentSceneInfo.value.promptContent +']是否执行分析规划？', '提示', {
-    //         confirmButtonText: '确定',
-    //         cancelButtonText: '取消',
-    //         type: 'warning'
-    //     })
-    //     .then(() => {
-    //         updateSceneGenStatus(currentSceneId.value , 1).then(res => {
-    //             person.value = currentSceneInfo.value.businessProcessorEngineers[0];
-    //             message.value = currentSceneInfo.value.promptContent;
-    //             openChatBoxStreamContent();
-    //         })
-    //     })
-    //     .catch(() => {
-    //         console.log('用户取消了生成章节操作');
-    //     });
-    //   }
-
-      if(outline.value.length > 0){
-
-        const loading = ElLoading.service({
+ 
+       streamLoading.value = ElLoading.service({
             lock: true,
             text: '加载中...',
             background: 'rgba(0, 0, 0, 0.7)',
         })
+ 
+    await getGeneralAgentScene(currentSceneId.value , taskId.value).then(res => {
+      currentSceneInfo.value = res.data
+      person.value = currentSceneInfo.value.businessProcessorEngineers[0];
 
-        // 默认显示第1章节
-        nextTick(() => {
-            const item = outline.value[0];
-            const node = {
-                label: item.label ,
-                data: { chapterEditor:  item.chapterEditor ,  description: item.description }
-            }
-            const data = { id: item.id }
-            editContent(node , data)
-            loading.close();
-        })
-      }
+      outline.value = res.data.chapterTree || []; 
+      emit('setCurrentSceneInfo' , res.data)
+  
+      // 重新加载场景默认点击第1章节
+      nextTick(() => {
+        const item = outline.value[0];
+        if(item && item.children && item.children.length > 0){
+          const node = {
+              label: item.label ,
+              data: { chapterEditor:  item.chapterEditor ,  description: item.description , hasContent: item.hasContent }
+          }
+          const data = { id: item.id }
+          editContent(node , data)
+        }
+        streamLoading.value.close();
+      })
 
     })
 
@@ -542,7 +500,7 @@ const closeStreamDialog = () => {
 const handleGetTask = async () => {
 
   try {
-    await getLongTextTask(taskId.value).then(res => {
+    await getGeneralAgentTask(taskId.value).then(res => {
       taskInfo.value = res.data
       
       const taskStatus = taskInfo.value.taskStatus
@@ -562,7 +520,7 @@ const handleGetTask = async () => {
       }
       
       // 原有逻辑保持不变
-      if (taskStatus == 0 || taskStatus == null) {
+      if (taskStatus == 'running' || taskStatus == null) {
         submitTask(taskId.value, channelStreamId.value).then(res => {
           genStreamContent()
         })
