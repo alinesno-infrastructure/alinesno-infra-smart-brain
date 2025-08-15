@@ -16,11 +16,7 @@
                   AI针对于某一个场景设计出智能体任务，并结合需求进行输出
                 </span>
               </div>
-
-                <!-- 
-                <ArticleTemplatePanel v-model="formData.selectedTemplateId" /> 
-                -->
-
+ 
               <div class="input-button-section">
                 <div style="width:100%">
                   <!-- 附件内容-->
@@ -60,7 +56,7 @@
               <div class="example-section">
                 <div class="example-title">你可以这样提问</div>
                 <div class="example-list">
-                  <div v-for="(item, index) in topics" :key="index" class="example-item" @click="handleExampleClick(item)">
+                  <div v-for="(item, index) in greetingQuestionList" :key="index" class="example-item" @click="handleExampleClick(item)">
                     <span class="example-text">{{ item.text }}</span>
                     <i class="fa-solid fa-paper-plane example-icon"></i>
                   </div> 
@@ -76,31 +72,12 @@
               <div class="review-question-preview-title">
                 <span>
                   <i class="fa-solid fa-file-pdf"></i> 它可以帮你完成这些事情
-                </span>
-                <!-- 
-                <el-button type="danger" :disabled="!outline" @click="generatorPPT()">
-                  <i class="fa-solid fa-floppy-disk"></i>&nbsp;编辑文章
-                </el-button> 
-                -->
+                </span> 
               </div>
+ 
               <!-- 大纲生成预览 -->
-              <div class="pager-gen-result-panel">
-
-                <!-- 
-                <div :style="!showArticleOutput?'visibility:visible':'visibility:hidden;display:none'" style="margin-top: 10vh;">
-                  <el-empty description="当前未生成文章内容，可以上传相关文档和配置场景，生成文章" />
-                </div> 
-                -->
-
-                <!-- 
-                <el-scrollbar :style="showArticleOutput?'visibility:visible':'visibility:hidden;height:0px;'" class="pager-container" ref="scrollbarRef"> 
-                  <div ref="innerRef">
-                    <DataAnalysisDisplay  ref="dataAnalysisDisplayRef" />
-                  </div>
-                </el-scrollbar> 
-                -->
-                <ArticleTemplatePanel v-model="formData.selectedTemplateId" /> 
-
+              <div class="pager-gen-result-panel"> 
+                <ArticleTemplatePanel v-model="formData.selectedTemplateId" :seceneTemplates="seceneTemplates" />  
               </div>
             </el-col>
           </el-row>
@@ -146,7 +123,9 @@ const snowflake = new SnowflakeId();
 const route = useRoute();
 const router = useRouter();
 
-const topics = [
+const seceneTemplates = ref([])
+
+const greetingQuestionList = ref([
     { text: "写一篇关于产品营销的计划方案" },
     { text: "分析上传的数据报告" },
     { text: "人工智能的发展趋势与未来展望" },
@@ -154,7 +133,8 @@ const topics = [
     { text: "2025在线教育的发展与挑战" },
     { text: "企业数字化执行阻力突破" },
     { text: "年度工作回顾与未来规划" }
-];
+]);
+
 
 const outline = ref(null)
 const pptId = ref(null)
@@ -216,21 +196,7 @@ const handleUpload = () => {
     attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
   }
 };
-
-// 生成PPT
-const generatorPPT = () => {
-  savePPTOutline(sceneId.value , 
-      outline.value , 
-      pptId.value , 
-      formData.value.pptConfig,
-      formData.value.promptText
-    ).then(res => {
-    pptId.value = res.data ;
-    window.open(`http://alinesno-infra-smart-aippt-ui.beta.base.infra.linesno.com?pptId=${pptId.value}&editorType=editor`, '_blank');
-  }).catch(error => {
-    ElMessage.error(error.message)
-  })
-}
+ 
 
 // 计算总题目数和总分
 const updateTotalStats = (stats) => {
@@ -240,23 +206,18 @@ const updateTotalStats = (stats) => {
 
 const handleGetScene = () => {
   getScene(sceneId.value).then(res => {
-    currentSceneInfo.value = res.data;
-    // handleRoleBySceneIdAndAgentType();
+  
+    currentSceneInfo.value = res.data;   
+    seceneTemplates.value = currentSceneInfo.value.templates 
 
-    if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) {
-      greetingQuestionList.value = [];
+    if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) { 
       res.data.greetingQuestion.forEach(item => {
         greetingQuestionList.value.push({
           text: item
         });
       });
     }
-
-    // if (!currentSceneInfo.value.requirementAnalyzer || !currentSceneInfo.value.prototypeDesigner) { // 选择配置角色
-    //   roleSelectPanelRef.value.configAgent();
-    //   return;
-    // }
-
+ 
     if (!currentSceneInfo.value.businessProcessorEngineer || !currentSceneInfo.value.dataViewerEngineer) { // 选择配置角色
       roleSelectPanelRef.value.configAgent();
       return;
@@ -272,51 +233,23 @@ const handleClose = (done) => {
 }
 
 const handleExampleClick = (item) => {
-  formData.value.promptText = item.text;
-  // generaterText();
-}
-
-// 保存试卷题目信息
-const handleSavePagerQuestion = async () => {
-
-  try {
-    // 验证表单
-    await formRef.value.validate()
-    console.log('保存文章数据:', formData.value)
-
-    const questionList = pagerGenContainerPanelRef.value.getQuestionList() ;
-
-    const data = {
-      sceneId: sceneId.value,
-      channelStreamId: channelStreamId.value,
-      pagerType: formData.value.pagerType,
-      difficulty: formData.value.difficultyLevel,
-      examStructure: formData.value.examStructure,
-      questionList: questionList,
-    }
-
-    savePagerQuestion(data).then(res => {
-      console.log('保存成功:', res)
-    })
-    
-    ElMessage.success('试卷保存成功')
-    dialogVisible.value = false
-
-  } catch (error) {
-    console.error('保存失败:', error)
-    ElMessage.error('请填写完整的试卷信息')
-  }
-
+  formData.value.promptText = item.text; 
 }
 
 const generaterText = async () => {
+
   if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
     return;
   }
 
-  addTask(formData.value).then(res => {
+  // 检查是否选择了模板
+  if (!formData.value.selectedTemplateId) {
+    ElMessage.error('请在右边选择一个模板');
+    return;
+  }
 
+  addTask(formData.value).then(res => { 
     const taskId = res.data ; 
 
     router.push({
@@ -334,10 +267,8 @@ const generaterText = async () => {
 };
 
 onMounted(() => {
-  handleGetScene();
-  // calculateTotals(); // 初始化统计
+  handleGetScene(); 
 
-  // Add this check for channelStreamId in URL
   if (!route.query.channelStreamId) {
     router.replace({
       query: {
