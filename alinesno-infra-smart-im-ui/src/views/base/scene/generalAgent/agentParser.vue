@@ -1,18 +1,10 @@
 <template>
 
-    <div class="ppt-pager-container long-text-container">
+    <GeneralAgentContainer>
 
-        <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-            <el-aside width="80px" class="ppt-pager-aside">
-                <FunctionList />
-            </el-aside>
-
-            <el-main class="ppt-pager-main">
-
-                <div style="background-color: #fff;padding:0px;margin:0px;padding-left:0px !important">
+                <div style="padding:0px;margin:0px;padding-left:0px !important">
                     <el-row>
-                        <el-col :span="11">
+                        <el-col :span="9">
                             <!-- 目录大纲编辑界面 -->
                             <GeneratorAgentOutlineEditor ref="OutlineEditorRef"
                                 @openChatBox="openChatBox"
@@ -24,7 +16,7 @@
                                 @editContent="editContent" />
                         </el-col>
 
-                        <el-col :span="13">
+                        <el-col :span="15">
                             <div class="chapter-edit">
                                 <el-card class="box-card" shadow="never">
                                     <template #header>
@@ -51,28 +43,33 @@
 
                                             <!-- 执行按钮_start -->
                                             <div>
-                                                <el-button type="primary" text bg size="large"
+                                                <el-button type="primary" text bg 
                                                     @click="genChapterContent()">
                                                     <i class="fa-solid fa-paper-plane"></i> &nbsp; 重新生成
                                                 </el-button>
 
-                                                <el-button type="primary" text bg size="large"
+                                                <el-button type="primary" text bg 
                                                     @click="genSingleChapterContent()">
                                                     <i class="fa-brands fa-firefox-browser"></i> &nbsp; 生成章节
                                                 </el-button>
 
-                                                <el-button type="primary" text bg size="large" @click="expertScene">
+                                                <el-button type="primary" text bg @click="expertScene">
                                                     <i class="fa-solid fa-download"></i> &nbsp; 报告生成
                                                 </el-button>
 
                                             </div>
                                             <!-- 执行按钮_end -->
                                         </div>
-                                    </template>
+                                    </template> 
 
-                                    <div>
-                                        <DataAnalysisDisplay ref="dataAnalysisDisplayRef" />
-                                    </div>
+                                    <el-form :model="form" label-width="100px" label-position="top" v-loading="loading">
+                                        <div class="chapter-title">
+                                            {{ form.title?form.title:'未生成章节.' }}
+                                        </div> 
+                                        <el-form-item label="章节内容" class="chapter-content">
+                                            <DataAnalysisDisplay ref="dataAnalysisDisplayRef" />
+                                        </el-form-item>
+                                    </el-form>
 
                                 </el-card>
                             </div>
@@ -123,7 +120,7 @@
                         <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
                             title="预览与调试" :with-header="true">
                             <div style="margin-top: 0px;">
-                                <RoleChatPanel ref="roleChatPanelRef" />
+                                <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
                             </div>
                         </el-drawer>
                     </div>
@@ -134,9 +131,7 @@
                         <div class="document-wrapper" v-loading="loadingDocument">
                             <el-scrollbar class="scrollable-area"
                                 style="height: calc(70vh);margin-top:20px; padding-right:0px">
-                                <iframe :src="iframeUrl"
-                                    style="position: absolute;width: 100%;border-radius: 5px; height: 100%;border: 0px;padding-bottom: 10px;background: #323639;">
-                                </iframe>
+                                 
                             </el-scrollbar>
                         </div>
                         <!-- 显示下载word文档按钮 -->
@@ -150,9 +145,7 @@
 
                 </div>
 
-            </el-main>
-        </el-container>
-    </div>
+            </GeneralAgentContainer>
 </template>
 
 <script setup>
@@ -171,6 +164,7 @@ import {
     getPreviewUrl,
 } from '@/api/base/im/scene/generalAgent'
 
+import GeneralAgentContainer from './generalAgentContainer'
 import FunctionList from './functionList'
 import GeneratorAgentOutlineEditor from './agentOutlineEditor.vue'
 import DataAnalysisDisplay from './agentContentDisplay.vue'
@@ -236,26 +230,11 @@ const openChatBox = (roleId, message) => {
     console.log('roleId = ' + roleId + ' , message = ' + message);
 
     nextTick(() => {
-        roleChatPanelRef.value.openChatBoxWithRole(roleId) ; 
-        // roleChatPanelRef.value.openChatBox(roleId, message);
-        // OutlineEditorRef.value.genStreamContentByMessage(roleId, message);
+        roleChatPanelRef.value.openChatBoxWithRole(roleId) ;  
     })
 
 }
-
-// // 生成全部章节内容通过角色
-// const genChapterContentByAgent = async () => {
-//     console.log('开始生成全部章节内容通过角色 = genChapterContentByAgent');
-//     // 分配章节角色
-//     dispatchAgent(sceneId.value , taskId.value).then(res => {
-//         getGeneralAgentScene(sceneId.value , taskId.value).then(res => {
-//             setCurrentSceneInfo(res.data)
-//             genChapterContent();
-//             showDebugRunDialog.value = true;
-//         })
-//     })
-// };
-
+  
 // 重新生成指定的章节内容
 const genSingleChapterContent = async () => {
 
@@ -701,6 +680,17 @@ padding: 0px !important;
     margin-top: 20px;
     margin-bottom: 20px;
     text-align: right;
+}
+
+.chapter-title {
+    font-size: 17px;
+    font-weight: bold;
+    line-height: 2.8;
+    border-radius: 5px;
+    padding-left: 20px;
+    margin-bottom: 10px;
+    background: #f5f5f5;
+    margin-top: -10px;
 }
 </style>
 
