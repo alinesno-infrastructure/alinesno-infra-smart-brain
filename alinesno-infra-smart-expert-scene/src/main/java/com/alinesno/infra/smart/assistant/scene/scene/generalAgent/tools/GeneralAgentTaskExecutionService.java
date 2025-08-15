@@ -1,14 +1,14 @@
 package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.prompt.GeneralAgentPrompt;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
 import com.alinesno.infra.smart.scene.dto.*;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
-import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
@@ -20,12 +20,14 @@ import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jodd.util.StringUtil;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
+import javax.lang.exception.RpcServiceRuntimeException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -35,14 +37,6 @@ import java.util.concurrent.*;
 @Slf4j
 @Service
 public class GeneralAgentTaskExecutionService {
-
-    // 存储任务及其Future的映射
-    private final ConcurrentMap<Long, Future<?>> taskFutures = new ConcurrentHashMap<>();
-
-    // 存储章节任务及其Future的映射
-    private final ConcurrentMap<Long, Future<?>> chapterTaskFutures = new ConcurrentHashMap<>();
-
-//    private final ExecutorService executor = Executors.newCachedThreadPool();
 
     @Autowired
     private ThreadPoolTaskExecutor executor;
@@ -57,7 +51,10 @@ public class GeneralAgentTaskExecutionService {
     private IGeneralAgentTaskService taskService;
 
     @Autowired
-    private IGeneralAgentSceneService longTextSceneService;
+    private IGeneralAgentTemplateService generalAgentTemplateService;
+
+    @Autowired
+    private IGeneralAgentSceneService generalAgentSceneService;
 
     @Autowired
     private GeneralAgentFormatMessageTool formatMessageTool;
@@ -79,18 +76,6 @@ public class GeneralAgentTaskExecutionService {
      * @param query  权限查询
      */
     public void executeTaskAsync(Long taskId, Long channelStreamId, PermissionQuery query) {
-//        // 提交任务并存储Future
-//        Future<?> future = executor.submit(() -> {
-//            try {
-//                internalExecuteTask(taskId, channelStreamId, query);
-//            } catch (InterruptedException e) {
-//                log.warn("任务被中断: taskId={}", taskId);
-//                Thread.currentThread().interrupt(); // 恢复中断状态
-//            }
-//        });
-//
-//        taskFutures.put(taskId, future);
-
         CompletableFuture.runAsync(() -> {
             try {
                 internalExecuteTask(taskId, channelStreamId, query);
@@ -110,15 +95,19 @@ public class GeneralAgentTaskExecutionService {
      */
     private void internalExecuteTask(Long taskId, Long channelStreamId, PermissionQuery query) throws InterruptedException {
         GeneralAgentTaskEntity task = taskService.getById(taskId);
+
         try {
             if (task == null) return;
+
+            task.setGenPlanStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+            taskService.updateById(task);
 
             // 检查中断状态
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException("任务被取消");
             }
 
-            GeneralAgentSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(task.getSceneId(), query);
+            GeneralAgentSceneEntity longTextSceneEntity = generalAgentSceneService.getBySceneId(task.getSceneId(), query);
             ChatRoleDto dto = new ChatRoleDto();
 
             dto.setTaskId(taskId);
@@ -128,15 +117,6 @@ public class GeneralAgentTaskExecutionService {
             dto.setMessage(task.getTaskDescription() == null ? task.getTaskName() : task.getTaskDescription());
 
             List<TreeNodeDto> treeNodeDtos = chatRoleAsync(dto);
-
-//            chapterService.saveChaptersWithHierarchy(treeNodeDtos,
-//                    null,
-//                    1,
-//                    task.getSceneId(),
-//                    longTextSceneEntity.getId(),
-//                    query,
-//                    task);
-
             generalAgentPlanService.saveChaptersWithHierarchy(treeNodeDtos, null,
                     1 ,
                     task.getSceneId() ,
@@ -146,13 +126,8 @@ public class GeneralAgentTaskExecutionService {
             // 分发任务
             dispatchAgent(task.getSceneId(), taskId, query);
 
-            // 再次检查中断状态
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException("任务被取消");
-            }
-
             // 任务完成
-            task.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
+            task.setGenPlanStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
             task.setOutline(JSONArray.toJSONString(treeNodeDtos));
             task.setTaskEndTime(new Date());
             taskService.updateById(task);
@@ -160,11 +135,14 @@ public class GeneralAgentTaskExecutionService {
             // 执行章节任务
             executeChapterTask(taskId, query, task);
 
+            // TODO 执行生成内容结果
+            // executeResultTask(taskId, query) ;
+
         } catch (Exception e) {
             log.error("任务执行失败", e);
 
             // 更新任务状态为失败
-            task.setTaskStatus(e instanceof InterruptedException ?
+            task.setGenPlanStatus(e instanceof InterruptedException ?
                     String.valueOf(TaskStatusEnum.CANCELLED.getCode()) :
                     String.valueOf(TaskStatusEnum.RUN_FAILED.getCode()));
             task.setTaskEndTime(new Date());
@@ -172,33 +150,58 @@ public class GeneralAgentTaskExecutionService {
         } finally {
             // 清理进度和Future
             taskProgress.remove(taskId);
-            taskFutures.remove(taskId);
         }
+    }
+
+    /**
+     * 生成内容结果
+     * @param taskId
+     * @param query
+     */
+    private void executeResultTask(Long taskId, PermissionQuery query) {
+        GeneralAgentTaskEntity task = taskService.getById(taskId);
+        task.setGenResultStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        taskService.updateById(task);
+
+        GeneralAgentSceneEntity longTextSceneEntity = generalAgentSceneService.getBySceneId(task.getSceneId(), query);
+
+        // 准备任务信息
+        MessageTaskInfo taskInfo = new MessageTaskInfo();
+        taskInfo.setChannelStreamId(String.valueOf(task.getChannelStreamId()));
+        taskInfo.setRoleId(Long.parseLong(longTextSceneEntity.getDataViewerEngineer()));
+        taskInfo.setChannelId(task.getSceneId());
+        taskInfo.setSceneId(task.getSceneId());
+        taskInfo.setQueryText(task.getTaskPrompt()) ;
+
+        // 处理附件
+        if (StringUtil.isNotBlank(task.getAttachments())) {
+            List<Long> attachmentIds = Arrays.stream(task.getAttachments().split(","))
+                    .map(Long::parseLong)
+                    .toList();
+            List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
+            taskInfo.setAttachments(attachments);
+        }
+
+        // 获取模板信息
+        GeneralAgentTemplateEntity template = generalAgentTemplateService.getById(task.getSelectedTemplateId());
+        log.debug("获取模板信息完成，template.Name: {}", template.getName());
+
+        taskInfo.setText(GeneralAgentPrompt.getResultPrompt(
+            taskInfo,
+            template
+        ));
+
+        task.setGenResultStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
+        taskService.updateById(task);
     }
 
     /**
      * 执行章节任务
      */
     public void executeChapterTask(Long taskId, PermissionQuery query, GeneralAgentTaskEntity task) {
-        // 提交章节任务并存储Future
-        Future<?> chapterFuture = executor.submit(() -> {
-            try {
-                internalExecuteChapterTask(taskId, query, task);
-            } catch (InterruptedException e) {
-                log.warn("章节任务被中断: taskId={}", taskId);
-                Thread.currentThread().interrupt(); // 恢复中断状态
-            }
-        });
 
-        chapterTaskFutures.put(taskId, chapterFuture);
-    }
-
-    /**
-     * 内部执行章节任务方法（添加中断检查）
-     */
-    private void internalExecuteChapterTask(Long taskId, PermissionQuery query, GeneralAgentTaskEntity task) throws InterruptedException {
         // 更新任务状态到章节生成中
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        task.setGentContentStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
         taskService.updateById(task);
 
         // 获取任务的所有章节
@@ -210,10 +213,6 @@ public class GeneralAgentTaskExecutionService {
 
         // 遍历所有章节并生成内容
         for (int i = 0; i < totalChapters; i++) {
-            // 检查中断状态
-            if (Thread.currentThread().isInterrupted()) {
-                throw new InterruptedException("章节任务被取消");
-            }
 
             GeneralAgentPlanEntity chapter = chapters.get(i);
 
@@ -235,7 +234,7 @@ public class GeneralAgentTaskExecutionService {
                 chapter.setContent(content);
                 generalAgentPlanService.update(chapter);
             } catch (InterruptedException e) {
-                throw e; // 重新抛出中断异常
+                log.error(e.getMessage(), e);
             } catch (Exception e) {
                 log.error("章节生成失败", e);
             }
@@ -248,12 +247,7 @@ public class GeneralAgentTaskExecutionService {
             taskService.updateById(task);
         }
 
-        // 最终检查中断状态
-        if (Thread.currentThread().isInterrupted()) {
-            throw new InterruptedException("章节任务被取消");
-        }
-
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
+        task.setGentContentStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
         taskService.updateById(task);
     }
 
@@ -263,18 +257,19 @@ public class GeneralAgentTaskExecutionService {
      * @param chatRole
      * @return
      */
+    @SneakyThrows
     public List<TreeNodeDto> chatRoleAsync(ChatRoleDto chatRole) {
         log.info("开始处理chatRole异步请求，taskId: {}", chatRole.getTaskId());
 
         Long taskId = chatRole.getTaskId();
-        GeneralAgentTaskEntity longTextTaskEntity = taskService.getById(taskId);
+        GeneralAgentTaskEntity generalAgentTaskEntity = taskService.getById(taskId);
 
         // 构建任务信息
         MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo();
 
         // 处理附件（如果有）
-        if (StringUtil.isNotBlank(longTextTaskEntity.getAttachments())) {
-            List<Long> attachmentIds = Arrays.stream(longTextTaskEntity.getAttachments().split(","))
+        if (StringUtil.isNotBlank(generalAgentTaskEntity.getAttachments())) {
+            List<Long> attachmentIds = Arrays.stream(generalAgentTaskEntity.getAttachments().split(","))
                     .map(Long::parseLong)
                     .toList();
             List<FileAttachmentDto> attachments = cloudStorageConsumer.list(attachmentIds);
@@ -289,31 +284,34 @@ public class GeneralAgentTaskExecutionService {
         taskInfo.setQueryText(chatRole.getMessage());
 
         // 调用角色服务生成内容
-        CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
+        CompletableFuture<WorkflowExecutionDto> futureGenContent = roleService.runRoleAgent(taskInfo);
         log.info("角色服务调用完成，taskId: {}", taskId);
 
-        // 获取模板信息
-        // LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+        WorkflowExecutionDto genContent = futureGenContent.get();
 
-//        // 格式化内容
-//        formatMessageTool.handleChapterMessage(genContent, taskInfo);
-//
-//        // 处理代码内容（如果有）
-//        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
-//            String codeContent = genContent.getCodeContent().get(0).getContent();
-//
-//            // 验证JSON格式
-//            try {
-//                JSONArray.parseArray(codeContent);
-//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-//                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
-//
-//                return nodeDtos ;
-//            } catch (Exception e) {
-//                log.error("JSON解析失败", e);
-//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
-//            }
-//        }
+        // 获取模板信息
+        GeneralAgentTemplateEntity template = generalAgentTemplateService.getById(generalAgentTaskEntity.getSelectedTemplateId());
+        log.debug("获取模板信息完成，template.Name: {}", template.getName());
+
+        // 格式化内容
+        formatMessageTool.handleChapterMessage(genContent, taskInfo);
+
+        // 处理代码内容（如果有）
+        if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+            String codeContent = genContent.getCodeContent().get(0).getContent();
+
+            // 验证JSON格式
+            try {
+                JSONArray.parseArray(codeContent);
+                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
+                log.debug("解析成功，章节节点数: {}", nodeDtos.size());
+
+                return nodeDtos ;
+            } catch (Exception e) {
+                log.error("JSON解析失败", e);
+                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成");
+            }
+        }
         return Collections.emptyList() ;
     }
 
@@ -368,8 +366,10 @@ public class GeneralAgentTaskExecutionService {
             ));
 
             // 执行角色生成
-            CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
+            CompletableFuture<WorkflowExecutionDto> futureGenContent = roleService.runRoleAgent(taskInfo);
             log.info("章节内容生成完成，chapterId: {}", dto.getChapterId());
+
+            futureGenContent.get() ;
 
             // 更新章节内容
             chapterEntity.setContent(taskInfo.getFullContent());
@@ -390,7 +390,7 @@ public class GeneralAgentTaskExecutionService {
     public void dispatchAgent(Long sceneId , Long taskId , PermissionQuery query) {
 
         SceneEntity entity = service.getById(sceneId) ;
-        GeneralAgentSceneEntity longTextSceneEntity = longTextSceneService.getBySceneId(sceneId , query) ;
+        GeneralAgentSceneEntity longTextSceneEntity = generalAgentSceneService.getBySceneId(sceneId , query) ;
 
         ChatContentEditDto dto = new ChatContentEditDto() ;
         dto.setSceneId(sceneId);
@@ -412,45 +412,6 @@ public class GeneralAgentTaskExecutionService {
 
         dto.setChapters(chapterIdsStr);
         generalAgentPlanService.updateChapterEditor(dto, longTextSceneEntity.getId() , taskId);
-    }
-
-    /**
-     * 取消任务执行
-     * @param taskId 任务ID
-     * @return 是否取消成功
-     */
-    public boolean cancelTask(Long taskId) {
-        boolean cancelled = false;
-
-        // 1. 取消主任务
-        Future<?> mainTaskFuture = taskFutures.get(taskId);
-        if (mainTaskFuture != null) {
-            cancelled = mainTaskFuture.cancel(true);
-            taskFutures.remove(taskId);
-            log.info("主任务取消结果: taskId={}, cancelled={}", taskId, cancelled);
-        }
-
-        // 2. 取消章节任务
-        Future<?> chapterTaskFuture = chapterTaskFutures.get(taskId);
-        if (chapterTaskFuture != null) {
-            boolean chapterCancelled = chapterTaskFuture.cancel(true);
-            chapterTaskFutures.remove(taskId);
-            log.info("章节任务取消结果: taskId={}, cancelled={}", taskId, chapterCancelled);
-            cancelled = cancelled || chapterCancelled;
-        }
-
-        // 3. 更新数据库状态
-        if (cancelled) {
-            GeneralAgentTaskEntity task = taskService.getById(taskId);
-            if (task != null) {
-                task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-                task.setChapterStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-                task.setTaskEndTime(new Date());
-                taskService.updateById(task);
-            }
-        }
-
-        return cancelled;
     }
 
     /**
