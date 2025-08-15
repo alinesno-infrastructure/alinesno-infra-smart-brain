@@ -2,7 +2,10 @@
   <div class="app-container">
     <el-row :gutter="20">
        <!--应用数据-->
-      <el-col :span="24" :xs="24">
+      <el-col :span="3" :xs="24">
+        <SceneSider :scenes="supportSceneList" @scene-selected="handleSceneSelected"  />
+      </el-col>
+      <el-col :span="21" :xs="24">
         <el-form :model="queryParams" ref="queryRef" :inline="true" v-show="showSearch" label-width="68px">
 
           <el-form-item label="场景名称" prop="name">
@@ -78,7 +81,7 @@
               <div style="font-size: 15px;font-weight: 500;color: #1d75b0;">
                {{ scope.row.sceneName }}
               </div>
-              <div style="font-size: 13px;color: #a5a5a5;">
+              <div style="font-size: 13px;color: #a5a5a5;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
                 {{ scope.row.sceneDesc }}
               </div>
             </template>
@@ -89,14 +92,18 @@
               {{  getSceneScopeByType(scope.row.sceneScope)?.label }}
             </template>
           </el-table-column> 
-          <el-table-column label="场景类型" align="center" key="sceneType" width="180" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <el-table-column label="场景类型" align="left" key="sceneType" width="220" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
-              <i  :class="getSceneTypeByType(scope.row.sceneType)?.icon" />
-              {{ getSceneTypeByType(scope.row.sceneType)?.sceneName }}
+             
+              <i :class="getSceneTypeByType(scope.row.sceneType)?.icon" />
+              {{ getSceneTypeByType(scope.row.sceneType)?.sceneName }} &nbsp;
+               <el-button type="primary" text bg @click="configScene(scope.row)">
+                配置
+              </el-button>
             </template>
           </el-table-column>
 
-          <el-table-column label="配置" align="center" key="sceneType" width="320" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
+          <el-table-column label="智能体" align="center" key="sceneType" width="320" prop="sceneType" v-if="columns[2].visible" :show-overflow-tooltip="true">
             <template #default="scope">
               <el-button text bg type="warning" @click="openGreetingQuestionPanel(scope.row)">
                 <i class="fa-solid fa-envelope-open-text"></i> &nbsp;开场白
@@ -242,9 +249,25 @@
      <ConfigSceneAgent ref="configSceneAgentRef" />
     </el-dialog>
 
-        <!-- 开场白预置问题 -->
+    <!-- 开场白预置问题 -->
     <el-dialog title="开场白预置问题" v-model="openingPhraseStatusVisible" width="700px">
         <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
+    </el-dialog>
+
+    <!-- 场景配置项 -->
+    <el-dialog :title="sceneConfigPanelTitle" v-model="openingSceneConfigPanelVisible" width="1300px">
+        <!-- 通用场景 -->
+        <GeneratorAgentConfigPanel 
+            ref="generatorAgentConfigPanelRef" 
+            v-if="sceneConfigType === 'generalAgent'" 
+            :initial-selected-templates="selectedConfigData"
+            :sceneData="sceneItemData" />
+        <template #footer>
+          <div class="dialog-footer">
+            <el-button type="primary" size="large" @click="submitSceneConfig">确 定</el-button>
+            <el-button @click="openingSceneConfigPanelVisible = false" size="large">取 消</el-button>
+          </div>
+        </template>
     </el-dialog>
 
   </div>
@@ -261,7 +284,8 @@ import {
   addScene,
   updateSceneAgent,
   updateGreetingQuestion,
-  supportAllScene
+  supportAllScene , 
+  updateSceneConfigData
 } from "@/api/smart/assistant/scene";
 
 import {
@@ -270,8 +294,14 @@ import {
 
 import {nextTick, reactive} from "vue";
 
+import SceneSider from "./sceneSider.vue"
 import ConfigSceneAgent from "./configSceneAgent.vue"
 import OpeningPhraseStatusPanel from './openingPhraseStatusPanel'
+
+// 场景配置面板
+import GeneratorAgentConfigPanel from './config/generalAgentConfigPanel.vue'
+
+const generatorAgentConfigPanelRef = ref(null)
 
 const router = useRouter();
 const {proxy} = getCurrentInstance();
@@ -281,6 +311,14 @@ const configSceneAgentRef = ref(null)
 // 开场白预置问题
 const openingPhraseStatusVisible = ref(false)
 const openingPhraseStatusPanelRef  = ref(null)
+
+// 场景配置项
+const sceneConfigPanelTitle = ref(null)
+const openingSceneConfigPanelVisible = ref(false)
+const sceneConfigType = ref(null)
+const sceneConfigTypeSceneId = ref(null)
+const sceneItemData = ref(null)
+const selectedConfigData = ref(null)
 
 const SceneList = ref([]);
 const open = ref(false);
@@ -593,10 +631,47 @@ const handleGetSceneScope = () => {
   })
 }
 
-getList();
-handleListAllRole();
-handleSupportScene();
-handleGetSceneScope();
+// 场景配置
+const configScene = (row) => {
+  openingSceneConfigPanelVisible.value = true ;
+  sceneConfigPanelTitle.value = "配置 " + row.sceneName ;
+  sceneConfigType.value = row.sceneType ;
+  sceneConfigTypeSceneId.value = row.id ;
+  selectedConfigData.value = JSON.parse(row.configData)  ;
+}
+
+const handleSceneSelected = (sceneId) => {
+  console.log('选中的场景ID:', sceneId);
+  // 在这里处理选中的场景ID
+  queryParams.value.sceneType = sceneId;
+  getList();
+};
+
+// 提交场景配置
+const submitSceneConfig = () => {
+  let sceneConfigData = null ; 
+
+  if(sceneConfigType.value === 'generalAgent') {
+    sceneConfigData = generatorAgentConfigPanelRef.value.getConfigData() ; 
+  }
+
+  console.log('sceneConfigType = ' + sceneConfigType.value + ' ,  sceneConfigData = ' + sceneConfigData)
+
+  updateSceneConfigData({sceneId: sceneConfigTypeSceneId.value , config: sceneConfigData}).then(res => {
+    proxy.$modal.msgSuccess("更新成功");
+    openingSceneConfigPanelVisible.value = false ; 
+    getList();
+  })
+}
+
+onMounted(async () => {
+  await getList();
+  await handleListAllRole();
+  await handleSupportScene();
+  await handleGetSceneScope();
+})
+
+
 
 </script>
 
