@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.controller;
 
 import cn.hutool.core.util.IdUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -10,13 +11,17 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.ConfigDto;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools.GeneralRobustExcelParser;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTemplateGroupService;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTemplateEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentTemplateGroupEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTemplateGroupEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -24,6 +29,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +56,7 @@ public class GeneralAgentTemplateController extends BaseController<GeneralAgentT
     private IGeneralAgentTemplateService service;
 
     @Autowired
-    private ILongTextTemplateGroupService longTextTemplateGroupService;
+    private IGeneralAgentTemplateGroupService generalAgentTemplateGroupService;
 
     @Value("${alinesno.file.local.path:${java.io.tmpdir}}")
     private String localPath  ;
@@ -69,23 +75,6 @@ public class GeneralAgentTemplateController extends BaseController<GeneralAgentT
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
         return this.toPage(model, this.getFeign(), page);
-    }
-
-    /**
-     * 获取所有文章分类
-     *
-     * @return
-     */
-    @DataPermissionQuery
-    @GetMapping("/getAllLongTextTemplate")
-    public AjaxResult getAllLongTextTemplate(PermissionQuery query) {
-        LambdaQueryWrapper<LongTextTemplateGroupEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.setEntityClass(LongTextTemplateGroupEntity.class);
-        query.toWrapper(queryWrapper);
-        queryWrapper.eq(LongTextTemplateGroupEntity::getHasDelete, 0);
-
-        List<LongTextTemplateGroupEntity> allLongTextTemplateGroup = longTextTemplateGroupService.list(queryWrapper);
-        return AjaxResult.success(allLongTextTemplateGroup) ;
     }
 
     /**
@@ -109,11 +98,27 @@ public class GeneralAgentTemplateController extends BaseController<GeneralAgentT
         return AjaxResult.success(service.getTemplateByType(query , typeCode));
     }
 
+    /**
+     * 保存模板
+     * @param entity
+     * @return
+     * @throws Exception
+     */
     @DataPermissionSave
     @ResponseBody
-    @PostMapping("/saveLongTextTemplate")
+    @PostMapping("/saveTemplate")
     public AjaxResult saveLongTextTemplate(@RequestBody GeneralAgentTemplateEntity entity) throws Exception {
         service.save(entity);
+        return this.ok();
+    }
+
+    /**
+     * 更新模板
+     */
+    @DataPermissionSave
+    @PutMapping("/updateTemplate")
+    public AjaxResult updateTemplate(@RequestBody GeneralAgentTemplateEntity entity) {
+        service.updateById(entity);
         return this.ok();
     }
 
@@ -144,6 +149,23 @@ public class GeneralAgentTemplateController extends BaseController<GeneralAgentT
         FileUtils.forceDeleteOnExit(targetFile);
 
         return AjaxResult.success("操作成功." , failResult);
+    }
+
+    @DataPermissionSave
+    @PostMapping("/updateTemplateConfig")
+    public AjaxResult handleConfig(@Valid @RequestBody ConfigDto configDto) {
+
+        log.debug("configDto = {}" , configDto);
+
+        Long templateId = configDto.getTemplateId();
+        GeneralAgentTemplateEntity entity = service.getById(templateId);
+
+        entity.setConfig(JSONObject.toJSONString(configDto.getConfig()));
+        entity.setResultConfig(JSONObject.toJSONString(configDto.getResultConfig()));
+
+        service.updateById(entity);
+
+        return AjaxResult.success("配置接收成功");
     }
 
     @Override
