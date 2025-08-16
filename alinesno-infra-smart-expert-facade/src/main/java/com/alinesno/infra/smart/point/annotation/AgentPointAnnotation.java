@@ -30,4 +30,11 @@ public @interface AgentPointAnnotation {
      * @return
      */
     String paramName() default "roleId";
+
+    /**
+     *（每秒允许的请求数）
+     * @return
+     */
+    double rateLimit() default -1;
+
 }
