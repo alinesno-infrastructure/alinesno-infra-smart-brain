@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
+import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
@@ -63,6 +64,9 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
                     node.setChapterEditorAvatar(role.getRoleAvatar());
                     node.setChapterEditor(roleId);
                 }
+
+                // 设置是否有内容
+                node.setHasContent(chapter.getContent() != null && !chapter.getContent().isEmpty());
 
                 // 递归查找子节点
                 node.setChildren(new ArrayList<>());
@@ -122,7 +126,7 @@ public class GeneralAgentPlanServiceImpl extends IBaseServiceImpl<GeneralAgentPl
         // 更新taskGenStatus
         IGeneralAgentTaskService taskService = SpringUtils.getBean(IGeneralAgentTaskService.class);
         GeneralAgentTaskEntity task = taskService.getById(taskId);
-        task.setGenStatus(1);
+        task.setGenContentStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
         taskService.updateById(task);
     }
 
