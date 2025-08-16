@@ -57,6 +57,7 @@ import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -194,8 +195,11 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
             dto.setBusinessExecuteEngineer(generalAgentSceneEntity.getBusinessExecuteEngineer());
             dto.setDataViewerEngineer(generalAgentSceneEntity.getDataViewerEngineer());
 
-            dto.setGenStatus(taskEntity.getGenStatus());
             dto.setPromptContent(taskEntity.getTaskName());
+
+            dto.setGenPlanStatus(taskEntity.getGenPlanStatus());
+            dto.setGentContentStatus(taskEntity.getGenContentStatus());
+            dto.setGenResultStatus(taskEntity.getGenResultStatus());
 
             dto.setBusinessProcessorEngineers(RoleUtils.getEditors(roleService , generalAgentSceneEntity.getBusinessProcessorEngineer())); // 查询出当前的数据分析编辑人员
             dto.setDataViewerEngineers(RoleUtils.getEditors(roleService, generalAgentSceneEntity.getDataViewerEngineer())); // 查询出当前的内容编辑人员
@@ -406,52 +410,91 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
 
     /**
      * 生成章节内容
+     * 使用DeferredResult实现异步处理同步返回，超时时间设置为300秒
      */
     @DataPermissionQuery
     @SneakyThrows
     @PostMapping("/chatRoleSync")
-    public AjaxResult chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto , PermissionQuery query) {
+    public DeferredResult<AjaxResult> chatRoleSync(@RequestBody @Validated ChapterGenFormDto dto, PermissionQuery query) {
+        log.debug("接收到的请求参数 dto = {}", dto);
 
-        log.debug("dto = {}", dto);
+        // 创建DeferredResult对象，设置超时时间为300000毫秒（300秒）
+        // 当异步处理完成时通过setResult方法返回结果
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(300000L);
 
-        long chapterId = dto.getChapterId() ;
-        GeneralAgentPlanEntity chapterEntity = generalAgentPlanService.getById(chapterId) ;
-        Long roleId = chapterEntity.getBusinessExecutorEngineerId() ;
+        // 根据章节ID获取章节实体信息
+        long chapterId = dto.getChapterId();
+        GeneralAgentPlanEntity chapterEntity = generalAgentPlanService.getById(chapterId);
+        // 获取角色ID（业务执行工程师ID）
+        Long roleId = chapterEntity.getBusinessExecutorEngineerId();
 
-        GeneralAgentSceneEntity longTextSceneEntity = service.getBySceneId(dto.getSceneId() , query) ;
-
-        if(roleId != null){
-            MessageTaskInfo taskInfo = new MessageTaskInfo() ;
-
-            GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(dto.getTaskId()) ;
-            handleAttachment(taskEntity, taskInfo);
-
-            taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-            taskInfo.setRoleId(roleId);
-            taskInfo.setChannelId(dto.getSceneId());
-            taskInfo.setSceneId(dto.getSceneId());
-
-            String allChapterContent = generalAgentPlanService.getAllChapterContent(dto.getSceneId()) ;
-            String chapterPromptContent = longTextSceneEntity.getPromptContent() ;
-
-            taskInfo.setText(FormatMessageTool.getChapterPrompt(
-                    allChapterContent ,
-                    dto ,
-                    chapterPromptContent ,
-                    taskInfo
-            )) ;
-
-            CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-            log.debug("chatRole = {}" , genContent);
-
-            // 更新章节内容
-            chapterEntity.setContent(taskInfo.getFullContent());
-            generalAgentPlanService.update(chapterEntity);
-
-            return AjaxResult.success("生成成功",chapterEntity.getContent()) ;
+        // 如果未指定角色ID，直接返回未指定编辑人员的提示
+        if (roleId == null) {
+            deferredResult.setResult(AjaxResult.success("操作成功", "此章节未指定编辑人员"));
+            return deferredResult;
         }
 
-        return AjaxResult.success("操作成功" , "此章节未指定编辑人员");
+        // 根据场景ID获取场景实体信息
+        GeneralAgentSceneEntity longTextSceneEntity = service.getBySceneId(dto.getSceneId(), query);
+
+        // 准备任务信息
+        MessageTaskInfo taskInfo = new MessageTaskInfo();
+        // 获取任务实体并处理附件
+        GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(dto.getTaskId());
+        handleAttachment(taskEntity, taskInfo);
+
+        // 设置任务相关参数
+        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
+        taskInfo.setRoleId(roleId);
+        taskInfo.setChannelId(dto.getSceneId());
+        taskInfo.setSceneId(dto.getSceneId());
+
+        // 获取所有章节内容和场景提示内容
+        String allChapterContent = generalAgentPlanService.getAllChapterContent(dto.getSceneId());
+        String chapterPromptContent = longTextSceneEntity.getPromptContent();
+
+        // 格式化生成章节提示内容
+        taskInfo.setText(FormatMessageTool.getChapterPrompt(
+                allChapterContent,
+                dto,
+                chapterPromptContent,
+                taskInfo
+        ));
+
+        // 异步调用角色服务生成内容
+        log.info("开始异步生成章节内容...");
+        CompletableFuture<WorkflowExecutionDto> genContent = roleService.runRoleAgent(taskInfo);
+
+        // 设置异步完成后的回调处理
+        genContent.whenComplete((result, ex) -> {
+            if (ex != null) {
+                // 处理异常情况
+                log.error("生成章节内容过程中发生异常", ex);
+                deferredResult.setResult(AjaxResult.error("生成章节内容时出错：" + ex.getMessage()));
+            } else {
+                try {
+                    // 更新章节内容
+                    log.info("章节内容生成成功，开始更新章节...");
+                    chapterEntity.setContent(taskInfo.getFullContent());
+                    generalAgentPlanService.update(chapterEntity);
+                    // 设置成功返回结果
+                    deferredResult.setResult(AjaxResult.success("生成成功", chapterEntity.getContent()));
+                    log.info("章节更新完成");
+                } catch (Exception e) {
+                    log.error("更新章节内容失败", e);
+                    deferredResult.setResult(AjaxResult.error("更新章节内容失败"));
+                }
+            }
+        });
+
+        // 设置超时回调处理
+        deferredResult.onTimeout(() -> {
+            log.warn("生成章节内容操作超时（300秒）");
+            deferredResult.setResult(AjaxResult.error("生成章节内容超时，请稍后重试"));
+        });
+
+        // 立即返回DeferredResult对象，异步处理将继续执行
+        return deferredResult;
     }
 
     /**
