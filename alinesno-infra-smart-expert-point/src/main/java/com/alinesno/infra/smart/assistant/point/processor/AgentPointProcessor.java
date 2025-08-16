@@ -1,38 +1,52 @@
 package com.alinesno.infra.smart.assistant.point.processor;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alinesno.infra.common.core.cache.RedisUtils;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.point.enums.ParamSource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.annotation.AnnotationUtils;
-import org.springframework.web.method.HandlerMethod;
+import org.springframework.data.redis.core.RedisTemplate;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.lang.reflect.Method;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class AgentPointProcessor implements PointAnnotationProcessor {
+public class AgentPointProcessor extends PointProcessorParent {
 
     private final AgentPointAnnotation annotation;
     private final Method method;
+    private double currentRateLimit; // 当前限流值
+    private int pointsToDeduct;     // 需要扣除的积分
 
-    public AgentPointProcessor(Method method) {
+    public AgentPointProcessor(Method method , AgentPointAnnotation annotation) {
         this.method = method;
-        this.annotation = AnnotationUtils.findAnnotation(method, AgentPointAnnotation.class);
+        this.currentRateLimit = 1 ; // 可从配置获取
+        this.pointsToDeduct = 1; // 默认扣除1积分，可从配置获取
+        this.annotation = annotation;
+    }
+
+
+    public boolean checkRateLimit(Long userId, Long orgId) {
+        return super.checkRateLimit(orgId, userId , currentRateLimit);
+    }
+
+    public void deductPoints(Long userId, Long orgId) {
+        super.recordPointDeduction(orgId, userId, pointsToDeduct);
     }
 
     @Override
-    public void process(HttpServletRequest request, Long userId) throws Exception {
-        if (annotation == null) {
-            return;
+    public void process(HttpServletRequest request, Long userId, Long orgId) {
+        // 保持空实现，由aspect直接调用checkRateLimit和deductPoints
+
+        String key = RATE_LIMIT_PREFIX + "org:" + orgId;
+
+        // 删除前建议先检查是否存在
+        if (RedisUtils.isExistsObject(key)) {
+            RedisUtils.deleteObject(key);
         }
-
-        String roleId = getRoleIdFromRequest(request);
-        log.debug("处理AgentPoint注解 - userId: {}, roleId: {}", userId, roleId);
-
-        // 这里可以继续处理AgentPoint相关的积分逻辑
     }
 
     private String getRoleIdFromRequest(HttpServletRequest request) {
