@@ -19,6 +19,12 @@
 
 	<dependencies>
 
+		<dependency>
+			<groupId>com.alinesno.infra.common</groupId>
+			<artifactId>alinesno-infra-common-web-api-login</artifactId>
+			<version>${alinesno.infra.common.version}</version>
+		</dependency>
+
 		<!-- 引入forest_starter_start -->
 		<dependency>
 			<groupId>com.dtflys.forest</groupId>
