@@ -136,7 +136,7 @@ public class GeneralAgentTaskExecutionService {
             executeChapterTask(taskId, query, task);
 
             // TODO 执行生成内容结果
-            // executeResultTask(taskId, query) ;
+             executeResultTask(taskId, query) ;
 
         } catch (Exception e) {
             log.error("任务执行失败", e);
@@ -201,7 +201,7 @@ public class GeneralAgentTaskExecutionService {
     public void executeChapterTask(Long taskId, PermissionQuery query, GeneralAgentTaskEntity task) {
 
         // 更新任务状态到章节生成中
-        task.setGentContentStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        task.setGenContentStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
         taskService.updateById(task);
 
         // 获取任务的所有章节
@@ -227,12 +227,11 @@ public class GeneralAgentTaskExecutionService {
 
             String processMsg = (i + 1) + ": 章节:" + genFormDto.getChapterTitle() + "任务生成中，还有【" + (chapters.size() - i) + "】篇";
             task.setCurrentChapterLabel(processMsg);
+            task.setCurrentChapterId(chapter.getId());
 
             // 调用章节生成逻辑
             try {
-                String content = chatRoleSyncAsync(genFormDto, query).get();
-                chapter.setContent(content);
-                generalAgentPlanService.update(chapter);
+                chatRoleSyncAsync(genFormDto, query).get();
             } catch (InterruptedException e) {
                 log.error(e.getMessage(), e);
             } catch (Exception e) {
@@ -247,7 +246,7 @@ public class GeneralAgentTaskExecutionService {
             taskService.updateById(task);
         }
 
-        task.setGentContentStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
+        task.setGenContentStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
         taskService.updateById(task);
     }
 
