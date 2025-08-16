@@ -67,7 +67,9 @@
                                             {{ form.title?form.title:'未生成章节.' }}
                                         </div> 
                                         <el-form-item label="章节内容" class="chapter-content">
-                                            <DataAnalysisDisplay ref="dataAnalysisDisplayRef" />
+                                            <DataAnalysisDisplay
+                                                v-model:articleData="articleData"
+                                                ref="dataAnalysisDisplayRef" />
                                         </el-form-item>
                                     </el-form>
 
@@ -118,6 +120,7 @@
                     <!-- 运行抽屉 -->
                     <div class="aip-flow-drawer">
                         <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;"
+                            :close-on-press-escape="false"
                             title="预览与调试" :with-header="true">
                             <div style="margin-top: 0px;">
                                 <RoleChatPanel ref="roleChatPanelRef" :showDebugRunDialog="showDebugRunDialog" />
@@ -145,6 +148,14 @@
 
                 </div>
 
+        <!-- AI生成状态 -->
+        <AIGeneratingStatus 
+            ref="generatingStatusRef" 
+            :close-enable="false"
+            :back-to-path="'/scene/longText/longTextManager'"
+            :route-params="{ sceneId: sceneId }" 
+        />
+
             </GeneralAgentContainer>
 </template>
 
@@ -158,12 +169,14 @@ import {
     chatRoleSync,
     genDataReport,
     getScene,
+    getChapterContent,
     getGeneralAgentScene,
     getPreviewDocx,
     dispatchAgent,
     getPreviewUrl,
 } from '@/api/base/im/scene/generalAgent'
 
+import AIGeneratingStatus from '@/components/GeneratingStatus/index.vue'
 import GeneralAgentContainer from './generalAgentContainer'
 import FunctionList from './functionList'
 import GeneratorAgentOutlineEditor from './agentOutlineEditor.vue'
@@ -192,6 +205,7 @@ const currentUser = ref(null);
 const editorRoleId = ref(null);
 
 const totalNodes = ref(0);
+const generatingStatusRef = ref(null)
 
 const showPdfDialog = ref(false);
 const pdfTitle = ref('')
@@ -210,6 +224,10 @@ const person = ref({
     responsibilities: '主要负责与客户进行沟通，解答客户关于产品的各种疑问，提供专业的咨询服务，以帮助客户更好地理解和使用产',
     email: 'zhangsan@example.com',
 });
+
+const articleData = ref({
+    content: "" , 
+})
 
 const form = reactive({
     id: 0,
@@ -244,16 +262,11 @@ const genSingleChapterContent = async () => {
     }
 
     // 开始生成
-    streamLoading.value = ElLoading.service({
-        lock: true,
-        background: 'rgba(255, 255, 255, 0.2)',
-        customClass: 'custom-loading'
-    });
-
+    generatingStatusRef.value?.loading();
     showDebugRunDialog.value = true;
 
     let text = '正在重新生成【' + form.title + '】内容，请稍等.';
-    streamLoading.value.setText(text)
+    generatingStatusRef.value?.setText(text)
 
     let formData = {
         sceneId: sceneId.value,
@@ -267,13 +280,19 @@ const genSingleChapterContent = async () => {
     nextTick(() => {
         roleChatPanelRef.value.openChatBox(editorRoleId.value, formData.chapterTitle);
     })
+ 
+    try{
+        const result = await chatRoleSync(formData);  
+        articleData.value.content = result.data == null ? '' : result.data;
 
-    const result = await chatRoleSync(formData);
-    // chapterEditorRef.value.setData(result.data) ;
-    dataAnalysisDisplayRef.value.setPlanItemContentData(result.data);
+        generatingStatusRef.value?.close();
+        showDebugRunDialog.value = false;
 
-    streamLoading.value.close();
-    showDebugRunDialog.value = false;
+    }catch(e){
+        console.log('e = ' + e)
+        generatingStatusRef.value.close();
+        showDebugRunDialog.value = false;
+    }
 
 };
 
@@ -412,9 +431,16 @@ const findNodeById = (nodes, id) => {
 
 /** 编辑章节内容 */
 const editContent = (node, data) => {
-    // let chapterId = data.id ;
+    console.log('node = ' + JSON.stringify(node.data)) 
 
+    let chapterId = data.id; 
     editorRoleId.value = node.data.chapterEditor;
+
+    if(!editorRoleId.value){
+        proxy.$modal.msgError("章节未分配编辑人员.");
+        return ; 
+    }
+
     console.log('editorRoleId = ' + editorRoleId.value)
 
     form.id = data.id;
@@ -422,10 +448,10 @@ const editContent = (node, data) => {
     form.chapterEditor = node.chapterEditor;
     form.description = node.data.description;
 
-    nextTick(() => {
-        dataAnalysisDisplayRef.value.setData(form);
+    getChapterContent(chapterId).then(res => { 
+        articleData.value.content = res.data == null ? '' : res.data;
+        loading.value = false;
     })
-    
 
 }
 
@@ -489,6 +515,9 @@ const downloadWordDocument = () => {
 
 // 关闭对话窗口
 const closeShowDebugRunDialog = () => {
+    if(generatingStatusRef.value?.isLoading()){
+        return ; 
+    }
     showDebugRunDialog.value = false;
 }
 
