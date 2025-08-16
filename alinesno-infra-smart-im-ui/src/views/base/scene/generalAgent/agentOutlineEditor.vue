@@ -63,7 +63,7 @@
                             <div class="custom-tree-node" style="height:auto;">
                                 <div style="display: flex;flex-direction: column;">
                                     <div style="font-size: 16px;font-weight: bold;">
-                                        {{ node.label }}
+                                        {{ node.label }} <i v-if="!data.hasContent" class="fa-solid fa-triangle-exclamation"></i>
                                     </div>
                                     <div class="description">
                                         <span style="color: #777;">{{ data.description }}</span>
@@ -489,11 +489,9 @@ const getOutlineJsonSingle = () => {
     })
 }
 
-const closeStreamDialog = () => {
-  console.log('child method. ' + streamLoading.value)
-  if(streamLoading.value){
-    streamLoading.value.close()
-  }
+
+const closeStreamDialog = () => { 
+  generatingStatusRef.value?.close()
   emit('closeShowDebugRunDialog')
 }
 
@@ -503,13 +501,15 @@ const handleGetTask = async () => {
     await getGeneralAgentTask(taskId.value).then(res => {
       taskInfo.value = res.data
       
-      const taskStatus = taskInfo.value.taskStatus
-      const chapterStatus = taskInfo.value.chapterStatus
+      const genPlanStatus = taskInfo.value.genPlanStatus
+      const genContentStatus = taskInfo.value.genContentStatus
+      const genResultStatus = taskInfo.value.genResultStatus
+
       const currentChapterId = taskInfo.value.currentChapterId
       const currentChapterLabel = taskInfo.value.currentChapterLabel
       
       // 检查是否满足停止条件（大纲和章节都完成）
-      if (taskStatus === '1' && chapterStatus === '1') {
+      if (genPlanStatus === 'completed' && genContentStatus === 'completed' && genResultStatus === 'completed') {
         // 关闭dialog
         closeStreamDialog();
 
@@ -518,35 +518,35 @@ const handleGetTask = async () => {
         console.log("任务已完成，停止轮询")
         return
       }
-      
-      // 原有逻辑保持不变
-      if (taskStatus == 'running' || taskStatus == null) {
+
+      if (genPlanStatus == 'not_run') {  // 没有生成规划
         submitTask(taskId.value, channelStreamId.value).then(res => {
           genStreamContent()
         })
-      } else if (taskStatus == 2) {
+      } else if(genPlanStatus == 'running') {
         genStreamContent()
-      } else if (taskStatus == 1) {  // 章节生成完成
+      } else if(genPlanStatus == 'completed') {  // 内容生成完成
 
-        if(outline.value.length == 0 ){
-           getScene(currentSceneId.value , taskId.value).then(res => {
-                outline.value = res.data.chapterTree
-           })
+       if(outline.value.length == 0 ){
+           handleGetScene();
         }
 
-        person.value = currentSceneInfo.value.businessExecuteEngineers[0] //contentEditors[0]
-        
-        if (chapterStatus == 0 || chapterStatus == null) {
-          submitChapterTask(taskId.value, channelStreamId.value).then(res => {
-            genStreamContent("开始生成章节内容.")
-          })
-        } else if (chapterStatus == 2) {
-          openCurrentChapter(currentChapterId)
-          genStreamContent(currentChapterLabel)
-        } else if (chapterStatus == 1) {
-          // 章节生成完成
+        person.value = currentSceneInfo.value.businessExecuteEngineers[0] 
+
+        openCurrentChapter(currentChapterId)
+         
+        if(genContentStatus == 'running') { 
+            genStreamContent(currentChapterLabel)
+        } else if(genPlanStatus == 'completed') {
+
+            if(genResultStatus == 'running') {
+                genStreamContent()
+            } else if(genPlanStatus == 'completed') {
+            }
         }
+
       }
+ 
 
     })
   } catch (error) {
