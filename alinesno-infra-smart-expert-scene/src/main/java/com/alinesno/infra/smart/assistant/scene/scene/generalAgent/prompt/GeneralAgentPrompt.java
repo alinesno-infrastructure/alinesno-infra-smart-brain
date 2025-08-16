@@ -16,5 +16,7 @@ public class GeneralAgentPrompt {
      * @return
      */
     public static String getResultPrompt(MessageTaskInfo taskInfo, GeneralAgentTemplateEntity template) {
+
+        return null ;
     }
 }
