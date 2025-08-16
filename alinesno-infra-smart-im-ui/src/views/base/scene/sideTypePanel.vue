@@ -20,7 +20,10 @@
                 @click="handleClick(item.code)">
                 <i :class="item.icon"></i> {{ item.sceneName }} 
 
+                <!--
                 <el-check-tag type="info" v-if="item.isMature == '0'" size="small" effect="dark">开发中</el-check-tag>
+                --> 
+                
             </div>
         </div>
         <div class="empty-list" v-else>
