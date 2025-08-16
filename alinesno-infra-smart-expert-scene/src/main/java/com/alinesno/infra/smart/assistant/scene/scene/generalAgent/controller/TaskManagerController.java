@@ -90,7 +90,10 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
         taskEntity.setGeneralAgentSceneId(sceneEntity.getId());
         taskEntity.setTaskStartTime(new Date());
         taskEntity.setSelectedTemplateId(dto.getSelectedTemplateId());
-        taskEntity.setGenStatus(0);
+
+        taskEntity.setGenPlanStatus(TaskStatusEnum.NOT_RUN.getCode());
+        taskEntity.setGenContentStatus(TaskStatusEnum.NOT_RUN.getCode());
+        taskEntity.setGenResultStatus(TaskStatusEnum.NOT_RUN.getCode());
 
         if(dto.getAttachments() != null){
             String attachments = dto.getAttachments().stream().map(String::valueOf).collect(Collectors.joining(",")) ;
@@ -120,18 +123,21 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
     @DataPermissionQuery
     @GetMapping("/submitTask")
     public AjaxResult submitTask(@RequestParam Long taskId, @RequestParam Long channelStreamId ,  PermissionQuery query) {
+
         GeneralAgentTaskEntity task = service.getById(taskId);
         if (task == null) {
             return AjaxResult.error("任务不存在");
         }
 
-        // 检查任务状态是否可执行
-        if (task.getTaskStatus() != null && !(TaskStatusEnum.NOT_RUN.getCode().equals(task.getTaskStatus()))) {
-            return AjaxResult.error("任务状态不允许执行");
+        if(TaskStatusEnum.RUNNING.getCode().equals(task.getGenPlanStatus()) ||
+                TaskStatusEnum.RUNNING.getCode().equals(task.getGenContentStatus()) ||
+                TaskStatusEnum.RUNNING.getCode().equals(task.getGenResultStatus())
+        ){
+            return AjaxResult.error("任务正在执行中");
         }
 
         // 更新任务状态为运行中
-        task.setTaskStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        task.setGenPlanStatus(TaskStatusEnum.RUNNING.getCode());
         task.setTaskStartTime(new Date());
         task.setChannelStreamId(String.valueOf(channelStreamId));
 
@@ -154,13 +160,8 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
             return AjaxResult.error("任务不存在");
         }
 
-        // 检查任务状态是否可执行
-        if (task.getChapterStatus() != null && TaskStatusEnum.RUN_COMPLETED.getCode().equals(task.getChapterStatus())) {
-            return AjaxResult.error("章节任务已生成完成.");
-        }
-
         // 更新任务状态为运行中
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
+        task.setGenContentStatus(String.valueOf(TaskStatusEnum.RUNNING.getCode()));
         task.setTaskStartTime(new Date());
 
         service.updateById(task);
@@ -188,7 +189,11 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
         // 返回任务状态和进度信息
         TaskStatusDto statusDto = new TaskStatusDto();
         statusDto.setTaskId(taskId);
-        statusDto.setStatus(task.getTaskStatus());
+
+        statusDto.setGenPlanStatus(TaskStatusEnum.NOT_RUN.getCode());
+        statusDto.setGentContentStatus(TaskStatusEnum.NOT_RUN.getCode());
+        statusDto.setGenResultStatus(TaskStatusEnum.NOT_RUN.getCode());
+
         statusDto.setProgress(taskExecutionService.getTaskProgress(taskId));
 
         return AjaxResult.success(statusDto);
@@ -237,18 +242,18 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
      * 通过id更新任务状态 updateTaskStatus
      * @return
      */
-    @GetMapping("/updateTaskStatus")
-    public AjaxResult updateTaskStatus(@RequestParam Long taskId){
-
-        GeneralAgentTaskEntity task = service.getById(taskId) ;
-
-        task.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
-        task.setChapterStatus(String.valueOf(TaskStatusEnum.NOT_RUN.getCode()));
-
-        service.updateById(task) ;
-
-        return AjaxResult.success("更新成功");
-    }
+//    @GetMapping("/updateTaskStatus")
+//    public AjaxResult updateTaskStatus(@RequestParam Long taskId){
+//
+//        GeneralAgentTaskEntity task = service.getById(taskId) ;
+//
+//        task.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
+//        task.setChapterStatus(String.valueOf(TaskStatusEnum.NOT_RUN.getCode()));
+//
+//        service.updateById(task) ;
+//
+//        return AjaxResult.success("更新成功");
+//    }
 
     @Override
     public IGeneralAgentTaskService getFeign() {
