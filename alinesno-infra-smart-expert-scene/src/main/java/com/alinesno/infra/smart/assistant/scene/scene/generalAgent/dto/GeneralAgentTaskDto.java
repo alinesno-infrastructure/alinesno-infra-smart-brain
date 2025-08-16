@@ -3,6 +3,9 @@ package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
+import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -63,15 +66,24 @@ public class GeneralAgentTaskDto extends SceneDto {
     private List<IndustryRoleDto> businessExecuteEngineers;
 
     /**
-     * 生成状态
-     * 表示场景的生成状态，用于跟踪场景的创建或更新过程
-     */
-    private Integer genStatus;
-
-    /**
      * 章节树节点信息
      * 存储章节的树状结构信息，每个节点信息是一个TreeNodeDto对象
      */
     private List<TreeNodeDto> chapterTree = new ArrayList<>();
+
+    /**
+     * 内容生成状态
+     */
+    private String gentContentStatus ;
+
+    /**
+     * 计划生成状态
+     */
+    private String genPlanStatus;
+
+    /**
+     * 结果生成状态
+     */
+    private String genResultStatus ;
 
 }
