@@ -448,7 +448,7 @@ export const constantRoutes = [
         component: () => import('@/views/base/store/index'),
         name: '/store',
         meta: { title: '智能体商店', icon: 'dashboard', affix: true }
-      },
+      }, 
 
       ...screenRoutes ,
 
