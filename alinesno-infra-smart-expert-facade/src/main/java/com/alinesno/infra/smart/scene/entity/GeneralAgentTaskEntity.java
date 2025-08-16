@@ -75,7 +75,7 @@ public class GeneralAgentTaskEntity extends InfraBaseEntity {
     // --->>>>>>>>>>>> 任务状态_start ---->>>>>>>>>>>>
     @TableField
     @Column(name = "gen_content_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "生成内容状态")
-    private String gentContentStatus ;
+    private String genContentStatus ;
 
     @TableField
     @Column(name = "gen_plan_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "生成规划状态")
