@@ -1,13 +1,5 @@
 <template>
-  <div class="exam-pagercontainer">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
-      <el-aside width="80px" class="exam-pager-aside">
-        <FunctionList />
-      </el-aside>
-
-      <el-main class="exam-pager-main">
+  <DocumentReaderContainer>
         <el-scrollbar style="height:calc(100vh - 50px)">
           <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
 
@@ -87,9 +79,7 @@
 
           </div>
         </el-scrollbar>
-      </el-main>
-    </el-container>
-  </div>
+      </DocumentReaderContainer> 
 </template>
 
 <script setup>
@@ -104,6 +94,7 @@ import {
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
+import DocumentReaderContainer from './documentReaderContainer'
 
 const router = useRouter();
 const route = useRoute();
