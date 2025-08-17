@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.point.annotation;
 
+import com.alinesno.infra.smart.point.enums.ParamSource;
+
 import java.lang.annotation.*;
 
 /**
@@ -9,5 +11,24 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface ScenePointAnnotation {
-    String sceneCode(); // 场景编号
+
+    /**
+     * 积分场景编号
+     * @return
+     */
+    String sceneCode();
+
+    /**
+     * roleId参数获取形式(params从url中获取/body则从对象里面获取)、默认名称为roleId
+     *
+     * @return
+     */
+    ParamSource paramType() default ParamSource.PARAMS;
+
+    /**
+     * 获取参数名称
+     * @return
+     */
+    String paramName() default "roleId";
+
 }
