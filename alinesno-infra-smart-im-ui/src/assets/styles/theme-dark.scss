@@ -1167,4 +1167,65 @@ html.dark {
       }
     }
   }
+
+  .pay-container { 
+    .pay-modal {
+      background-color: $dark-bg-color; 
+    }
+
+    .pay-header {
+      border-bottom-color: $dark-border-color;
+      
+      h3 {
+        color: $dark-text-color;
+      }
+
+      .close-btn {
+        color: rgba($dark-text-color, 0.7);
+        
+        &:hover {
+          color: $dark-text-color;
+        }
+      }
+    }
+
+    .plan-info {
+      h4, .price {
+        color: $dark-text-color;
+      }
+
+      .features {
+        color: rgba($dark-text-color, 0.8);
+      }
+
+      .more-info {
+        color: lighten(#1890ff, 10%);
+      }
+    }
+
+    .qr-code-placeholder {
+      .qr-code {
+        background-color: lighten($dark-bg-panel, 5%);
+        border-color: $dark-border-color;
+        color: rgba($dark-text-color, 0.5);
+      }
+
+      p {
+        color: rgba($dark-text-color, 0.7);
+      }
+    }
+
+    .payment-amount {
+      background-color: lighten($dark-bg-panel, 3%);
+      
+      span {
+        color: $dark-text-color;
+      }
+    }
+
+    .pay-footer {
+      border-top-color: $dark-border-color;
+      color: rgba($dark-text-color, 0.6);
+    } 
+  }
 }
