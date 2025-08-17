@@ -98,8 +98,8 @@ import SnowflakeId from "snowflake-id";
 
 import {
   chatEditorRole,
-  generateImages
-} from '@/api/base/im/scene/longTextTask';
+  // generateImages
+} from '@/api/base/im/scene/generalAgentTask';
 
 // 定义组件可能触发的事件
 const emit = defineEmits([
