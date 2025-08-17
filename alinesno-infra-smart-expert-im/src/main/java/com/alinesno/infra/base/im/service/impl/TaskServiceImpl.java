@@ -1,5 +1,6 @@
 package com.alinesno.infra.base.im.service.impl;
 
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
@@ -8,6 +9,7 @@ import com.alinesno.infra.smart.im.enums.TaskStatusEnums;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.im.service.ITaskService;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import com.alinesno.infra.smart.utils.FilterWordUtils;
 import lombok.SneakyThrows;
@@ -41,13 +43,28 @@ public class TaskServiceImpl implements ITaskService {
     @Autowired
     private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     @Override
     public void addTask(MessageTaskInfo taskInfo) {
+
+
         CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
 
         // 处理消息结果
         genContent.whenComplete((result, ex) -> {
             handleWorkflowMessage(taskInfo, result) ;
+
+            if(taskInfo.getAccountOrgId() != null){
+                // 积分计数开始会话
+                long currentAccountId = taskInfo.getAccountId() ;
+                long accountOrgId = taskInfo.getAccountOrgId() ;
+
+                // 积分计数结束会话
+                accountPointService.endSession(currentAccountId , accountOrgId , taskInfo.getRoleId());
+            }
+
         }) ;
     }
 
