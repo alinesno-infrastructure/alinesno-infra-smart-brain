@@ -29,6 +29,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessa
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentPlanEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
@@ -104,6 +105,9 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
 
     @Autowired
     private GeneralAgentFormatMessageTool formatMessageTool;
+
+    @Autowired
+    private IAccountPointService accountPointService ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -220,50 +224,6 @@ public class GeneralAgentSceneController extends BaseController<GeneralAgentScen
         GeneralAgentPlanEntity chapterEntity = generalAgentPlanService.getById(chapterId) ;
         return AjaxResult.success("操作成功" , chapterEntity.getContent()) ;
     }
-
-//    /**
-//     * 与角色交互，获取到内容结果
-//     */
-//    @DataPermissionSave
-//    @SneakyThrows
-//    @PostMapping("/chatRole")
-//    public AjaxResult chatRole(@RequestBody @Validated ChatRoleDto chatRole) {
-//
-//        MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo() ; // new MessageTaskInfo() ;
-//
-//        GeneralAgentTaskEntity taskEntity = generalAgentTaskService.getById(chatRole.getTaskId()) ;
-//        handleAttachment(taskEntity, taskInfo);
-//
-//        taskInfo.setRoleId(chatRole.getRoleId());
-//        taskInfo.setChannelStreamId(chatRole.getChannelStreamId());
-//        taskInfo.setChannelId(chatRole.getSceneId());
-//        taskInfo.setSceneId(chatRole.getSceneId());
-//        taskInfo.setText(chatRole.getMessage());
-//
-//        // 优先获取到结果内容
-//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo) ;
-//
-//       // 获取到格式化的内容
-//       formatMessageTool.handleChapterMessage(genContent , taskInfo);
-//
-//        // 解析得到代码内容
-//        if(genContent.getCodeContent() !=null && !genContent.getCodeContent().isEmpty()){
-//            String codeContent = genContent.getCodeContent().get(0).getContent() ;
-//            JSONArray dataObject = JSONArray.parseArray(codeContent) ;
-//
-//            // 验证是否可以正常解析json
-//            try{
-//                List<TreeNodeDto> nodeDtos = JSON.parseArray(codeContent, TreeNodeDto.class);
-//                log.debug("nodeDtos = {}", JSONUtil.toJsonPrettyStr(nodeDtos));
-//            }catch (Exception e){
-//                throw new RpcServiceRuntimeException("生成大纲格式不正确，请点击重新生成.") ;
-//            }
-//
-//            return AjaxResult.success("操作成功" , dataObject) ;
-//        }
-//
-//        return AjaxResult.success("操作成功" , genContent) ;
-//    }
 
     private void handleAttachment(GeneralAgentTaskEntity taskEntity, MessageTaskInfo taskInfo) {
         // 引用附件不为空，则引入和解析附件
