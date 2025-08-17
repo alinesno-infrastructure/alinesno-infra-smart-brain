@@ -21,6 +21,7 @@ import com.alinesno.infra.smart.im.service.IMessageFeedbackService;
 import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.im.service.ISSEService;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import jakarta.validation.Valid;
 import lombok.Data;
@@ -67,10 +68,14 @@ public class RoleChatController extends SuperController {
     private CloudStorageConsumer storageConsumer ;
 
     @Autowired
-    private ThreadPoolTaskExecutor chatThreadPool;
+    private ThreadPoolTaskExecutor chatThreadPool ;
 
     @Autowired
     private IFrequentAgentService frequentAgentService ;
+
+    @Autowired
+    private IAccountPointService accountPointService ;
+
 
     /**
      * 保存用户消息评价 messageFeedback
@@ -132,12 +137,15 @@ public class RoleChatController extends SuperController {
         String name = CurrentAccountJwt.get().getName();
         String avatarPath = CurrentAccountJwt.get().getAvatarPath();
 
-        // 记录到用户常用场景里面
         if(CurrentAccountJwt.get() != null){
+            // 记录到用户常用场景里面
             frequentAgentService.addFrequentAgent(CurrentAccountJwt.getUserId(), roleId, FrequentTypeEnums.AGENT) ;
+
+            // 启动会话
+            accountPointService.startSession(currentAccountId , accountOrgId , roleId);
         }
 
-        CompletableFuture.supplyAsync(() -> {
+         CompletableFuture.supplyAsync(() -> {
             try {
                 IndustryRoleEntity role = industryRoleService.getById(roleId);
                 List<IndustryRoleEntity> roleList = new ArrayList<>();
@@ -173,7 +181,8 @@ public class RoleChatController extends SuperController {
             }
 
         }, chatThreadPool).whenComplete((result, ex) -> {
-            if (ex != null) {
+
+                   if (ex != null) {
                 deferredResult.setErrorResult(AjaxResult.error("处理请求时发生异常"));
             } else {
                 deferredResult.setResult(result);
