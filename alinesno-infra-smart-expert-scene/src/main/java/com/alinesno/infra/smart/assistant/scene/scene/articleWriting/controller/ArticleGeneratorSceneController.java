@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.articleWriting.controller;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.message.AiMessage;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
@@ -8,6 +9,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
@@ -29,6 +31,8 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.enums.TaskResultTypeEnums;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ArticleManagerEntity;
@@ -113,6 +117,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
     @Autowired
     private ArticleChatRoleUtil articleChatRoleUtil ;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     /**
      * 通过Id获取到场景
      *
@@ -178,12 +185,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      * @param query
      * @return
      */
-    /**
-     * 聊天提示内容
-     * @param dto
-     * @param query
-     * @return
-     */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
     public DeferredResult<AjaxResult> chatPromptContent(@RequestBody @Validated ArticleGeneratorDTO dto, PermissionQuery query) {
@@ -195,9 +197,16 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
         log.debug("dto = {}", dto);
 
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
+
         try {
             ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
             Long articleWriterEngineer = entity.getArticleWriterEngineer();
+
+            // 启动会话
+            accountPointService.startSession(currentAccountId, accountOrgId , articleWriterEngineer);
 
             MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
 
@@ -246,6 +255,9 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
                     log.error("Error processing article content", e);
                     deferredResult.setErrorResult(AjaxResult.error("处理文章内容时出错"));
                 }
+            }).whenComplete((result, ex) -> {
+                // 积分计数结束会话
+                accountPointService.endSession(currentAccountId , accountOrgId , taskInfo.getRoleId());
             }).exceptionally(ex -> {
                 log.error("Error in role agent execution", ex);
                 deferredResult.setErrorResult(AjaxResult.error("角色代理执行出错"));
@@ -259,71 +271,13 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
         return deferredResult;
     }
 
-//    @DataPermissionQuery
-//    @PostMapping("/chatPromptContent")
-//    public AjaxResult chatPromptContent(@RequestBody @Validated ArticleGeneratorDTO dto , PermissionQuery query) {
-//
-//        log.debug("dto = {}" , dto);
-//
-//        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-//        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
-//
-//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
-//
-//        // 引用附件不为空，则引入和解析附件
-//        if(!CollectionUtils.isEmpty(dto.getAttachments())){
-//            List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-//            taskInfo.setAttachments(attachmentList);
-//        }
-//
-//        ArticleTemplateEntity templateEntity = null ;
-//        if(dto.getSelectedTemplateId() != null){
-//            templateEntity =  articleTemplateService.getById(dto.getSelectedTemplateId()) ;
-//        }
-//        Asserts.notNull(templateEntity , "未找到对应的模板实体");
-//
-//        String promptText = ArticlePromptHandle.generatorPrompt(dto , templateEntity) ;
-//
-//        taskInfo.setRoleId(articleWriterEngineer);
-//        taskInfo.setChannelStreamId(dto.getChannelStreamId());
-//        taskInfo.setChannelId(dto.getSceneId());
-//        taskInfo.setSceneId(dto.getSceneId());
-//        taskInfo.setText(promptText);
-//
-//        // 优先获取到结果内容
-//        WorkflowExecutionDto genContent  = roleService.runRoleAgent(taskInfo).get() ;
-//        log.debug("genContent = {}", genContent.getGenContent());
-//
-//        // 获取文章内容并保存
-//        String articleContent;
-//        if(TaskResultTypeEnums.SUMMARY.getCode().equals(taskInfo.getResultType())){ // 总结性结果输出
-//            articleContent = taskInfo.getFullContent() ;
-//        }else{
-//            List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()) ;
-//            articleContent = contentList.isEmpty()?  taskInfo.getFullContent() : contentList.get(0).getContent() ;
-//        }
-//
-//        Long articleId = articleManagerSceneService.saveArticle(
-//                articleContent ,
-//                dto ,
-//                entity ,
-//                query) ;
-//
-//        return AjaxResult.success("操作成功" , articleId) ;
-//    }
-
-    /**
-     * 重新润色文章
-     * @param dto
-     * @param query
-     * @return
-     */
     /**
      * 重新润色文章（异步高并发版）
      * @param dto 请求参数
      * @param query 权限查询条件
      * @return DeferredResult 异步响应结果
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/reChatPromptContent")
     public DeferredResult<AjaxResult> reChatPromptContent(
@@ -341,10 +295,18 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
         log.debug("dto = {}", dto);
 
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
+
         try {
             // 2. 同步查询部分（快速操作）
             ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
             Long articleWriterEngineer = entity.getArticleWriterEngineer();
+
+            // 启动会话
+            accountPointService.startSession(currentAccountId, accountOrgId , articleWriterEngineer);
+
             ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId());
 
             // 3. 构建任务信息
@@ -372,6 +334,10 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
                         // 6. 成功响应
                         deferredResult.setResult(AjaxResult.success("操作成功", resultContent));
                     })
+                    .whenComplete((result, ex) -> {
+                        // 积分计数结束会话
+                        accountPointService.endSession(currentAccountId , accountOrgId , taskInfo.getRoleId());
+                    })
                     .exceptionally(ex -> {
                         // 7. 异常处理
                         log.error("文章润色失败，articleId={}", dto.getArticleId(), ex);
@@ -387,36 +353,6 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
 
         return deferredResult;
     }
-//    @DataPermissionQuery
-//    @PostMapping("/reChatPromptContent")
-//    public AjaxResult reChatPromptContent(@RequestBody @Validated ReWriterArticleGeneratorDTO dto , PermissionQuery query) {
-//
-//        log.debug("dto = {}" , dto);
-//
-//        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-//        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
-//
-//        MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo() ;
-//
-//        ArticleManagerEntity articleManagerEntity = articleManagerSceneService.getById(dto.getArticleId()) ;
-//        String promptText = ArticlePromptHandle.generatorReWriterPrompt(dto , articleManagerEntity.getContent()) ;
-//
-//        taskInfo.setRoleId(articleWriterEngineer);
-//        taskInfo.setChannelStreamId(String.valueOf(dto.getChannelStreamId()));
-//        taskInfo.setChannelId(dto.getSceneId());
-//        taskInfo.setSceneId(dto.getSceneId());
-//        taskInfo.setText(promptText);
-//
-//        // 优先获取到结果内容
-//        CompletableFuture<WorkflowExecutionDto> genContent  = roleService.runRoleAgent(taskInfo) ;
-//        log.debug("genContent = {}", genContent);
-//
-//        // 获取文章内容
-//        String articleContent = taskInfo.getFullContent() ;
-//        List<CodeContent> contentList = CodeBlockParser.parseCodeBlocks(articleContent) ;
-//
-//        return AjaxResult.success("操作成功" , contentList.isEmpty()?  articleContent : contentList.get(0).getContent() ) ;
-//    }
 
     /**
      * 重新润色文章
@@ -552,18 +488,50 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
      * @param dto
      * @return
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/chatEditorRole")
-    public AjaxResult chatEditorRole(@RequestBody @Validated ChatEditorDto dto , PermissionQuery query){
+    public DeferredResult<AjaxResult> chatEditorRole(@RequestBody @Validated ChatEditorDto dto, PermissionQuery query) {
+        // 设置超时时间（毫秒），例如30秒
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(120_000L);
 
-        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query) ;
-        Long articleWriterEngineer = entity.getArticleWriterEngineer() ;
+        // 默认超时处理
+        deferredResult.onTimeout(() ->
+                deferredResult.setResult(AjaxResult.error("请求处理超时"))
+        );
 
-        IndustryRoleDto roleDto =  RoleUtils.getEditors(roleService , String.valueOf(articleWriterEngineer)).get(0) ;
+        // 错误处理
+        deferredResult.onError((Throwable t) ->
+                deferredResult.setResult(AjaxResult.error("处理请求时发生错误: " + t.getMessage()))
+        );
 
-        articleChatRoleUtil.chat(roleDto , dto , query) ;
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
 
-        return AjaxResult.success("操作成功") ;
+        ArticleGenerateSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+        Long articleWriterEngineer = entity.getArticleWriterEngineer();
+        IndustryRoleDto roleDto = RoleUtils.getEditors(roleService, String.valueOf(articleWriterEngineer)).get(0);
+
+        // 启动会话
+        accountPointService.startSession(currentAccountId, accountOrgId , articleWriterEngineer);
+
+        // 提交异步任务
+        CompletableFuture<AiMessage> future = articleChatRoleUtil.chat(roleDto, dto, query);
+
+        future.whenComplete((result, ex) -> {
+
+            // 停止会话
+            accountPointService.endSession(currentAccountId, accountOrgId , articleWriterEngineer);
+
+            if (ex != null) {
+                deferredResult.setErrorResult(AjaxResult.error("处理失败: " + ex.getMessage()));
+            } else {
+                deferredResult.setResult(AjaxResult.success("操作成功"));
+            }
+        });
+
+        return deferredResult;
     }
 
     /**
