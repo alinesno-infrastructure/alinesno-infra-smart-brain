@@ -14,7 +14,7 @@
         <el-dialog
             v-model="dialogDisplayVisible"  
             title="查看组织积分余额和明细记"
-            width="80%"
+            width="80%" 
             style="max-width:900px"
             :before-close="handleClose"
           >
@@ -25,10 +25,13 @@
         <el-dialog
             v-model="dialogVisible" 
             width="80%"
+            :close-on-click-modal="false"
+            :close-on-press-escape="false"
             style="max-width:900px"
             :before-close="handleClose"
           >
-            <div class="user-integral-package">
+            <el-collapse-transition>
+            <div class="user-integral-package" v-if="showIntegralPanel">
                 <div class="integral-price-title">
                     <span class="integral-price-label">价格</span>
                     <span class="integral-price-desc">
@@ -50,6 +53,7 @@
                                     <el-button 
                                         type="primary" 
                                         size="large" 
+                                        @click="enterPay(packageItem)"
                                         style="width:100%"
                                     >
                                         升级{{ packageItem.name }}版本
@@ -74,14 +78,23 @@
                         </div>
                     </el-col>
                 </el-row>
+
+               
+
             </div>
 
-            <template #footer>
-              <div class="dialog-footer"> 
-                   <el-text class="mx-1" type="info">遇到问题?</el-text> &nbsp; 
-                   <el-link type="info" href="#" :underline="false">联系我们获取帮助</el-link>
-              </div>
-            </template>
+            <div v-if="!showIntegralPanel">
+                <UserPay :packageItem="currentPackageItem" @goBack="enterPay" />
+            </div>
+
+            </el-collapse-transition>
+
+             <template #footer>
+                  <div class="dialog-footer"> 
+                       <el-text class="mx-1" type="info">遇到问题?</el-text> &nbsp; 
+                       <el-link type="info" href="#" :underline="false">联系我们获取帮助</el-link>
+                  </div>
+                </template>
              
           </el-dialog>
 
@@ -92,6 +105,7 @@
 import { computed } from 'vue';
 
 import IntegralDisplayPanel from "./integralDisplay"
+import UserPay from "./userPay"
 
 const props = defineProps({
     // 用户类型: trial(试用), standard(标准), enterprise(企业)
@@ -102,6 +116,8 @@ const props = defineProps({
     }
 });
 
+const showIntegralPanel = ref(true)
+const currentPackageItem = ref(null)
 const dialogVisible = ref(false)
 const dialogDisplayVisible = ref(false)
 
@@ -128,6 +144,7 @@ const userIcon = computed(() => {
 // 显示套餐积分
 const showIntegral = () => {
     dialogVisible.value = true ;
+    showIntegralPanel.value = true ;
 }
 
 // 套餐数据
@@ -158,6 +175,12 @@ const packages = ref([
         ]
     }
 ]);
+
+// 进入支付界面
+const enterPay = (packageItem) => {
+    showIntegralPanel.value = !showIntegralPanel.value ;
+    currentPackageItem.value = packageItem;
+}
 
 // 格式化特性文本，突出显示数字
 const formatFeatureText = (text) => {
