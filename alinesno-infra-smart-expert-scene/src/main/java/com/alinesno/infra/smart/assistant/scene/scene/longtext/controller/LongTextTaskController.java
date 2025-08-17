@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.agentsflex.core.message.AiMessage;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
@@ -10,6 +11,7 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.common.web.adapter.utils.file.FileUtils;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
@@ -23,7 +25,10 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongText
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTaskExecutionService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
+import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
@@ -44,6 +49,7 @@ import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
@@ -55,6 +61,7 @@ import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -90,6 +97,9 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
 
     @Autowired
     private SmartDocumentConsumer smartOfficeConsumer;
+
+    @Autowired
+    private IAccountPointService accountPointService ;
 
     /**
      * 获取BusinessLogEntity的DataTables数据。
@@ -353,23 +363,56 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         return AjaxResult.success("");
     }
 
-
     /**
      * 与编辑角色沟通
      * @param dto
      * @return
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/chatEditorRole")
-    public AjaxResult chatEditorRole(@RequestBody @Validated TextChatEditorDto dto , PermissionQuery query){
+    public DeferredResult<AjaxResult> chatEditorRole(@RequestBody @Validated TextChatEditorDto dto, PermissionQuery query) {
+        // 设置超时时间（毫秒），例如30秒
+        DeferredResult<AjaxResult> deferredResult = new DeferredResult<>(120_000L);
 
-        LongTextSceneEntity entity = longTextSceneService.getBySceneId(dto.getSceneId(), query) ;
-        String articleWriterEngineer = entity.getContentEditor() ;
+        // 默认超时处理
+        deferredResult.onTimeout(() ->
+                deferredResult.setResult(AjaxResult.error("请求处理超时"))
+        );
 
-        IndustryRoleDto roleDto =  RoleUtils.getEditors(roleService , articleWriterEngineer).get(0) ;
-        longTextChatRoleUtil.chat(roleDto , dto , query) ;
+        // 错误处理
+        deferredResult.onError((Throwable t) ->
+                deferredResult.setResult(AjaxResult.error("处理请求时发生错误: " + t.getMessage()))
+        );
 
-        return AjaxResult.success("操作成功") ;
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
+
+        LongTextSceneEntity entity = longTextSceneService.getBySceneId(dto.getSceneId(), query);
+        Long articleWriterEngineer = Long.parseLong(entity.getContentEditor());
+
+        IndustryRoleDto roleDto = RoleUtils.getEditors(roleService, String.valueOf(articleWriterEngineer)).get(0);
+
+        // 启动会话
+        accountPointService.startSession(currentAccountId, accountOrgId , articleWriterEngineer);
+
+        // 提交异步任务
+        CompletableFuture<AiMessage> future = longTextChatRoleUtil.chat(roleDto, dto, query);
+
+        future.whenComplete((result, ex) -> {
+
+            // 停止会话
+            accountPointService.endSession(currentAccountId, accountOrgId , articleWriterEngineer);
+
+            if (ex != null) {
+                deferredResult.setErrorResult(AjaxResult.error("处理失败: " + ex.getMessage()));
+            } else {
+                deferredResult.setResult(AjaxResult.success("操作成功"));
+            }
+        });
+
+        return deferredResult;
     }
 
     @Override
