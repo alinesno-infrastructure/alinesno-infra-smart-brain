@@ -9,6 +9,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.examPaper.dto.*;
@@ -19,6 +20,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.examPaper.tools.ExamPagerF
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.ExamPagerEntity;
 import com.alinesno.infra.smart.scene.entity.ExamPagerSceneEntity;
@@ -90,6 +93,9 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
     @Autowired
     private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     /**
      * 通过Id获取到场景
      *
@@ -158,6 +164,7 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
      * @param query 权限查询参数
      * @return 异步处理结果
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
     public DeferredResult<AjaxResult> chatPromptContent(@RequestBody @Validated ExamPagerGeneratorDTO dto, PermissionQuery query) {
@@ -167,60 +174,78 @@ public class ExamPaperSceneController extends BaseController<ExamPagerSceneEntit
         // 在异步流程外部创建taskInfo
         MessageTaskInfo taskInfo = new MessageTaskInfo();
 
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
+
+        // 1. 获取场景信息
+        ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+        Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer();
+
         // 构建异步处理流程
-        CompletableFuture<Void> processFuture = CompletableFuture.runAsync(() -> {
-                    // 1. 获取场景信息
-                    ExamPagerSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
-                    Long questionGeneratorEngineer = entity.getQuestionGeneratorEngineer();
+        CompletableFuture.runAsync(() -> {
+            // 启动会话
+            accountPointService.startSession(currentAccountId, accountOrgId , questionGeneratorEngineer);
 
-                    // 2. 构建任务信息
-                    BeanUtils.copyProperties(dto.toPowerMessageTaskInfo(), taskInfo);
+            // 2. 构建任务信息
+            BeanUtils.copyProperties(dto.toPowerMessageTaskInfo(), taskInfo);
 
-                    // 3. 处理附件（如果有）
-                    if (!CollectionUtils.isEmpty(dto.getAttachments())) {
-                        List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
-                        taskInfo.setAttachments(attachmentList);
-                    }
+            // 3. 处理附件（如果有）
+            if (!CollectionUtils.isEmpty(dto.getAttachments())) {
+                List<FileAttachmentDto> attachmentList = cloudStorageConsumer.list(dto.getAttachments());
+                taskInfo.setAttachments(attachmentList);
+            }
 
-                    // 4. 生成提示文本
-                    String promptText = ExamPagerPromptHandle.generatorPrompt(
-                            dto.getPromptText(),
-                            dto.getDifficultyLevel(),
-                            dto.getExamStructureItem()
-                    );
+            // 4. 生成提示文本
+            String promptText = ExamPagerPromptHandle.generatorPrompt(
+                    dto.getPromptText(),
+                    dto.getDifficultyLevel(),
+                    dto.getExamStructureItem()
+            );
 
-                    // 5. 设置任务参数
-                    taskInfo.setRoleId(questionGeneratorEngineer);
-                    taskInfo.setChannelStreamId(dto.getChannelStreamId());
-                    taskInfo.setChannelId(dto.getSceneId());
-                    taskInfo.setSceneId(dto.getSceneId());
-                    taskInfo.setText(promptText);
-                }, chatThreadPool)
-                .thenComposeAsync(v -> {
-                    // 6. 异步调用角色服务获取内容
-                    return roleService.runRoleAgent(taskInfo);
-                }, chatThreadPool)
-                .thenComposeAsync(genContent -> {
-                    // 7. 异步格式化章节消息
-                    return examPagerFormatMessageTool.handleChapterMessageAsync(genContent, taskInfo)
-                            .thenApply(v -> genContent);
-                }, chatThreadPool)
-                .thenAcceptAsync(genContent -> {
-                    // 8. 处理最终结果
-                    if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
-                        String codeContent = genContent.getCodeContent().get(0).getContent();
-                        JSONArray dataObject = JSONArray.parseArray(codeContent);
-                        deferredResult.setResult(AjaxResult.success("操作成功", dataObject));
-                    } else {
-                        deferredResult.setResult(AjaxResult.success("操作成功"));
-                    }
-                }, chatThreadPool)
-                .exceptionally(ex -> {
-                    // 异常处理
-                    log.error("处理失败", ex);
-                    deferredResult.setErrorResult(AjaxResult.error("处理失败: " + ex.getMessage()));
-                    return null;
-                });
+            // 5. 设置任务参数
+            taskInfo.setRoleId(questionGeneratorEngineer);
+            taskInfo.setChannelStreamId(dto.getChannelStreamId());
+            taskInfo.setChannelId(dto.getSceneId());
+            taskInfo.setSceneId(dto.getSceneId());
+            taskInfo.setText(promptText);
+
+            taskInfo.setAccountId(currentAccountId);
+            taskInfo.setAccountOrgId(accountOrgId);
+
+        }, chatThreadPool)
+        .thenComposeAsync(v -> {
+            // 6. 异步调用角色服务获取内容
+            return roleService.runRoleAgent(taskInfo);
+        }, chatThreadPool)
+        .thenComposeAsync(genContent -> {
+            // 7. 异步格式化章节消息
+            return examPagerFormatMessageTool.handleChapterMessageAsync(genContent, taskInfo).thenApply(v -> genContent);
+        }, chatThreadPool)
+        .thenAcceptAsync(genContent -> {
+            // 8. 处理最终结果
+            if (genContent.getCodeContent() != null && !genContent.getCodeContent().isEmpty()) {
+                String codeContent = genContent.getCodeContent().get(0).getContent();
+                JSONArray dataObject = JSONArray.parseArray(codeContent);
+                deferredResult.setResult(AjaxResult.success("操作成功", dataObject));
+            } else {
+                deferredResult.setResult(AjaxResult.success("操作成功"));
+            }
+
+            // 停止会话 - 正常完成时
+            accountPointService.endSession(currentAccountId, accountOrgId, questionGeneratorEngineer);
+
+        }, chatThreadPool)
+        .exceptionally(ex -> {
+            // 异常处理
+            log.error("处理失败", ex);
+            deferredResult.setErrorResult(AjaxResult.error("处理失败: " + ex.getMessage()));
+
+            // 停止会话 - 异常结束时
+            accountPointService.endSession(currentAccountId, accountOrgId, questionGeneratorEngineer);
+
+            return null;
+        });
 
         // 设置超时回调
         deferredResult.onTimeout(() -> {
