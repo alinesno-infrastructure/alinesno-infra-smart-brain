@@ -134,12 +134,12 @@ public class SSEServiceImpl implements ISSEService {
                             .data(msg));
                 } catch (Exception e) {
                     log.trace("客户端【{}】连接异常，已自动移除，原因：{}", entry.getKey(), e.getMessage());
+                    iterator.remove(); // 先从缓存中移除
                     try {
-                        emitter.complete();  // 先完成emitter
+                        emitter.completeWithError(e); // 标记为错误完成
                     } catch (Exception ex) {
                         // 忽略complete时的异常
                     }
-                    iterator.remove();      // 再从缓存中移除
                 }
             }
         }
