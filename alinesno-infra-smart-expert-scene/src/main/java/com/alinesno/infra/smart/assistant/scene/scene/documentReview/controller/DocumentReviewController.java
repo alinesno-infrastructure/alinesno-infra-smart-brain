@@ -32,6 +32,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocRe
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.ParserDocumentTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
@@ -244,6 +245,7 @@ public class DocumentReviewController extends SuperController {
      * 文件上传
      * @return
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @SneakyThrows
     @PostMapping("/importData")
