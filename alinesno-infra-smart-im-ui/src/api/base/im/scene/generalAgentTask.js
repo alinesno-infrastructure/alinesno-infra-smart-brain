@@ -13,6 +13,17 @@ var managerUrl = {
   submitTask: prefix + "submitTask",
   submitChapterTask: prefix + "submitChapterTask",
   updateTaskStatus: prefix + "updateTaskStatus",
+
+  chatEditorRole: prefix + "chatEditorRole" ,
+}
+
+// 文章编辑角色
+export function chatEditorRole(data) {
+  return request({
+    url: managerUrl.chatEditorRole,
+    method: 'post',
+    data: data
+  })
 }
 
 // 更新任务状态
