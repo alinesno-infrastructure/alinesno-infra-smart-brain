@@ -9,7 +9,7 @@ import com.alinesno.infra.smart.assistant.scene.common.utils.GenPdfTool;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.utils.RoleUtils;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller.ReviewListOptionEnum;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewListOptionEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
