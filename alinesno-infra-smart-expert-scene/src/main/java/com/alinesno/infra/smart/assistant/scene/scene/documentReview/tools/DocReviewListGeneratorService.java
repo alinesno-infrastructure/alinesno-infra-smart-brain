@@ -12,7 +12,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller.ReviewListOptionEnum;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewListOptionEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
@@ -22,6 +22,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDo
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
@@ -75,6 +76,9 @@ public class DocReviewListGeneratorService {
     @Qualifier("chatThreadPool")
     private ThreadPoolTaskExecutor chatThreadPool;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     /**
      * 启动审核清单生成任务
      *
@@ -121,7 +125,10 @@ public class DocReviewListGeneratorService {
     /**
      * 使用AI生成文档的元数据
      */
-    private void generateByDocumentMeta(DocReviewSceneEntity sceneEntity, DocReviewTaskEntity entity, DocReviewGenReviewDto dto) {
+    private void generateByDocumentMeta(DocReviewSceneEntity sceneEntity,
+                                        DocReviewTaskEntity entity,
+                                        DocReviewGenReviewDto dto ,
+                                        PermissionQuery query) {
         final MessageTaskInfo taskInfo = prepareTaskInfo(sceneEntity, entity, dto);
 
         String documentInfo = String.format(
@@ -131,9 +138,16 @@ public class DocReviewListGeneratorService {
 
         taskInfo.setText(documentInfo);
 
+        // 会话开始
+        accountPointService.startSession(query.getOperatorId(), query.getOrgId() , taskInfo.getRoleId());
+
         // 异步调用角色服务
         CompletableFuture<WorkflowExecutionDto> genContentFuture = roleService.runRoleAgent(taskInfo);
         genContentFuture.whenComplete((result, ex) -> {
+
+            // 结束会话
+            accountPointService.endSession(query.getOperatorId(), query.getOrgId() , taskInfo.getRoleId());
+
             if (ex != null) {
                 log.error("生成审核清单失败", ex);
                 handleGenerationError(dto.getTaskId(), "生成审核清单失败: " + ex.getMessage());
@@ -298,7 +312,10 @@ public class DocReviewListGeneratorService {
             dto.setSceneId(sceneId);
 
             DocReviewSceneEntity sceneEntity = docReviewSceneService.getBySceneId(sceneId, query);
-            generateByDocumentMeta(sceneEntity, taskEntity,  dto) ;
+            generateByDocumentMeta(sceneEntity,
+                    taskEntity,
+                    dto ,
+                    query) ;
         });
     }
 
