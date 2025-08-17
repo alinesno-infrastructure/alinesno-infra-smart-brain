@@ -9,6 +9,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
+import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
@@ -23,6 +24,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IP
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.dto.TreeNodeDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
@@ -88,6 +91,9 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
 
     @Autowired
     private IIndustryRoleService roleService ;
+
+    @Autowired
+    private IAccountPointService accountPointService ;
 
     /**
      * 通过Id获取到场景
@@ -191,6 +197,7 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
      * @param query 权限查询
      * @return DeferredResult 异步结果
      */
+    @AgentPointAnnotation
     @DataPermissionQuery
     @PostMapping("/chatPromptContent")
     public DeferredResult<AjaxResult> chatPromptContentAsync(@RequestBody @Validated ProjectSearchDTO dto, PermissionQuery query) {
@@ -202,13 +209,21 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
             deferredResult.setErrorResult(AjaxResult.error("请求处理超时，请稍后重试"));
         });
 
+        // 积分计数开始会话
+        long currentAccountId = CurrentAccountJwt.getUserId() ;
+        long accountOrgId = CurrentAccountJwt.get().getOrgId() ;
+
+        ProjectResearchSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
+        Long pptPlannerEngineer = entity.getProcessCollectorEngineer();
+
         // 异步处理逻辑
         CompletableFuture.runAsync(() -> {
             try {
                 log.debug("dto = {}", dto);
 
-                ProjectResearchSceneEntity entity = service.getBySceneId(dto.getSceneId(), query);
-                Long pptPlannerEngineer = entity.getProcessCollectorEngineer();
+
+                // 启动会话
+                accountPointService.startSession(currentAccountId, accountOrgId , pptPlannerEngineer);
 
                 MessageTaskInfo taskInfo = dto.toPowerMessageTaskInfo();
 
@@ -268,6 +283,9 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
                                 log.error("处理生成内容时出错", e);
                                 deferredResult.setErrorResult(AjaxResult.error("处理生成内容时出错: " + e.getMessage()));
                             }
+                        }).whenComplete((result, ex) -> {
+                            // 停止会话
+                            accountPointService.endSession(currentAccountId, accountOrgId , pptPlannerEngineer);
                         })
                         .exceptionally(ex -> {
                             log.error("执行角色服务时出错", ex);
