@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.tools;
 
 import cn.hutool.core.util.IdUtil;
-import com.agentsflex.core.image.*;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.message.AiMessage;
@@ -12,8 +11,6 @@ import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ChatEditorDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ImageGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -30,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -72,7 +68,7 @@ public class LongTextChatRoleUtil {
             """;
 
     @SneakyThrows
-    public void chat(IndustryRoleDto roleDto, TextChatEditorDto dto, PermissionQuery query) {
+    public CompletableFuture<AiMessage> chat(IndustryRoleDto roleDto, TextChatEditorDto dto, PermissionQuery query) {
 
         AgentSceneEntity agentSceneEntity =  agentSceneService.getByRoleAndScene(roleDto.getId() , SceneEnum.LONG_TEXT.getSceneInfo().getId()) ;
         LlmModelEntity modelEntity = llmModelService.getById(agentSceneEntity.getLlmModelId()) ;
@@ -110,10 +106,7 @@ public class LongTextChatRoleUtil {
         String articlePreContent = extractRelevantText(dto.getArticleContent() , dto.getModifyText()) ;
         String prompt = String.format(PROMPT_TEXT , articlePreContent , dto.getModifyText() ,  dto.getMessage()) ;
 
-        CompletableFuture<AiMessage> future = modelAdapterLLM.getSingleAiChatResultAsync(llm, role, prompt , taskInfo , messageId) ;
-
-        AiMessage message = future.get();
-        log.debug("output = {}" , message.getFullContent());
+        return modelAdapterLLM.getSingleAiChatResultAsync(llm, role, prompt , taskInfo , messageId);
     }
 
     /**
