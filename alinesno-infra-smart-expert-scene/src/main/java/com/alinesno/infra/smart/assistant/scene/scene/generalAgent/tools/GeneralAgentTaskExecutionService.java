@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.prompt.GeneralAgentPrompt;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.*;
 import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
@@ -68,6 +69,9 @@ public class GeneralAgentTaskExecutionService {
     @Autowired
     private IIndustryRoleService roleService;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     /**
      * 异步执行任务
      *
@@ -76,17 +80,27 @@ public class GeneralAgentTaskExecutionService {
      * @param query  权限查询
      */
     public void executeTaskAsync(Long taskId, Long channelStreamId, PermissionQuery query) {
+
+        long userId = query.getOperatorId() ;
+        long orgId = query.getOrgId() ;
+
         CompletableFuture.runAsync(() -> {
             try {
+                // 任务开始
+                accountPointService.startSceneTask(userId , orgId , taskId);
+
                 internalExecuteTask(taskId, channelStreamId, query);
             } catch (InterruptedException e) {
                 log.warn("任务被中断: taskId={}", taskId);
                 Thread.currentThread().interrupt();
             }
         }, executor)
-        .exceptionally(ex -> {
-            log.error("任务执行失败: taskId={}", taskId, ex);
-            return null;
+        .whenComplete((result, ex) -> {
+            accountPointService.endSceneTask(userId, orgId, taskId); // 直接复用
+
+            if (ex != null) {
+                log.error("任务执行失败: taskId={}", taskId, ex);
+            }
         });
     }
 
