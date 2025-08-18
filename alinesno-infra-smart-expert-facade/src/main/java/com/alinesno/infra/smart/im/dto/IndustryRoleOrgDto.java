@@ -11,6 +11,8 @@ import lombok.EqualsAndHashCode;
 @Data
 public class IndustryRoleOrgDto extends IndustryRoleEntity {
 
-    private String orgName ;
+    private String orgName ;  // 组织名称
+    private int like ; // 喜欢
+    private int dislike ; // 不喜欢
 
 }
