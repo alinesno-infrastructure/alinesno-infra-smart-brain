@@ -6,6 +6,7 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ExecuteTaskDto;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.prompt.ProjectPromptHandle;
 import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
@@ -56,11 +57,22 @@ public class ProjectTaskExecutorService {
     private ProjectContentSummaryTool projectContentSummaryTool ;
 
     @Autowired
+    private IAccountPointService accountPointService ;
+
+    @Autowired
     @Qualifier("chatThreadPool")
     private ThreadPoolTaskExecutor chatThreadPool;
 
     public void executeTaskAsync(ExecuteTaskDto dto, PermissionQuery query, ProjectTaskEntity taskEntity) {
         chatThreadPool.execute(() -> {
+
+            long userId = query.getOperatorId() ;
+            long orgId = query.getOrgId() ;
+            long taskId = taskEntity.getId() ;
+
+            // 启动任务
+            accountPointService.startSceneTask(userId, orgId , taskId);
+
             ProjectResearchSceneEntity sceneEntity = projectResearchSceneService.getBySceneId(dto.getSceneId(), query);
             Long progressAnalyzerEngineer = sceneEntity.getProgressAnalyzerEngineer();
 
@@ -118,6 +130,9 @@ public class ProjectTaskExecutorService {
                 taskEntity.setTaskEndTime(new Date());
                 projectTaskService.updateById(taskEntity);
             }
+
+            // 结束任务
+            accountPointService.endSceneTask(userId, orgId , taskId);
         });
     }
 
