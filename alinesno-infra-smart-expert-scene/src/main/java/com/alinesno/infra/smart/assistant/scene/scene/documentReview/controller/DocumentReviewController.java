@@ -33,10 +33,12 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.Parse
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import lombok.SneakyThrows;
@@ -307,6 +309,7 @@ public class DocumentReviewController extends SuperController {
     /**
      * 文档进行内容审核
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.DOCUMENT_REVIEW)
     @DataPermissionQuery
     @PostMapping("/genAuditResult")
     public AjaxResult genAuditResult(@RequestBody @Validated GenAuditResultDto dto , PermissionQuery query){
