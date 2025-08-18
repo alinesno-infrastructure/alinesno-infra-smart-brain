@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.entity.MessageFeedbackEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface IMessageFeedbackService extends IBaseService<MessageFeedbackEntity> {
@@ -16,4 +17,11 @@ public interface IMessageFeedbackService extends IBaseService<MessageFeedbackEnt
      * @param dto
      */
     void messageFeedback(MessageFeedbackDto dto , Long userId , String userName);
+
+    /**
+     * 统计角色反馈
+     * @param longs
+     * @return
+     */
+    List<RoleFeedbackStat> countFeedbackByRoleIds(ArrayList<Long> longs);
 }
