@@ -15,7 +15,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.Execut
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectTaskGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.UpdateProjectReSearchTaskNameDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.tools.ProductResearchChatRoleUtil;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.tools.ProjectTaskExecutorService;
 import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
@@ -96,6 +98,13 @@ public class ProjectTaskController extends BaseController<ProjectTaskEntity, IPr
         return AjaxResult.success("操作成功" , taskEntity.getId()) ;
     }
 
+    /**
+     * 执行任务
+     * @param dto
+     * @param query
+     * @return
+     */
+    @ScenePointAnnotation(sceneCode = SceneEnum.PRODUCT_RESEARCH)
     @DataPermissionQuery
     @PostMapping("/executeTask")
     public AjaxResult executeTask(@RequestBody @Validated ExecuteTaskDto dto, PermissionQuery query) {
