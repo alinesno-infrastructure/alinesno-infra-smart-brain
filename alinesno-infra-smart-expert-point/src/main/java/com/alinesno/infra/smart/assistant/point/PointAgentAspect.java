@@ -29,15 +29,11 @@ import java.lang.reflect.Method;
 @Slf4j
 public class PointAgentAspect {
 
-    private final AipPointConsumer aipPointConsumer;
-
     @Value("${alinesno.point.enable:false}")
     private boolean pointEnable ;
 
-    // 使用构造函数注入替代字段注入
-    public PointAgentAspect(AipPointConsumer aipPointConsumer) {
-        this.aipPointConsumer = aipPointConsumer;
-    }
+    @Value("${alinesno.point.agent-max-concurrent:5}") // 默认值5
+    private int agentMaxConcurrent;
 
     // 定义切入点：同时包含两个注解的方法
     @Pointcut("@annotation(com.alinesno.infra.smart.point.annotation.AgentPointAnnotation)")
@@ -64,6 +60,7 @@ public class PointAgentAspect {
 
             // 初始化处理器
             AgentPointProcessor agentProcessor = new AgentPointProcessor(agentPointAnnotation);
+            agentProcessor.setAgentMaxConcurrent(agentMaxConcurrent);
             agentProcessor.process(request, userId, orgId);
         }
 
