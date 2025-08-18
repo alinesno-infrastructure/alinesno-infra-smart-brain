@@ -1,6 +1,7 @@
 package com.alinesno.infra.smart.point.annotation;
 
 import com.alinesno.infra.smart.point.enums.ParamSource;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 
 import java.lang.annotation.*;
 
@@ -16,7 +17,7 @@ public @interface ScenePointAnnotation {
      * 积分场景编号
      * @return
      */
-    String sceneCode();
+    SceneEnum sceneCode() ;
 
     /**
      * roleId参数获取形式(params从url中获取/body则从对象里面获取)、默认名称为roleId
@@ -29,6 +30,6 @@ public @interface ScenePointAnnotation {
      * 获取参数名称
      * @return
      */
-    String paramName() default "roleId";
+    String paramName() default "taskId";
 
 }
