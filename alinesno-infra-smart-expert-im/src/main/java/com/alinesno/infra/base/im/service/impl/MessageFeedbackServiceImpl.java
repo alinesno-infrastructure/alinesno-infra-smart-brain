@@ -5,6 +5,7 @@ import com.alinesno.infra.base.im.mapper.MessageFeedbackMapper;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.im.dto.MessageFeedbackDto;
+import com.alinesno.infra.smart.im.dto.RoleFeedbackStat;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.entity.MessageFeedbackEntity;
 import com.alinesno.infra.smart.im.service.IMessageFeedbackService;
@@ -14,7 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 消息反馈服务实现类
@@ -46,5 +49,10 @@ public class MessageFeedbackServiceImpl extends IBaseServiceImpl<MessageFeedback
         entity.setTimestamp(dto.getTimestamp()) ;
 
         saveOrUpdate(entity);
+    }
+
+    @Override
+    public List<RoleFeedbackStat> countFeedbackByRoleIds(ArrayList<Long> longs) {
+        return mapper.countFeedbackByRoleIds(longs) ;
     }
 }
