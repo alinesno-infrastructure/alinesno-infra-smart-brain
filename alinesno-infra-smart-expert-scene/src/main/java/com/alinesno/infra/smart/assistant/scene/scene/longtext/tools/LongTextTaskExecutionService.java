@@ -12,6 +12,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongText
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.ChapterGenFormDto;
 import com.alinesno.infra.smart.scene.dto.ChatContentEditDto;
 import com.alinesno.infra.smart.scene.dto.ChatRoleDto;
@@ -72,6 +73,9 @@ public class LongTextTaskExecutionService {
     @Autowired
     private IIndustryRoleService roleService;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     // 限流相关常量
     private static final String RATE_LIMIT_PREFIX = "longtext:ratelimit:";
     private static final int RATE_LIMIT_INTERVAL = 60; // 60秒(1分钟)
@@ -80,10 +84,17 @@ public class LongTextTaskExecutionService {
      * 异步执行任务（包含主任务和章节任务）
      */
     public void executeTaskAsync(Long taskId, Long channelStreamId, PermissionQuery query) {
+
+        long userId = query.getOperatorId() ;
+        long orgId = query.getOrgId() ;
+
         // 提交主任务并保存 Future
         CompletableFuture<LongTextTaskEntity> mainFuture = CompletableFuture
                 .supplyAsync(() -> {
                     try {
+                        // 启动任务
+                        accountPointService.startSceneTask(userId, orgId , taskId);
+
                         return internalExecuteTask(taskId, channelStreamId, query);
                     } catch (Exception e) {
                         throw new CompletionException(e);
@@ -119,6 +130,10 @@ public class LongTextTaskExecutionService {
                     taskEntity.setChapterStatus(TaskStatusEnum.RUN_COMPLETED.getCode());
 
                     taskService.update(taskEntity);
+
+                    // 结束任务
+                    accountPointService.endSceneTask(userId, orgId , taskId);
+
                 }, chatThreadPool);
 
         chapterTaskFutures.put(taskId, chapterFuture);
