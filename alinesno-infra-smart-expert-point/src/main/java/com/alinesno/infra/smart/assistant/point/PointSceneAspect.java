@@ -28,15 +28,11 @@ import java.lang.reflect.Method;
 @Slf4j
 public class PointSceneAspect {
 
-    private final AipPointConsumer aipPointConsumer;
-
     @Value("${alinesno.point.enable:false}")
     private boolean pointEnable ;
 
-    // 使用构造函数注入替代字段注入
-    public PointSceneAspect(AipPointConsumer aipPointConsumer) {
-        this.aipPointConsumer = aipPointConsumer;
-    }
+    @Value("${alinesno.point.scene-max-concurrent:2}")
+    private int sceneMaxConcurrent;
 
     // 定义切入点：同时包含两个注解的方法
     @Pointcut("@annotation(com.alinesno.infra.smart.point.annotation.ScenePointAnnotation)")
@@ -66,6 +62,7 @@ public class PointSceneAspect {
 
             // 初始化处理器
             ScenePointProcessor sceneProcessor = new ScenePointProcessor(scenePointAnnotation) ;
+            sceneProcessor.setSceneMaxConcurrent(sceneMaxConcurrent);
             sceneProcessor.process(request, userId, orgId);
         }
 
