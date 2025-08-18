@@ -67,7 +67,7 @@ public class AccountPointServiceImpl implements IAccountPointService {
 
     // 新增场景任务统计方法
     @Override
-    public void startSceneTask(long userId, long orgId, long roleId, long taskId) {
+    public void startSceneTask(long userId, long orgId, long taskId) {
         // 组织级任务计数
         String orgTaskKey = String.format(PointConstants.ORG_TASK_COUNTER_KEY, orgId);
         long orgTaskCount = RedisUtils.incrAtomicValue(orgTaskKey);
@@ -77,7 +77,7 @@ public class AccountPointServiceImpl implements IAccountPointService {
     }
 
     @Override
-    public void endSceneTask(long userId, long orgId, long roleId, long taskId) {
+    public void endSceneTask(long userId, long orgId, long taskId) {
         // 组织级任务计数
         String orgTaskKey = String.format(PointConstants.ORG_TASK_COUNTER_KEY, orgId);
         long orgTaskCount = RedisUtils.decrAtomicValue(orgTaskKey);
