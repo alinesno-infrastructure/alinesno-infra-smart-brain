@@ -66,9 +66,9 @@
                                     <div class="semi-space" style="width: 100%;gap: 8px;display: flex;justify-content: space-between;align-items: center;">
                                         <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children" style="display: inline-flex;">
                                             <div class="semi-space card-statics" style="gap: 8px;">
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
+                                                <span class="semi-typography text-h6"><i class="fa-solid fa-message"></i> {{item.chatCount}}</span>
+                                                <span class="semi-typography text-h6"><i class="fa-regular fa-thumbs-up"></i> {{item.like}}</span>
+                                                <span class="semi-typography text-h6"><i class="fa-regular fa-thumbs-down"></i> {{item.dislike}}</span>
                                             </div>
                                         </div>
 
@@ -143,9 +143,9 @@
                                     <div class="semi-space" style="width: 100%;gap: 8px;display: flex;justify-content: space-between;align-items: center;">
                                         <div class="semi-space semi-space-align-center semi-space-horizontal" x-semi-prop="children" style="display: inline-flex;">
                                             <div class="semi-space card-statics" style="gap: 8px;">
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-user-ninja"></i> 1.2K</span>
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-link"></i> 2.1K</span>
-                                                <span class="semi-typography text-h6"><i class="fa-solid fa-pen-nib"></i> 45.3K</span>
+                                                <span class="semi-typography text-h6"><i class="fa-solid fa-message"></i> {{item.chatCount}}</span>
+                                                <span class="semi-typography text-h6"><i class="fa-regular fa-thumbs-up"></i> {{item.like}}</span>
+                                                <span class="semi-typography text-h6"><i class="fa-regular fa-thumbs-down"></i> {{item.dislike}}</span>
                                             </div>
                                         </div>
 
