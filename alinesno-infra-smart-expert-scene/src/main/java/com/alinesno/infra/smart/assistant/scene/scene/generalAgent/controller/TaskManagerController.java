@@ -22,11 +22,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentTaskEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -98,6 +100,7 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
      * 更新chapterPromptContent内容
      * @return
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.GENERAL_AGENT)
     @DataPermissionQuery
     @PostMapping("/addTask")
     public AjaxResult addTask(@RequestBody @Validated TaskGeneratorDTO dto , PermissionQuery query) {
@@ -143,6 +146,7 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
      * @param taskId 任务ID
      * @return 操作结果
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.GENERAL_AGENT)
     @DataPermissionQuery
     @GetMapping("/submitTask")
     public AjaxResult submitTask(@RequestParam Long taskId, @RequestParam Long channelStreamId ,  PermissionQuery query) {
@@ -230,15 +234,6 @@ public class TaskManagerController extends BaseController<GeneralAgentTaskEntity
     @DataPermissionQuery
     @GetMapping("/stopTask")
     public AjaxResult stopTask(@RequestParam Long taskId) {
-//        boolean cancelled = taskExecutionService.cancelTask(taskId);
-//
-//        if (cancelled) {
-//            // 更新数据库状态
-//            GeneralAgentTaskEntity task = service.getById(taskId);
-//            task.setTaskStatus(String.valueOf(TaskStatusEnum.CANCELLED.getCode()));
-//            service.updateById(task);
-//            return AjaxResult.success("任务已停止");
-//        }
         return AjaxResult.error("停止任务失败，任务可能已完成或不存在");
     }
 
