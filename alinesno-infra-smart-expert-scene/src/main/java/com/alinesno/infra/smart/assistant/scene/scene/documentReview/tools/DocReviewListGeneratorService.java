@@ -110,7 +110,7 @@ public class DocReviewListGeneratorService {
             docReviewTaskService.update(entity);
 
             if (dto.getReviewListOption().equals("aigen")) {
-                generateByAI(sceneEntity, entity, dto);
+                generateByAI(sceneEntity, entity, dto , query);
             } else {
                 // 非AI生成逻辑
                 entity.setReviewGenStatus(ReviewRuleGenStatusEnums.SUCCESS.getCode());
@@ -189,8 +189,14 @@ public class DocReviewListGeneratorService {
     /**
      * 使用AI生成审核清单
      */
-    private void generateByAI(DocReviewSceneEntity sceneEntity, DocReviewTaskEntity entity, DocReviewGenReviewDto dto) {
+    private void generateByAI(DocReviewSceneEntity sceneEntity, DocReviewTaskEntity entity, DocReviewGenReviewDto dto, PermissionQuery query) {
         final MessageTaskInfo taskInfo = prepareTaskInfo(sceneEntity, entity, dto);
+
+        long userId = query.getOperatorId() ;
+        long orgId = query.getOrgId() ;
+
+        // 任务会话开始
+        accountPointService.startSceneTask(userId, orgId , entity.getId());
 
         ContractTypeEnum contractType = ContractTypeEnum.getByScenarioId(entity.getContractType());
         if (contractType == null) {
@@ -219,10 +225,15 @@ public class DocReviewListGeneratorService {
                 result.setCodeContent(CodeBlockParser.parseCodeBlocks(taskInfo.getFullContent()));
 
                 processGeneratedContent(result, entity);
+
+
             } catch (Exception e) {
                 log.error("解析审核规则失败, taskId: {}, content: {}", dto.getTaskId(),  taskInfo.getFullContent(), e);
                 handleGenerationError(dto.getTaskId(), "生成审核规则格式不正确，请点击重新生成.");
             }
+
+            // 任务会话开始
+            accountPointService.endSceneTask(userId, orgId , entity.getId());
         });
     }
 
@@ -332,6 +343,12 @@ public class DocReviewListGeneratorService {
             Map<String , String> errorMap = new HashMap<>();
             AtomicInteger successCount = new AtomicInteger(0);
 
+            long userId = query.getOperatorId() ;
+            long orgId = query.getOrgId() ;
+
+            // 任务会话开始
+            accountPointService.startSceneTask(userId, orgId , taskEntity.getId());
+
             for (Long rule : dto.getRuleIds()) {
                 dto.setRuleId(rule);
                 asyncGenerateAuditList(taskEntity, dto, query, contentList , errorMap , successCount);
@@ -348,6 +365,10 @@ public class DocReviewListGeneratorService {
                 taskEntity.setTaskEndTime(new Date());  // 设置任务结束时间
                 docReviewTaskService.updateById(taskEntity);
             }
+
+            // 任务会话结束
+            accountPointService.endSceneTask(userId, orgId , taskEntity.getId());
+
         });
 
     }
