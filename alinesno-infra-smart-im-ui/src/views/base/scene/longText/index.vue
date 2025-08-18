@@ -206,8 +206,7 @@ const generaterText = () => {
   if (!formData.value.promptText) {
     ElMessage.error('请输入内容');
     return;
-  }
-  ElMessage.success('生成成功');
+  } 
 
   addTask(formData.value).then(res => {
     const taskId = res.data;
