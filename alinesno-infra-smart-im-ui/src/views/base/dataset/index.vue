@@ -33,13 +33,10 @@
                                     <span class="filename"> {{ group.groupName }} </span>
                                     <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;"> 业务知识库，集成配置管理 </span>
                                 </div>
-                               
-
-                                <div v-if="groupButtonVisible[groupIndex]" style="display: inline-block;">
-                                    <el-button type="primary" size="small" text bg
-                                        @click="openEditGroupDialog(groupIndex)">编辑</el-button>
-                                    <el-button type="danger" style="margin-left:0px;" size="small" text bg
-                                        @click="deleteGroup(groupIndex)">删除</el-button>
+                                
+                                <div class="group-opt-btn" v-if="groupButtonVisible[groupIndex]">
+                                    <el-button type="primary" size="small" text bg @click="openEditGroupDialog(groupIndex)">编辑</el-button>
+                                    <el-button type="danger" style="margin-left: 0px;" size="small" text bg @click="deleteGroup(groupIndex)">删除</el-button>
                                 </div>
                             </li>
                         </ul>
@@ -68,13 +65,13 @@
                         <div v-for="(rule, ruleIndex) in currentGroup.rules" :key="ruleIndex" class="rule-item"
                             :class="{ 'rule-selected': currentItem.id === rule.id, 'rule-hover': ruleHoverIndex === ruleIndex }"
                             @mouseenter="ruleMouseEnter(ruleIndex)" @mouseleave="ruleMouseLeave(ruleIndex)"
-                            @click="selectRuleItem(rule)">
+                            >
                             <div class="rule-item-content">
                                 <span class="rule-item-icon"> 
                                     <i :class="`fa-solid ${getFileIcon(rule.docName)}`"></i>
                                 </span>
                                 <div style="cursor: pointer;display: flex;gap: 7px;flex-direction: column;line-height: 1.3rem;">
-                                    <span class="filename">
+                                    <span class="filename" @click="selectRuleItem(rule)">
                                         {{ rule.docName }}
                                     </span>
                                     <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;">
@@ -559,11 +556,16 @@ handleListGroup();
             flex-shrink: 0;
             color: #1d75b0;
             font-size: 25px;
-        }
+        } 
+    } 
+}
 
-    }
-
-
+.group-opt-btn {
+    position: absolute;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .group-item {
