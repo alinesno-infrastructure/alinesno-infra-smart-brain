@@ -26,11 +26,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextCha
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTaskExecutionService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
 import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
@@ -207,6 +209,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
      * 更新chapterPromptContent内容
      * @return
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.LONG_TEXT)
     @DataPermissionQuery
     @PostMapping("/addTask")
     public AjaxResult addTask(@RequestBody @Validated LongTextTaskGeneratorDTO dto , PermissionQuery query) {
@@ -288,6 +291,7 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
      * @param taskId 任务ID
      * @return 操作结果
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.LONG_TEXT)
     @DataPermissionQuery
     @GetMapping("/submitTask")
     public AjaxResult submitTask(@RequestParam Long taskId, @RequestParam Long channelStreamId ,  PermissionQuery query) {
