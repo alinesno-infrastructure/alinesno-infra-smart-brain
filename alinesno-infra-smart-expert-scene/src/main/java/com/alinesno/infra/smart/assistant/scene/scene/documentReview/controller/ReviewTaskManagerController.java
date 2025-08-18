@@ -18,8 +18,10 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDo
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.TaskGeneratorDTO;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
+import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
@@ -123,6 +125,7 @@ public class ReviewTaskManagerController extends BaseController<DocReviewTaskEnt
     /**
      * 生成审核清单
      */
+    @ScenePointAnnotation(sceneCode = SceneEnum.DOCUMENT_REVIEW)
     @DataPermissionQuery
     @PostMapping("/genReviewList")
     public AjaxResult genReviewList(@RequestBody @Validated DocReviewGenReviewDto dto, PermissionQuery query) {
