@@ -29,12 +29,12 @@ public interface IAccountPointService {
     /**
      * 开始场景任务
      */
-    void startSceneTask(long userId , long orgId , long roleId , long taskId);
+    void startSceneTask(long userId , long orgId  , long taskId);
 
     /**
      * 结束场景任务
      */
-    void endSceneTask(long userId , long orgId , long roleId , long taskId);
+    void endSceneTask(long userId , long orgId  , long taskId);
 
     /**
      * 获取指定组织的场景任务数
