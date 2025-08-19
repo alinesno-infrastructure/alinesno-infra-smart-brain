@@ -145,7 +145,7 @@
     </el-row>
 
     <!-- 添加或修改角色配置对话框 -->
-    <el-dialog :title="title" v-model="open" style="width:80%;max-width:1400px" append-to-body>
+    <el-dialog :title="title" v-model="open" append-to-body fullscreen>
 
     <el-row>
   <el-col :span="16">
@@ -205,18 +205,18 @@
   </el-col>
 </el-row> 
         
-        <el-row>
-        <!--
-        <el-col :span="12">
-          <el-form-item label="角色类型" prop="roleType">
-            <el-radio-group v-model="form.roleType">
-              <el-radio v-for="item in roleTypes" :key="item.key" :label="item.key" size="large" border>{{ item.name
-                }}</el-radio>
-            </el-radio-group>
-          </el-form-item>
+        <el-row> 
+        <el-col :span="24">
+          <el-form-item label="角色等级" prop="roleLevel">
+              <el-radio-group v-model="form.roleLevel" style="flex-direction: column;align-items: flex-start;">
+                <el-radio v-for="level in agentLevels" :key="level.code" :label="level.code"> 
+                  {{ level.code + '(' + level.name + ')' }} - {{ level.desc }}
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
         </el-col>
-        -->
-          <el-col :span="12">
+     
+          <el-col :span="23">
             <el-form-item style="width: 100%;" label="业务分类" prop="industryCatalog">
               <el-tree-select v-model="form.industryCatalog" :data="deptOptions"
                 :props="{ value: 'id', label: 'label', children: 'children' }" value-key="id" placeholder="请选择归属类型"
@@ -241,7 +241,7 @@
  
       </el-form>
       
-        <div class="dialog-footer">
+        <div class="dialog-footer" style="margin-right:50px;">
           <el-button type="primary" size="large" @click="submitForm">确 定</el-button>
         </div>
       
@@ -344,7 +344,8 @@ import {
   confirmPushOrg,
   changStatusField,
   changeSaleField,
-  recommended
+  recommended,
+  getAgentLevel
 } from "@/api/smart/assistant/role";
 
 import { ElMessage } from 'element-plus'
@@ -364,6 +365,7 @@ const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
 const imageUrl = ref([])
+const agentLevels = ref([])
 
 const pushOrgDialogFormVisible = ref(false)
 
@@ -702,7 +704,9 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加角色";
-  imageUrl.value = []; // 清空数组
+  imageUrl.value = []; // 清空数组 
+  // 默认选中executeTypes的第一个角色
+  form.value.scriptType = executeTypes.value[0].code;
 };
 
 function handleAddFromTemplate() {
@@ -758,6 +762,14 @@ function getDeptTree() {
   });
 };
 
+// 获取到角色等级
+const handleGetAgentLevel = () => {
+  getAgentLevel().then(res => {
+    agentLevels.value = res.data ;
+  })
+}
+
+handleGetAgentLevel();
 getDeptTree();
 getList();
 
