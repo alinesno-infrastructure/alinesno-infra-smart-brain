@@ -18,6 +18,7 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.enums.AgentLevelEnums;
 import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.IChapterService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
@@ -118,6 +119,16 @@ public class SceneController extends BaseController<SceneEntity, ISceneService> 
         List<IndustryRoleEntity> list = agentSceneService.getRoleBySceneIdAndAgentType(sceneId, agentTypeId , orgId);
 
         return AjaxResult.success("操作成功", list);
+    }
+
+    /**
+     * 获取等级
+     * @return
+     */
+    @GetMapping("/getLevel")
+    public AjaxResult getLevel(){
+        List<Map<String, Object>> levelKeys =  AgentLevelEnums.getAllList();
+        return AjaxResult.success(levelKeys) ;
     }
 
     /**
