@@ -31,4 +31,7 @@ public class RoleInfoDto extends BaseDto {
     @NotBlank(message = "执行类型不能为空")
     private String scriptType ;
 
+    @NotBlank(message = "角色等级不能为空")
+    private String roleLevel;
+
 }
