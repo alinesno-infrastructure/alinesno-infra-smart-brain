@@ -1,5 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.common.utils;
 
+import lombok.SneakyThrows;
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,6 +25,24 @@ public class FileTool {
         // 将内容写入临时文件
         Files.writeString(tempPath, content,
                 StandardOpenOption.TRUNCATE_EXISTING);
+
+        return tempFile;
+    }
+
+    /**
+     * 创建临时HTML文件并写入内容
+     */
+    @SneakyThrows
+    public static File createTempFile(byte[] bytes) {
+        // 创建临时文件，后缀为.html
+        Path tempPath = Files.createTempFile("export-", ".html");
+        File tempFile = tempPath.toFile();
+
+        // 设置临时文件在JVM退出时自动删除
+        tempFile.deleteOnExit();
+
+        // 将内容写入临时文件
+        FileUtils.writeByteArrayToFile(tempFile, bytes);
 
         return tempFile;
     }
