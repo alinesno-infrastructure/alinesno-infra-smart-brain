@@ -257,7 +257,9 @@ public class ContentFormatterLayoutController extends BaseController<ContentForm
     @DataPermissionQuery
     @PostMapping("/formatContent")
     public AjaxResult formatContent(@RequestBody @Valid DocumentFormatDTO dto , PermissionQuery query) {
+
         String newContent = service.formatContent(dto , query) ;
+
         return AjaxResult.success("格式化成功" , newContent);
     }
 
