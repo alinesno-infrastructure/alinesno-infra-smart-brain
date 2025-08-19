@@ -35,6 +35,15 @@ var managerUrl = {
 
   closeSceneSSE: "/v1/api/infra/base/im/sseSceneTask/closeSseConnect" ,
   getFlowTaskNotice: "/v1/api/infra/base/im/chat/getFlowTaskNotice" ,
+  getAgentLevel: prefix + "getLevel",
+}
+
+// 获取到所有的角色等级
+export function getAgentLevel() {
+  return request({
+    url: managerUrl.getAgentLevel ,
+    method: 'get'
+  })
 }
 
 // 新增频道
