@@ -83,4 +83,9 @@ public class SceneEntity extends InfraBaseEntity {
     @Column(name = "config_data", type = MySqlTypeConstant.TEXT , comment = "配置数据(以json数据结构保存)")
     private String configData ;
 
+    // 场景等级
+    @TableField
+    @Column(name = "scene_level", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "场景等级")
+    private String sceneLevel;
+
 }
