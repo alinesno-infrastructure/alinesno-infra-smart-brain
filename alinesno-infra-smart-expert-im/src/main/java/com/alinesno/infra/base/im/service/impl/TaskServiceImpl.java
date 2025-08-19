@@ -1,6 +1,5 @@
 package com.alinesno.infra.base.im.service.impl;
 
-import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.ChatMessageDto;
@@ -15,14 +14,12 @@ import com.alinesno.infra.smart.utils.FilterWordUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * TaskServiceImpl 主要用于处理任务，包括添加任务、获取任务等。
