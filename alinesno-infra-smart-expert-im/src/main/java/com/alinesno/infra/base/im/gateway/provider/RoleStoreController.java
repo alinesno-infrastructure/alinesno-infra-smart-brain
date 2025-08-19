@@ -3,32 +3,24 @@ package com.alinesno.infra.base.im.gateway.provider;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.common.facade.wrapper.RpcWrapper;
-import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationConsumer;
-import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.workplace.tools.RoleOrganizationUtil;
 import com.alinesno.infra.smart.im.dto.IndustryRoleOrgDto;
-import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
 import com.alinesno.infra.smart.im.enums.AgentStoreTypeEnum;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.poi.ss.formula.functions.T;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 角色商店服务
