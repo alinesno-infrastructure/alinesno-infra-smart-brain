@@ -391,6 +391,7 @@ const handleTemplateSelect = (template) => {
   console.log('文档内容', customEditorContent.value);
   // 处理模板选择逻辑
   const data = {
+    documentId: documentId.value ,
     templateId: template.id,
     content:  customEditorContent.value ,
   }
