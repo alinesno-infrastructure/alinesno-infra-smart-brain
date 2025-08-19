@@ -140,8 +140,11 @@ public class ContentFormatterDocumentController extends BaseController<ContentFo
 
         log.debug("newFileName = {} , targetFile = {}" , newFileName , targetFile.getAbsoluteFile());
 
+        // 将文件上传到云存储
+        R<String> r = storageConsumer.upload(targetFile);
+
         // 保存上传的文档内容
-        Long documentId =  service.saveUploadDocument(fileName , targetFile , sceneId ,  query) ;
+        Long documentId =  service.saveUploadDocument(fileName , targetFile , sceneId ,  query , r.getData()) ;
 
         return AjaxResult.success("创建成功", documentId);
     }
