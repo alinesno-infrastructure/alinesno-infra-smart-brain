@@ -106,7 +106,7 @@ const font_family_formats = ref(`
   华文仿宋=STFangsong;
   华文楷体=STKaiti;
   华文黑体=STHeiti;
-  华文中宋=STZhongsong;
+  华文中宋=STZhongsong; 
   方正小标宋=FZXiaoBiaoSong-B05;
   方正仿宋=FZFangSong-Z02;
   方正楷体=FZKai-Z03;
@@ -198,7 +198,7 @@ const init = ({
   editimage_toolbar: "rotateleft rotateright | flipv fliph | editimage imageoptions",
   // 文字样式
   font_family_formats: font_family_formats.value ,   
-  font_size_formats: "初号=31.5pt 小初=27pt 一号=19.5pt 小一=18pt 二号=16.5pt 小二=13.5pt 三号=16pt 小三=11.25pt 四号=10.5pt 小四=9pt 五号=7.875pt 小五=6.75pt 六号=5.625pt 七号=4.875pt 八号=3.75pt 6pt 7.5pt 8.25pt 36pt 48pt 54pt", //文字大小
+  font_size_formats: "初号=42pt 小初=36pt 一号=26pt 小一=18pt 二号=22pt 小二=18pt 三号=16pt 小三=11.25pt 四号=10.5pt 小四=9pt 五号=7.875pt 小五=6.75pt 六号=5.625pt 七号=4.875pt 八号=3.75pt 6pt 7.5pt 8.25pt 36pt 48pt 54pt",
   image_caption: true,
   editimage_cors_hosts: ["picsum.photos"],
   noneditable_class: "mceNonEditable",
