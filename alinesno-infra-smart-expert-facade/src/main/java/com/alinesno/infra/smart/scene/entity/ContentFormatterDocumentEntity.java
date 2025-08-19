@@ -47,4 +47,8 @@ public class ContentFormatterDocumentEntity extends InfraBaseEntity {
     @Column(name = "scene_id", type = MySqlTypeConstant.BIGINT, length = 32, comment = "关联的场景ID")
     private Long sceneId; // 关联的场景ID
 
+   @TableField
+   @Column(name = "storage_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "关联的云存储ID")
+   private String storageId ;
+
 }
