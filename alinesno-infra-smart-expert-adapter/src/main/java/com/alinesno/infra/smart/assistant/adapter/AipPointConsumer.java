@@ -20,12 +20,6 @@ import java.util.List;
 public interface AipPointConsumer {
 
     /**
-     * 获取到所有的拦截连接地址与匹配的积分配置
-     */
-    @Get(url = "/getAllPointSetting" , contentType = "application/json")
-    R<List<PointSettingDto>> getAllPointSetting();
-
-    /**
      * 获取当前用户积分
      */
     @Get(url = "/getUserPoint" , contentType = "application/json")
