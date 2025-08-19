@@ -12,11 +12,13 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.Docum
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutGroupMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutMapper;
+import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterDocumentService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelData;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.ContentLayoutExcelParser;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxHtmlFormatterUtils;
+import com.alinesno.infra.smart.scene.entity.ContentFormatterDocumentEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
@@ -49,6 +51,9 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
 
     @Autowired
     private SmartDocumentConsumer smartDocumentConsumer ;
+
+    @Autowired
+    private IContentFormatterDocumentService documentService;
 
     @Autowired
     private IContentFormatterOfficeConfigService officeConfigService;
@@ -133,24 +138,50 @@ public class ContentFormatterLayoutServiceImpl extends IBaseServiceImpl<ContentF
             throw new RuntimeException("未找到模板[" + templateId + "]");
         }
 
+        String dataContent = content.getContent();
+        Long documentId = content.getDocumentId() ;
         DocumentTemplateDTO documentTemplateDTO = DocumentTemplateDTO.fromContentFormatterLayoutDto(templateLayout) ;
+        ContentFormatterDocumentEntity contentFormatterDocument =  documentService.getById(documentId) ;
 
-        // 3. 将HTML内容保存为临时文件
-        String htmlContent = DocxHtmlFormatterUtils.ensureHtmlStructure(content.getContent()) ;
-        if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getOfficialHeaderHtml())){
-            htmlContent = DocxHtmlFormatterUtils.addHeaderToBody(htmlContent, documentTemplateDTO.getOfficialHeaderHtml());
-        }
+        String storageId = contentFormatterDocument.getStorageId() ;
+        if(storageId != null){  // 先下载到本地
+            byte[] bytes = cloudStorageConsumer.download(storageId, null)  ;
+            // 保存到本地
 
-        if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getFooterHtml())){
-            htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
-        }
+            File tempFile = FileTool.createTempFile(bytes) ;
+            byte[] outputBytes = smartDocumentConsumer.formatOfficialDocument(tempFile)  ;
+            File docxTempFile = FileTool.createTempFile(outputBytes)  ;
 
-        File tempFile;
-        try {
-            tempFile = FileTool.createTempHtmlFile(htmlContent);
-            return smartDocumentConsumer.htmlToOfficial(tempFile);
-        } catch (IOException e) {
-            throw new RpcServiceRuntimeException("格式化失败:" + e.getMessage());
+            // outputBytes保存到本地，然后再转换成html
+            String formatterHtmlContent = smartDocumentConsumer.convertToHtml(docxTempFile);
+
+            if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getOfficialHeaderHtml())){
+                formatterHtmlContent = DocxHtmlFormatterUtils.addHeaderToBody(formatterHtmlContent, documentTemplateDTO.getOfficialHeaderHtml());
+            }
+
+            if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getFooterHtml())){
+                formatterHtmlContent = DocxHtmlFormatterUtils.addFooterToBody(formatterHtmlContent, documentTemplateDTO.getFooterHtml());
+            }
+
+            return formatterHtmlContent ;
+        }else{
+            String htmlContent = DocxHtmlFormatterUtils.ensureHtmlStructure(dataContent) ; // 3. 将HTML内容保存为临时文件
+
+            if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getOfficialHeaderHtml())){
+                htmlContent = DocxHtmlFormatterUtils.addHeaderToBody(htmlContent, documentTemplateDTO.getOfficialHeaderHtml());
+            }
+
+            if(DocxHtmlFormatterUtils.hasText(documentTemplateDTO.getFooterHtml())){
+                htmlContent = DocxHtmlFormatterUtils.addFooterToBody(htmlContent, documentTemplateDTO.getFooterHtml());
+            }
+
+            File tempFile;
+            try {
+                tempFile = FileTool.createTempHtmlFile(htmlContent);
+                return smartDocumentConsumer.htmlToOfficial(tempFile);
+            } catch (IOException e) {
+                throw new RpcServiceRuntimeException("格式化失败:" + e.getMessage());
+            }
         }
     }
 
