@@ -154,7 +154,8 @@
     </el-row>
 
     <!-- 添加或修改应用配置对话框 -->
-    <el-dialog :title="title" v-model="open" width="900px" append-to-body>
+    <el-dialog :title="title" v-model="open" fullscreen append-to-body>
+      <div style="max-width: 1240px;margin: auto;">
       <el-form :model="form" :rules="rules" size="large" ref="SceneRef" label-width="80px">
           <el-row>
             <el-col :span="24" class="editor-after-div">
@@ -218,6 +219,16 @@
             </el-form-item>
 
           </el-col>
+
+        <el-col :span="24">
+          <el-form-item label="场景等级" prop="sceneLevel">
+              <el-radio-group v-model="form.sceneLevel" style="flex-direction: column;align-items: flex-start;">
+                <el-radio v-for="level in agentLevels" :key="level.code" :label="level.code"> 
+                  {{ level.code + '(' + level.name + ')' }} - {{ level.desc }}
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+        </el-col>
         </el-row>
         <el-row>
           <el-col :span="24">
@@ -235,13 +246,12 @@
         </el-row>
 
         
-      </el-form>
-      <template #footer>
+      </el-form> 
         <div class="dialog-footer">
           <el-button type="primary" size="large" @click="submitForm">确 定</el-button>
           <el-button @click="cancel" size="large">取 消</el-button>
-        </div>
-      </template>
+        </div> 
+     </div> 
     </el-dialog>
 
     <el-dialog v-model="configAgentDialogVisible" :title="sceneAgentConfigTitle" width="960px">
@@ -285,7 +295,8 @@ import {
   updateSceneAgent,
   updateGreetingQuestion,
   supportAllScene , 
-  updateSceneConfigData
+  updateSceneConfigData,
+  getAgentLevel
 } from "@/api/smart/assistant/scene";
 
 import {
@@ -330,7 +341,7 @@ const multiple = ref(true);
 const total = ref(0);
 const title = ref("");
 const dateRange = ref([]);
-
+const agentLevels = ref([])
 const imageUrl = ref([])
 
 const sceneTypesArr = [];
@@ -389,6 +400,7 @@ const data = reactive({
   },
   rules: {
     sceneName: [{required: true, message: "场景名称不能为空", trigger: "blur"}, {min: 2, max: 20, message: "场景名称长度必须介于 2 和 20 之间", trigger: "blur" }],
+    sceneLevel: [{required: true, message: "场景等级不能为空", trigger: "blur"}],
     sceneDesc: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
     sceneType: [{required: true, message: "场景类型不能为空", trigger: "blur"}],
   }
@@ -664,7 +676,17 @@ const submitSceneConfig = () => {
   })
 }
 
+// 获取到角色等级
+const handleGetAgentLevel = async() => {
+  await getAgentLevel().then(res => {
+    agentLevels.value = res.data ;
+  })
+}
+
+
+
 onMounted(async () => {
+  await handleGetAgentLevel();
   await getList();
   await handleListAllRole();
   await handleSupportScene();
