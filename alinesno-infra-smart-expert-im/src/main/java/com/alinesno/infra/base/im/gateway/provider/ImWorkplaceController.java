@@ -5,10 +5,8 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.smart.assistant.api.IndustryFrequentRoleDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.OrgWorkplaceDto;
-import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceImResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceEntity;
-import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceItemTypeEnums;
 import com.alinesno.infra.smart.assistant.workplace.service.IOrgWorkplaceService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceItemService;
 import com.alinesno.infra.smart.assistant.workplace.service.IWorkplaceService;
@@ -18,16 +16,13 @@ import com.alinesno.infra.smart.im.dto.CustomizeWorkbenchDTO;
 import com.alinesno.infra.smart.im.dto.HomePageDto;
 import com.alinesno.infra.smart.im.service.IAccountHomePageService;
 import com.alinesno.infra.smart.im.service.IFrequentAgentService;
-import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 /**
  * 工作台配置管理
