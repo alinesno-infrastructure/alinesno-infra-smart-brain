@@ -23,6 +23,7 @@ import com.alinesno.infra.smart.assistant.api.config.RoleFlowConfigDto;
 import com.alinesno.infra.smart.assistant.api.config.RoleReActConfigDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleCatalogEntity;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.enums.AgentLevelEnums;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
@@ -41,6 +42,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -409,6 +411,16 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
         log.debug("dto = {}", dto);
         service.updateRoleWelcome(dto) ;
         return ok() ;
+    }
+
+    /**
+     * 获取等级
+     * @return
+     */
+    @GetMapping("/getLevel")
+    public AjaxResult getLevel(){
+        List<Map<String, Object>> levelKeys =  AgentLevelEnums.getAllList();
+        return AjaxResult.success(levelKeys) ;
     }
 
     @Override
