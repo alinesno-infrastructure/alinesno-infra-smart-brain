@@ -41,6 +41,15 @@ var managerUrl = {
   publishRole: prefix + "publishRole",
   listPublicRole: prefix + "listPublicRole",
   updateWelcomeConfig: prefix + "updateWelcomeConfig",
+  getAgentLevel: prefix + "getLevel",
+}
+
+// 获取到所有的角色等级
+export function getAgentLevel() {
+  return request({
+    url: managerUrl.getAgentLevel ,
+    method: 'get'
+  })
 }
 
 // 更新欢迎界面配置
