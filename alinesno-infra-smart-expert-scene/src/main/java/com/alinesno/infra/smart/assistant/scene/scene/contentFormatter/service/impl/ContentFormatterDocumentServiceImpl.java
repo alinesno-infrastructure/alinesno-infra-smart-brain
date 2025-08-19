@@ -4,28 +4,18 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.DocumentTemplateDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.DocumentSourceEnums;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.GroupTypeEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterDocumentMapper;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutGroupMapper;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterLayoutMapper;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.ContentFormatterRuleMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterDocumentService;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxHtmlFormatterUtils;
 import com.alinesno.infra.smart.scene.entity.*;
-import com.alinesno.infra.smart.scene.enums.SceneScopeType;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 描述:文档操作接口
@@ -41,7 +31,7 @@ public class ContentFormatterDocumentServiceImpl extends IBaseServiceImpl<Conten
     private SmartDocumentConsumer smartDocumentConsumer;
 
     @Override
-    public Long saveUploadDocument(String fileName, File targetFile, long sceneId, PermissionQuery query) {
+    public Long saveUploadDocument(String fileName, File targetFile, long sceneId, PermissionQuery query, String storageId) {
 
         // fileName去掉后缀
         String fileNameWithoutExtension = fileName.substring(0, fileName.lastIndexOf("."));
@@ -64,6 +54,7 @@ public class ContentFormatterDocumentServiceImpl extends IBaseServiceImpl<Conten
         entity.setDocumentContent(htmlContent);
         entity.setDocumentSource(DocumentSourceEnums.UPLOAD.getCode());
         entity.setLastSavedTime(new Date());
+        entity.setStorageId(storageId);
 
         // 权限复制
         entity.setOperatorId(query.getOperatorId());
