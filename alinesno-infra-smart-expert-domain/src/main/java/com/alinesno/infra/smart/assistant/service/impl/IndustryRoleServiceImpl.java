@@ -468,6 +468,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
 
         role.setRoleAvatar(dto.getRoleAvatar());
         role.setRoleName(dto.getRoleName());
+        role.setRoleLevel(dto.getRoleLevel());
         role.setIndustryCatalog(dto.getIndustryCatalog());
         role.setResponsibilities(dto.getResponsibilities());
 
@@ -475,6 +476,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             case "script" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_SCRIPT);
             case "react" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_REACT);
             case "flow" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_FLOW);
+            case "deepsearch" -> role.setChainId(AssistantConstants.PREFIX_ASSISTANT_DEEP_SEARCH);
         }
 
         role.setScriptType(dto.getScriptType());
