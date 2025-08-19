@@ -86,7 +86,7 @@ public interface SmartDocumentConsumer {
      * @return API响应
      */
     @Post(url = "/api/v1/docx/format/official")
-    R<byte[]> formatOfficialDocument(@DataFile("file") File file);
+    byte[] formatOfficialDocument(@DataFile("file") File file);
 
     /**
      * HTML转政务公文
