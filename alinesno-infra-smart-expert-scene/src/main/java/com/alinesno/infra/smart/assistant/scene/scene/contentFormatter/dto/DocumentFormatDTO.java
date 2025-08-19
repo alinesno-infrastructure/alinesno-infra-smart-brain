@@ -7,6 +7,12 @@ import lombok.Data;
 public class DocumentFormatDTO {
 
     /**
+     * 文档ID
+     */
+    @NotNull(message = "文档ID不能为空")
+    private Long documentId ;
+
+    /**
      * 模板ID
      */
     @NotNull(message = "模板ID不能为空")
