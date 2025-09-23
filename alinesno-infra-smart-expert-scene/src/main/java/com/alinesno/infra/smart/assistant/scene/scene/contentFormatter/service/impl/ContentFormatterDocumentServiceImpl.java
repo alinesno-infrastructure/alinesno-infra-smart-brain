@@ -9,7 +9,8 @@ import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.mapper.Co
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterDocumentService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterOfficeConfigService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxHtmlFormatterUtils;
-import com.alinesno.infra.smart.scene.entity.*;
+import com.alinesno.infra.smart.scene.entity.ContentFormatterDocumentEntity;
+import com.alinesno.infra.smart.scene.entity.ContentFormatterOfficeConfigEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
