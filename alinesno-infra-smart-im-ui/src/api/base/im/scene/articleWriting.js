@@ -45,6 +45,7 @@ var managerUrl = {
 
   getAllArticleTemplateType: templatePrefix +"getAllArticleTemplate",
   getTemplateByType: templatePrefix +"getTemplateByType",
+  getTemplateBySceneId: templatePrefix +"getTemplateBySceneId",
   getTemplateDetail: templatePrefix +"getTemplateDetail",
 }
 
@@ -103,6 +104,14 @@ export function getArticleById(id) {
  export function getAllArticleTemplateType() {
   return request({
     url: managerUrl.getAllArticleTemplateType , 
+    method: 'get'
+  })
+}
+
+// 获取getTemplateBySceneId
+ export function getTemplateBySceneId(sceneId) {
+  return request({
+    url: managerUrl.getTemplateBySceneId + '?sceneId=' + parseStrEmpty(sceneId),
     method: 'get'
   })
 }
