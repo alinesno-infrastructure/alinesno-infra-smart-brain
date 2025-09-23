@@ -6,17 +6,17 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.prompt.GeneralAgentPrompt;
-import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
-import com.alinesno.infra.smart.point.service.IAccountPointService;
-import com.alinesno.infra.smart.scene.dto.*;
-import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentPlanService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.service.IGeneralAgentTemplateService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.FormatMessageTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
+import com.alinesno.infra.smart.scene.dto.*;
+import com.alinesno.infra.smart.scene.entity.*;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -33,7 +33,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -87,7 +88,8 @@ public class GeneralAgentTaskExecutionService {
         CompletableFuture.runAsync(() -> {
             try {
                 // 任务开始
-                accountPointService.startSceneTask(userId , orgId , taskId);
+                GeneralAgentTaskEntity task = taskService.getById(taskId);
+                accountPointService.startSceneTask(userId , orgId , taskId , task.getSceneId());
 
                 internalExecuteTask(taskId, channelStreamId, query);
             } catch (InterruptedException e) {
