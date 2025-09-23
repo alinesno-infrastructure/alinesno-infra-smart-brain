@@ -69,19 +69,31 @@
           <div class="say-message-body markdown-body chat-reasoning" v-if="item.reasoningText" v-html="readerReasonningHtml(item.reasoningText)"></div>
           <div class="say-message-body markdown-body" v-if="item.chatText" v-html="readerHtml(item.chatText)"></div>
 
-          <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
-            <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
-            <el-button type="danger" v-if="!item.isPlaySpeaking" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
-            <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
-            <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
-            <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
-            <el-button type="info" v-if="item.messageId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+          <div class="chat-ai-footer">
+            <div class="chat-ai-msg-info" :class="(item.roleType == 'agent' && index > 1 && !chatStreamLoading) ? 'show-tools' : 'hide-tools' ">
+              <el-button type="info" link icon="Link" size="small" @click="handleOpenMessageReference(item)">引用</el-button> 
+              <UserFeelbackButton :feel="true" :message="item" @submit="handleFeedback" />
+              <UserFeelbackButton :feel="false" :message="item" @submit="handleFeedback" /> 
+              <DocumentDownloadButton :message="item" /> 
+            </div>
+
+            <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
+              <img :src="speakingIcon" v-if="item.isPlaySpeaking" style="width:25px;margin-right:10px;cursor: pointer;"  />
+              <el-button type="danger" v-if="!item.isPlaySpeaking" link icon="Headset" size="small" @click="handlePlayGenContent(item)" :loading="item.getSpeechLoading">播放</el-button>
+              <el-button type="primary" link icon="Position" size="small" @click="handleBusinessIdToMessageBox(item)">引用</el-button>
+              <el-button type="primary" link icon="EditPen" size="small" @click="handleEditGenContent(item)">查看</el-button>
+              <el-button type="info" link icon="CopyDocument" size="small" @click="handleCopyGenContent(item)">复制</el-button>
+              <el-button type="info" v-if="item.messageId && item.roleId" size="small" link icon="Promotion" @click="handleExecutorMessage(item)">执行</el-button>
+            </div>
           </div>
 
         </div>
       </div>
 
     </div>
+
+    <!-- 消息引用弹出窗 -->
+    <ChatMessageReferencePanel ref="chatMessageReferencePanelRef" />
 
   </el-scrollbar>
 </template>
@@ -91,11 +103,16 @@
 import { ElMessage } from 'element-plus';
 import { nextTick , ref , defineEmits} from 'vue';
 
+const { proxy } = getCurrentInstance();
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
-import { playGenContent  } from '@/api/base/im/roleChat'
+import { playGenContent , messageFeedback  } from '@/api/base/im/roleChat'
+
+import ChatMessageReferencePanel from '@/components/ChatAttachment/chatMessageReferencePanel'
+import UserFeelbackButton from "@/components/ChatAttachment/userFeelbackButton"
+import DocumentDownloadButton from "@/components/ChatAttachment/documentDownloadButton"
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 import { handleCopyGenContent } from '@/utils/ruoyi'
@@ -108,6 +125,8 @@ const loading = ref(false)
 const innerRef = ref(null);
 const scrollbarRef = ref(null);
 const messageList = ref([]);
+
+const chatMessageReferencePanelRef = ref(null); 
 
 // 定义派发事件
 const emit = defineEmits(['sendMessageToChatBox' , 'handleEditorContent' , 'executorMessage'])
@@ -285,6 +304,11 @@ function handleEditGenContent(item){
   emit('handleEditorContent' , businessId) ; 
 }
 
+// 打开消息引用
+const handleOpenMessageReference = (item) => {
+  chatMessageReferencePanelRef.value.openReferece(item);
+}
+
 // 定义 handleCopyGenContent 函数
 // const handleCopyGenContent = async (item) => {
 //   try {
@@ -333,7 +357,13 @@ const handlePlayGenContent = (item) => {
   });
 }
 
-
+// 提交用户消息反馈
+const handleFeedback = (data) => {
+  messageFeedback(data).then(res => {
+    console.log('res = xx' + res); 
+    proxy.$modal.msgSuccess("评价成功，非常感谢你的反馈。");
+  })
+}
 
 function handleExecutorMessage(item){
   emit('executorMessage' , item) ; 
@@ -457,6 +487,19 @@ defineExpose({
 
   .message {
     margin-bottom: 8px;
+  }
+
+  .chat-ai-footer{
+    display: flex;
+    justify-content: space-between;
+
+    .chat-ai-msg-info{
+      display: flex;
+      margin-right:6px;
+      .el-button+.el-button {
+          margin-left: 6px;
+      }
+    }
   }
 
 }
