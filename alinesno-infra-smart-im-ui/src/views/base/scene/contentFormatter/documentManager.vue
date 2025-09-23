@@ -237,9 +237,9 @@ onMounted(() => {
 }
 
 .document-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
   gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .document-card {
@@ -247,6 +247,7 @@ onMounted(() => {
   border-radius: 12px;
   border: 1px solid rgba(6, 7, 9, 0.1);
   transition: all 0.3s;
+  width: calc(25% - 15px);
   
   .card-content {
     padding: 16px;
