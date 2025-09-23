@@ -15,9 +15,7 @@
 
         <el-row :gutter="20">
             <el-col :span="4">
-                <div class="siderbar-type-list" style="
-
-">
+                <div class="siderbar-type-list">
                     <div class="review-group-add" style="margin-top:0px;">
                         分类
                         <el-button type="primary" text bg icon="Plus" @click="openAddGroupDialog">新建</el-button>
@@ -31,7 +29,7 @@
 
                                 <div style="display: flex;flex-direction: column;gap: 5px;">
                                     <span class="filename"> {{ group.groupName }} </span>
-                                    <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;"> 业务知识库，集成配置管理 </span>
+                                    <span style="font-size:13px;color:#a5a5a5;"> 业务知识库，集成配置管理 </span>
                                 </div>
                                 
                                 <div class="group-opt-btn" v-if="groupButtonVisible[groupIndex]">
@@ -74,7 +72,7 @@
                                     <span class="filename" @click="selectRuleItem(rule)">
                                         {{ rule.docName }}
                                     </span>
-                                    <span style="font-size:13px;color:#a5a5a5;font-weight: lighter;">
+                                    <span style="font-size:13px;color:#a5a5a5;">
                                         纳瓦尔宝典由埃里克·乔根森编著。本书围绕财富与幸福两大主题，集结纳瓦尔智慧。书中指出积累财富
                                     </span>
                                     <div class="file-list-footer"> 
