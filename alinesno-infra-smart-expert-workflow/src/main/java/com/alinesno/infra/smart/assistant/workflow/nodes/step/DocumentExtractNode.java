@@ -1,4 +1,3 @@
-// DocumentExtractNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 该类表示文档内容提取节点，继承自 AbstractFlowNode 类。
@@ -31,17 +32,26 @@ public class DocumentExtractNode extends AbstractFlowNode {
     }
 
     @Override
-    protected void handleNode() {
-        DocumentExtractNodeData nodeData = getNodeData() ;
-        log.debug("nodeData = {}" , nodeData) ;
-        log.debug("node type = {} output = {}" , node.getType() , output);
+    protected CompletableFuture<Void> handleNode() {
+        try {
+            DocumentExtractNodeData nodeData = getNodeData();
+            log.debug("nodeData = {}" , nodeData);
+            log.debug("node type = {} output = {}" , node.getType() , output);
 
-        String content = "文档提取内容" ;
-        output.put(node.getStepName()+".content" , content);
+            String content = "文档提取内容";
+            output.put(node.getStepName() + ".content", content);
+
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception ex) {
+            log.error("DocumentExtractNode 执行异常: {}", ex.getMessage(), ex);
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(ex);
+            return failed;
+        }
     }
 
     private DocumentExtractNodeData getNodeData(){
-        String nodeDataJson = String.valueOf(node.getProperties().get("node_data")) ;
-        return JSONObject.parseObject(nodeDataJson , DocumentExtractNodeData.class) ;
+        String nodeDataJson = String.valueOf(node.getProperties().get("node_data"));
+        return JSONObject.parseObject(nodeDataJson , DocumentExtractNodeData.class);
     }
 }
