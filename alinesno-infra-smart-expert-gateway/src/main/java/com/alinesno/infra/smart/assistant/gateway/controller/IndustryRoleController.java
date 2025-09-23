@@ -27,7 +27,6 @@ import com.alinesno.infra.smart.assistant.enums.AgentLevelEnums;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.enums.PushOptions;
 import com.alinesno.infra.smart.im.service.IAgentStoreService;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -90,7 +89,7 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @ResponseBody
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
-        log.debug("page = {}", ToStringBuilder.reflectionToString(page));
+
 
         List<ConditionDto> condition =  page.getConditionList() ;
         String catalogId =  request.getParameter("industryCatalog") ;
