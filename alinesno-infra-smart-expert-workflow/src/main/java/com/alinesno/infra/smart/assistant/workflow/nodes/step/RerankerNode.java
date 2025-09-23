@@ -1,4 +1,3 @@
-// RerankerNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
 import com.alibaba.fastjson.JSONObject;
@@ -10,6 +9,8 @@ import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.CompletableFuture;
 
 /**
  * 该类表示多路召回节点，继承自 AbstractFlowNode 类。
@@ -30,16 +31,16 @@ public class RerankerNode extends AbstractFlowNode {
         setType("reranker");
     }
 
-
     @Override
-    protected void handleNode() {
-        RerankerNodeData nodeData = getNodeData() ;
-        log.debug("nodeData = {}" , nodeData) ;
+    protected CompletableFuture<Void> handleNode() {
+        RerankerNodeData nodeData = getNodeData();
+        log.debug("nodeData = {}" , nodeData);
         log.debug("node type = {} output = {}" , node.getType() , output);
+        return CompletableFuture.completedFuture(null);
     }
 
     private RerankerNodeData getNodeData(){
-        String nodeDataJson = String.valueOf(node.getProperties().get("node_data")) ;
-        return JSONObject.parseObject(nodeDataJson , RerankerNodeData.class) ;
+        String nodeDataJson = String.valueOf(node.getProperties().get("node_data"));
+        return JSONObject.parseObject(nodeDataJson , RerankerNodeData.class);
     }
 }
