@@ -22,7 +22,7 @@
 		<cos_api.version>5.6.137</cos_api.version>
 
 		<!-- 模型适配 -->
-		<model-adapter.version>3.0.0-M2-SNAPSHOT</model-adapter.version>
+		<model-adapter.version>3.0.1-M2-SNAPSHOT</model-adapter.version>
 	</properties>
 
 	<dependencies>
