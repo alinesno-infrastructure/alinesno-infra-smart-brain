@@ -8,13 +8,13 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeService;
 import com.alinesno.infra.smart.assistant.service.IAttachmentReaderService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.enums.ReviewPositionEnums;
 import com.alinesno.infra.smart.scene.enums.RiskLevelEnums;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import io.jsonwebtoken.lang.Assert;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -174,10 +174,10 @@ public class ProjectKnowledgeController extends BaseController<ProjectKnowledgeE
                     entity.setDocContent(fileContent);
                 }
 
-                service.importData(entity);
+                service.importData(entity , null, null);
 
                 // 处理完成，设置结果
-                deferredResult.setResult(AjaxResult.success("审核规则导入成功"));
+                deferredResult.setResult(AjaxResult.success("知识库导入成功."));
             } catch (Exception e) {
                 // 处理异常
                 deferredResult.setErrorResult(AjaxResult.error("文件处理失败: " + e.getMessage()));
