@@ -1,6 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
@@ -13,7 +16,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextExc
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.RobustExcelParser;
 import com.alinesno.infra.smart.scene.entity.LongTextTemplateEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTemplateGroupEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -126,6 +131,26 @@ public class LongTextTemplateServiceImpl extends IBaseServiceImpl<LongTextTempla
         result.put("groupTemplateMap", groupTemplateMap); // 分组映射(可选)
 
         return result;
+    }
+
+    @Override
+    public List<LongTextTemplateEntity> getTemplateBySceneId(PermissionQuery query, Long sceneId) {
+
+        ISceneService sceneService = SpringUtil.getBean(ISceneService.class);
+        SceneEntity sceneEntity = sceneService.getById(sceneId);
+
+        String configDataStr = sceneEntity.getConfigData();
+        if (configDataStr != null) {
+            JSONObject configData = JSONObject.parseObject(configDataStr);
+            JSONArray selectedTemplateIds = configData.getJSONArray("selectedTemplateIds");
+
+            if (selectedTemplateIds != null) {
+                // 将 JSONArray 转换为 JSON 字符串后再解析为 List
+                return JSONArray.parseArray(selectedTemplateIds.toJSONString(), LongTextTemplateEntity.class);
+            }
+        }
+
+        return List.of();
     }
 
     private String getSimplifiedStackTrace(Exception e) {
