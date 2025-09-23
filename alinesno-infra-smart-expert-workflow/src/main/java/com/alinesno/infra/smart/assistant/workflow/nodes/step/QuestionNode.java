@@ -1,4 +1,3 @@
-// QuestionNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
 import com.agentsflex.core.llm.Llm;
@@ -12,13 +11,11 @@ import com.alinesno.infra.smart.assistant.workflow.nodes.AbstractFlowNode;
 import com.alinesno.infra.smart.assistant.workflow.nodes.variable.step.QuestionNodeData;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 该类表示问题优化节点，继承自 AbstractFlowNode 类。
@@ -39,38 +36,41 @@ public class QuestionNode extends AbstractFlowNode {
         setType("question");
     }
 
-    @SneakyThrows
     @Override
-    protected void handleNode() {
-        QuestionNodeData nodeData = getAiChatProperties() ;
-        log.debug("node type = {}" , nodeData) ;
+    protected CompletableFuture<Void> handleNode() {
+        QuestionNodeData nodeData = getAiChatProperties();
+        log.debug("node type = {}" , nodeData);
 
-        if(nodeData != null){
-            String llmModelId = nodeData.getLlmModelId() ;
-            LlmModelEntity llmModel = llmModelService.getById(llmModelId) ;
-
-            log.debug("llmModel = {}" , llmModel)  ;
-
-            if(llmModel != null && llmModel.getProviderCode().equals("qwen")){
-                QwenLlmConfig config = new QwenLlmConfig();
-                config.setEndpoint(llmModel.getApiUrl()); ;
-                config.setApiKey(llmModel.getApiKey()) ;
-                config.setModel(llmModel.getModel()) ;
-
-                Llm llm = new QwenLlm(config);
-//                CompletableFuture<String> future = getAiChatCompletableFuture(llm , nodeData.getPrompt()) ;
-//                CompletableFuture<String> future = getAiChatCompletableFuture(llm , nodeData.getPrompt()) ;
-//                String chatResult = future.get() ;
-
-                CompletableFuture<String> future = getAiChatResultAsync(llm, replacePlaceholders(nodeData.getPrompt()));
-                // 设置超时时间为 120 秒
-                String chatResult = future.get(120, TimeUnit.SECONDS);
-                System.out.println("Chat result: " + chatResult);
-
-                output.put(node.getStepName()+".answer" , chatResult);
-            }
-
+        if (nodeData == null) {
+            return CompletableFuture.completedFuture(null);
         }
+
+        String llmModelId = nodeData.getLlmModelId();
+        LlmModelEntity llmModel = llmModelService.getById(llmModelId);
+
+        log.debug("llmModel = {}" , llmModel);
+
+        if (llmModel != null && "qwen".equals(llmModel.getProviderCode())) {
+            QwenLlmConfig config = new QwenLlmConfig();
+            config.setEndpoint(llmModel.getApiUrl());
+            config.setApiKey(llmModel.getApiKey());
+            config.setModel(llmModel.getModel());
+
+            Llm llm = new QwenLlm(config);
+
+            CompletableFuture<String> future = getAiChatResultAsync(llm, replacePlaceholders(nodeData.getPrompt()));
+            return future.thenAccept(chatResult -> {
+                log.debug("Chat result: {}", chatResult);
+                output.put(node.getStepName() + ".answer", chatResult);
+            }).exceptionally(ex -> {
+                log.error("QuestionNode 执行异常: {}", ex.getMessage(), ex);
+                CompletableFuture<Void> failed = new CompletableFuture<>();
+                failed.completeExceptionally(ex);
+                return null;
+            });
+        }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private QuestionNodeData getAiChatProperties(){
