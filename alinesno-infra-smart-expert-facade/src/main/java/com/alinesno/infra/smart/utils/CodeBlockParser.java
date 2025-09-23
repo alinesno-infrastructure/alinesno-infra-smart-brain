@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.utils;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import lombok.extern.slf4j.Slf4j;
