@@ -41,6 +41,37 @@ function translationEdgeData(edgeData, distance) {
 const TRANSLATION_DISTANCE = 40;
 let CHILDREN_TRANSLATION_DISTANCE = 40;
 
+/**
+ * 辅助：判断当前是否有可输入元素处于焦点
+ * - 支持原生 input/textarea/select
+ * - 支持 contenteditable 元素
+ * - 支持 Element Plus 输入类组件（通过 class 名检测）
+ */
+function isInputFocused() {
+    if (typeof document === 'undefined') return false;
+    const activeEl = document.activeElement;
+    if (!activeEl) return false;
+
+    const tag = activeEl.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+
+    if (activeEl.isContentEditable) return true;
+
+    // 常见第三方组件输入内部 class（Element Plus）
+    // el-input 内部输入元素 class 为 'el-input__inner'
+    // el-textarea 也会存在 'el-textarea__inner'
+    // el-select 的输入框可能在 .el-input__inner 内
+    if (activeEl.classList && (
+        activeEl.classList.contains('el-input__inner') ||
+        activeEl.classList.contains('el-textarea__inner') ||
+        activeEl.closest?.('.el-input__inner, .el-textarea__inner, .el-select .el-input') 
+    )) {
+        return true;
+    }
+
+    return false;
+}
+
 export function initDefaultShortcut(lf, graph) {
     const { keyboard } = lf;
     const {
@@ -54,6 +85,8 @@ export function initDefaultShortcut(lf, graph) {
         CHILDREN_TRANSLATION_DISTANCE = TRANSLATION_DISTANCE;
         if (!keyboardOptions?.enabled) return true;
         if (graph.textEditElement) return true;
+        if (isInputFocused()) return true;
+
         const { guards } = lf.options;
         const elements = graph.getSelectElements(false);
         const enabledClone = guards && guards.beforeClone ? guards.beforeClone(elements) : true;
@@ -78,6 +111,8 @@ export function initDefaultShortcut(lf, graph) {
     const paste_node = () => {
         if (!keyboardOptions?.enabled) return true;
         if (graph.textEditElement) return true;
+        if (isInputFocused()) return true; // 输入框聚焦时放行（让粘贴作用于输入框）
+
         if (selected && (selected.nodes || selected.edges)) {
             lf.clearSelectElements();
             const addElements = lf.addElements(selected, CHILDREN_TRANSLATION_DISTANCE);
@@ -92,6 +127,10 @@ export function initDefaultShortcut(lf, graph) {
     };
 
     const delete_node = () => {
+
+        // 如果输入/富文本聚焦，放行（不进行节点删除）
+        if (isInputFocused()) return true;
+
         const elements = graph.getSelectElements(true);
         lf.clearSelectElements();
         if (elements.nodes.length === 0 && elements.edges.length === 0) {
@@ -113,6 +152,7 @@ export function initDefaultShortcut(lf, graph) {
         }).then(() => {
             if (!keyboardOptions?.enabled) return true;
             if (graph.textEditElement) return true;
+            if (isInputFocused()) return true;
 
             elements.edges.forEach((edge) => lf.deleteEdge(edge.id));
             elements.nodes.forEach((node) => lf.deleteNode(node.id));
@@ -128,19 +168,28 @@ export function initDefaultShortcut(lf, graph) {
     keyboard.on(['cmd + v', 'ctrl + v'], paste_node);
     // undo
     keyboard.on(['cmd + z', 'ctrl + z'], () => {
-        // if (!keyboardOptions?.enabled) return true
-        // if (graph.textEditElement) return true
-        // lf.undo()
-        // return false
+        if (!keyboardOptions?.enabled) return true
+        if (graph.textEditElement) return true
+        if (isInputFocused()) return true
+        lf.undo()
+        return false
     });
     // redo
     keyboard.on(['cmd + y', 'ctrl + y'], () => {
         if (!keyboardOptions?.enabled) return true;
         if (graph.textEditElement) return true;
+        if (isInputFocused()) return true;
         lf.redo();
         return false;
     });
     // delete
     keyboard.on(['backspace'], delete_node);
+
+    // 关键修改：返回方法，供组件调用
+    return {
+        copy_node,
+        paste_node,
+        delete_node
+    };
 
 }
