@@ -6,6 +6,7 @@
       :direction="direction"
       :modal="false"
       :before-close="handleClose"
+      style="width:25%"
       size="25%"
     >
       <el-scrollbar class="drawer-scrollbar">
