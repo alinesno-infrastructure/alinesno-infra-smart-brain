@@ -2,8 +2,6 @@ package com.alinesno.infra.smart.im.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.api.IndustryFrequentRoleDto;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
-import com.alinesno.infra.smart.im.entity.AccountHomePageEntity;
 import com.alinesno.infra.smart.im.entity.FrequentAgentEntity;
 import com.alinesno.infra.smart.im.enums.FrequentTypeEnums;
 
