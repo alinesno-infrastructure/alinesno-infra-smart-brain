@@ -84,6 +84,19 @@ public class ArticleTemplateController extends BaseController<ArticleTemplateEnt
         return AjaxResult.success(service.getTemplateByType(query , typeCode));
     }
 
+    /**
+     * 获取场景模板
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    @DataPermissionQuery
+    @GetMapping("/getTemplateBySceneId")
+    public AjaxResult getTemplateBySceneId(PermissionQuery query , Long sceneId) throws Exception {
+        return AjaxResult.success(service.getTemplateBySceneId(query , sceneId));
+    }
+
     @DataPermissionSave
     @ResponseBody
     @PostMapping("/saveArticleTemplate")
