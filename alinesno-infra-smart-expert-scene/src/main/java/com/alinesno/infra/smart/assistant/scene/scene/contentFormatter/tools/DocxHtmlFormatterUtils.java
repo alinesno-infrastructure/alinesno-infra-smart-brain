@@ -4,8 +4,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import java.util.regex.Pattern;
-
 /**
  * Docx Format HTML内容格式化的处理
  */
