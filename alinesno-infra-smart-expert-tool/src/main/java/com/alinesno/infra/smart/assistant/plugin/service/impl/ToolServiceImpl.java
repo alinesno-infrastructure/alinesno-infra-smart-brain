@@ -280,19 +280,17 @@ public class ToolServiceImpl extends IBaseServiceImpl<ToolEntity, ToolMapper> im
         // 发送HTTP请求
         String response = HttpUtil.get(url).trim() ;
 
-        if (response != null) {
-            // 将返回结果转换成R<String>
-            R<List<ToolEntity>> r = JSON.parseObject(response, new TypeReference<>() {});
-            List<ToolEntity> list = r.getData();
-            if (list != null) {
-                for (ToolEntity toolEntity : list) {
-                    toolEntity.setName("(MCP) "+toolEntity.getName()) ;
-                }
+        // 将返回结果转换成R<String>
+        R<List<ToolEntity>> r = JSON.parseObject(response, new TypeReference<>() {});
+        List<ToolEntity> list = r.getData();
+        if (list != null) {
+            for (ToolEntity toolEntity : list) {
+                toolEntity.setName("(MCP) "+toolEntity.getName()) ;
+                toolEntity.setToolCatalog("mcp");
             }
-            return list;
         }
+        return list;
 
-        return Collections.emptyList();
     }
 
     /**
