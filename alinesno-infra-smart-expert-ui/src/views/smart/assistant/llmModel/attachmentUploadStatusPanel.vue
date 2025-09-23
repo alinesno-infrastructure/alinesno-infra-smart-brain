@@ -59,6 +59,19 @@
           <el-slider size="large" show-input v-model="formData.maxLength" :step="100" :max="30000" />
       </el-form-item>
 
+      <!-- 超长字符处理策略 -->
+      <el-form-item label="超出策略">
+        <el-radio-group v-model="formData.overflowStrategy" @change="formData.ragVectorId = ''">
+          <el-radio value="truncate">截取内容</el-radio>
+          <el-radio value="rag">转换成RAG</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
+      <!--  向量化方式处理 -->
+      <el-form-item label="向量模型" prop="ragVectorId" v-if="formData.overflowStrategy === 'rag'">
+        <LLMSelector :modelType="'vector_model'" :size="'large'" v-model="formData.ragVectorId" />
+      </el-form-item>
+
       <!-- 提交按钮 -->
       <el-form-item>
         <div style="width: 100%;text-align: right;margin-top:10px">
