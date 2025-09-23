@@ -2,8 +2,6 @@ package com.alinesno.infra.smart.assistant.role.utils;
 
 import com.alinesno.infra.smart.im.dto.ParserDataBean;
 import com.alinesno.infra.smart.im.enums.FileType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.Comparator;
 import java.util.List;
