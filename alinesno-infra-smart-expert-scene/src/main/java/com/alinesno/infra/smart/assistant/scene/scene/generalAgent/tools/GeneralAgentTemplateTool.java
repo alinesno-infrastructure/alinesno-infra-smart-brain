@@ -1,13 +1,12 @@
 package com.alinesno.infra.smart.assistant.scene.scene.generalAgent.tools;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.scene.scene.generalAgent.dto.GeneralTemplateDto;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 通用智能助手模板工具类
