@@ -3,33 +3,28 @@ package com.alinesno.infra.smart.assistant.scene.scene.longtext.controller;
 import cn.hutool.core.bean.BeanUtil;
 import com.agentsflex.core.message.AiMessage;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
-import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.common.web.adapter.utils.file.FileUtils;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.LongTextTaskGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.GeneratorDocumentNameUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTaskExecutionService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.point.service.IAccountPointService;
-import com.alinesno.infra.smart.scene.entity.ArticleGenerateSceneEntity;
-import com.alinesno.infra.smart.scene.entity.GeneralAgentSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextSceneEntity;
 import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
@@ -37,8 +32,6 @@ import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.dtflys.forest.annotation.Get;
-import com.dtflys.forest.annotation.Post;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,13 +40,11 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.request.async.DeferredResult;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -93,6 +84,9 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
 
     @Autowired
     private LongTextChatRoleUtil longTextChatRoleUtil ;
+
+    @Autowired
+    private GeneratorDocumentNameUtil generatorDocumentNameUtil ;
 
     @Autowired
     private IIndustryRoleService roleService ;
@@ -234,6 +228,9 @@ public class LongTextTaskController extends BaseController<LongTextTaskEntity, I
         }
 
         service.save(taskEntity);
+
+        // 动态生成任务名称
+        generatorDocumentNameUtil.generatorDocumentName(taskEntity , dto.getPromptText());
 
         return AjaxResult.success("操作成功" , taskEntity.getId()) ;
     }
