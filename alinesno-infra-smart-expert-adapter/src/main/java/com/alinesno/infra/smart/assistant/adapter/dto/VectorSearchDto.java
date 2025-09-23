@@ -23,11 +23,13 @@ public class VectorSearchDto {
     @NotBlank(message = "搜索文本不能为空")
     private String searchText ;
 
+    private String searchType ;
+
     private Integer topK ;
 
-    private String minRelevance = "0.6";  // 最低相关度
+    private String minRelevance = "0.3";  // 最低相关度
 
-    private Integer quoteLimit; // 引用查询字符上限
+    private Integer quoteLimit = 2000; // 引用查询字符上限
 
     public VectorSearchDto(long datasetId, String searchText, int topK) {
         this.datasetId = datasetId;
