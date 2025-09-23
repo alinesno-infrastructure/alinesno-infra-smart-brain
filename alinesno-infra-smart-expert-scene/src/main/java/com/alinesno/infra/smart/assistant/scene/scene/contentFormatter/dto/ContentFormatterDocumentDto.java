@@ -1,11 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.alinesno.infra.smart.scene.entity.ContentFormatterDocumentEntity;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import org.springframework.beans.BeanUtils;
 
 /**
  * 文档操作接口数据传输对象
