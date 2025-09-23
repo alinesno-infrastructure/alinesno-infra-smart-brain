@@ -2,7 +2,6 @@ package com.alinesno.infra.smart.im.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.im.dto.ParserDataBean;
-import com.alinesno.infra.smart.im.entity.AccountChannelEntity;
 import com.alinesno.infra.smart.im.entity.MessageReferenceEntity;
 
 import java.util.List;
