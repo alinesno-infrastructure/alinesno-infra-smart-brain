@@ -2,13 +2,13 @@ package com.alinesno.infra.smart.assistant.scene.common.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectKnowledgeDto;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectKnowledgeGroupDto;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.ProjectKnowledgeGroupMapper;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeService;
+import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeDto;
+import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeGroupDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
