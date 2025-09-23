@@ -6,9 +6,6 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.agentsflex.core.util.StringUtil;
-import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.Message;
-import com.alibaba.dashscope.common.Role;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
@@ -16,6 +13,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
+import com.alinesno.infra.smart.assistant.workflow.WorkflowManage;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowExecutionEntity;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowNodeExecutionEntity;
@@ -25,18 +23,18 @@ import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
+import com.alinesno.infra.smart.im.service.IMessageReferenceService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import io.reactivex.Flowable;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 这是一个抽象父类，继承自 WorkflowNode 接口。
@@ -55,10 +53,27 @@ public abstract class AbstractFlowNode implements FlowNode {
     protected StreamStoreMessagePublisher streamStoreMessagePublisher; // 保存入库的消息
 
     @Autowired
+    protected IMessageReferenceService messageReferenceService;
+
+    @Autowired
     protected QianWenNewApiLLM qianWenNewApiLLM ;
 
     @Autowired
-    protected ILlmModelService llmModelService; ;
+    protected ILlmModelService llmModelService;
+
+    @Autowired
+    @Qualifier("chatThreadPool")
+    protected ThreadPoolTaskExecutor chatThreadPool;
+
+    /**
+     * 工作流管理类，用于管理流程中的节点和数据
+     */
+    protected WorkflowManage workflowManage;
+
+    /**
+     * 节点列表，用于存储流程中的所有节点
+     */
+    protected List<FlowNodeDto> flowNodes ;
 
     /**
      * 流程节点DTO，用于存储流程节点的相关信息
@@ -68,7 +83,7 @@ public abstract class AbstractFlowNode implements FlowNode {
     /**
      * 最后输出的内容
      */
-    private StringBuilder outputContent ;
+    protected StringBuilder outputContent ;
 
     /**
      * 流程执行实体，代表整个流程的执行实例
@@ -115,79 +130,88 @@ public abstract class AbstractFlowNode implements FlowNode {
      */
     private GlobalVariables globalVariables;
 
-    /**
-     * 执行节点任务
-     *
-     * @param node
-     * @param flowExecution
-     * @param flowNodeExecution
-     * @param output
-     */
+    // AbstractFlowNode.java
     @SneakyThrows
-    public void executeNode(FlowNodeDto node,
-                            FlowExecutionEntity flowExecution ,
-                            FlowNodeExecutionEntity flowNodeExecution,
-                            Map<String, Object> output,
-                            StringBuilder outputContent ,
-                            MessageTaskInfo taskInfo,
-                            IndustryRoleEntity role,
-                            MessageEntity workflowExecution,
-                            FlowExpertService flowExpertService) {
+    public CompletableFuture<Void> executeNode(
+            FlowNodeDto node,
+            FlowExecutionEntity flowExecution,
+            FlowNodeExecutionEntity flowNodeExecution,
+            Map<String, Object> output,
+            StringBuilder outputContent,
+            MessageTaskInfo taskInfo,
+            IndustryRoleEntity role,
+            MessageEntity workflowExecution,
+            FlowExpertService flowExpertService) {
 
-        boolean isPrintContent = isPrintContent(node) ;
-        log.debug("isPrintContent(node) = {}" , isPrintContent);
-
+        // 1. 初始化工作流参数（同步准备，无阻塞逻辑）
+        workflowManage = new WorkflowManage(node, flowNodes);
+        boolean isPrintContent = isPrintContent(node);
         node.setPrint(isPrintContent);
         flowExpertService.setNode(node);
         flowExpertService.setOutputContent(outputContent);
 
-        // 设置运行参数变量
+        // 设置成员变量（同步操作）
         this.setNode(node);
-        this.outputContent = outputContent ;
-        this.setFlowExecution(flowExecution);
-        this.setFlowNodeExecution(flowNodeExecution);
-        this.setOutput(output);
-        this.setTaskInfo(taskInfo);
-        this.setRole(role);
-        this.setWorkflowExecution(workflowExecution);
-        this.setFlowExpertService(flowExpertService);
+        this.outputContent = outputContent;
+        this.flowExecution = flowExecution;
+        this.flowNodeExecution = flowNodeExecution;
+        this.output = output;
+        this.taskInfo = taskInfo;
+        this.role = role;
+        this.workflowExecution = workflowExecution;
+        this.flowExpertService = flowExpertService;
 
         log.debug("执行节点任务:{} , node:{}", node.getType(), node.getProperties());
-        eventStepMessage(AgentConstants.STEP_START) ;
+        eventStepMessage(AgentConstants.STEP_START); // 发送开始事件
 
-        // 如果是开始节点，则配置全局变量
+        // 2. 处理全局变量（仅 start 节点需要，同步逻辑）
         if ("start".equals(node.getType())) {
 
             List<String> messages = new ArrayList<>();
-            handleHistoryMessage(messages , taskInfo.getChannelId());
-
-            String preContent = workflowExecution==null?"" : workflowExecution.getContent() ;
-
-            GlobalVariables globalVariables = new GlobalVariables(preContent , taskInfo.getChannelId() , messages) ;
+            handleHistoryMessage(messages, taskInfo.getChannelId());
+            String preContent = workflowExecution == null ? "" : workflowExecution.getContent();
+            GlobalVariables globalVariables = new GlobalVariables(preContent, taskInfo.getChannelId(), messages);
             this.setGlobalVariables(globalVariables);
 
-            String historyContentAsString = String.join(",", globalVariables.getHistoryContent());
+            // 填充全局变量到 output（同步操作）
+            output.put("global.time", globalVariables.getTime());
+            output.put("global.pre_content", globalVariables.getPreContent());
+            output.put("global.channelId", globalVariables.getChannelId());
+            output.put("global.history_content", String.join(",", globalVariables.getHistoryContent()));
+            output.put("global.datasetKnowledgeDocument", StringUtils.hasLength(taskInfo.getDatasetKnowledgeDocument()) ? taskInfo.getDatasetKnowledgeDocument() : "");
 
-            // 设置全局变量
-            output.put("global.time", globalVariables.getTime()) ;
-            output.put("global.pre_content", globalVariables.getPreContent()) ;
-            output.put("global.channelId", globalVariables.getChannelId()) ;
-            output.put("global.history_content", historyContentAsString) ;
+            if (taskInfo.getAttachments() != null && !taskInfo.getAttachments().isEmpty()) {
+                output.put("global.document", taskInfo.getAttachments().get(0));
+            }
         }
 
-        handleNode();
-        log.debug("output = {}" , output);
+        workflowManage.setOutput(output);
 
-        // 结束流程节点
-        eventStepMessage(AgentConstants.STEP_FINISH) ;
+        // 3. 异步执行节点逻辑（核心改造：调用子类异步 handleNode()）
+        return handleNode()
+                .thenRun(() -> {
+                    // 4. 节点成功后处理（异步回调）
+                    log.debug("output = {}", output);
+                    eventStepMessage(AgentConstants.STEP_FINISH); // 发送完成事件
+                    // 如果是最后节点，异步保存完整输出
+                    if (node.isLastNode()) {
+                        String messageId =  streamStoreMessagePublisher.doStuffAndPublishAnEvent(
+                                taskInfo.getFullContent(),
+                                role,
+                                taskInfo,
+                                taskInfo.getFlowChatId()
+                        );
 
-        // 如果是最后一个节点，则将所有内容拼接保存到数据库中
-        if (node.isLastNode()) {
-            streamStoreMessagePublisher.doStuffAndPublishAnEvent(outputContent.toString() ,
-                    role,
-                    taskInfo,
-                    taskInfo.getFlowChatId());
-        }
+                        // 保存内容引用
+                        messageReferenceService.saveMessageReference(taskInfo.getDatasetMap() , messageId);
+                    }
+                })
+                .exceptionally(ex -> {
+                    // 5. 异常处理（异步回调）
+                    log.error("节点执行失败:{}", ex.getMessage(), ex);
+                    eventStepMessage("节点执行失败: " + ex.getMessage(), AgentConstants.STEP_ERROR);
+                    return null; // 异常不中断上层流程，仅标记错误状态
+                });
     }
 
     /**
@@ -302,125 +326,33 @@ public abstract class AbstractFlowNode implements FlowNode {
     /**
      * 处理节点任务
      */
-    protected abstract void handleNode() ;
-
-    /**
-     * 获取字符串的CompletableFuture
-     * @param prompt
-     * @return
-     */
-    @NotNull
-    protected CompletableFuture<String> getStringCompletableFuture(String prompt) {
-        return CompletableFuture.supplyAsync(() -> {
-
-            StringBuilder outputStr = new StringBuilder();
-
-            List<Message> messages = new ArrayList<>();
-            messages.add(qianWenNewApiLLM.createMessage(Role.USER, prompt));
-
-            Flowable<GenerationResult> result = qianWenNewApiLLM.streamReasoningCall(messages) ; // "qwen-max-2025-01-25"
-
-            long tmpMsgId = taskInfo.getFlowChatId() ;
-
-            StringBuilder preMsg = new StringBuilder() ;
-
-            result.blockingForEach(message -> {
-
-                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
-                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
-
-                log.debug(msg);
-
-                String newMsg = msg.substring(preMsg.toString().length()) ;
-
-                eventNodeMessage(newMsg);
-
-                preMsg.setLength(0);
-                preMsg.append(msg) ;
-
-                if(finishReason != null && finishReason.equals("stop")){
-                    outputStr.append(msg);
-                }
-            });
-
-            eventStepMessage("思考结束" , AgentConstants.STEP_FINISH, String.valueOf(tmpMsgId)) ;
-
-            // 生成任务结果
-            return outputStr.toString() ;
-        });
-    }
-
-    /**
-     * 流式任务
-     * @param role
-     * @param prompt
-     * @param taskInfo
-     */
-    @SneakyThrows
-    protected CompletableFuture<String> processStream(Llm llm , IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
-
-        return CompletableFuture.supplyAsync(() -> {
-
-            StringBuilder outputStr = new StringBuilder();
-            long workflowId = IdUtil.getSnowflakeNextId() ;
-
-            llm.chatStream(prompt, (context, response) -> {
-                AiMessage message = response.getMessage();
-
-//            // TODO 流程节点输出思考内容
-//            if(StringUtil.hasText(message.getReasoningContent())){
-//                taskInfo.setReasoningText(message.getReasoningContent());
-//                streamMessagePublisher.doStuffAndPublishAnEvent(null , role, taskInfo, workflowId);
-//            }
-
-                if(StringUtil.hasText(message.getContent())){
-                    taskInfo.setReasoningText(null);
-                    eventNodeMessage(message.getContent() );
-                }
-
-                MessageStatus status =  message.getStatus() ;
-                if(status == MessageStatus.END){  // 结束
-
-                    MessageEntity entity = new MessageEntity();
-
-                    entity.setTraceBusId(taskInfo.getTraceBusId());
-                    entity.setId(workflowId) ;
-                    entity.setContent(message.getFullContent()) ;
-                    entity.setReasoningContent(message.getFullReasoningContent());
-                    entity.setFormatContent(message.getFullContent());
-                    entity.setName(role.getRoleName());
-
-                    entity.setRoleType("agent");
-                    entity.setReaderType("html");
-
-                    entity.setAddTime(new Date());
-                    entity.setIcon(role.getRoleAvatar());
-
-                    entity.setChannelId(taskInfo.getChannelId()) ;
-                    entity.setRoleId(role.getId()) ;
-
-                    flowExpertService.getMessageService().save(entity);
-                    outputStr.append(message.getFullContent()) ;
-                }
-
-            });
-
-            return outputStr.toString() ;
-        });
-
-    }
+    protected abstract CompletableFuture<Void> handleNode();
 
     protected void eventNodeMessage(String newMsg) {
+       eventNodeMessage(newMsg , null);
+    }
 
-        if(newMsg == null || newMsg.isEmpty()){
-            return ;
+    protected void eventNodeMessage(String newMsg , String reasoningText) {
+
+        // 如果两个都为空，则没有需要处理的信息，直接返回
+        if ((newMsg == null || newMsg.isEmpty()) &&
+                (reasoningText == null || reasoningText.isEmpty())) {
+            return;
         }
 
         FlowStepStatusDto stepDto = new FlowStepStatusDto() ;
         stepDto.setMessage("任务进行中...") ;
         stepDto.setStepId(node.getId()) ;
         stepDto.setStatus(AgentConstants.STEP_PROCESS);
-        stepDto.setFlowChatText(newMsg) ;
+
+        if(StringUtils.hasLength(newMsg)){
+            stepDto.setFlowChatText(newMsg) ;
+        }
+
+        if(StringUtils.hasLength(reasoningText)){
+            stepDto.setFlowReasoningText(reasoningText);
+        }
+
         stepDto.setPrint(node.isPrint());
 
         taskInfo.setFlowStep(stepDto);
@@ -431,53 +363,65 @@ public abstract class AbstractFlowNode implements FlowNode {
                 taskInfo.getFlowChatId());
     }
 
-
     protected CompletableFuture<String> getAiChatResultAsync(Llm llm, String prompt) {
-        CompletableFuture<String> future = new CompletableFuture<>();
-        AtomicReference<String> outputStr = new AtomicReference<>("");
-
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
-        final MessageTaskInfo localTaskInfo = taskInfo;
+        final CompletableFuture<String> future = new CompletableFuture<>();
 
         try {
             llm.chatStream(prompt, (context, response) -> {
-                AiMessage message = response.getMessage();
-                System.out.println(">>>> " + message);
-
-                FlowStepStatusDto stepDto = new FlowStepStatusDto();
-                stepDto.setMessage("任务进行中...");
-                stepDto.setStepId(node.getId());
-                stepDto.setStatus(AgentConstants.STEP_PROCESS);
-                stepDto.setFlowChatText(message.getContent());
-                stepDto.setPrint(node.isPrint());
-
-                synchronized (localTaskInfo) {
-                    localTaskInfo.setFlowStep(stepDto);
-                }
-
                 try {
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            outputStr.set(message.getFullContent());
-                            stepDto.setStatus(AgentConstants.STEP_FINISH);
-                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getFlowChatId());
-                            future.complete(outputStr.get());
-                        } else {
-                            streamMessagePublisher.doStuffAndPublishAnEvent(null, role, localTaskInfo, localTaskInfo.getFlowChatId());
-                        }
+                    AiMessage message = response.getMessage();
+                    if (message == null) {
+                        return;
                     }
-                } catch (Exception e) {
-                    // 处理发布事件时的异常
-                    log.error(e.getMessage());
-                    future.completeExceptionally(e);
+
+                    // 实时片段推送（与之前逻辑一致）
+                    if (StringUtil.hasText(message.getReasoningContent())) {
+                        taskInfo.setReasoningText(null);
+                        eventNodeMessage(null , message.getReasoningContent());
+                    }
+
+                    // 实时片段推送（与之前逻辑一致）
+                    if (StringUtil.hasText(message.getContent())) {
+                        taskInfo.setReasoningText(null);
+                        eventNodeMessage(message.getContent());
+                    }
+
+                    // 终止时完成 future
+                    if (message.getStatus() == MessageStatus.END) {
+                        String full = message.getFullContent();
+                        // 持久化最终消息（保持之前行为）
+                        MessageEntity entity = new MessageEntity();
+                        entity.setTraceBusId(taskInfo.getTraceBusId());
+                        entity.setId(IdUtil.getSnowflakeNextId());
+                        entity.setContent(full);
+                        entity.setReasoningContent(message.getFullReasoningContent());
+                        entity.setFormatContent(full);
+                        entity.setName(role.getRoleName());
+                        entity.setRoleType("agent");
+                        entity.setReaderType("html");
+                        entity.setAddTime(new Date());
+                        entity.setIcon(role.getRoleAvatar());
+                        entity.setChannelId(taskInfo.getChannelId());
+                        entity.setRoleId(role.getId());
+                        // 保存操作可能是同步的，建议交给 orchestratorExecutor/异步写入以避免阻塞回调线程
+                        try {
+                            flowExpertService.getMessageService().save(entity);
+                        } catch (Exception ex) {
+                            log.warn("保存消息实体异常: {}", ex.getMessage(), ex);
+                        }
+
+                        future.complete(full);
+                    }
+                } catch (Exception ex) {
+                    future.completeExceptionally(ex);
                 }
             });
         } catch (Exception e) {
-            // 处理 chatStream 方法的异常
-            log.error(e.getMessage());
             future.completeExceptionally(e);
         }
 
+        // 为避免无限等待，可在调用处或这里设置超时
+        // 例如：return future.orTimeout(120, TimeUnit.SECONDS);
         return future;
     }
 
