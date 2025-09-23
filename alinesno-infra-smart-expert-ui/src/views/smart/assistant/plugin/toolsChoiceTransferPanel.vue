@@ -36,9 +36,14 @@
             <template #default="{ option }">
               <div class="aip-el-transfer-panel__item">
 
-                <img :src="imagePath(option.icon)" 
+                <img v-if="option.toolCatalog === 'mcp'" :src="option.iconBase64" 
                   @error="handleImageError" 
                   style="border-radius: 50%; width: 30px; height: 30px;" />
+                  
+                <img v-else :src="imagePath(option.icon)" 
+                  @error="handleImageError" 
+                  style="border-radius: 50%; width: 30px; height: 30px;" />
+
                 {{ option.name }}
               </div>
             </template>
