@@ -12,8 +12,11 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewGenReviewDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewTaskDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewListOptionEnum;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditResultService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewRulesService;
@@ -194,9 +197,10 @@ public class DocReviewListGeneratorService {
 
         long userId = query.getOperatorId() ;
         long orgId = query.getOrgId() ;
+        long sceneId = sceneEntity.getSceneId();
 
         // 任务会话开始
-        accountPointService.startSceneTask(userId, orgId , entity.getId());
+        accountPointService.startSceneTask(userId, orgId , entity.getId() , sceneId);
 
         ContractTypeEnum contractType = ContractTypeEnum.getByScenarioId(entity.getContractType());
         if (contractType == null) {
@@ -345,9 +349,10 @@ public class DocReviewListGeneratorService {
 
             long userId = query.getOperatorId() ;
             long orgId = query.getOrgId() ;
+            long sceneId = taskEntity.getSceneId();
 
             // 任务会话开始
-            accountPointService.startSceneTask(userId, orgId , taskEntity.getId());
+            accountPointService.startSceneTask(userId, orgId , taskEntity.getId() , sceneId);
 
             for (Long rule : dto.getRuleIds()) {
                 dto.setRuleId(rule);
@@ -515,7 +520,8 @@ public class DocReviewListGeneratorService {
                 rule,
                 taskInfo ,
                 taskDto) +
-                FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT;
+                FormatterPromptTools.FORMAT_REVIEW_OUTPUT_PROMPT +
+                DocReviewPrompt.EXAMPLE_RULE;
 
         taskInfo.setText(prompt);
 
