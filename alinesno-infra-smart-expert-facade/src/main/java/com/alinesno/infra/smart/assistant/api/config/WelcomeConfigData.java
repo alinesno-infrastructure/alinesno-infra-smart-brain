@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.api.config;
 
 import lombok.Data;
-import org.springframework.data.domain.Example;
 
 import java.util.List;
 
