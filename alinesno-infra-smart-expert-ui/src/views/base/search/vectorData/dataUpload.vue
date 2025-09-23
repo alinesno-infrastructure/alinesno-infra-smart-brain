@@ -420,7 +420,7 @@ nextTick(() => {
 
 .upload-dataset-container{
     margin: auto;
-    max-width:1400px;
+    max-width:2000px;
 }
 .step-container {
     background: #F7F8FA;
