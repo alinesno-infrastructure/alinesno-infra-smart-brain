@@ -20,13 +20,14 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import io.jsonwebtoken.lang.Assert;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -41,6 +42,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -86,6 +88,13 @@ public class DatasetKnowledgeController extends BaseController<DatasetKnowledgeE
     @PostMapping("/datatables")
     public TableDataInfo datatables(HttpServletRequest request, Model model, DatatablesPageBean page) {
         log.debug("page = {}", ToStringBuilder.reflectionToString(page));
+
+        String datasetId = request.getParameter("datasetId") ;
+        if(StringUtils.isBlank(datasetId)){
+            TableDataInfo tableDataInfo = this.toPage(model, this.getFeign(), page);
+            tableDataInfo.setRows(new ArrayList<>());
+            return tableDataInfo ;
+        }
 
         List<ConditionDto> conditionList = page.getConditionList() ; // new ArrayList<>() ;
 
