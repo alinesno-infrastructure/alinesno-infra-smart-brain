@@ -20,6 +20,7 @@ import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublis
 import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.PromptMessageDto;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.api.prompt.PromptMessage;
 import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
@@ -33,7 +34,6 @@ import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
 import com.alinesno.infra.smart.assistant.template.service.ITemplateService;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.ChannelEntity;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -44,7 +44,6 @@ import com.alinesno.infra.smart.im.service.ITaskService;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import com.alinesno.infra.smart.utils.FilterWordUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.plexpt.chatgpt.entity.chat.Message;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.SneakyThrows;
@@ -58,7 +57,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
 import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.*;
@@ -408,11 +406,11 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
             if (params != null) {
                 contentTemplate = TemplateParser.parserTemplate(contentTemplate, paramMap);
             }
-            if (Message.Role.SYSTEM.getValue().equals(msg.getRole())) {
+            if (Role.SYSTEM.getValue().equals(msg.getRole())) {
                 message = PromptMessage.ofSystem(contentTemplate);
-            } else if (Message.Role.ASSISTANT.getValue().equals(msg.getRole())) {
+            } else if (Role.ASSISTANT.getValue().equals(msg.getRole())) {
                 message = PromptMessage.ofAssistant(contentTemplate);
-            } else if (Message.Role.USER.getValue().equals(msg.getRole())) {
+            } else if (Role.USER.getValue().equals(msg.getRole())) {
                 message = PromptMessage.of(contentTemplate);
             }
 
