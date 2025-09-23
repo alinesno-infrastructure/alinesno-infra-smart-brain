@@ -2,7 +2,7 @@
     <DocumentReviewContainer> 
                 <div class="app-container docuemnt-parser-container">
                     <el-row>
-                        <el-col :span="14">
+                        <el-col :span="12">
                             <div style="font-size: 16px;font-weight: bold;display: flex;align-items: center;gap:20px; justify-content: flex-start;">
                          
                                 <!-- 标题内容 -->
@@ -20,7 +20,7 @@
                                 </el-scrollbar>
                             </div>
                         </el-col>
-                        <el-col :span="10" style="padding-left: 20px;">
+                        <el-col :span="12" style="padding-left: 20px;">
                             <div>  
                                 <el-steps class="mb-4"  finish-status="success" style="width: 100%;cursor: pointer;" :space="200"
                                     :active="currentActive" simple>
@@ -49,6 +49,7 @@
                                         @closeGeneratorStatus="closeGeneratorStatus"
                                         @generatorStatus="generatorStatus"
                                         @reCheck="reCheck"
+                                        @getPlainText="handlePlainTextRequest"
                                         @genSingleChapterContent="genSingleChapterContent" />
 
                                     <ReviewResult v-if="currentActive == 3" 
@@ -217,7 +218,10 @@ const closeGeneratorStatus = () => {
 
 // 搜索和替换
 const searchAndReplace = (searchText , replaceText) => {
-    tinyMceEditorRef.value.handleSearchReplace(searchText , replaceText);
+   const searchIndex = tinyMceEditorRef.value.handleSearchReplace(searchText , replaceText);
+    if(searchIndex == 0){
+        ElMessage.warning('未找到内容匹配项目，请根据内容查询！');
+    }
 }
 
 const downloadWordDocument = () => { 
@@ -229,10 +233,22 @@ const downloadWordDocument = () => {
     );
 }; 
 
+// 获取纯文本
+const handlePlainTextRequest = ({ resolve, reject }) => {
+  try {
+    const plainText = tinyMceEditorRef.value.getPlainText();
+    resolve(plainText);
+  } catch (error) {
+    reject(error);
+  }
+};
+
 // 更新文档内容
 const handleUpdateDocumentContent = () => {
     const htmlContent = tinyMceEditorRef.value.getContent();
+
     console.log("html content = " + htmlContent);
+
     const data = {
         htmlContent: htmlContent , 
         taskId: taskId.value
@@ -367,6 +383,7 @@ onUnmounted(() => {
     top: auto;
     right: 10px;
     border-radius: 8px;
+    position: absolute;
 }
 
 .aip-flow-drawer .el-drawer__header {
