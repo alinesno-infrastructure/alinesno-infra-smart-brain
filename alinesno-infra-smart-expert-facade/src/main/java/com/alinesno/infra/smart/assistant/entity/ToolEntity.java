@@ -93,4 +93,11 @@ public class ToolEntity extends InfraBaseEntity {
     @ColumnComment("工具权限")
     @TableField("tool_permission")
     private String toolPermission;
+
+    @TableField(exist = false)
+    private String toolCatalog ; // 工具分类
+
+    // 临时配合MCP图标
+    @TableField(exist = false)
+    private String iconBase64;
 }
