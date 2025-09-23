@@ -1,15 +1,10 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import javax.validation.constraints.Size;
 
 /**
  * 内容格式化规则DTO
