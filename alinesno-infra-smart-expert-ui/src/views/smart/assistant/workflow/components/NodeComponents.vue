@@ -20,7 +20,7 @@
                     </div>
                 </el-col>
 
-                <el-col :span="12" v-for="item in workflowNodes" :key="item.name" >
+                <el-col :span="12" v-for="item in filteredWorkflowNodes" :key="item.name" >
                     <div class="node-components-content" @click="clickNode(item)">
                         <div class="node-components-icon">
                             <i :class="item.properties.icon" />
@@ -31,6 +31,13 @@
                         </div>
                     </div>
                 </el-col>
+
+                 <el-col :span="24" v-if="filteredWorkflowNodes.length === 0">
+                    <div class="node-components-content no-results">
+                        <el-empty description="没有搜索结果，请重新再搜索." image-size="100" />
+                    </div>
+                </el-col>
+
             </el-row>
         </el-scrollbar>
     </div>
@@ -141,7 +148,7 @@ const workflowNodes = [
             color: "#303F9F",
             stepName: '判断器',
             showNode: true,
-            height: 330,
+            height: 352,
             width: 540,
             branch_condition_list: [
                 {
@@ -261,8 +268,81 @@ const workflowNodes = [
             height: 540,
             width: 330
         }
+    },
+    {
+        // 结束节点
+        id: '1015',
+        name: "END",
+        label: "结束节点",
+        description: "结束流程",
+        type: "end",
+        properties: {
+            icon: 'fa-solid fa-flag-checkered',
+            color: "#424242",
+            stepName: '结束节点',
+            showNode: true,
+            height: 330,
+            width: 330
+        }
     }
 ];
+
+// 将搜索拆分为关键字数组（去除空项），匹配任一字段包含所有关键字才保留
+const filteredWorkflowNodes = computed(() => {
+    const q = (searchNodeComponent.value || '').trim().toLowerCase();
+    if (!q) {
+        return workflowNodes;
+    }
+    const terms = q.split(/\s+/).filter(Boolean);
+    return workflowNodes.filter(node => {
+        const hay = `${node.label} ${node.name} ${node.description} ${node.type}`.toLowerCase();
+        // 所有 terms 必须都出现在 hay 中
+        return terms.every(t => hay.indexOf(t) !== -1);
+    });
+});
+
+// 辅助：安全地构造正则（转义特殊字符）
+function escapeRegExp(string = '') {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// 高亮 label（返回 HTML）
+const highlightLabel = (item) => {
+    const q = (searchNodeComponent.value || '').trim();
+    if (!q) return escapeHtml(item.label);
+    return highlightText(item.label, q);
+}
+
+// 高亮 description（返回 HTML）
+const highlightDesc = (item) => {
+    const q = (searchNodeComponent.value || '').trim();
+    if (!q) return escapeHtml(item.description);
+    return highlightText(item.description, q);
+}
+
+// 将 text 中匹配的关键字用 <mark> 包裹（支持多关键字，忽略大小写）
+function highlightText(text = '', query = '') {
+    const terms = query.split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return escapeHtml(text);
+
+    // 依次替换每个关键字（注意逐一替换以避免影响后续关键字）
+    let result = escapeHtml(text);
+    terms.forEach(term => {
+        const re = new RegExp(escapeRegExp(term), 'ig');
+        result = result.replace(re, match => `<mark class="node-highlight">${match}</mark>`);
+    });
+    return result;
+}
+
+// 简单 HTML 转义，防止注入
+function escapeHtml(str = '') {
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 
 const clickNode = (item) => {
     // const { id, workflowRef } = props;
@@ -348,6 +428,10 @@ defineExpose({ clickNode });
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+    }
+
+    .no-results {
+        justify-content: center;
     }
 }
 </style>
