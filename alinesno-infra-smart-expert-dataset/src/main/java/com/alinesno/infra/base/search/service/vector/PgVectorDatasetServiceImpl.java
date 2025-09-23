@@ -116,7 +116,7 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         Llm llm = null ;
         EmbeddingOptions embeddingOptions = null ;
 
-        if(ConfigTypeEnums.CUSTOM.getValue().equals(vectorDatasetEntity.getConfigType())){
+        if(vectorDatasetEntity != null && ConfigTypeEnums.CUSTOM.getValue().equals(vectorDatasetEntity.getConfigType())){
             Long embeddingModelId = vectorDatasetEntity.getEmbeddingModelId() ;
 
             LlmModelEntity llmModel = llmModelService.getById(embeddingModelId) ;
@@ -144,6 +144,10 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         List<DocumentVectorBean> list = null;
 
         VectorDatasetEntity vectorDatasetEntity = getById(dto.getDatasetId()) ;
+        if(vectorDatasetEntity == null) {
+            return Collections.emptyList();
+        }
+
         setVectorModel(vectorDatasetEntity);
 
         if(StringUtils.hasLength(dto.getSearchType())){
