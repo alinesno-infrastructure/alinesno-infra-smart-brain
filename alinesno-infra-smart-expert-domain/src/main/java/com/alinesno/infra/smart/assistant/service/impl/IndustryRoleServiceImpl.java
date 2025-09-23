@@ -32,7 +32,6 @@ import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleMapper;
 import com.alinesno.infra.smart.assistant.service.*;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.AgentStoreEntity;
@@ -523,6 +522,7 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         role.setVoicePlayStatus(dto.isVoicePlayStatus());
         role.setUploadStatus(dto.isUploadStatus());
         role.setOutputFileFormatStatus(dto.isOutputFileFormatStatus());
+        role.setContextEngineeringEnable(dto.isContextEngineeringEnable());
 
         // 开场白问题
         role.setGreetingQuestion(JSONObject.toJSONString(dto.getGreetingQuestion()));
@@ -560,6 +560,12 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         if(dto.getOutputFileFormatData() != null){
             role.setOutputFileFormatData(JSONObject.toJSONString(dto.getOutputFileFormatData()));
         }
+
+        // 上下文工程
+        if(dto.getContextEngineeringData() != null){
+            role.setContextEngineeringData(JSONObject.toJSONString(dto.getContextEngineeringData()));
+        }
+
     }
 
     /**
@@ -785,6 +791,10 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
         subQueryWrapper.select(AgentStoreEntity::getAgentId)
                 .eq(AgentStoreEntity::getRoleOrganizationId , AgentConstants.STORE_EMPTY_ORG_ID);
         List<Object> agentIds = agentStoreService.listObjs(subQueryWrapper);
+
+        if(agentIds.isEmpty()){
+            return new ArrayList<>();
+        }
 
         // 主查询：构建查询条件
         LambdaQueryWrapper<IndustryRoleEntity> queryWrapper = new LambdaQueryWrapper<>();
