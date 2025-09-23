@@ -1,23 +1,12 @@
 package com.alinesno.infra.smart.assistant.role.utils;
 
-import com.alinesno.infra.smart.assistant.api.CodeContent;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.context.ContextManager;
-import com.alinesno.infra.smart.assistant.role.tools.ToolsUtil;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.entity.MessageEntity;
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
 import lombok.Data;
 import org.codehaus.groovy.ast.stmt.*;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 public class GroovySandbox {
 
