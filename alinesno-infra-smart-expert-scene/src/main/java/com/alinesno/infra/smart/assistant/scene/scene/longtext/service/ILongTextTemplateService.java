@@ -35,4 +35,11 @@ public interface ILongTextTemplateService extends IBaseService<LongTextTemplateE
      */
     Map<String, Object> readExcel(List<RobustExcelParser.TemplateBean> dataList, PermissionQuery query);
 
+    /**
+     * 根据场景ID获取模板
+     * @param query
+     * @param sceneId
+     * @return
+     */
+    List<LongTextTemplateEntity>  getTemplateBySceneId(PermissionQuery query, Long sceneId);
 }
