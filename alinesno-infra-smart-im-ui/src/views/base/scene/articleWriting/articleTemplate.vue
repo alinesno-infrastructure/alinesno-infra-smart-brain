@@ -4,10 +4,15 @@
       <div class="article-template-type-item" :class="{ 'active': selectedType === 0 }" @click="selectType(0)">
         <i class="fa-solid fa-list-ul"></i> 全部
       </div>
+      <div class="article-template-type-item" :class="{ 'active': selectedType === 1 }" @click="selectType(1)">
+        <i class="fa-solid fa-list-ul"></i> 我的模板
+      </div>
+      <!-- 
       <div class="article-template-type-item" v-for="item in templateTypeList" :key="item.code"
         :class="{ 'active': selectedType === item.code }" @click="selectType(item.code)">
         <i :class="item.icon"></i> {{ item.label }}
-      </div>
+      </div> 
+      -->
     </div>
 
     <!-- 模型列表 -->
@@ -42,8 +47,9 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import {
-  getAllArticleTemplateType,
-  getTemplateByType , 
+  // getAllArticleTemplateType,
+  // getTemplateByType , 
+  getTemplateBySceneId, 
   getTemplateDetail ,
 } from '@/api/base/im/scene/articleWriting';
 
@@ -58,11 +64,14 @@ const props = defineProps({
 // 发出选中的模板类型
 const emit = defineEmits(['update:modelValue' , 'selectTemplate']);
 
-const templateTypeList = ref([]);
+const route = useRoute();
+
 const templateList = ref([]);
 const selectedType = ref(0); // 默认选中"全部"
 const selectedTemplateCode = ref(props.modelValue);
+const sceneId = ref(route.query.sceneId)
 
+// const templateTypeList = ref([]);
 // 计算属性：根据选中的类型过滤模板列表
 // const filteredTemplateList = computed(() => {
 //   if (selectedType.value === 0) {
@@ -77,9 +86,9 @@ const selectType = (typeId) => {
   if (selectedType.value === typeId) return;
 
   selectedType.value = typeId;
-  getTemplateByType(typeId).then(res => {
-    templateList.value = res.data;
-  });
+  // getTemplateBySceneId(typeId).then(res => {
+  //   templateList.value = res.data;
+  // });
 };
 
 // 选择模板
@@ -95,13 +104,8 @@ const selectTemplate = (item) => {
 };
 
 onMounted(() => {
-  // 获取所有模板类型
-  getAllArticleTemplateType().then(res => {
-    templateTypeList.value = res.data;
-  });
-
   // 获取默认模板列表（全部类型）
-  getTemplateByType(0).then(res => {
+  getTemplateBySceneId(sceneId.value).then(res => {
     templateList.value = res.data;
     if (res.data.length > 0 && !props.modelValue) {
       selectTemplate(res.data[0]);
