@@ -19,6 +19,11 @@ public class UploadData {
     // 识别结果处理
     private int maxLength = 16384; // 最大长度，默认16k
 
+    // 超出字符策略(truncate截取|rag转换成RAG知识库)
+    private String overflowStrategy = "truncate";
+
+    // rag向量化ID
+    private String ragVectorId ;
 
     // 获取最大长度
     public int getMaxLength() {
