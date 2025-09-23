@@ -29,7 +29,7 @@ public interface IAccountPointService {
     /**
      * 开始场景任务
      */
-    void startSceneTask(long userId , long orgId  , long taskId);
+    void startSceneTask(long userId , long orgId  , long taskId , long sceneId);
 
     /**
      * 结束场景任务
