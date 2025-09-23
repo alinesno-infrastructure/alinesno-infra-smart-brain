@@ -126,17 +126,17 @@ import ArticleTypeConfig from './articleTypeConfig.vue';
 
 // import DataAnalysisDisplay from './agentContentDisplay.vue'
 // import OutlineGenContainerPanel from './components/OutlineEditor.vue';
+// import FunctionList from './functionList'
+// import DynamicTemplateEditor from './components/dynamicTemplateEditor'
 
 import RoleChatPanel from '@/views/base/scene/common/chatPanel';
-import FunctionList from './functionList'
-// import DynamicTemplateEditor from './components/dynamicTemplateEditor'
 import DynamicPromptEditor from './components/DynamicPromptEditor.vue';
 
 import {
   getScene,
-  // savePagerQuestion,
   chatPromptContent ,
   // savePPTOutline
+  // savePagerQuestion,
 } from '@/api/base/im/scene/articleWriting';
 
 import SnowflakeId from "snowflake-id";
@@ -166,10 +166,10 @@ const outline = ref(null)
 // 执行面板
 const showDebugRunDialog = ref(false);
 const roleChatPanelRef = ref(null)
-const finalText = ref('')
 const currentPromptTemplate = ref('帮我写一篇文章')
 const sceneId = ref(route.query.sceneId)
 const streamLoading = ref(null)
+const finalText = ref('')
 const showArticleOutput = ref(false)
   
 const channelStreamId= ref(route.query.channelStreamId || snowflake.generate())
