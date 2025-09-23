@@ -9,22 +9,23 @@
                     <span class="box-card-title">AI配置</span>
                 </div>
 
-                <!-- <el-row class="nav-row">
-                    <el-col :span="24">
+                <!-- 上下文工程_start -->
+                <el-row class="nav-row">
+                    <el-col :span="12">
                         <div class="ai-config-section-title">
-                            <i class="fa-solid fa-comment-slash"></i> 对话开场白
+                            <i class="fa-solid fa-layer-group"></i> <span> 上下文工程</span>
                         </div>
                     </el-col>
-                    <el-col :span="24">
-                        <div class="input-wrapper">
-                            <el-form-item prop="greeting" class="form-item-wrapper">
-                                <el-input maxlength="100" v-model="agentModelConfigForm.greeting" show-word-limit
-                                    type="textarea" resize="none" :rows="2"
-                                    placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题"></el-input>
-                            </el-form-item>
+                    <el-col :span="12">
+                        <div class="button-group">
+                            <el-button type="primary" text bg @click="toggleContextEngineStatus">
+                                {{ contextEngineeringEnable ? '关闭' : '开启' }}
+                            </el-button>
+                            <el-button v-if="contextEngineeringEnable" type="primary" text bg @click="toggleContextEngineSettingsPanel">参数</el-button>
                         </div>
                     </el-col>
-                </el-row> -->
+                </el-row>
+                <!-- 上下文工程_end -->
 
                 <el-row class="nav-row">
                     <el-col :span="12">
@@ -73,8 +74,12 @@
                     <el-col :span="24">
                         <div class="input-wrapper">
                             <el-form-item prop="greeting" class="form-item-wrapper">
-                                <el-input maxlength="100" v-model="agentModelConfigForm.greeting"
-                                    show-word-limit type="textarea" resize="none" :rows="2"
+                                <el-input maxlength="2000" 
+                                    v-model="agentModelConfigForm.greeting"
+                                    show-word-limit 
+                                    type="textarea" 
+                                    resize="none" 
+                                    :rows="2"
                                     placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题">
                                 </el-input>
                             </el-form-item>
@@ -150,22 +155,6 @@
                                 </el-col>
                             </el-row>
 
-                <!-- <el-row class="nav-row">
-                    <el-col :span="12">
-                        <div class="ai-config-section-title">
-                            <i class="fa-solid fa-lightbulb"></i> <span>用户问题建议</span>
-                        </div>
-                    </el-col>
-                    <el-col :span="12">
-                        <div class="button-group">
-                            <el-button type="primary" text bg @click="toggleGuessWhatYouAsk">
-                                {{ guessWhatYouAskStatus ? '关闭' : '开启' }}
-                            </el-button>
-                            <el-button v-if="guessWhatYouAskStatus" type="primary" text bg
-                                @click="toggleGuessWhatYouAskStatusPanel">参数</el-button>
-                        </div>
-                    </el-col>
-                </el-row> -->
             </el-form>
 
         </el-card>
@@ -217,6 +206,11 @@
                 <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
             </el-dialog>
 
+            <!-- 上下文工程配置 -->
+            <el-dialog title="上下文工程配置" v-model="contextEngineStatusVisible" width="700px">
+                <ContextEngineSettingsPanel @handleContextEngineSettingsPanelClose="handleContextEngineSettingsPanelClose" ref="contextEngineSettingsPanelRef" />
+            </el-dialog>
+
     </div>
 </template>
 
@@ -262,7 +256,7 @@ import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPane
 import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
 import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
 import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
-
+import ContextEngineSettingsPanel from '@/views/smart/assistant/llmModel/contextEngineSettingsPanel'
 
 // AI大模型配置窗口相关
 const agentModelConfigFormRef = ref(null)
@@ -311,6 +305,7 @@ const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
 const openingPhraseStatusVisible = ref(false)
+const contextEngineStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -323,6 +318,7 @@ const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
 const openingPhraseStatusPanelRef  = ref(null)
+const contextEngineSettingsPanelRef = ref(false)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
@@ -381,6 +377,8 @@ const voicePlayStatus = ref(false);
 const voiceInputStatus = ref(false);
 // 用户问题建议开关
 const guessWhatYouAskStatus = ref(false);
+// 上下文工程开头
+const contextEngineeringEnable = ref(false)
 
 // 已选择的数据集数据
 // const selectionDatasetData = ref([]);
@@ -616,6 +614,13 @@ const displayRoleInfoBack = (currentRole) =>{
         agentModelConfigForm.value.greetingQuestion = currentRole.greetingQuestion ;
     }
 
+    // 上下文工程
+    if(currentRole.contextEngineeringEnable){
+        contextEngineeringEnable.value = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringEnable = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringData = currentRole.contextEngineeringData ;
+    }
+
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
 
@@ -830,6 +835,39 @@ const openGreetingQuestionPanel = () => {
     nextTick(() => {
        openingPhraseStatusPanelRef.value.setOpeningQuestions(agentModelConfigForm.value.greetingQuestion) 
     });
+}
+
+/** 上下文工程配置 */
+const toggleContextEngineStatus = () => {
+    contextEngineeringEnable.value = !contextEngineeringEnable.value;
+    agentModelConfigForm.value.contextEngineeringEnable = contextEngineeringEnable.value;
+}
+
+const toggleContextEngineSettingsPanel = () => {
+    contextEngineStatusVisible.value = !contextEngineStatusVisible.value;
+
+    nextTick(() => {
+        console.log(contextEngineSettingsPanelRef.value)
+        contextEngineSettingsPanelRef.value.setLlmModelOptions(llmModelOptions.value);
+
+        if(agentModelConfigForm.value.contextEngineeringData){
+            contextEngineSettingsPanelRef.value.setConfigParams(agentModelConfigForm.value.contextEngineeringData);
+        }
+    });
+
+}
+// 用户上下文工程配置
+function handleContextEngineSettingsPanelClose(formData) {
+
+    if (contextEngineSettingsPanelRef.value) {
+        contextEngineStatusVisible.value = false ;
+
+        contextEngineeringEnable.value = formData.enable; 
+        agentModelConfigForm.value.contextEngineeringData = formData;
+
+        // 更新角色内容
+        submitModelConfig();
+    }
 }
 
 /** 开场白角色配置 */
