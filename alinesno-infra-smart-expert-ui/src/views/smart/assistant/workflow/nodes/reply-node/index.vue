@@ -27,7 +27,6 @@
           </el-form-item>
 
           <el-form-item label="指定回答内容" v-if="formData.replayType === 'text'">
-            <!-- <el-input type="textarea" :rows="5" resize="none" placeholder="角色设置" /> -->
             <div class="function-CodemirrorEditor mb-8" style="height: 120px;width:100%">
               <ScriptEditorPanel ref="auditEditorRef" :lang="'markdown'" />
               <div class="function-CodemirrorEditor__footer">
