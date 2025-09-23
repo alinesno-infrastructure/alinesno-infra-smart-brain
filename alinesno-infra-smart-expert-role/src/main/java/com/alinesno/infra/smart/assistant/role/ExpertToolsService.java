@@ -120,7 +120,7 @@ public abstract class ExpertToolsService {
     /**
      * 频道知识库搜索
      */
-    public String searchKnowledgeContent(String content , String datasetIds){
+    public String searchKnowledgeContent(String content ,String datasetIds){
         List<DocumentVectorBean> result = searchChannelKnowledgeBase(content , datasetIds) ;
         StringBuilder sb = new StringBuilder();
         if(!CollectionUtils.isEmpty(result)){
@@ -149,4 +149,26 @@ public abstract class ExpertToolsService {
     }
 
 
+    /**
+     * 工作流知识库搜索
+     * @param query
+     * @param datasetList
+     * @return
+     */
+    public List<DocumentVectorBean> searchWorkflowKnowledgeContent(String query,
+                                                                   List<Long> datasetList ,
+                                                                   int quoteLimit ,
+                                                                   String searchType ,
+                                                                   int topK ,
+                                                                   String minScore) {
+        VectorSearchDto dto = new VectorSearchDto() ;
+
+        dto.setQuoteLimit(quoteLimit) ;
+        dto.setMinRelevance(minScore);
+        dto.setSearchText(query) ;
+        dto.setTopK(topK) ;
+        dto.setSearchType(searchType);
+
+        return vectorDatasetService.searchMultiDataset(dto ,datasetList);
+    }
 }
