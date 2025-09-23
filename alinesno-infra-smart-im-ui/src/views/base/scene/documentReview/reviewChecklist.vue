@@ -75,6 +75,7 @@ import { ref, onMounted } from 'vue';
 const emit = defineEmits([
     'handleStepClick', 
     'reCheck',
+    'getPlainText',
     'genSingleChapterContent', 
     'closeGeneratorStatus',
     'generatorStatus'])
@@ -126,36 +127,44 @@ const submitAuditForm = async (type) => {
     // 获取所有选择的id
     const selectedIds = checkList.value;
     const totalCount = selectedIds.length;
+
+    const plainText = await new Promise((resolve, reject) => {
+        emit('getPlainText', { resolve, reject });
+        // 可选：设置超时
+        setTimeout(() => reject(new Error("获取文本超时")), 5000);
+    });
+
+    console.log('getPlainText ==>>> ' + plainText)
   
-        const data = {
-            sceneId: sceneId.value,
-            channelStreamId: channelStreamId.value,
-            taskId: taskId.value,
-            ruleIds: selectedIds,
-            auditId: auditId.value,
-            roleId: props.currentSceneInfo.logicReviewerEngineer
-        };
+    const data = {
+        sceneId: sceneId.value,
+        channelStreamId: channelStreamId.value,
+        taskId: taskId.value,
+        ruleIds: selectedIds,
+        auditId: auditId.value,
+        roleId: props.currentSceneInfo.logicReviewerEngineer,
+        plainText: plainText
+    };
 
-        try {
-            const res = await genAuditResult(data);
+    try {
+        const res = await genAuditResult(data);
 
-            if('reCheck' == type){
-                emit("reCheck");
-            }
-
-            if(res.code != 200){
-                ElMessage.error(res.msg);
-                return ;
-            }
-
-            emit('genSingleChapterContent', props.currentSceneInfo.logicReviewerEngineer);
-            emit('generatorStatus' , '正在进行检查中.'); 
-
-            console.log('res = ' + res);
-        } catch (error) {
-            console.error(`处理规则时出错:`, error); 
+        if('reCheck' == type){
+            emit("reCheck");
         }
 
+        if(res.code != 200){
+            ElMessage.error(res.msg);
+            return ;
+        }
+
+        emit('genSingleChapterContent', props.currentSceneInfo.logicReviewerEngineer);
+        emit('generatorStatus' , '正在进行检查中.'); 
+
+        console.log('res = ' + res);
+    } catch (error) {
+        console.error(`处理规则时出错:`, error); 
+    }
 };
  
 const showResult = () => {
