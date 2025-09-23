@@ -427,10 +427,13 @@ const searchAndReplace = (searchText, replaceText = '') => {
   const editor = tinymce.get(tinymceId.value);
   if (editor) {  
     if(replaceText){
-      editor.plugins.searchreplace.find(searchText) ;
+      const index = editor.plugins.searchreplace.find(searchText) ;
       editor.plugins.searchreplace.replace(replaceText)
+      return index ;
     }else{
-      editor.plugins.searchreplace.find(searchText) ;
+      const index = editor.plugins.searchreplace.find(searchText) ;
+      console.log('index = ' + index);
+      return index ;
     } 
   }
 };
@@ -661,9 +664,14 @@ const handleGetContent = () => {
   return tinymce.activeEditor.getContent();
 };
 
+const getPlainText = () => {
+  return tinymce.activeEditor.getContent({ format: 'text' });
+};
+
 defineExpose({
   handleSetContent,
   handleGetContent,
+  getPlainText,
   updateMargins,
   searchAndReplace
 });
