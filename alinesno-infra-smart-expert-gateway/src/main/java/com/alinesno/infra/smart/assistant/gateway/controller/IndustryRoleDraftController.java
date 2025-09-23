@@ -24,7 +24,6 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleDraftEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleCatalogService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleDraftService;
 import com.alinesno.infra.smart.assistant.service.IRolePushOrgService;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import io.swagger.annotations.Api;
