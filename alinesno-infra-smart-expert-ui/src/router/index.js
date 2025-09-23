@@ -156,7 +156,7 @@ export const constantRoutes = [
         path: '/base/search/vectorData/websiteImport' , 
         component: () => import('@/views/base/search/vectorData/websiteImport'),
         name: '/base/search/vectorData/websiteImport' , 
-        meta: { title: 'Web站点同步', icon: 'dashboard', affix: true }
+        meta: { title: 'Web站点导入', icon: 'dashboard', affix: true }
       },
       {
         path: '/base/search/vectorData/dataUpload' , 
