@@ -29,12 +29,8 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 /**
  * 脚本编辑方式
@@ -87,7 +83,8 @@ public class ScriptExpertService extends ReActExpertService {
 				codeContentLis ,
 				scriptText ,
 				datasetKnowledgeDocument) ;
-		log.debug("handleRole output : {}", future);
+
+		log.debug("handleRole output future : {}", future);
 
 		return future ;
 	}
