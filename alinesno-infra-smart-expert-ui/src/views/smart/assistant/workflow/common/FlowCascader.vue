@@ -6,6 +6,7 @@
             :options="options"
             :props="{ expandTrigger: 'hover'}"
             placeholder="请选择内容"
+            @visible-change="handleVisibleChange"
             />
             <!-- @change="handleChange" -->
     </div>
@@ -19,7 +20,12 @@ const props = defineProps({
     default: () => ({})
   },
   nodeModel: {
-    type: Object
+    type: Object,
+    required: true
+  },
+  modelValue: { // 接收父组件v-model的值（formData.questionReference）
+    type: Array,
+    default: () => [] // 默认空数组，避免undefined
   }
 });
 
@@ -33,7 +39,8 @@ const data = computed({
     emit('update:modelValue', value)
   },
   get: () => {
-    return props.modelValue
+    // return props.modelValue
+    return Array.isArray(props.modelValue) ? props.modelValue : []
   }
 })
 
@@ -73,7 +80,7 @@ const convertToOptions = (nodeList) => {
     nodeList.forEach((item) => {
         const option = {
             value: item.id,
-            label: item.properties.stepName,
+            label: item.properties.stepName || '未命名节点', // 增加默认值，避免空标签
             type: item.type,
             children: item.properties?.config?.fields || []
         };
@@ -104,14 +111,28 @@ const nodeIncomingNodeRefresh = () =>{
   options.value = convertToOptions(upNodeListObj.value);
 }
 
-// const handleMouseOver = () => {
-//   console.log('handleMouseOver , currentData = ' + currentData.value);
-//   if(!currentData.value){
-//     nodeIncomingNodeRefresh();
-//   }
-// };
+// 6. 新增：下拉展开时刷新选项（确保每次打开都有最新上游节点数据）
+const handleVisibleChange = (isVisible) => {
+  if (isVisible) {
+    nodeIncomingNodeRefresh()
+  }
+}
+
+// 7. 监听modelValue变化：父组件值更新时，同步刷新选项（关键回显逻辑）
+watch(
+  () => props.modelValue,
+  (newVal) => {
+    // 若新值存在且非空，刷新选项列表（确保有数据可回显）
+    if (Array.isArray(newVal) && newVal.length > 0) {
+      nodeIncomingNodeRefresh()
+    }
+  },
+  { immediate: true, deep: true } // 立即执行+深度监听（数组元素变化也触发）
+)
 
 onMounted(() => {
+
+  nodeIncomingNodeRefresh()
 
   props.nodeModel.graphModel.eventCenter.on('element:click', () => {
     if(!currentData.value){
