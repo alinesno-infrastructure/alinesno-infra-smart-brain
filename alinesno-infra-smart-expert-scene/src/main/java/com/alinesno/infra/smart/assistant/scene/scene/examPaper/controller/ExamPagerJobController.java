@@ -144,6 +144,7 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
         wrapper.eq(ExamScoreEntity::getExamInfoId , examId);
         wrapper.eq(ExamScoreEntity::getUserId , examineeId);
 
+        ExamInfoEntity examInfo = examInfoService.getById(examId) ;
         ExamScoreEntity examScore = examScoreService.getOne(wrapper) ;
         log.debug("examScore = {}" , examScore);
 
@@ -179,7 +180,7 @@ public class ExamPagerJobController extends BaseController<ExamPagerEntity, IExa
             IndustryRoleEntity industryRole = industryRoleService.getById(answerCheckerEngineer) ;
 
             // 提交到线程池异步处理
-            examPagerFormatMessageTool.markExamScore(examScore , industryRole , examPagerScene);
+            examPagerFormatMessageTool.markExamScore(examScore , industryRole , examPagerScene , examInfo);
 
             return AjaxResult.success("阅卷已开始，请稍后查询结果", Map.of(
                     "taskId", examScore.getId(),
