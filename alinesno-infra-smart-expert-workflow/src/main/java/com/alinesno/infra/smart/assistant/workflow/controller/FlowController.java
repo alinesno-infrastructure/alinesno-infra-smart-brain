@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.assistant.workflow.dto.FlowDto;
 import com.alinesno.infra.smart.assistant.workflow.dto.WorkflowRequestDto;
 import com.alinesno.infra.smart.assistant.workflow.entity.FlowEntity;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -28,9 +29,9 @@ public class FlowController {
     @PostMapping("/processAndSave")
     public AjaxResult processAndSave(@RequestBody WorkflowRequestDto flowDto, @RequestParam Long roleId) {
 
-        flowService.saveRoleFlow(roleId, flowDto);  // 保存工作流
+        FlowEntity flowEntity = flowService.saveRoleFlow(roleId, flowDto);  // 保存工作流
 
-        return AjaxResult.success();
+        return AjaxResult.success("保存成功."  , flowEntity);
     }
 
     /**
@@ -64,7 +65,9 @@ public class FlowController {
      * 发布流程
      */
     @GetMapping("/published")
-    public AjaxResult published(@RequestParam Long flowId) {
+    public AjaxResult published(
+            @RequestParam @NotNull(message = "缺少流程ID号，请提供有效的flowId") Long flowId
+    ) {
         flowService.publishFlow(flowId);
         return AjaxResult.success("流程发布成功");
     }
