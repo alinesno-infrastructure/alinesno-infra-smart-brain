@@ -26,10 +26,13 @@
                 <el-input v-model="queryParams.roleName" placeholder="请输入角色名称" clearable
                   style="width: 240px" @keyup.enter="handleQuery" />
               </el-form-item>
+
+              <!-- 
               <el-form-item label="角色描述" prop="responsibilities" label-width="100px">
                 <el-input v-model="queryParams.responsibilities" placeholder="请输入角色描述" clearable
                   style="width: 240px" @keyup.enter="handleQuery" />
-              </el-form-item>
+              </el-form-item> 
+              -->
 
               <el-form-item>
                 <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
