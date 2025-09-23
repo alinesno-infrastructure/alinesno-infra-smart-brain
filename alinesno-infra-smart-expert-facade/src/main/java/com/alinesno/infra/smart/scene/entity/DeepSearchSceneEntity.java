@@ -1,15 +1,12 @@
 package com.alinesno.infra.smart.scene.entity;
 
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
-import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.List;
 
 /**
  * 深度搜索场景实体类
