@@ -98,7 +98,12 @@
 
         <!-- 试运行窗口 -->
         <div class="aip-flow-drawer">
-            <el-drawer v-model="showDebugRunDialog" :modal="false" size="40%" style="max-width: 700px;" title="预览与调试"
+            <el-drawer 
+                v-model="showDebugRunDialog" 
+                :modal="false" 
+                size="40%" 
+                style="max-width: 700px;position: absolute;" 
+                title="预览与调试"
                 :with-header="true">
                 <div style="margin-top: 0px;">
                     <RoleChatPanel ref="roleChatPanelRef" />
@@ -108,7 +113,13 @@
 
         <!-- 参数配置窗口 -->
         <div class="aip-flow-drawer">
-            <el-drawer v-model="showParamsDialog" v-if="showParamsDialog" :modal="false" size="40%" style="max-width: 600px;" title="角色参数配置"
+            <el-drawer 
+                v-model="showParamsDialog" 
+                v-if="showParamsDialog" 
+                :modal="false" 
+                size="40%" 
+                style="position: absolute; max-width: 600px;" 
+                title="角色参数配置"
                 :with-header="true">
                 <div style="margin-top: 0px;padding:0px !important" class="agent-chat-box  agent-inference-container">
                     <!-- <ParamsConfigPanel ref="paramsConfigRef" :diffHeight="295" /> -->
@@ -127,6 +138,7 @@
 
 <script setup>
 
+
 import {
     processAndSave
 } from "@/api/smart/assistant/flow";
@@ -144,9 +156,11 @@ import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 import ParamsConfigPanel from '@/views/smart/assistant/role/ParamsConfigPanel.vue';
 
 import { ElMessage, ElLoading } from "element-plus";
-import { nextTick, ref } from "vue";
+import { onMounted, onUnmounted, ref } from "vue";
 
-const emits = defineEmits(['clickNode'])
+const emits = defineEmits(['clickNode' , 'saveFlow'])
+
+let escKeydownListener = null;
 
 const router = useRouter();
 const currentRoleId = ref(null)
@@ -286,6 +300,8 @@ const save = () => {
     processAndSave(workflowData, currentRoleId.value).then(response => {
         ElMessage.success('保存成功');
         loading.close();
+
+        emits('saveFlow', response.data)
     }).catch(error => {
         loading.close();
     })
@@ -350,7 +366,20 @@ onMounted(() => {
     // console.log('props.lf = ' + JSON.stringify(props.lf))
     currentRoleId.value = router.currentRoute.value.query.roleId;
     getRoleInfo();
+
+    escKeydownListener = (e) => {
+        if (e.key === "Escape" && showComponent.value) {
+        showComponent.value = false; // Close the panel when ESC is pressed
+        }
+    };
+    document.addEventListener("keydown", escKeydownListener);
 })
+
+onUnmounted(() => {
+  if (escKeydownListener) {
+    document.removeEventListener("keydown", escKeydownListener);
+  }
+});
 
 </script>
 
