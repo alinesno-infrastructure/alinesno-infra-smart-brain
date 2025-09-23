@@ -2,11 +2,8 @@ package com.alinesno.infra.smart.assistant.point;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
-import com.alinesno.infra.smart.assistant.adapter.AipPointConsumer;
 import com.alinesno.infra.smart.assistant.point.processor.AgentPointProcessor;
-import com.alinesno.infra.smart.assistant.point.processor.ScenePointProcessor;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
-import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -19,7 +16,6 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-import org.springframework.web.context.request.async.DeferredResult;
 
 import javax.lang.exception.RpcServiceRuntimeException;
 import java.lang.reflect.Method;
@@ -60,7 +56,6 @@ public class PointAgentAspect {
 
             // 初始化处理器
             AgentPointProcessor agentProcessor = new AgentPointProcessor(agentPointAnnotation);
-            agentProcessor.setAgentMaxConcurrent(agentMaxConcurrent);
             agentProcessor.process(request, userId, orgId);
         }
 
