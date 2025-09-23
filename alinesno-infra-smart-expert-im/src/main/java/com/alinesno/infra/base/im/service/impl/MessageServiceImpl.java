@@ -7,9 +7,9 @@ import com.alinesno.infra.base.im.utils.TaskUtils;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.PromptMessageDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.*;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.MessageType;
@@ -380,6 +380,7 @@ public class MessageServiceImpl extends IBaseServiceImpl<MessageEntity, MessageM
                 dto.setChatText(StringUtils.isBlank(e.getFormatContent()) ? e.getContent() : e.getFormatContent());
                 dto.setReasoningText(e.getReasoningContent());
 
+                dto.setMessageId(e.getId());
                 dto.setName(e.getName());
                 dto.setIcon(e.getIcon());
                 dto.setRoleId(e.getRoleId() == null ? 0L : e.getRoleId());
