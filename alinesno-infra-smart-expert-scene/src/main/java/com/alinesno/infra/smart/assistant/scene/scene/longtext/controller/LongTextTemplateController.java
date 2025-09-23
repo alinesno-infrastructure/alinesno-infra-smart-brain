@@ -109,6 +109,19 @@ public class LongTextTemplateController extends BaseController<LongTextTemplateE
         return AjaxResult.success(service.getTemplateByType(query , typeCode));
     }
 
+    /**
+     * 获取到场景模板
+     *
+     * @param query
+     * @return
+     * @throws Exception
+     */
+    @DataPermissionQuery
+    @GetMapping("/getTemplateBySceneId")
+    public AjaxResult getTemplateBySceneId(PermissionQuery query , Long sceneId) throws Exception {
+        return AjaxResult.success(service.getTemplateBySceneId(query , sceneId));
+    }
+
     @DataPermissionSave
     @ResponseBody
     @PostMapping("/saveLongTextTemplate")
