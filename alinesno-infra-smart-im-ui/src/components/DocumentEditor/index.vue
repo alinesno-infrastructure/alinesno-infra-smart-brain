@@ -38,13 +38,18 @@ const setContent = (content) => {
 };
 
 // 暴露 getContent 方法
+const getPlainText = () => {
+  return tinyMCEEditorRef.value?.getPlainText();
+}
+
+// 暴露 getContent 方法
 const getContent = () => {
   return tinyMCEEditorRef.value?.handleGetContent();
 }
 
 // 在父组件中调用搜索替换方法
 const handleSearchReplace = (searchText , replaceText) => {
-  tinyMCEEditorRef.value?.searchAndReplace(searchText , replaceText);  
+  return tinyMCEEditorRef.value?.searchAndReplace(searchText , replaceText);  
 };
 
 // 组件挂载时计算高度并添加resize监听
@@ -63,6 +68,7 @@ onBeforeUnmount(() => {
 defineExpose({
   setContent,
   getContent,
+  getPlainText,
   handleSearchReplace
 });
 
