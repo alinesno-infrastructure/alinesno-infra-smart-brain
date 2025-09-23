@@ -5,7 +5,6 @@ import com.agentflex.vision.qwen.QwenVisionModelEnums;
 import com.agentsflex.image.doubao.DoubaoImageModelEnums;
 import com.agentsflex.image.qwen.QwenImageModelEnums;
 import com.agentsflex.llm.deepseek.DeepSeekModelEnums;
-import com.agentsflex.llm.deepseek.DeepseekLlm;
 import com.agentsflex.llm.jdcloud.JDcloudLlmModelEnums;
 import com.agentsflex.llm.ollama.OllamaLlmModelEnums;
 import com.agentsflex.llm.qwen.QwenLlmModelEnums;
@@ -36,11 +35,11 @@ public enum LlmModelProviderEnums {
 
     QWEN("阿里百炼(Qwen)", "qwen", List.of(
             new ModelInfo(ModelTypeEnums.LARGE_LANGUAGE_MODEL, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwenLlmModelEnums.getAllModels()),
-            new ModelInfo(ModelTypeEnums.VECTOR_MODEL, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwenVectorModelEnums.getAllModels()),
+            new ModelInfo(ModelTypeEnums.VECTOR_MODEL, "https://dashscope.aliyuncs.com" , QwenVectorModelEnums.getAllModels()),
             new ModelInfo(ModelTypeEnums.RE_RANKING_MODEL, "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank" , QwenReRankerModelEnums.getAllModels()),
             new ModelInfo(ModelTypeEnums.SPEECH_RECOGNITION, "https://dashscope.aliyuncs.com/api/v1/services/audio/asr/transcription" , QwenSpeechRecognizeModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.SPEECH_SYNTHESIS, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwenSpeechModelEnums.getAllModels() , 2) ,
-            new ModelInfo(ModelTypeEnums.VISION_MODEL, "https://dashscope.aliyuncs.com/compatible-mode/v1" , QwenVisionModelEnums.getAllModels()) ,
+            new ModelInfo(ModelTypeEnums.VISION_MODEL, "https://dashscope.aliyuncs.com" , QwenVisionModelEnums.getAllModels()) ,
             new ModelInfo(ModelTypeEnums.IMAGE_GENERATION, "https://dashscope.aliyuncs.com/api/v1/services/aigc/text2image/image-synthesis" , QwenImageModelEnums.getAllModels())
     )),
 
