@@ -2,11 +2,17 @@
     <div>
         <el-row :gutter="20">
             <el-col :span="17">
-                <el-form :model="queryParams" ref="queryRef" :rules="rules" :inline="true" v-show="showSearch" label-width="100px">
+                <el-form :model="queryParams" ref="queryRef" :rules="rules" :inline="true" 
+                    @submit.prevent
+                    v-show="showSearch"
+                    label-width="100px">
                     <el-form-item label="搜索条件" prop="searchText">
-                        <el-input v-model="queryParams.searchText" placeholder="请输入搜索条件" clearable style="width: 540px"
-                        @keyup.enter.native="handleQuery"
-                             />
+                        <el-input 
+                            v-model="queryParams.searchText" 
+                            placeholder="请输入搜索条件" 
+                            clearable 
+                            style="width: 540px"
+                            @keyup.enter="handleQuery" />
                     </el-form-item>
                     <el-form-item>
                         <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
@@ -41,13 +47,15 @@
             <el-col :span="7">
                 <div class="config-container">
                     <div class="config-title">查询配置</div>
-                    <el-form :model="queryParams" :label-position="'top'" ref="configRef" :inline="true" style="width:100%" label-width="120px">
+                    <el-form :model="queryParams" :label-position="'top'" ref="configRef" :inline="true"
+                        style="width:100%" label-width="120px">
                         <el-row>
                             <el-col :span="24">
                                 <el-form-item label="检索类型">
                                     <el-radio-group v-model="queryParams.searchType">
                                         <el-radio v-for="item in searchTypes" :key="item.code" :label="item.code"
-                                            style="height:60px" size="large" class="search-type-radio" :class="item.code === queryParams.searchType ? 'search-type-radio-active' : 'search-type-radio-normal'">
+                                            style="height:60px" size="large" class="search-type-radio"
+                                            :class="item.code === queryParams.searchType ? 'search-type-radio-active' : 'search-type-radio-normal'">
                                             <template #default>
                                                 <div
                                                     style="display: flex;flex-direction: row;contain-intrinsic-block-size: auto 100px;line-height: 20px;align-items: center;gap: 10px;">
@@ -58,7 +66,8 @@
                                                         <span style="color:#333">
                                                             {{ item.label }}
                                                         </span>
-                                                        <span style="color: #667085;font-size:13px">{{ item.desc }}</span>
+                                                        <span style="color: #667085;font-size:13px">{{ item.desc
+                                                            }}</span>
                                                     </div>
                                                 </div>
                                             </template>
@@ -73,11 +82,8 @@
                             </el-col>
                             <el-col :span="24">
                                 <el-form-item label="是否结果重排" prop="reorderResults">
-                                    <el-switch v-model="queryParams.reorderResults" 
-                                        :active-value="1"
-                                        :inactive-value="0"
-                                        active-text="是" 
-                                        inactive-text="否" />
+                                    <el-switch v-model="queryParams.reorderResults" :active-value="1"
+                                        :inactive-value="0" active-text="是" inactive-text="否" />
                                 </el-form-item>
                             </el-col>
                             <el-col :span="24">
@@ -162,26 +168,26 @@ const data = reactive({
 const { queryParams, form, rules } = toRefs(data);
 
 const searchTypes = ref([
-    { 
-        code: 'vector', 
-        label: '向量检索', 
-        desc: '使用向量进行文本相关性查询', 
+    {
+        code: 'vector',
+        label: '向量检索',
+        desc: '使用向量进行文本相关性查询',
         enable: true,
         icon: 'fa-solid fa-magnifying-glass-chart'
     },
-    { 
-        code: 'fulltext', 
-        label: '全文检索', 
-        desc: '使用传统的全文检索，基于PostgreSql的全文检索', 
+    {
+        code: 'fulltext',
+        label: '全文检索',
+        desc: '使用传统的全文检索，基于PostgreSql的全文检索',
         enable: false,
         icon: 'fa-solid fa-file-pdf'
     },
-    { 
-        code: 'hybrid', 
-        label: '混合检索', 
-        desc: '使用向量检索与全文检索的综合结果返回。', 
+    {
+        code: 'hybrid',
+        label: '混合检索',
+        desc: '使用向量检索与全文检索的综合结果返回。',
         enable: false,
-        icon: 'fa-solid fa-code-branch' 
+        icon: 'fa-solid fa-code-branch'
     }
 ]);
 
@@ -189,10 +195,10 @@ const setDataset = (dataset) => {
     if (dataset) {
         console.log('props.dataset = ' + JSON.stringify(dataset));
 
-        queryParams.value.searchType = dataset.searchType; 
-        queryParams.value.quoteLimit = dataset.quoteLimit; 
-        queryParams.value.reorderResults = dataset.reorderResults; 
-        queryParams.value.minRelevance = dataset.minRelevance; 
+        queryParams.value.searchType = dataset.searchType;
+        queryParams.value.quoteLimit = dataset.quoteLimit;
+        queryParams.value.reorderResults = dataset.reorderResults;
+        queryParams.value.minRelevance = dataset.minRelevance;
     }
 }
 
@@ -314,9 +320,9 @@ defineExpose({
     padding: 5px 10px;
     border-radius: 5px;
 
-    .search-type-radio-active{
-            border: 1px solid #5E8FFF;
-    background-color: #E1EAFF;
+    .search-type-radio-active {
+        border: 1px solid #5E8FFF;
+        background-color: #E1EAFF;
     }
 }
 
