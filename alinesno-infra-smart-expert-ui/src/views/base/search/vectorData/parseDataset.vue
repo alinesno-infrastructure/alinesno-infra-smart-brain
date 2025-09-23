@@ -21,6 +21,7 @@ import {
 
 import DatasetList from './datasetList';
 import DatasetSearch from './datasetSearch';
+import { ElMessage } from 'element-plus';
 
 const currentDatasetId = getParam("datasetId");
 
@@ -35,6 +36,11 @@ const goBack = () => {
 }
 
 const handleGetDataset = () => {
+    if(!currentDatasetId){
+        ElMessage.error('请选择数据集');
+        return;
+    }
+
     getDataset(currentDatasetId).then(res => {
         currentDataset.value = res.data;
     })
