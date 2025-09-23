@@ -5,31 +5,35 @@
                 <ReviewResultExpertButton :currentTaskInfo="props.currentTaskInfo" />
                 &nbsp;
                 <el-button type="primary" :loading="getMarkLoading" text bg @click="handleGenMarkDocxReport">
-                    <i class="fa-solid fa-file-word"></i> &nbsp; 导出标注文档
+                    <i class="fa-solid fa-file-pen"></i> &nbsp; 导出标注文档
+                </el-button>
+                &nbsp;
+                <el-button type="primary" :loading="getMarkLoading" text bg @click="handleGenMarkDocxReport">
+                    <i class="fa-solid fa-check-to-slot"></i> &nbsp; 导出审核结果
                 </el-button>
             </div>
             <div>
                 <el-checkbox-group v-model="checkList" @change="handleFilterChange">
-                                    <el-checkbox
-                                        v-for="item in availableCheckboxOptions"
-                                        :key="item.value"
-                                        :label="item.value" >
-                                        {{ item.label }}
-                                    </el-checkbox>
-                                </el-checkbox-group>
+                    <el-checkbox
+                        v-for="item in availableCheckboxOptions"
+                        :key="item.value"
+                        :label="item.value" >
+                        {{ item.label }}
+                    </el-checkbox>
+                </el-checkbox-group>
             </div>
         </div>
         <div>
             <div style="margin-top:20px;">
 
-                <div v-if="checkResultList.length == 0">
+                <div v-if="checkResultList.length == 0 || filteredResults.length == 0">
                     <el-empty description="审核结果为空，文档未进行审核">
                       <el-button type="primary" text bg size="large" @click="handleGenDocxReport" icon="Plus">返回审核</el-button>
                     </el-empty>
                 </div>
  
                 <div v-if="checkResultList.length > 0">
-                    <el-scrollbar class="scrollable-area">
+                    <el-scrollbar class="scrollable-area" style="border:0px !important">
                         <el-collapse v-model="activeNames" accordion>
                             <el-collapse-item
                                 v-for="(item, index) in filteredResults"
@@ -37,7 +41,7 @@
                                 :key="index"
                                 :class="'item-alert-' + item.riskLevel">
                                 <template #title>
-                                    <div class="check-result-box" style="display: flex;gap: 5px;align-items: center;width: 100%;">
+                                    <div class="check-result-box" style="display: flex;gap: 5px;align-items: center;width: 100%;line-height: 1rem;">
                                         <span style="min-width: 30px;">
                                             {{ index + 1 }}
                                         </span>
@@ -71,14 +75,29 @@
                                                 <b>建议内容:</b>
                                                 <p>{{ result.suggestedContent }}</p>
                                             </div>
+
                                             <div class="action-buttons">
-                                                <el-button type="primary" size="small" @click.stop="handlePointTo(result)">
-                                                    <i class="fa-solid fa-hand-pointer"></i>&nbsp;定位
-                                                </el-button> 
-                                                <el-button type="danger" size="small" @click.stop="handlePointToReplace(result)">
-                                                    <i class="fa-brands fa-pinterest-p"></i>&nbsp;替换
-                                                </el-button>
+
+                                                <div class="action-buttons">
+                                                    <el-button type="primary" size="small" text bg @click.stop="handlePointTo(result)">
+                                                        <i class="fa-solid fa-map-marker-alt"></i>&nbsp;定位
+                                                    </el-button> 
+                                                    <el-button type="primary" size="small" text bg @click.stop="handlePointToPrev(result)">
+                                                        <i class="fa-solid fa-chevron-left"></i>&nbsp;上一个
+                                                    </el-button> 
+                                                    <el-button type="primary" size="small" text bg @click.stop="handlePointToNext(result)">
+                                                        <i class="fa-solid fa-chevron-right"></i>&nbsp;下一个
+                                                    </el-button> 
+                                                    <el-button type="danger" size="small" text bg @click.stop="handlePointToReplace(result)">
+                                                        <i class="fa-solid fa-exchange"></i>&nbsp;替换
+                                                    </el-button>
+                                                    <el-button type="warning" size="small" text bg @click.stop="handlePointToIgnore(result)">
+                                                        <i class="fa-solid fa-circle-xmark"></i>&nbsp;忽略
+                                                    </el-button>
+                                                </div>
+
                                             </div>
+
                                         </div>
                                     </div>
                                 </div>
@@ -249,6 +268,12 @@ const downloadWordDocument = () => {
     })
 }
 
+// 忽略问题
+const handlePointToIgnore = (item) => {
+    ElMessage.warning('功能在测试中');
+    console.log('忽略问题:', item);
+}
+
 // 更新文档内容
 const handleUpdateDocumentContent = () => {
     emit("handleUpdateDocumentContent")
@@ -261,24 +286,40 @@ const handleDownloadDocument = () => {
 
 // 导出标注文档
 const handleGenMarkDocxReport = () => {
-    getMarkLoading.value = true;
-    try {
-        downloadMarkDocx(sceneId.value, taskId.value).then(res => {
-            proxy.download(res.data, {}, `${currentSceneInfo.value.documentName}_${new Date().getTime()}.docx`)
-            getMarkLoading.value = false;
-        }).catch(error => {
-            getMarkLoading.value = false;
-        })
-    } catch (error) {
-        console.error('Error:', error);
-        ElMessage.error('下载失败');
-        getMarkLoading.value = false;
-    }
+    ElMessage.warning('功能在测试中');
+    return ; 
+
+    // getMarkLoading.value = true;
+    // try {
+    //     downloadMarkDocx(sceneId.value, taskId.value).then(res => {
+    //         proxy.download(res.data, {}, `${currentSceneInfo.value.documentName}_${new Date().getTime()}.docx`)
+    //         getMarkLoading.value = false;
+    //     }).catch(error => {
+    //         getMarkLoading.value = false;
+    //     })
+    // } catch (error) {
+    //     console.error('Error:', error);
+    //     ElMessage.error('下载失败');
+    //     getMarkLoading.value = false;
+    // }
 }
 
+// 定位
 const handlePointTo = (item) => { 
     console.log('定位到:', item); 
     emit("searchAndReplace" , item.originalContent);
+}
+
+//  上一个点
+const handlePointToPrev = (item) => { 
+    ElMessage.warning('功能在测试中');
+    console.log('定位到:', item); 
+}
+
+// 下一个点
+const handlePointToNext = (item) => { 
+    ElMessage.warning('功能在测试中');
+    console.log('定位到:', item); 
 }
 
 const handlePointToReplace = (item) => { 
@@ -370,24 +411,32 @@ onMounted(() => {
 .item-alert-high {
     :deep(.el-collapse-item__header) {
         border-left: 3px solid #f56c6c;
+        border-bottom: 1px solid #e7e7e7;
+        border-right: 1px solid #e7e7e7;
     }
 }
 
 .item-alert-medium {
     :deep(.el-collapse-item__header) {
         border-left: 3px solid #e6a23c;
+        border-bottom: 1px solid #e7e7e7;
+        border-right: 1px solid #e7e7e7;
     }
 }
 
 .item-alert-low {
     :deep(.el-collapse-item__header) {
         border-left: 3px solid #909399;
+        border-bottom: 1px solid #e7e7e7;
+        border-right: 1px solid #e7e7e7;
     }
 }
 
 .item-alert-passed {
     :deep(.el-collapse-item__header) {
         border-left: 3px solid #67c23a;
+        border-bottom: 1px solid #e7e7e7;
+        border-right: 1px solid #e7e7e7;
     }
 }
 
