@@ -1,8 +1,6 @@
 package com.alinesno.infra.smart.assistant.api;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
