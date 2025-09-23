@@ -1,32 +1,20 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools;
 
-import cn.hutool.core.io.FileUtil;
-import com.agentsflex.core.document.Document;
-import com.agentsflex.document.parser.PdfBoxDocumentParser;
-import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.common.utils.FileTool;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import javax.lang.exception.RpcServiceRuntimeException;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URL;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -52,15 +40,17 @@ public class ParserDocumentTool {
 
     /**
      * 解析文档并获取到分档内容分割列表
+     *
      * @param taskEntity
+     * @param dto
      * @return
      */
     @SneakyThrows
-    public List<DocumentInfoBean> parseContent(DocReviewTaskEntity taskEntity) {
+    public List<DocumentInfoBean> parseContent(DocReviewTaskEntity taskEntity, GenAuditResultDto dto) {
         List<DocumentInfoBean> documentInfoBeans = new ArrayList<>();
 
         File tempHtmlFile = FileTool.createTempHtmlFile(taskEntity.getHtmlContent());
-        String content = smartDocumentConsumer.convertHtmlToPlainText(tempHtmlFile, true);
+        String content = dto.getPlainText() ; // smartDocumentConsumer.convertHtmlToPlainText(tempHtmlFile, true);
         splitContentIntelligently(content, documentInfoBeans);
 
         if(tempHtmlFile.exists()){
