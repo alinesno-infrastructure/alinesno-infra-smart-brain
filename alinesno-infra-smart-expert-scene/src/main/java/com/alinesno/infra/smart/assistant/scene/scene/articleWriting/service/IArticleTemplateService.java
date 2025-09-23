@@ -35,4 +35,11 @@ public interface IArticleTemplateService extends IBaseService<ArticleTemplateEnt
      */
     Map<String, Object> readExcel(List<ExcelData> dataList, PermissionQuery query);
 
+    /**
+     * 根据场景ID获取模板
+     * @param query
+     * @param sceneId
+     * @return
+     */
+    List<ArticleTemplateEntity> getTemplateBySceneId(PermissionQuery query, Long sceneId);
 }
