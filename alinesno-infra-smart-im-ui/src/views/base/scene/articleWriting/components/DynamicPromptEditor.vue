@@ -1,393 +1,336 @@
 <template>
-    <div class="dynamic-prompt-editor">
-        <div class="editor-container" ref="editorContainer" @click="handleContainerClick">
-            <template v-if="hasParsedSegments">
-                <template v-for="(segment, index) in parsedSegments" :key="index">
-                    <span v-if="!segment?.isPlaceholder" class="static-text">{{ segment?.text }}</span>
-
-                    <span v-else class="placeholder" :style="{
-            backgroundColor: getPlaceholderColor(segment.placeholderKey),
-            minWidth: shouldShowPlaceholder(segment.placeholderKey) ? 'auto' : '60px'
-        }" contenteditable="true" @input="handlePlaceholderInput(segment.placeholderKey, $event)"
-                        @focus="handlePlaceholderFocus(segment.placeholderKey, $event)"
-                        @blur="handlePlaceholderBlur(segment.placeholderKey, $event)"
-                        :ref="el => setPlaceholderRef(el, segment.placeholderKey)">{{ getPlaceholderDisplayText(segment)
-                        }}</span>
-
-                </template>
-            </template>
-            <div v-else class="error-message">
-                无效的模板格式
-            </div>
-        </div>
-
-        <input type="hidden" v-model="generatedText" />
+  <div class="dynamic-prompt-editor" @click="handleContainerClick">
+    <div class="editor-content" ref="editorRef">
+      <template v-for="(segment, index) in parsedSegments" :key="index">
+        <span 
+          v-if="segment.type === 'text'" 
+          class="static-text"
+        >{{ segment.content }}</span>
+        
+        <span
+          v-else
+          :class="['placeholder', { 'editing': isEditing(segment.key) }]"
+          :style="{ backgroundColor: getPlaceholderColor(segment.key) }"
+          ref="placeholderRefs"
+          :data-key="segment.key"
+          contenteditable="true"
+          @focus="handleFocus($event, segment.key)"
+          @blur="handleBlur($event, segment.key)"
+          @input="handleInput($event, segment.key)"
+          @keydown="handleKeydown($event, segment.key)"
+        >{{ getPlaceholderDisplayText(segment.key) }}</span>
+      </template>
     </div>
+    
+    <div v-if="isInvalidTemplate" class="error-message">
+      无效的模板格式
+    </div>
+  </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted } from 'vue'
+<script>
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
 
-const props = defineProps({
-    modelValue: {
-        type: String,
-        default: ''
-    },
-    promptText: {
-        type: String,
-        default: '',
-        validator: value => typeof value === 'string'
-    }
-})
-
-const emit = defineEmits(['update:modelValue'])
-
-// 响应式数据
-const placeholderValues = ref({})
-const currentPlaceholder = ref(null)
-const placeholderRefs = ref({})
-const editorContainer = ref(null)
-const parseError = ref(null)
-
-// 响应式数据
-const focusedPlaceholders = ref(new Set())
-
-const colorPalette = [
-    '#e3f2fd', '#fff8e1', '#e8f5e9', '#f3e5f5',
-    '#ffebee', '#fce4ec', '#f3e5f5', '#ede7f6',
-    '#e8eaf6', '#e3f2fd', '#e1f5fe', '#e0f7fa'
+// 预设颜色板
+const COLOR_PALETTE = [
+  '#E3F2FD', '#F3E5F5', '#E8F5E9', '#FFF3E0', 
+  '#E0F7FA', '#FBE9E7', '#EFEBE9', '#E8EAF6'
 ]
 
-// 计算显示文本
-const getPlaceholderDisplayText = (segment) => {
-    if (!segment.isPlaceholder) return segment.text
-    // 如果当前聚焦，不显示占位标记
-    if (focusedPlaceholders.value.has(segment.placeholderKey)) {
-        return placeholderValues.value[segment.placeholderKey] || ''
-    }
-    // 如果有值显示值，否则显示占位标记
-    return placeholderValues.value[segment.placeholderKey] || segment.originalText
-}
-
-// 处理聚焦事件 - 改进版
-const handlePlaceholderFocus = (key, event) => {
-    currentPlaceholder.value = key
-    focusedPlaceholders.value.add(key)
-
-    // 设置最小宽度防止收缩
-    if (event.target) {
-        event.target.style.minWidth = `${event.target.offsetWidth}px`
-    }
-
-    // 如果当前内容是占位标记，清空但保留一个空格
-    if (event.target.innerText === `\${${key}}`) {
-        event.target.innerText = placeholderValues.value[key] || ' '
-        setCaretPosition(event.target, 0)
-    }
-}
-
-// 处理失去焦点事件 - 改进版
-const handlePlaceholderBlur = (key, event) => {
-    focusedPlaceholders.value.delete(key)
-
-    // 移除固定宽度
-    if (event.target) {
-        event.target.style.minWidth = ''
-    }
-
-    // 处理内容
-    const text = event.target.innerText.trim()
-    if (!text) {
-        event.target.innerText = `\${${key}}`
-        placeholderValues.value[key] = ''
-    } else if (text === ' ') {
-        event.target.innerText = `\${${key}}`
-        placeholderValues.value[key] = ''
-    } else {
-        placeholderValues.value[key] = text
-    }
-}
-
-// 计算属性
-const hasParsedSegments = computed(() => {
-    return !parseError.value && parsedSegments.value?.length > 0
-})
-
-const generatedText = computed({
-    get() {
-        return props.modelValue || ''
+export default {
+  name: 'DynamicPromptEditor',
+  props: {
+    modelValue: {
+      type: String,
+      default: ''
     },
-    set(value) {
-        emit('update:modelValue', value || '')
+    promptText: {
+      type: String,
+      default: '',
+      validator: value => typeof value === 'string'
     }
-})
-
-// 方法
-const getPlaceholderColor = (key) => {
-    try {
-        if (!key) return colorPalette[0]
-
-        let hash = 0
-        for (let i = 0; i < key.length; i++) {
-            hash = key.charCodeAt(i) + ((hash << 5) - hash)
+  },
+  emits: ['update:modelValue'],
+  
+  setup(props, { emit }) {
+    const editorRef = ref(null)
+    const placeholderRefs = ref([])
+    const placeholderValues = ref({})
+    const focusedPlaceholder = ref(null)
+    const isInvalidTemplate = ref(false)
+    
+    // 解析模板文本
+    const parsedSegments = computed(() => {
+      isInvalidTemplate.value = false
+      const segments = []
+      const template = props.promptText
+      let currentIndex = 0
+      
+      while (currentIndex < template.length) {
+        const startIndex = template.indexOf('${', currentIndex)
+        
+        if (startIndex === -1) {
+          // 没有更多占位符，添加剩余文本
+          if (currentIndex < template.length) {
+            segments.push({
+              type: 'text',
+              content: template.slice(currentIndex)
+            })
+          }
+          break
         }
-        return colorPalette[Math.abs(hash) % colorPalette.length] || colorPalette[0]
-    } catch {
-        return colorPalette[0]
-    }
-}
-
-const setPlaceholderRef = (el, key) => {
-    if (el && key) {
-        placeholderRefs.value[key] = el
-    }
-}
-
-const handlePlaceholderInput = (key, event) => {
-    if (!key || !event?.target) return
-
-    try {
-        const newValue = event.target.innerText || ''
-        placeholderValues.value[key] = newValue
-        updateGeneratedText()
-
-        if (!newValue.trim()) {
-            event.target.innerText = `\${${key}}`
-            setCaretPosition(event.target, 2)
-            placeholderValues.value[key] = ''
+        
+        // 添加起始位置到占位符开始之间的文本
+        if (startIndex > currentIndex) {
+          segments.push({
+            type: 'text',
+            content: template.slice(currentIndex, startIndex)
+          })
         }
-    } catch (error) {
-        console.error('处理输入时出错:', error)
-    }
-}
-
-const handleContainerClick = (event) => {
-    if (!event?.target || !placeholderRefs.value) return
-
-    try {
-        if (!event.target.classList.contains('placeholder')) {
-            if (currentPlaceholder.value && placeholderRefs.value[currentPlaceholder.value]) {
-                placeholderRefs.value[currentPlaceholder.value].focus()
-            } else if (Object.keys(placeholderRefs.value).length > 0) {
-                const firstKey = Object.keys(placeholderRefs.value)[0]
-                if (placeholderRefs.value[firstKey]) {
-                    placeholderRefs.value[firstKey].focus()
-                }
-            }
+        
+        const endIndex = template.indexOf('}', startIndex + 2)
+        if (endIndex === -1) {
+          // 没有闭合的 }，标记为无效模板
+          isInvalidTemplate.value = true
+          break
         }
-    } catch (error) {
-        console.error('处理点击时出错:', error)
+        
+        const key = template.slice(startIndex + 2, endIndex).trim()
+        if (!key) {
+          // 空占位符 key，标记为无效
+          isInvalidTemplate.value = true
+          break
+        }
+        
+        segments.push({
+          type: 'placeholder',
+          key: key,
+          content: template.slice(startIndex, endIndex + 1)
+        })
+        
+        currentIndex = endIndex + 1
+      }
+      
+      // 清理不存在的占位符数据
+      if (!isInvalidTemplate.value) {
+        const validKeys = segments
+          .filter(s => s.type === 'placeholder')
+          .map(s => s.key)
+        
+        Object.keys(placeholderValues.value).forEach(key => {
+          if (!validKeys.includes(key)) {
+            delete placeholderValues.value[key]
+          }
+        })
+      }
+      
+      return isInvalidTemplate.value ? [] : segments
+    })
+    
+    // 生成最终文本
+    const generatedText = computed(() => {
+      if (isInvalidTemplate.value) return ''
+      
+      let result = ''
+      parsedSegments.value.forEach(segment => {
+        if (segment.type === 'text') {
+          result += segment.content
+        } else {
+          const value = placeholderValues.value[segment.key] || ''
+          result += value.trim() || segment.content
+        }
+      })
+      
+      return result
+    })
+    
+    // 监听生成文本变化并同步到父组件
+    watch(generatedText, (newValue) => {
+      emit('update:modelValue', newValue)
+    }, { immediate: true })
+    
+    // 监听模板变化，重置状态
+    watch(() => props.promptText, () => {
+      focusedPlaceholder.value = null
+    })
+    
+    // 哈希函数生成颜色
+    const getPlaceholderColor = (key) => {
+      let hash = 0
+      for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash)
+      }
+      return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length]
     }
-}
-
-const setCaretPosition = (element, position) => {
-    if (!element || position === undefined) return
-
-    try {
-        const range = document.createRange()
+    
+    // 获取占位符显示文本
+    const getPlaceholderDisplayText = (key) => {
+      const value = placeholderValues.value[key]
+      // 当正在编辑且值为空时，显示空字符串以便用户输入
+      if (isEditing(key) && (!value || !value.trim())) {
+        return ''
+      }
+      // 否则显示用户输入值或默认占位符
+      return value && value.trim() ? value : `\${${key}}`
+    }
+    
+    // 检查是否正在编辑
+    const isEditing = (key) => {
+      return focusedPlaceholder.value === key
+    }
+    
+    // 处理聚焦事件
+    const handleFocus = (event, key) => {
+      focusedPlaceholder.value = key
+      const element = event.target
+      
+      // 如果是默认文本，清空内容
+      if (!placeholderValues.value[key] || !placeholderValues.value[key].trim()) {
+        element.textContent = ''
+      }
+      
+      // 设置最小宽度防止收缩
+      element.style.minWidth = '60px'
+      
+      // 确保光标在起始位置
+      nextTick(() => {
         const selection = window.getSelection()
-        if (selection) {
-            range.setStart(element.firstChild || element, Math.max(0, position))
-            range.collapse(true)
-            selection.removeAllRanges()
-            selection.addRange(range)
-        }
-    } catch (error) {
-        console.error('设置光标位置时出错:', error)
-    }
-}
-
-const updateGeneratedText = () => {
-    try {
-        if (!props.promptText) {
-            generatedText.value = ''
-            return
-        }
-
-        let result = props.promptText
-        for (const [key, value] of Object.entries(placeholderValues.value)) {
-            if (key && value !== undefined) {
-                result = result.replace(new RegExp(`\\\$\\{${key}\\}`, 'g'), value || '')
-            }
-        }
-        generatedText.value = result
-    } catch (error) {
-        console.error('更新生成文本时出错:', error)
-        generatedText.value = ''
-    }
-}
-
-// 判断是否应该显示占位标记
-const shouldShowPlaceholder = (key) => {
-    return !focusedPlaceholders.value.has(key) && !placeholderValues.value[key]
-}
-
-// 当前模板的占位符集合
-const currentTemplatePlaceholders = ref(new Set())
-
-// 解析模板时提取占位符
-const extractPlaceholders = (text) => {
-  const placeholders = new Set()
-  const regex = /\$\{([^}]+)\}/g
-  let match
-  while ((match = regex.exec(text))) {
-    if (match[1]) {
-      placeholders.add(match[1])
-    }
-  }
-  return placeholders
-}
-
-// 清理不存在的占位符值
-const cleanStalePlaceholderValues = (newPlaceholders) => {
-  const newValues = {}
-  newPlaceholders.forEach(key => {
-    newValues[key] = placeholderValues.value[key] || ''
-  })
-  placeholderValues.value = newValues
-}
-
-// 计算属性
-const parsedSegments = computed(() => {
-  if (!props.promptText) return []
-  
-  // 提取当前模板的所有占位符
-  const newPlaceholders = extractPlaceholders(props.promptText)
-  currentTemplatePlaceholders.value = newPlaceholders
-  
-  // 清理不再存在的占位符值
-  cleanStalePlaceholderValues(newPlaceholders)
-  
-  // 剩余解析逻辑保持不变...
-  const segments = []
-  const placeholderRegex = /\$\{([^}]+)\}/g
-  let lastIndex = 0
-  let match
-  
-  while ((match = placeholderRegex.exec(props.promptText))) {
-    if (match.index > lastIndex) {
-      segments.push({
-        isPlaceholder: false,
-        text: props.promptText.substring(lastIndex, match.index)
+        const range = document.createRange()
+        range.selectNodeContents(element)
+        range.collapse(true)
+        selection.removeAllRanges()
+        selection.addRange(range)
       })
     }
     
-    const placeholderKey = match[1]
-    segments.push({
-      isPlaceholder: true,
-      placeholderKey: placeholderKey,
-      displayText: placeholderValues.value[placeholderKey] || match[0],
-      originalText: match[0]
-    })
-    
-    lastIndex = match.index + match[0].length
-  }
-  
-  if (lastIndex < props.promptText.length) {
-    segments.push({
-      isPlaceholder: false,
-      text: props.promptText.substring(lastIndex)
-    })
-  }
-  
-  return segments
-})
-
-
-// 添加这个方法来验证占位符是否全部填写
-const validatePlaceholders = () => {
-    // 查找第一个未填写的占位符
-    const emptyPlaceholder = parsedSegments.value.find(
-        segment => segment.isPlaceholder && !placeholderValues.value[segment.placeholderKey]
-    );
-    
-    if (emptyPlaceholder) {
-        // 聚焦到第一个未填写的占位符
-        const placeholderEl = placeholderRefs.value[emptyPlaceholder.placeholderKey];
-        if (placeholderEl) {
-            placeholderEl.focus();
-        }
-        return false; // 返回false表示有未填写的占位符
+    // 处理失焦事件
+    const handleBlur = (event, key) => {
+      focusedPlaceholder.value = null
+      const element = event.target
+      const text = element.textContent || ''
+      
+      // 移除最小宽度
+      element.style.minWidth = ''
+      
+      if (!text.trim()) {
+        // 内容为空，恢复默认状态
+        placeholderValues.value[key] = ''
+        // 显式设置文本为占位符，确保视觉一致性
+        element.textContent = `\${${key}}`
+      } else {
+        // 保存有效内容
+        placeholderValues.value[key] = text
+      }
     }
     
-    return true; // 返回true表示所有占位符都已填写
-};
-
-
-// 生命周期
-onMounted(() => {
-    updateGeneratedText()
-})
-
-// 监听promptText变化，主动清理旧值
-watch(() => props.promptText, (newVal, oldVal) => {
-
-    updateGeneratedText()
-
-  if (newVal !== oldVal) {
-    const newPlaceholders = extractPlaceholders(newVal)
-    cleanStalePlaceholderValues(newPlaceholders)
-    currentTemplatePlaceholders.value = newPlaceholders
+    // 处理输入事件 - 修复了空内容处理问题
+    const handleInput = (event, key) => {
+      const text = event.target.textContent || ''
+      // 当内容为空时，清除保存的值而不是保存空字符串
+      placeholderValues.value[key] = text.trim() || ''
+    }
+    
+    // 处理键盘事件，增加对删除键的处理
+    const handleKeydown = (event, key) => {
+      // 当按下退格键且内容为空时，确保状态正确
+      if ((event.key === 'Backspace' || event.key === 'Delete') && 
+          !event.target.textContent.trim()) {
+        placeholderValues.value[key] = ''
+      }
+    }
+    
+    // 处理容器点击事件
+    const handleContainerClick = (event) => {
+      // 如果点击的是容器本身而不是占位符
+      if (event.target === editorRef.value) {
+        const firstPlaceholder = placeholderRefs.value[0]
+        if (firstPlaceholder) {
+          firstPlaceholder.focus()
+        }
+      }
+    }
+    
+    // 验证所有占位符是否已填写
+    const validatePlaceholders = () => {
+      const emptyPlaceholders = parsedSegments.value
+        .filter(segment => segment.type === 'placeholder')
+        .filter(segment => {
+          const value = placeholderValues.value[segment.key]
+          return !value || !value.trim()
+        })
+        .map(segment => segment.key)
+      
+      if (emptyPlaceholders.length > 0) {
+        // 找到第一个空占位符并聚焦
+        const firstEmptyKey = emptyPlaceholders[0]
+        const placeholderElement = placeholderRefs.value.find(
+          el => el.getAttribute('data-key') === firstEmptyKey
+        )
+        if (placeholderElement) {
+          placeholderElement.focus()
+        }
+        return false
+      }
+      
+      return true
+    }
+    
+    return {
+      editorRef,
+      placeholderRefs,
+      parsedSegments,
+      isInvalidTemplate,
+      getPlaceholderColor,
+      getPlaceholderDisplayText,
+      isEditing,
+      handleFocus,
+      handleBlur,
+      handleInput,
+      handleKeydown,
+      handleContainerClick,
+      validatePlaceholders
+    }
   }
-})
-
-watch(parsedSegments, () => {
-    updateGeneratedText()
-}, { deep: true })
-
-// 将方法暴露给父组件使用
-defineExpose({
-    validatePlaceholders
-});
-
+}
 </script>
 
 <style scoped>
 .dynamic-prompt-editor {
-    /* border: 1px solid #dcdfe6; */
-    border-radius: 4px;
-    padding: 10px;
-    min-height: 80px;
-    line-height: 1.5;
-    font-size: 15px;
-    color: #222;
-    position: relative;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 40px;
+  cursor: text;
 }
 
-.editor-container {
-    white-space: pre-wrap;
-    outline: none;
-    min-height: 60px;
-    line-height: 1.6rem;
+.editor-content {
+  outline: none;
+  min-height: 24px;
+  line-height: 2.5rem;
 }
 
 .static-text {
-    user-select: none;
-}
-
-.placeholder:focus {
-    border-bottom: 1px solid #409eff;
-}
-
-.error-message {
-    color: #f56c6c;
-    font-size: 14px;
-    padding: 8px;
-    background-color: #fef0f0;
-    border-radius: 4px;
+  user-select: none;
+  pointer-events: none;
 }
 
 .placeholder {
-    display: inline-block;
-    min-width: 60px;
-    border-radius: 3px;
-    padding: 0 3px;
-    outline: none;
-    border-bottom: 1px dashed #999;
-    margin: 0 2px;
-    transition: min-width 0.2s ease;
-    color: #0057ff;
-    font-weight: bold;
-    opacity: 0.9;
+  display: inline-block;
+  min-height: 24px;
+  border-radius: 3px;
+  padding: 0 4px;
+  margin: 0 2px;
+  outline: none;
+  cursor: text;
+  transition: background-color 0.2s;
+}
+
+.placeholder.editing {
+  box-shadow: 0 0 0 2px #2196F3;
+}
+
+.error-message {
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 8px;
 }
 </style>
