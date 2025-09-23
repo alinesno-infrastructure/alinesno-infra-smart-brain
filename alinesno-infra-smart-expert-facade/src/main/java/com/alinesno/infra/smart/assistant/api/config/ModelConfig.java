@@ -21,6 +21,8 @@ import lombok.Data;
         private int maxLoop = 6;
         // 失败则跳出
         private boolean failBreak;
+        // 上下文工程最大长度
+        private int contextLimit = 120000 ;
     }
 
 
