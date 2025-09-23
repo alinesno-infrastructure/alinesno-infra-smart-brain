@@ -223,6 +223,13 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 
 import SnowflakeId from "snowflake-id";
 
+const props = defineProps({
+  heightDiff: {
+    type: Number,
+    default: 260
+  },
+})
+
 const snowflake = new SnowflakeId();
 const channelStreamId = ref(snowflake.generate());
 
@@ -247,7 +254,7 @@ const audioUrl = ref('');
 const transcription = ref('');
 
 // 记录当前的高度差值
-const heightDiff = ref(260);
+const heightDiff = ref(props.heightDiff);
 
 const { proxy } = getCurrentInstance();
 
