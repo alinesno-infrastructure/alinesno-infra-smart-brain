@@ -15,9 +15,7 @@ import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.FileTool;
-import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.*;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.prompt.ArticlePromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleManagerService;
@@ -65,8 +63,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -265,7 +261,7 @@ public class ArticleGeneratorSceneController extends BaseController<ArticleGener
             });
         } catch (Exception e) {
             log.error("Error in chatPromptContent", e);
-            deferredResult.setErrorResult(AjaxResult.error("处理请求时出错"));
+            deferredResult.setErrorResult(AjaxResult.error("处理请求时出错:" + e.getMessage()));
         }
 
         return deferredResult;
