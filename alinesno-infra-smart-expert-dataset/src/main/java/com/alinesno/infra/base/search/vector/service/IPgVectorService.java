@@ -1,5 +1,7 @@
 package com.alinesno.infra.base.search.vector.service;
 
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.adapter.dto.VectorSearchDto;
 import com.pgvector.PGvector;
@@ -50,6 +52,7 @@ public interface IPgVectorService {
 
     /**
      * 插入向量数据
+     *
      * @param documentVectorBean
      */
     void insertVector(DocumentVectorBean documentVectorBean);
@@ -123,4 +126,12 @@ public interface IPgVectorService {
      * @param datasetId
      */
     void deleteVectorDataset(String datasetId);
+
+    /**
+     * 设置LLM向量工具
+     *
+     * @param llm
+     * @param embeddingOptions
+     */
+    void setLlm(Llm llm, EmbeddingOptions embeddingOptions);
 }
