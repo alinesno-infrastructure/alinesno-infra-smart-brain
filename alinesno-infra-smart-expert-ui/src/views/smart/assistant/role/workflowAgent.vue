@@ -14,16 +14,20 @@
               <el-tag effect="primary" v-if="currentFlow?.publishStatus == 'published'">
                 已发布
               </el-tag>
-              <span style="color: #aaaaaa;font-size: 14px;">最后更新 {{ currentFlow?.updateTime }}</span>
+              <!-- <span style="color: #aaaaaa;font-size: 14px;">最后更新 {{ currentFlow?.updateTime }}</span> -->
+              <span style="color: #aaaaaa;font-size: 14px;">更新时间： {{ parseTime(currentRole.updateTime?currentRole.updateTime:currentRole.addTime) }} </span>
             </div>
           </div>
         </template>
       </el-page-header>
 
       <div class="page-header-btn-container">
+        <!--
         <el-button type="danger" icon="Setting" size="large" text bg @click="handlePublishedFlow">
           保存配置
         </el-button>
+        -->
+
         <el-button type="primary" icon="Position" size="large" text bg @click="handlePublishedFlow">
           发布角色
         </el-button>
@@ -34,7 +38,7 @@
     <el-row>
       <el-col :span="24" v-loading="loading" element-loading-text="任务正在生成中，请勿刷新 ..." :element-loading-spinner="svg">
         <div class="workflow-main-panel" id="workflowMainPanelId">
-          <flowPanel ref="workflowRef" />
+          <flowPanel ref="workflowRef" @saveFlow="saveFlow" />
         </div>
       </el-col>
     </el-row>
@@ -58,6 +62,7 @@ import { ElMessage } from "element-plus";
 
 const router = useRouter();
 
+const workflowData = ref(null)
 const workflowRef = ref(null);
 const currentFlow = ref(null);
 const currentRole = ref({
@@ -92,10 +97,20 @@ const handleGetLastFlow = () => {
 
 /** 发布当前节点 */
 const handlePublishedFlow = () => {
+  if(!currentFlow.value.id){
+    ElMessage.error('请保存工作流任务配置');
+    return ;
+  }
   publishedFlow(currentFlow.value.id).then(response => {
     ElMessage.success('发布成功');
     handleGetLastFlow();
   })
+}
+
+// 保存并返回存储的对象信息
+const saveFlow = (workflowData) => {
+  console.log('workflowData id = ' + workflowData.id)
+  currentFlow.value = workflowData;
 }
 
 /** 初始化数据 */
