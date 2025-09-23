@@ -17,11 +17,11 @@
     <dependencies>
 
         <!-- config-agent_start -->
-        <dependency>
+       <!-- <dependency>
             <groupId>com.alinesno.infra.smart</groupId>
             <artifactId>alinesno-infra-smart-brain-agent</artifactId>
             <version>${revision}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>com.alinesno.infra.common</groupId>
             <artifactId>alinesno-infra-common-config</artifactId>
