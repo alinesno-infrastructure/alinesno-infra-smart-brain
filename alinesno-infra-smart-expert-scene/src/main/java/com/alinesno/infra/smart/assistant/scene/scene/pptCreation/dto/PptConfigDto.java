@@ -1,9 +1,9 @@
 package com.alinesno.infra.smart.assistant.scene.scene.pptCreation.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.AllArgsConstructor;
 
 /**
  * PPT 配置信息数据传输对象 (DTO)
