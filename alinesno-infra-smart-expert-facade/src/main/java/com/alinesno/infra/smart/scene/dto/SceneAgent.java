@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.scene.dto;
 
-import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
