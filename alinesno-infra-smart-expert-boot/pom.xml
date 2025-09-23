@@ -80,11 +80,11 @@
 			<artifactId>alinesno-infra-smart-expert-deepsearch</artifactId>
 			<version>${revision}</version>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-brain-domain</artifactId>
 			<version>${revision}</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>com.alinesno.infra.smart</groupId>
 			<artifactId>alinesno-infra-smart-expert-publish</artifactId>
