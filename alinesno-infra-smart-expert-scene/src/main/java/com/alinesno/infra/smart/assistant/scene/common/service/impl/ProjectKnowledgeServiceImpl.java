@@ -1,8 +1,12 @@
 package com.alinesno.infra.smart.assistant.scene.common.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.extra.spring.SpringUtil;
 import com.agentsflex.core.document.Document;
 import com.agentsflex.core.document.splitter.SimpleTokenizeSplitter;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
+import com.agentsflex.core.store.VectorData;
 import com.agentsflex.store.pgvector.PgvectorVectorStore;
 import com.agentsflex.store.pgvector.PgvectorVectorStoreConfig;
 import com.alibaba.dashscope.embeddings.TextEmbeddingResultItem;
@@ -12,11 +16,11 @@ import com.alinesno.infra.base.search.vector.utils.DashScopeEmbeddingUtils;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.web.adapter.utils.MD5Util;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.ProjectKnowledgeMapper;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeService;
 import com.alinesno.infra.smart.scene.constants.SceneConstants;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -24,10 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -80,10 +81,12 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
 
     /**
      * 导入数据并进行向量化存储
-     * @param entity 项目知识实体
+     *
+     * @param entity           项目知识实体
+     * @param embeddingOptions
      */
     @Override
-    public void importData(ProjectKnowledgeEntity entity) {
+    public void importData(ProjectKnowledgeEntity entity , Llm llm, EmbeddingOptions embeddingOptions) {
         if (entity == null || entity.getDocContent() == null) {
             log.error("导入数据失败: 实体或内容为空");
             throw new IllegalArgumentException("实体或内容不能为空");
@@ -117,7 +120,7 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
             log.info("文件分块完成, 共分成 {} 个块", chunks.size());
 
             // 向量化处理
-            List<Document> vectorizedDocs = processVectorization(chunks, fileName, id, collectionIndexName);
+            List<Document> vectorizedDocs = processVectorization(chunks, fileName, id, collectionIndexName , llm , embeddingOptions);
             log.info("向量化处理完成, 共生成 {} 个向量", vectorizedDocs.size());
 
             // 存储向量
@@ -146,13 +149,20 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
 
     /**
      * 向量化处理
-     * @param chunks 文档分块
-     * @param fileName 文件名
-     * @param docId 文档ID
+     *
+     * @param chunks              文档分块
+     * @param fileName            文件名
+     * @param docId               文档ID
      * @param collectionIndexName 集合名称
+     * @param embeddingOptions
      * @return 向量化后的文档列表
      */
-    private List<Document> processVectorization(List<Document> chunks, String fileName, Long docId, String collectionIndexName) throws NoApiKeyException, InputRequiredException {
+    private List<Document> processVectorization(List<Document> chunks,
+                                                String fileName,
+                                                Long docId,
+                                                String collectionIndexName,
+                                                Llm llm,
+                                                EmbeddingOptions embeddingOptions) throws NoApiKeyException, InputRequiredException {
 
         if (chunks == null || chunks.isEmpty()) {
             log.warn("文档分块列表为空，无法进行向量化处理");
@@ -178,10 +188,30 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
                 textList.add(chunk.getContent());
             }
 
-            log.info("处理第 {} 批向量化，共 {} 条文本", batch + 1, textList.size());
-
             // 批量获取向量
-            List<TextEmbeddingResultItem> embeddingResultItems = dashScopeEmbeddingUtils.embedSingleList(textList);
+            List<TextEmbeddingResultItem> embeddingResultItems = null ;
+
+            if(llm == null){  // 使用默认的向量
+                log.info("处理第 {} 批向量化，共 {} 条文本", batch + 1, textList.size());
+                embeddingResultItems = dashScopeEmbeddingUtils.embedSingleList(textList);
+            }else {
+               embeddingResultItems = new ArrayList<>() ;
+               for(Document chunk : batchChunks) {
+                   VectorData vectorData = llm.embed(chunk , embeddingOptions) ;
+
+                   log.debug("向量化结果: {}" , vectorData);
+                   TextEmbeddingResultItem textResultItem = new TextEmbeddingResultItem();
+
+                   // 使用 Stream API
+                   List<Double> embedding = Arrays.stream(vectorData.getVector())
+                           .boxed()
+                           .toList();
+
+                   textResultItem.setEmbedding(embedding);
+
+                   embeddingResultItems.add(textResultItem);
+               }
+            }
 
             // 处理当前批次的向量化结果
             for (int i = 0; i < batchChunks.size(); i++) {
@@ -203,6 +233,8 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
 
                 // 创建带向量的文档
                 Document vectorizedDoc = new Document(chunk.getContent());
+
+                vectorizedDoc.setId(IdUtil.getSnowflakeNextId());
                 vectorizedDoc.setVector(vector);
                 vectorizedDoc.setMetadataMap(metadata);
 
