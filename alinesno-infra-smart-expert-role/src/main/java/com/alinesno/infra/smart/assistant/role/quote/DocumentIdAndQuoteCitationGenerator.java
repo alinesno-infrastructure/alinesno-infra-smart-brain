@@ -5,6 +5,7 @@ import com.alinesno.infra.smart.assistant.api.quote.CitedAnswer;
 import com.alinesno.infra.smart.assistant.api.quote.Document;
 import com.alinesno.infra.smart.assistant.service.CitationGenerator;
 import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
 
