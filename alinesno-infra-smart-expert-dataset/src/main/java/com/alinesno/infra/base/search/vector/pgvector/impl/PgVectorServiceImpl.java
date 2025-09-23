@@ -1,6 +1,10 @@
 package com.alinesno.infra.base.search.vector.pgvector.impl;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.document.Document;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
+import com.agentsflex.core.store.VectorData;
 import com.alinesno.infra.base.search.vector.service.IPgVectorService;
 import com.alinesno.infra.base.search.vector.utils.DashScopeEmbeddingUtils;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
@@ -11,20 +15,19 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author luoxiaodong
  * @version 1.0.0
  */
 @Slf4j
+@Scope("prototype")
 @Component
 public class PgVectorServiceImpl implements IPgVectorService {
 
@@ -37,12 +40,29 @@ public class PgVectorServiceImpl implements IPgVectorService {
     @Autowired
     private DashScopeEmbeddingUtils dashScopeEmbeddingUtils;
 
+    private Llm llm ;
+
+    private EmbeddingOptions embeddingOptions ;
+
     // 提取获取嵌入向量的方法
     @SneakyThrows
     @Override
     public PGvector getEmbeddingVector(String queryText) {
-        List<Double> embeddingVector = dashScopeEmbeddingUtils.getEmbeddingDoubles(queryText);
-        return new PGvector(embeddingVector);
+
+        // 使用配置的向量化工具
+        if(llm != null){
+            VectorData vectorData = llm.embed(Document.of(queryText) , embeddingOptions) ;
+
+            List<Double> embeddingVector = Arrays.stream(vectorData.getVector())
+                    .boxed()  // 将double转换为Double
+                    .toList();
+
+            return new PGvector(embeddingVector);
+        }else{
+
+            List<Double> embeddingVector = dashScopeEmbeddingUtils.getEmbeddingDoubles(queryText);
+            return new PGvector(embeddingVector);
+        }
     }
 
     // 提取将查询结果转换为 DocumentVectorBean 对象列表的方法
@@ -573,5 +593,11 @@ public class PgVectorServiceImpl implements IPgVectorService {
         } else {
             log.warn("未找到数据集ID[{}]的向量记录", datasetId);
         }
+    }
+
+    @Override
+    public void setLlm(Llm llm , EmbeddingOptions embeddingOptions) {
+        this.llm = llm;
+        this.embeddingOptions = embeddingOptions ;
     }
 }
