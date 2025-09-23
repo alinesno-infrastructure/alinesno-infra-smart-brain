@@ -1,10 +1,14 @@
 package com.alinesno.infra.base.search.service.vector;
 
 import cn.hutool.core.util.IdUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.LlmConfig;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.alinesno.infra.base.search.api.SearchUpdateConfigDto;
 import com.alinesno.infra.base.search.api.SegmentUpdateDto;
 import com.alinesno.infra.base.search.entity.DatasetKnowledgeEntity;
 import com.alinesno.infra.base.search.entity.VectorDatasetEntity;
+import com.alinesno.infra.base.search.enums.ConfigTypeEnums;
 import com.alinesno.infra.base.search.enums.SearchType;
 import com.alinesno.infra.base.search.mapper.VectorDatasetMapper;
 import com.alinesno.infra.base.search.service.IDatasetKnowledgeService;
@@ -17,7 +21,10 @@ import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.adapter.RerankConsumer;
 import com.alinesno.infra.smart.assistant.adapter.dto.*;
+import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
+import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.enums.ModelDataScopeOptions;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
@@ -45,6 +52,12 @@ import java.util.stream.Collectors;
 public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEntity, VectorDatasetMapper> implements IVectorDatasetService {
 
     @Autowired
+    private ILLmAdapterService llmAdapterService ;
+
+    @Autowired
+    private ILlmModelService llmModelService ;
+
+    @Autowired
     private IPgVectorService pgVectorService;
 
     @Autowired
@@ -59,10 +72,12 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
     private static final int MAX_RESULTS = 5; // 最大结果数量
     private static final Gson gson = new Gson() ;
 
+
     @Override
     public List<Long> insertDatasetKnowledge(Long datasetId, List<String> sentenceList, String fileName, String fileType) {
 
         VectorDatasetEntity vectorDatasetEntity = getById(datasetId) ;
+        setVectorModel(vectorDatasetEntity);
 
         int datasetSize = sentenceList.size() + vectorDatasetEntity.getDatasetSize() ;
         log.debug("datasetSize = {}" , datasetSize);
@@ -97,12 +112,45 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
         return ids ;
     }
 
+    private void setVectorModel(VectorDatasetEntity vectorDatasetEntity) {
+        Llm llm = null ;
+        EmbeddingOptions embeddingOptions = null ;
+
+        if(ConfigTypeEnums.CUSTOM.getValue().equals(vectorDatasetEntity.getConfigType())){
+            Long embeddingModelId = vectorDatasetEntity.getEmbeddingModelId() ;
+
+            LlmModelEntity llmModel = llmModelService.getById(embeddingModelId) ;
+            cn.hutool.core.lang.Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+            LlmConfig config = new LlmConfig() ;
+
+            config.setEndpoint(llmModel.getApiUrl());
+            config.setApiKey(llmModel.getApiKey()) ;
+            config.setModel(llmModel.getModel()) ;
+
+            embeddingOptions = new EmbeddingOptions();
+            embeddingOptions.setModel(llmModel.getModel());
+
+            llm = llmAdapterService.getLlm(llmModel.getProviderCode(), config);
+
+        }
+
+        pgVectorService.setLlm(llm , embeddingOptions) ;
+    }
+
     @Override
     public List<DocumentVectorBean> search(VectorSearchDto dto) {
 
         List<DocumentVectorBean> list = null;
 
         VectorDatasetEntity vectorDatasetEntity = getById(dto.getDatasetId()) ;
+        setVectorModel(vectorDatasetEntity);
+
+        if(StringUtils.hasLength(dto.getSearchType())){
+            vectorDatasetEntity.setSearchType(dto.getSearchType());
+        }
+
+        dto.setCollectionName(vectorDatasetEntity.getCollectionName());
 
         if(vectorDatasetEntity.getSearchType() == null){
             vectorDatasetEntity.setSearchType(SearchType.VECTOR.getCode());
@@ -236,9 +284,17 @@ public class PgVectorDatasetServiceImpl extends IBaseServiceImpl<VectorDatasetEn
             return Collections.emptyList();
         }
 
-        List<DocumentVectorBean> list =  pgVectorService.queryMultiVectorDocument(datasetIdArr , dto.getSearchText() , dto.getTopK()) ;
+        List<DocumentVectorBean> list = new ArrayList<>(); //  pgVectorService.queryMultiVectorDocument(datasetIdArr , dto.getSearchText() , dto.getTopK()) ;
 
-        // Assert.isTrue(list != null , "搜索结果为空");
+        for(Long datasetId : datasetIdArr){
+
+            dto.setDatasetId(datasetId);
+            List<DocumentVectorBean> datasetSubList = search(dto) ;
+
+            list.addAll(datasetSubList);
+        }
+
+
         return list.stream().sorted((o1, o2) -> Float.compare(o2.getScore(), o1.getScore())).collect(Collectors.toList());
     }
 
