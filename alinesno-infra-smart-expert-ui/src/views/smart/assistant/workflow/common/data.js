@@ -12,36 +12,38 @@ const startNode = {
         stepName: '开始节点',
         config: {
             fields: [
-                {
-                    label: '用户消息',
-                    value: 'message'
-                },
-                {
-                    label: '文档',
-                    value: 'document'
-                }
+                { label: '用户消息', value: 'message' },
+                { label: '文档', value: 'document' }
             ],
             globalFields: [
-                {
-                    value: 'time',
-                    label: '当前时间'
-                },
-                {
-                    value: 'pre_content',
-                    label: '上节点内容'
-                },
-                {
-                    value: 'channelId',
-                    label: '频道号'
-                },
-                {
-                    value: 'history_content',
-                    label: '历史对话'
-                }
+                { value: 'time', label: '当前时间' },
+                { value: 'pre_content', label: '上节点内容' },
+                { value: 'channelId', label: '频道号' },
+                { value: 'datasetKnowledgeDocument', label: '全局知识库' },
+                { value: 'history_content', label: '历史对话' }
             ]
         }
     }
 };
+
+// 结束节点配置
+const endNode = {
+    id: WorkflowType.End,
+    type: WorkflowType.End,
+    x: 200,
+    y: 270,
+    text: '结束节点',
+    properties: {
+        width: 420,
+        height: 330,
+        stepName: '结束节点',
+        config: {
+            fields: [
+                { label: '答案内容', value: 'output' },
+            ]
+        }
+    }
+}
 
 // 基础节点配置
 const baseNode = {
@@ -104,18 +106,18 @@ const searchDatasetNode = {
                     label: '段落列表',
                     value: 'paragraph_list'
                 },
-                {
-                    label: '命中处理方法列表',
-                    value: 'is_hit_handling_method_list'
-                },
+                // {
+                //     label: '命中处理方法列表',
+                //     value: 'is_hit_handling_method_list'
+                // },
                 {
                     label: '结果',
                     value: 'data'
                 },
-                {
-                    label: '直接返回',
-                    value: 'directly_return'
-                }
+                // {
+                //     label: '直接返回',
+                //     value: 'directly_return'
+                // }
             ]
         }
     }
@@ -361,7 +363,8 @@ const menuNodes = [
     questionNode,
     documentExtractNode,
     speechToTextNode,
-    textToSpeechNode
+    textToSpeechNode,
+    endNode
 ];
 
 // 自定义函数节点配置
@@ -458,7 +461,8 @@ const nodeDict = {
     [WorkflowType.ImageUnderstandNode]: imageUnderstandNode,
     [WorkflowType.TextToSpeechNode]: textToSpeechNode,
     [WorkflowType.SpeechToTextNode]: speechToTextNode,
-    [WorkflowType.ImageGenerateNode]: imageGenerateNode
+    [WorkflowType.ImageGenerateNode]: imageGenerateNode,
+    [WorkflowType.End]: endNode
 };
 
 // 判断是否为工作流类型
@@ -502,5 +506,6 @@ export {
     compareList,
     nodeDict,
     isWorkFlow,
-    isLastNode
+    isLastNode,
+    endNode
 };
