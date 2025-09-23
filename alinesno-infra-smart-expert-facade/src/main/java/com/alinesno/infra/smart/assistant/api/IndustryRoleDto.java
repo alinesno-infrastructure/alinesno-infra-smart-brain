@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -31,6 +32,10 @@ public class IndustryRoleDto {
     private boolean uploadStatus ; // 文件上传
     private boolean outputFileFormatStatus ; // 输出文件格式
     private boolean welcomeConfigStatus;  // 欢迎配置
+
+    private boolean contextEngineeringEnable ; // 是否开启上下文工程
+    private ContextEngineeringData contextEngineeringData ; // 上下文工程配置数据项
+
     private UploadData uploadData; // 文件上传配置
     private VoiceInputData voiceInputData; // 语音输入相关数据配置
     private VoicePlayData voicePlayData; // 语音播放
@@ -57,6 +62,9 @@ public class IndustryRoleDto {
     private String executeScript; // 执行脚本
     private String auditScript; // 审核脚本
     private String functionCallbackScript; // 功能回调脚本
+
+    private Date addTime ;   // 添加时间
+    private Date updateTime ;  // 更新时间
 
     // 假设存在一个静态方法 fromEntity，用于从 IndustryRoleEntity 转换为 IndustryRoleDto
     public static IndustryRoleDto fromEntity(IndustryRoleEntity entity) {
@@ -114,6 +122,11 @@ public class IndustryRoleDto {
         // 欢迎配置
         if (entity.getWelcomeConfigData() != null) {
             dto.setWelcomeConfigData(JSONObject.parseObject(entity.getWelcomeConfigData(), WelcomeConfigData.class));
+        }
+
+        // 上下文工程配置
+        if (entity.getContextEngineeringData() != null) {
+            dto.setContextEngineeringData(JSONObject.parseObject(entity.getContextEngineeringData(), ContextEngineeringData.class));
         }
 
         return dto;
