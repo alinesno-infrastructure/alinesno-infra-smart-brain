@@ -3,7 +3,6 @@ package com.alinesno.infra.smart.assistant.api;
 import com.alibaba.fastjson.JSONObject;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.checkerframework.checker.units.qual.N;
 
 /**
  * 角色欢迎信息数据传输对象
