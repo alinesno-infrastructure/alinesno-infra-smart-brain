@@ -8,11 +8,11 @@ import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
-import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectKnowledgeGroupDto;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeService;
+import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeGroupDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
