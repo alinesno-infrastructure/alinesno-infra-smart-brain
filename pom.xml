@@ -18,7 +18,7 @@
     <properties>
         <revision>2.0.0-SNAPSHOT</revision>
 
-        <alinesno.infra.common.version>1.1.0-SNAPSHOT</alinesno.infra.common.version>
+        <alinesno.infra.common.version>1.2.0-SNAPSHOT</alinesno.infra.common.version>
         <commons-text.version>1.1</commons-text.version>
 
         <fastjson.version>2.0.47</fastjson.version>
@@ -30,13 +30,12 @@
 
         <docx4j.core.version>11.5.4</docx4j.core.version>
         <docx4j.importxhtml.version>11.4.8</docx4j.importxhtml.version>
+
+        <!-- 模型适配 -->
+        <model-adapter.version>3.0.1-M2-SNAPSHOT</model-adapter.version>
     </properties>
 
     <modules>
-        <!-- GPT接入服务 -->
-        <module>alinesno-infra-smart-brain-facade</module>  <!-- 接口和引用 -->
-        <module>alinesno-infra-smart-brain-domain</module>  <!-- 领域服务 -->
-
 		<!-- 助手服务 -->
         <module>alinesno-infra-smart-expert-facade</module>  <!-- 接口和引用 -->
         <module>alinesno-infra-smart-expert-domain</module>  <!-- 领域服务 -->
@@ -49,7 +48,6 @@
         <module>alinesno-infra-smart-expert-workflow</module> <!-- 流程编排 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
         <module>alinesno-infra-smart-expert-gateway</module>  <!-- 接口服务 -->
-        <module>alinesno-infra-smart-expert-client</module>  <!-- 对外引用 -->
         <module>alinesno-infra-smart-expert-portal</module>  <!-- 场景工作台门户 -->
 
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
@@ -185,6 +183,17 @@
                 <version>${docx4j.importxhtml.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.agentsflex</groupId>
+                <artifactId>alinesno-smart-model-adapter-core</artifactId>
+                <version>${model-adapter.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-simple</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
 
         </dependencies>
     </dependencyManagement>
