@@ -32,11 +32,11 @@ public class ChapterEntity extends InfraBaseEntity {
     private Integer chapterSort;
 
     @TableField
-    @Column(name = "chapter_require", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "编写要求")
+    @Column(name = "chapter_require", type = MySqlTypeConstant.TEXT, comment = "编写要求")
     private String chapterRequire;
 
     @TableField
-    @Column(name = "chapter_additional_require", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "附加要求")
+    @Column(name = "chapter_additional_require", type = MySqlTypeConstant.TEXT, length = 1024 , comment = "附加要求")
     private String chapterAdditionalRequire;
 
     @TableField
