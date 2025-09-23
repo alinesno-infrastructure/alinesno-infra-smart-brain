@@ -5,7 +5,6 @@ import com.agentsflex.core.image.*;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.message.AiMessage;
-import com.alinesno.infra.common.core.cache.RedisUtils;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
@@ -21,14 +20,16 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import jakarta.annotation.PreDestroy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
