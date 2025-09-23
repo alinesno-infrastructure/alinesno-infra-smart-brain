@@ -1,5 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.impl;
 
+import cn.hutool.extra.spring.SpringUtil;
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
@@ -10,7 +12,9 @@ import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IAr
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ExcelData;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.tools.ImageCompressionUtil;
 import com.alinesno.infra.smart.scene.entity.ArticleTemplateEntity;
+import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneScopeType;
+import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -145,6 +149,27 @@ public class ArticleTemplateServiceImpl extends IBaseServiceImpl<ArticleTemplate
         result.put("failedList", failedList);
         return result;
     }
+
+    @Override
+    public List<ArticleTemplateEntity> getTemplateBySceneId(PermissionQuery query, Long sceneId) {
+
+        ISceneService sceneService = SpringUtil.getBean(ISceneService.class);
+        SceneEntity sceneEntity = sceneService.getById(sceneId);
+
+        String configDataStr = sceneEntity.getConfigData();
+        if (configDataStr != null) {
+            JSONObject configData = JSONObject.parseObject(configDataStr);
+            JSONArray selectedTemplateIds = configData.getJSONArray("selectedTemplateIds");
+
+            if (selectedTemplateIds != null) {
+                // 将 JSONArray 转换为 JSON 字符串后再解析为 List
+                return JSONArray.parseArray(selectedTemplateIds.toJSONString(), ArticleTemplateEntity.class);
+            }
+        }
+
+        return List.of();
+    }
+
 
     /**
      * 判断是否存在同名的模板
