@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.tools;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
@@ -29,7 +30,10 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 
 import javax.lang.exception.RpcServiceRuntimeException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.*;
 
 @Slf4j
@@ -93,10 +97,12 @@ public class LongTextTaskExecutionService {
                 .supplyAsync(() -> {
                     try {
                         // 启动任务
-                        accountPointService.startSceneTask(userId, orgId , taskId);
+                        LongTextTaskEntity task = taskService.getById(taskId);
+                        accountPointService.startSceneTask(userId, orgId , taskId , task.getSceneId());
 
                         return internalExecuteTask(taskId, channelStreamId, query);
                     } catch (Exception e) {
+                        log.error("任务执行失败: taskId={}", taskId, e);
                         throw new CompletionException(e);
                     }
                 }, chatThreadPool);
@@ -229,12 +235,19 @@ public class LongTextTaskExecutionService {
         // 创建顺序执行的CompletableFuture链
         for (int i = 0; i < totalChapters; i++) {
             final ChapterEntity chapter = chapters.get(i);
-                // 检查是否被中断
-                if (Thread.interrupted()) {
-                    log.info("章节任务已被取消，taskId={}, chapterId={}", taskId, chapter.getId());
-                    throw new CancellationException("任务被取消");
-                }
 
+            // 检查是否被中断
+            if (Thread.interrupted()) {
+                log.info("章节任务已被取消，taskId={}, chapterId={}", taskId, chapter.getId());
+                throw new CancellationException("任务被取消");
+            }
+
+            // 判断是否是叶子节点
+            if (CollectionUtil.isNotEmpty(chapter.getSubtitles())) {  // 非叶子节点则直接使用描述即可
+                ChapterEntity chapterEntity = chapterService.getById(chapter.getId());
+                chapterEntity.setContent(chapterEntity.getChapterRequire());
+                chapterService.update(chapterEntity);
+            }else{
                 // 构建章节生成DTO
                 ChapterGenFormDto genFormDto = new ChapterGenFormDto();
                 genFormDto.setChapterId(chapter.getId());
@@ -258,6 +271,8 @@ public class LongTextTaskExecutionService {
                 task.setTaskEndTime(new Date());  // 任务更新时间
 
                 taskService.updateById(task);
+            }
+
         }
 
     }
@@ -463,7 +478,7 @@ public class LongTextTaskExecutionService {
             WorkflowExecutionDto genContent = roleService.runRoleAgent(taskInfo).get() ;
 
            chapterEntity.setContent(taskInfo.getFullContent());
-            chapterService.update(chapterEntity);
+           chapterService.update(chapterEntity);
 
         } catch (Exception e) {
            log.error("章节内容生成失败: " + e.getMessage());
@@ -501,7 +516,12 @@ public class LongTextTaskExecutionService {
             taskInfo.setQueryText(chatRole.getMessage());
 
             // 获取模板信息
-            LongTextTemplateEntity template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+            LongTextTemplateEntity template;
+            if(longTextTaskEntity.getSelectedTemplateId() != null) {
+                template = longTextTemplateService.getById(longTextTaskEntity.getSelectedTemplateId());
+            } else {
+                template = null;
+            }
 
             // 完全异步处理
             return roleService.runRoleAgent(taskInfo)
