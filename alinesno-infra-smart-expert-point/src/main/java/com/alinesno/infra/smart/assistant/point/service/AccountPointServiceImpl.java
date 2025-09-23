@@ -1,9 +1,14 @@
 package com.alinesno.infra.smart.assistant.point.service;
 
 import com.alinesno.infra.common.core.cache.RedisUtils;
+import com.alinesno.infra.smart.assistant.point.event.AgentPointConsumeEvent;
+import com.alinesno.infra.smart.assistant.point.event.ScenePointConsumeEvent;
+import com.alinesno.infra.smart.assistant.point.listener.AgentPointConsumeListener;
+import com.alinesno.infra.smart.assistant.point.listener.ScenePointConsumeListener;
 import com.alinesno.infra.smart.point.constants.PointConstants;
 import com.alinesno.infra.smart.point.service.IAccountPointService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +24,12 @@ public class AccountPointServiceImpl implements IAccountPointService {
 
     @Value("${alinesno.point.enable:false}")
     private boolean pointEnable ;
+
+    @Autowired
+    private AgentPointConsumeListener agentPointConsumeListener;
+
+    @Autowired
+    private ScenePointConsumeListener scenePointConsumeListener ;
 
     // 会话计数器的TTL(在时间范围内容最多的会话次数)
     private static final Duration SESSION_TTL = Duration.ofMinutes(1);
@@ -38,6 +49,12 @@ public class AccountPointServiceImpl implements IAccountPointService {
         RedisUtils.expire(key, SESSION_TTL);
 
         log.debug("用户[{}]启动会话 | Org[{}] 计数+1 → 当前: {}", userId, orgId, count);
+
+        // 2. 使用eventPublisher发布事件
+        if (pointEnable) {
+            // 消耗用户积分，使用spring event在其它类处理，做到解耦
+            agentPointConsumeListener.handlePointConsumeEvent(new AgentPointConsumeEvent(userId, orgId, roleId));
+        }
     }
 
     @Override
@@ -54,7 +71,6 @@ public class AccountPointServiceImpl implements IAccountPointService {
 
         log.debug("用户[{}]结束会话 | Org[{}] 计数-1 → 剩余: {}", userId, orgId, count);
 
-        // TODO 扣除用户积分
     }
 
     /**
@@ -67,13 +83,19 @@ public class AccountPointServiceImpl implements IAccountPointService {
 
     // 新增场景任务统计方法
     @Override
-    public void startSceneTask(long userId, long orgId, long taskId) {
+    public void startSceneTask(long userId, long orgId, long taskId , long sceneId) {
         // 组织级任务计数
         String orgTaskKey = String.format(PointConstants.ORG_TASK_COUNTER_KEY, orgId);
         long orgTaskCount = RedisUtils.incrAtomicValue(orgTaskKey);
         RedisUtils.expire(orgTaskKey, TASK_TTL);
 
         log.info("场景任务启动 | 用户[{}] | 任务[{}] | Org[{}] 任务数+1 → {}",  userId, taskId, orgId, orgTaskCount);
+
+        // 2. 使用eventPublisher发布事件
+        if (pointEnable) {
+            // 消耗用户积分，使用spring event在其它类处理，做到解耦
+            scenePointConsumeListener.handlePointConsumeEvent(new ScenePointConsumeEvent(userId, orgId, taskId , sceneId));
+        }
     }
 
     @Override
