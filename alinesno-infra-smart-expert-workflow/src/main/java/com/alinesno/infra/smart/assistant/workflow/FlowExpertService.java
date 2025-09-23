@@ -4,14 +4,17 @@ import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.agentsflex.core.util.StringUtil;
+import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
-import com.alinesno.infra.smart.assistant.role.ExpertService;
+import com.alinesno.infra.smart.assistant.role.ReActExpertService;
 import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
+import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
 import com.alinesno.infra.smart.assistant.workflow.service.IFlowService;
@@ -24,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +40,10 @@ import static com.alinesno.infra.smart.im.constants.ImConstants.TYPE_ROLE;
 @Scope("prototype")
 @Slf4j
 @Service(AssistantConstants.PREFIX_ASSISTANT_FLOW)
-public class FlowExpertService extends ExpertService {
+public class FlowExpertService extends ReActExpertService {
+
+    @Autowired
+    private ReActServiceTool reActServiceTool  ;
 
     @Autowired
     private IFlowService flowService;
@@ -52,66 +59,147 @@ public class FlowExpertService extends ExpertService {
                                                    MessageEntity workflowExecution,
                                                    MessageTaskInfo taskInfo) {
 
-        String result = flowService.runRoleFlow(taskInfo, role, workflowExecution, this);
+        String datasetKnowledgeDocument = getDatasetKnowledgeDocument(role, workflowExecution, taskInfo);
+        taskInfo.setDatasetKnowledgeDocument(datasetKnowledgeDocument);
+
+        CompletableFuture<String> result = flowService.runRoleFlow(taskInfo, role, workflowExecution, this);
         log.debug("handleRole result : {}", result);
 
-        return null ; //   AgentConstants.ChatText.CHAT_FINISH ;
+        return result ; //   AgentConstants.ChatText.CHAT_FINISH ;
+    }
+
+    private String getDatasetKnowledgeDocument(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+        log.debug("workflowExecution = {}" , workflowExecution);
+        String goal = clearMessage(taskInfo.getText()) ; // 目标
+        String queryText = StringUtils.hasLength(taskInfo.getQueryText()) ? taskInfo.getQueryText() : goal ;
+
+        HistoriesPrompt historyPrompt = new HistoriesPrompt();
+        historyPrompt.setMaxAttachedMessageCount(maxHistory);
+        historyPrompt.setHistoryMessageTruncateEnable(false);
+
+        List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(queryText , role.getKnowledgeBaseIds()) ;
+        reActServiceTool.handleReferenceArticle(taskInfo, datasetKnowledgeDocumentList) ;
+
+        String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
+        return reActServiceTool.getDatasetKnowledgeDocument(queryText , workflowExecution, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
     }
 
     @Override
     public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
-
+        // 预构建 record 和一些同步设置（不包含长耗时调用）
         WorkflowExecutionDto record = new WorkflowExecutionDto();
-
-        // 设置业务跟踪
         long traceBusId = IdUtil.getSnowflakeNextId();
         long flowChatId = IdUtil.getSnowflakeNextId();
-
         record.setTraceBusId(traceBusId);
-
         taskInfo.setTraceBusId(traceBusId);
         taskInfo.setFlowChatId(flowChatId);
-
-        // 任务开始记录
         record.setRoleId(role.getId());
         record.setChannelId(taskInfo.getChannelId());
-
         record.setBuildNumber(1);
         record.setStartTime(System.currentTimeMillis());
-
         record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
-
         this.setRole(role);
         this.setTaskInfo(taskInfo);
         this.setMsgUuid(IdUtil.getSnowflakeNextId());
         this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
-
         record.setChatType(TYPE_ROLE);
 
-        try {
-            // 处理业务
-            CompletableFuture<String> gentContent = handleRole(role, workflowExecution, taskInfo);
-            log.debug("handleRole result : {}", gentContent);// 解析出生成的内容
-//            record.setGenContent(gentContent);
-//            List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContent);
-//            record.setCodeContent(codeContentList);
-        } catch (Exception e) {
-            log.error("解析代码块异常:{}", e.getMessage());
+        // 调用异步处理，handleRole 返回 CompletableFuture<String>
+        CompletableFuture<String> genContentFuture = handleRole(role, workflowExecution, taskInfo)
+                // 给一个超时保护（可调），防止外部 LLM 永久阻塞
+                .orTimeout(300, java.util.concurrent.TimeUnit.SECONDS);
 
-            streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
-            streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
-        }
-
-        // 处理完成之后记录更新
-        record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
-        record.setEndTime(System.currentTimeMillis());
-        record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
-
-//        return  record;
-
-        return null ;
-
+        // 把后续处理链式挂上去，避免 blocking.get()
+        return genContentFuture
+                .thenApplyAsync(gentContentStr -> {
+                    // 解析与填充 record（短耗时工作）
+                    record.setGenContent(gentContentStr);
+//                    try {
+//                        List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContentStr);
+//                        record.setCodeContent(codeContentList);
+//                    } catch (Exception e) {
+//                        log.error("解析代码块异常:{}", e.getMessage(), e);
+//                        // 异常时可继续，或者设置错误状态
+//                        streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage(), role, taskInfo, IdUtil.getSnowflakeNextId());
+//                        streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]", role, taskInfo, IdUtil.getSnowflakeNextId());
+//                    }
+                    record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+                    record.setEndTime(System.currentTimeMillis());
+                    record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+                    return record;
+                } /* 可选择传入 orchestratorExecutor: , orchestratorExecutor */)
+                .exceptionally(ex -> {
+                    // 统一异常处理路径（包括超时）
+                    log.error("runRoleAgent 异常: {}", ex.getMessage(), ex);
+                    record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus()); // 或设置 ERROR
+                    record.setEndTime(System.currentTimeMillis());
+                    record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+                    // 推送异常事件
+                    streamMessagePublisher.doStuffAndPublishAnEvent("流程异常: " + ex.getMessage(), role, taskInfo, IdUtil.getSnowflakeNextId());
+                    streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]", role, taskInfo, IdUtil.getSnowflakeNextId());
+                    return record;
+                });
     }
+
+//    @Override
+//    public CompletableFuture<WorkflowExecutionDto> runRoleAgent(IndustryRoleEntity role, MessageEntity workflowExecution, MessageTaskInfo taskInfo) {
+//
+//        return CompletableFuture.supplyAsync(() -> {
+//
+//            WorkflowExecutionDto record = new WorkflowExecutionDto();
+//
+//            // 设置业务跟踪
+//            long traceBusId = IdUtil.getSnowflakeNextId();
+//            long flowChatId = IdUtil.getSnowflakeNextId();
+//
+//            record.setTraceBusId(traceBusId);
+//
+//            taskInfo.setTraceBusId(traceBusId);
+//            taskInfo.setFlowChatId(flowChatId);
+//
+//            // 任务开始记录
+//            record.setRoleId(role.getId());
+//            record.setChannelId(taskInfo.getChannelId());
+//
+//            record.setBuildNumber(1);
+//            record.setStartTime(System.currentTimeMillis());
+//
+//            record.setStatus(WorkflowStatusEnum.IN_PROGRESS.getStatus());
+//
+//            this.setRole(role);
+//            this.setTaskInfo(taskInfo);
+//            this.setMsgUuid(IdUtil.getSnowflakeNextId());
+//            this.setSecretKey(secretService.getByOrgId(role.getOrgId()));
+//
+//            record.setChatType(TYPE_ROLE);
+//
+//            try {
+//                // 处理业务
+//                CompletableFuture<String> gentContent = handleRole(role, workflowExecution, taskInfo);
+//                log.debug("handleRole result gentContent : {}", gentContent);// 解析出生成的内容
+//
+//                String gentContentStr = gentContent.get();
+//                record.setGenContent(gentContentStr) ;
+//
+//                List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(gentContentStr);
+//                record.setCodeContent(codeContentList);
+//
+//            } catch (Exception e) {
+//                log.error("解析代码块异常:{}", e.getMessage());
+//
+//                streamMessagePublisher.doStuffAndPublishAnEvent(e.getMessage() , role, taskInfo, IdUtil.getSnowflakeNextId());
+//                streamMessagePublisher.doStuffAndPublishAnEvent("[DONE]" , role, taskInfo, IdUtil.getSnowflakeNextId());
+//            }
+//
+//            // 处理完成之后记录更新
+//            record.setStatus(WorkflowStatusEnum.COMPLETED.getStatus());
+//            record.setEndTime(System.currentTimeMillis());
+//            record.setUsageTimeSeconds(RoleUtils.formatTime(record.getStartTime(), record.getEndTime()));
+//
+//            return  record;
+//        });
+//
+//    }
 
     @Override
     protected CompletableFuture<String> handleModifyCall(IndustryRoleEntity role,
