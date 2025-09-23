@@ -1228,4 +1228,10 @@ html.dark {
       color: rgba($dark-text-color, 0.6);
     } 
   }
+
+  .integral-display {
+    .statistic-card ,.detail-section {
+      box-shadow: -1px 1px 12px rgb(10 11 11);
+    }
+  } 
 }
