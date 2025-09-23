@@ -18,7 +18,6 @@ import com.alinesno.infra.smart.assistant.enums.ScriptPurposeEnums;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleCatalogMapper;
 import com.alinesno.infra.smart.assistant.mapper.IndustryRoleDraftMapper;
 import com.alinesno.infra.smart.assistant.service.*;
-import com.alinesno.infra.smart.brain.api.dto.PromptMessageDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.service.IMessageService;
