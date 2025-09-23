@@ -2,7 +2,7 @@
     <div class="app-container">
       <el-page-header @back="goBack">
         <template #content>
-          <span class="text-large font-600 mr-3" style="font-size: 16px;"> [测试数据集] Web站点同步</span>
+          <span class="text-large font-600 mr-3" style="font-size: 16px;"> [测试数据集] Web站点导入</span>
         </template>
       </el-page-header>
       <div class="step-container">
@@ -29,13 +29,13 @@
                   font-size: 14px;
                   text-align: left;
                   color: #666;
-              ">Web站点同步功能允许你填写一个网站的根地址，系统会自动深度抓取相关的网页进行知识库训练。仅会抓取静态的网站，以项目文档、博客为主</div>
+              ">Web站点导入功能允许你填写一个网站的根地址，系统会自动深度抓取相关的网页进行知识库训练。仅会抓取静态的网站，以项目文档、博客为主</div>
             </div>
             <el-form :model="formData" :rules="rules" 
                      label-position="top"
                      size="large" ref="formRef" label-width="120px">
-              <el-form-item label="网站根地址" prop="rootUrl">
-                <el-input v-model="formData.rootUrl" placeholder="请输入网站根地址"></el-input>
+              <el-form-item label="链接地址" prop="rootUrl">
+                <el-input v-model="formData.rootUrl" type="textarea" :rows="5" resize="none" placeholder="请输入网站链接，最多不能超过10个"></el-input>
               </el-form-item>
               <el-form-item label="CSS内容选择器(可选)" prop="cssSelector">
                 <el-input v-model="formData.cssSelector" placeholder="请输入CSS内容选择器 body div.content"></el-input>
@@ -51,6 +51,7 @@
               </el-form-item>
               <el-form-item>
                 <el-button style="width: 100%;" 
+                  :disabled="true"
                   :loading="webImportLoading"
                   type="primary" 
                   class="next-button" @click="submitForm">确认站点同步</el-button>
