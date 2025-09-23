@@ -7,7 +7,6 @@ import com.alibaba.dashscope.embeddings.TextEmbeddingResultItem;
 import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.fastjson.JSON;
-import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.EmbeddingConsumer;
 import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingRequest;
 import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingResponse;
