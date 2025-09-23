@@ -9,11 +9,11 @@ import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
+import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
@@ -270,8 +270,8 @@ public class WorkerHandler extends BaseHandler {
         params.put("planning_detail", planningDetail);
         params.put("task_id", taskId);
         params.put("task_description", taskDescription);
-        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false , false)));
-        params.put("current_time", Prompt.getCurrentTime());
+        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(getTools(), false , false)));
+        params.put("current_time", PromptHandle.getCurrentTime());
         return params;
     }
 
