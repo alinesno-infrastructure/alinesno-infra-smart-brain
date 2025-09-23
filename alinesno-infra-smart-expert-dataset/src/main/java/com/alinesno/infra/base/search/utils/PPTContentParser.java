@@ -7,8 +7,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.poi.hslf.usermodel.*;
-import org.apache.poi.sl.usermodel.Shape;
 import org.apache.poi.sl.usermodel.*;
+import org.apache.poi.sl.usermodel.Shape;
 import org.apache.poi.xslf.usermodel.*;
 
 import javax.imageio.IIOImage;
@@ -19,8 +19,10 @@ import javax.imageio.stream.ImageOutputStream;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.*;
+import java.util.Map;
 
 /**
  * PPT内容解析工具类(结合OCR工具)
