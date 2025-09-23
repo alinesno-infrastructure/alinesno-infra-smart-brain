@@ -11,7 +11,6 @@
     </div>
 
     <!-- 模型列表 -->
-    <el-scrollbar style="max-height:calc(100vh - 350px)">
       <div class="research-template-list" v-if="templateList.length > 0">
         <div class="research-template-item" v-for="item in templateList" :key="item.id"
           :class="{ 'active': selectedTemplateCode === item.id }" @click="selectTemplate(item)">
@@ -32,7 +31,6 @@
       <div style="justify-content: center;" v-if="templateList.length == 0">
         <el-empty style="padding: 10px;" description="此类型还没有知识库，请选项其它类型的知识库" image-size="50" />
       </div>
-    </el-scrollbar>
   </div>
 </template>
 
@@ -40,8 +38,8 @@
 import { ref, computed, onMounted, watch } from 'vue';
 
 import {
-  getAllLongTextTemplateType,
-  getTemplateByType , 
+  // getAllLongTextTemplateType,
+  getTemplateBySceneId, 
   getTemplateDetail ,
 } from '@/api/base/im/scene/longText';
 
@@ -56,21 +54,24 @@ const props = defineProps({
 // 发出选中的知识库类型
 const emit = defineEmits(['update:modelValue', 'selectTemplate']);
 
+const route = useRoute();
+const sceneId = ref(route.query.sceneId)
+
 const templateTypeList = ref([]);
 const templateList = ref([]);
 const selectedType = ref(0); // 默认选中"全部"
 const selectedTemplateCode = ref(props.modelValue);
 
-// 根据文档类型获取图标
-const getIconByType = (type) => {
-  const icons = {
-    pdf: 'fa-solid fa-file-pdf',
-    word: 'fa-solid fa-file-word',
-    excel: 'fa-solid fa-file-excel',
-    default: 'fa-solid fa-file'
-  };
-  return icons[type] || icons.default;
-};
+// // 根据文档类型获取图标
+// const getIconByType = (type) => {
+//   const icons = {
+//     pdf: 'fa-solid fa-file-pdf',
+//     word: 'fa-solid fa-file-word',
+//     excel: 'fa-solid fa-file-excel',
+//     default: 'fa-solid fa-file'
+//   };
+//   return icons[type] || icons.default;
+// };
 
 // 截断字符串
 const truncateString = (str, num) => {
@@ -85,7 +86,7 @@ const selectType = async (typeId) => {
   selectedType.value = typeId;
 
   try {
-    const res = await getTemplateByType(typeId);
+    const res = await getTemplateBySceneId(sceneId.value);
     templateList.value = res.data ; 
     // 如果切换类型后当前选中的模板不在新列表中，则取消选中
     if (!templateList.value.some(item => item.id === selectedTemplateCode.value)) {
@@ -113,15 +114,17 @@ const selectTemplate = async (item) => {
 onMounted(async () => {
   try {
     // 获取所有知识库类型
-    const typeRes = await getAllLongTextTemplateType();
-    templateTypeList.value = typeRes.data;
+    // const typeRes = await getAllLongTextTemplateType();
+    // templateTypeList.value = typeRes.data;
     
     // 获取默认知识库列表（全部类型）
-    const templateRes = await getTemplateByType(0);
+    const templateRes = await getTemplateBySceneId(sceneId.value);
     templateList.value = templateRes.data ; // .slice(0, 6);
-    if (templateRes.data.length > 0 && !props.modelValue) {
-      selectTemplate(templateRes.data[0]);
-    }
+
+    // if (templateRes.data.length > 0 && !props.modelValue) {
+    //   selectTemplate(templateRes.data[0]);
+    // }
+
   } catch (error) {
     console.error('初始化数据失败:', error);
     templateTypeList.value = [];
