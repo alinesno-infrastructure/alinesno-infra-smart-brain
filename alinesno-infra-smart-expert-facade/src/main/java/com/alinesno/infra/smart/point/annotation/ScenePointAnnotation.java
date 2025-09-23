@@ -30,6 +30,6 @@ public @interface ScenePointAnnotation {
      * 获取参数名称
      * @return
      */
-    String paramName() default "taskId";
+    String paramName() default "sceneId";
 
 }
