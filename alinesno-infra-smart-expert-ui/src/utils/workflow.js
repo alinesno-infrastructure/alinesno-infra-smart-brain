@@ -1,6 +1,7 @@
 const WorkflowType = {
     Base: 'base',
     Start: 'start',
+    End: 'end',
     AiChat: 'ai_chat',
     SearchDataset: 'knowledge_search',
     Question: 'question',
