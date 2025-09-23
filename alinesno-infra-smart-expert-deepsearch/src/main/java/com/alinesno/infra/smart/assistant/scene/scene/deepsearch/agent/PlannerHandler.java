@@ -12,7 +12,7 @@ import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
-import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
+import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.PlanningPrompts;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
@@ -82,9 +82,9 @@ public class PlannerHandler extends BaseHandler {
 
         params.put("complex_task", goal);
         params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());
-        params.put("tool_info", JSON.toJSONString(Prompt.parsePlugins(getTools(), false , false)));
+        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(getTools(), false , false)));
         params.put("max_plannings", maxPlannings);
-        params.put("current_time", Prompt.getCurrentTime());
+        params.put("current_time", PromptHandle.getCurrentTime());
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT, params);
         historyPrompt.addMessage(new HumanMessage(plannerPrompt));
@@ -162,7 +162,7 @@ public class PlannerHandler extends BaseHandler {
 
         Map<String, Object> params = new HashMap<>();
         params.put("plan_content", output);
-        params.put("current_time", Prompt.getCurrentTime());
+        params.put("current_time", PromptHandle.getCurrentTime());
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT_FORMATTED, params);
         // historyPrompt.addMessage(new HumanMessage(plannerPrompt));
