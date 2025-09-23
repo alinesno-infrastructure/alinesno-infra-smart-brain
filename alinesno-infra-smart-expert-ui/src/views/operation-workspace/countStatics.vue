@@ -12,7 +12,7 @@
                 <span class="label-tip">
                   <a target="_blank" :href="item.link">
                     <img :src="imagePath(item.roleAvatar)" style="width:40px;height:40px;float:left; border-radius: 50%" />
-                    <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);">
+                    <div style="float: left;margin-top: 3px;margin-left: 10px;width: calc(100% - 50px);" @click="configExecuteScript(item)">
                       {{ item.roleName }} 
                       <br/>
                       <span class="label" style="font-size: 13px;line-height: 13px;font-weight: lighter;">
@@ -72,6 +72,7 @@ import {
   getNewestRole 
 } from '@/api/smart/assistant/dashboard.js'
 
+const router = useRouter();
 const runCountArr = ref([]);
 
 // 随机图标 
@@ -100,6 +101,25 @@ function handleNewestRole(){
   getNewestRole().then(response => {
     runCountArr.value = response.data;
   });
+}
+
+
+/** 配置角色脚本 */
+function configExecuteScript(row) {
+
+  console.log('scriptType = ' + row.scriptType)
+
+  if (row.scriptType && row.scriptType == 'flow') {  // 流程
+    router.push({ path: '/expert/smart/assistant/role/workflowAgent', query: { roleId: row.id } });
+  } else if (row.scriptType && row.scriptType == 'react') {  // 推荐
+    router.push({ path: '/expert/smart/assistant/role/agentInference', query: { roleId: row.id } });
+  // 深度搜索
+  } else if (row.scriptType && row.scriptType == 'deepsearch') {  // 深度搜索
+    router.push({ path: '/expert/smart/assistant/role/deepSearch', query: { roleId: row.id } });
+  } else {  // 脚本
+    router.push({ path: '/expert/smart/assistant/role/constomScript', query: { roleId: row.id } });
+  }
+
 }
 
 // 编写一个方法来随机选择一个icon
