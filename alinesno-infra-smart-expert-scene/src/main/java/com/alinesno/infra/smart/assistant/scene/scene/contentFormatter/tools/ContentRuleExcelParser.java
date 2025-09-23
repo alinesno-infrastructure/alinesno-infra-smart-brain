@@ -1,7 +1,5 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
