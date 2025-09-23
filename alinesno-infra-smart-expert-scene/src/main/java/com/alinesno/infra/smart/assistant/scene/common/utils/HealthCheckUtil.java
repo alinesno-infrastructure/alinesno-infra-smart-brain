@@ -2,8 +2,6 @@ package com.alinesno.infra.smart.assistant.scene.common.utils;
 
 import cn.hutool.http.HttpRequest;
 import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSONObject;
-import cn.hutool.json.JSONUtil;
 
 /**
  * 健康检查工具类
