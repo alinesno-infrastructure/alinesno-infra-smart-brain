@@ -1,10 +1,8 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
@@ -13,11 +11,8 @@ import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.SuperController;
 import com.alinesno.infra.smart.assistant.adapter.SmartDocumentConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.common.utils.AddCommentToCharacters;
 import com.alinesno.infra.smart.assistant.scene.common.utils.Revision;
-import com.alinesno.infra.smart.assistant.scene.common.utils.WordToPdfConverter;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.FormatterPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.bean.DocumentInfoBean;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewSceneInfoDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.GenAuditResultDto;
@@ -28,18 +23,14 @@ import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDo
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewPromptTools;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.ParserDocumentTool;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
-import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -49,11 +40,6 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -61,7 +47,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
@@ -69,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -329,7 +313,7 @@ public class DocumentReviewController extends SuperController {
         taskEntity.setResultGenStatus(ReviewRuleGenStatusEnums.GENERATING.getCode()) ;
         docReviewTaskService.updateById(taskEntity);
 
-        List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(taskEntity) ;
+        List<DocumentInfoBean> contentList = parserDocumentTool.parseContent(taskEntity , dto) ;
 
         docReviewListGeneratorService.startGenerateAuditList(taskEntity ,  dto , query , contentList) ;
 
