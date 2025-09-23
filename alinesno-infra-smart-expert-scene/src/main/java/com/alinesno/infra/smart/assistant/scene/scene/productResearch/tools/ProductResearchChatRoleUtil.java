@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.productResearch.tools;
 
 import cn.hutool.core.util.IdUtil;
-import com.agentsflex.core.image.*;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.message.AiMessage;
@@ -12,10 +11,7 @@ import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ChatEditorDto;
-import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.dto.ImageGeneratorDTO;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
@@ -23,7 +19,6 @@ import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
-import com.alinesno.infra.smart.scene.entity.LongTextTaskEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
 import jodd.util.StringUtil;
@@ -32,8 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
