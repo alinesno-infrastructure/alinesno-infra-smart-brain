@@ -1,4 +1,3 @@
-// FunctionNode.java
 package com.alinesno.infra.smart.assistant.workflow.nodes.step;
 
 import com.alibaba.fastjson.JSONObject;
@@ -17,7 +16,6 @@ import com.alinesno.infra.smart.utils.CodeBlockParser;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
@@ -47,54 +45,54 @@ public class FunctionNode extends AbstractFlowNode {
         setType("function");
     }
 
-    @SneakyThrows
     @Override
-    protected void handleNode() {
-        log.debug("node type = {} output = {}" , node.getType() , output) ;
-        log.debug("FunctionNodeData = {}" , getNodeData());
+    protected CompletableFuture<Void> handleNode() {
+        log.debug("node type = {} output = {}", node.getType(), output);
+        FunctionNodeData nodeData = getNodeData();
+        log.debug("FunctionNodeData = {}", nodeData);
 
-        CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-
-
+        return CompletableFuture.supplyAsync(() -> {
             // 上一个任务节点不为空，执行任务并记录
-            List<CodeContent> codeContentLis = null ;
-            if(workflowExecution != null){
+            List<CodeContent> codeContentLis = null;
+            if (workflowExecution != null) {
                 String gentContent = workflowExecution.getContent();
                 codeContentLis = CodeBlockParser.parseCodeBlocks(gentContent);
             }
 
-            String scriptText = getNodeData().getRawScript() ;
+            String scriptText = nodeData == null ? null : nodeData.getRawScript();
 
-            String nodeOutput = executeGroovyScript(role ,
-                    workflowExecution ,
-                    taskInfo ,
-                    codeContentLis ,
-                    scriptText) ;
+            String nodeOutput = executeGroovyScript(role,
+                    workflowExecution,
+                    taskInfo,
+                    codeContentLis,
+                    scriptText);
 
             log.debug("handleNode nodeOutput : {}", nodeOutput);
+            // 触发节点事件消息
             eventNodeMessage(nodeOutput);
 
-            // 生成任务结果
             return nodeOutput;
+        }).thenAccept(nodeOutput -> {
+            log.debug("message = {}", nodeOutput);
+            output.put(node.getStepName() + ".result", nodeOutput);
+
+            if (node.isPrint() && StringUtils.isNotEmpty(nodeOutput)) {  // 是否为返回内容，如果是则输出消息
+                eventMessageCallbackMessage(nodeOutput);
+            }
+        }).exceptionally(ex -> {
+            log.error("FunctionNode 执行异常: {}", ex.getMessage(), ex);
+            return null;
         });
-        String nodeOutput =  future.get() ;
-
-        log.debug("message = {}" , nodeOutput);
-        output.put(node.getStepName()+".result" ,nodeOutput);
-
-        if(node.isPrint() && StringUtils.isNotEmpty(nodeOutput)){  // 是否为返回内容，如果是则输出消息
-            eventMessageCallbackMessage(nodeOutput);
-        }
-
     }
 
     /**
      * 获取节点数据，用于执行脚本逻辑。
+     *
      * @return
      */
-    private FunctionNodeData getNodeData(){
-        String nodeDataJson = String.valueOf(node.getProperties().get("node_data")) ;
-        return JSONObject.parseObject(nodeDataJson , FunctionNodeData.class) ;
+    private FunctionNodeData getNodeData() {
+        String nodeDataJson = String.valueOf(node.getProperties().get("node_data"));
+        return JSONObject.parseObject(nodeDataJson, FunctionNodeData.class);
     }
 
     /**
@@ -108,18 +106,18 @@ public class FunctionNode extends AbstractFlowNode {
      * @return
      */
     private String executeGroovyScript(IndustryRoleEntity role,
-                                       MessageEntity workflow ,
+                                       MessageEntity workflow,
                                        MessageTaskInfo taskInfo,
                                        List<CodeContent> codeContentList,
                                        String scriptText) {
 
-        if(StringUtils.isEmpty(scriptText)){
-            return "角色脚本执行失败:脚本为空" ;
+        if (StringUtils.isEmpty(scriptText)) {
+            return "角色脚本执行失败:脚本为空";
         }
 
         // TODO 待处理Groovy脚本安全的问题
 
-        ToolsUtil tools = new ToolsUtil() ;
+        ToolsUtil tools = new ToolsUtil();
 
         // 创建 Binding 对象，用于绑定变量到 Groovy 脚本
         Binding binding = new Binding();
@@ -131,8 +129,8 @@ public class FunctionNode extends AbstractFlowNode {
         binding.setVariable("qianWenAuditLLM", flowExpertService.getQianWenAuditLLM());  // 语音生成
         binding.setVariable("templateService", flowExpertService.getTemplateService()); // 模板引擎
         binding.setVariable("expertService", flowExpertService);  // 操作服务
-        binding.setVariable("secretKey",flowExpertService.getSecretKey());  // 操作服务
-        binding.setVariable("channelInfo",flowExpertService.getChannelInfo(taskInfo.getChannelId()));  // 操作服务
+        binding.setVariable("secretKey", flowExpertService.getSecretKey());  // 操作服务
+        binding.setVariable("channelInfo", flowExpertService.getChannelInfo(taskInfo.getChannelId()));  // 操作服务
 //        binding.setVariable("screenInfo",flowExpertService.getScreenInfo(taskInfo.getSceneId()));  // 操作服务
         binding.setVariable("tools", tools); // 工具类
 
@@ -145,10 +143,10 @@ public class FunctionNode extends AbstractFlowNode {
         GroovyShell shell = new GroovyShell(this.getClass().getClassLoader(), binding);
 
         // 执行 Groovy 脚本
-        try{
-            return String.valueOf(shell.evaluate(scriptText)) ;
-        }catch (Exception e){
-            return "角色脚本执行失败:" + e.getMessage() ;
+        try {
+            return String.valueOf(shell.evaluate(scriptText));
+        } catch (Exception e) {
+            return "角色脚本执行失败:" + e.getMessage();
         }
     }
 
