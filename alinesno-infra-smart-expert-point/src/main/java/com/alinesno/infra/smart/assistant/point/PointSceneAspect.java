@@ -2,10 +2,7 @@ package com.alinesno.infra.smart.assistant.point;
 
 import cn.dev33.satoken.stp.StpUtil;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
-import com.alinesno.infra.smart.assistant.adapter.AipPointConsumer;
-import com.alinesno.infra.smart.assistant.point.processor.AgentPointProcessor;
 import com.alinesno.infra.smart.assistant.point.processor.ScenePointProcessor;
-import com.alinesno.infra.smart.point.annotation.AgentPointAnnotation;
 import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -62,7 +59,6 @@ public class PointSceneAspect {
 
             // 初始化处理器
             ScenePointProcessor sceneProcessor = new ScenePointProcessor(scenePointAnnotation) ;
-            sceneProcessor.setSceneMaxConcurrent(sceneMaxConcurrent);
             sceneProcessor.process(request, userId, orgId);
         }
 
