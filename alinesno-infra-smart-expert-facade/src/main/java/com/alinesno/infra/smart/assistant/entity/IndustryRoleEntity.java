@@ -137,6 +137,14 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "是否启用长期记忆功能")
     private boolean longTermMemoryEnabled;
 
+    @TableField("context_engineering_enable")
+    @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "是否开启上下文工程")
+    private boolean contextEngineeringEnable ;
+
+    @TableField("context_engineering_data")
+    @Column(type = MySqlTypeConstant.TEXT , isNull = true , comment = "上下文工程数据")
+    private String contextEngineeringData ;
+
     // 是否启用语音输入状态
     @TableField("voice_input_status")
     @Column(type = MySqlTypeConstant.INT , length = 1 , isNull = true , comment = "是否启用语音输入状态")
