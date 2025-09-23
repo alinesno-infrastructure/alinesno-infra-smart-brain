@@ -3,6 +3,7 @@
   <Control 
     class="workflow-control" 
     @clickNode="clickNode"
+    @saveFlow="saveFlow"
     v-if="lf" 
     :lf="lf">
   </Control>
@@ -10,7 +11,7 @@
 
 <script setup>
 
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted , computed } from 'vue'
 
 import LogicFlow from '@logicflow/core'
 import '@logicflow/extension/lib/style/index.css'
@@ -19,10 +20,16 @@ import '@logicflow/core/dist/style/index.css'
 import Dagre from './plugins/dagre.js'
 import AppEdge from './common/edge'
 
+import { useWorkflowStore } from '@/store/modules/workflowStore'; // 导入 Pinia Store
 import Control from './common/FlowControl.vue'
 const nodes = import.meta.glob('./nodes/**/index.js', { eager: true })
 
+const emits = defineEmits(['saveFlow'])
+
 import { initDefaultShortcut } from './common/shortcut';
+
+// 初始化 Pinia Store
+const workflowStore = useWorkflowStore();
 
 const lf = ref();
 const flowId = ref('');
@@ -83,6 +90,9 @@ const renderGraphData = (data) => {
       });
     });
 
+    // 关键：将 lf 实例存入 Pinia 状态
+    workflowStore.setLF(lf.value);
+
     // setTimeout(() => {
       // lf.value?.fitView({
         // animation: true , 
@@ -96,11 +106,6 @@ const renderGraphData = (data) => {
 
 // TODO 待获取画布中心位置
 const clickNode = (shapeItem) => {
-
-  // const virtualRectSize = lf.value.graphModel.getVirtualRectSize() ; 
-  // console.log('lf.value.graphModel.getVirtualRectSize() = ' + virtualRectSize) ; 
-  // console.log('lf.value.graphModel.width = ' + lf.value.graphModel.width)
-  // console.log('lf.value.graphModel.height = ' + lf.value.graphModel.height)
 
   // 清除所有选中的元素
   lf.value.clearSelectElements();
@@ -170,6 +175,15 @@ const setWorkflowGraphData = (data) => {
 //   })
 // });
 
+const saveFlow = (workflowData) => {
+  emits('saveFlow', workflowData)
+};
+
+// 页面卸载时清除 Pinia 中的 lf 实例
+onUnmounted(() => {
+  workflowStore.clearLF();
+});
+
 defineExpose({
   onmousedown,
   clickNode,
@@ -191,7 +205,7 @@ defineExpose({
 
 .workflow-control {
   position: absolute;
-  bottom: 24px;
+  bottom: 14px;
   left: 24px;
   z-index: 2;
   display: flex;
