@@ -168,7 +168,6 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
                     case EXCEL, EXCEL_OLD -> documentParserService.parseExcel(targetFile);
                     case DOCX -> documentParserService.getContentDocx(targetFile);
                     case DOC -> documentParserService.getContentDoc(targetFile);
-                    default -> sentenceList;
                 };
 
                 log.debug("sentenceList = {}" , new Gson().toJson(sentenceList));
@@ -179,7 +178,7 @@ public class DatasetKnowledgeImpl extends IBaseServiceImpl<DatasetKnowledgeEntit
 
                 List<Long> vectorDataIds = new ArrayList<>();
                 if(!sentenceList.isEmpty()){
-                    sentenceList.forEach(s -> log.debug("sentence = {}" , s));
+                    sentenceList.forEach(s -> log.debug("sentenceList sentence = {}" , s));
                     // 保存到知识库中
                     vectorDataIds = vectorDatasetService.insertDatasetKnowledge(datasetId, sentenceList , documentName , entity.getFileType()) ;
                 }
