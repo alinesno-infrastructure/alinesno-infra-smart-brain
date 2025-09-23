@@ -9,6 +9,8 @@ import com.alinesno.infra.smart.assistant.workflow.entity.FlowEntity;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * 工作流服务接口，负责处理工作流基础信息和元数据信息相关的业务操作。
  * 继承自 IBaseService 接口，借助其提供的通用方法，可对工作流数据进行基本的增删改查等操作。
@@ -20,10 +22,12 @@ public interface IFlowService extends IBaseService<FlowEntity> {
 
     /**
      * 保存角色工作流信息
+     *
      * @param roleId
      * @param flowDto
+     * @return
      */
-    void saveRoleFlow(Long roleId, WorkflowRequestDto flowDto);
+    FlowEntity saveRoleFlow(Long roleId, WorkflowRequestDto flowDto);
 
     /**
      * 发布工作流
@@ -60,6 +64,6 @@ public interface IFlowService extends IBaseService<FlowEntity> {
      * @param workflowExecution
      * @param flowExpertService
      */
-    String runRoleFlow(MessageTaskInfo taskInfo, IndustryRoleEntity role, MessageEntity workflowExecution, FlowExpertService flowExpertService);
+    CompletableFuture<String> runRoleFlow(MessageTaskInfo taskInfo, IndustryRoleEntity role, MessageEntity workflowExecution, FlowExpertService flowExpertService);
 
 }
