@@ -5,7 +5,7 @@
             <el-page-header @back="goBack">
                 <template #content>
                     <div style="display: flex;gap: 10px;align-items: center;">
-                        <span style="color: #aaaaaa;font-size: 14px;">更新时间：2025-02-14 23:50:44</span>
+                        <span style="color: #aaaaaa;font-size: 14px;">更新时间： {{ parseTime(currentRole.updateTime?currentRole.updateTime:currentRole.addTime) }} </span>
                     </div>
                 </template>
             </el-page-header>
