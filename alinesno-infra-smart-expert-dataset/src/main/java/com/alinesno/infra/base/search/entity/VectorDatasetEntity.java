@@ -45,6 +45,11 @@ public class VectorDatasetEntity extends InfraBaseEntity {
     @TableField(value = "dataset_status")
     private String datasetStatus;
 
+    @ColumnComment("配置类型")
+    @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 10)
+    @TableField(value = "config_type")
+    private String configType ;
+
     @ColumnComment("是否为目录")
     @ColumnType(value = MySqlTypeConstant.SMALLINT, length = 1)
     @TableField(value = "is_directory")
@@ -54,6 +59,11 @@ public class VectorDatasetEntity extends InfraBaseEntity {
     @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
     @TableField(value = "dataset_type")
     private long datasetType;
+
+    @ColumnComment("资产目录ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "asset_catalog_id")
+    private Long assetCatalogId ;
 
     @ColumnComment("标签")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 50)
@@ -119,5 +129,23 @@ public class VectorDatasetEntity extends InfraBaseEntity {
     @ColumnType(value = MySqlTypeConstant.VARCHAR)
     @TableField(value = "min_relevance")
     private String minRelevance;
+
+    // >>>>>>>>>>>>>> 模型配置 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    // 向量模型embeddingModelId/OCR模型ocrModelId/文档识别模型documentRecognitionModelId
+
+    @ColumnComment("向量模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "embedding_model_id")
+    private Long embeddingModelId;
+
+    @ColumnComment("OCR模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "ocr_model_id")
+    private Long ocrModelId;
+
+    @ColumnComment("文档识别模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "document_recognition_model_id")
+    private Long documentRecognitionModelId;
 
 }
