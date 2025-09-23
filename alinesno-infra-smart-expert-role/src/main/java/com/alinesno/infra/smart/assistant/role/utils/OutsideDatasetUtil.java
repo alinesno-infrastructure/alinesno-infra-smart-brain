@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.assistant.role.utils;
 
 import com.agentsflex.core.document.Document;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.agentsflex.core.store.SearchWrapper;
 import com.agentsflex.store.pgvector.PgvectorVectorStore;
 import com.agentsflex.store.pgvector.PgvectorVectorStoreConfig;
@@ -8,6 +10,7 @@ import com.alinesno.infra.base.search.vector.utils.DashScopeEmbeddingUtils;
 import com.alinesno.infra.smart.im.dto.ParserDataBean;
 import com.alinesno.infra.smart.scene.constants.SceneConstants;
 import jakarta.annotation.PostConstruct;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -42,6 +45,12 @@ public class OutsideDatasetUtil {
 
     private int pgVectorPort;
 
+    @Setter
+    private Llm llm ;
+
+    @Setter
+    private EmbeddingOptions embeddingOptions ;
+
     private String pgVectorDatabase ;
 
     @PostConstruct
@@ -63,10 +72,8 @@ public class OutsideDatasetUtil {
 
             String[] portAndDb = parts[1].split("/");
             this.pgVectorPort = Integer.parseInt(portAndDb[0]);
-
-//            log.info("解析PostgreSQL连接信息 - Host: {}, Port: {}", pgVectorHost, pgVectorPort);
         } catch (Exception e) {
-            log.error("解析PostgreSQL URL失败，使用默认值", e);
+            log.error("解析PostgresSQL URL失败，使用默认值", e);
             this.pgVectorHost = "127.0.0.1";
             this.pgVectorPort = 5432;
         }
@@ -84,8 +91,14 @@ public class OutsideDatasetUtil {
     public String search(String collectionIndexName, String goal, List<ParserDataBean> indexDatasetMap) {
         PgvectorVectorStore store = getPgvectorVectorStore(collectionIndexName);
 
-        List<Double> embeddingVector = dashScopeEmbeddingUtils.getEmbeddingDoubles(goal);
-        double[] vector = embeddingVector.stream().mapToDouble(Double::doubleValue).toArray();
+        double[] vector;
+
+        if(llm != null){
+            vector = llm.embed(Document.of(goal), embeddingOptions).getVector();
+        }else{
+            List<Double> embeddingVector = dashScopeEmbeddingUtils.getEmbeddingDoubles(goal);
+            vector = embeddingVector.stream().mapToDouble(Double::doubleValue).toArray();
+        }
 
         SearchWrapper searchWrapper = new SearchWrapper().text(goal);
         searchWrapper.setVector(vector);
@@ -107,6 +120,7 @@ public class OutsideDatasetUtil {
 
                 if(indexDatasetMap != null){
                     ParserDataBean parserDataBean = new ParserDataBean(fileName, sort) ;
+                    parserDataBean.setContent(document.getContent());
                     indexDatasetMap.add(parserDataBean) ;
                     sort ++ ;
                 }
