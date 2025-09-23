@@ -5,7 +5,8 @@ import com.alinesno.infra.common.web.adapter.base.consumer.IBaseOrganizationCons
 import com.alinesno.infra.common.web.adapter.base.dto.OrganizationDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.assistant.workplace.dto.*;
+import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceItemDto;
+import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceItemEntity;
 import com.alinesno.infra.smart.assistant.workplace.enums.WorkplaceItemTypeEnums;
 import com.alinesno.infra.smart.assistant.workplace.mapper.WorkplaceItemMapper;
