@@ -105,4 +105,12 @@ public class FlowNodeExecutionEntity extends InfraBaseEntity {
     @ColumnType(value = MySqlTypeConstant.DATETIME)
     @ColumnComment("结束时间")
     private Date finishTime;
+
+    /**
+     * 错误信息
+     */
+    @TableField(value = "error_msg")
+    @ColumnType(value = MySqlTypeConstant.TEXT)
+    @ColumnComment("错误信息")
+    private String errorMsg ;
 }
