@@ -117,13 +117,19 @@ const handleSubmit = () => {
   if (showOtherInput.value && otherReason.value.trim()) {
     allReasons.push(`其他: ${otherReason.value.trim()}`);
   }
+
+  // 生成Java兼容的时间戳格式 (yyyy-MM-dd HH:mm:ss)
+  const date = new Date();
+  const timestamp = date.toISOString()
+    .replace('T', ' ')         // 将 'T' 替换为空格
+    .replace(/\.\d{3}Z$/, ''); // 移除毫秒和时区 'Z'
   
   // 触发提交事件，将结果传递给父组件
   emit('submit', {
     feel: props.feel,
     reasons: allReasons,
     messageId: props.message.messageId,
-    timestamp: new Date().toISOString()
+    timestamp: timestamp
   });
   
   // 重置状态并关闭弹窗
