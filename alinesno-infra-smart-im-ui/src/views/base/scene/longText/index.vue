@@ -81,12 +81,9 @@
               <!-- 文章模板 -->
               <div class="pager-gen-result-panel">
 
-                <el-scrollbar class="pager-container" ref="scrollbarRef"> 
-                  <div ref="innerRef">
-
-
-                <DatasetTemplatePanel v-model="formData.selectedTemplateId" />
-
+                <el-scrollbar class="pager-container" ref="scrollbarRef">  
+                    <div ref="innerRef">
+                      <DatasetTemplatePanel v-model="formData.selectedTemplateId" />
                   </div>
                 </el-scrollbar>
               </div>
@@ -426,7 +423,7 @@ onMounted(() => {
   }
 
   .review-question-preview {
-    height: calc(100vh - 170px);
+    height: calc(100vh - 180px);
     margin-left: 20px;
     border-radius: 8px;
     background: #fafafa;
@@ -444,7 +441,7 @@ onMounted(() => {
       // margin: 10px 10px;
       margin-right: 0px;
       border-radius: 8px;
-      height: calc(100vh - 190px);
+      height: calc(100vh - 170px);
       padding: 10px;
       // padding-left: 10px;
       // margin-left: 20px;
