@@ -83,6 +83,9 @@
               </div>
               <div style="font-size: 13px;color: #a5a5a5;white-space: nowrap;overflow: hidden;text-overflow: ellipsis;">
                 {{ scope.row.sceneDesc }}
+                <span v-if="scope.row.sceneLevel">
+                  ({{ scope.row.sceneLevel }})
+                </span>
               </div>
             </template>
           </el-table-column>
@@ -193,6 +196,12 @@
             </el-form-item>
           </el-col>
           <el-col :span="24">
+            <el-form-item  label="场景模型" prop="modelId">
+              <!-- <el-input v-model="form.modelId" placeholder="请输入场景名称" maxlength="30"/> -->
+                <LLMSelector :modelType="'large_language_model'" :size="'large'" v-model="form.modelId" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
             <el-form-item label="频道类型" prop="sceneScope">
 
               <el-alert title="频道类型提交确认后不可修改" type="warning" :closable="false" show-icon style="margin-bottom: 10px;" />
@@ -266,12 +275,28 @@
 
     <!-- 场景配置项 -->
     <el-dialog :title="sceneConfigPanelTitle" v-model="openingSceneConfigPanelVisible" width="1300px">
+
+        <!-- 文章写作 -->
+        <ArticleWritingConfigPanel
+            ref="articleWritingConfigPanelRef" 
+            v-if="sceneConfigType === 'articleWriting'" 
+            :initial-selected-templates="selectedConfigData"
+            :sceneData="sceneItemData" />
+
+        <!-- 长文本配置 -->
+        <LongTextConfigPanel
+            ref="longTextConfigPanelRef"
+            v-if="sceneConfigType === 'longText'" 
+            :initial-selected-templates="selectedConfigData"
+            :sceneData="sceneItemData" />
+
         <!-- 通用场景 -->
         <GeneratorAgentConfigPanel 
             ref="generatorAgentConfigPanelRef" 
             v-if="sceneConfigType === 'generalAgent'" 
             :initial-selected-templates="selectedConfigData"
             :sceneData="sceneItemData" />
+
         <template #footer>
           <div class="dialog-footer">
             <el-button type="primary" size="large" @click="submitSceneConfig">确 定</el-button>
@@ -308,10 +333,15 @@ import {nextTick, reactive} from "vue";
 import SceneSider from "./sceneSider.vue"
 import ConfigSceneAgent from "./configSceneAgent.vue"
 import OpeningPhraseStatusPanel from './openingPhraseStatusPanel'
+import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
 // 场景配置面板
+import ArticleWritingConfigPanel from './config/articleWritingConfigPanel.vue'
+import LongTextConfigPanel from './config/longTextConfigPanel.vue'
 import GeneratorAgentConfigPanel from './config/generalAgentConfigPanel.vue'
 
+const articleWritingConfigPanelRef = ref(null)
+const longTextConfigPanelRef = ref(null)
 const generatorAgentConfigPanelRef = ref(null)
 
 const router = useRouter();
@@ -521,6 +551,7 @@ function handleAdd() {
   reset();
   open.value = true;
   title.value = "添加应用";
+  imageUrl.value = []; // 清空数组
 };
 
 /** 修改按钮操作 */
@@ -663,8 +694,14 @@ const handleSceneSelected = (sceneId) => {
 const submitSceneConfig = () => {
   let sceneConfigData = null ; 
 
-  if(sceneConfigType.value === 'generalAgent') {
+  console.log('sceneConfigType = ' + sceneConfigType.value)
+
+  if(sceneConfigType.value === 'generalAgent') {  // 通用场景 
     sceneConfigData = generatorAgentConfigPanelRef.value.getConfigData() ; 
+  }else if(sceneConfigType.value == 'articleWriting'){  // 文章场景
+    sceneConfigData = articleWritingConfigPanelRef.value.getConfigData() ; 
+  }else if(sceneConfigType.value == 'longText'){  // 长文本场景
+    sceneConfigData = longTextConfigPanelRef.value.getConfigData() ; 
   }
 
   console.log('sceneConfigType = ' + sceneConfigType.value + ' ,  sceneConfigData = ' + sceneConfigData)
@@ -700,9 +737,11 @@ onMounted(async () => {
 <style lang="scss" scoped>
 .scene-icon{
   img {
-    width:auto;
-    height:45px;
+    width: 100%;
+    height:auto;
     border-radius: 4px;
+    object-fit: cover;
+    object-position: center;
   }
 }
 </style>
