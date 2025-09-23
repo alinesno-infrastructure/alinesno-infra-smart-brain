@@ -28,6 +28,7 @@ var managerUrl = {
 
   getAllLongTextTemplateType: templatePrefix +"getAllLongTextTemplate",
   getTemplateByType: templatePrefix +"getTemplateByType",
+  getTemplateBySceneId: templatePrefix +"getTemplateBySceneId",
   getTemplateDetail: templatePrefix +"getTemplateDetail",
 }
 
@@ -43,6 +44,14 @@ export function getTemplateDetail(templateId) {
  export function getAllLongTextTemplateType() {
   return request({
     url: managerUrl.getAllLongTextTemplateType , 
+    method: 'get'
+  })
+}
+
+// 获取getTemplateBySceneId
+ export function getTemplateBySceneId(sceneId) {
+  return request({
+    url: managerUrl.getTemplateBySceneId + '?sceneId=' + parseStrEmpty(sceneId),
     method: 'get'
   })
 }
