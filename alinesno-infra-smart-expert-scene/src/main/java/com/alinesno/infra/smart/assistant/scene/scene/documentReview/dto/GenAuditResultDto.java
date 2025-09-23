@@ -33,4 +33,7 @@ public class GenAuditResultDto extends BaseDto {
 
     @NotNull(message = "角色ID不能为空")
     private Long roleId;
+
+    @NotNull(message = "文本内容不能为空")
+    private String plainText ;
 }
