@@ -68,6 +68,11 @@ public class SceneEntity extends InfraBaseEntity {
     @ColumnComment("开场白问题")
     private String greetingQuestion ; // 开场白问题
 
+    @TableField
+    @Column(name = "model_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "模型ID")
+    @ColumnComment("模型ID")
+    private String modelId ;  // 模型ID
+
     // 管理者场景
     // --->>>>>>>>>>>>>>> Leader人员和工作人员都以|号进行分割_start ---->>>>>>>>>>>>>
     @TableField
