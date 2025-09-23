@@ -250,6 +250,7 @@ const handleStepClick = (index, auditId) => {
     top: auto;
     right: 10px;
     border-radius: 8px;
+    position: absolute;
 }
 
 .aip-flow-drawer .el-drawer__header {
