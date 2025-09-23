@@ -1,26 +1,14 @@
 package com.alinesno.infra.smart.assistant.service.impl;
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.mapper.AgentSceneMapper;
 import com.alinesno.infra.smart.assistant.mapper.MessageReferenceMapper;
-import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.ParserDataBean;
-import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.entity.MessageReferenceEntity;
-import com.alinesno.infra.smart.im.service.IAgentSceneService;
 import com.alinesno.infra.smart.im.service.IMessageReferenceService;
-import com.alinesno.infra.smart.scene.dto.SceneAgent;
-import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
-import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
