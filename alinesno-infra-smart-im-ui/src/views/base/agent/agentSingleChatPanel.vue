@@ -106,6 +106,7 @@
                           <el-button type="info" link icon="Link" size="small" @click="handleOpenMessageReference(item)">引用</el-button> 
                           <UserFeelbackButton :feel="true" :message="item" @submit="handleFeedback" />
                           <UserFeelbackButton :feel="false" :message="item" @submit="handleFeedback" /> 
+                          <DocumentDownloadButton :message="item" /> 
                         </div>
 
                         <div class="chat-ai-say-tools" :class="item.roleType == 'agent' && item.chatText && (item.showTools || item.isPlaySpeaking || item.getSpeechLoading) ? 'show-tools' : 'hide-tools'">
@@ -227,6 +228,7 @@ import ChatMessageReferencePanel from '@/components/ChatAttachment/chatMessageRe
 import ChatAttachmentMessagePanel from '@/components/ChatAttachment/chatAttachmentMessagePanel'
 import UserQuestionSuggestions from '@/components/ChatAttachment/userQuestionSuggestionsPanel' 
 import UserFeelbackButton from "@/components/ChatAttachment/userFeelbackButton"
+import DocumentDownloadButton from "@/components/ChatAttachment/documentDownloadButton"
 
 import { getInfo, chatRole , playGenContent , messageFeedback } from '@/api/base/im/roleChat'
 import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
@@ -722,18 +724,7 @@ onBeforeUnmount(() => {
 
   }
 
-    .chat-ai-footer{
-    display: flex;
-    justify-content: space-between;
 
-    .chat-ai-msg-info{
-      display: flex;
-      margin-right:6px;
-      .el-button+.el-button {
-          margin-left: 6px;
-      }
-    }
-  }
 
   .chat-ai-say-tools{
     margin-top: 3px;
