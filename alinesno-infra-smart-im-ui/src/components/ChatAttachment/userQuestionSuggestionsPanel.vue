@@ -43,7 +43,8 @@ const handleGetUserQuestionSuggestions = () => {
     channelId: props.channelId 
   }
   getRoleQuestionSuggestion(data).then(res => {
-    userQuestionSuggestions.value = res.data
+    // userQuestionSuggestions.value = res.data
+    userQuestionSuggestions.value = res.data?.length ? res.data.slice(0, 3) : [];
     emit('initChatBoxScroll')
   })
 }
