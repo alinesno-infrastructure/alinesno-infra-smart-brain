@@ -2,7 +2,6 @@ package com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.im
 
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.dto.DocReaderInitDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.mapper.DocReaderSceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
@@ -10,6 +9,7 @@ import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.scene.dto.RoleListRequestDto;
 import com.alinesno.infra.smart.scene.dto.UpdateSceneAgentDto;
 import com.alinesno.infra.smart.scene.entity.DocReaderSceneEntity;
+import com.alinesno.infra.smart.utils.RoleUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
