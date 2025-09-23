@@ -4,7 +4,7 @@
             <el-page-header @back="goBack">
                 <template #content>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <span style="color: #aaaaaa; font-size: 14px;">更新时间：2025-02-14 23:50:44</span>
+                        <span style="color: #aaaaaa;font-size: 14px;">更新时间： {{ parseTime(currentRole.updateTime?currentRole.updateTime:currentRole.addTime) }} </span>
                     </div>
                 </template>
             </el-page-header>
@@ -54,7 +54,7 @@
                                 <el-col :span="18">
                                     <div class="select-wrapper" style="align-items: flex-start;">
                                         <el-form-item prop="modelName" class="form-item-wrapper">
-                                            <LLMSelector :modelType="'large_language_model'" v-model="agentModelConfigForm.modelId" />
+                                            <LLMSelector :modelType="'large_language_model'" :size="'large'" v-model="agentModelConfigForm.modelId" />
                                         </el-form-item>
                                         <el-button type="primary" size="large" text bg @click="openModelConfigDialog" style="margin-top:2px;">
                                             <i class="fa-solid fa-screwdriver-wrench"></i>
@@ -62,6 +62,25 @@
                                     </div>
                                 </el-col>
                             </el-row>
+
+                            <!-- 上下文工程_start -->
+                            <el-row class="nav-row">
+                                <el-col :span="12">
+                                    <div class="ai-config-section-title">
+                                        <i class="fa-solid fa-layer-group"></i> <span> 上下文工程</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text bg @click="toggleContextEngineStatus">
+                                            {{ contextEngineeringEnable ? '关闭' : '开启' }}
+                                        </el-button>
+                                        <el-button v-if="contextEngineeringEnable" type="primary" text bg @click="toggleContextEngineSettingsPanel">参数</el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <!-- 上下文工程_end -->
+
                             <el-row class="nav-row">
                                 <el-col :span="24">
                                     <div class="ai-config-section-title">
@@ -71,7 +90,7 @@
                                 <el-col :span="24">
                                     <div class="input-wrapper">
                                         <el-form-item prop="promptContent" class="form-item-wrapper">
-                                            <el-input maxlength="5000" show-word-limit
+                                            <el-input maxlength="20000" show-word-limit
                                                 v-model="agentModelConfigForm.promptContent" type="textarea"
                                                 resize="none" :rows="4"
                                                 placeholder="模型固定的引导词，通过调整该内容，可以引导模型聊天方向。该内容会被固定在上下文的开头。可通过输入 / 插入选择变量如果关联了知识库，你还可以通过适当的描述，来引导模型何时去调用知识库搜索。例如：你是电影《星际穿越》的助手，当用户询问与《星际穿越》相关的内容时，请搜索知识库并结合搜索结果进行回答。"></el-input>
@@ -143,7 +162,7 @@
                                 <el-col :span="24">
                                     <div class="input-wrapper">
                                         <el-form-item prop="greeting" class="form-item-wrapper">
-                                            <el-input maxlength="100" v-model="agentModelConfigForm.greeting"
+                                            <el-input maxlength="2000" v-model="agentModelConfigForm.greeting"
                                                 show-word-limit type="textarea" resize="none" :rows="2"
                                                 placeholder="每次对话开始前，发送一个初始内容。支持标准 Markdown 语法，可使用的额外标记：[快捷按键]：用户点击后可以直接发送该问题">
                                             </el-input>
@@ -284,6 +303,11 @@
         <OpeningPhraseStatusPanel @handleOpeningPhraseStatusPanelClose="handleOpeningPhraseStatusPanelClose" ref="openingPhraseStatusPanelRef" />
     </el-dialog>
 
+    <!-- 上下文工程配置 -->
+     <el-dialog title="上下文工程配置" v-model="contextEngineStatusVisible" width="700px">
+        <ContextEngineSettingsPanel @handleContextEngineSettingsPanelClose="handleContextEngineSettingsPanelClose" ref="contextEngineSettingsPanelRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -301,10 +325,8 @@ import {
 
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 
-// import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
 import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
-// import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
 import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoiceTransferPanel'
 import VoiceChoicePanel from '@/views/smart/assistant/llmModel/choiceVoicePanel'
 import LllModelConfigPanel from '@/views/smart/assistant/llmModel/lllModelConfigPanel'
@@ -313,6 +335,7 @@ import promptEditorPanel from '@/views/smart/assistant/llmModel/promptEditorPane
 import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputStatusPanel'
 import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
 import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
+import ContextEngineSettingsPanel from '@/views/smart/assistant/llmModel/contextEngineSettingsPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -333,6 +356,7 @@ const voiceInputStatusVisible = ref(false)
 const guessWhatYouAskStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
 const openingPhraseStatusVisible = ref(false)
+const contextEngineStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -345,6 +369,7 @@ const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
 const openingPhraseStatusPanelRef  = ref(null)
+const contextEngineSettingsPanelRef = ref(false)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
@@ -392,13 +417,12 @@ const voicePlayStatus = ref(false);
 const voiceInputStatus = ref(false);
 // 用户问题建议开关
 const guessWhatYouAskStatus = ref(false);
-
+// 上下文工程开头
+const contextEngineeringEnable = ref(false)
 // 已选择的数据集数据
 const selectionDatasetData = ref([]);
-
 // 已选择的工具数据
 const selectionToolsData = ref([])
-
 /** 返回 */
 function goBack() {
     router.back();
@@ -484,6 +508,13 @@ const displayRoleInfoBack = (currentRole) =>{
     //  对话开场白
     if(currentRole.greetingQuestion){
         agentModelConfigForm.value.greetingQuestion = currentRole.greetingQuestion ;
+    }
+
+    // 上下文工程
+    if(currentRole.contextEngineeringEnable){
+        contextEngineeringEnable.value = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringEnable = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringData = currentRole.contextEngineeringData ;
     }
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
@@ -784,6 +815,39 @@ const handleOpeningPhraseStatusPanelClose = (formData) => {
         agentModelConfigForm.value.greetingQuestion = formData ;
 
         // 更新配置
+        submitModelConfig();
+    }
+}
+
+/** 上下文工程配置 */
+const toggleContextEngineStatus = () => {
+    contextEngineeringEnable.value = !contextEngineeringEnable.value;
+    agentModelConfigForm.value.contextEngineeringEnable = contextEngineeringEnable.value;
+}
+
+const toggleContextEngineSettingsPanel = () => {
+    contextEngineStatusVisible.value = !contextEngineStatusVisible.value;
+
+    nextTick(() => {
+        console.log(contextEngineSettingsPanelRef.value)
+        contextEngineSettingsPanelRef.value.setLlmModelOptions(llmModelOptions.value);
+
+        if(agentModelConfigForm.value.contextEngineeringData){
+            contextEngineSettingsPanelRef.value.setConfigParams(agentModelConfigForm.value.contextEngineeringData);
+        }
+    });
+
+}
+// 用户上下文工程配置
+function handleContextEngineSettingsPanelClose(formData) {
+
+    if (contextEngineSettingsPanelRef.value) {
+        contextEngineStatusVisible.value = false ;
+
+        contextEngineeringEnable.value = formData.enable; 
+        agentModelConfigForm.value.contextEngineeringData = formData;
+
+        // 更新角色内容
         submitModelConfig();
     }
 }
