@@ -3,7 +3,6 @@ package com.alinesno.infra.smart.assistant.workplace.service;
 import com.alinesno.infra.common.facade.services.IBaseService;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceAddDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceEntity;
-import com.alinesno.infra.smart.im.dto.CollectItemDto;
 
 import java.util.List;
 
