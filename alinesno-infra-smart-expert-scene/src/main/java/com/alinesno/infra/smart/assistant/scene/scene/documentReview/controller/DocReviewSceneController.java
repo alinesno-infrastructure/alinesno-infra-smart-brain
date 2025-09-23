@@ -1,9 +1,6 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.controller;
 
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSONArray;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -11,44 +8,32 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
-import com.alinesno.infra.common.facade.response.R;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.scene.common.utils.GenPdfTool;
-import com.alinesno.infra.smart.assistant.scene.common.utils.MarkdownToWord;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.*;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewAuditDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewGenReviewByDatasetDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewInitDto;
+import com.alinesno.infra.smart.assistant.scene.scene.documentReview.dto.DocReviewRulesDto;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.enums.ReviewRuleGenStatusEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewAuditService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.AnalysisTool;
-import com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools.DocReviewListGeneratorService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewSceneEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
-import com.alinesno.infra.smart.scene.enums.ContractTypeEnum;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
-import org.springframework.core.io.Resource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
-import org.springframework.util.Assert;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.context.request.async.DeferredResult;
 
-import javax.lang.exception.RpcServiceRuntimeException;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 处理与BusinessLogEntity相关的请求的Controller。
