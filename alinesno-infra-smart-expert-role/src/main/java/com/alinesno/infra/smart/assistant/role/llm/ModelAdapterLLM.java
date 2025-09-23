@@ -3,8 +3,6 @@ package com.alinesno.infra.smart.assistant.role.llm;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.message.AiMessage;
-import com.alibaba.fastjson.JSONObject;
-import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
@@ -16,7 +14,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 /**
