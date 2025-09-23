@@ -1,6 +1,8 @@
 package com.alinesno.infra.smart.assistant.role.tools;
 
 import cn.hutool.extra.spring.SpringUtil;
+import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.alinesno.infra.smart.assistant.annotation.ParamInfo;
 import com.alinesno.infra.smart.assistant.annotation.ToolInfo;
 import com.alinesno.infra.smart.assistant.plugin.tool.Tool;
@@ -8,6 +10,7 @@ import com.alinesno.infra.smart.assistant.role.utils.OutsideDatasetUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -30,6 +33,12 @@ public class RagTool extends Tool {
 
     private String collectionIndexName;
 
+    @Setter
+    private Llm llm ;
+
+    @Setter
+    private EmbeddingOptions embeddingOptions ;
+
     public RagTool(String queryText, String collectionIndexName) {
         this.collectionIndexName = collectionIndexName;
         this.queryText = queryText;
@@ -40,9 +49,15 @@ public class RagTool extends Tool {
         StringBuilder sb = new StringBuilder();
 
         OutsideDatasetUtil outsideUtil = SpringUtil.getBean(OutsideDatasetUtil.class);
+        outsideUtil.setLlm(llm);
+        outsideUtil.setEmbeddingOptions(embeddingOptions);
+
+        log.debug("查询的数据集:collectionIndexName = {}" , collectionIndexName);
 
         String result = outsideUtil.search(collectionIndexName, queryText, null);
         sb.append(result);
+
+        log.debug("查询结果:{}" , result);
 
         return sb.toString();
     }
