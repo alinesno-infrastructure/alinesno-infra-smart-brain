@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.deepsearch.enums;
 
 import lombok.Getter;
-import org.springframework.web.bind.annotation.GetMapping;
 
 /**
  * 步骤动作状态枚举
