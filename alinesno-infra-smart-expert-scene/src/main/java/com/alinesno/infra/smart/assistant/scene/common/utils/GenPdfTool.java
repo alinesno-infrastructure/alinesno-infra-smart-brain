@@ -1,20 +1,11 @@
 package com.alinesno.infra.smart.assistant.scene.common.utils;
 
-import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.scene.entity.DocReviewAuditResultEntity;
 import com.alinesno.infra.smart.scene.entity.DocReviewRulesEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.core.io.Resource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
