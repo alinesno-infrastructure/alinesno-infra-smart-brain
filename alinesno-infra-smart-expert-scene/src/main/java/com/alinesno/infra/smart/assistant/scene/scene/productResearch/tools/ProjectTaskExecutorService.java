@@ -6,25 +6,24 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ExecuteTaskDto;
-import com.alinesno.infra.smart.point.service.IAccountPointService;
-import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.prompt.ProjectPromptHandle;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectResearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.service.IProjectTaskService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectResearchSceneEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectTaskEntity;
+import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
@@ -69,9 +68,10 @@ public class ProjectTaskExecutorService {
             long userId = query.getOperatorId() ;
             long orgId = query.getOrgId() ;
             long taskId = taskEntity.getId() ;
+            long sceneId = taskEntity.getSceneId() ;
 
             // 启动任务
-            accountPointService.startSceneTask(userId, orgId , taskId);
+            accountPointService.startSceneTask(userId, orgId , taskId , sceneId);
 
             ProjectResearchSceneEntity sceneEntity = projectResearchSceneService.getBySceneId(dto.getSceneId(), query);
             Long progressAnalyzerEngineer = sceneEntity.getProgressAnalyzerEngineer();
