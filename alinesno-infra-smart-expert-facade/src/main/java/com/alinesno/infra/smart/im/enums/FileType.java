@@ -3,8 +3,6 @@ package com.alinesno.infra.smart.im.enums;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-import javax.swing.text.html.HTML;
-
 /**
  * 文件类型枚举
  */
