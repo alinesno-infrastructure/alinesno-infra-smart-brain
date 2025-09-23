@@ -50,7 +50,9 @@ const currentSupportSceneAgents = ref([]);
 const agentListMap = ref({});
 
 /** 配置成员 */
-function configAgent() {
+const configAgent = async() => {
+
+  await handleGetScene();
 
   // 公共场景只允许在后台配置
   if(currentSeneInfo.value && currentSeneInfo.value.sceneScope === 'public'){
@@ -59,7 +61,7 @@ function configAgent() {
   }
 
   configAgentDialogVisible.value = true;
-  sceneAgentConfigTitle.value = currentSeneInfo.value.sceneName + "配置"; 
+  sceneAgentConfigTitle.value = currentSeneInfo.value?.sceneName + "配置"; 
   nextTick(() => {
     configSceneAgentRef.value.configSceneAgent(currentSeneInfo.value, supportSceneList.value);
   });
@@ -80,6 +82,8 @@ const handleGetScene = async () => {
 
     currentSeneInfo.value = sceneRes.data;
     supportSceneList.value = supportSceneRes.data;
+
+    console.log('currentSeneInfo.value  = ' + currentSeneInfo.value.sceneName );
 
     const filteredArray = supportSceneList.value.filter(item => item.code === currentSeneInfo.value.sceneType);
 
