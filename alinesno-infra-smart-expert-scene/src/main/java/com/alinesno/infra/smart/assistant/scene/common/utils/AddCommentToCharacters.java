@@ -1,9 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.common.utils;
 
-import com.alinesno.infra.common.core.utils.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.File;
 import java.util.List;
 
 @Slf4j
