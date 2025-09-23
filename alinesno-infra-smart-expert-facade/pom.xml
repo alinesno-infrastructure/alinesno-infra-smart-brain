@@ -28,11 +28,11 @@
 			<version>${alinesno.infra.common.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.alinesno.infra.smart</groupId>
-			<artifactId>alinesno-infra-smart-brain-facade</artifactId>
-			<version>${revision}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.alinesno.infra.smart</groupId>-->
+<!--			<artifactId>alinesno-infra-smart-brain-facade</artifactId>-->
+<!--			<version>${revision}</version>-->
+<!--		</dependency>-->
 
 		<dependency>
 			<groupId>com.alinesno.infra.common</groupId>
@@ -51,6 +51,11 @@
             <artifactId>gson</artifactId>
         </dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>com.agentsflex</groupId>
+            <artifactId>alinesno-smart-model-adapter-core</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>
