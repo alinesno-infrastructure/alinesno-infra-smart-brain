@@ -3,6 +3,8 @@
     <el-select
       class="llm-selector"
       clearable
+      :size="props.size"
+      :disabled="props.disabled"
       v-model="data"
       placeholder="请选择大模型"
     >
@@ -52,6 +54,10 @@ const props = defineProps({
   nodeModel: {
     type: Object
   },
+  size: {
+    type: String,
+    default: 'default'
+  },
   modelValue: {
     type: String,
     default: ''
@@ -59,6 +65,10 @@ const props = defineProps({
   modelType: {
     type: String,
     default: ''
+  },
+  disabled: {
+    type: Boolean,
+    default: false
   }
 });
 
