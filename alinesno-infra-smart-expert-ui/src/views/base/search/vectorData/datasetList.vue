@@ -23,7 +23,7 @@
           </el-col>
           <el-col :span="1.5">
             <router-link :to="'/base/search/vectorData/websiteImport?datasetId=' + currentDatasetId" >
-              <el-button type="warning" plain icon="Link">Web站点同步</el-button>
+              <el-button type="warning" plain icon="Link">Web站点导入</el-button>
             </router-link>
           </el-col>
           <right-toolbar v-model:showSearch="showSearch" @queryTable="getList" :columns="columns"></right-toolbar>
