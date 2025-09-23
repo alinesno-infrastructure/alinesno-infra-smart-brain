@@ -266,7 +266,7 @@
     <div class="aip-flow-drawer">
       <el-drawer v-model="showDebugRunDialog" 
         :modal="false" 
-        :size="isMobile?'calc(100% - 20px)':'40%'" 
+        :size="isMobile?'calc(100% - 20px)':'35%'" 
         title="预览与调试"
         :with-header="true">
         <div style="margin-top: 0px;">
