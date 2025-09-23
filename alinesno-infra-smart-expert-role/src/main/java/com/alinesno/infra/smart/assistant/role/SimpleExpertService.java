@@ -9,14 +9,14 @@ import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
+import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.api.config.ModelConfig;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
-import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
-import com.alinesno.infra.smart.assistant.role.prompt.Prompt;
+import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
@@ -41,15 +41,13 @@ import java.util.concurrent.CompletableFuture;
 @Service(AssistantConstants.PREFIX_ASSISTANT_SIMPLE)
 public class SimpleExpertService extends ReActExpertService {
 
-
     @Autowired
-    private ReActServiceTool reActServiceTool  ;
+    private ReActServiceTool reActServiceTool ;
 
     @Override
     protected CompletableFuture<String> handleRole(IndustryRoleEntity role,
                                                    MessageEntity workflowMessage,
                                                    MessageTaskInfo taskInfo) {
-
 
         reActServiceTool.setRole(getRole());
         reActServiceTool.setTaskInfo(getTaskInfo());
@@ -81,7 +79,7 @@ public class SimpleExpertService extends ReActExpertService {
             reActServiceTool.eventStepMessage("开始思考问题.", AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
 
-            String prompt = Prompt.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument, getMaxLoop() , hasOutsideKnowledge) ;
+            String prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument, getMaxLoop() , hasOutsideKnowledge) ;
 
             reActServiceTool.eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
