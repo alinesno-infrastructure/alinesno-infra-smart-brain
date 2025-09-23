@@ -9,6 +9,7 @@ import com.agentsflex.core.llm.ChatContext;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.llm.StreamResponseListener;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.MessageStatus;
@@ -51,7 +52,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * 应用构建Service业务层处理
@@ -456,8 +460,12 @@ public class LlmModelServiceImpl extends IBaseServiceImpl<LlmModelEntity, LlmMod
         Llm llm = llmAdapterService.getLlm(modelProvider, llmConfig);
 
         try{
-            VectorData embeddings = llm.embed(Document.of("我是向量化."));
+            EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+            embeddingOptions.setModel(modelName);
 
+            VectorData embeddings = llm.embed(Document.of("我是向量化.") , embeddingOptions);
+
+            Assert.isTrue(embeddings.getVector().length == 1024  , "向量化长度错误,当前只支持1024维度向量") ;
             Assert.notNull(embeddings.getVector() , "向量化失败");
             log.debug("向量化的数据:{}"  , Arrays.toString(embeddings.getVector()));
         }catch(Exception e){
