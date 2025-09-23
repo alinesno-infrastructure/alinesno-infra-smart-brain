@@ -1,23 +1,11 @@
 package com.alinesno.infra.smart.assistant.scene.scene.documentReview.tools;
 
-import cn.hutool.core.util.IdUtil;
-import com.agentsflex.core.llm.Llm;
-import com.agentsflex.core.llm.LlmConfig;
-import com.agentsflex.core.message.AiMessage;
 import com.alinesno.infra.base.search.service.reader.BaseReaderServiceImpl;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
-import com.alinesno.infra.smart.assistant.api.WorkflowExecutionDto;
-import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.role.llm.ModelAdapterLLM;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
-import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
-import com.alinesno.infra.smart.im.entity.AgentSceneEntity;
 import com.alinesno.infra.smart.im.service.IAgentSceneService;
-import com.alinesno.infra.smart.scene.enums.SceneEnum;
-import com.alinesno.infra.smart.utils.CodeBlockParser;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
@@ -29,7 +17,6 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
 
 /**
  * 文档分析工具
