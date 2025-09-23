@@ -1,8 +1,5 @@
 package com.alinesno.infra.smart.assistant.scene.scene.longtext.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
-import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 
 /**
