@@ -1,7 +1,6 @@
 package com.alinesno.infra.smart.assistant.workplace.service;
 
 import com.alinesno.infra.common.facade.services.IBaseService;
-import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceImResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceItemDto;
 import com.alinesno.infra.smart.assistant.workplace.dto.WorkplaceResponseDto;
 import com.alinesno.infra.smart.assistant.workplace.entity.WorkplaceItemEntity;
