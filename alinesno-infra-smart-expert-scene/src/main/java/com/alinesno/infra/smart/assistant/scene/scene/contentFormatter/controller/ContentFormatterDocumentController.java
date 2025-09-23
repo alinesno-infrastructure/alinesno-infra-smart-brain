@@ -1,9 +1,7 @@
 package com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.controller;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
-import com.alinesno.infra.common.core.utils.DateUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionScope;
@@ -12,26 +10,18 @@ import com.alinesno.infra.common.facade.pageable.DatatablesPageBean;
 import com.alinesno.infra.common.facade.pageable.TableDataInfo;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
-import com.alinesno.infra.common.facade.response.ResultCodeEnum;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterDocumentDto;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.dto.ContentFormatterLayoutGroupDto;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.enums.DocumentSourceEnums;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterDocumentService;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterLayoutGroupService;
 import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.tools.DocxHtmlFormatterUtils;
 import com.alinesno.infra.smart.scene.entity.ContentFormatterDocumentEntity;
-import com.alinesno.infra.smart.scene.entity.ContentFormatterLayoutGroupEntity;
-import com.alinesno.infra.smart.scene.entity.DocReviewTaskEntity;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -43,7 +33,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.util.Base64;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 /**
