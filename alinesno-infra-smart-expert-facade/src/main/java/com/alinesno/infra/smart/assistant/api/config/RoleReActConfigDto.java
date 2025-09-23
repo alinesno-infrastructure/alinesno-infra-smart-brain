@@ -57,6 +57,9 @@ public class RoleReActConfigDto {
     // 文件格式输出
     private boolean outputFileFormatStatus ;
 
+    // 上下文工程
+    private boolean contextEngineeringEnable ;
+
     // 文件上传相关数据
     private UploadData uploadData ;
 
@@ -75,4 +78,6 @@ public class RoleReActConfigDto {
     // 文件格式输出
     private OutputFileFormatData outputFileFormatData ;
 
+    // 上下文工程
+    private ContextEngineeringData contextEngineeringData ;
 }
