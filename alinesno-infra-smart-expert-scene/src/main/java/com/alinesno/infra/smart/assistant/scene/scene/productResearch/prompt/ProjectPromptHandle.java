@@ -3,8 +3,8 @@ package com.alinesno.infra.smart.assistant.scene.scene.productResearch.prompt;
 
 import com.alinesno.infra.common.web.log.utils.SpringUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.productResearch.dto.ProjectSearchDTO;
-import com.alinesno.infra.smart.assistant.scene.common.service.IProjectKnowledgeService;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 import java.util.List;
