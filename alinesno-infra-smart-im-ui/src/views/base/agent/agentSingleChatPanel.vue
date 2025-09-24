@@ -424,8 +424,6 @@ const handleOpenMessageReference = (item) => {
   chatMessageReferencePanelRef.value.openReferece(item);
 }
 
-
-
 // 是否显示调试内容
 const handleShowDebuggerContent = (messageIndex, stepIndex) => {
   console.log('handleShowDebuggerContent messageIndex = ' + messageIndex + ' , stepIndex = ' + stepIndex);
@@ -724,7 +722,18 @@ onBeforeUnmount(() => {
 
   }
 
+  .chat-ai-footer{
+    display: flex;
+    justify-content: space-between;
 
+    .chat-ai-msg-info{
+      display: flex;
+      margin-right:6px;
+      .el-button+.el-button {
+          margin-left: 6px;
+      }
+    }
+  }
 
   .chat-ai-say-tools{
     margin-top: 3px;
