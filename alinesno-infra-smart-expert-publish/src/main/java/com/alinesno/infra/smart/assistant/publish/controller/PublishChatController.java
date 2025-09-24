@@ -7,6 +7,9 @@ import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.constants.PublishConst;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
+import com.alinesno.infra.smart.assistant.publish.dto.PublishChannelInfoDto;
+import com.alinesno.infra.smart.assistant.publish.dto.PublishRoleDto;
+import com.alinesno.infra.smart.assistant.publish.entity.ChannelPublishEntity;
 import com.alinesno.infra.smart.assistant.publish.service.IChannelPublishService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
@@ -16,6 +19,7 @@ import com.alinesno.infra.smart.im.service.IMessageService;
 import com.alinesno.infra.smart.utils.AgentUtils;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
@@ -49,9 +53,6 @@ public class PublishChatController {
 
     @Autowired
     private IIndustryRoleService industryRoleService;
-
-//    @Autowired
-//    private QianWenLLM qianWenLLM;
 
     @Autowired
     private IChannelPublishService channelPublishService ;
@@ -109,15 +110,14 @@ public class PublishChatController {
     @GetMapping("/getShareInfo")
     public AjaxResult getShareInfo(@RequestParam String shareId) {
 
-        long roleId = channelPublishService.getByShareToken(shareId).getRoleId();
+        ChannelPublishEntity channel = channelPublishService.getByShareToken(shareId) ;
+        if(channel == null){
+            return AjaxResult.error("分享渠道已关闭或者不存在");
+        }
 
+        long roleId = channel.getRoleId();
         IndustryRoleEntity role = industryRoleService.getById(roleId);
         ChatMessageDto message = AgentUtils.getChatMessageDto(role, IdUtil.getSnowflakeNextId());
-
-        // 生成介绍的chat
-//        Message userMsg = getMessage(role);
-//        MessageManager msgManager = new MessageManager(10);
-//        msgManager.add(userMsg);
 
         if(StringUtils.isNotBlank(role.getGreeting())){
             message.setChatText(role.getGreeting());
@@ -135,7 +135,13 @@ public class PublishChatController {
 
         AjaxResult result = AjaxResult.success();
 
-        result.put("role", role);
+        PublishRoleDto publishRoleDto = new PublishRoleDto() ;
+        BeanUtils.copyProperties(role , publishRoleDto);
+
+        PublishChannelInfoDto publishChannelInfoDto = PublishChannelInfoDto.formEntity(channel) ;
+
+        result.put("role", publishRoleDto);
+        result.put("channelInfo", publishChannelInfoDto);
         result.put("message", message);
 
         return result;
@@ -174,21 +180,6 @@ public class PublishChatController {
         return AjaxResult.success("语音识别成功");
     }
 
-//    private static Message getMessage(IndustryRoleEntity role) {
-//        String introBuilder = "你是一名[" + role.getRoleName() +
-//                "], " +
-//                role.getRoleLevel() +
-//                "，" +
-//                role.getResponsibilities() +
-//                "，现在有人咨询你，请你生成一句跟别人打招呼的语句，体现你的业务能力。";
-//
-//        return Message
-//                .builder()
-//                .role(Role.USER.getValue())
-//                .content(introBuilder)
-//                .build();
-//    }
-
     /**
      * 角色对话
      *
@@ -200,7 +191,13 @@ public class PublishChatController {
     @PostMapping("/chatShareRole")
     public AjaxResult chatShareRole(@RequestBody ChatSendMessageDto chatMessage, String shareId) {
 
-        long roleId = channelPublishService.getByShareToken(shareId).getRoleId();
+        ChannelPublishEntity channel = channelPublishService.getByShareToken(shareId) ;
+
+        if(channel == null){
+            return AjaxResult.error("分享渠道已关闭或者不存在");
+        }
+
+        long roleId = channel.getRoleId();
 
         IndustryRoleEntity role = industryRoleService.getById(roleId);
 
