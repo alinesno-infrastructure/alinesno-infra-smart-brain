@@ -3,19 +3,14 @@
   <div class="acp-dashboard aip-chat-dashboard-panel" v-loading="loading" element-loading-text="Loading..."
     :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50" style="padding:0px !important;">
 
-    <div class="aip-page-header">
+    <div class="aip-page-header" v-if="isShareEnabled && showNav">
       <div class="logo-section">
-        <img :src="AIPLogo" alt="AIP 智能体平台 logo">
-        AIP 智能体平台
-      </div>
-      <div class="nav-link">
-        <a href="http://cloud.linesno.com/" target="_blank">
-          <i class="fa-solid fa-link"></i> 官网
-        </a>
+        <img :src="channelInfo.bannerLogo? imagePath(channelInfo.bannerLogo) : AIPLogo" :alt="channelInfo.name">
+        {{ channelInfo? channelInfo.name : 'AIP智能体平台' }}
       </div>
     </div>
 
-    <div class="smart-container inner-smart-container">
+    <div class="smart-container inner-smart-container" v-if="isShareEnabled">
       <el-row>
         <el-col :span="24">
           <div class="robot-chat-windows">
@@ -214,6 +209,12 @@
       </el-row>
     </div>
 
+    <!-- 分享渠道不存在界面 -->
+    <ShareNotFound 
+      v-if="!isShareEnabled" 
+      @goToHome="goToHome"
+    />
+
   </div>
 </template>
 
@@ -229,19 +230,22 @@ import AIVoiceInput from '@/views/smart/assistant/llmModel/aiVoiceInput'
 import ChatAttachmentPanel from '@/views/smart/assistant/llmModel/chatAttachmentPanel'
 import ChatAttachmentMessagePanel from '@/views/smart/assistant/llmModel/chatAttachmentMessagePanel'
 import UserQuestionSuggestions from '@/views/smart/assistant/llmModel/userQuestionSuggestionsPanel'
+import ShareNotFound from './ShareNotFound.vue'
 
 import { getShareInfo, chatShareRole, playShareGenContent } from '@/api/smart/assistant/publishChat'
-import { openSseConnect } from "@/api/smart/assistant/chatsse";
+import { openSseConnect , handleCloseSse } from "@/api/smart/assistant/chatsse";
 // import { playGenContent} from '@/api/smart/assistant/roleChat'
 
 import { getParam } from '@/utils/ruoyi'
-import { nextTick, onMounted } from "vue";
+import { nextTick, onMounted, ref } from "vue";
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 
 // import { v4 as uuidv4 } from 'uuid'
 
 import SnowflakeId from "snowflake-id";
+import router from '@/router';
+// const router = useRouter();
 
 const snowflake = new SnowflakeId();
 const channelStreamId = ref(snowflake.generate());
@@ -249,6 +253,7 @@ const { proxy } = getCurrentInstance();
 
 // const openDebuggerDialog = ref(true)
 
+const isShareEnabled = ref(true)
 const isSpeaking = ref(false)
 // 定义响应式变量
 const isRecording = ref(false);
@@ -264,7 +269,8 @@ const attachmentPanelRef = ref(null);
 
 // const agentSingleRightPanelRef = ref(null)
 // 记录当前的高度差值
-const heightDiff = ref(170);
+const showNav = ref(true); 
+const heightDiff = ref(170) ; // + (showNav.value ? 0 : 50));
 
 const loading = ref(true)
 const shareId = ref(null);
@@ -272,6 +278,7 @@ const channelId = ref(null);
 const roleInfo = ref({})
 const message = ref('');
 const businessId = ref(null);
+const channelInfo = ref({})
 
 const innerRef = ref(null); // 滚动条的处理_starter
 const scrollbarRef = ref(null);
@@ -640,20 +647,27 @@ function handleFileIdToMessageBox(file) {
 }
 
 /** 获取角色信息 */
-function handleGetInfo(shareId) {
+const handleGetInfo = async (shareId) => {
   getShareInfo(shareId).then(res => {
     let role = res.role;
     let msg = res.message;
 
+    channelInfo.value = res.channelInfo;
     roleInfo.value = role;
     pushResponseMessageList(msg);
 
+    isShareEnabled.value = true ; 
     loading.value = false;
 
-    // nextTick(() => {
-    //   agentSingleRightPanelRef.value.setRoleInfo(role);
-    // })
+    nextTick(() => {
+      initChatBoxScroll();
+    })
 
+  }).catch(error => {
+    loading.value = false;
+    handleCloseSse(channelId.value).then(res => {
+      console.log('关闭sse连接成功:' + channelId)
+    })
   })
 }
 
@@ -714,20 +728,25 @@ function setRoleInfo(roleInfo) {
   roleInfo.value = roleInfo
 }
 
-onMounted(() => {
-  initChatBoxScroll();
+onMounted( async() => {
 
   shareId.value = getParam('shareId')
   channelId.value = snowflake.generate()
 
-  // handleSseConnect(channelId.value)
+  const showNavStr = getParam('showNav');
+  if (showNavStr != null){
+    showNav.value = showNavStr  === 'true';
+    heightDiff.value = showNav.value ? 170 : 120;
+  } 
+
+  await handleGetInfo(shareId.value);
   handleSseConnect(channelStreamId.value)
-  handleGetInfo(shareId.value);
+
 })
 
-defineExpose({
-  setRoleInfo
-})
+// defineExpose({
+//   setRoleInfo
+// })
 
 </script>
 
