@@ -35,6 +35,11 @@ public class ChannelPublishEntity extends InfraBaseEntity implements Serializabl
     @ColumnComment("渠道名称")
     private String name;
 
+    @TableField(value = "banner_logo")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @ColumnComment("渠道Banner图标")
+    private Long bannerLogo ;  // 渠道Banner图标
+
     @TableField(value = "description")
     @ColumnType(value = MySqlTypeConstant.VARCHAR, length = 32)
     @ColumnComment("渠道描述")
