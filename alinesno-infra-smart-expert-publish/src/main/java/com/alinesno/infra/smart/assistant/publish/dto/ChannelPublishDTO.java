@@ -30,6 +30,7 @@ public class ChannelPublishDTO extends BaseDto {
 
     @NotBlank(message = "名称不能为空")
     private String shareName; // 发布渠道的名称
+    private Long bannerLogo ; // 频道的Banner图标
     private String description; // 发布渠道的描述信息
     private String iconClass; // 图标类名，用于表示发布渠道的图标
 
@@ -69,6 +70,7 @@ public class ChannelPublishDTO extends BaseDto {
         entity.setRoleId(roleId);
         entity.setApiKey(apiKey);
         entity.setName(shareName);
+        entity.setBannerLogo(bannerLogo);
         entity.setDescription(description);
         entity.setIconClass(channelListEnums.getIconClass());
         entity.setParamKey(paramKey);
@@ -122,6 +124,7 @@ public class ChannelPublishDTO extends BaseDto {
         configMap.put("id", entity.getId());
         configMap.put("roleId", entity.getRoleId());
         configMap.put("shareName", entity.getName());
+        configMap.put("bannerLogo", entity.getBannerLogo());
         configMap.put("description", entity.getDescription());
         configMap.put("iconClass", entity.getIconClass());
         configMap.put("paramKey", entity.getParamKey());
