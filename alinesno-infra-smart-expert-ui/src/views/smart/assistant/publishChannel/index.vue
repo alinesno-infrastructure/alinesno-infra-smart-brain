@@ -75,6 +75,29 @@
         <!-- 配置模态框 -->
         <el-dialog v-model="showConfigDialog" :title="currentConfigChannel.name ? `${currentConfigChannel.name} 渠道配置` : '渠道配置'" :width="800 + 'px'">
             <el-form :model="configForm" size="large" :rules="formRules" ref="configFormRef" label-width="120px" style="margin-top:30px;">
+
+                <el-row v-if="currentConfigChannel.paramKey === 'web_version' || currentConfigChannel.paramKey === 'web_embedded'">
+                    <el-col :span="24" class="editor-after-div">
+                    <el-form-item
+                        label="图标"
+                        :rules="[{ required: true, message: '请上传头像', trigger: 'blur',},]">
+                        <el-upload
+                            :file-list="imageUrl"
+                            :action="upload.url + '?type=img&updateSupport=' + upload.updateSupport"
+                            list-type="picture-card"
+                            :auto-upload="true"
+                            :on-success="handleAvatarSuccess"
+                            :before-upload="beforeAvatarUpload"
+                            :headers="upload.headers"
+                            :disabled="upload.isUploading"
+                            :on-progress="handleFileUploadProgress"
+                        >
+                            <el-icon class="avatar-uploader-icon"><Plus /></el-icon>
+                        </el-upload>
+                        </el-form-item>
+                    </el-col>
+                </el-row>
+
                 <el-form-item label="分享名称" prop="shareName">
                     <el-input v-model="configForm.shareName" placeholder="请输入分享名称"></el-input>
                 </el-form-item>
@@ -254,6 +277,7 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import {getToken} from "@/utils/auth";
 
 import {
   getSceneScope
@@ -294,6 +318,7 @@ const shareId = ref(null)
 const currentRoleId = ref(null);
 
 const currentScreenAgent = ref(false);
+
 
 const showChatWindowConfig = ref(false);
 const showConfigDialog = ref(false);
@@ -369,6 +394,25 @@ const updateFormRules = () => {
     formRules.expireTime[0].required = configForm.value.expireType === 4;
 };
 
+const imageUrl = ref([])
+/*** 应用导入参数 */
+const upload = reactive({
+  // 是否显示弹出层（应用导入）
+  open: false,
+  // 弹出层标题（应用导入）
+  title: "",
+  // 是否禁用上传
+  isUploading: false,
+  // 是否更新已经存在的应用数据
+  updateSupport: 0,
+  // 设置上传的请求头部
+  headers: {Authorization: "Bearer " + getToken()},
+  // 上传的地址
+  url: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/importData",
+  // 显示地址
+  display: import.meta.env.VITE_APP_BASE_API + "/v1/api/infra/base/im/chat/displayImage/"
+});
+
 const copyCode = () => {
     const code = `<iframe
   src="http://portal.infra.linesno.com"
@@ -398,7 +442,6 @@ function goBack() {
 // }
 
 const startUsing = (channel) => {
-
 
   currentStartUsingChannel.value = {
     ...channel,
@@ -459,6 +502,15 @@ function configureChannel(channel) {
         // 发布configForm.agentStoreType类型，默认选择第1个选项
         if(!configForm.value.agentStoreType && currentConfigChannel.value.storeType){
             configForm.value.agentStoreType = currentConfigChannel.value.storeType[0].id;
+        }
+
+        imageUrl.value = []; // 清空数组
+        if(currentConfigChannel.value.bannerLogo){
+            const item = {
+                url: upload.display + currentConfigChannel.value.bannerLogo ,
+                uid: currentConfigChannel.value.id // 可以在这里初始化属性
+            }
+            imageUrl.value.push(item) ; 
         }
 
         updateFormRules(); // 更新表单验证规则
@@ -580,6 +632,21 @@ const handleChangeSaleField = async (field, value, id) => {
     getList()
   }
 }
+
+/** 图片上传成功 */
+const handleAvatarSuccess = (response, uploadFile) => {
+  imageUrl.value = response.data ? response.data.split(',').map(url => { return { url: upload.display + url } }) : [];
+  currentConfigChannel.value.bannerLogo = response.data ;
+};
+
+/** 图片上传之前 */
+const beforeAvatarUpload = (rawFile) => {
+  if (rawFile.size / 1024 / 1024 > 2) {
+    ElMessage.error('Avatar picture size can not exceed 2MB!');
+    return false;
+  }
+  return true;
+};
 
 // 渠道列表，每个元素添加了 id 属性
 const channelList = ref([]);
