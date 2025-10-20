@@ -1,26 +1,24 @@
 <template>
   <div class="task-trace-panel">
     <div class="title" style="padding-bottom:10px;">
-      DeepSearch运行的工作空间
-      <span>
-        <el-button type="primary" bg text size="large" @click="handleClose">
-          <el-icon><Close /></el-icon>
-        </el-button>
-      </span>
+      深度搜索运行的工作空间
     </div>
 
     <!-- 执行步骤显示 -->
     <div class="follow-step-panel" v-if="!displayContentVisible">
 
-      <div class="step-title" v-if="currentStepAction.actionName">
+      <div class="step-title">
         <i :class="currentStepAction?.icon"></i> &nbsp; 正在使用
-        <span class="trace-tag">{{ currentStepAction.actionName }}</span>
+        <span class="trace-tag">{{ currentStepAction.actionName || '任务未运行' }}</span>
       </div>
-      <!-- <div v-else>
-          <el-empty description="还未没有执行步骤" />
-      </div> -->
 
       <el-scrollbar class="step-body-panel" ref="scrollbarRef">
+
+      <div v-if="!currentStepAction.actionName" style="margin-top: 10vh">
+          <el-empty description="当前还没有执行步骤，任务状态显示为空，还未没有执行步骤" />
+      </div>
+
+
         <div class="step-body" ref="innerRef">
 
           <div class="say-message-body markdown-body think-content" v-if="currentStepAction?.think" v-html="readerHtml(currentStepAction.think)"></div>
@@ -38,7 +36,7 @@
         </span>
         <span style="margin-right: 20px;display: flex;gap: 10px;flex-direction: row;">
           <el-button type="text" @click="hadnleOpenLink()" v-if="displayContentType === 'html'" >
-            <i class="fa-solid fa-share"></i>
+            <i class="fa-solid fa-paper-plane"></i>
           </el-button>
           <el-button type="text" @click="handleCopyContent()">
             <i class="fa-solid fa-clone"></i>
@@ -50,15 +48,13 @@
       </div>
 
       <iframe :src="displayContentHtmlUrl" v-if="displayContentType === 'html'" />
-      <el-scrollbar class="step-body-panel" ref="scrollbarRef"  v-if="displayContentType === 'md'" >
-        <div class="say-message-body markdown-body output-content" v-html="readerHtml(displayContentMd)"></div> 
-      </el-scrollbar>
+      <ChapterEditor v-model:articleData="articleData" ref="chapterEditorRef" v-if="displayContentType === 'md'" />
 
     </div>
 
     <div class="follow-btn-panel">
       <el-row style="width:100%;align-items: center;">
-        <el-col :span="8">
+        <el-col :span="4">
             <div class="step-btn-panel">
               <el-button type="primary" bg text size="large" @click="previewStepAction">
                 <el-icon><ArrowLeftBold /></el-icon>
@@ -68,7 +64,7 @@
               </el-button>
             </div>
         </el-col>
-        <el-col :span="16">
+        <el-col :span="20">
             <div class="step-progress-panel">
               <el-progress :percentage="percentage" />
             </div>
@@ -84,6 +80,7 @@ import { ref, onMounted } from 'vue';
 import { Close } from '@element-plus/icons-vue';
 import { ElLoading, ElMessage } from 'element-plus'
 
+import ChapterEditor from './chapterEditor'
 import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
@@ -100,6 +97,11 @@ const displayContentVisible = ref(false)
 const displayContentType = ref('html')
 const displayContentHtmlUrl = ref('http://data.linesno.com/index3.html')
 const displayContentMd = ref('')
+
+const chapterEditorRef = ref(null)
+const articleData = ref({
+    content: "" , 
+})
 
 const percentage = ref(0)
 
@@ -273,6 +275,7 @@ const handleDisplayContent = (item) => {
 
     getOutputMarkdownContent(item.storageId).then(res => {
       displayContentMd.value = res.data ; 
+      articleData.value.content = res.data ;
     })
   }else{
     ElMessage.warning("其它格式暂时不支持显示，可直接下载.")
@@ -300,7 +303,7 @@ defineExpose({
     display: flex;
     justify-content: space-between;
     align-items: center;
-    color: #444;
+    color: #222;
     border-bottom: 1px solid var(--line-color-border-2, #eaedf1);
     margin-bottom: 10px;
     font-size: 18px;
@@ -380,27 +383,20 @@ defineExpose({
     color: #aaa;
     border-left: 2px solid #ddd;
     padding-left: 10px;
-    // font-size: 14px;
-    // line-height: 1.3rem;
     border-radius: 5px;
     margin-bottom: 20px;
-    // margin-left:10px;
   }
 
   .output-content {
     color: #444;
     margin-top: 5px;
-    // font-size: 14px;
-    // line-height: 1.3rem;
     margin-bottom: 5px;
-    // margin-left:10px;
   }
 }
 
 .step-body-panel {
-  height: calc(100vh - 250px);
+  height: calc(100vh - 240px);
   border-radius: 7px;
-  // border: 1px solid #dedede;
   padding-bottom: 20px;
 }
 
@@ -423,7 +419,7 @@ defineExpose({
 .display-output-content {
   iframe {
     width: 100%;
-    height: calc(100vh - 300px);
+    height: calc(100vh - 270px);
     border: 0px;
     margin-bottom:15px;
     border-radius: 8px;
