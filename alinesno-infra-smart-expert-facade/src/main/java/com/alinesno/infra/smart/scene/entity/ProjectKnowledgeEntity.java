@@ -49,4 +49,8 @@ public class ProjectKnowledgeEntity extends InfraBaseEntity {
     @Column(name = "file_type", type = MySqlTypeConstant.VARCHAR, length = 10, comment = "文件类型")
     private String fileType ;
 
+    @TableField("chunk_count")
+    @Column(name = "chunk_count", type = MySqlTypeConstant.INT, comment = "分块数量")
+    private int chunkCount ;
+
 }
