@@ -147,6 +147,9 @@ public class MessageTaskInfo implements Serializable {
     // 数据解析知识库信息
     private String datasetKnowledgeDocument ;
 
+    // 场景任务ID
+    private Long sceneTaskId ;
+
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
         this.businessId = businessId;
