@@ -1,9 +1,7 @@
 <template>
   <div class="deepsearch-text-container">
 
-    <RoleSelectPanel 
-      :currentSeneInfo="currentSceneInfo"
-      @openExecuteHandle="openExecuteHandle"
+    <RoleSelectPanel :currentSeneInfo="currentSceneInfo" @openExecuteHandle="openExecuteHandle"
       ref="roleSelectPanelRef" />
 
     <div class="main-content">
@@ -14,18 +12,35 @@
         <span class="description">依托强大的通用智能体，轻松应对各类任务。输入需求，快速获得精准、专业的解决方案</span>
       </div>
       <div class="input-button-section">
-        <el-input v-model="promptText" class="input-box" size="large" placeholder="请输入您的需求，获取智能体服务" :prefix-icon="Search" />
-        <el-button type="primary" size="large" @click="generaterText()" class="send-button">
-          <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
-        </el-button>
+
+        <!-- 附件内容-->
+        <AttachmentSetionPanel @upload-success="handleUploadSuccess" ref="attachmentPanelRef"
+          style="padding: 0px 0px;margin-bottom:0px;" />
+
+        <el-input v-model="promptText" class="input-box" size="large" placeholder="请输入您的需求，获取智能体服务"
+          :prefix-icon="Search" />
+
+        <!-- 上传附件按键 -->
+        <div class="upload-button-section">
+          <div>
+            <el-button type="primary" size="large" class="upload-button" @click="handleUpload" text bg>
+              <i class="fa-solid fa-paperclip"></i> 上传附件
+            </el-button>
+          </div>
+
+          <el-button type="primary" size="large" @click="generaterText()" class="send-button">
+            <i class="fa-solid fa-paper-plane" style="font-size:22px"></i>
+          </el-button>
+        </div>
       </div>
       <div class="example-section">
         <div class="example-title">你可以这样提问</div>
         <div class="example-list">
-          <div v-for="(item, index) in greetingQuestionList" :key="index" class="example-item" @click="handleExampleClick(item)">
+          <div v-for="(item, index) in greetingQuestionList" :key="index" class="example-item"
+            @click="handleExampleClick(item)">
             <span class="example-text">{{ item.text }}</span>
             <i class="fa-solid fa-paper-plane example-icon"></i>
-          </div> 
+          </div>
         </div>
       </div>
     </div>
@@ -34,33 +49,19 @@
     </div>
 
     <!-- 弹出窗口，用于保存场景信息 -->
-    <el-dialog v-model="isShowSaveSceneDialog" 
-      title="保存场景" 
-      width="600px" 
-      :before-close="handleCloseSaveSceneDialog">
+    <el-dialog v-model="isShowSaveSceneDialog" title="保存场景" width="600px" :before-close="handleCloseSaveSceneDialog">
       <div class="save-scene-dialog-content">
-        <el-form
-          ref="saveSceneFormRef"
-          :label-position="'top'"
-          :model="saveSceneForm"
-          label-width="80px"
-          size="large"
-          :rules="rules"
-        >
+        <el-form ref="saveSceneFormRef" :label-position="'top'" :model="saveSceneForm" label-width="80px" size="large"
+          :rules="rules">
           <el-form-item label="场景横幅" prop="sceneBanner">
-              <el-scrollbar height="140px">
-            <el-radio-group style="width:100%" v-model="saveSceneForm.sceneBanner">
+            <el-scrollbar height="140px">
+              <el-radio-group style="width:100%" v-model="saveSceneForm.sceneBanner">
 
-              <el-radio
-                v-for="(image, index) in bannerImages"
-                style="height:70px"
-                :key="index"
-                :label="image"
-              >
-                <img :src="'http://data.linesno.com/' + image" alt="banner" width="100" style="border-radius: 3px;" />
-              </el-radio>
-            </el-radio-group>
-              </el-scrollbar>
+                <el-radio v-for="(image, index) in bannerImages" style="height:70px" :key="index" :label="image">
+                  <img :src="'http://data.linesno.com/' + image" alt="banner" width="100" style="border-radius: 3px;" />
+                </el-radio>
+              </el-radio-group>
+            </el-scrollbar>
           </el-form-item>
           <el-form-item label="场景名称" prop="sceneName">
             <el-input v-model="saveSceneForm.sceneName" placeholder="比如法律知识库深度搜索" />
@@ -85,14 +86,16 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { nextTick, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 
-import { 
-  getScene, 
+import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
+import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
+
+import {
+  getScene,
   createScene,
-  updateChapterPromptContent 
+  updateChapterPromptContent
 } from '@/api/base/im/scene/deepSearch';
 
 import SnowflakeId from "snowflake-id";
@@ -106,6 +109,7 @@ const sceneId = ref(route.query.sceneId)
 
 const isBack = ref(route.query.back || false)
 const promptText = ref('');
+const attachments = ref([]);
 
 // 弹出场景信息保存对话框
 const isShowSaveSceneDialog = ref(false);
@@ -159,7 +163,11 @@ const greetingQuestionList = ref([
   { text: "制定一份市场营销策划方案" },
   { text: "分析当前热门短视频运营策略" },
   { text: "规划一场线上产品发布会流程" },
-  { text: "设计一套员工培训课程体系" }
+  { text: "设计一套员工培训课程体系" },
+  { text: "制定一份销售策略" },
+  { text: "撰写一份品牌推广活动执行方案" },
+  { text: "策划一场客户答谢会活动方案" },
+  { text: "制定新媒体平台内容运营计划" }
 ]);
 
 const currentSceneInfo = ref({
@@ -195,14 +203,33 @@ const submitForm = () => {
   });
 };
 
+
+// 添加attachmentPanelRef引用
+const attachmentPanelRef = ref(null);
+
+// 处理上传成功
+const handleUploadSuccess = (fileInfo) => {
+  console.log('文件上传成功:', fileInfo);
+  // 这里可以保存storageId到表单数据中
+  // 例如: formData.value.attachments.push(fileInfo.storageId);
+  attachments.value.push(fileInfo.storageId);
+};
+
+// 修改handleUpload方法，直接调用子组件的上传
+const handleUpload = () => {
+  if (attachmentPanelRef.value) {
+    attachmentPanelRef.value.$el.querySelector('.el-upload__input').click();
+  }
+};
+
 const handleGetScene = () => {
 
   getScene(sceneId.value).then(res => {
     currentSceneInfo.value = res.data;
     // handleRoleBySceneIdAndAgentType();
 
-    if(res.data.greetingQuestion && res.data.greetingQuestion.length > 0){
-      greetingQuestionList.value = [] ; 
+    if (res.data.greetingQuestion && res.data.greetingQuestion.length > 0) {
+      greetingQuestionList.value = [];
       res.data.greetingQuestion.forEach(item => {
         greetingQuestionList.value.push({
           text: item
@@ -210,18 +237,20 @@ const handleGetScene = () => {
       });
     }
 
-    if(!currentSceneInfo.value.searchPlannerEngineer){ // 选择配置角色
-      roleSelectPanelRef.value.configAgent();
-      return ;
+    if (!currentSceneInfo.value.searchPlannerEngineer) { // 选择配置角色
+      nextTick(() => {
+        // roleSelectPanelRef.value.configAgent();
+      });
+      return;
     }
 
-    if(res.data.genStatus == 1 && !isBack.value){
+    if (res.data.genStatus == 1 && !isBack.value) {
       router.push({
         path: '/scene/deepsearch/index',
         query: {
           sceneId: sceneId.value,
-          genStatus: true ,
-          channelStreamId: snowflake.generate() 
+          genStatus: true,
+          channelStreamId: snowflake.generate()
         }
       })
     }
@@ -238,17 +267,22 @@ const generaterText = () => {
 
   updateChapterPromptContent({
     sceneId: sceneId.value,
+    channelStreamId: snowflake.generate(),
+    attachments: attachments.value.join(','),
     promptContent: promptText.value
   }).then(res => {
 
-    // router.push({
-    //   path: '/scene/generalAgent/agentParser',
-    //   query: {
-    //     sceneId: sceneId.value,
-    //     genStatus: true ,
-    //     channelStreamId: snowflake.generate() 
-    //   }
-    // })
+    const taskId = res.data ;
+
+    router.push({
+      path: '/scene/deepsearch/taskPanel',
+      query: {
+        sceneId: sceneId.value,
+        taskId: taskId,
+        genStatus: true ,
+        channelStreamId: snowflake.generate() 
+      }
+    })
 
   })
 
@@ -278,20 +312,20 @@ onMounted(() => {
   background: #fff;
   height: calc(100vh - 70px);
 
- .main-content {
+  .main-content {
     display: flex;
     flex-direction: column;
-    padding-top: calc(22vh - 56px);
+    padding-top: calc(15vh - 56px);
     text-align: center;
-    max-width: 1024px;
+    max-width: 860px;
     margin: auto;
 
-   .title-section {
+    .title-section {
       display: flex;
       flex-direction: column;
       text-align: left;
 
-     .title {
+      .title {
         color: #2C2C36;
         font-weight: 600;
         font-size: 28px;
@@ -299,7 +333,7 @@ onMounted(() => {
         line-height: 40px;
       }
 
-     .description {
+      .description {
         margin-top: 10px;
         color: #8F91A8;
         font-weight: 400;
@@ -308,23 +342,23 @@ onMounted(() => {
       }
     }
 
-   .input-button-section {
+    .input-button-section {
       display: flex;
       gap: 10px;
       position: relative;
       box-sizing: border-box;
       width: 100%;
-      border-radius: 8px;
-      box-shadow: rgba(54, 54, 73, 0.06) 0px 12px 24px -16px, rgba(74, 80, 96, 0.12) 0px 12px 40px, rgba(44, 44, 54, 0.02) 0px 0px 1px;
+      border-radius: 15px;
       transition: 0.3s;
       background: rgb(255, 255, 255);
       padding: 10px !important;
       border: 1px solid rgb(232, 234, 242);
       margin-top: 30px;
       margin-bottom: 30px;
-      align-items: center;
+      align-items: flex-start;
+      flex-direction: column;
 
-     .input-box {
+      .input-box {
         width: 100%;
         height: 50px;
         border: 0px !important;
@@ -332,10 +366,10 @@ onMounted(() => {
       }
     }
 
-   .example-section {
+    .example-section {
       padding: 0px 0px;
 
-     .example-title {
+      .example-title {
         color: rgb(44, 44, 54);
         font-size: 14px;
         text-align: left;
@@ -344,11 +378,12 @@ onMounted(() => {
         margin-bottom: 15px;
       }
 
-     .example-list {
+      .example-list {
         display: flex;
         flex-wrap: wrap;
+        justify-content: center;
 
-       .example-item {
+        .example-item {
           position: relative;
           display: flex;
           gap: 8px;
@@ -359,25 +394,26 @@ onMounted(() => {
           cursor: pointer;
           transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           will-change: opacity, transform;
-          width: calc(50% - 10px);
+          width: auto; // calc(50% - 10px);
           box-sizing: border-box;
           padding: 10px;
           margin: 5px 5px 8px 5px;
 
           &:hover {
             background: rgb(232 233 235);
-           .example-icon {
-              display: block;
+
+            .example-icon {
+              visibility: visible;
             }
           }
 
           .example-icon {
-            display: none;
+            visibility: hidden;
             color: #585a73;
-            font-size:12px;
+            font-size: 12px;
           }
 
-         .example-text {
+          .example-text {
             flex: 1 1;
             overflow: hidden;
             color: #585a73;
@@ -392,7 +428,7 @@ onMounted(() => {
     }
   }
 
- .review-footer-message {
+  .review-footer-message {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -401,7 +437,7 @@ onMounted(() => {
     padding: 12px 0px;
     text-align: center;
 
-   .footer-message {
+    .footer-message {
       margin-bottom: 4px;
       color: #C8CAD9;
       font-size: 12px;
@@ -409,7 +445,6 @@ onMounted(() => {
     }
   }
 }
-
 </style>
 
 
