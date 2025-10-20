@@ -17,7 +17,7 @@
 
       <!-- 语音模型选择项 -->
       <el-form-item label="大模型" prop="llmModel">
-        <LLMSelector :modelType="'large_language_model'" v-model="formData.llmModel" />
+        <LLMSelector :modelType="'large_language_model'" size="large" v-model="formData.llmModel" />
       </el-form-item>
 
       <el-form-item label="文件格式化" prop="fileFormats">
