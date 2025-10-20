@@ -2,10 +2,9 @@ package com.alinesno.infra.smart.scene.dto;
 
 import com.alinesno.infra.common.facade.base.BaseDto;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.List;
 
 /**
  * 文档审核规则组数据传输对象
@@ -27,8 +26,29 @@ public class ProjectKnowledgeGroupDto extends BaseDto {
     private String groupName ;
 
     /**
-     * 规则组所有列表
+     * 描述
      */
-    private List<ProjectKnowledgeDto> rules;
+    @NotBlank(message = "描述不能为空")
+    private String description ;
 
+    /**
+     * 向量模型ID
+     */
+    @NotNull(message = "向量模型ID不能为空")
+    private Long embeddingModelId;
+
+    /**
+     * OCR模型ID
+     */
+    private Long ocrModelId;
+
+    /**
+     * 文档识别模型ID
+     */
+    private Long documentRecognitionModelId;
+
+    /**
+     * 文档数量
+     */
+    private long documentCount = 0 ;
 }
