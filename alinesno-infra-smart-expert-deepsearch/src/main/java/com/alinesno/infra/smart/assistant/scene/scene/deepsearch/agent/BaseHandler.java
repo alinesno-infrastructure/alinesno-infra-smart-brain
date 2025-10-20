@@ -6,6 +6,7 @@ import com.alinesno.infra.smart.assistant.api.config.ContextEngineeringData;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record.DeepSearchTaskRecordManager;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepsearchSummaryMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.assistant.service.IToolService;
@@ -49,4 +50,7 @@ public abstract class BaseHandler {
     private ContextEngineeringData contextEngineeringData ; // 上下文工程
 
     private DeepSearchTaskEntity deepSearchTask ; // 深度检索任务
+
+    private DeepSearchTaskRecordManager statusManager; // 状态管理
+
 }
