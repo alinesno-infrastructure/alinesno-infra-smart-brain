@@ -27,7 +27,35 @@ var managerUrl = {
   createScene: prefix + "createScene" , 
   listAllDeepsearchScene: prefix + "listAllDeepsearchScene" , 
   getOutputPreviewUrl: prefix +"getOutputPreviewUrl",
-  getOutputMarkdownContent: prefix +"getOutputMarkdownContent"
+  getOutputMarkdownContent: prefix +"getOutputMarkdownContent",
+  getDeepsearchTaskById: prefix +"getDeepsearchTaskById",
+  pagerListByPage: prefix +"pagerListByPage",
+  deleteById: prefix +"deleteById",
+}
+
+// 分页查询任务列表
+export function pagerListByPage(data , sceneId) {
+  return request({
+    url: managerUrl.pagerListByPage + '?sceneId=' + parseStrEmpty(sceneId) ,
+    method: 'post',
+    data: data
+  })
+}
+
+// 删除任务
+export function deleteById(taskId) {
+  return request({
+    url: managerUrl.deleteById + '?id=' + parseStrEmpty(taskId),
+    method: 'get',
+  })
+}
+
+// 通过id获取到任务
+export function getDeepsearchTaskById(deepsearchTaskId) {
+  return request({
+    url: managerUrl.getDeepsearchTaskById + '?taskId=' + parseStrEmpty(deepsearchTaskId) ,
+    method: 'get'
+  })
 }
 
 // 获取输出预览
