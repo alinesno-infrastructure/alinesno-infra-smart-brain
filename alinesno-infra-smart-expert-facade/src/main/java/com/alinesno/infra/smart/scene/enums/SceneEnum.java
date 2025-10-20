@@ -55,13 +55,6 @@ public enum SceneEnum {
                     new SceneAgent(20000101L, "文档分析助手", "analysisAgent", "对合同类文档的审核，审核清单生成，还有分析合同目录内容等。" , true),
                     new SceneAgent(20000202L, "文档审核助手", "logicReviewer", "审核文档内容的逻辑是否合理，有无矛盾或不合理之处。")
     ))),
-    // 智能文档
-    CONTENT_FORMATTER(new SceneInfoDto(70000000L, "智能文档", "contentFormatter", "AI智能文档管理，文档编写，文档审核和内容排版等功能", "已集成", "1", "", "fa-solid fa-file-lines",
-            List.of(
-                    new SceneAgent(40000401L, "内容提取助手", "templateExtractor", "从给定的内容中提取出模板信息。") ,
-                    new SceneAgent(40000402L, "内容检查助手", "contentReviewer", "对提取的模块内容进行检查，确保模板的完整性和正确性。" , true)
-            )
-    )),
     // 项目检索
     PRODUCT_RESEARCH(new SceneInfoDto(90000000L, "知识库检索", "productResearch", "接入企业不同知识库进行内容深度检索，文档报告分析，预测规划等", "已集成", "1", "", "fa-solid fa-chart-line",
             Arrays.asList(
