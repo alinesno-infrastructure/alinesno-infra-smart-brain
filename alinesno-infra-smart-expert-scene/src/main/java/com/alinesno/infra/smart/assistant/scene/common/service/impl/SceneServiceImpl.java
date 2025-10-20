@@ -10,7 +10,6 @@ import com.alinesno.infra.smart.assistant.adapter.service.BaseSearchConsumer;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.SceneMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.articleWriting.service.IArticleWriterSceneService;
-import com.alinesno.infra.smart.assistant.scene.scene.contentFormatter.service.IContentFormatterSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReader.service.IDocReaderSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.documentReview.service.IDocReviewSceneService;
@@ -195,11 +194,6 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             documentReaderSceneService.updateSceneAgents(dto);
         }
-        // 内容排版
-        else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
-            IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
-            contentFormatterSceneService.updateSceneAgents(dto);
-        }
         // 通用智能体
         else if(sceneTypeCode.equals(SceneEnum.GENERAL_AGENT.getSceneInfo().getCode())){
             IGeneralAgentSceneService generalAgentSceneService = SpringUtils.getBean(IGeneralAgentSceneService.class) ;
@@ -251,11 +245,6 @@ public class SceneServiceImpl extends IBaseServiceImpl<SceneEntity, SceneMapper>
         else if(sceneTypeCode.equals(SceneEnum.DOCUMENT_READER.getSceneInfo().getCode())){
             IDocReaderSceneService documentReaderSceneService = SpringUtils.getBean(IDocReaderSceneService.class) ;
             return documentReaderSceneService.getRoleList(dto);
-        }
-        // 内容排版
-        else if(sceneTypeCode.equals(SceneEnum.CONTENT_FORMATTER.getSceneInfo().getCode())){
-            IContentFormatterSceneService contentFormatterSceneService = SpringUtils.getBean(IContentFormatterSceneService.class) ;
-            return contentFormatterSceneService.getRoleList(dto);
         }
         // 通用智能体
         else if(sceneTypeCode.equals(SceneEnum.GENERAL_AGENT.getSceneInfo().getCode())){
