@@ -2,7 +2,7 @@ package com.alinesno.infra.base.im.gateway.provider;
 
 import cn.hutool.core.util.IdUtil;
 import com.alibaba.fastjson.JSONArray;
-import com.alinesno.infra.base.im.utils.MessageFormatter;
+import com.alinesno.infra.smart.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.facade.response.R;
