@@ -9,13 +9,20 @@ public class SummaryPrompt {
      * 内容总结
      */
     public static final String DEFAULT_SUMMARY_PROMPT = """
+            ## 角色
+            你是一个整合和总结专家。用户给出一个复杂任务：${complex_task!""}
+            你收到了问题拆解计划以及每个 worker agent 的执行输出。你的目标是将所有阶段和每个worker的研究发现和信息撰写高质量的研究报告。
+            
             ##问题
             用户提供了一个复杂问题：${complex_task!""}
+            
             ##计划
             问题被拆解成了以下的计划并被执行完毕：${planning_detail!""}
-            ###执行结果
+            
+            ###研究数据
             ${answer_output!""}
-            请根据的上述计划执行的结果，进行总结性的回复
+            
+            请根据上面每个阶段执行的结果，您的任务是根据提供的研究数据，为研究报告撰写深入、优质且详尽的引言与结论部分。
             """;
 
     /**
@@ -62,14 +69,12 @@ public class SummaryPrompt {
             </body>
             </html>
             ```
-                        
             请根据模板和内容，编写出对应的网页界面排版，要求：
             1. 界面是单界面显示，界面显示要排版布局美观合理，符合主题内容，单界面显示不需要导航栏
             2. 如果内容有iframe，则需要直接嵌入网页显示
             3. 直接返回html内容，不要返回不相关内容，返回格式为
                ```html
                ```
-               
             目标要求:${complex_task!""}
             目标内容:${summary_content!""}
             """;
