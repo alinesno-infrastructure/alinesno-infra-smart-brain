@@ -1,6 +1,5 @@
 package com.alinesno.infra.smart.assistant.config;
 
-import com.alinesno.infra.base.search.memory.BaseMemoryStore;
 import com.alinesno.infra.base.search.service.IVectorDatasetService;
 import com.alinesno.infra.base.search.vector.service.IPgVectorService;
 import com.alinesno.infra.common.facade.enable.EnableActable;
@@ -72,9 +71,6 @@ public class AppConfiguration implements CommandLineRunner {
     private IPgVectorService pgVectorService ;
 
     @Autowired
-    private BaseMemoryStore baseMemoryStore ;
-
-    @Autowired
     private DeepSearchService deepSearchService;
 
     @Bean
@@ -94,7 +90,6 @@ public class AppConfiguration implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         log.debug("deepSearchService = {}" , deepSearchService);
-        baseMemoryStore.createMemoryVectorIndex();
         log.info("当前向量存储引擎:{}" , vectorDatasetService.getVectorEngine());
         pgVectorService.createVectorIndex(null);
         log.debug("项目启动完成");
