@@ -1,6 +1,6 @@
 package com.alinesno.infra.base.im.gateway.provider;
 
-import com.alinesno.infra.base.im.utils.MessageFormatter;
+import com.alinesno.infra.smart.utils.MessageFormatter;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
