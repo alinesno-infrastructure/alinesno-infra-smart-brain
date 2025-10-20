@@ -10,6 +10,7 @@ import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.GeneratorTaskNameUtil;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchSceneDto;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchSceneRequestDto;
@@ -19,9 +20,9 @@ import com.alinesno.infra.smart.scene.entity.DeepSearchSceneEntity;
 import com.alinesno.infra.smart.scene.entity.DeepSearchTaskEntity;
 import com.alinesno.infra.smart.scene.entity.SceneEntity;
 import com.alinesno.infra.smart.scene.enums.SceneEnum;
+import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
 import com.alinesno.infra.smart.scene.service.ISceneService;
 import com.alinesno.infra.smart.utils.RoleUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -65,6 +66,9 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
     @Autowired
     private IDeepSearchTaskService taskService ;
 
+    @Autowired
+    private GeneratorTaskNameUtil generatorTaskNameUtil ;
+
     /**
      * 保存场景
      */
@@ -97,14 +101,24 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         taskEntity.setSceneId(dto.getSceneId());
         taskEntity.setDeepsearchSceneId(sceneEntity.getId());
         taskEntity.setGenStatus(0);
+        taskEntity.setTaskStatus(TaskStatusEnum.NOT_RUN.getCode());
         taskEntity.setTaskName(dto.getPromptContent());
         taskEntity.setPromptContent(dto.getPromptContent());
+        taskEntity.setChannelStreamId(dto.getChannelStreamId());
+        taskEntity.setAttachments(dto.getAttachments());
         taskEntity.setSearchPlannerEngineer(sceneEntity.getSearchPlannerEngineer());
 
         taskService.save(taskEntity);
 
+        // 动态生成任务名称
+        generatorTaskNameUtil.generatorDeepSearchDocumentName(taskEntity , dto.getPromptContent());
+
         return AjaxResult.success("操作成功" , taskEntity.getId()) ;
     }
+
+    /**
+     * 通过id删除场景任务
+     */
 
     /**
      * 通过Id获取到场景
@@ -139,20 +153,13 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
     }
 
     /**
-     * 查询出所有的DeepSearch场景
+     * 根据TaskID查询出DeepSearch场景
      * @return
      */
     @DataPermissionQuery
-    @GetMapping("/listAllDeepsearchScene")
-    public AjaxResult listAll(PermissionQuery query , @RequestParam(required = true) String sceneId) {
-
-        LambdaQueryWrapper<DeepSearchTaskEntity> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.setEntityClass(DeepSearchTaskEntity.class);
-        query.toWrapper(queryWrapper);
-        queryWrapper.eq(DeepSearchTaskEntity::getSceneId, sceneId);
-        queryWrapper.orderByDesc(DeepSearchTaskEntity::getAddTime);
-
-        return AjaxResult.success(taskService.list(queryWrapper)) ;
+    @GetMapping("/getDeepsearchTaskById")
+    public AjaxResult getDeepsearchTaskById(@RequestParam(required = true) Long taskId) {
+        return AjaxResult.success(taskService.getById(taskId)) ;
     }
 
     /**
@@ -164,28 +171,6 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
         return AjaxResult.success("操作成功" , previewUrl);
     }
-
-    /**
-     * 获取markdown内容,先获取到预览地址，然后再根据地址请求到里面的markdown内容
-     * @return
-     */
-//    @GetMapping("/getOutputMarkdownContent")
-//    public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
-//
-//        String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
-//
-//        // 设置 StringHttpMessageConverter 的编码为 UTF-8
-//        restTemplate.getMessageConverters()
-//                .stream()
-//                .filter(converter -> converter instanceof StringHttpMessageConverter)
-//                .map(converter -> (StringHttpMessageConverter) converter)
-//                .forEach(converter -> converter.setDefaultCharset(StandardCharsets.UTF_8));
-//
-//        // 发送请求并获取响应，指定返回类型为 String
-//        String markdownContent = restTemplate.getForObject(previewUrl, String.class);
-//
-//        return AjaxResult.success("操作成功" , markdownContent);
-//    }
 
     @GetMapping("/getOutputMarkdownContent")
     public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
