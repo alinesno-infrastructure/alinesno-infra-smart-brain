@@ -6,8 +6,12 @@ import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.StreamResponseListener;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
+import com.agentsflex.core.message.HumanMessage;
 import com.agentsflex.core.message.MessageStatus;
+import com.agentsflex.core.message.SystemMessage;
+import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.alibaba.fastjson.JSON;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolResult;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
@@ -28,8 +32,8 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +43,6 @@ import java.util.stream.Collectors;
 
 /**
  * 任务执行器，这里使用ReAct模式运行任务，然后获取到FinalAnswer字段
- *
- * @author luoxiaodong
  */
 @EqualsAndHashCode(callSuper = true)
 @Slf4j
@@ -57,21 +59,23 @@ public class WorkerHandler extends BaseHandler {
     private DeepSearchFlow.Step step ;
 
     /**
-     * 执行任务，并获取到执行结果
+     * 执行任务，并获取到执行结果（同步方法）
      *
      * @param task
      * @return
      */
     public String executeTask(DeepTaskBean task) {
 
-        String answer = "";
-        int loopCount = 0;
+        StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
+        String answer = StringUtils.EMPTY;
         boolean isCompleted = false;
+        int loopCount = 0;
+
+        List<WorkerResponseJson> workerResponseJsons = new ArrayList<>();
 
         do {
             // 循环执行，确认达到目标，则跳出
-            StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
-            String workerOutput = executeWorker(task , toolOutput);
+            String workerOutput = executeWorker(task , toolOutput , maxLoopCount);
 
             // ----->>>>>>>>>>>>>>>>>>> 解析出需要调用的方法_start ----->>>>>>>>>>>>>>>>>
             List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(workerOutput);
@@ -80,7 +84,7 @@ public class WorkerHandler extends BaseHandler {
             WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
 
             // 获取到工具名称，拼接名称起来
-            String useToolName = reactResponse.getTools().stream()
+            String useToolName = reactResponse.getTools() == null ? "" : reactResponse.getTools().stream()
                     .map(tool -> tool.getName() + "(" + tool.getType() + ")")
                     .collect(Collectors.joining(","));
 
@@ -94,6 +98,7 @@ public class WorkerHandler extends BaseHandler {
                     stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
                     stepActionDto.setThink(reactResponse.getThought()) ;
                     stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
+                    stepActionDto.setThink(reactResponse.getThought());
                     step.addAction(stepActionDto);
                     getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId())); // 更新step信息，通过id删除掉原来的step
                     getDeepSearchFlow().getSteps().add(step);
@@ -111,7 +116,6 @@ public class WorkerHandler extends BaseHandler {
                     getDeepSearchFlow().getSteps().add(step);
 
                     getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
-                    log.debug("正在执行工具名称：{}" , toolFullName);
 
                     Map<String, String> argsList = tool.getArgsList();
                     ToolResult toolResult = null;
@@ -128,7 +132,7 @@ public class WorkerHandler extends BaseHandler {
                         }
 
                         Object executeToolOutput = toolResult.getOutput() ;
-                        toolOutput.append(String.format("当前执行次数[%s],使用工具[%s] \r\n执行结果:%s" , loopCount , toolFullName , executeToolOutput));
+                        toolOutput.append(String.format("\r\n ## 当前执行次数[%s],使用工具[%s] \r\n执行结果:%s" , loopCount , toolFullName , executeToolOutput));
 
                         // 更新step信息，通过id删除掉原来的step
                         stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
@@ -155,7 +159,9 @@ public class WorkerHandler extends BaseHandler {
                     }
 
                 }
-            }else if(StringUtils.hasLength(reactResponse.getFinalAnswer())){  // 有了最终的答案
+
+                workerResponseJsons.add(reactResponse) ;
+            }else if(StringUtils.isNotEmpty(reactResponse.getFinalAnswer())){  // 有了最终的答案
                 answer = reactResponse.getFinalAnswer();
                 isCompleted = true;
             }
@@ -165,7 +171,25 @@ public class WorkerHandler extends BaseHandler {
 
             if(loopCount >= maxLoopCount){
                 isCompleted = true ;
-                answer = StringUtils.hasText(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
+
+                // 健壮性处理(如果是循环结束而且没有答案)
+                if(StringUtils.isEmpty(answer)){
+
+                    String summaryPrompt = PromptHandle.buildSummaryPrompt(getGoal(),
+                            getDatasetKnowledgeDocument(),
+                            workerResponseJsons) ;
+
+                    answer = getSummaryMessageTool().getSummaryAnswer(llm ,
+                            summaryPrompt ,
+                            getTaskInfo() ,
+                            getRole() ,
+                            getDeepSearchFlow() ,
+                            step,
+                            getStepEventUtil()) ;
+
+                }
+
+                answer = StringUtils.isNotEmpty(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
             }
 
             loopCount ++ ;
@@ -180,14 +204,20 @@ public class WorkerHandler extends BaseHandler {
      *
      * @param task
      * @param toolOutput
+     * @param maxLoopCount
      * @return
      */
     @SneakyThrows
-    private String executeWorker(DeepTaskBean task, StringBuilder toolOutput) {
+    private String executeWorker(DeepTaskBean task, StringBuilder toolOutput, int maxLoopCount) {
 
         Map<String, Object> params = getStringObjectMap(task , toolOutput);
+        params.put("max_loop_count" , maxLoopCount) ;
 
         String workerPrompt = FreemarkerUtil.processTemplate(WorkerPrompt.DEFAULT_WORKER_PROMPT, params);
+
+        HistoriesPrompt historyPrompt = new HistoriesPrompt();
+        historyPrompt.addMessage(new SystemMessage(WorkerPrompt.DEFAULT_SYSTEM_WORKER_PROMPT));
+        historyPrompt.addMessage(new HumanMessage(workerPrompt));
 
         CompletableFuture<String> future = new CompletableFuture<>();
         AtomicReference<String> outputStr = new AtomicReference<>("");
@@ -195,15 +225,15 @@ public class WorkerHandler extends BaseHandler {
         DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
         stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
 
-        llm.chatStream(workerPrompt, new StreamResponseListener() {
+        llm.chatStream(historyPrompt, new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
 
                 AiMessage message = response.getMessage();
 
                 stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
-                stepActionDto.setResult(StringUtils.hasLength(message.getContent())?message.getContent():"");
-                stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent())?message.getReasoningContent():"");
+                stepActionDto.setResult(StringUtils.isNotEmpty(message.getContent())?message.getContent():StringUtils.EMPTY);
+                stepActionDto.setThink(StringUtils.isNotEmpty(message.getReasoningContent())?message.getReasoningContent():StringUtils.EMPTY);
                 stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey()) ;
 
                 try {
