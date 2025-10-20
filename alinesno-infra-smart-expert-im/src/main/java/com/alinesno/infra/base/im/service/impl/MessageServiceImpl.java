@@ -2,7 +2,7 @@ package com.alinesno.infra.base.im.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import com.alinesno.infra.base.im.mapper.MessageMapper;
-import com.alinesno.infra.base.im.utils.MessageFormatter;
+import com.alinesno.infra.smart.utils.MessageFormatter;
 import com.alinesno.infra.base.im.utils.TaskUtils;
 import com.alinesno.infra.common.core.context.SpringContext;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
