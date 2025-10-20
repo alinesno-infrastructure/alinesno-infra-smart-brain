@@ -4,6 +4,8 @@ import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Column;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnComment;
+import com.gitee.sunchenbin.mybatis.actable.annotation.ColumnType;
 import com.gitee.sunchenbin.mybatis.actable.annotation.Table;
 import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
@@ -34,6 +36,10 @@ public class ProjectKnowledgeGroupEntity extends InfraBaseEntity {
     private String groupName;
 
     @TableField
+    @Column(name = "group_description", type = MySqlTypeConstant.VARCHAR, length = 256, comment = "分组描述")
+    private String groupDescription;
+
+    @TableField
     @Column(name = "group_sort", type = MySqlTypeConstant.INT, length = 5, comment = "分组排序")
     private Integer groupSort;
 
@@ -41,5 +47,20 @@ public class ProjectKnowledgeGroupEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "vector_dataset_name", type = MySqlTypeConstant.VARCHAR, length = 128, comment = "向量数据集名称")
     private String vectorDatasetName;
+
+    @ColumnComment("向量模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "embedding_model_id")
+    private Long embeddingModelId;
+
+    @ColumnComment("OCR模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "ocr_model_id")
+    private Long ocrModelId;
+
+    @ColumnComment("文档识别模型ID")
+    @ColumnType(value = MySqlTypeConstant.BIGINT, length = 32)
+    @TableField(value = "document_recognition_model_id")
+    private Long documentRecognitionModelId;
 
 }
