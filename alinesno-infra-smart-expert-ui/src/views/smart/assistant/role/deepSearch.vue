@@ -54,7 +54,7 @@
                                 <el-col :span="18">
                                     <div class="select-wrapper" style="align-items: flex-start;">
                                         <el-form-item prop="modelName" class="form-item-wrapper">
-                                            <LLMSelector :modelType="'large_language_model'" v-model="agentModelConfigForm.modelId" />
+                                            <LLMSelector :modelType="'large_language_model'" size="large" v-model="agentModelConfigForm.modelId" />
                                         </el-form-item>
                                         <el-button type="primary" size="large" text bg @click="openModelConfigDialog">
                                             <i class="fa-solid fa-screwdriver-wrench"></i>
@@ -62,6 +62,24 @@
                                     </div>
                                 </el-col>
                             </el-row>
+
+                            <!-- 上下文工程_start -->
+                            <el-row class="nav-row">
+                                <el-col :span="12">
+                                    <div class="ai-config-section-title">
+                                        <i class="fa-solid fa-layer-group"></i> <span> 上下文工程</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text bg @click="toggleContextEngineStatus">
+                                            {{ contextEngineeringEnable ? '关闭' : '开启' }}
+                                        </el-button>
+                                        <el-button v-if="contextEngineeringEnable" type="primary" text bg @click="toggleContextEngineSettingsPanel">参数</el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <!-- 上下文工程_end -->
 
                             <!--
                             <el-row class="nav-row">
@@ -318,6 +336,11 @@
         <OutputFileFormatStatusPanel @handleOutputFileFormatStatusPanelPanelClose="handleOutputFileFormatStatusPanelPanelClose" ref="outputFileFormatRef" />
     </el-dialog>
 
+    <!-- 上下文工程配置 -->
+     <el-dialog title="上下文工程配置" v-model="contextEngineStatusVisible" width="700px">
+        <ContextEngineSettingsPanel @handleContextEngineSettingsPanelClose="handleContextEngineSettingsPanelClose" ref="contextEngineSettingsPanelRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -349,6 +372,7 @@ import VoiceInputStatusPanel from '@/views/smart/assistant/llmModel/voiceInputSt
 import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attachmentUploadStatusPanel'
 import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
 import OutputFileFormatStatusPanel from '@/views/smart/assistant/llmModel/outputFileFormatStatusPanel'
+import ContextEngineSettingsPanel from '@/views/smart/assistant/llmModel/contextEngineSettingsPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -370,6 +394,7 @@ const guessWhatYouAskStatusVisible = ref(false)
 const outputFileFormatStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
 const openingPhraseStatusVisible = ref(false)
+const contextEngineStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -383,6 +408,7 @@ const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
 const openingPhraseStatusPanelRef  = ref(null)
+const contextEngineSettingsPanelRef = ref(false)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
@@ -435,6 +461,9 @@ const voiceInputStatus = ref(false);
 const guessWhatYouAskStatus = ref(false);
 // 内容格式化开关
 const outputFileFormatStatus = ref(false);
+
+// 上下文工程开头
+const contextEngineeringEnable = ref(false)
 
 // 已选择的数据集数据
 const selectionDatasetData = ref([]);
@@ -535,6 +564,14 @@ const displayRoleInfoBack = (currentRole) =>{
     if(currentRole.greetingQuestion){
         agentModelConfigForm.value.greetingQuestion = currentRole.greetingQuestion ;
     }
+
+    // 上下文工程
+    if(currentRole.contextEngineeringEnable){
+        contextEngineeringEnable.value = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringEnable = currentRole.contextEngineeringEnable ;
+        agentModelConfigForm.value.contextEngineeringData = currentRole.contextEngineeringData ;
+    }
+
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
@@ -867,6 +904,39 @@ const handleOpeningPhraseStatusPanelClose = (formData) => {
         agentModelConfigForm.value.greetingQuestion = formData ;
 
         // 更新配置
+        submitModelConfig();
+    }
+}
+
+/** 上下文工程配置 */
+const toggleContextEngineStatus = () => {
+    contextEngineeringEnable.value = !contextEngineeringEnable.value;
+    agentModelConfigForm.value.contextEngineeringEnable = contextEngineeringEnable.value;
+}
+
+const toggleContextEngineSettingsPanel = () => {
+    contextEngineStatusVisible.value = !contextEngineStatusVisible.value;
+
+    nextTick(() => {
+        console.log(contextEngineSettingsPanelRef.value)
+        contextEngineSettingsPanelRef.value.setLlmModelOptions(llmModelOptions.value);
+
+        if(agentModelConfigForm.value.contextEngineeringData){
+            contextEngineSettingsPanelRef.value.setConfigParams(agentModelConfigForm.value.contextEngineeringData);
+        }
+    });
+
+}
+// 用户上下文工程配置
+function handleContextEngineSettingsPanelClose(formData) {
+
+    if (contextEngineSettingsPanelRef.value) {
+        contextEngineStatusVisible.value = false ;
+
+        contextEngineeringEnable.value = formData.enable; 
+        agentModelConfigForm.value.contextEngineeringData = formData;
+
+        // 更新角色内容
         submitModelConfig();
     }
 }
