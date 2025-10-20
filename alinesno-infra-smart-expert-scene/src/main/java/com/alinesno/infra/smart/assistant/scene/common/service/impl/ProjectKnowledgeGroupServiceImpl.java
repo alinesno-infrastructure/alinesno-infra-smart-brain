@@ -3,7 +3,6 @@ package com.alinesno.infra.smart.assistant.scene.common.service.impl;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.ProjectKnowledgeGroupMapper;
-import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeDto;
 import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeGroupDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
@@ -31,7 +30,9 @@ public class ProjectKnowledgeGroupServiceImpl extends IBaseServiceImpl<ProjectKn
 
         // 查询所有组织下的规则组
         LambdaQueryWrapper<ProjectKnowledgeGroupEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(ProjectKnowledgeGroupEntity::getOrgId, query.getOrgId());
+        query.toWrapper(wrapper);
+        wrapper.setEntityClass(ProjectKnowledgeGroupEntity.class);
+        wrapper.orderByDesc(ProjectKnowledgeGroupEntity::getAddTime) ;
 
         List<ProjectKnowledgeGroupEntity> ruleGroups = list(wrapper);
         if (ruleGroups != null && !ruleGroups.isEmpty()) {
@@ -42,22 +43,18 @@ public class ProjectKnowledgeGroupServiceImpl extends IBaseServiceImpl<ProjectKn
 
                         dto.setId(rule.getId());
                         dto.setGroupName(rule.getGroupName());
+                        dto.setDescription(rule.getGroupDescription());
+                        dto.setGroupType(rule.getGroupType());
+                        dto.setAddTime(rule.getAddTime());
 
-                        LambdaQueryWrapper<ProjectKnowledgeEntity> rulesWrapper = new LambdaQueryWrapper<>();
-                        rulesWrapper.eq(ProjectKnowledgeEntity::getGroupId, rule.getId());
-                        List<ProjectKnowledgeEntity> rules = knowledgeService.list(rulesWrapper);
+                        dto.setEmbeddingModelId(rule.getEmbeddingModelId());
+                        dto.setDocumentRecognitionModelId(rule.getDocumentRecognitionModelId());
+                        dto.setOcrModelId(rule.getOcrModelId());
 
-                        if (rules != null && !rules.isEmpty()) {
-                            dto.setRules(rules.stream()
-                                    .map(r -> {
-                                        ProjectKnowledgeDto rulesDto = new ProjectKnowledgeDto();
-                                        BeanUtils.copyProperties(r, rulesDto);
-                                        return rulesDto;
-                                    }).toList()
-                            );
-                        }else{
-                            dto.setRules(Collections.emptyList());
-                        }
+                        LambdaQueryWrapper<ProjectKnowledgeEntity> knowledgeWrapper = new LambdaQueryWrapper<>();
+                        knowledgeWrapper.eq(ProjectKnowledgeEntity::getGroupId, rule.getId());
+                        long count = knowledgeService.count(knowledgeWrapper);
+                        dto.setDocumentCount(count);
 
                         return dto;
                     })
