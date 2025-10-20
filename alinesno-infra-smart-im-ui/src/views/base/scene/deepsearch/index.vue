@@ -8,7 +8,6 @@
       </el-aside>
         <el-main class="deepsearch-app-main">
           <SearchPanel />
-          <!-- <ChatPanel v-else  :taskItem="taskItem" /> -->
         </el-main>
     </el-container>
   </div>
@@ -18,7 +17,6 @@
 
 import TaskListPanel from './functionList.vue'
 import SearchPanel from './searchPanel.vue'
-import ChatPanel from './chatPanel.vue'
 
 const hasNwTask = ref(true)
 const taskItem = ref({})
@@ -49,7 +47,7 @@ const handleNewTask = () => {
 
   .deepsearch-app-main {
     padding: 0px !important;
-    height: calc(100vh - 60px);
+    height: calc(100vh - 40px);
   }
 
 }
