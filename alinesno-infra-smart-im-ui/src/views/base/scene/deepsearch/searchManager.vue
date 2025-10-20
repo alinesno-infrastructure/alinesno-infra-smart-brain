@@ -9,9 +9,7 @@
 
       <el-main class="exam-pager-main">
         <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff;">
-
-            <!-- <SideTypePanel /> -->
+          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff; height: calc(100vh - 50px) ;">
 
             <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
 
@@ -43,29 +41,38 @@
                             <span class="scene-title">{{ item.taskName }}</span>
                           </div>
 
+                          <div class="scene-tags">
+                            <span class="scene-tag-time"><i class="fa-solid fa-calendar-check"></i> {{ item.addTime }}</span>
+                          </div>
+
                           <div class="scene-description">
-                            {{ item.taskDescription }}
+                            {{ item.taskDescription || '当前还没有执行任务，暂时无任务描述。' }}
                           </div>
                           <div class="semi-divider semi-divider-horizontal"></div>
                           <div class="scene-footer">
                             <div class="scene-price">
-                              <el-tag v-if="item.sceneScope == 'private'" type="info"><i class="fa-solid fa-lock" />
-                                私有</el-tag>
-                              <el-tag v-else-if="item.sceneScope == 'public'" type="info"><i
-                                  class="fa-solid fa-globe" /> 公开</el-tag>
-                              <el-tag v-else type="info"><i class="fa-solid fa-truck-plane" />
-                                组织</el-tag>
+                              <el-button 
+                                text 
+                                bg 
+                                :type="getStatusConfig(item).type"
+                              >
+                                <i :class="`fa-solid ${getStatusConfig(item).icon}`" /> 
+                                {{ typeof getStatusConfig(item).text === 'function' 
+                                   ? getStatusConfig(item).text(item) 
+                                   : getStatusConfig(item).text 
+                                }}
+                              </el-button>
                             </div>
                             <div class="scene-tag">
                               <div class="scene-stats">
                                 <span>时间</span>
-                                <span>{{ item.updateTime? item.updateTime : item.addTime }}</span>
+                                <span>{{ taskUseTime(item) }}</span>
                               </div>
 
                               <div class="article-delete-btn" @click.stop>
                                 <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(item)">
                                   <template #reference>
-                                    <el-button type="danger" text bg size="small" @click.stop>
+                                    <el-button type="info" text bg size="small" @click.stop>
                                       <i class="fa-solid fa-trash"></i>&nbsp;删除
                                     </el-button>
                                   </template>
@@ -102,13 +109,14 @@ import FunctionList from './functionList'
 import {
   pagerListByPage ,
   deleteById
-} from '@/api/base/im/scene/documentReviewTask';
+} from '@/api/base/im/scene/deepSearchTask';
 
 // import SideTypePanel from './articleType.vue'
 
 import { onMounted } from 'vue';
 import learnLogo from '@/assets/icons/tech_01.svg';
 import SnowflakeId from "snowflake-id";
+import { ElMessage } from 'element-plus';
 
 const snowflake = new SnowflakeId();
 
@@ -124,12 +132,12 @@ const pagerList = ref([])
 function enterExamPager(item) {
 
   router.push({
-      path: '/scene/documentReview/documentParser',
+      path: '/scene/deepsearch/taskPanel',
       query: {
           sceneId: sceneId.value , 
           genStatus: true,
           taskId: item.id,
-          channelStreamId: snowflake.generate()
+          channelStreamId: item.channelStreamId 
       }
   })
 
@@ -137,8 +145,29 @@ function enterExamPager(item) {
 
 const handleDelete = (item) => {
   deleteById(item.id).then(res => {
+    ElMessage.success('删除成功')
     handlePagerListByPage()
   })
+}
+
+// 在script setup部分添加状态配置 
+const statusConfig = [
+  { condition: (item) => item.taskStatus === 'not_run' || item.taskStatus === null, type: "warning", icon: "fa-hourglass-start", text: "任务未开始" },
+  { condition: (item) => item.taskStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: "任务生成中" },
+  { condition: (item) => item.taskStatus === 'cancelling', type: "warning", icon: "fa-ban fa-spin", text: "任务取消中" },
+  { condition: (item) => item.taskStatus === 'cancelled', type: "info", icon: "fa-ban", text: "任务已取消" },
+  { condition: (item) => item.taskStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "任务失败" },
+  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'not_run' || item.chapterStatus === null), type: "warning", icon: "fa-list-check", text: "章节未开始" },
+  { condition: (item) => item.chapterStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '正在生成章节' },
+  { condition: (item) => item.chapterStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '当前章节' },
+  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'cancelled' || item.chapterStatus === null), type: "warning", icon: "fa-check-circle", text: "章节完成" },
+  { condition: (item) => item.chapterStatus === 'completed', type: "success", icon: "fa-check-circle", text: "全部完成" },
+  { condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态" },
+]
+
+// 查找匹配的状态配置
+const getStatusConfig = (item) => {
+  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
 }
 
 /** 获取场景列表 */
@@ -155,6 +184,40 @@ function handlePagerListByPage() {
   }).catch(err => {
     sceneLoading.value = false
   })  
+}
+
+// 任务用时
+const taskUseTime = (item) => {
+  if (!item.taskStartTime || !item.taskEndTime) {
+    return '--';
+  }
+  
+  const startTime = new Date(item.taskStartTime);
+  const endTime = new Date(item.taskEndTime);
+  
+  // Calculate the difference in milliseconds
+  const diffMs = endTime - startTime;
+  
+  // Convert to seconds
+  const diffSec = Math.floor(diffMs / 1000);
+  
+  if (diffSec < 60) {
+    return `${diffSec}秒`;
+  }
+  
+  // Convert to minutes and seconds
+  const minutes = Math.floor(diffSec / 60);
+  const seconds = diffSec % 60;
+  
+  if (minutes < 60) {
+    return `${minutes}分${seconds}秒`;
+  }
+  
+  // Convert to hours, minutes and seconds
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  
+  return `${hours}时${remainingMinutes}分${seconds}秒`;
 }
 
 onMounted(() => {
@@ -231,7 +294,7 @@ onMounted(() => {
       flex-direction: column;
 
       .scene-title {
-        font-weight: 500;
+        font-weight: bold;
         font-size: 16px;
         line-height: 22px;
         color: var(--coz-fg-primary);
@@ -336,6 +399,18 @@ onMounted(() => {
         color: var(--coz-fg-secondary);
       }
     }
+  }
+  .scene-tags{
+    display:flex ;
+      span.scene-tag-time {
+        font-size: 13px; 
+        border-radius: 5px;
+        background: #fafafa;
+        opacity: 0.7;
+        margin-top:5px; 
+        padding: 5px;
+      }
+
   }
 
   .article-delete-btn{
