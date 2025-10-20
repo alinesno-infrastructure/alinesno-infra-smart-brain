@@ -16,7 +16,10 @@ public enum StepActionEnums {
     CHAT("chat", "AI对话聊天", "fa-solid fa-comments"),  // 聊天
     THINK("think", "思考当中", "fa-solid fa-lightbulb"),
     TOOL("tool", "使用工具", "fa-solid fa-screwdriver-wrench"),
+    // 阶段性总结
+    SUMMARY_STEP("summaryStep", "阶段性总结", "fa-solid fa-file-lines"),
     SUMMARY("summary", "内容总结", "fa-solid fa-file-lines");
+
 
     private final String actionType;
     private final String description;
