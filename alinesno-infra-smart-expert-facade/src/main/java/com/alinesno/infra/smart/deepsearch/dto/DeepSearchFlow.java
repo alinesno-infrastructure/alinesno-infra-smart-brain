@@ -16,6 +16,8 @@ import java.util.List;
 @Data
 public class DeepSearchFlow implements Serializable {
 
+    private Long taskId ; // 任务ID
+    private Long sceneId ;  // 场景ID
     private String flowId ; // 流程ID
     private Plan plan; // 规划
     private List<Step> steps; // 规划步骤列表
