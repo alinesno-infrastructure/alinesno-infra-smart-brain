@@ -3,26 +3,28 @@
     :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50" style="padding:0px !important;">
     <div class="smart-container inner-smart-container">
       <el-row>
-        <el-col :span="14">
+        <el-col :span="12">
           <div class="robot-chat-windows">
             <div class="robot-chat-header">
               <div class="chat-header-title">
-                {{ taskItem.name }}
-                <!-- {{ roleInfo.roleName }} -->
-              </div>
-              <div class="chat-header-desc">
-                <!-- ({{ truncateString(roleInfo.responsibilities, 60) }}) -->
-                {{ taskItem.log }}
-              </div>
 
+                  <div class="chat-top-ai-header">
+                    <div class="header-top-image">
+                      <img :src="imagePathByPath(roleInfo?.roleAvatar)" />
+                    </div>
+                  </div>
+
+                <!-- 标题内容 -->
+                <EditableTitle 
+                  v-model:title="taskTitle" 
+                  class="article-edit-title" 
+                />
+              </div>
               <!-- 
-              <div class="chat-header-desc" style="float: right;margin-top: -10px;">
-                <el-button type="primary" text bg size="large" @click="taskFlowDialogVisible = true">
-                  <i class="fa-solid fa-truck-fast icon-btn"></i>
-                </el-button>
+              <div class="chat-header-desc">
+                {{ currentTask?.log }}
               </div> 
               -->
-
             </div>
 
             <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
@@ -33,14 +35,7 @@
 
                   <div class="robot-chat-ai-say-box" v-for="(item, index) in messageList" @mouseover="showTools(item)" @mouseleave="hideTools(item)" :key="index">
 
-                    <div class="chat-ai-header" :class="item.roleType == 'person' ? 'say-right-window' : ''">
-                      <div class="header-images">
-                        <img :src="imagePath(item)" />
-                      </div>
-                    </div>
-
-                    <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''"
-                      style="max-width:calc(100% - 135px)">
+                    <div class="chat-ai-say-body" :class="item.roleType == 'person' ? 'say-right-window' : ''" style="max-width:calc(100% - 135px)">
                       <div class="say-message-info" v-if="item.roleType == 'person'">
                         <span style="margin-left:10px" :class="item.showTools ? 'show-tools' : 'hide-tools'"> {{ item.dateTime }}</span>
                         {{ item.name }}
@@ -161,14 +156,8 @@
                       <AIVoiceInput @sendAudioToBackend="sendAudioToBackend" :role="roleInfo" v-if="roleInfo.voiceInputStatus"/>
 
                       <el-tooltip class="box-item" effect="dark" content="确认发送指令给Agent，快捷键：Enter+Ctrl" placement="top">
-                        <el-button type="danger"  :loading="chatStreamLoading"  text bg size="large" @click="sendMessage('send')">
+                        <el-button type="primary"  :loading="chatStreamLoading"  text bg size="large" @click="sendMessage('send')">
                           <svg-icon icon-class="send" class="icon-btn" style="font-size:25px" /> 
-                        </el-button>
-                      </el-tooltip>
-
-                      <el-tooltip class="box-item" effect="dark" content="执行任务" placement="top">
-                        <el-button type="warning" text bg size="large" @click="sendMessage('function')">
-                          <i class="fa-solid fa-feather icon-btn"></i>
                         </el-button>
                       </el-tooltip>
 
@@ -189,17 +178,12 @@
           </div>
         </el-col>
 
-        <el-col :span="10">
+        <el-col :span="12">
           <TracePanel ref="agentSingleRightPanelRef" />
         </el-col>
 
       </el-row>
     </div>
-
-    <!-- 文档编辑界面 -->
-    <!-- <el-dialog v-model="editDialogVisible" title="任务内容编辑" width="60%" destroy-on-close append-to-body>
-      <ChatMessageEditor :businessId="currentBusinessId" />
-    </el-dialog> -->
 
   </div>
 </template>
@@ -217,10 +201,14 @@ import AIVoiceInput from '@/components/aiVoiceInput'
 import ChatAttachmentPanel from '@/components/ChatAttachment/chatAttachmentPanel'
 import ChatAttachmentMessagePanel from '@/components/ChatAttachment/chatAttachmentMessagePanel'
 import UserQuestionSuggestions from '@/components/ChatAttachment/userQuestionSuggestionsPanel'
+import EditableTitle from './components/EditableTitle'
 
 import { getInfo, chatRole , playGenContent  } from '@/api/base/im/roleChat'
 import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
+import { getDeepsearchTaskById } from '@/api/base/im/scene/deepSearch';
+import { submitDeepSearchTask } from '@/api/base/im/scene/deepSearchTask';
+
 import { nextTick, onMounted } from "vue";
 
 import speakingIcon from '@/assets/icons/speaking.gif';
@@ -228,26 +216,26 @@ import speakingIcon from '@/assets/icons/speaking.gif';
 import ChatMessageEditor from '@/views/base/chat/chatMessageEditor.vue'
 import SnowflakeId from "snowflake-id";
 
-const props = defineProps({
-  taskItem: {
-    type: Object,
-    default: null
-  }
-})
-
 const snowflake = new SnowflakeId();
-const channelStreamId = ref(snowflake.generate());
+const channelStreamId = ref(null);
 const { proxy } = getCurrentInstance();
+const route = useRoute();
 
 const agentSingleRightPanelRef = ref(null)
 
 const userQuestionSuggestionsRef = ref(null);
 const attachmentPanelRef = ref(null);
-const heightDiff = ref(218);
+const heightDiff = ref(228);
 
 const loading = ref(false)
 const roleId = ref(null);
 const channelId = ref(null);
+const sceneId = ref(route.query.sceneId)
+const taskId = ref(route.query.taskId)
+const currentTask = ref({})
+const taskTitle = ref('深度搜索任务')
+const taskStatus = ref(null)
+
 const roleInfo = ref({
   roleName: '深度搜索业务角色',
   responsibilities: '深度搜索业务角色',
@@ -390,32 +378,14 @@ const pushResponseMessageList = (newMessage) => {
 
 // 推送到deepsearchFlowTracePanel
 const pushDeepsearchFlowTracePanel = (item) =>{
-    agentSingleRightPanelRef.value.pushDeepsearchFlowTracePanel(item)
+  nextTick(() => { 
+    if(agentSingleRightPanelRef.value){
+      agentSingleRightPanelRef.value.pushDeepsearchFlowTracePanel(item)
+    }
+  })
 }
 
 function handleExecutorMessage(item){
-
-  // emit('executorMessage' , item) ; 
-  // let channelId = getParam("channel");
-  // let users = [item.roleId];
-  // let bId = [item.businessId];
-  // let type = 'function';
-  // let message = " #"+item.businessId+" @图片设计专家 " ; 
-
-  // streamLoading.value = ElLoading.service({
-  //   lock: true,
-  //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.2)',
-  // })
-
-  // sendUserMessage(message, users, bId , channelId, type).then(response => {
-  //   console.log("发送消息", response.data);
-  //   response.data.forEach(item => {
-  //     chatListRef.value.pushResponseMessageList(item);
-  //   })
-  // }).catch(error => {
-  //   streamLoading.value.close();
-  // })
 
   const businessIdMessage = ' #' + item.messageId + ' ';
   businessId.value = item.messageId;
@@ -449,8 +419,8 @@ function handleSseConnect(channelStreamId) {
             pushResponseMessageList(data);
           }
       } else if(event.data.includes('[DONE]')) {
-          console.log('消息接收结束.')
-          chatStreamLoading.value = false ; // 关闭流式结束
+          // console.log('消息接收结束.')
+          // chatStreamLoading.value = false ; // 关闭流式结束
         }
 
       }
@@ -466,11 +436,6 @@ function handleBusinessIdToMessageBox(item) {
 
 /** 文件引用 */
 function handleFileIdToMessageBox(file) {
-
-// const businessIdMessage = ' #doc' + fileId + ' ';
-// businessId.value = fileId;
-// message.value += businessIdMessage;
-// refreshFieldId.value.push(fileId);
 
 const attFile = {
   id: file.fileId,
@@ -491,9 +456,11 @@ function handleGetInfo(roleId) {
 
     loading.value = false;
 
-    nextTick(() => {
-      agentSingleRightPanelRef.value.setRoleInfo(role);
-    })
+    // nextTick(() => {
+    //   if(agentSingleRightPanelRef.value){
+    //     agentSingleRightPanelRef.value.setRoleInfo(role);
+    //   }
+    // })
 
   })
 }
@@ -502,9 +469,9 @@ function handleGetInfo(roleId) {
 const updateChatWindowHeight = (heightVal) => {
   console.log('heightVal = ' + heightVal);
   if(heightVal > 0){
-    heightDiff.value = heightVal - 42;
+    heightDiff.value = heightVal - 32;
   }else {
-    heightDiff.value = 260 - 42;
+    heightDiff.value = 260 - 32;
   }
   console.log('heightDiff.value = ' + heightDiff.value);
 };
@@ -557,15 +524,12 @@ const sendMessage = (type) => {
     return;
   }
 
-  // streamLoading.value = ElLoading.service({
-  //   lock: true,
-  //   text: '任务执行中，请勿操作其它界面 ...',
-  //   background: 'rgba(0, 0, 0, 0.2)',
-  // })
-
   chatStreamLoading.value = true ;
 
   let formData = {
+    taskId: taskId.value,
+    sceneId: sceneId.value,
+    roleId: roleId.value,
     channelId: channelId.value,
     channelStreamId: channelStreamId.value,
     message: message.value,
@@ -574,12 +538,19 @@ const sendMessage = (type) => {
     fileIds: uploadFiles // [...uploadFiles , ...refreshFieldId.value] 
   }
 
-  chatRole(formData, roleId.value).then(res => {
+  submitDeepSearchTask(formData, roleId.value).then(res => {
     proxy.$modal.msgSuccess("发送成功");
     pushResponseMessageList(res.data);
   }).catch(error => {
     streamLoading.value.close();
   })
+
+  // chatRole(formData, roleId.value).then(res => {
+  //   proxy.$modal.msgSuccess("发送成功");
+  //   pushResponseMessageList(res.data);
+  // }).catch(error => {
+  //   streamLoading.value.close();
+  // })
 
   message.value = '';
 };
@@ -587,12 +558,6 @@ const sendMessage = (type) => {
 // 发送音频数据到后端
 const sendAudioToBackend = async (voiceMessage) => {
   try {
-
-    // streamLoading.value = ElLoading.service({
-    //   lock: true,
-    //   text: '语音识别中...',
-    //   background: 'rgba(0, 0, 0, 0.2)',
-    // })
 
     chatStreamLoading.value = true ;
     
@@ -620,31 +585,12 @@ function hideTools(item) {
   item.showTools = false; // 鼠标移出时隐藏 tools
 }
 
-// watch taskItem传递过来的变化 
-watch(() => props.taskItem, (newVal, oldVal) => {
-  // 处理taskItem变化的逻辑
-  if (newVal) {
-    // 可以在这里添加任务项变化后的处理逻辑
-    console.log('Task item changed:', newVal);
-
-    messageList.value = [];
-    roleId.value = newVal.roleId
-    channelId.value = newVal.id ;
-
-    handleSseConnect(channelStreamId.value)
-    handleGetInfo(roleId.value);
-    
-  }
-}, {
-  deep: true,  // 如果taskItem是嵌套对象，需要深度监听
-  immediate: true  // 初始化时立即执行一次
-});
-
-
 // 显示DeepSearch的内容
 function handleDisplayContent(item){
   // emits("handleDisplayContent", item);
-  agentSingleRightPanelRef.value.handleDisplayContent(item)
+  if(agentSingleRightPanelRef.value){
+    agentSingleRightPanelRef.value.handleDisplayContent(item)
+  }
 }
 
 // 销毁信息
@@ -652,6 +598,37 @@ onBeforeUnmount(() => {
   handleCloseSse(channelStreamId.value).then(res => {
     console.log('关闭sse连接成功:' + channelId)
   })
+});
+
+onMounted(async() => { 
+  console.log('sceneId = ' + sceneId.value)
+  console.log('taskId = ' + taskId.value)
+
+  const taskRes = await getDeepsearchTaskById(taskId.value) ; 
+
+  let data = taskRes.data ;
+  currentTask.value = data ; 
+
+  taskTitle.value = data.taskName ;
+  message.value = data.promptContent ;
+  taskStatus.value = data.taskStatus ;
+
+  messageList.value = [];
+  roleId.value =  data.searchPlannerEngineer ;
+  channelId.value = data.id ;
+  channelStreamId.value = data.channelStreamId;
+
+  handleSseConnect(channelStreamId.value)
+  handleGetInfo(roleId.value);
+
+  // 如果没有运行，则提交消息任务
+  if(taskStatus.value === 'not_run'){
+    sendMessage('send');
+    return ;
+  }else if(taskStatus.value === 'running') { // 运行状态
+    chatStreamLoading.value = true ;
+  }
+
 });
 
 </script>
@@ -662,6 +639,7 @@ onBeforeUnmount(() => {
 
   .robot-chat-windows {
     border: 0px !important;
+    padding: 0 1%;
   }
 
   // .inner-robot-chat-body {
@@ -757,5 +735,26 @@ onBeforeUnmount(() => {
     margin-bottom: 8px;
   }
 
+
+}
+
+  .robot-chat-header {
+    display: flex;
+    align-items: center;
+    padding: 5px !important;
+}
+
+.chat-header-title {
+    align-items: center;
+    gap: 10px;
+}
+.chat-top-ai-header{
+  .header-top-image{ 
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+  }
 }
 </style>
