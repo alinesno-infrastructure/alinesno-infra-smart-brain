@@ -16,11 +16,13 @@
         <i :class="currentStepAction?.icon"></i> &nbsp; 正在使用
         <span class="trace-tag">{{ currentStepAction.actionName }}</span>
       </div>
-      <div v-else>
-          <el-empty description="还未没有执行步骤" />
-      </div>
 
       <el-scrollbar class="step-body-panel" ref="scrollbarRef" >
+
+        <div v-if="!currentStepAction.actionName" style="margin-top: 10vh">
+          <el-empty description="当前还没有执行步骤，任务状态显示为空，还未没有执行步骤" />
+        </div>
+
         <div class="step-body" ref="innerRef">
 
           <div class="say-message-body markdown-body think-content" v-if="currentStepAction?.think" v-html="readerHtml(currentStepAction.think)"></div>
