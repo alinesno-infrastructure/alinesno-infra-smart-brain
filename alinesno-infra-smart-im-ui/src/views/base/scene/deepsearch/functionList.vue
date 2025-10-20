@@ -19,10 +19,6 @@
           </div>  
           <div class="item-name">
             {{ item.name }}
-            <!-- 
-              <span class="item-label"></span>
-              <span class="item-log">{{ item.log }}</span> 
-            -->
           </div>
       </div>
     </div>
@@ -79,7 +75,7 @@ const enterFunction = () => {
 .article-function-panel {
   padding: 10px;
   background: #fff;
-  height: calc(100vh - 80px);
+  height: calc(100vh - 40px);
 
   .title {
     margin-bottom: 15px;
