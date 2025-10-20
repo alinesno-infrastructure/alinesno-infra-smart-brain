@@ -6,7 +6,6 @@ import com.alinesno.infra.smart.im.dto.MessageExportWordDto;
 import com.alinesno.infra.smart.im.entity.MessageReferenceEntity;
 import com.alinesno.infra.smart.im.service.IMessageReferenceService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
