@@ -8,6 +8,8 @@ import com.gitee.sunchenbin.mybatis.actable.constants.MySqlTypeConstant;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import java.util.Date;
+
 /**
  * 深度搜索任务实体类
  * @author luoxiaodong
@@ -30,6 +32,10 @@ public class DeepSearchTaskEntity extends InfraBaseEntity {
     private Integer genStatus = 0 ;
 
     @TableField
+    @Column(name = "attachments", type = MySqlTypeConstant.VARCHAR, comment = "附件ID号，以逗号进行分隔")
+    private String attachments;
+
+    @TableField
     @Column(name = "search_planner_engineer", type = MySqlTypeConstant.BIGINT, length = 32, comment = "搜索规划者ID")
     private Long searchPlannerEngineer ;
 
@@ -40,5 +46,33 @@ public class DeepSearchTaskEntity extends InfraBaseEntity {
     @TableField
     @Column(name = "task_name", type = MySqlTypeConstant.VARCHAR, length = 255, comment = "任务名称")
     private String taskName ;
+
+    @TableField
+    @Column(name = "task_description", type = MySqlTypeConstant.TEXT, comment = "任务描述")
+    private String taskDescription;
+
+    @TableField
+    @Column(name = "task_status", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "任务状态(not_run未运行|completed已运行|running运行中|generating生成中|cancelling取消中|cancelled已取消|failed运行失败)")
+    private String taskStatus;
+
+    @TableField
+    @Column(name = "channel_stream_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "频道流ID")
+    private String channelStreamId ;
+
+    @TableField
+    @Column(name = "task_start_time", type = MySqlTypeConstant.DATETIME, comment = "任务开始时间")
+    private Date taskStartTime;
+
+    @TableField
+    @Column(name = "task_end_time", type = MySqlTypeConstant.DATETIME, comment = "任务结束时间")
+    private Date taskEndTime;
+
+    @TableField
+    @Column(name = "task_plan_json", type = MySqlTypeConstant.TEXT, comment = "任务计划JSON")
+    private String taskPlanJson ;
+
+    @TableField
+    @Column(name = "error_message", type = MySqlTypeConstant.TEXT, comment = "设置错误信息")
+    private String errorMessage ;
 
 }
