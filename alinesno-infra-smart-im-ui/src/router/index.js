@@ -201,75 +201,75 @@ const screenRoutes = [
   // -->>>>>>>>>>>> 原型设计_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> PPT编辑_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  {
-    path: '/scene/pptCreation/index',
-    component: () => import('@/views/base/scene/pptCreation/index'),
-    name: '/scene/pptCreation/index',
-    meta: { title: 'PPT编辑', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/pptCreation/pptManager',
-    component: () => import('@/views/base/scene/pptCreation/pptManager'),
-    name: '/scene/pptCreation/pptManager',
-    meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/pptCreation/pptEditor',
-    component: () => import('@/views/base/scene/pptCreation/pptEditor'),
-    name: '/scene/pptCreation/pptEditor',
-    meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
-  },
+  // {
+  //   path: '/scene/pptCreation/index',
+  //   component: () => import('@/views/base/scene/pptCreation/index'),
+  //   name: '/scene/pptCreation/index',
+  //   meta: { title: 'PPT编辑', icon: 'fa-solid fa-file-word', affix: true }
+  // },
+  // {
+  //   path: '/scene/pptCreation/pptManager',
+  //   component: () => import('@/views/base/scene/pptCreation/pptManager'),
+  //   name: '/scene/pptCreation/pptManager',
+  //   meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
+  // },
+  // {
+  //   path: '/scene/pptCreation/pptEditor',
+  //   component: () => import('@/views/base/scene/pptCreation/pptEditor'),
+  //   name: '/scene/pptCreation/pptEditor',
+  //   meta: { title: 'PPT管理', icon: 'fa-solid fa-file-word', affix: true }
+  // },
   // -->>>>>>>>>>>> PPT编辑_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 内容排版_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  {
-    path: '/scene/contentFormatter/index',
-    component: () => import('@/views/base/scene/contentFormatter/index'),
-    name: '/scene/contentFormatter/index',
-    meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/contentFormatter/contentParser',
-    component: () => import('@/views/base/scene/contentFormatter/contentParser'),
-    name: '/scene/contentFormatter/contentParser',
-    meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/contentFormatter/documentManager',
-    component: () => import('@/views/base/scene/contentFormatter/documentManager'),
-    name: '/scene/contentFormatter/documentManager',
-    meta: { title: '排版管理', icon: 'fa-solid fa-file-word', affix: true }
-  },
+  // {
+  //   path: '/scene/contentFormatter/index',
+  //   component: () => import('@/views/base/scene/contentFormatter/index'),
+  //   name: '/scene/contentFormatter/index',
+  //   meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
+  // },
+  // {
+  //   path: '/scene/contentFormatter/contentParser',
+  //   component: () => import('@/views/base/scene/contentFormatter/contentParser'),
+  //   name: '/scene/contentFormatter/contentParser',
+  //   meta: { title: '内容排版场景', icon: 'fa-solid fa-file-word', affix: true }
+  // },
+  // {
+  //   path: '/scene/contentFormatter/documentManager',
+  //   component: () => import('@/views/base/scene/contentFormatter/documentManager'),
+  //   name: '/scene/contentFormatter/documentManager',
+  //   meta: { title: '排版管理', icon: 'fa-solid fa-file-word', affix: true }
+  // },
   // -->>>>>>>>>>> 内容排版_end>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 短视频生成场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  {
-    path: '/scene/videoGeneration/index',
-    component: () => import('@/views/base/scene/videoGeneration/index'),
-    name: '/scene/videoGeneration/index',
-    meta: { title: '短视频生成场景', icon: 'fa-solid fa-file-word', affix: true }
-  },
-  {
-    path: '/scene/videoGeneration/videoManager',
-    component: () => import('@/views/base/scene/videoGeneration/videoManager'),
-    name: '/scene/videoGeneration/videoManager',
-    meta: { title: '短视频管理', icon: 'fa-solid fa-chart-line', affix: true }
-  },
-  {
-    path: '/scene/videoGeneration/mediaParser',
-    component: () => import('@/views/base/scene/videoGeneration/mediaParser'),
-    name: '/scene/videoGeneration/mediaParser',
-    meta: { title: '短视频编辑', icon: 'fa-solid fa-chart-line', affix: true }
-  },
+  // {
+  //   path: '/scene/videoGeneration/index',
+  //   component: () => import('@/views/base/scene/videoGeneration/index'),
+  //   name: '/scene/videoGeneration/index',
+  //   meta: { title: '短视频生成场景', icon: 'fa-solid fa-file-word', affix: true }
+  // },
+  // {
+  //   path: '/scene/videoGeneration/videoManager',
+  //   component: () => import('@/views/base/scene/videoGeneration/videoManager'),
+  //   name: '/scene/videoGeneration/videoManager',
+  //   meta: { title: '短视频管理', icon: 'fa-solid fa-chart-line', affix: true }
+  // },
+  // {
+  //   path: '/scene/videoGeneration/mediaParser',
+  //   component: () => import('@/views/base/scene/videoGeneration/mediaParser'),
+  //   name: '/scene/videoGeneration/mediaParser',
+  //   meta: { title: '短视频编辑', icon: 'fa-solid fa-chart-line', affix: true }
+  // },
   // -->>>>>>>>>>>> 短视频生成场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 会议纪要场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  {
-    path: '/scene/meetingMinutes/index',
-    component: () => import('@/views/base/scene/meetingMinutes/index'),
-    name: '/scene/meetingMinutes/index',
-    meta: { title: '会议纪要场景', icon: 'fa-solid fa-calendar-check', affix: true }
-  },
+  // {
+  //   path: '/scene/meetingMinutes/index',
+  //   component: () => import('@/views/base/scene/meetingMinutes/index'),
+  //   name: '/scene/meetingMinutes/index',
+  //   meta: { title: '会议纪要场景', icon: 'fa-solid fa-calendar-check', affix: true }
+  // },
   // -->>>>>>>>>>>> 会议纪要场景_end >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
   // -->>>>>>>>>>>> 产品进度汇总场景_start >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -340,6 +340,12 @@ const deepsearchRoutes = [
     component: () => import('@/views/base/scene/deepsearch/index'),
     name: '/scene/deepsearch/index',
     meta: { title: '深度搜索', icon: 'fa-solid fa-magnifying-glass', affix: true }
+  },
+  {
+    path: '/scene/deepsearch/taskPanel',
+    component: () => import('@/views/base/scene/deepsearch/taskPanel'),
+    name: '/scene/deepsearch/taskPanel',
+    meta: { title: '深度界面', icon: 'fa-solid fa-magnifying-glass', affix: true }
   },
   {
     path: '/scene/deepsearch/searchManager',
@@ -436,6 +442,12 @@ export const constantRoutes = [
         component: () => import('@/views/base/dataset/index'),
         name: '/dataset',
         meta: { title: '知识库', icon: 'dashboard', affix: true }
+      },
+      {
+        path: '/datasetEdit',
+        component: () => import('@/views/base/dataset/datasetEdit'),
+        name: '/datasetEdit',
+        meta: { title: '知识库上传编辑', icon: 'dashboard', affix: true }
       },
       {
         path: '/scene',
