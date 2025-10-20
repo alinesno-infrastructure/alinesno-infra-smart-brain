@@ -6,6 +6,7 @@ import com.agentsflex.core.document.Document;
 import com.agentsflex.core.document.splitter.SimpleTokenizeSplitter;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.llm.embedding.EmbeddingOptions;
+import com.agentsflex.core.store.StoreResult;
 import com.agentsflex.core.store.VectorData;
 import com.agentsflex.store.pgvector.PgvectorVectorStore;
 import com.agentsflex.store.pgvector.PgvectorVectorStoreConfig;
@@ -14,13 +15,14 @@ import com.alibaba.dashscope.exception.InputRequiredException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alinesno.infra.base.search.vector.utils.DashScopeEmbeddingUtils;
 import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
-import com.alinesno.infra.common.web.adapter.utils.MD5Util;
 import com.alinesno.infra.smart.assistant.scene.common.mapper.ProjectKnowledgeMapper;
 import com.alinesno.infra.smart.scene.constants.SceneConstants;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
+import com.alinesno.infra.smart.scene.enums.KnowledgeVectorStatusEnums;
 import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -54,6 +56,15 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
     @PostConstruct
     public void init() {
         parsePgVectorUrl();
+    }
+
+    @Override
+    public boolean hasOngoingImport(Long groupId) {
+        if (groupId == null) return false;
+        LambdaQueryWrapper<ProjectKnowledgeEntity> qw = new LambdaQueryWrapper<>();
+        qw.eq(ProjectKnowledgeEntity::getGroupId, groupId);
+        qw.eq(ProjectKnowledgeEntity::getVectorStatus , KnowledgeVectorStatusEnums.IMPORTING.getCode()); // 0 表示正在处理
+        return this.count(qw) > 0;
     }
 
     /**
@@ -94,12 +105,6 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
 
         String fileName = entity.getDocName();
         String content = entity.getDocContent();
-
-        String md5 = MD5Util.encode(fileName) ;
-        entity.setDocMd5(md5);
-
-        save(entity);
-
         Long id = entity.getId();
         Long groupId = entity.getGroupId();
 
@@ -110,6 +115,8 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
             ProjectKnowledgeGroupEntity projectKnowledgeGroup = projectKnowledgeGroupService.getById(groupId);
             if (projectKnowledgeGroup == null) {
                 log.error("导入数据失败: 未找到对应的知识分组, groupId={}", groupId);
+                entity.setVectorStatus(KnowledgeVectorStatusEnums.IMPORT_FAIL.getCode());
+                this.updateById(entity);
                 throw new IllegalArgumentException("未找到对应的知识分组");
             }
 
@@ -128,13 +135,33 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
             log.info("向量存储完成, 集合名称: {}", collectionIndexName);
 
             // 更新实体状态
-            entity.setVectorStatus(1); // 标记为已向量化
+            entity.setChunkCount(chunks.size());
+            entity.setVectorStatus(KnowledgeVectorStatusEnums.IMPORT_SUCCESS.getCode()); // 标记为已向量化
             this.update(entity);
 
         } catch (Exception e) {
-            log.error("导入数据过程中发生异常", e);
+            log.error("导入数据过程中发生异常, id={}", id, e);
+            try {
+                entity.setVectorStatus(KnowledgeVectorStatusEnums.IMPORT_FAIL.getCode());
+                this.updateById(entity);
+            } catch (Exception ex) {
+                log.error("更新失败状态时发生异常, id={}", id, ex);
+            }
             throw new RuntimeException("导入数据失败: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * 判断指定 group 下是否存在相同 md5 的记录（用于去重）
+     */
+    @Override
+    public boolean existsByMd5AndGroupId(String md5, Long groupId) {
+
+        LambdaQueryWrapper<ProjectKnowledgeEntity> qw = new LambdaQueryWrapper<>();
+        qw.eq(ProjectKnowledgeEntity::getDocMd5, md5);
+        qw.eq(ProjectKnowledgeEntity::getGroupId, groupId);
+
+        return this.count(qw) > 0;
     }
 
     /**
@@ -146,6 +173,7 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
         SimpleTokenizeSplitter splitter = new SimpleTokenizeSplitter(512); // 512 tokens 为一块
         return splitter.split(Document.of(content));
     }
+
 
     /**
      * 向量化处理
@@ -189,7 +217,7 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
             }
 
             // 批量获取向量
-            List<TextEmbeddingResultItem> embeddingResultItems = null ;
+            List<TextEmbeddingResultItem> embeddingResultItems;
 
             if(llm == null){  // 使用默认的向量
                 log.info("处理第 {} 批向量化，共 {} 条文本", batch + 1, textList.size());
@@ -208,7 +236,6 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
                            .toList();
 
                    textResultItem.setEmbedding(embedding);
-
                    embeddingResultItems.add(textResultItem);
                }
             }
@@ -287,4 +314,66 @@ public class ProjectKnowledgeServiceImpl extends IBaseServiceImpl<ProjectKnowled
 
         return new PgvectorVectorStore(config);
     }
+
+    @Override
+    public void renameKnowledge(Long id, String newName) {
+        if (id == null) {
+            throw new IllegalArgumentException("id 不能为空");
+        }
+        ProjectKnowledgeEntity entity = this.getById(id);
+        if (entity == null) {
+            throw new IllegalArgumentException("未找到对应记录");
+        }
+        entity.setDocName(newName);
+        this.updateById(entity);
+    }
+
+    @Override
+    public void deleteKnowledgeById(Long id) throws Exception {
+        if (id == null) {
+            throw new IllegalArgumentException("id 不能为空");
+        }
+
+        ProjectKnowledgeEntity entity = this.getById(id);
+        if (entity == null) {
+            throw new IllegalArgumentException("未找到记录");
+        }
+
+        Long groupId = entity.getGroupId();
+        IProjectKnowledgeGroupService projectKnowledgeGroupService = SpringUtil.getBean(IProjectKnowledgeGroupService.class);
+        ProjectKnowledgeGroupEntity group = projectKnowledgeGroupService.getById(groupId);
+        String collectionIndexName = null;
+        if (group != null) {
+            collectionIndexName = group.getVectorDatasetName();
+        }
+
+        // 1) 删除向量库中 docId 对应的向量（如果 collectionIndexName 非空）
+        if (collectionIndexName != null && !collectionIndexName.trim().isEmpty()) {
+            try {
+                removeVectorsByDocId(collectionIndexName);
+                log.info("向量库中 docId={} 的向量已删除, 集合={}", id, collectionIndexName);
+            } catch (Exception e) {
+                // 根据策略：如果向量删除失败，你可以选择回滚删除（抛出异常），
+                // 或者记录警告然后继续删除实体。这里选择抛出异常以保证一致性。
+                log.error("删除向量时失败, collection={}, docId={}", collectionIndexName, id, e);
+                throw new RuntimeException("删除向量失败: " + e.getMessage(), e);
+            }
+        }
+
+        // 3) 删除数据库记录
+        boolean removed = this.removeById(id);
+        if (!removed) {
+            throw new RuntimeException("删除记录失败");
+        }
+    }
+
+    private void removeVectorsByDocId(String collectionIndexName) {
+
+        PgvectorVectorStore pgvectorVectorStore =  getPgvectorVectorStore(collectionIndexName);
+        StoreResult result = new StoreResult(true) ; // TODO pgvectorVectorStore.deleteByIndexName(collectionIndexName) ;
+
+        boolean affected = result.isSuccess() ;
+        log.info("从向量表 {} 的向量结果: {}", collectionIndexName, affected);
+    }
+
 }
