@@ -32,7 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 处理任务工具类
@@ -90,139 +89,110 @@ public class PlannerHandler extends BaseHandler {
         historyPrompt.addMessage(new HumanMessage(plannerPrompt));
 
         CompletableFuture<String> future = new CompletableFuture<>();
-        AtomicReference<String> outputStr = new AtomicReference<>("");
-
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
-        final MessageTaskInfo localTaskInfo = taskInfo;
-        long startTime = System.currentTimeMillis();
 
         DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
         stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
+        stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
+        stepActionDto.setActionName(stepActionDto.getActionName() + " | " + goal);
 
         llm.chatStream(historyPrompt, new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
-
                 AiMessage message = response.getMessage();
+                String content = message.getContent();
+                String reasoning = message.getReasoningContent();
 
-                stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
-                stepActionDto.setActionName(stepActionDto.getActionName() + " | " + goal);
-                stepActionDto.setResult(StringUtils.hasLength(message.getContent())?message.getContent():"");
-                stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent())?message.getReasoningContent():"");
+                // 更新步骤状态（无需同步，单线程回调）
+                stepActionDto.setResult(StringUtils.hasLength(content) ? content : "");
+                stepActionDto.setThink(StringUtils.hasLength(reasoning) ? reasoning : "");
                 stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
 
                 try {
-                    boolean isEnd = false;
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            outputStr.set(message.getFullContent());
-                            isEnd = true;
-                        }
-                    }
-
-                    if (isEnd) {
+                    // 检查流式响应是否结束
+                    if (message.getStatus() == MessageStatus.END) {
                         stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
-                        future.complete(outputStr.get());
+                        // 直接用最终结果完成 Future（无需 AtomicReference）
+                        future.complete(message.getFullContent());
                     }
 
-                    DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan() ;
+                    // 更新步骤流事件（单线程执行，无需同步）
+                    DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan();
                     plan.addStepAction(stepActionDto);
                     getDeepSearchFlow().setPlan(plan);
+                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole(), getTaskInfo());
 
-                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
                 } catch (Exception e) {
-                    // 处理发布事件时的异常
-                    log.error(e.getMessage());
-                    future.completeExceptionally(e);
+                    log.error("步骤事件处理失败", e);
+                    future.completeExceptionally(e); // 异常时标记 Future 失败
                 }
             }
 
             @Override
             public void onFailure(ChatContext context, Throwable throwable) {
-                log.error("消息处理失败" , throwable);
-                future.completeExceptionally(throwable);
+                log.error("LLM 流式调用失败", throwable);
+                future.completeExceptionally(throwable); // 失败时完成 Future
             }
-
-        }) ;
+        });
 
         return future;
     }
 
     /**
-     * 获取AI计划并且已经格式化的
-     * @param llm
-     * @param historyPrompt
-     * @param taskInfo
-     * @param oneChatId
-     * @param output
-     * @return
+     * 异步获取格式化的任务列表（改造后返回 CompletableFuture）
      */
     @SneakyThrows
-    public List<DeepTaskBean> getAiChatPlanAsync(Llm llm, HistoriesPrompt historyPrompt, MessageTaskInfo taskInfo, String oneChatId, String output) {
+    public CompletableFuture<List<DeepTaskBean>> getAiChatPlanAsync(
+            Llm llm, HistoriesPrompt historyPrompt, MessageTaskInfo taskInfo, String oneChatId, String output) {
 
         Map<String, Object> params = new HashMap<>();
         params.put("plan_content", output);
         params.put("current_time", PromptHandle.getCurrentTime());
 
         String plannerPrompt = FreemarkerUtil.processTemplate(PlanningPrompts.DEFAULT_PLANNING_MAKE_PROMPT_FORMATTED, params);
-        // historyPrompt.addMessage(new HumanMessage(plannerPrompt));
-
-        CompletableFuture<String> future = new CompletableFuture<>();
-        AtomicReference<String> outputStr = new AtomicReference<>("");
-
-        // 创建一个 final 局部变量来持有 taskInfo 的引用
-        final MessageTaskInfo localTaskInfo = taskInfo;
+        CompletableFuture<String> formatFuture = new CompletableFuture<>();
 
         DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
         stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
+        stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
 
+        // 流式调用 LLM，异步获取格式化结果
         llm.chatStream(plannerPrompt, new StreamResponseListener() {
             @Override
             public void onMessage(ChatContext context, AiMessageResponse response) {
-
                 AiMessage message = response.getMessage();
-
-                stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
-                stepActionDto.setResult(StringUtils.hasLength(message.getContent())?message.getContent():"");
-                stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent())?message.getReasoningContent():"");
+                stepActionDto.setResult(StringUtils.hasLength(message.getContent()) ? message.getContent() : "");
+                stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent()) ? message.getReasoningContent() : "");
                 stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
 
                 try {
-                    boolean isEnd = false;
-                    synchronized (localTaskInfo) {
-                        if (message.getStatus() == MessageStatus.END) {
-                            outputStr.set(message.getFullContent());
-                            isEnd = true;
-                        }
-                    }
-
-                    if (isEnd) {
+                    if (message.getStatus() == MessageStatus.END) {
                         stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
-                        future.complete(outputStr.get());
+                        formatFuture.complete(message.getFullContent()); // 完成 Future
                     }
 
-                    DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan() ;
+                    // 更新步骤事件
+                    DeepSearchFlow.Plan plan = getDeepSearchFlow().getPlan();
                     plan.addStepAction(stepActionDto);
                     getDeepSearchFlow().setPlan(plan);
-
-                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
+                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole(), getTaskInfo());
                 } catch (Exception e) {
-                    // 处理发布事件时的异常
-                    log.error(e.getMessage());
-                    future.completeExceptionally(e);
+                    log.error("格式化任务列表失败", e);
+                    formatFuture.completeExceptionally(e);
                 }
             }
 
             @Override
             public void onFailure(ChatContext context, Throwable throwable) {
-                log.error("消息处理失败" , throwable);
-                future.completeExceptionally(throwable);
+                log.error("LLM 格式化任务流调用失败", throwable);
+                formatFuture.completeExceptionally(throwable);
             }
+        });
 
-        }) ;
-
-        String formatOutput = future.get() ;
-
-        return getTaskList(formatOutput);
+        // 解析格式化结果为任务列表（异步链式调用）
+        return formatFuture.thenApply(formatOutput -> {
+            log.debug("格式化后的规划输出: {}", formatOutput);
+            return getTaskList(formatOutput); // 调用现有 getTaskList 方法解析 JSON
+        });
     }
+
 }
