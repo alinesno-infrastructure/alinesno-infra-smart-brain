@@ -8,6 +8,9 @@ import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.assistant.enums.ModelTypeEnums;
+import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.scene.dto.ProjectKnowledgeGroupDto;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeEntity;
 import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
@@ -15,6 +18,7 @@ import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
 import com.alinesno.infra.smart.scene.service.IProjectKnowledgeService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +33,9 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
 
     @Autowired
     private IProjectKnowledgeService projectKnowledgeService  ;
+
+    @Autowired
+    private ILlmModelService llmModelService;
 
     /**
      * 添加分组
@@ -45,8 +52,16 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
             entity = service.getById(entity.getId());
             entity.setGroupName(dto.getGroupName());
             entity.setGroupType(dto.getGroupType());
+
+            // 添加其他字段
+            entity.setGroupDescription(dto.getDescription());
+            entity.setEmbeddingModelId(dto.getEmbeddingModelId());
+            entity.setOcrModelId(dto.getOcrModelId());
+            entity.setDocumentRecognitionModelId(dto.getDocumentRecognitionModelId());
+
         }else{
             BeanUtil.copyProperties(dto , entity);
+            entity.setGroupDescription(dto.getDescription());
         }
 
         if(StringUtils.isEmpty(entity.getVectorDatasetName())){
@@ -55,6 +70,14 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
 
         service.saveOrUpdate(entity);
         return ok();
+    }
+
+    /**
+     * 通过groupId获取到详细信息
+     */
+    @GetMapping("/getGroupById")
+    public AjaxResult getGroupDetail(@RequestParam(value = "groupId") Long groupId) {
+        return AjaxResult.success(service.getById(groupId));
     }
 
     /**
@@ -132,6 +155,25 @@ public class ProjectKnowledgeGroupController extends BaseController<ProjectKnowl
         });
 
         return AjaxResult.success(list);
+    }
+
+    /**
+     * 列出所有配置的大模型
+     * @return
+     */
+    @DataPermissionQuery
+    @GetMapping("/listLlmMode")
+    public AjaxResult listLlmMode(PermissionQuery query , String modelType) {
+
+        List<LlmModelEntity> allLlmMode = llmModelService.listLlmMode(query , modelType);
+
+        if(!CollectionUtils.isEmpty(allLlmMode)){
+            for(LlmModelEntity entity : allLlmMode) {
+                entity.setFieldProp(ModelTypeEnums.getDisplayNameByCode(entity.getModelType())) ;
+            }
+        }
+
+        return AjaxResult.success(allLlmMode) ;
     }
 
     @Override
