@@ -15,6 +15,7 @@ html.dark {
   }
 
   .aip-appinfo-header {
+
     .title,
     .title-desc {
       color: $dark-text-color !important;
@@ -139,8 +140,8 @@ html.dark {
     background: $dark-bg-color !important;
   }
 
-  .default-theme.splitpanes--vertical > .splitpanes__splitter,
-  .default-theme .splitpanes--vertical > .splitpanes__splitter {
+  .default-theme.splitpanes--vertical>.splitpanes__splitter,
+  .default-theme .splitpanes--vertical>.splitpanes__splitter {
     border: 1px solid $dark-bg-color !important;
   }
 
@@ -199,6 +200,7 @@ html.dark {
   }
 
   .smart-container {
+
     .robot-chat-body,
     .robot-chat-header,
     .robot-chat-footer {
@@ -206,6 +208,7 @@ html.dark {
       border-bottom: 0px !important;
       border-radius: 10px;
     }
+
     .robot-chat-footer {
       box-shadow: 1px 0px 6px rgb(0 0 0 / 55%);
       border: 1px solid #1d1e1f;
@@ -270,6 +273,7 @@ html.dark {
   }
 
   .card-container {
+
     h1,
     p {
       color: $dark-text-color !important;
@@ -290,6 +294,7 @@ html.dark {
   }
 
   .scene-app-container {
+
     .app-row,
     .right-chatbox-contain {
       background: $dark-bg-color !important;
@@ -309,26 +314,10 @@ html.dark {
     background: $dark-bg-color !important;
   }
 
-  .scene-app-container
-    .app-row
-    .el-col:first-child
-    .avatar-title-container
-    .title,
-  .scene-app-container
-    .middle-section
-    .subordinate-roles
-    ul
-    li
-    .role-info
-    .role-title,
+  .scene-app-container .app-row .el-col:first-child .avatar-title-container .title,
+  .scene-app-container .middle-section .subordinate-roles ul li .role-info .role-title,
   .scene-app-container .middle-section .triggers ul li .role-info .role-title,
-  .scene-app-container
-    .middle-section
-    .introduction
-    ul
-    li
-    .role-info
-    .role-title {
+  .scene-app-container .middle-section .introduction ul li .role-info .role-title {
     color: $dark-text-color !important;
   }
 
@@ -397,6 +386,7 @@ html.dark {
   .chat-fileds-reference {
     background: #1d1e20;
   }
+
   .chat-attachment-action-btn {
     background-color: #1d1e20 !important;
   }
@@ -412,6 +402,7 @@ html.dark {
   .side-type-container {
     .type-list {
       div {
+
         &:hover,
         &.active {
           background: #262727 !important;
@@ -439,6 +430,7 @@ html.dark {
       .workspace-title {
         color: $dark-text-color !important;
       }
+
       .workspace-description {
         color: $dark-text-color !important;
       }
@@ -496,6 +488,7 @@ html.dark {
 
     .welcome-example-item {
       background: #262727 !important;
+
       .text-label {
         color: $dark-text-color !important;
       }
@@ -511,10 +504,11 @@ html.dark {
   }
 
   .exam-pager-main {
-    background-color: $dark-bg-panel !important ;
+    background-color: $dark-bg-panel !important;
   }
 
   .exam-pagercontainer {
+
     .exam-pager-aside,
     .exam-function-panel {
       border-right: 1px solid $dark-bg-panel;
@@ -525,7 +519,7 @@ html.dark {
       }
     }
 
-    .exam-code { 
+    .exam-code {
       background: #262727 !important;
       color: $dark-text-color !important;
     }
@@ -643,9 +637,7 @@ html.dark {
     }
   }
 
-  .research-template-container
-    .research-template-list
-    .research-template-item.active {
+  .research-template-container .research-template-list .research-template-item.active {
     background: #409eff !important;
   }
 
@@ -707,6 +699,7 @@ html.dark {
   }
 
   .review-checklist-container {
+
     .review-checklist-item-content,
     .review-checklist-rule-title {
       color: $dark-text-color !important;
@@ -741,7 +734,7 @@ html.dark {
   .ppt-pager-main {
     background: #1d1e1f !important;
 
-    .article-template-container{
+    .article-template-container {
       background: #262727;
     }
 
@@ -788,7 +781,7 @@ html.dark {
     }
   }
 
-  .example-section .example-title{
+  .example-section .example-title {
     color: $dark-text-color !important;
   }
 
@@ -842,6 +835,7 @@ html.dark {
         background: #1d1e1f;
       }
     }
+
     .context-menu {
       background: #1d1e1f !important;
       border: 1px solid #1d1e1f !important;
@@ -855,6 +849,7 @@ html.dark {
   .exam-pager-container,
   .exam-main {
     background: #262727 !important;
+
     .top-panel {
       background: #262727 !important;
 
@@ -969,6 +964,7 @@ html.dark {
     .answer-details-section {
       .answer-details-header {
         background: #1d1e1f !important;
+
         h3 {
           color: $dark-text-color !important;
         }
@@ -1040,6 +1036,7 @@ html.dark {
           border-color: #1d1e1f !important;
         }
       }
+
       .result-header {
         color: $dark-text-color;
         background-color: #262727 !important;
@@ -1100,9 +1097,9 @@ html.dark {
       }
     }
 
-     .exam-info-item {
-        color: $dark-text-color;
-     }
+    .exam-info-item {
+      color: $dark-text-color;
+    }
   }
 
   .user-integral {
@@ -1115,40 +1112,41 @@ html.dark {
         color: $dark-text-color;
       }
 
-      .package-price{
+      .package-price {
         color: $dark-text-color;
       }
 
-       .package-features {
+      .package-features {
         li {
           color: $dark-text-color;
         }
-       }
+      }
     }
   }
 
-  .ppt-function-panel{
+  .ppt-function-panel {
     background-color: #262727 !important;
 
-    .title{
+    .title {
       color: $dark-text-color;
     }
 
-     .task-list .task-item {
-        background-color: #1d1e1f !important;
-        color: $dark-text-color;
-     }
+    .task-list .task-item {
+      background-color: #1d1e1f !important;
+      color: $dark-text-color;
+    }
   }
 
   .message-referece-panel {
- 
-    .reference-item , .reference-header{
-        background-color: #262727 !important;
-        color: $dark-text-color;
 
-        .content-preview {
-          color: $dark-text-color;
-        }
+    .reference-item,
+    .reference-header {
+      background-color: #262727 !important;
+      color: $dark-text-color;
+
+      .content-preview {
+        color: $dark-text-color;
+      }
 
     }
 
@@ -1168,21 +1166,21 @@ html.dark {
     }
   }
 
-  .pay-container { 
+  .pay-container {
     .pay-modal {
-      background-color: $dark-bg-color; 
+      background-color: $dark-bg-color;
     }
 
     .pay-header {
       border-bottom-color: $dark-border-color;
-      
+
       h3 {
         color: $dark-text-color;
       }
 
       .close-btn {
         color: rgba($dark-text-color, 0.7);
-        
+
         &:hover {
           color: $dark-text-color;
         }
@@ -1190,7 +1188,9 @@ html.dark {
     }
 
     .plan-info {
-      h4, .price {
+
+      h4,
+      .price {
         color: $dark-text-color;
       }
 
@@ -1217,7 +1217,7 @@ html.dark {
 
     .payment-amount {
       background-color: lighten($dark-bg-panel, 3%);
-      
+
       span {
         color: $dark-text-color;
       }
@@ -1226,12 +1226,70 @@ html.dark {
     .pay-footer {
       border-top-color: $dark-border-color;
       color: rgba($dark-text-color, 0.6);
-    } 
+    }
   }
 
   .integral-display {
-    .statistic-card ,.detail-section {
+
+    .statistic-card,
+    .detail-section {
       box-shadow: -1px 1px 12px rgb(10 11 11);
     }
-  } 
+  }
+
+  .deepsearch-app-container {
+
+    .think-title,
+    .step-title,
+    .file-item,
+    .step-desc,
+    .task-step-name {
+      color: $dark-text-color !important;
+      background-color: $dark-bg-color !important;
+    }
+
+    .deepsearch-app-aside {
+      border-right: 1px solid $dark-bg-color !important;
+    }
+
+    .task-trace-panel {
+      color: $dark-text-color;
+      background-color: $dark-bg-color !important;
+      border: 1px solid $dark-border-color !important;
+
+      .title {
+        color: $dark-text-color;
+        border-bottom: 1px solid $dark-border-color !important;
+      }
+
+      .trace-tag{
+        color: $dark-text-color;
+        background-color: $dark-bg-panel !important;
+      }
+    }
+
+    .deepsearch-text-container {
+      color: $dark-text-color;
+      background-color: $dark-bg-color !important;
+    }
+
+    .title-section {
+      .title {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .example-item {
+      background: #262727 !important;
+
+      .example-text {
+        color: $dark-text-color !important;
+      }
+    }
+
+    .input-button-section {
+      background: #262727 !important;
+      border: 1px solid #262727 !important;
+    }
+  }
 }
