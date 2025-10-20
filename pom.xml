@@ -16,7 +16,7 @@
     <version>${revision}</version>
 
     <properties>
-        <revision>2.0.0-SNAPSHOT</revision>
+        <revision>3.0.0-SNAPSHOT</revision>
 
         <alinesno.infra.common.version>1.2.0-SNAPSHOT</alinesno.infra.common.version>
         <commons-text.version>1.1</commons-text.version>
@@ -43,7 +43,6 @@
         <module>alinesno-infra-smart-expert-tool</module>  <!-- 角色工具 -->
 
         <module>alinesno-infra-smart-expert-dataset</module> <!-- 数据集(知识库)-->
-        <module>alinesno-infra-smart-expert-memory</module> <!-- 记忆库 -->
         <module>alinesno-infra-smart-expert-role</module> <!-- 角色服务 -->
         <module>alinesno-infra-smart-expert-workflow</module> <!-- 流程编排 -->
         <module>alinesno-infra-smart-expert-im</module> <!-- 第三方IM通信 -->
@@ -51,8 +50,8 @@
         <module>alinesno-infra-smart-expert-portal</module>  <!-- 场景工作台门户 -->
 
         <module>alinesno-infra-smart-expert-template</module>  <!-- 模板管理 -->
-        <module>alinesno-infra-smart-expert-deepsearch</module> <!-- 深度搜索 -->
         <module>alinesno-infra-smart-expert-scene</module>  <!-- 场景管理 -->
+        <module>alinesno-infra-smart-expert-deepsearch</module> <!-- 深度搜索 -->
         <module>alinesno-infra-smart-expert-publish</module>  <!-- 角色分发 -->
         <module>alinesno-infra-smart-expert-point</module>  <!-- 积分管理 -->
 
