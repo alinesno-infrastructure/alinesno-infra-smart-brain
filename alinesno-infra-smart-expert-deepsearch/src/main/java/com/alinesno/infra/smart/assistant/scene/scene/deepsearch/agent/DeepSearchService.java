@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.agent;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.Llm;
 import com.agentsflex.core.prompt.HistoriesPrompt;
+import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.adapter.dto.DocumentVectorBean;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
@@ -13,8 +14,8 @@ import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.role.ReActExpertService;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record.DeepSearchTaskRecordManager;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepSearchTaskStatusManager;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepsearchSummaryMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
@@ -71,7 +72,7 @@ public class DeepSearchService extends ReActExpertService {
     private DeepsearchSummaryMessageTool summaryMessageTool ;
 
     @Autowired
-    private DeepSearchTaskStatusManager statusManager;
+    private DeepSearchTaskRecordManager recordManager;
 
     @Autowired
     @Qualifier("chatThreadPool")
@@ -95,11 +96,7 @@ public class DeepSearchService extends ReActExpertService {
         DeepSearchTaskEntity deepSearchTask = taskService.getById(sceneTaskId) ;
 
         // 1) 创建 TASK 元记录
-        statusManager.createTaskMeta(
-                sceneTaskId,
-                sceneId,
-                goal,
-                deepSearchFlow.getFlowId());
+        recordManager.createTaskMeta(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId());
 
         // 1. 解析公共知识库（同步操作，假设耗时短；若耗时长可改为异步）
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal, role.getKnowledgeBaseIds());
@@ -139,22 +136,35 @@ public class DeepSearchService extends ReActExpertService {
                 summaryMessageTool ,
                 uploadData ,
                 contextEngineeringData ,
-                deepSearchTask);
+                deepSearchTask ,
+                recordManager);
 
         Llm llm = getLlm(role);
         DeepSearchFlow.Plan plan = new DeepSearchFlow.Plan("执行规划思考");
         deepSearchFlow.setPlan(plan);
         stepEventUtil.eventStepMessage(deepSearchFlow, getRole(), getTaskInfo());
 
+        // 添加任务计划
+        recordManager.addTaskPlan(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , plan);
+
         // 2. 异步链式调用：规划生成 -> 任务解析 -> 顺序执行每个任务 -> 汇总输出
         return plannerHandler.getAiChatResultAsync(llm, historyPrompt, taskInfo, oneChatId, goal)
                 .thenCompose(planningOutput -> {
                     log.debug("planning prompt output = {}", planningOutput);
+
                     return plannerHandler.getAiChatPlanAsync(llm, historyPrompt, taskInfo, oneChatId, planningOutput);
                 })
                 .thenCompose(taskBeans -> {
+
+                    // 保存plan的任务
+                    recordManager.addTaskPlanStep(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , plan);
+
                     workerHandler.setTaskStepMap(taskBeans);
                     deepSearchFlow.setSteps(new ArrayList<>()); // 初始化步骤列表
+
+                    // 更新任务计划
+                    deepSearchTask.setTaskPlanJson(JSONObject.toJSONString(taskBeans));
+                    taskService.updateById(deepSearchTask);
 
                     // 初始一个已完成的 CompletableFuture<StringBuilder>
                     CompletableFuture<StringBuilder> seq = CompletableFuture.completedFuture(new StringBuilder());
@@ -170,9 +180,13 @@ public class DeepSearchService extends ReActExpertService {
                                     step.setDescription(task.getTaskDesc());
                                     step.setId(task.getId());
 
+                                    recordManager.addTaskWorkerStep(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , step);
+
                                     workerHandler.setLlm(llm);
                                     workerHandler.setStep(step);
                                     String taskOutput = workerHandler.executeTask(task); // 同步执行，运行在线程池中
+
+                                    recordManager.addTaskWorkerStepActionAsync(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , step);
 
                                     // 合并结果
                                     sb.append(taskOutput);
@@ -189,6 +203,8 @@ public class DeepSearchService extends ReActExpertService {
                     // 异步处理最终输出（调用改造后的 handleOutputAsync）
                     DeepSearchFlow.Output deepSearchOutput = new DeepSearchFlow.Output();
 
+                    recordManager.addTaskOutput(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , deepSearchOutput);
+
                     return deepSearchOutputHandler.handleOutputAsync(llm, answerOutput, deepSearchOutput, historyPrompt, goal)
                             .thenApply(v -> {
 
@@ -197,15 +213,18 @@ public class DeepSearchService extends ReActExpertService {
                                 stepEventUtil.eventStepMessage(deepSearchFlow, getRole(), getTaskInfo());
 
                                 // 成功完成，更新 TASK 元记录状态
-                                statusManager.updateTaskStatus(sceneTaskId, "COMPLETED");
+                                recordManager.updateTaskStatus(sceneTaskId, "COMPLETED");
+
+                                recordManager.addTaskOutputStep(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , deepSearchOutput);
+
                                 // 更新 progress 为 100
-                                statusManager.updateTaskProgress(sceneTaskId, 100);
+                                recordManager.updateTaskProgress(sceneTaskId, 100);
                                 return AgentConstants.ChatText.CHAT_FINISH;
                             }); // 输出处理完成后返回结束标识
                 })
                 .exceptionally(ex -> {
                     log.error("DeepSearch 全流程处理失败", ex);
-                    statusManager.updateTaskStatus(sceneTaskId, "FAILED");
+                    recordManager.updateTaskStatus(sceneTaskId, "FAILED");
                     throw new RuntimeException("DeepSearch 全流程处理失败", ex);
                 });
     }
@@ -220,7 +239,8 @@ public class DeepSearchService extends ReActExpertService {
                                          DeepsearchSummaryMessageTool summaryMessageTool,
                                          UploadData uploadData,
                                          ContextEngineeringData contextEngineeringData,
-                                         DeepSearchTaskEntity deepSearchTask) {
+                                         DeepSearchTaskEntity deepSearchTask,
+                                         DeepSearchTaskRecordManager statusManager) {
 
         List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData() , orgId) ;
 
@@ -239,6 +259,8 @@ public class DeepSearchService extends ReActExpertService {
         plannerHandler.setSummaryMessageTool(summaryMessageTool) ;
         plannerHandler.setUploadData(uploadData) ;
         plannerHandler.setContextEngineeringData(contextEngineeringData) ;
+        plannerHandler.setDeepSearchTask(deepSearchTask) ;
+        plannerHandler.setStatusManager(statusManager) ;
 
         // 初始化执行服务参数
         workerHandler.setRole(getRole()) ;
@@ -256,6 +278,8 @@ public class DeepSearchService extends ReActExpertService {
         workerHandler.setSummaryMessageTool(summaryMessageTool) ;
         workerHandler.setUploadData(uploadData) ;
         workerHandler.setContextEngineeringData(contextEngineeringData) ;
+        workerHandler.setDeepSearchTask(deepSearchTask) ;
+        workerHandler.setStatusManager(statusManager) ;
 
         // outputHandler
         deepSearchOutputHandler.setRole(getRole()) ;
@@ -272,6 +296,8 @@ public class DeepSearchService extends ReActExpertService {
         deepSearchOutputHandler.setSummaryMessageTool(summaryMessageTool) ;
         deepSearchOutputHandler.setUploadData(uploadData) ;
         deepSearchOutputHandler.setContextEngineeringData(contextEngineeringData) ;
+        deepSearchOutputHandler.setDeepSearchTask(deepSearchTask) ;
+        deepSearchOutputHandler.setStatusManager(statusManager) ;
 
     }
 
