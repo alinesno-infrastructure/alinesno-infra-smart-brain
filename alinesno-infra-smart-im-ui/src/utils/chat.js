@@ -52,6 +52,9 @@ export function imagePath(row){
 
 /** 显示图片 */
 export function imagePathByPath(roleAvatar){
+  if(!roleAvatar){
+    return ;
+  }
   // 判断是否是base64
   if (typeof roleAvatar === 'string' && (/^\/9j\//).test(roleAvatar)) {
     // 如果是Base64编码的JPEG图像，添加data:image/jpeg;base64, 前缀
