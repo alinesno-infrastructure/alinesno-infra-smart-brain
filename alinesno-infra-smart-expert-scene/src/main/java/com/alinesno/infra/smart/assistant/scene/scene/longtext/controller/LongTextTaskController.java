@@ -18,7 +18,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TaskStatusDto
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.dto.TextChatEditorDto;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.service.ILongTextTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.GeneratorDocumentNameUtil;
+import com.alinesno.infra.smart.assistant.scene.common.utils.GeneratorDocumentNameUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextChatRoleUtil;
 import com.alinesno.infra.smart.assistant.scene.scene.longtext.tools.LongTextTaskExecutionService;
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
