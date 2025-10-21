@@ -19,6 +19,7 @@ import com.alinesno.infra.smart.utils.MessageFormatter;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -54,8 +55,9 @@ public class DeepSearchTaskUtils {
     @Autowired
     private IIndustryRoleService roleService;
 
-
     public void executeTaskAsync(DeepsearchChatRoleDto chatRole, PermissionQuery query) {
+
+        // 新起一个线程来执行任务
         log.debug("开始异步执行任务：{}", chatRole.getMessage());
 
         try {
