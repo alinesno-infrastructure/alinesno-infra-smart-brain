@@ -51,6 +51,6 @@ public abstract class BaseHandler {
 
     private DeepSearchTaskEntity deepSearchTask ; // 深度检索任务
 
-    private DeepSearchTaskRecordManager statusManager; // 状态管理
+    private DeepSearchTaskRecordManager recordManager; // 状态管理
 
 }
