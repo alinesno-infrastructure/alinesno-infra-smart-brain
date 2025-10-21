@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.deepsearch.dto;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import lombok.Data;
@@ -33,11 +34,13 @@ public class DeepSearchFlow implements Serializable {
     @Data
     @NoArgsConstructor
     public static class Plan {
+        private String id ;
         private String name ; // 规划步骤名称
         private String description ;  // 规划步骤描述
         private List<StepAction> actions = new ArrayList<>();  // 规划步骤动作列表
 
         public Plan(String name) {
+            this.id = IdUtil.getSnowflakeNextIdStr();
             this.name = name;
         }
 
@@ -82,6 +85,7 @@ public class DeepSearchFlow implements Serializable {
     @Data
     @NoArgsConstructor
     public static class Output {
+        private String id ;
         private String name ; // 规划步骤名称
         private String description ; //  规划步骤描述
         private List<StepAction> actions = new ArrayList<>() ; // 规划步骤动作列表
