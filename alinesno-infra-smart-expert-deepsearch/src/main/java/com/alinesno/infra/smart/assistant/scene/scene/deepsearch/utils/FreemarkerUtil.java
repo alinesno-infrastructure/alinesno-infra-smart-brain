@@ -3,6 +3,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import lombok.SneakyThrows;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -25,7 +26,8 @@ public class FreemarkerUtil {
      * @throws IOException       如果读取模板或写入输出时发生 I/O 错误
      * @throws TemplateException 如果处理模板时发生错误
      */
-    public static String processTemplate(String templateString, Map<String, Object> dataModel) throws IOException, TemplateException {
+    @SneakyThrows
+    public static String processTemplate(String templateString, Map<String, Object> dataModel) {
         // 创建模板对象
         Template template = new Template("dynamicTemplate", templateString, cfg);
 
