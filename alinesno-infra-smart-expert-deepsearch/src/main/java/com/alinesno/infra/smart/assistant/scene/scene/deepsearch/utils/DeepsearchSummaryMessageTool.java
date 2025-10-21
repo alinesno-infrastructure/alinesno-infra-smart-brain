@@ -54,7 +54,8 @@ public class DeepsearchSummaryMessageTool {
                                    IndustryRoleEntity role,
                                    DeepSearchFlow deepSearchFlow,
                                    DeepSearchFlow.Step step,
-                                   StepEventUtil stepEventUtil) {
+                                   StepEventUtil stepEventUtil,
+                                   DeepSearchFlow.StepAction stepActionDto) {
 
         CompletableFuture<String> future =
                 getSingleAiChatResultAsync(llm,
@@ -64,6 +65,7 @@ public class DeepsearchSummaryMessageTool {
                         deepSearchFlow,
                         step,
                         stepEventUtil,
+                        stepActionDto,
                         defaultTimeout);
         return future.get(defaultTimeout.toMillis(), TimeUnit.MILLISECONDS); // 为调用方也添加超时保护
     }
@@ -79,6 +81,7 @@ public class DeepsearchSummaryMessageTool {
                                                                 DeepSearchFlow deepSearchFlow,
                                                                 DeepSearchFlow.Step step ,
                                                                 StepEventUtil stepEventUtil,
+                                                                DeepSearchFlow.StepAction stepActionDto,
                                                                 Duration timeout) {
 
         Objects.requireNonNull(llm, "llm cannot be null");
@@ -98,9 +101,6 @@ public class DeepsearchSummaryMessageTool {
 
         try {
 
-            DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
-            stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
-
             llm.chatStream(prompt, (context, response) -> {
                 // 快速检查：如果已经完成（超时或提前完成），忽略后续回调，避免并发竞争
                 if (completed.get()) {
@@ -113,15 +113,17 @@ public class DeepsearchSummaryMessageTool {
                         return;
                     }
 
-                    stepActionDto.setActionType(StepActionEnums.SUMMARY_STEP.getActionType());
                     stepActionDto.setResult(StringUtils.isNotEmpty(message.getContent())?message.getContent(): StringUtils.EMPTY);
                     stepActionDto.setThink(StringUtils.isNotEmpty(message.getReasoningContent())?message.getReasoningContent(): StringUtils.EMPTY);
-                    stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey()) ;
 
                     try {
                         // 检查流式响应是否结束
                         if (message.getStatus() == MessageStatus.END) {
                             stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey()) ;
+
+                            stepActionDto.setThink(message.getFullReasoningContent());
+                            stepActionDto.setResult(message.getFullContent());
+
                             // 直接用最终结果完成 Future（无需 AtomicReference）
                             future.complete(message.getFullContent());
                         }
