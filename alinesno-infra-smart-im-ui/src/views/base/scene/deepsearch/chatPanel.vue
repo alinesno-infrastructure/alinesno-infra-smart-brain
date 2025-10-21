@@ -20,11 +20,6 @@
                   class="article-edit-title" 
                 />
               </div>
-              <!-- 
-              <div class="chat-header-desc">
-                {{ currentTask?.log }}
-              </div> 
-              -->
             </div>
 
             <div class="robot-chat-body inner-robot-chat-body" :style="'height:calc(100vh - ' +heightDiff+ 'px)'">
@@ -213,7 +208,6 @@ import { nextTick, onMounted } from "vue";
 
 import speakingIcon from '@/assets/icons/speaking.gif';
 
-import ChatMessageEditor from '@/views/base/chat/chatMessageEditor.vue'
 import SnowflakeId from "snowflake-id";
 
 const snowflake = new SnowflakeId();
