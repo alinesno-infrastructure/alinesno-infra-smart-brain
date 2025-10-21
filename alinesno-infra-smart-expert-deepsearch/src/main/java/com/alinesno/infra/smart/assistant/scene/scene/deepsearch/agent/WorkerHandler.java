@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepSearchContext;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
@@ -26,45 +27,38 @@ import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 /**
- * 任务执行器，这里使用ReAct模式运行任务，然后获取到FinalAnswer字段
+ * 任务执行处理器（无状态，所有依赖通过 DeepSearchContext 显式传入）
  */
-@EqualsAndHashCode(callSuper = true)
-@Slf4j
-@Data
 @Component
-public class WorkerHandler extends BaseHandler {
-
-    private static final ExecutorService executorService = Executors.newFixedThreadPool(10); // 自定义线程池
-
-    private int maxLoopCount ;
-    private String oneChatId;  // 当前聊天步骤ID
-    private Llm llm;  // LLM模型
-    private List<DeepTaskBean> taskStepMap ;  // 任务规划步骤
-    private DeepSearchFlow.Step step ;
+@Slf4j
+public class WorkerHandler {
 
     /**
-     * 执行任务，并获取到执行结果（同步方法）
+     * 执行单个任务（同步方法，期望在线程池中调用）
      *
-     * @param task
-     * @return
+     * @param task        当前任务
+     * @param llm         LLM 实例
+     * @param taskStepMap 全部任务规划（用于 planning detail）
+     * @param context     执行上下文（不可变）
+     * @return 返回该任务的文本结果
      */
-    public String executeTask(DeepTaskBean task) {
+    public String executeTask(DeepTaskBean task,
+                              Llm llm,
+                              List<DeepTaskBean> taskStepMap,
+                              DeepSearchContext context) {
 
         StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
         String answer = StringUtils.EMPTY;
@@ -73,145 +67,188 @@ public class WorkerHandler extends BaseHandler {
 
         List<WorkerResponseJson> workerResponseJsons = new ArrayList<>();
 
+        // 创建 step 对象并通过 context.deepSearchFlow 管理（与原逻辑一致）
+        DeepSearchFlow.Step step = new DeepSearchFlow.Step();
+        step.setId(task.getId());
+        step.setName(task.getTaskName());
+        step.setDescription(task.getTaskDesc());
+        // 将 step 写入 flow 的 steps 列表
+        List<DeepSearchFlow.Step> steps = context.getDeepSearchFlow().getSteps();
+        if (steps == null) {
+            steps = new ArrayList<>();
+            context.getDeepSearchFlow().setSteps(steps);
+        }
+        steps.add(step);
+        context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
+
         do {
-            // 循环执行，确认达到目标，则跳出
-            String workerOutput = executeWorker(task , toolOutput , maxLoopCount);
+            // 循环执行，确认达到目标则跳出
+            String workerOutput = executeWorker(task, toolOutput, context.getMaxLoopCount(), llm, taskStepMap, context, step);
 
-            // ----->>>>>>>>>>>>>>>>>>> 解析出需要调用的方法_start ----->>>>>>>>>>>>>>>>>
+            // 解析出需要调用的方法
             List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(workerOutput);
-            CodeContent codeContent = codeContentList.get(0);
+            if (codeContentList.isEmpty()) {
+                log.warn("未解析到代码块，workerOutput: {}", workerOutput);
+                // 若无代码块，作为文本返回，跳出循环
+                answer = workerOutput;
+                isCompleted = true;
+            } else {
+                CodeContent codeContent = codeContentList.get(0);
+                WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
 
-            WorkerResponseJson reactResponse = JSON.parseObject(codeContent.getContent(), WorkerResponseJson.class);
+                // 获取工具名
+                String useToolName = reactResponse.getTools() == null ? "" :
+                        reactResponse.getTools().stream()
+                                .map(t -> t.getName() + "(" + t.getType() + ")")
+                                .collect(Collectors.joining(","));
 
-            // 获取到工具名称，拼接名称起来
-            String useToolName = reactResponse.getTools() == null ? "" : reactResponse.getTools().stream()
-                    .map(tool -> tool.getName() + "(" + tool.getType() + ")")
-                    .collect(Collectors.joining(","));
+                if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
+                    // 执行工具调用
+                    for (WorkerResponseJson.Tool tool : reactResponse.getTools()) {
+                        log.debug("正在执行工具：{}，任务：{}", tool.getName(), task.getTaskName());
 
-            if (reactResponse.getTools() != null && !reactResponse.getTools().isEmpty()) {
-                for (WorkerResponseJson.Tool tool : reactResponse.getTools()) {
-                    log.debug("正在执行工具名称：{}" , tool.getName());
+                        DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
+                        stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
+                        stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
+                        stepActionDto.setThink(reactResponse.getThought());
+                        stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
+                        stepActionDto.setActionName(stepActionDto.getActionName() + "|" + useToolName);
 
-                    DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
-                    stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
+                        // 将 action 添加进 step，并发布事件
+                        step.addAction(stepActionDto);
+                        // 更新 flow steps（替换）
+                        context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
+                        context.getDeepSearchFlow().getSteps().add(step);
+                        context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
-                    stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
-                    stepActionDto.setThink(reactResponse.getThought()) ;
-                    stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
-                    stepActionDto.setThink(reactResponse.getThought());
-                    step.addAction(stepActionDto);
-                    getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId())); // 更新step信息，通过id删除掉原来的step
-                    getDeepSearchFlow().getSteps().add(step);
-                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
+                        // 记录步骤信息到 recordManager（异步记录方法原样调用）
+                        context.getRecordManager().addTaskWorkerStepActionSingleAsync(
+                                context.getDeepSearchTask().getId(),
+                                context.getDeepSearchTask().getSceneId(),
+                                context.getGoal(),
+                                context.getDeepSearchFlow().getFlowId(),
+                                stepActionDto,
+                                step);
 
-                    String toolFullName = tool.getName() ;
+                        Map<String, String> argsList = tool.getArgsList();
+                        ToolResult toolResult = null;
+                        try {
+                            String toolFullName = tool.getName();
+                            if ("stdio".equals(tool.getType())) {
+                                ToolEntity toolEntity = context.getToolService().getToolScript(toolFullName, context.getRole().getSelectionToolsData());
+                                toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList, context.getSecretKey());
+                            } else if ("mcp".equals(tool.getType())) {
+                                toolResult = context.getToolService().executeMcpTool(tool.getId(), argsList, context.getRole().getOrgId());
+                            } else {
+                                log.warn("未知工具类型：{}", tool.getType());
+                                continue;
+                            }
 
-                    stepActionDto.setActionType(StepActionEnums.TOOL.getActionType());
-                    stepActionDto.setActionName(stepActionDto.getActionName() + "|" + useToolName);
+                            Object executeToolOutput = toolResult.getOutput();
+                            toolOutput.append(String.format("\r\n ## 当前执行次数[%s],使用工具[%s] \r\n执行结果:%s", loopCount, toolFullName, executeToolOutput));
 
-                    step.addAction(stepActionDto);
+                            // 更新 stepAction 状态为 DONE
+                            stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+                            stepActionDto.setResult(String.valueOf(executeToolOutput));
+                            // 更新 flow step
+                            context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
+                            context.getDeepSearchFlow().getSteps().add(step);
+                            context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
-                    // 更新step信息，通过id删除掉原来的step
-                    getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
-                    getDeepSearchFlow().getSteps().add(step);
+                            // 标记任务已完成
+                            context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
 
-                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
+                            if (toolResult.isFinished()) {
+                                answer = String.valueOf(executeToolOutput);
+                                isCompleted = true;
+                            }
+                        } catch (Exception e) {
+                            log.error("执行工具异常: {}", e.getMessage(), e);
+                            stepActionDto.setStatus(StepActionStatusEnums.FAIL.getKey());
+                            stepActionDto.setResult(e.getMessage());
+                            context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
+                            context.getDeepSearchFlow().getSteps().add(step);
+                            context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
-                    Map<String, String> argsList = tool.getArgsList();
-                    ToolResult toolResult = null;
-
-                    try {
-
-                        if(tool.getType().equals("stdio")){
-                            ToolEntity toolEntity = getToolService().getToolScript(toolFullName , getRole().getSelectionToolsData()) ;
-                            toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList , getSecretKey());
-                        }else if(tool.getType().equals("mcp")){
-                            toolResult = getToolService().executeMcpTool(tool.getId() , argsList , getRole().getOrgId()) ;
-                        }else{
-                            continue;
+                            // 记录失败
+                            context.getRecordManager().addTaskWorkerStepActionSingleAsync(
+                                    context.getDeepSearchTask().getId(),
+                                    context.getDeepSearchTask().getSceneId(),
+                                    context.getGoal(),
+                                    context.getDeepSearchFlow().getFlowId(),
+                                    stepActionDto,
+                                    step);
                         }
-
-                        Object executeToolOutput = toolResult.getOutput() ;
-                        toolOutput.append(String.format("\r\n ## 当前执行次数[%s],使用工具[%s] \r\n执行结果:%s" , loopCount , toolFullName , executeToolOutput));
-
-                        // 更新step信息，通过id删除掉原来的step
-                        stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
-                        stepActionDto.setResult(executeToolOutput + "");
-                        getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
-                        getDeepSearchFlow().getSteps().add(step);
-
-                        getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
-
-                        if(toolResult.isFinished()){  // 设置工具执行结果即是答案
-                            answer = String.valueOf(executeToolOutput) ;
-                            isCompleted = true ;   // 结束对话
-                        }
-
-                    } catch (Exception e) {
-                        log.error("执行工具异常：{}" , e.getMessage());
-                        // 更新step信息，通过id删除掉原来的step
-                        stepActionDto.setStatus(StepActionStatusEnums.FAIL.getKey());
-                        stepActionDto.setResult(e.getMessage());
-                        getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
-                        getDeepSearchFlow().getSteps().add(step);
-
-                        getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
                     }
 
+                    workerResponseJsons.add(reactResponse);
+                } else if (StringUtils.isNotEmpty(reactResponse.getFinalAnswer())) {
+                    answer = reactResponse.getFinalAnswer();
+                    isCompleted = true;
                 }
+            }
 
-                workerResponseJsons.add(reactResponse) ;
-            }else if(StringUtils.isNotEmpty(reactResponse.getFinalAnswer())){  // 有了最终的答案
-                answer = reactResponse.getFinalAnswer();
+            log.debug("task={} answer={} isCompleted={}", task.getTaskName(), answer, isCompleted);
+
+            // 超过循环次数处理
+            if (loopCount >= context.getMaxLoopCount()) {
                 isCompleted = true;
-            }
-            // ----->>>>>>>>>>>>>>>>>>> 解析出需要调用的方法_end ----->>>>>>>>>>>>>>>>>
+                if (StringUtils.isEmpty(answer)) {
+                    String summaryPrompt = PromptHandle.buildSummaryPrompt(context.getGoal(),
+                            context.getDatasetKnowledgeDocument(),
+                            workerResponseJsons);
 
-            log.debug("answer = {} , isCompleted = {}" , answer , isCompleted);
+                    DeepSearchFlow.StepAction summaryAction = new DeepSearchFlow.StepAction();
+                    summaryAction.setActionId(IdUtil.getSnowflakeNextIdStr());
+                    summaryAction.setActionType(StepActionEnums.SUMMARY_STEP.getActionType());
+                    summaryAction.setStatus(StepActionStatusEnums.DOING.getKey());
 
-            if(loopCount >= maxLoopCount){
-                isCompleted = true ;
+                    context.getRecordManager().addTaskWorkerStepActionSingleAsync(
+                            context.getDeepSearchTask().getId(),
+                            context.getDeepSearchTask().getSceneId(),
+                            context.getGoal(),
+                            context.getDeepSearchFlow().getFlowId(),
+                            summaryAction,
+                            step);
 
-                // 健壮性处理(如果是循环结束而且没有答案)
-                if(StringUtils.isEmpty(answer)){
-
-                    String summaryPrompt = PromptHandle.buildSummaryPrompt(getGoal(),
-                            getDatasetKnowledgeDocument(),
-                            workerResponseJsons) ;
-
-                    answer = getSummaryMessageTool().getSummaryAnswer(llm ,
-                            summaryPrompt ,
-                            getTaskInfo() ,
-                            getRole() ,
-                            getDeepSearchFlow() ,
+                    // 通过 summaryMessageTool 获取最终答案（同步调用，保持原逻辑）
+                    answer = context.getSummaryMessageTool().getSummaryAnswer(
+                            llm,
+                            summaryPrompt,
+                            context.getTaskInfo(),
+                            context.getRole(),
+                            context.getDeepSearchFlow(),
                             step,
-                            getStepEventUtil()) ;
+                            context.getStepEventUtil(),
+                            summaryAction
+                    );
 
+                    context.getRecordManager().markTaskWorkerSingleStep(summaryAction, StepActionStatusEnums.DONE.getKey());
                 }
-
-                answer = StringUtils.isNotEmpty(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER ; // 没有找到答案
+                answer = StringUtils.isNotEmpty(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER;
             }
 
-            loopCount ++ ;
+            loopCount++;
         } while (!isCompleted);
 
-        return answer ;
-
+        return answer;
     }
 
     /**
-     * 执行任务
+     * 执行一次 worker 的对话（会发起 llm.chatStream）
      *
-     * @param task
-     * @param toolOutput
-     * @param maxLoopCount
-     * @return
+     * @return 完整的 LLM 输出内容（blocking 等待）
      */
-    @SneakyThrows
-    private String executeWorker(DeepTaskBean task, StringBuilder toolOutput, int maxLoopCount) {
+    private String executeWorker(DeepTaskBean task,
+                                 StringBuilder toolOutput,
+                                 int maxLoopCount,
+                                 Llm llm,
+                                 List<DeepTaskBean> taskStepMap,
+                                 DeepSearchContext context,
+                                 DeepSearchFlow.Step step) {
 
-        Map<String, Object> params = getStringObjectMap(task , toolOutput);
-        params.put("max_loop_count" , maxLoopCount) ;
+        Map<String, Object> params = getStringObjectMap(task, toolOutput, taskStepMap, context);
+        params.put("max_loop_count", maxLoopCount);
 
         String workerPrompt = FreemarkerUtil.processTemplate(WorkerPrompt.DEFAULT_WORKER_PROMPT, params);
 
@@ -220,51 +257,62 @@ public class WorkerHandler extends BaseHandler {
         historyPrompt.addMessage(new HumanMessage(workerPrompt));
 
         CompletableFuture<String> future = new CompletableFuture<>();
-        AtomicReference<String> outputStr = new AtomicReference<>("");
+        final StringBuilder outputAcc = new StringBuilder();
 
         DeepSearchFlow.StepAction stepActionDto = new DeepSearchFlow.StepAction();
         stepActionDto.setActionId(IdUtil.getSnowflakeNextIdStr());
+        stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
+        stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey());
+
+        // 记录步骤信息
+        context.getRecordManager().addTaskWorkerStepActionSingleAsync(
+                context.getDeepSearchTask().getId(),
+                context.getDeepSearchTask().getSceneId(),
+                context.getGoal(),
+                context.getDeepSearchFlow().getFlowId(),
+                stepActionDto,
+                step);
 
         llm.chatStream(historyPrompt, new StreamResponseListener() {
             @Override
-            public void onMessage(ChatContext context, AiMessageResponse response) {
-
+            public void onMessage(ChatContext c, AiMessageResponse response) {
                 AiMessage message = response.getMessage();
-
-                stepActionDto.setActionType(StepActionEnums.ANALYSIS.getActionType());
-                stepActionDto.setResult(StringUtils.isNotEmpty(message.getContent())?message.getContent():StringUtils.EMPTY);
-                stepActionDto.setThink(StringUtils.isNotEmpty(message.getReasoningContent())?message.getReasoningContent():StringUtils.EMPTY);
-                stepActionDto.setStatus(StepActionStatusEnums.DOING.getKey()) ;
+                stepActionDto.setResult(message.getContent() != null ? message.getContent() : "");
+                stepActionDto.setThink(message.getReasoningContent() != null ? message.getReasoningContent() : "");
 
                 try {
                     boolean isEnd = false;
                     if (message.getStatus() == MessageStatus.END) {
-                        outputStr.set(message.getFullContent());
+                        outputAcc.append(message.getFullContent());
                         isEnd = true;
+                    } else {
+                        outputAcc.append(message.getContent() != null ? message.getContent() : "");
                     }
 
                     step.addAction(stepActionDto);
 
                     if (isEnd) {
-                        stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey()) ;
-                        future.complete(outputStr.get());
+                        stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+                        stepActionDto.setThink(message.getReasoningContent());
+                        stepActionDto.setResult(message.getFullContent());
+                        context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                        future.complete(outputAcc.toString());
                     }
 
-                    // 更新step信息，通过id删除掉原来的step
-                    getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
-                    getDeepSearchFlow().getSteps().add(step);
+                    // 更新 flow step 并发布事件
+                    context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
+                    context.getDeepSearchFlow().getSteps().add(step);
+                    context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
-                    getStepEventUtil().eventStepMessage(getDeepSearchFlow(), getRole() , getTaskInfo());
                 } catch (Exception e) {
-                    // 处理发布事件时的异常
-                    log.error(e.getMessage());
+                    log.error("worker 流式回调处理失败", e);
                     future.completeExceptionally(e);
                 }
             }
 
             @Override
-            public void onFailure(ChatContext context, Throwable throwable) {
-                log.error("消息处理失败", throwable);
+            public void onFailure(ChatContext c, Throwable throwable) {
+                log.error("LLM worker 调用失败", throwable);
                 future.completeExceptionally(throwable);
             }
         });
@@ -273,51 +321,43 @@ public class WorkerHandler extends BaseHandler {
             return future.get(10, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            String errorMessage = "执行任务时线程被中断: " + e.getMessage();
-            log.error(errorMessage, e);
-            return errorMessage;
+            log.error("executeWorker 被中断", e);
+            return "执行被中断: " + e.getMessage();
         } catch (ExecutionException e) {
-            String errorMessage = "执行任务时出现执行异常: " + e.getCause().getMessage();
-            log.error(errorMessage, e.getCause());
-            return errorMessage;
+            log.error("executeWorker 执行异常", e);
+            return "执行异常: " + e.getCause().getMessage();
         } catch (TimeoutException e) {
-            String errorMessage = "执行任务时超时: " + e.getMessage();
-            log.error(errorMessage, e);
-            return errorMessage;
+            log.error("executeWorker 超时", e);
+            return "执行超时: " + e.getMessage();
         }
     }
 
-    @NotNull
-    private Map<String, Object> getStringObjectMap(DeepTaskBean task, StringBuilder toolOutput) {
-        String envInfo = toolOutput.toString();
-        String planningDetail = getPlanningDetail() ;
-        String taskId = task.getId();
-        String taskDescription = task.getTaskDesc();
-
-        Map<String, Object> params = new HashMap<>();
-        params.put("observation_info", envInfo);
-        params.put("dataset_knowledge_info", getDatasetKnowledgeDocument());  // 知识库
-        params.put("planning_detail", planningDetail);
-        params.put("task_id", taskId);
-        params.put("task_description", taskDescription);
-        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(getTools(), false , false)));
+    /**
+     * 构造 prompt 参数 map
+     */
+    private Map<String, Object> getStringObjectMap(DeepTaskBean task, StringBuilder toolOutput, List<DeepTaskBean> taskStepMap, DeepSearchContext context) {
+        Map<String, Object> params = new java.util.HashMap<>();
+        params.put("observation_info", toolOutput.toString());
+        params.put("dataset_knowledge_info", context.getDatasetKnowledgeDocument());
+        params.put("planning_detail", getPlanningDetail(taskStepMap));
+        params.put("task_id", task.getId());
+        params.put("task_description", task.getTaskDesc());
+        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, false)));
         params.put("current_time", PromptHandle.getCurrentTime());
         return params;
     }
 
-    private String getPlanningDetail() {
-
-        // 返回所有的任务规划列表
+    /**
+     * 拼接所有 planning detail
+     */
+    private String getPlanningDetail(List<DeepTaskBean> taskStepMap) {
         StringBuilder planningDetail = new StringBuilder();
-
-        for (DeepTaskBean task : taskStepMap) {
-            planningDetail.append("任务顺序:").append(task.getOrder()).append("\n")
-                    .append("任务ID:").append(task.getId()).append("\n")
-                    .append("任务名称:").append(task.getTaskName()).append("\n")
-                    .append("任务描述:").append(task.getTaskDesc()).append("\n")
-                    .append("\n");
+        for (DeepTaskBean t : taskStepMap) {
+            planningDetail.append("任务顺序:").append(t.getOrder()).append("\n")
+                    .append("任务ID:").append(t.getId()).append("\n")
+                    .append("任务名称:").append(t.getTaskName()).append("\n")
+                    .append("任务描述:").append(t.getTaskDesc()).append("\n\n");
         }
-
         return planningDetail.toString();
     }
 }
