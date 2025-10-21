@@ -41,14 +41,22 @@ public class DeepSearchTaskRecordEntity extends InfraBaseEntity {
     @Column(name = "step_type", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "记录类型：TASK/PLAN/STEP/OUTPUT")
     private String stepType; // "TASK" or "PLAN"/"STEP"/"OUTPUT"
 
+    @TableField
+    @Column(name = "plan_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "计划ID（仅 PLAN/STEP/OUTPUT 行使用）")
+    private String planId ;
+
+    @TableField
+    @Column(name = "output_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "输出ID（仅 OUTPUT 行使用）")
+    private String outputId ;
+
     // 对于 STEP 类型记录用于关联 step（step.id）
     @TableField
-    @Column(name = "step_id", type = MySqlTypeConstant.VARCHAR, length = 64, comment = "步骤ID（仅 STEP 类型有值）")
+    @Column(name = "step_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "步骤ID（仅 STEP 类型有值）")
     private String stepId;
 
     // 每个动作唯一 id（StepAction.actionId）；TASK 元记录使用固定值 "TASK_META"
     @TableField
-    @Column(name = "action_id", type = MySqlTypeConstant.VARCHAR, length = 64, comment = "动作ID（StepAction.actionId 或 TASK_META）")
+    @Column(name = "action_id", type = MySqlTypeConstant.VARCHAR, length = 32, comment = "动作ID（StepAction.actionId 或 TASK_META）")
     private String actionId;
 
     @TableField
@@ -109,5 +117,8 @@ public class DeepSearchTaskRecordEntity extends InfraBaseEntity {
     @Column(name = "end_time", type = MySqlTypeConstant.DATETIME, comment = "结束时间（TASK 行使用）")
     private Date endTime;
 
+    @TableField
+    @Column(name = "timestamp", type = MySqlTypeConstant.BIGINT, comment = "时间戳")
+    private Long timestamp;
 
 }
