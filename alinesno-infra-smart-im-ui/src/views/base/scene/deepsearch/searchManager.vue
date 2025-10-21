@@ -1,39 +1,48 @@
 <template>
   <div class="exam-pagercontainer">
-
-    <el-container style="height:calc(100vh - 40px );background-color: #fff;">
-
+    <el-container class="exam-container">
       <el-aside width="80px" class="exam-pager-aside">
         <FunctionList />
       </el-aside>
 
       <el-main class="exam-pager-main">
-        <el-scrollbar style="height:calc(100vh - 50px)">
-          <div class="tpl-app" style="display: flex;margin-left: 0px;width:100%;background-color: #fff; height: calc(100vh - 50px) ;">
-
-            <div style="width: calc(100%);margin-top: 10px;" v-loading="sceneLoading">
-
+        <el-scrollbar class="scroll-area">
+          <div class="tpl-app">
+            <div class="content-wrapper" v-loading="sceneLoading">
               <div class="search-container-panel">
                 <el-row>
                   <el-col :span="24">
                     <div class="feature-team-box">
-                      <div style="gap: 12px;">
-                        <h1 style="font-size: 20px; font-weight: 500; font-style: normal; line-height: 32px; color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha)); margin: 0px 0px 0px 10px; float: left;">
-                          搜索分析报告 
+                      <div class="title-wrap">
+                        <h1 class="page-title">
+                          搜索分析报告
                         </h1>
                       </div>
                       <div class="search-container-weDuEn">
-                        <el-input v-model="input1" style="width: 400px" size="large" placeholder="搜索场景"
-                          :suffix-icon="Search" />
+                        <el-input
+                          v-model="input1"
+                          class="search-input"
+                          size="large"
+                          placeholder="搜索场景（按回车或清空实时过滤）"
+                          clearable
+                          suffix-icon="el-icon-search"
+                          @keyup.enter.native="onSearch"
+                        />
                       </div>
+                      <span></span>
                     </div>
                   </el-col>
                 </el-row>
               </div>
 
-              <div class="channel-container-panel" style="margin-top:20px">
+              <div class="channel-container-panel">
                 <el-row>
-                  <el-col :span="6" v-for="(item, index) in pagerList" :key="index" style="padding:8px;">
+                  <el-col
+                    :span="6"
+                    v-for="(item, index) in filteredList"
+                    :key="item.id || index"
+                    class="col-item"
+                  >
                     <div class="exam-pager-card-container" @click="enterExamPager(item)">
                       <article class="exam-pager-card">
                         <div class="exam-pager-card-content">
@@ -51,15 +60,15 @@
                           <div class="semi-divider semi-divider-horizontal"></div>
                           <div class="scene-footer">
                             <div class="scene-price">
-                              <el-button 
-                                text 
-                                bg 
+                              <el-button
                                 :type="getStatusConfig(item).type"
+                                text
                               >
-                                <i :class="`fa-solid ${getStatusConfig(item).icon}`" /> 
-                                {{ typeof getStatusConfig(item).text === 'function' 
-                                   ? getStatusConfig(item).text(item) 
-                                   : getStatusConfig(item).text 
+                                <i :class="`fa-solid ${getStatusConfig(item).icon}`"></i>
+                                &nbsp;
+                                {{ typeof getStatusConfig(item).text === 'function'
+                                   ? getStatusConfig(item).text(item)
+                                   : getStatusConfig(item).text
                                 }}
                               </el-button>
                             </div>
@@ -70,9 +79,9 @@
                               </div>
 
                               <div class="article-delete-btn" @click.stop>
-                                <el-popconfirm title="确定要删除吗？" @confirm="handleDelete(item)">
+                                <el-popconfirm title="确定要删除吗？" @confirm="() => handleDelete(item)">
                                   <template #reference>
-                                    <el-button type="info" text bg size="small" @click.stop>
+                                    <el-button type="info" text size="small" @click.stop>
                                       <i class="fa-solid fa-trash"></i>&nbsp;删除
                                     </el-button>
                                   </template>
@@ -80,21 +89,19 @@
                               </div>
 
                             </div>
-
                           </div>
                         </div>
                       </article>
                     </div>
                   </el-col>
 
-                  <el-col :span="24" v-if="pagerList.length == 0">
+                  <el-col :span="24" v-if="!sceneLoading && filteredList.length === 0">
                     <el-empty :image-size="400" :image="learnLogo" description="当前未创建业务场景，你的业务场景还未为空，可以在侧边栏快速创建。" />
                   </el-col>
 
                 </el-row>
               </div>
             </div>
-
           </div>
         </el-scrollbar>
       </el-main>
@@ -103,130 +110,186 @@
 </template>
 
 <script setup>
-
-import FunctionList from './functionList'
+import { ref, onMounted, computed } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import FunctionList from './functionList';
+import learnLogo from '@/assets/icons/tech_01.svg';
 
 import {
-  pagerListByPage ,
+  pagerListByPage,
   deleteById
 } from '@/api/base/im/scene/deepSearchTask';
 
-// import SideTypePanel from './articleType.vue'
-
-import { onMounted } from 'vue';
-import learnLogo from '@/assets/icons/tech_01.svg';
-import SnowflakeId from "snowflake-id";
 import { ElMessage } from 'element-plus';
-
-const snowflake = new SnowflakeId();
 
 const router = useRouter();
 const route = useRoute();
 
-const sceneId = ref(route.query.sceneId)
+const sceneId = ref(route.query.sceneId || '');
+const sceneLoading = ref(true);
+const pagerList = ref([]);
+const input1 = ref('');
 
-const sceneLoading = ref(true)
-const pagerList = ref([])
-
-/** 进入长文本编辑界面 */
 function enterExamPager(item) {
-
   router.push({
-      path: '/scene/deepsearch/taskPanel',
-      query: {
-          sceneId: sceneId.value , 
-          genStatus: true,
-          taskId: item.id,
-          channelStreamId: item.channelStreamId 
-      }
-  })
-
+    path: '/scene/deepsearch/taskPanel',
+    query: {
+      sceneId: sceneId.value,
+      genStatus: true,
+      taskId: item.id,
+      channelStreamId: item.channelStreamId
+    }
+  });
 }
 
-const handleDelete = (item) => {
-  deleteById(item.id).then(res => {
-    ElMessage.success('删除成功')
-    handlePagerListByPage()
-  })
-}
+const handleDelete = async (item) => {
+  try {
+    await deleteById(item.id);
+    ElMessage.success('删除成功');
+    await handlePagerListByPage();
+  } catch (err) {
+    ElMessage.error('删除失败');
+    console.error(err);
+  }
+};
 
-// 在script setup部分添加状态配置 
 const statusConfig = [
-  { condition: (item) => item.taskStatus === 'not_run' || item.taskStatus === null, type: "warning", icon: "fa-hourglass-start", text: "任务未开始" },
+  { condition: (item) => item.taskStatus === 'not_run' || item.taskStatus === null || item.taskStatus === undefined, type: "warning", icon: "fa-hourglass-start", text: "任务未开始" },
   { condition: (item) => item.taskStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: "任务生成中" },
   { condition: (item) => item.taskStatus === 'cancelling', type: "warning", icon: "fa-ban fa-spin", text: "任务取消中" },
   { condition: (item) => item.taskStatus === 'cancelled', type: "info", icon: "fa-ban", text: "任务已取消" },
   { condition: (item) => item.taskStatus === 'failed', type: "danger", icon: "fa-circle-xmark", text: "任务失败" },
-  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'not_run' || item.chapterStatus === null), type: "warning", icon: "fa-list-check", text: "章节未开始" },
-  { condition: (item) => item.chapterStatus === 'generating', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '正在生成章节' },
-  { condition: (item) => item.chapterStatus === 'running', type: "primary", icon: "fa-spinner fa-spin", text: (item) => truncateString(item.currentChapterLabel, 12) || '当前章节' },
-  { condition: (item) => item.taskStatus === 'completed' && (item.chapterStatus === 'cancelled' || item.chapterStatus === null), type: "warning", icon: "fa-check-circle", text: "章节完成" },
-  { condition: (item) => item.chapterStatus === 'completed', type: "success", icon: "fa-check-circle", text: "全部完成" },
-  { condition: () => true, type: "info", icon: "fa-question-circle", text: "未知状态" },
-]
+  { condition: (item) => item.taskStatus === 'completed', type: "success", icon: "fa-check-circle", text: "任务完成" },
+];
 
-// 查找匹配的状态配置
 const getStatusConfig = (item) => {
-  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1]
-}
+  return statusConfig.find(config => config.condition(item)) || statusConfig[statusConfig.length - 1];
+};
 
-/** 获取场景列表 */
-function handlePagerListByPage() {
-
-  const data = {
-    page: 1,
-    limit: 100
+async function handlePagerListByPage() {
+  sceneLoading.value = true;
+  const data = { page: 1, limit: 100 };
+  try {
+    const res = await pagerListByPage(data, sceneId.value);
+    pagerList.value = Array.isArray(res.data) ? res.data : (res.data?.list || []);
+  } catch (err) {
+    ElMessage.error('获取任务列表失败');
+    console.error(err);
+  } finally {
+    sceneLoading.value = false;
   }
-
-  pagerListByPage(data , sceneId.value).then(res => {
-    pagerList.value = res.data
-    sceneLoading.value = false
-  }).catch(err => {
-    sceneLoading.value = false
-  })  
 }
 
-// 任务用时
+const onSearch = () => {
+  // 当前使用本地过滤，按需可在此处调用后端搜索接口
+};
+
 const taskUseTime = (item) => {
-  if (!item.taskStartTime || !item.taskEndTime) {
-    return '--';
-  }
-  
+  if (!item.taskStartTime || !item.taskEndTime) return '--';
   const startTime = new Date(item.taskStartTime);
   const endTime = new Date(item.taskEndTime);
-  
-  // Calculate the difference in milliseconds
-  const diffMs = endTime - startTime;
-  
-  // Convert to seconds
-  const diffSec = Math.floor(diffMs / 1000);
-  
-  if (diffSec < 60) {
-    return `${diffSec}秒`;
-  }
-  
-  // Convert to minutes and seconds
+  if (isNaN(startTime.getTime()) || isNaN(endTime.getTime()) || endTime < startTime) return '--';
+  const diffSec = Math.floor((endTime - startTime) / 1000);
+  if (diffSec < 60) return `${diffSec}秒`;
   const minutes = Math.floor(diffSec / 60);
   const seconds = diffSec % 60;
-  
-  if (minutes < 60) {
-    return `${minutes}分${seconds}秒`;
-  }
-  
-  // Convert to hours, minutes and seconds
+  if (minutes < 60) return `${minutes}分${seconds}秒`;
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
-  
   return `${hours}时${remainingMinutes}分${seconds}秒`;
-}
+};
+
+const filteredList = computed(() => {
+  const keyword = (input1.value || '').trim().toLowerCase();
+  if (!keyword) return pagerList.value;
+  return pagerList.value.filter(item => {
+    const name = (item.taskName || '').toString().toLowerCase();
+    const desc = (item.taskDescription || '').toString().toLowerCase();
+    return name.includes(keyword) || desc.includes(keyword);
+  });
+});
 
 onMounted(() => {
-  handlePagerListByPage()
-})
-
+  handlePagerListByPage();
+});
 </script>
 
 <style lang="scss" scoped>
+/* 布局相关 */
+.exam-container {
+  height: calc(100vh - 40px);
+  background-color: #fff;
+}
+
+.scroll-area {
+  height: calc(100vh - 50px);
+}
+
+/* tpl-app 原来带 inline style */
+.tpl-app {
+  display: flex;
+  margin-left: 0;
+  width: 100%;
+  background-color: #fff;
+  height: calc(100vh - 50px);
+  box-sizing: border-box;
+}
+
+/* 内容容器 */
+.content-wrapper {
+  width: 100%;
+  margin-top: 10px;
+  box-sizing: border-box;
+}
+
+/* 搜索面板 */
+.search-container-panel {
+  padding: 0 12px;
+}
+
+.feature-team-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* 标题 */
+.title-wrap {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.page-title {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 32px;
+  color: rgba(var(--coze-fg-4), var(--coze-fg-4-alpha));
+  margin: 0 0 0 10px;
+  float: left;
+}
+
+/* 搜索输入框宽度 */
+.search-container-weDuEn {
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 400px;
+}
+
+/* 卡片列表容器间距 */
+.channel-container-panel {
+  margin-top: 20px;
+}
+
+/* 每列 padding（替代 el-col 的 inline style）*/
+.col-item {
+  padding: 8px;
+}
+
+/* 保留之前的样式（大部分未改变）*/
 .exam-pager-card-container {
   display: flex;
   flex-grow: 1;
@@ -234,13 +297,13 @@ onMounted(() => {
 }
 
 .semi-divider.semi-divider-horizontal {
-    margin-top: 20px;
-    margin-bottom: 16px;
-    border-bottom: 0.5px solid #f0f0f5;
-    display: flex;
-    width: 100%;
-    box-sizing: border-box;
-    color: var(--semi-color-text-0);
+  margin-top: 10px;
+  margin-bottom: 6px;
+  border-bottom: 0.5px solid #f0f0f5;
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  color: var(--semi-color-text-0);
 }
 
 .exam-pager-card {
@@ -264,7 +327,6 @@ onMounted(() => {
     position: relative;
     width: 100%;
     height: 10px;
-    // border-radius: 8px;
     overflow: hidden;
 
     .exam-pager-card-image {
@@ -298,11 +360,11 @@ onMounted(() => {
         font-size: 16px;
         line-height: 22px;
         color: var(--coz-fg-primary);
-        white-space: nowrap;      /* 禁止换行 */
-        overflow: hidden;         /* 隐藏超出部分 */
-        text-overflow: ellipsis;  /* 超出部分显示省略号 */
-        display: block;          /* 或 inline-block，取决于你的布局需求 */
-        width: 100%;             /* 需要指定一个宽度 */
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        width: 100%;
       }
 
       .scene-tag {
@@ -364,7 +426,7 @@ onMounted(() => {
       color: var(--coz-fg-secondary);
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      height: 40px;
+      // height: 40px;
       overflow: hidden;
       display: -webkit-box;
       display: -moz-box;
@@ -400,20 +462,20 @@ onMounted(() => {
       }
     }
   }
-  .scene-tags{
-    display:flex ;
-      span.scene-tag-time {
-        font-size: 13px; 
-        border-radius: 5px;
-        background: #fafafa;
-        opacity: 0.7;
-        margin-top:5px; 
-        padding: 5px;
-      }
 
+  .scene-tags {
+    display:flex ;
+    span.scene-tag-time {
+      font-size: 13px;
+      border-radius: 5px;
+      background: #fafafa;
+      opacity: 0.7;
+      margin-top:5px;
+      padding: 5px;
+    }
   }
 
-  .article-delete-btn{
+  .article-delete-btn {
     margin-left: 10px;
   }
 }
