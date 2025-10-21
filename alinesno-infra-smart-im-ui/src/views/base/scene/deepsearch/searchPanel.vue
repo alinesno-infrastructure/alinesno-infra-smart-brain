@@ -265,9 +265,11 @@ const generaterText = () => {
   }
   ElMessage.success('处理完成');
 
+  const channelStreamId = snowflake.generate();
+
   updateChapterPromptContent({
     sceneId: sceneId.value,
-    channelStreamId: snowflake.generate(),
+    channelStreamId: channelStreamId , 
     attachments: attachments.value.join(','),
     promptContent: promptText.value
   }).then(res => {
@@ -280,7 +282,7 @@ const generaterText = () => {
         sceneId: sceneId.value,
         taskId: taskId,
         genStatus: true ,
-        channelStreamId: snowflake.generate() 
+        channelStreamId: channelStreamId
       }
     })
 
