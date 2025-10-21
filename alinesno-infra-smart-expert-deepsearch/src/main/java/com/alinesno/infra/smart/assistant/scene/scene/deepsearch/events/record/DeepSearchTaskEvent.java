@@ -23,14 +23,23 @@ public class DeepSearchTaskEvent implements Serializable {
         TASK_CREATE,     // 任务创建
         PLAN_CREATE,     // 规划创建
         PLAN_STEP,       // 规划步骤
+        PLAN_MARK,       // 规划步骤标记
+        PLAN_STEP_SINGLE , // 规划步骤动作
+        PLAN_STEP_SINGLE_MARK , // 规划步骤动作标记
         WORKER_STEP,     // 工作步骤
         WORKER_STEP_ACTION, // 工作步骤动作
+        WORKER_STEP_ACTION_SINGLE, // 工作步骤动作
+        WORKER_STEP_SINGLE_MARK , // 工作步骤动作标记
         OUTPUT_CREATE,   // 输出创建
         OUTPUT_STEP,     // 输出步骤
+        OUTPUT_MARK ,  // 输出步骤标记
+        OUTPUT_STEP_SINGLE , // 输出步骤动作
         STATUS_UPDATE,   // 状态更新
+        WORKER_MARK,     // 工作步骤标记
         PROGRESS_UPDATE  // 进度更新
     }
 
+    private String planId ;         // 规划ID
     private Long taskId;          // 任务ID
     private Long sceneId;         // 场景ID
     private String flowId;        // 流程ID
@@ -39,7 +48,9 @@ public class DeepSearchTaskEvent implements Serializable {
     private Integer seq;          // 顺序号（全局自增）
     private DeepSearchFlow.Plan plan; // 规划对象
     private DeepSearchFlow.Step step; // 步骤对象
+    private DeepSearchFlow.StepAction stepAction; // 步骤执行对象
     private DeepSearchFlow.Output output; // 输出对象
     private String status;        // 状态信息
     private Integer progress;     // 进度值
+    private Long timestamp;       // 时间戳
 }
