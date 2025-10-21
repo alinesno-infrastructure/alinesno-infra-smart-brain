@@ -16,9 +16,9 @@
           <div class="think-loading" v-if="item.status === 'doing'">
             <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
           </div>
-          <!-- 
           <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
           <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerHtml(item.result)"></div> 
+          <!-- 
            -->
         </div>
 
