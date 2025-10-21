@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.im.dto;
 
+import com.alibaba.fastjson2.JSON;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import lombok.Data;
@@ -166,5 +167,10 @@ public class MessageTaskInfo implements Serializable {
     public boolean isScreen(){
         // 判断screenId是否大于0
        return this.getSceneId() > 0 ;
+    }
+
+    // 深度拷贝方法（基于JSON序列化，确保所有字段被复制）
+    public MessageTaskInfo deepCopy() {
+        return JSON.parseObject(JSON.toJSONString(this), MessageTaskInfo.class);
     }
 }
