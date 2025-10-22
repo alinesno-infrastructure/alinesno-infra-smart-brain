@@ -151,6 +151,9 @@ public class MessageTaskInfo implements Serializable {
     // 场景任务ID
     private Long sceneTaskId ;
 
+    // 会话ID，区分同一任务的不同执行轮次
+    private String sessionId;
+
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
         this.businessId = businessId;
