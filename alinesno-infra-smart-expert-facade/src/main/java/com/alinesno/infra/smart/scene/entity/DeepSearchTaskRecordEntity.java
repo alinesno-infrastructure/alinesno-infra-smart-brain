@@ -121,4 +121,8 @@ public class DeepSearchTaskRecordEntity extends InfraBaseEntity {
     @Column(name = "timestamp", type = MySqlTypeConstant.BIGINT, comment = "时间戳")
     private Long timestamp;
 
+    @TableField
+    @Column(name = "session_id", type = MySqlTypeConstant.VARCHAR, length = 64, comment = "会话ID（区分同一任务的不同执行轮次）")
+    private String sessionId;
+
 }
