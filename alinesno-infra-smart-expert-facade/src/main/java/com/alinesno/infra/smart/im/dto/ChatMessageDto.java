@@ -54,5 +54,6 @@ public class ChatMessageDto {
     private boolean voicePlayStatus = false ; // 语音播放能力(默认为false)
 
     private DeepSearchFlow deepSearchFlow ; // 深度搜索流程信息
+    private String sessionId; // 会话ID，区分同一任务的不同执行轮次
 
 }
