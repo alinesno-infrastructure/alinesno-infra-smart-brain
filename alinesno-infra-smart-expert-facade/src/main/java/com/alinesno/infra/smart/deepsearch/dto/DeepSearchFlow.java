@@ -37,6 +37,7 @@ public class DeepSearchFlow implements Serializable {
         private String id ;
         private String name ; // 规划步骤名称
         private String description ;  // 规划步骤描述
+        private String status = StepActionStatusEnums.UNDO.getKey() ; // 状态(done成功|fail失败|doing进行中)
         private List<StepAction> actions = new ArrayList<>();  // 规划步骤动作列表
 
         public Plan(String name) {
@@ -65,6 +66,7 @@ public class DeepSearchFlow implements Serializable {
         private String id ;
         private String name ; // 规划步骤名称
         private String description ;  // 规划步骤描述
+        private String status = StepActionStatusEnums.UNDO.getKey() ; // 状态(done成功|fail失败|doing进行中)
         private List<StepAction> actions = new ArrayList<>() ;  // 规划步骤动作列表
 
         public void addAction(StepAction stepActionDto) {
@@ -88,6 +90,7 @@ public class DeepSearchFlow implements Serializable {
         private String id ;
         private String name ; // 规划步骤名称
         private String description ; //  规划步骤描述
+        private String status = StepActionStatusEnums.UNDO.getKey() ; // 状态(done成功|fail失败|doing进行中)
         private List<StepAction> actions = new ArrayList<>() ; // 规划步骤动作列表
         private List<FileAttachmentDto> attachments =  new ArrayList<>() ; // 附件列表
 
