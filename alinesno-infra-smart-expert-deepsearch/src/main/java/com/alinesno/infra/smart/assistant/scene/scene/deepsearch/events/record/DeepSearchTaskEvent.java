@@ -36,7 +36,8 @@ public class DeepSearchTaskEvent implements Serializable {
         OUTPUT_STEP_SINGLE , // 输出步骤动作
         STATUS_UPDATE,   // 状态更新
         WORKER_MARK,     // 工作步骤标记
-        PROGRESS_UPDATE  // 进度更新
+        PROGRESS_UPDATE, // 进度更新
+        ATTACHMENT_CREATE  // 附件创建事件
     }
 
     private String planId ;         // 规划ID
@@ -50,6 +51,7 @@ public class DeepSearchTaskEvent implements Serializable {
     private DeepSearchFlow.Step step; // 步骤对象
     private DeepSearchFlow.StepAction stepAction; // 步骤执行对象
     private DeepSearchFlow.Output output; // 输出对象
+    private DeepSearchFlow.FileAttachmentDto attachment ; // 附件对象
     private String status;        // 状态信息
     private Integer progress;     // 进度值
     private Long timestamp;       // 时间戳
