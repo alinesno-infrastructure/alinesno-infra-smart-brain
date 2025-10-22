@@ -8,6 +8,15 @@ var managerUrl = {
   pagerListByPage: prefix +"pagerListByPage",
   deleteById: prefix +"deleteById",
   submitDeepSearchTask: prefix +"submitDeepSearchTask",
+  getTaskRecords: prefix +"getTaskRecords", // 新增
+}
+
+// 获取任务完整记录
+export function getTaskRecords(taskId) {
+  return request({
+    url: managerUrl.getTaskRecords + '?taskId=' + parseStrEmpty(taskId),
+    method: 'get',
+  })
 }
 
 // 提交任务
