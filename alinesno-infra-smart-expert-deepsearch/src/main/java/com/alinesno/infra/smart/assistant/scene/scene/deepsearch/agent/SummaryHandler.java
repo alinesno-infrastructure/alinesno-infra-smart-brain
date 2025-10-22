@@ -123,6 +123,17 @@ public class SummaryHandler {
                     DeepSearchFlow.Output output = context.getDeepSearchFlow().getOutput();
                     output.setAttachments(attachments);
                     context.getDeepSearchFlow().setOutput(output);
+
+                    // 发布附件事件（每条附件一条事件）
+                    attachments.forEach(attachment -> {
+                        context.getRecordManager().publishAttachmentEvent(
+                                context.getDeepSearchTask().getId(),
+                                context.getDeepSearchTask().getSceneId(),
+                                goal,
+                                context.getDeepSearchFlow().getFlowId(),
+                                attachment
+                        );
+                    });
                     context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
                 }
 
@@ -282,15 +293,18 @@ public class SummaryHandler {
                 @Override
                 public void onMessage(ChatContext ctx, AiMessageResponse response) {
                     AiMessage message = response.getMessage();
+
                     stepActionDto.setResult(StringUtils.hasLength(message.getContent()) ? message.getContent() : "");
                     stepActionDto.setThink(StringUtils.hasLength(message.getReasoningContent()) ? message.getReasoningContent() : "");
 
                     try {
                         if (message.getStatus() == MessageStatus.END) {
                             stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+
                             stepActionDto.setThink(message.getReasoningContent());
                             stepActionDto.setResult(message.getFullContent());
                             context.getRecordManager().markTaskOutputStepSingle(stepActionDto, StepActionStatusEnums.DONE.getKey());
+
                             future.complete(message.getFullContent());
                         }
                         updateOutputStepAction(stepActionDto, context);
