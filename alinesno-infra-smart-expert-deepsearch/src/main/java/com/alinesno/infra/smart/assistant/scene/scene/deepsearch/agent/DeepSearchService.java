@@ -233,7 +233,7 @@ public class DeepSearchService extends ReActExpertService {
                                 recordManager.markTaskOutput(deepSearchOutput , StepActionStatusEnums.DONE.getKey());
 
                                 // 更新 progress 为 100
-                                recordManager.updateTaskProgress(sceneTaskId, 100);
+                                //  recordManager.updateTaskProgress(sceneTaskId, 100);
                                 return AgentConstants.ChatText.CHAT_FINISH;
                             }); // 输出处理完成后返回结束标识
                 })
