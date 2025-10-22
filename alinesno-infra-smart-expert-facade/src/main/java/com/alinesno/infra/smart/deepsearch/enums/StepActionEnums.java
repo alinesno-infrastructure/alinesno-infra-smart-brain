@@ -11,14 +11,16 @@ public enum StepActionEnums {
     // 生成HTML界面
     GENERATE_HTML("generateHtml", "生成HTML界面", "fa-solid fa-file-code"),
 
+    // 问题分析
     ANALYSIS("analysis", "问题分析", "fa-solid fa-magnifying-glass-chart"),
     PLAN("plan", "执行规划", "fa-solid fa-calendar-check"),
     CHAT("chat", "AI对话聊天", "fa-solid fa-comments"),  // 聊天
     THINK("think", "思考当中", "fa-solid fa-lightbulb"),
     TOOL("tool", "使用工具", "fa-solid fa-screwdriver-wrench"),
+
     // 阶段性总结
     SUMMARY_STEP("summaryStep", "阶段性总结", "fa-solid fa-file-lines"),
-    SUMMARY("summary", "内容总结", "fa-solid fa-file-lines");
+    SUMMARY("summary", "内容整合", "fa-solid fa-file-lines");
 
 
     private final String actionType;
