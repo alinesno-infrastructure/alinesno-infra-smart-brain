@@ -9,22 +9,20 @@
 
       <div class="step-title">
         <i :class="currentStepAction?.icon"></i> &nbsp; 正在使用
-        <span class="trace-tag">{{ currentStepAction.actionName || '任务未运行' }}</span>
+        <span class="trace-tag">{{ currentStepAction?.actionName || '任务未运行' }}</span>
       </div>
 
       <el-scrollbar class="step-body-panel" ref="scrollbarRef">
 
-      <div v-if="!currentStepAction.actionName" style="margin-top: 10vh">
+      <div v-if="!currentStepAction?.actionName" style="margin-top: 10vh">
           <el-empty description="当前还没有执行步骤，任务状态显示为空，还未没有执行步骤" />
       </div>
 
-
-        <div class="step-body" ref="innerRef">
-
+      <div class="step-body" ref="innerRef">
           <div class="say-message-body markdown-body think-content" v-if="currentStepAction?.think" v-html="readerHtml(currentStepAction.think)"></div>
           <div class="say-message-body markdown-body output-content" v-if="currentStepAction?.result" v-html="readerHtml(currentStepAction.result)"></div> 
+      </div>
 
-        </div>
       </el-scrollbar>
     </div>
 
@@ -47,7 +45,11 @@
         </span>
       </div>
 
-      <iframe :src="displayContentHtmlUrl" v-if="displayContentType === 'html'" />
+       <div v-loading="iframeLoading" element-loading-text="页面加载中 ..." :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50">
+      <iframe :src="displayContentHtmlUrl"
+        v-if="displayContentType === 'html'"
+        @load="iframeLoading = false" />
+       </div>
       <ChapterEditor v-model:articleData="articleData" ref="chapterEditorRef" v-if="displayContentType === 'md'" />
 
     </div>
@@ -104,6 +106,7 @@ const articleData = ref({
 })
 
 const percentage = ref(0)
+const iframeLoading = ref(false);
 
 const mdi = new MarkdownIt({
   html: true,
@@ -264,6 +267,7 @@ const handleDisplayContent = (item) => {
   if(item.type === 'html'){
 
     ElMessage.info("正在获取生成内容.")
+    iframeLoading.value = true; // 显示局部loading
 
     getOutputPreviewUrl(item.storageId).then(res => {
       displayContentHtmlUrl.value = res.data ; 
@@ -419,7 +423,7 @@ defineExpose({
 .display-output-content {
   iframe {
     width: 100%;
-    height: calc(100vh - 270px);
+    height: calc(100vh - 260px);
     border: 0px;
     margin-bottom:15px;
     border-radius: 8px;
