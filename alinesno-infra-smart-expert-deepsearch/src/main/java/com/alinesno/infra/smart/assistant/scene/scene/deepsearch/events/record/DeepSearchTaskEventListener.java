@@ -1,9 +1,11 @@
 // DeepSearchTaskEventListener.java
 package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskRecordService;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
+import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import com.alinesno.infra.smart.scene.entity.DeepSearchTaskRecordEntity;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -63,6 +65,7 @@ public class DeepSearchTaskEventListener {
                 case OUTPUT_STEP_SINGLE -> handleOutputStepSingle(event, now);
                 case STATUS_UPDATE -> handleStatusUpdate(event, now);
                 case PROGRESS_UPDATE -> handleProgressUpdate(event, now);
+                case ATTACHMENT_CREATE -> handleAttachmentCreate(event, now);
                 default -> log.warn("未知事件类型: {}", event.getEventType());
             }
         } catch (Exception e) {
@@ -121,6 +124,7 @@ public class DeepSearchTaskEventListener {
         entity.setResult(action.getResult());
         entity.setStatus(action.getStatus());
         entity.setSeq(event.getSeq());
+        entity.setActionType(action.getActionType());
 
         entity.setAddTime(now);
         entity.setUpdateTime(now);
@@ -262,6 +266,7 @@ public class DeepSearchTaskEventListener {
         entity.setResult(stepAction.getResult());
         entity.setStatus(stepAction.getStatus());
         entity.setIcon(stepAction.getIcon());
+        entity.setActionType(stepAction.getActionType());
 
         entity.setSeq(event.getSeq());
         entity.setAddTime(now);
@@ -317,6 +322,7 @@ public class DeepSearchTaskEventListener {
         entity.setActionId(plan.getId());
         entity.setActionName(plan.getName());
         entity.setResult(plan.getDescription());
+        entity.setActionType(StepActionEnums.PLAN.getActionType());
 
         entity.setStatus(StepActionStatusEnums.DOING.getKey());
         entity.setSeq(event.getSeq());
@@ -348,6 +354,7 @@ public class DeepSearchTaskEventListener {
             entity.setResult(action.getResult());
             entity.setStatus(action.getStatus());
             entity.setIcon(action.getIcon());
+            entity.setActionType(action.getActionType()) ;
 
             entity.setSeq(event.getSeq()); // 同批次步骤使用相同顺序号
             entity.setAddTime(now);
@@ -385,6 +392,7 @@ public class DeepSearchTaskEventListener {
         entity.setResult(stepAction.getResult());
         entity.setStatus(stepAction.getStatus());
         entity.setIcon(stepAction.getIcon());
+        entity.setActionType(stepAction.getActionType()) ;
 
         entity.setSeq(event.getSeq()); // 同批次步骤使用相同顺序号
         entity.setAddTime(now);
@@ -410,6 +418,7 @@ public class DeepSearchTaskEventListener {
         entity.setActionName(step.getName());
         entity.setResult(step.getDescription());
         entity.setStatus(StepActionStatusEnums.DOING.getKey());
+        entity.setActionType(StepActionEnums.PLAN.getActionType());
 
         entity.setSeq(event.getSeq());
         entity.setAddTime(now);
@@ -438,6 +447,7 @@ public class DeepSearchTaskEventListener {
             entity.setResult(action.getResult());
             entity.setStatus(action.getStatus());
             entity.setIcon(action.getIcon());
+            entity.setActionType(action.getActionType()) ;
 
             entity.setSeq(event.getSeq());
             entity.setAddTime(now);
@@ -467,6 +477,7 @@ public class DeepSearchTaskEventListener {
         entity.setResult(output.getDescription());
         entity.setStatus(StepActionStatusEnums.DOING.getKey());
         entity.setSeq(event.getSeq());
+        entity.setActionType(StepActionEnums.SUMMARY.getActionType());
 
         entity.setAddTime(now);
         entity.setUpdateTime(now);
@@ -484,6 +495,7 @@ public class DeepSearchTaskEventListener {
             entity.setTaskId(event.getTaskId());
             entity.setSceneId(event.getSceneId());
             entity.setFlowId(event.getFlowId());
+
             entity.setGoal(event.getGoal());
             entity.setStepType("OUTPUT_STEP");
             entity.setActionId(action.getActionId());
@@ -491,6 +503,8 @@ public class DeepSearchTaskEventListener {
             entity.setThink(action.getThink());
             entity.setResult(action.getResult());
             entity.setStatus(action.getStatus());
+            entity.setActionType(action.getActionType());
+
             entity.setSeq(event.getSeq());
             entity.setAddTime(now);
             entity.setUpdateTime(now);
@@ -541,6 +555,37 @@ public class DeepSearchTaskEventListener {
         entity.setProgress(progress);
         entity.setUpdateTime(now);
         taskRecordService.updateById(entity);
+    }
+
+    /**
+     * 处理附件创建事件
+     */
+    private void handleAttachmentCreate(DeepSearchTaskEvent event, Date now) {
+        DeepSearchFlow.FileAttachmentDto attachment = event.getAttachment();
+        if (attachment == null) {
+            log.warn("附件信息为空，跳过持久化");
+            return;
+        }
+
+        DeepSearchTaskRecordEntity entity = new DeepSearchTaskRecordEntity();
+        entity.setTaskId(event.getTaskId());
+        entity.setSceneId(event.getSceneId());
+        entity.setFlowId(event.getFlowId());
+        entity.setGoal(event.getGoal());
+
+        entity.setStepType("ATTACHMENT");  // 步骤类型：附件
+        entity.setStepId(attachment.getId());  // 附件 ID 作为步骤 ID
+        entity.setActionId("ATTACH_" + attachment.getId());  // 动作 ID
+        entity.setActionName(attachment.getName());  // 附件名称
+        entity.setResult(JSON.toJSONString(attachment));  // 存储完整附件信息（JSON 格式）
+        entity.setStatus(StepActionStatusEnums.DONE.getKey());  // 附件状态默认完成
+        entity.setSeq(event.getSeq());
+
+        entity.setAddTime(now);
+        entity.setUpdateTime(now);
+        entity.setTimestamp(event.getTimestamp());
+
+        taskRecordService.save(entity);
     }
 
 }
