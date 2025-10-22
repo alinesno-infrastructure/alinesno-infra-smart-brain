@@ -31,12 +31,16 @@ public class DeepsearchChatRoleDto extends BaseDto {
 
     private String attachments;  // 附件信息
 
+    // 会话ID，区分同一任务的不同执行轮次
+    private String sessionId;
+
     public MessageTaskInfo toPowerMessageTaskInfo() {
         MessageTaskInfo taskInfo = new MessageTaskInfo() ;
 
         taskInfo.setOrgId(this.getOrgId());
         taskInfo.setDepartmentId(this.getDepartmentId());
         taskInfo.setOperatorId(this.getOperatorId());
+        taskInfo.setSessionId(this.sessionId); // 传递会话ID到任务信息
 
         return taskInfo ;
     }
