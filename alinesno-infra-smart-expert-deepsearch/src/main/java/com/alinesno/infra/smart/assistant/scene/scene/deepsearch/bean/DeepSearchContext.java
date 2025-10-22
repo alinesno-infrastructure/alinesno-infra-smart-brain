@@ -28,6 +28,7 @@ import java.util.Map;
 @Getter
 @Builder(toBuilder = true)
 public final class DeepSearchContext {
+
     // 基础信息
     private final Long orgId;
     private final String goal;
@@ -55,8 +56,8 @@ public final class DeepSearchContext {
     private final DeepSearchTaskRecordManager recordManager;
     private final MessageTaskInfo taskInfo;
 
-    // 外部服务（已确保线程安全）
-    private final ILLmAdapterService llmAdapter; // 补充原代码中缺失的LLM适配器
-    private final ILlmModelService llmModelService; // 补充原代码中缺失的模型服务
-    private final CloudStorageConsumer cloudStorageConsumer; // 补充原代码中缺失的云存储服务
+    // 外部服务
+    private final ILLmAdapterService llmAdapter;
+    private final ILlmModelService llmModelService;
+    private final CloudStorageConsumer cloudStorageConsumer;
 }
