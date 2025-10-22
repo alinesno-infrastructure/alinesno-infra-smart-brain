@@ -292,4 +292,20 @@ public class DeepSearchTaskRecordManager {
                 .output(deepSearchOutput)
                 .build());
     }
+
+    /**
+     * 发布附件创建事件
+     */
+    public void publishAttachmentEvent(Long taskId, long sceneId, String goal, String flowId, DeepSearchFlow.FileAttachmentDto attachment) {
+        publishEvent(DeepSearchTaskEvent.builder()
+                .taskId(taskId)
+                .sceneId(sceneId)
+                .flowId(flowId)
+                .goal(goal)
+                .eventType(DeepSearchTaskEvent.Type.ATTACHMENT_CREATE)
+                .seq(getNextSeq(taskId))
+                .attachment(attachment)  // 新增 Attachment 字段
+                .timestamp(System.currentTimeMillis())
+                .build());
+    }
 }
