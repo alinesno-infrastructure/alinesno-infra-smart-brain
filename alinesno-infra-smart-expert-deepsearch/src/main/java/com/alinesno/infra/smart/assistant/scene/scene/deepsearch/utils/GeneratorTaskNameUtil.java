@@ -128,11 +128,7 @@ public class GeneratorTaskNameUtil {
 
                 // 验证标题
                 if (isValidTitle(title)) {
-
-                    taskEntity.setTaskName(title);
-                    taskEntity.setTaskDescription(desc);
-
-                    deepSearchTaskService.updateById(taskEntity);
+                    deepSearchTaskService.updateTitleAndDescById(taskEntity , title , desc);
                     log.info("成功生成并更新文档标题，任务ID: {}", taskEntity.getId());
                     success = true;
                 } else {
