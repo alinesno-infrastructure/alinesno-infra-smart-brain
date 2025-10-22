@@ -185,6 +185,8 @@ const handleDisplayContent = (item) => {
 
 // 计算属性：合并规划动作（按actionId拼接think和result）
 const mergedPlanActions = computed(() => {
+  if (!props.deepSearchFlow?.plan?.actions) return [];
+
   const actionMap = new Map();
   
   (props.deepSearchFlow.plan?.actions || []).forEach(newAction => {
@@ -210,6 +212,8 @@ const mergedPlanActions = computed(() => {
 
 // 计算属性：合并步骤（包含步骤内动作的think/result拼接）
 const mergedSteps = computed(() => {
+  if (!props.deepSearchFlow?.steps) return [];
+
   const stepMap = new Map();
 
   (props.deepSearchFlow.steps || []).forEach(newStep => {
@@ -258,6 +262,8 @@ const mergedSteps = computed(() => {
 // 计算属性：合并规划动作（按actionId拼接think和result）
 const outputActionMap = new Map();
 const mergedOutputActions = computed(() => {
+
+  if (!props.deepSearchFlow?.output?.actions) return [];
   
   (props.deepSearchFlow.output?.actions || []).forEach(newAction => {
     const actionId = newAction.actionId;
