@@ -202,7 +202,7 @@ import { getInfo, chatRole , playGenContent  } from '@/api/base/im/roleChat'
 import { getParam , handleCopyGenContent } from '@/utils/ruoyi'
 import { openSseConnect, handleCloseSse } from "@/api/base/im/chatsse";
 import { getDeepsearchTaskById } from '@/api/base/im/scene/deepSearch';
-import { submitDeepSearchTask } from '@/api/base/im/scene/deepSearchTask';
+import { submitDeepSearchTask , getTaskRecords } from '@/api/base/im/scene/deepSearchTask';
 
 import { nextTick, onMounted } from "vue";
 
@@ -440,22 +440,22 @@ attachmentPanelRef.value.setReferenceFile(attFile)
 }
 
 /** 获取角色信息 */
-function handleGetInfo(roleId) {
+const handleGetInfo = async(roleId) => {
   getInfo(roleId).then(res => {
     let role = res.role;
     let msg = res.message;
 
     roleInfo.value = role;
-    pushResponseMessageList(msg);
+
+    console.log('taskStatus = ' + taskStatus.value) ;
+    console.log('handle getInfo msg = ' + JSON.stringify(msg)) ;
+
+   // 如果是运行中的任务，则不需要添加
+   if (taskStatus.value === 'completed' || taskStatus.value === 'not_run') {
+     pushResponseMessageList(msg);
+   }
 
     loading.value = false;
-
-    // nextTick(() => {
-    //   if(agentSingleRightPanelRef.value){
-    //     agentSingleRightPanelRef.value.setRoleInfo(role);
-    //   }
-    // })
-
   })
 }
 
@@ -537,14 +537,8 @@ const sendMessage = (type) => {
     pushResponseMessageList(res.data);
   }).catch(error => {
     streamLoading.value.close();
+    chatStreamLoading.value = false;
   })
-
-  // chatRole(formData, roleId.value).then(res => {
-  //   proxy.$modal.msgSuccess("发送成功");
-  //   pushResponseMessageList(res.data);
-  // }).catch(error => {
-  //   streamLoading.value.close();
-  // })
 
   message.value = '';
 };
@@ -587,41 +581,99 @@ function handleDisplayContent(item){
   }
 }
 
+// 新增方法：加载任务历史记录
+const loadTaskHistoryRecords = async () => {
+  try {
+    const res = await getTaskRecords(taskId.value);
+    const deepSearchFlow = res.data;
+    const username = res.username;
+
+    if (deepSearchFlow) {
+      // 重建消息列表
+      rebuildMessageListFromFlow(deepSearchFlow , username);
+    }
+  } catch (error) {
+    console.error('加载任务历史记录失败:', error);
+    ElMessage.error('加载历史记录失败');
+  }
+};
+
+// 重建消息列表
+const rebuildMessageListFromFlow = (deepSearchFlow , username) => {
+  // 清空当前消息列表
+  // messageList.value = [];
+
+  // 添加用户初始消息
+  const userMessage = {
+    roleType: 'person',
+    name: username || '用户',
+    dateTime: new Date().toLocaleString(),
+    chatText: currentTask.value.promptContent,
+    businessId: snowflake.generate(),
+    showTools: false
+  };
+
+  messageList.value.push(userMessage);
+
+  // 添加 AI 响应消息（包含完整的 DeepSearch 流程）
+  const aiMessage = {
+    roleType: 'agent',
+    name: roleInfo.value.roleName || 'AI助手',
+    dateTime: new Date().toLocaleString(),
+    businessId: snowflake.generate(),
+    showTools: false,
+    deepSearchFlow: deepSearchFlow,
+    chatText: deepSearchFlow.output?.actions?.[0]?.result || '',
+    loading: false
+  };
+  messageList.value.push(aiMessage);
+
+  // 初始化滚动条
+  initChatBoxScroll();
+};
+
 // 销毁信息
 onBeforeUnmount(() => {
-  handleCloseSse(channelStreamId.value).then(res => {
-    console.log('关闭sse连接成功:' + channelId)
-  })
+  if(channelStreamId.value) {
+      handleCloseSse(channelStreamId.value).then(res => {
+        console.log('关闭sse连接成功:' + channelId)
+      })
+  }
 });
 
 onMounted(async() => { 
-  console.log('sceneId = ' + sceneId.value)
-  console.log('taskId = ' + taskId.value)
 
-  const taskRes = await getDeepsearchTaskById(taskId.value) ; 
+  nextTick(async() => {
+    const taskRes = await getDeepsearchTaskById(taskId.value) ;
 
-  let data = taskRes.data ;
-  currentTask.value = data ; 
+    let data = taskRes.data ;
+    currentTask.value = data ; 
 
-  taskTitle.value = data.taskName ;
-  message.value = data.promptContent ;
-  taskStatus.value = data.taskStatus ;
+    taskTitle.value = data.taskName ;
+    taskStatus.value = data.taskStatus ;
 
-  messageList.value = [];
-  roleId.value =  data.searchPlannerEngineer ;
-  channelId.value = data.id ;
-  channelStreamId.value = data.channelStreamId;
+    // messageList.value = [];
+    roleId.value =  data.searchPlannerEngineer ;
+    channelId.value = data.id ;
+    channelStreamId.value = data.channelStreamId;
 
-  handleSseConnect(channelStreamId.value)
-  handleGetInfo(roleId.value);
+    handleSseConnect(channelStreamId.value)
+    await handleGetInfo(roleId.value);
 
-  // 如果没有运行，则提交消息任务
-  if(taskStatus.value === 'not_run'){
-    sendMessage('send');
-    return ;
-  }else if(taskStatus.value === 'running') { // 运行状态
-    chatStreamLoading.value = true ;
-  }
+    // 新增：如果任务已完成或运行中，加载历史记录
+    if (taskStatus.value === 'completed') {
+      await loadTaskHistoryRecords();
+    }
+
+    // 如果没有运行，则提交消息任务
+    if(taskStatus.value === 'not_run'){
+      message.value = data.promptContent ;
+      sendMessage('send');
+      return ;
+    }else if(taskStatus.value === 'running') { // 运行状态
+      chatStreamLoading.value = true ;
+    }
+  })
 
 });
 
@@ -635,10 +687,6 @@ onMounted(async() => {
     border: 0px !important;
     padding: 0 1%;
   }
-
-  // .inner-robot-chat-body {
-  //   height: calc(100vh - 100px);
-  // }
 }
 
 .scroll-panel {
