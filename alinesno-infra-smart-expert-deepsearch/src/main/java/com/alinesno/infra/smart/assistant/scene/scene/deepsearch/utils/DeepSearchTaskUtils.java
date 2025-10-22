@@ -19,7 +19,6 @@ import com.alinesno.infra.smart.utils.MessageFormatter;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -55,7 +54,7 @@ public class DeepSearchTaskUtils {
     @Autowired
     private IIndustryRoleService roleService;
 
-    public void executeTaskAsync(DeepsearchChatRoleDto chatRole, PermissionQuery query) {
+    public void executeTaskAsync(DeepsearchChatRoleDto chatRole, PermissionQuery query, String sessionId) {
 
         // 新起一个线程来执行任务
         log.debug("开始异步执行任务：{}", chatRole.getMessage());
@@ -63,6 +62,7 @@ public class DeepSearchTaskUtils {
         try {
             // 构建任务信息
             MessageTaskInfo taskInfo = chatRole.toPowerMessageTaskInfo();
+            taskInfo.setSessionId(sessionId); // 绑定会话ID
             Long taskId = chatRole.getTaskId();
 
             // 处理附件（如果有）
@@ -85,7 +85,7 @@ public class DeepSearchTaskUtils {
             // 完全异步处理，添加异常处理
             roleService.runRoleAgent(taskInfo)
                     .thenApply(genContent -> {
-                        log.info("角色服务调用完成，taskId: {}", taskId);
+                        log.info("角色服务调用完成（会话ID：{}），taskId: {}", sessionId, taskId);
 
                         // 更新任务状态
                         DeepSearchTaskEntity task = taskService.getById(taskId);
@@ -97,7 +97,7 @@ public class DeepSearchTaskUtils {
                     })
                     .exceptionally(throwable -> {
                         // 处理异步执行过程中的异常
-                        log.error("异步任务执行失败，taskId: {}", taskId, throwable);
+                        log.error("异步任务执行失败（会话ID：{}），taskId: {}", sessionId, taskId, throwable);
 
                         // 更新任务状态为失败
                         try {
@@ -107,7 +107,7 @@ public class DeepSearchTaskUtils {
                             task.setErrorMessage(throwable.getMessage());
                             taskService.updateById(task);
                         } catch (Exception e) {
-                            log.error("更新任务状态失败，taskId: {}", taskId, e);
+                            log.error("更新任务状态失败（会话ID：{}），taskId: {}", sessionId, taskId, e);
                         }
 
                         return null;
@@ -115,7 +115,7 @@ public class DeepSearchTaskUtils {
 
         } catch (Exception e) {
             // 处理同步代码块的异常
-            log.error("异步任务初始化失败，taskId: {}", chatRole.getTaskId(), e);
+            log.error("异步任务初始化失败（会话ID：{}），taskId: {}", sessionId, chatRole.getTaskId(), e);
 
             // 更新任务状态为失败
             try {
@@ -126,7 +126,7 @@ public class DeepSearchTaskUtils {
                 task.setErrorMessage(e.getMessage());
                 taskService.updateById(task);
             } catch (Exception ex) {
-                log.error("更新任务状态失败，taskId: {}", chatRole.getTaskId(), ex);
+                log.error("更新任务状态失败（会话ID：{}），taskId: {}", sessionId, chatRole.getTaskId(), ex);
             }
         }
     }
@@ -149,6 +149,7 @@ public class DeepSearchTaskUtils {
         msgDto.setName(name); // 使用预先获取的名称
         msgDto.setRoleType("person");
         msgDto.setIcon(avatarPath); // 使用预先获取的头像路径
+        msgDto.setSessionId(chatRole.getSessionId()); // 消息绑定会话ID
 
         if(chatRole.getAttachments() != null) {
             List<Long> attachmentIds = Arrays.stream(chatRole.getAttachments().split(","))
