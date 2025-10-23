@@ -184,6 +184,9 @@ public class WorkerHandler {
                     workerResponseJsons.add(reactResponse);
                 } else if (StringUtils.isNotEmpty(reactResponse.getFinalAnswer())) {
                     answer = reactResponse.getFinalAnswer();
+
+                    // TODO 处理任务完成的情况问题
+
                     isCompleted = true;
                 }
             }
