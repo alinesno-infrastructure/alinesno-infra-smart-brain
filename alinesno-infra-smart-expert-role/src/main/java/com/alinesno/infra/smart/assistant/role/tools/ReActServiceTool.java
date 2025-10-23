@@ -118,9 +118,9 @@ public class ReActServiceTool {
         // 添加附件解析 attachments(比如文件或者图片之类的)
         if(!CollectionUtils.isEmpty(taskInfo.getAttachments())){
             IndustryRoleDto industryRoleDto = IndustryRoleDto.fromEntity(taskInfo.getRoleDto()) ;
+            UploadData uploadData = industryRoleDto.getUploadData();
 
-            if (industryRoleDto.isUploadStatus()) {
-                UploadData uploadData = industryRoleDto.getUploadData();
+            if (industryRoleDto.isUploadStatus() && uploadData != null) {
                 int maxTokenLength = uploadData.getMaxLength();
 
                 List<FileAttachmentDto> newAttachments = attachmentReaderUtils.readAttachmentList(
