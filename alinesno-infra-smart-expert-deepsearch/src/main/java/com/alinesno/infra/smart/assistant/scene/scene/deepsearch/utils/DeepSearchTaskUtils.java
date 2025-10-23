@@ -25,6 +25,8 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * DeepSearch任务工具类
@@ -160,4 +162,31 @@ public class DeepSearchTaskUtils {
 
         return msgDto;
     }
+
+    /**
+     * 合并附件
+     * @param chatAttachments
+     * @param taskAttachments
+     * @return
+     */
+    public String mergeAttachments(String chatAttachments, String taskAttachments) {
+        // 将两个附件字符串转为 Stream，处理 null 和空白
+        Stream<String> chatStream = parseToStream(chatAttachments);
+        Stream<String> taskStream = parseToStream(taskAttachments);
+
+        // 合并流、过滤空元素（可选去重）、拼接
+        return Stream.concat(chatStream, taskStream)
+                .filter(s -> !s.trim().isEmpty()) // 过滤拆分后可能的空字符串
+                 .distinct() // 如需去重，解开注释
+                .collect(Collectors.joining(","));
+    }
+
+    // 辅助方法：将字符串转为 Stream（处理 null 和空白）
+    private Stream<String> parseToStream(String str) {
+        if (str == null || str.trim().isEmpty()) {
+            return Stream.empty(); // 空字符串/null 直接返回空流
+        }
+        return Arrays.stream(str.split(",")); // 非空则拆分转为流
+    }
+
 }
