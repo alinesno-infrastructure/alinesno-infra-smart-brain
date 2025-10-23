@@ -13,6 +13,8 @@ public enum StepActionEnums {
 
     // 问题分析
     ANALYSIS("analysis", "问题分析", "fa-solid fa-magnifying-glass-chart"),
+    // 推理
+    REASONING("reasoning", "智能体推理", "fa-solid fa-lightbulb"),
     PLAN("plan", "执行规划", "fa-solid fa-calendar-check"),
     CHAT("chat", "AI对话聊天", "fa-solid fa-comments"),  // 聊天
     THINK("think", "思考当中", "fa-solid fa-lightbulb"),
