@@ -14,6 +14,8 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.config.OutputFileFormatData;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepSearchContext;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.SummaryPrompt;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
@@ -214,8 +216,7 @@ public class SummaryHandler {
             Map<String, Object> params = new java.util.HashMap<>();
             params.put("complex_task", goal);
             params.put("summary_content", summaryOutput);
-            String htmlPrompt = com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil
-                    .processTemplate(com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.SummaryPrompt.HTML_FORMAT_PROMPT, params);
+            String htmlPrompt = FreemarkerUtil.processTemplate(SummaryPrompt.HTML_FORMAT_PROMPT, params);
 
             AtomicReference<String> outputRef = new AtomicReference<>("");
 
@@ -268,8 +269,7 @@ public class SummaryHandler {
             params.put("complex_task", goal);
             params.put("planning_detail", context.getDatasetKnowledgeDocument());
             params.put("answer_output", answerOutput);
-            String summaryPrompt = com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil
-                    .processTemplate(com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.SummaryPrompt.DEFAULT_SUMMARY_PROMPT, params);
+            String summaryPrompt = FreemarkerUtil.processTemplate(SummaryPrompt.DEFAULT_SUMMARY_PROMPT, params);
 
             // 将 summary prompt 添加到 historyPrompt（流式调用）
             historyPrompt.addMessage(new HumanMessage(summaryPrompt));
