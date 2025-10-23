@@ -1,12 +1,14 @@
 package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.controller;
 
 import com.alinesno.infra.common.core.constants.SpringInstanceScope;
+import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionQuery;
 import com.alinesno.infra.common.extend.datasource.annotation.DataPermissionSave;
 import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.login.account.CurrentAccountJwt;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
+import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskRecordService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepSearchTaskUtils;
@@ -28,8 +30,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 深度搜索任务控制器
@@ -48,6 +53,9 @@ public class DeepSearchTaskController extends BaseController<DeepSearchTaskEntit
 
     @Autowired
     private DeepSearchTaskUtils  deepSearchTaskUtils ;
+
+    @Autowired
+    private CloudStorageConsumer storageConsumer ;
 
     /**
      * 查询出所有的DeepSearch场景
@@ -101,12 +109,32 @@ public class DeepSearchTaskController extends BaseController<DeepSearchTaskEntit
 
         taskService.updateById(task);
 
+        if(StringUtils.isNotEmpty(task.getAttachments())){
+            chatRole.setAttachments(deepSearchTaskUtils.mergeAttachments(chatRole.getAttachments() , task.getAttachments()));
+        }
+
         // 异步执行任务
         deepSearchTaskUtils.executeTaskAsync(chatRole , query , sessionId);
 
         // 创建一个消息对象
         ChatMessageDto msgDto = deepSearchTaskUtils.getChatMessageDto(chatRole , CurrentAccountJwt.get()) ;
         msgDto.setSessionId(sessionId);
+
+        // 从实体类中获取 attachments 字符串（如 task.getAttachments()）
+        String attachmentsStr = task.getAttachments();
+
+        if (attachmentsStr != null && !attachmentsStr.isEmpty()) {
+            // 分割字符串并转换为 List<Long>
+            List<Long> attachments = Arrays.stream(attachmentsStr.split(","))
+                    .map(Long::parseLong) // 字符串转 Long（若格式错误会抛异常）
+                    .collect(Collectors.toList());
+
+            // 调用方法处理
+            msgDto.setFileAttributeList(storageConsumer.list(attachments));
+        } else {
+            // 若字符串为空，可设置空集合或做其他处理
+            msgDto.setFileAttributeList(Collections.emptyList());
+        }
 
         return AjaxResult.success(msgDto);
     }
