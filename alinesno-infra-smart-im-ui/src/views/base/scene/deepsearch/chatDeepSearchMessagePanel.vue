@@ -17,7 +17,7 @@
             <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
           </div>
           <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
-          <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerHtml(item.result)"></div> 
+          <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerReactJSON(item.result)"></div> 
           <!-- 
            -->
         </div>
@@ -50,7 +50,7 @@
                   <el-button class="loading-btn" type="primary" text size="large" loading>正在生成中 ...</el-button>
                 </div>
                 <div class="say-message-body markdown-body think-content" v-if="actionItem.think" v-html="readerHtml(actionItem.think)"></div>
-                <div class="say-message-body markdown-body output-content" v-if="actionItem.result" v-html="readerHtml(actionItem.result)"></div> 
+                <div class="say-message-body markdown-body output-content" v-if="actionItem.result" v-html="readerReactJSON(actionItem.result)"></div> 
               </div>
 
             </div>
@@ -145,6 +145,7 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue';
+import JSONProcessor from '@/utils/jsonProcessor.js';
 
 const props = defineProps({
   deepSearchFlow: {
@@ -171,11 +172,15 @@ const readerHtml = (chatText) => {
   }
 }
 
-/** 读取html文本 */
-const readerTraceHtml = (chatText) => {
+/** 读取ReAct文本 */
+const readerReactJSON = (chatText) => {
   if (chatText) {
-    // return props.mdi.render(chatText);
-    currentTraceContent.value = chatText;
+    // 先尝试将JSON内容转换为更易读的Markdown格式
+    const processedText = JSONProcessor.convertToText(chatText);
+
+    console.log('processedText = ' + processedText)
+
+    return props.mdi.render(processedText);
   }
 }
 
