@@ -46,9 +46,7 @@
       </div>
 
        <div v-loading="iframeLoading" element-loading-text="页面加载中 ..." :element-loading-spinner="svg" element-loading-svg-view-box="-10, -10, 50, 50">
-      <iframe :src="displayContentHtmlUrl"
-        v-if="displayContentType === 'html'"
-        @load="iframeLoading = false" />
+        <iframe :src="displayContentHtmlUrl" v-if="displayContentType === 'html'" />
        </div>
       <ChapterEditor v-model:articleData="articleData" ref="chapterEditorRef" v-if="displayContentType === 'md'" />
 
@@ -267,7 +265,6 @@ const handleDisplayContent = (item) => {
   if(item.type === 'html'){
 
     ElMessage.info("正在获取生成内容.")
-    iframeLoading.value = true; // 显示局部loading
 
     getOutputPreviewUrl(item.storageId).then(res => {
       displayContentHtmlUrl.value = res.data ; 
