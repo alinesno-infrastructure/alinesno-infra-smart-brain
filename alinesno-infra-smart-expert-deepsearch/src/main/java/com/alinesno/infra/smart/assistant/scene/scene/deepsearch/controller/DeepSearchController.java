@@ -111,7 +111,7 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         taskService.save(taskEntity);
 
         // 动态生成任务名称
-        generatorTaskNameUtil.generatorDeepSearchDocumentName(taskEntity , dto.getPromptContent());
+         generatorTaskNameUtil.generatorDeepSearchDocumentName(taskEntity , dto.getPromptContent());
 
         return AjaxResult.success("操作成功" , taskEntity.getId()) ;
     }
