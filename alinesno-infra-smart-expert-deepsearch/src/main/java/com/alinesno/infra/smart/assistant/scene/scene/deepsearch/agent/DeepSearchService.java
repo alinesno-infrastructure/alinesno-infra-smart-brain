@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,12 +103,17 @@ public class DeepSearchService extends ReActExpertService {
         deepSearchFlow = new DeepSearchFlow(IdUtil.getSnowflakeNextIdStr()) ;  // 执行步骤统计
         Long sceneTaskId = taskInfo.getSceneTaskId() ;  // 当前任务id
         Long sceneId = taskInfo.getSceneId() ;  // 当前场景id
+        String sessionId = taskInfo.getSessionId() ;
 
+        deepSearchFlow.setSessionId(sessionId);
         deepSearchFlow.setSceneId(sceneId);
         deepSearchFlow.setTaskId(sceneTaskId);
 
         // 深度任务
         DeepSearchTaskEntity deepSearchTask = taskService.getById(sceneTaskId) ;
+
+        // 是否带有外部的知识库
+        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getOutsideCollectionIndexName()) ;
 
         // 1. 解析公共知识库（同步操作，假设耗时短；若耗时长可改为异步）
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(goal, role.getKnowledgeBaseIds());
@@ -150,7 +156,9 @@ public class DeepSearchService extends ReActExpertService {
                 deepSearchTask ,
                 recordManager,
                 deepSearchFlow,
-                oneChatId);
+                oneChatId ,
+                hasOutsideKnowledge ,
+                sessionId);
 
         Llm llm = getLlm(role);
         DeepSearchFlow.Plan plan = new DeepSearchFlow.Plan("执行深度搜索规划");
@@ -158,7 +166,7 @@ public class DeepSearchService extends ReActExpertService {
         stepEventUtil.eventStepMessage(deepSearchFlow, getRole(), getTaskInfo());
 
         // 添加任务计划
-        recordManager.addTaskPlan(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , plan);
+        recordManager.addTaskPlan(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , plan , sessionId);
 
         // 2. 异步链式调用：规划生成 -> 任务解析 -> 顺序执行每个任务 -> 汇总输出
         return plannerHandler.getAiChatResultAsync(llm, historyPrompt, taskInfo, oneChatId, goal, context)
@@ -170,7 +178,7 @@ public class DeepSearchService extends ReActExpertService {
                 .thenCompose(taskBeans -> {
 
                     // 标识规划任务已完成
-                    recordManager.markTaskPlan(plan , StepActionStatusEnums.DONE.getKey());
+                    recordManager.markTaskPlan(plan , StepActionStatusEnums.DONE.getKey() , context.getSessionId());
 
                     // 之前将步骤 map 注入到 workerHandler，现改为显式通过 context 传递，故不再 setTaskStepMap 等
                     deepSearchFlow.setSteps(new ArrayList<>()); // 初始化步骤列表
@@ -194,12 +202,12 @@ public class DeepSearchService extends ReActExpertService {
                                     step.setDescription(task.getTaskDesc());
                                     step.setId(task.getId());
 
-                                    recordManager.addTaskWorkerStep(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , step);
+                                    recordManager.addTaskWorkerStep(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , step , context.getSessionId());
 
                                     // 由 workerHandler.executeTask 接收 context 并在内部处理 step/addAction/record 等
                                     String taskOutput = workerHandler.executeTask(task, llm, taskBeans, context); // 同步执行，运行在线程池中
 
-                                    recordManager.markTaskWorker(step , StepActionStatusEnums.DONE.getKey());
+                                    recordManager.markTaskWorker(step , StepActionStatusEnums.DONE.getKey() , context.getSessionId());
 
                                     // 合并结果
                                     sb.append(taskOutput);
@@ -220,7 +228,7 @@ public class DeepSearchService extends ReActExpertService {
                     deepSearchOutput.setDescription("将根据目标生成多个目标结构.");
 
                     // 添加任务输出
-                    recordManager.addTaskOutput(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , deepSearchOutput);
+                    recordManager.addTaskOutput(sceneTaskId, sceneId, goal, deepSearchFlow.getFlowId() , deepSearchOutput , context.getSessionId());
 
                     return deepSearchOutputHandler.handleOutputAsync(llm, answerOutput, deepSearchOutput, historyPrompt, goal, context)
                             .thenApply(v -> {
@@ -230,7 +238,7 @@ public class DeepSearchService extends ReActExpertService {
                                 stepEventUtil.eventStepMessage(deepSearchFlow, getRole(), getTaskInfo());
 
                                 // 添加任务输出
-                                recordManager.markTaskOutput(deepSearchOutput , StepActionStatusEnums.DONE.getKey());
+                                recordManager.markTaskOutput(deepSearchOutput , StepActionStatusEnums.DONE.getKey() , context.getSessionId());
 
                                 // 更新 progress 为 100
                                 //  recordManager.updateTaskProgress(sceneTaskId, 100);
@@ -239,7 +247,7 @@ public class DeepSearchService extends ReActExpertService {
                 })
                 .exceptionally(ex -> {
                     log.error("DeepSearch 全流程处理失败", ex);
-                    recordManager.updateTaskStatus(sceneTaskId, "FAILED");
+                    recordManager.updateTaskStatus(sceneTaskId, "FAILED" , context.getSessionId());
                     throw new RuntimeException("DeepSearch 全流程处理失败", ex);
                 });
     }
@@ -257,7 +265,9 @@ public class DeepSearchService extends ReActExpertService {
                                                       DeepSearchTaskEntity deepSearchTask,
                                                       DeepSearchTaskRecordManager statusManager,
                                                       DeepSearchFlow deepSearchFlow,
-                                                      String oneChatId) {
+                                                      String oneChatId ,
+                                                      boolean hasOutsideKnowledge,
+                                                      String sessionId) {
 
         List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData() , orgId) ;
 
@@ -266,6 +276,7 @@ public class DeepSearchService extends ReActExpertService {
         return DeepSearchContext.builder()
                 .orgId(orgId)
                 .goal(goal)
+                .sessionId(sessionId)
                 .datasetKnowledgeDocument(datasetKnowledgeDocument)
                 .historyPrompt(new HistoriesPrompt()) // 若需要传入上面已构造的 historyPrompt，可改为传入变量
                 .oneChatId(oneChatId)
@@ -283,6 +294,7 @@ public class DeepSearchService extends ReActExpertService {
                 .stepEventUtil(stepEventUtil)
                 .recordManager(statusManager)
                 .taskInfo(getTaskInfo())
+                .hasOutsideKnowledge(hasOutsideKnowledge)
                 // 以下外部服务若在父类或容器中可获取则传入，否则可留 null 并在 handler 使用时考虑空判断
                 .llmAdapter(llmAdapter)
                 .llmModelService(llmModelService)
