@@ -59,18 +59,20 @@ export function getDeepsearchTaskById(deepsearchTaskId) {
 }
 
 // 获取输出预览
-export function getOutputPreviewUrl(storageId) {
+export function getOutputPreviewUrl(storageId, config = {}) {
   return request({
     url: managerUrl.getOutputPreviewUrl + "?storageId=" + storageId,
-    method: 'get'
+    method: 'get' ,
+    ...config // 传入 signal 等配置
   })
 }
 
 // 获取到markdown内容 
-export function getOutputMarkdownContent(storageId) {
+export function getOutputMarkdownContent(storageId, config = {}) {
   return request({
     url: managerUrl.getOutputMarkdownContent + "?storageId=" + storageId,
-    method: 'get'
+    method: 'get' ,
+    ...config // 传入 signal 等配置
   })
 }
 
