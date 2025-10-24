@@ -244,8 +244,8 @@ public class ProjectResearchSceneController extends BaseController<ProjectResear
                 Long datasetGroupId = dto.getDatasetGroupId();
                 ProjectKnowledgeGroupEntity groupEntity = projectKnowledgeGroupService.getById(datasetGroupId);
 
-                taskInfo.setCollectionIndexName(groupEntity.getVectorDatasetName());
-                taskInfo.setCollectionIndexLabel(groupEntity.getGroupName());
+                taskInfo.setOutsideCollectionIndexName(groupEntity.getVectorDatasetName());
+                taskInfo.setOutsideCollectionIndexLabel(groupEntity.getGroupName());
 
                 // 异步执行角色服务并处理结果
                 roleService.runRoleAgent(taskInfo)
