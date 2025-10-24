@@ -11,6 +11,7 @@ import com.alinesno.infra.smart.im.dto.ChatMessageDto;
 import com.alinesno.infra.smart.im.dto.FileAttachmentDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.service.IMessageService;
+import com.alinesno.infra.smart.point.service.IAccountPointService;
 import com.alinesno.infra.smart.scene.dto.DeepsearchChatRoleDto;
 import com.alinesno.infra.smart.scene.entity.DeepSearchTaskEntity;
 import com.alinesno.infra.smart.scene.enums.TaskStatusEnum;
@@ -56,10 +57,16 @@ public class DeepSearchTaskUtils {
     @Autowired
     private IIndustryRoleService roleService;
 
+    @Autowired
+    private IAccountPointService accountPointService ;
+
     public void executeTaskAsync(DeepsearchChatRoleDto chatRole, PermissionQuery query, String sessionId) {
 
         // 新起一个线程来执行任务
         log.debug("开始异步执行任务：{}", chatRole.getMessage());
+
+        Long userId = query.getOperatorId() ;
+        Long orgId = query.getOrgId() ;
 
         try {
             // 构建任务信息
@@ -84,6 +91,9 @@ public class DeepSearchTaskUtils {
             taskInfo.setQueryText(chatRole.getMessage());
             taskInfo.setSceneTaskId(taskId);
 
+            // 启动任务
+            accountPointService.startSceneTask(userId, orgId , taskId , chatRole.getSceneId());
+
             // 完全异步处理，添加异常处理
             roleService.runRoleAgent(taskInfo)
                     .thenApply(genContent -> {
@@ -94,6 +104,9 @@ public class DeepSearchTaskUtils {
                         task.setTaskStatus(String.valueOf(TaskStatusEnum.RUN_COMPLETED.getCode()));
                         task.setTaskEndTime(new Date());
                         taskService.updateById(task);
+
+                        // 结束任务
+                        accountPointService.endSceneTask(userId, orgId , taskId);
 
                         return null;
                     })
@@ -108,6 +121,10 @@ public class DeepSearchTaskUtils {
                             task.setTaskEndTime(new Date());
                             task.setErrorMessage(throwable.getMessage());
                             taskService.updateById(task);
+
+                            // 结束任务
+                            accountPointService.endSceneTask(userId, orgId , taskId);
+
                         } catch (Exception e) {
                             log.error("更新任务状态失败（会话ID：{}），taskId: {}", sessionId, taskId, e);
                         }
