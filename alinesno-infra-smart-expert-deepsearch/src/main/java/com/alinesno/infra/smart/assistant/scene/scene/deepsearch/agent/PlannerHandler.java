@@ -53,7 +53,7 @@ public class PlannerHandler {
             Map<String, Object> params = new HashMap<>();
             params.put("complex_task", goal);
             params.put("dataset_knowledge_info", context.getDatasetKnowledgeDocument());
-            params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, false)));
+            params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, context.isHasOutsideKnowledge() , context.isHasUploadKnowledge())));
             params.put("max_plannings", context.getRole().getAgentTaskPlanCount() == null ? 3 : context.getRole().getAgentTaskPlanCount());
             params.put("current_time", PromptHandle.getCurrentTime());
 
@@ -75,7 +75,8 @@ public class PlannerHandler {
                     goal,
                     context.getDeepSearchFlow().getFlowId(),
                     context.getDeepSearchFlow().getPlan(),
-                    stepActionDto
+                    stepActionDto ,
+                    context.getSessionId()
             );
 
             // 流式调用LLM
@@ -91,7 +92,7 @@ public class PlannerHandler {
                             stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
                             stepActionDto.setResult(message.getFullContent());
                             stepActionDto.setThink(message.getFullReasoningContent());
-                            context.getRecordManager().markTaskPlanSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                            context.getRecordManager().markTaskPlanSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
                             future.complete(message.getFullContent());
                         }
 
@@ -148,7 +149,8 @@ public class PlannerHandler {
                     context.getGoal(),
                     context.getDeepSearchFlow().getFlowId(),
                     context.getDeepSearchFlow().getPlan(),
-                    stepActionDto
+                    stepActionDto ,
+                    context.getSessionId()
             );
 
             // 流式调用LLM
@@ -164,7 +166,7 @@ public class PlannerHandler {
                             stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
                             stepActionDto.setResult(message.getFullContent());
                             stepActionDto.setThink(message.getFullReasoningContent());
-                            context.getRecordManager().markTaskPlanSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                            context.getRecordManager().markTaskPlanSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
                             formatFuture.complete(message.getFullContent());
                         }
 
