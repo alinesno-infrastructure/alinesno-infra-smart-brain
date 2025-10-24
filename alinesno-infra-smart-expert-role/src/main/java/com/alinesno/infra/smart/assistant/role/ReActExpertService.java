@@ -28,10 +28,7 @@ import com.alinesno.infra.smart.assistant.role.context.ContextEngineerUtils;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
 import com.alinesno.infra.smart.assistant.role.prompt.PromptTemplate;
-import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
-import com.alinesno.infra.smart.assistant.role.tools.RagTool;
-import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
-import com.alinesno.infra.smart.assistant.role.tools.SummaryMessageTool;
+import com.alinesno.infra.smart.assistant.role.tools.*;
 import com.alinesno.infra.smart.assistant.role.utils.ParserReActJsonUtil;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
@@ -41,6 +38,8 @@ import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
 import com.alinesno.infra.smart.im.dto.MessageUsageDto;
 import com.alinesno.infra.smart.im.entity.MessageEntity;
 import com.alinesno.infra.smart.im.enums.TaskResultTypeEnums;
+import com.alinesno.infra.smart.scene.entity.ProjectKnowledgeGroupEntity;
+import com.alinesno.infra.smart.scene.service.IProjectKnowledgeGroupService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
@@ -83,6 +82,9 @@ public class ReActExpertService extends ExpertService {
 
     @Autowired
     private ILlmModelService llmModelService ;
+
+    @Autowired
+    private IProjectKnowledgeGroupService projectKnowledgeGroupService ;
 
     @Autowired
     private ContextEngineerUtils contextEngineerUtils ;
@@ -130,7 +132,7 @@ public class ReActExpertService extends ExpertService {
         historyPrompt.setHistoryMessageTruncateEnable(false);
         historyPrompt.addMessage(new SystemMessage(PromptTemplate.REACT_PROMPT_SYSTEM_TEMPLATE));
 
-        // 搜索默认的静态知识库
+        // 智能体本身的静态知识库
         List<DocumentVectorBean> datasetKnowledgeDocumentList = searchChannelKnowledgeBase(queryText , role.getKnowledgeBaseIds()) ;
         reActServiceTool.handleReferenceArticle(taskInfo , datasetKnowledgeDocumentList) ;
 
@@ -146,7 +148,8 @@ public class ReActExpertService extends ExpertService {
         // 历史对话
         handleHistoryUserMessage(historyPrompt , taskInfo.getChannelId()) ;
 
-        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getCollectionIndexName()) ;
+        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getOutsideCollectionIndexName()) ;
+        boolean hasUploadKnowledge = StringUtils.hasLength(taskInfo.getUploadCollectionIndexName()) ;
         boolean isCompleted = false ;  // 是否已经完成
         boolean isToolCompleted = false ;  // 是否已经完成
         int loop = 0 ;
@@ -159,7 +162,6 @@ public class ReActExpertService extends ExpertService {
         Llm llm = getLlm(role) ;
 
         do {
-
             oneChatId = IdUtil.getSnowflakeNextIdStr() ;
 
             reActServiceTool.eventStepMessage(getStepMessage(loop , goal , useToolName), AgentConstants.STEP_START , oneChatId , taskInfo) ;
@@ -167,9 +169,8 @@ public class ReActExpertService extends ExpertService {
             loop++;
             toolOutput.append(String.format(AgentConstants.Slices.LOOP_COUNT , loop)) ;
 
-
             // 构建prompt时使用优化后的上下文
-            String prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument , maxLoop , hasOutsideKnowledge) ;
+            String prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument , maxLoop , hasOutsideKnowledge , hasUploadKnowledge) ;
 
             if(contextEngineeringDataEnable){
                 // 通过上下文处理长度的问题
@@ -183,7 +184,7 @@ public class ReActExpertService extends ExpertService {
                         contextEngineeringData) ;
                 try {
                     String compressDatasetKnowledgeDocument = compressPromptFuture.get() ;
-                    prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , compressDatasetKnowledgeDocument , maxLoop , hasOutsideKnowledge) ;
+                    prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , compressDatasetKnowledgeDocument , maxLoop , hasOutsideKnowledge , hasUploadKnowledge) ;
 
                     log.debug("compressDatasetKnowledgeDocument prompt = {}" , prompt);
 
@@ -241,50 +242,20 @@ public class ReActExpertService extends ExpertService {
                                 continue;
                             }
 
-                            // 如果是RagTool工具类
-                            if(toolFullName.equals(RagTool.class.getSimpleName())){
-                                RagTool ragTool = new RagTool(tool.getArgsList().get("queryText") , taskInfo.getCollectionIndexName()) ;
-
-                                // 配置查询向量模型
-                                if(uploadData.getOverflowStrategy().equals("rag")){
-
-                                    LlmConfig config = new LlmConfig() ;
-
-                                    LlmModelEntity llmModel = llmModelService.getById(uploadData.getRagVectorId()) ;
-                                    Assert.notNull(llmModel, "模型未配置或者不存在.");
-
-                                    config.setEndpoint(llmModel.getApiUrl());
-                                    config.setApiKey(llmModel.getApiKey()) ;
-                                    config.setModel(llmModel.getModel()) ;
-
-                                    Llm uploadRagLlm =llmAdapter.getLlm(llmModel.getProviderCode(), config);
-
-                                    EmbeddingOptions embeddingOptions = new EmbeddingOptions();
-                                    embeddingOptions.setModel(llmModel.getModel()) ;
-
-                                    ragTool.setLlm(uploadRagLlm);
-                                    ragTool.setEmbeddingOptions(embeddingOptions);
-                                }
-
-                                Object executeToolOutput = ragTool.execute() ;
-
-                                if(executeToolOutput != null && StringUtils.hasLength(executeToolOutput+"")){
-
-                                    FlowStepStatusDto stepDto = new FlowStepStatusDto();
-                                    stepDto.setMessage("RagTool工具执行完成.");
-                                    stepDto.setStepId(oneChatId);
-                                    stepDto.setStatus(AgentConstants.STEP_FINISH);
-                                    stepDto.setFlowChatText("\r\n" + executeToolOutput);
-                                    stepDto.setPrint(false);
-                                    taskInfo.setFlowStep(stepDto);
-                                    streamMessagePublisher.doStuffAndPublishAnEvent(null, getRole(), taskInfo, taskInfo.getTraceBusId());
-
-                                    String toolAndObservable = "\r\n" + reactResponse.getThought() + ":" + executeToolOutput ;
+                            if(toolFullName.equals(UploadRagTool.class.getSimpleName())){
+                                String toolAndObservable = reActServiceTool.executeUploadRagTool(tool, reactResponse.getThought(), taskInfo, oneChatId);
+                                if(StringUtils.hasLength(toolAndObservable)){
                                     toolOutput.append(toolAndObservable);
-
-                                    taskInfo.setReasoningText("<p>" + observation + "</p>");
                                 }
+                                continue;
+                            }
 
+                            // 如果是OutsideRagTool工具类，使用外挂知识库
+                            if(toolFullName.equals(OutsideRagTool.class.getSimpleName())){
+                                String toolAndObservable = reActServiceTool.executeOutsideRagTool(tool, reactResponse.getThought(), taskInfo, oneChatId);
+                                if(StringUtils.hasLength(toolAndObservable)){
+                                    toolOutput.append(toolAndObservable);
+                                }
                                 continue;
                             }
 
