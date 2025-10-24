@@ -220,6 +220,8 @@ import MarkdownIt from 'markdown-it';
 import mdKatex from '@traptitech/markdown-it-katex';
 import hljs from 'highlight.js';
 
+import JSONProcessor from '@/utils/jsonProcessor.js';
+
 import WelcomePanel from './welcomePanel.vue';
 import AgentSingleRightPanel from './rightPanel.vue'
 import AIVoiceInput from '@/components/aiVoiceInput'
@@ -312,7 +314,11 @@ function sendAttachmentActions(actionTxt) {
 
 /** 读取html文本 */
 function readerHtml(chatText) {
-  return mdi.render(chatText);
+  if(chatText){
+    // 先尝试将JSON内容转换为更易读的Markdown格式
+    const processedText = JSONProcessor.convertToText(chatText);
+    return mdi.render(processedText);
+  }
 }
 
 const handleUploadFile = () => {
