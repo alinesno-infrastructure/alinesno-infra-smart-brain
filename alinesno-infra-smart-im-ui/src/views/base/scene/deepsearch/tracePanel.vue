@@ -97,6 +97,7 @@ const displayContentVisible = ref(false)
 const displayContentType = ref('html')
 const displayContentHtmlUrl = ref('http://data.linesno.com/index3.html')
 const displayContentMd = ref('')
+let abortController = null;
 
 const chapterEditorRef = ref(null)
 const articleData = ref({
@@ -238,10 +239,15 @@ const handleClose = () => {
 
 function initChatBoxScroll() {
   nextTick(() => {
+
+    if (!innerRef.value) return;
+
     const element = innerRef.value;  // 获取滚动元素
     const scrollHeight = element.scrollHeight;
 
-    scrollbarRef.value.setScrollTop(scrollHeight);
+    if (scrollbarRef.value) {
+      scrollbarRef.value.setScrollTop(scrollHeight);
+    }
   })
 }
 
@@ -255,6 +261,7 @@ const hadnleOpenLink = () => {
   window.open(displayContentHtmlUrl.value);
 };
 
+
 // 显示内容
 const handleDisplayContent = (item) => {
   console.log('item = ' + JSON.stringify(item));
@@ -262,26 +269,56 @@ const handleDisplayContent = (item) => {
   displayContentVisible.value = true ;
   displayContentType.value = item.type ;
 
+  // 2. 终止上一次未完成的请求（关键：避免重复请求）
+    if (abortController) {
+      abortController.abort();
+      abortController = null;
+    }
+
   if(item.type === 'html'){
 
     ElMessage.info("正在获取生成内容.")
 
-    getOutputPreviewUrl(item.storageId).then(res => {
-      displayContentHtmlUrl.value = res.data ; 
-    })
+    // 3. 创建新的取消控制器
+    abortController = new AbortController();
+
+    getOutputPreviewUrl(item.storageId , { signal: abortController.signal }).then(res => {
+      displayContentHtmlUrl.value = res.data ;
+      abortController = null; // 请求成功后重置
+    }).catch(err => {
+        // 忽略取消请求的错误
+        if (err.name !== 'AbortError') {
+          ElMessage.error("获取HTML内容失败");
+        }
+        abortController = null;
+    });
 
   }else if(item.type === 'md'){
 
     ElMessage.info("正在获取生成内容.")
+    // 3. 创建新的取消控制器
+    abortController = new AbortController();
 
-    getOutputMarkdownContent(item.storageId).then(res => {
+    getOutputMarkdownContent(item.storageId , { signal: abortController.signal }).then(res => {
       displayContentMd.value = res.data ; 
       articleData.value.content = res.data ;
-    })
+    }).catch(err => {
+      if (err.name !== 'AbortError') {
+        ElMessage.error("获取MD内容失败");
+      }
+      abortController = null;
+    });
   }else{
     ElMessage.warning("其它格式暂时不支持显示，可直接下载.")
   }
 }
+
+// 组件卸载时终止未完成请求（可选，避免内存泄漏）
+onUnmounted(() => {
+  if (abortController) {
+    abortController.abort();
+  }
+});
 
 defineExpose({
   pushDeepsearchFlowTracePanel,
