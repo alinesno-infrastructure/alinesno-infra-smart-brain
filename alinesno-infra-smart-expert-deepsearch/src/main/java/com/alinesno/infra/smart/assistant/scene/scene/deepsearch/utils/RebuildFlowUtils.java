@@ -7,6 +7,7 @@ import com.alinesno.infra.smart.scene.entity.DeepSearchTaskEntity;
 import com.alinesno.infra.smart.scene.entity.DeepSearchTaskRecordEntity;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +38,70 @@ public class RebuildFlowUtils {
         rebuildOutputFromRecords(flow, recordsByType.get("OUTPUT"), recordsByType.get("OUTPUT_STEP"),recordsByType.get("ATTACHMENT"));
 
         return flow;
+    }
+
+    public static List<DeepSearchFlow> rebuildDeepSearchFlowsBySession(List<DeepSearchTaskRecordEntity> records, DeepSearchTaskEntity task) {
+        // 1. 按 sessionId 分组（无 sessionId 的归为默认组）
+        Map<String, List<DeepSearchTaskRecordEntity>> recordsBySession = records.stream()
+                .collect(Collectors.groupingBy(record ->
+                        StringUtils.isEmpty(record.getSessionId()) ? "DEFAULT" : record.getSessionId()
+                ));
+
+        List<DeepSearchFlow> flowList = new ArrayList<>();
+        for (Map.Entry<String, List<DeepSearchTaskRecordEntity>> entry : recordsBySession.entrySet()) {
+            String sessionId = entry.getKey();
+            List<DeepSearchTaskRecordEntity> sessionRecords = entry.getValue();
+
+            // 2. 为每个 session 重建一个 DeepSearchFlow
+            DeepSearchFlow flow = new DeepSearchFlow(task.getChannelStreamId());
+            flow.setSceneId(task.getSceneId());
+            flow.setTaskId(task.getId());
+            flow.setSessionId(sessionId); // 给 flow 绑定 sessionId
+
+            // 3. 提取当前 session 的用户问题（StepType = USER_QUESTION）
+            List<DeepSearchTaskRecordEntity> userQuestionRecords = sessionRecords.stream()
+                    .filter(r -> "USER_QUESTION".equals(r.getStepType()))
+                    .toList();
+            if (!userQuestionRecords.isEmpty()) {
+                flow.setUserQuestion(userQuestionRecords.get(0).getResult()); // 存储用户问题
+            }
+
+            // 4. 提取当前 session 的附件（StepType = USER_ATTACHMENT）
+            List<DeepSearchTaskRecordEntity> attachmentRecords = sessionRecords.stream()
+                    .filter(r -> "USER_ATTACHMENT".equals(r.getStepType()))
+                    .toList();
+            if (!attachmentRecords.isEmpty()) {
+                List<DeepSearchFlow.FileAttachmentDto> attachments = attachmentRecords.stream()
+                        .map(RebuildFlowUtils::convertRecordToAttachment)
+                        .collect(Collectors.toList());
+                flow.setUserAttachments(attachments); // 存储用户附件
+            }
+
+            // 5. 提取当前 session 的附件（StepType = ATTACHMENT）
+            List<DeepSearchTaskRecordEntity> outputAttachmentRecords = sessionRecords.stream()
+                    .filter(r -> "ATTACHMENT".equals(r.getStepType()))
+                    .toList();
+
+            // 5. 重建当前 session 的 Plan/Steps/Output（复用原有逻辑）
+            Map<String, List<DeepSearchTaskRecordEntity>> recordsByType = sessionRecords.stream()
+                    .collect(Collectors.groupingBy(DeepSearchTaskRecordEntity::getStepType));
+            rebuildPlanFromRecords(flow, recordsByType.get("PLAN"), recordsByType.get("PLAN_STEP"));
+            rebuildStepsFromRecords(flow, recordsByType.get("WORKER"), recordsByType.get("WORKER_ACTION"));
+            rebuildOutputFromRecords(flow, recordsByType.get("OUTPUT"), recordsByType.get("OUTPUT_STEP"), outputAttachmentRecords);
+
+            flowList.add(flow);
+        }
+
+        // 6. 按 seq 排序（确保轮次顺序正确）
+        return flowList.stream()
+                .sorted(Comparator.comparingInt(flow -> {
+                    // 取当前 flow 第一条记录的 seq 作为排序依据
+                    List<DeepSearchTaskRecordEntity> sessionRecords = recordsBySession.get(flow.getSessionId());
+                    return sessionRecords != null && !sessionRecords.isEmpty()
+                            ? sessionRecords.get(0).getSeq()
+                            : 0;
+                }))
+                .collect(Collectors.toList());
     }
 
     public static  void rebuildPlanFromRecords(DeepSearchFlow flow, List<DeepSearchTaskRecordEntity> planRecords,
