@@ -5,7 +5,7 @@
       <div class="reference-panel" >
         <div class="file-info">
           <span>
-             <i class="fa-solid fa-paperclip"></i> <i :class="getFileIconClass(referenceFile.extension)"></i>
+             <i class="fa-solid fa-paperclip"></i> <i :class="getFileIconClass(referenceFile?.extension)"></i>
           </span>
           <span>
             {{ referenceFile.name }}
@@ -51,7 +51,7 @@
       <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item" @mouseenter="showDeleteButton(index)" @mouseleave="hideDeleteButton(index)">
         <div class="file-header">
           <span>
-            <i :class="getFileIconClass(file.extension)" v-if="!file.uploading"></i>
+            <i :class="getFileIconClass(file?.extension)" v-if="!file.uploading"></i>
             <el-button type="text" text :loading="file.uploading"></el-button>
           </span>
           <div class="file-info" >
@@ -137,6 +137,13 @@ const referenceFile = ref(null);
 
 // 根据文件扩展名获取图标类名
 const getFileIconClass = (extension) => {
+
+  console.log('extension', extension);
+
+  if (!extension || typeof extension !== 'string') {
+    return 'fa-solid fa-file-question';
+  }
+
   switch (extension) {
     case 'pdf':
       return 'fa-solid fa-file-pdf';
@@ -239,6 +246,11 @@ const setReferenceFile = (file) => {
     ElMessage.warning('引用与上传文件不能同时存在');
     return;
   }
+
+    // 保证有 extension 字段
+    if (!file.extension && file.name) {
+      file.extension = file.name.split('.').pop().toLowerCase();
+    }
 
   // 补充处理文件类型
   file.type = getFileType(file.extension);
