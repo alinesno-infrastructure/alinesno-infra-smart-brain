@@ -69,7 +69,7 @@ public class SimpleExpertService extends ReActExpertService {
         String oneChatId = IdUtil.getSnowflakeNextIdStr() ;
         String datasetKnowledgeDocument = reActServiceTool.getDatasetKnowledgeDocument(goal , workflowMessage, taskInfo, datasetKnowledgeDocumentList, oneChatId, historyPrompt);
 
-        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getCollectionIndexName()) ;
+        boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getOutsideCollectionIndexName()) ;
         String answer = "" ; // 回答
         StringBuilder toolOutput = new StringBuilder(); // 工具执行结果
 
@@ -79,7 +79,7 @@ public class SimpleExpertService extends ReActExpertService {
             reActServiceTool.eventStepMessage("开始思考问题.", AgentConstants.STEP_START , oneChatId , taskInfo) ;
             taskInfo.setReasoningText(null);
 
-            String prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument, getMaxLoop() , hasOutsideKnowledge) ;
+            String prompt = PromptHandle.buildPrompt(role , tools , toolOutput , goal , datasetKnowledgeDocument, getMaxLoop() , hasOutsideKnowledge , false) ;
 
             reActServiceTool.eventStepMessage("开始思考中..." , AgentConstants.STEP_START , oneChatId , taskInfo) ;
 
