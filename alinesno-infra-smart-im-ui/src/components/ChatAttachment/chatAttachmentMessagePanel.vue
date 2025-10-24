@@ -14,7 +14,7 @@
       <div v-for="(file, index) in uploadedFiles" :key="index" class="file-item" @mouseenter="showDeleteButton(index)" @mouseleave="hideDeleteButton(index)">
         <div class="file-header">
           <span>
-            <i :class="getFileIconClass(file.fileType)"></i>
+            <i :class="getFileIconClass(file?.fileType)"></i>
           </span>
           <div class="file-info" >
             <div class="file-name">{{ file.fileName}}</div>
@@ -77,6 +77,11 @@ const isDeleteButtonVisible = ref({});
 // 根据文件扩展名获取图标类名
 
 const getFileIconClass = (extension) => {
+
+    if (extension === null || extension === undefined) {
+        return 'fa-solid fa-file';
+    }
+
     if (extension.includes('pdf')) {
         return 'fa-solid fa-file-pdf';
     } else if (extension.includes('ppt')) {
