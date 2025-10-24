@@ -22,10 +22,13 @@
 
         <!-- 上传附件按键 -->
         <div class="upload-button-section">
-          <div>
+          <div class="knowlege-upload-selector-group">
             <el-button type="primary" size="large" class="upload-button" @click="handleUpload" text bg>
               <i class="fa-solid fa-paperclip"></i> 上传附件
             </el-button>
+            <!-- 选择知识库
+            <KnowledgeBaseSelector size="large" v-model="selectedKbId" @change="handleKbChange" />
+            -->
           </div>
 
           <el-button type="primary" size="large" @click="generaterText()" class="send-button">
@@ -49,7 +52,7 @@
     </div>
 
     <!-- 弹出窗口，用于保存场景信息 -->
-    <el-dialog v-model="isShowSaveSceneDialog" title="保存场景" width="600px" :before-close="handleCloseSaveSceneDialog">
+    <!-- <el-dialog v-model="isShowSaveSceneDialog" title="保存场景" width="600px" :before-close="handleCloseSaveSceneDialog">
       <div class="save-scene-dialog-content">
         <el-form ref="saveSceneFormRef" :label-position="'top'" :model="saveSceneForm" label-width="80px" size="large"
           :rules="rules">
@@ -67,7 +70,6 @@
             <el-input v-model="saveSceneForm.sceneName" placeholder="比如法律知识库深度搜索" />
           </el-form-item>
 
-          <!-- 场景描述 -->
           <el-form-item label="场景描述" prop="sceneDesc">
             <el-input v-model="saveSceneForm.sceneDesc" placeholder="比如基于法律知识库深度搜索，重点在于案例和咨询" />
           </el-form-item>
@@ -80,7 +82,7 @@
           </el-form-item>
         </el-form>
       </div>
-    </el-dialog>
+    </el-dialog> -->
 
   </div>
 </template>
@@ -91,6 +93,7 @@ import { ElMessage } from 'element-plus';
 
 import RoleSelectPanel from '@/views/base/scene/common/roleSelectPanel'
 import AttachmentSetionPanel from '@/views/base/scene/articleWriting/common/attachmentSection'
+import KnowledgeBaseSelector from "@/components/KnowlegeComponent/index.vue" ; 
 
 import {
   getScene,
@@ -118,6 +121,7 @@ const saveSceneForm = ref({
   sceneDesc: ''
 });
 const saveSceneFormRef = ref(null);
+const selectedKbId = ref(null);
 
 // 表单校验规则
 const rules = ref({
@@ -132,32 +136,32 @@ const rules = ref({
 });
 
 // 横幅图片列表
-const bannerImages = ref([
-  'scene-bg/10.jpg',
-  'scene-bg/11.png',
-  'scene-bg/12.png',
-  'scene-bg/13.png',
-  'scene-bg/14.png',
-  'scene-bg/15.png',
-  'scene-bg/16.png',
-  'scene-bg/17.jpg',
-  'scene-bg/18.png',
-  'scene-bg/1.jpg',
-  'scene-bg/19.png',
-  'scene-bg/2.png',
-  'scene-bg/20.png',
-  'scene-bg/21.jpg',
-  'scene-bg/22.png',
-  'scene-bg/23.png',
-  'scene-bg/24.png',
-  'scene-bg/3.png',
-  'scene-bg/4.jpg',
-  'scene-bg/5.jpg',
-  'scene-bg/6.png',
-  'scene-bg/7.png',
-  'scene-bg/8.jpg',
-  'scene-bg/9.jpg'
-]);
+// const bannerImages = ref([
+//   'scene-bg/10.jpg',
+//   'scene-bg/11.png',
+//   'scene-bg/12.png',
+//   'scene-bg/13.png',
+//   'scene-bg/14.png',
+//   'scene-bg/15.png',
+//   'scene-bg/16.png',
+//   'scene-bg/17.jpg',
+//   'scene-bg/18.png',
+//   'scene-bg/1.jpg',
+//   'scene-bg/19.png',
+//   'scene-bg/2.png',
+//   'scene-bg/20.png',
+//   'scene-bg/21.jpg',
+//   'scene-bg/22.png',
+//   'scene-bg/23.png',
+//   'scene-bg/24.png',
+//   'scene-bg/3.png',
+//   'scene-bg/4.jpg',
+//   'scene-bg/5.jpg',
+//   'scene-bg/6.png',
+//   'scene-bg/7.png',
+//   'scene-bg/8.jpg',
+//   'scene-bg/9.jpg'
+// ]);
 
 const greetingQuestionList = ref([
   { text: "制定一份市场营销策划方案" },
@@ -174,34 +178,38 @@ const currentSceneInfo = ref({
   sceneName: '通用智能体服务',
 });
 
-// 关闭提示，在没有保存之前不允许关闭
-const handleCloseSaveSceneDialog = () => {
-  if (!sceneId.value) {
-    ElMessage.error('请先保存场景信息');
-    return false;
-  }
+// // 关闭提示，在没有保存之前不允许关闭
+// const handleCloseSaveSceneDialog = () => {
+//   if (!sceneId.value) {
+//     ElMessage.error('请先保存场景信息');
+//     return false;
+//   }
+// };
+
+const handleKbChange = (kbId) => {
+  console.log('选中的知识库ID:', kbId);
 };
 
 // 表单提交方法
-const submitForm = () => {
-  saveSceneFormRef.value.validate((valid) => {
-    if (valid) {
+// const submitForm = () => {
+//   saveSceneFormRef.value.validate((valid) => {
+//     if (valid) {
 
-      saveSceneForm.value.sceneScope = 'org';
-      saveSceneForm.value.sceneType = 'deepSearch';
+//       saveSceneForm.value.sceneScope = 'org';
+//       saveSceneForm.value.sceneType = 'deepSearch';
 
-      console.log('表单数据：', saveSceneForm.value);
+//       console.log('表单数据：', saveSceneForm.value);
 
-      createScene(saveSceneForm.value).then(res => {
-        ElMessage.success('保存成功');
-        isShowSaveSceneDialog.value = false;
-      })
+//       createScene(saveSceneForm.value).then(res => {
+//         ElMessage.success('保存成功');
+//         isShowSaveSceneDialog.value = false;
+//       })
 
-    } else {
-      return false;
-    }
-  });
-};
+//     } else {
+//       return false;
+//     }
+//   });
+// };
 
 
 // 添加attachmentPanelRef引用
