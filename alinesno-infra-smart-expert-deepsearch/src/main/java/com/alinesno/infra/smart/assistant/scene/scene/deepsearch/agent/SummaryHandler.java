@@ -133,7 +133,8 @@ public class SummaryHandler {
                                 context.getDeepSearchTask().getSceneId(),
                                 goal,
                                 context.getDeepSearchFlow().getFlowId(),
-                                attachment
+                                attachment ,
+                                context.getSessionId()
                         );
                     });
                     context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
@@ -211,7 +212,8 @@ public class SummaryHandler {
                     context.getDeepSearchTask().getSceneId(),
                     goal,
                     context.getDeepSearchFlow().getFlowId(),
-                    stepActionDto);
+                    stepActionDto ,
+                    context.getSessionId());
 
             Map<String, Object> params = new java.util.HashMap<>();
             params.put("complex_task", goal);
@@ -232,7 +234,7 @@ public class SummaryHandler {
                             stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
                             stepActionDto.setThink(message.getReasoningContent());
                             stepActionDto.setResult(message.getFullContent());
-                            context.getRecordManager().markTaskOutputStepSingle(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                            context.getRecordManager().markTaskOutputStepSingle(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
                             future.complete(message.getFullContent());
                         }
                         // 更新 flow output step action
@@ -287,7 +289,8 @@ public class SummaryHandler {
                     context.getDeepSearchTask().getSceneId(),
                     goal,
                     context.getDeepSearchFlow().getFlowId(),
-                    stepActionDto);
+                    stepActionDto ,
+                    context.getSessionId());
 
             llm.chatStream(historyPrompt, new StreamResponseListener() {
                 @Override
@@ -303,7 +306,7 @@ public class SummaryHandler {
 
                             stepActionDto.setThink(message.getReasoningContent());
                             stepActionDto.setResult(message.getFullContent());
-                            context.getRecordManager().markTaskOutputStepSingle(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                            context.getRecordManager().markTaskOutputStepSingle(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
 
                             future.complete(message.getFullContent());
                         }
