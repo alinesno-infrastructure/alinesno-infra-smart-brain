@@ -136,11 +136,11 @@ public class MessageTaskInfo implements Serializable {
     // 查询的文本
     private String queryText ;
 
-    // 知识库索引集合名称
-    private String collectionIndexName ;
-
-    // 知识库索引集合名称标识
-    private String collectionIndexLabel ;
+//    // 知识库索引集合名称
+//    private String collectionIndexName ;
+//
+//    // 知识库索引集合名称标识
+//    private String collectionIndexLabel ;
 
     // 数据来源引用数据集集合
     private List<ParserDataBean> datasetMap ;
@@ -153,6 +153,18 @@ public class MessageTaskInfo implements Serializable {
 
     // 会话ID，区分同一任务的不同执行轮次
     private String sessionId;
+
+    // 外挂的知识库索引集成名称
+    private String outsideCollectionIndexName ;
+
+    // 外挂的知识库索引集成名称标识
+    private String outsideCollectionIndexLabel ;
+
+    // 上传的知识库索引集成名称
+    private String uploadCollectionIndexName ;
+
+    // 上传的知识库索引集成名称标识
+    private String uploadCollectionIndexLabel ;
 
     public MessageTaskInfo(long channelId, String businessId, long roleId, String text, String preBusinessId, IndustryRoleEntity roleDto) {
         this.channelId = channelId;
