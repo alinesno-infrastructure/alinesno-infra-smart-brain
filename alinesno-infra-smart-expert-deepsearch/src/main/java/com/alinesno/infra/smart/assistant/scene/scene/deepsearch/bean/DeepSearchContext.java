@@ -31,11 +31,14 @@ public final class DeepSearchContext {
 
     // 基础信息
     private final Long orgId;
+    private final String sessionId ; // 会话ID
     private final String goal;
     private final String datasetKnowledgeDocument;
     private final HistoriesPrompt historyPrompt;
     private final String oneChatId;
     private final Integer maxLoopCount;
+    private final boolean hasOutsideKnowledge ;
+    private final boolean hasUploadKnowledge ;
 
     // 实体与配置
     private final IndustryRoleEntity role;
