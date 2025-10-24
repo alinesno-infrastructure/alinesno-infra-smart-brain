@@ -246,8 +246,9 @@ public class ProjectTaskExecutorService {
         Long datasetGroupId = taskEntity.getDatasetGroupId();
         ProjectKnowledgeGroupEntity groupEntity = projectKnowledgeGroupService.getById(datasetGroupId);
 
-        taskInfo.setCollectionIndexName(groupEntity.getVectorDatasetName());
-        taskInfo.setCollectionIndexLabel(groupEntity.getGroupName());
+        // 设置外部索引信息
+        taskInfo.setOutsideCollectionIndexName(groupEntity.getVectorDatasetName());
+        taskInfo.setOutsideCollectionIndexLabel(groupEntity.getGroupName());
 
         return taskInfo;
     }
