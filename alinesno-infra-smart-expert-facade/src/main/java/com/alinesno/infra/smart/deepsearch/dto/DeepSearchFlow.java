@@ -19,7 +19,11 @@ public class DeepSearchFlow implements Serializable {
 
     private Long taskId ; // 任务ID
     private Long sceneId ;  // 场景ID
+    private String sessionId ; // 会话ID
     private String flowId ; // 流程ID
+    private String userQuestion ; // 用户问题
+    private List<DeepSearchFlow.FileAttachmentDto> userAttachments ; // 用户附件
+
     private Plan plan; // 规划
     private List<Step> steps; // 规划步骤列表
     private Output output ; // 输出
