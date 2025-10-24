@@ -1,9 +1,12 @@
 package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.agent;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.IdUtil;
 import com.agentsflex.core.llm.ChatContext;
 import com.agentsflex.core.llm.Llm;
+import com.agentsflex.core.llm.LlmConfig;
 import com.agentsflex.core.llm.StreamResponseListener;
+import com.agentsflex.core.llm.embedding.EmbeddingOptions;
 import com.agentsflex.core.llm.response.AiMessageResponse;
 import com.agentsflex.core.message.AiMessage;
 import com.agentsflex.core.message.HumanMessage;
@@ -14,10 +17,12 @@ import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.common.core.utils.StringUtils;
 import com.alinesno.infra.smart.assistant.api.CodeContent;
 import com.alinesno.infra.smart.assistant.api.ToolResult;
+import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
 import com.alinesno.infra.smart.assistant.entity.ToolEntity;
 import com.alinesno.infra.smart.assistant.plugin.tool.ToolExecutor;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.prompt.PromptHandle;
+import com.alinesno.infra.smart.assistant.role.tools.OutsideRagTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepSearchContext;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
@@ -128,12 +133,62 @@ public class WorkerHandler {
                                 context.getGoal(),
                                 context.getDeepSearchFlow().getFlowId(),
                                 stepActionDto,
-                                step);
+                                step ,
+                                context.getSessionId());
 
                         Map<String, String> argsList = tool.getArgsList();
                         ToolResult toolResult = null;
                         try {
                             String toolFullName = tool.getName();
+
+                            // 如果是RagTool工具类
+                            if(toolFullName.equals(OutsideRagTool.class.getSimpleName())){
+                                OutsideRagTool ragTool = new OutsideRagTool(tool.getArgsList().get("queryText") , context.getTaskInfo().getOutsideCollectionIndexName()) ;
+
+                                // 配置查询向量模型
+                                if(context.getUploadData().getOverflowStrategy().equals("rag")){
+
+                                    LlmConfig config = new LlmConfig() ;
+
+                                    LlmModelEntity llmModel = context.getLlmModelService().getById(context.getUploadData().getRagVectorId()) ;
+                                    Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+                                    config.setEndpoint(llmModel.getApiUrl());
+                                    config.setApiKey(llmModel.getApiKey()) ;
+                                    config.setModel(llmModel.getModel()) ;
+
+                                    Llm uploadRagLlm =context.getLlmAdapter().getLlm(llmModel.getProviderCode(), config);
+
+                                    EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+                                    embeddingOptions.setModel(llmModel.getModel()) ;
+
+                                    ragTool.setLlm(uploadRagLlm);
+                                    ragTool.setEmbeddingOptions(embeddingOptions);
+                                }
+
+                                Object executeToolOutput = ragTool.execute() ;
+
+                                if(executeToolOutput != null && StringUtils.isNotBlank(executeToolOutput+"")){
+
+                                    // 更新 stepAction 状态为 DONE
+                                    stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
+                                    stepActionDto.setResult(String.valueOf(executeToolOutput));
+                                    // 更新 flow step
+                                    context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
+                                    context.getDeepSearchFlow().getSteps().add(step);
+                                    context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
+
+                                    // 标记任务已完成
+                                    context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
+
+
+                                    String toolAndObservable = "\r\n" + reactResponse.getThought() + ":" + executeToolOutput ;
+                                    toolOutput.append(toolAndObservable);
+                                }
+
+                                continue;
+                            }
+
                             if ("stdio".equals(tool.getType())) {
                                 ToolEntity toolEntity = context.getToolService().getToolScript(toolFullName, context.getRole().getSelectionToolsData());
                                 toolResult = ToolExecutor.executeGroovyScript(toolEntity.getGroovyScript(), argsList, context.getSecretKey());
@@ -156,7 +211,7 @@ public class WorkerHandler {
                             context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
                             // 标记任务已完成
-                            context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                            context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
 
                             if (toolResult.isFinished()) {
                                 answer = String.valueOf(executeToolOutput);
@@ -177,7 +232,8 @@ public class WorkerHandler {
                                     context.getGoal(),
                                     context.getDeepSearchFlow().getFlowId(),
                                     stepActionDto,
-                                    step);
+                                    step ,
+                                    context.getSessionId());
                         }
                     }
 
@@ -212,7 +268,8 @@ public class WorkerHandler {
                             context.getGoal(),
                             context.getDeepSearchFlow().getFlowId(),
                             summaryAction,
-                            step);
+                            step ,
+                            context.getSessionId());
 
                     // 通过 summaryMessageTool 获取最终答案（同步调用，保持原逻辑）
                     answer = context.getSummaryMessageTool().getSummaryAnswer(
@@ -226,7 +283,7 @@ public class WorkerHandler {
                             summaryAction
                     );
 
-                    context.getRecordManager().markTaskWorkerSingleStep(summaryAction, StepActionStatusEnums.DONE.getKey());
+                    context.getRecordManager().markTaskWorkerSingleStep(summaryAction, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
                 }
                 answer = StringUtils.isNotEmpty(answer) ? answer : AgentConstants.ChatText.CHAT_NO_ANSWER;
             }
@@ -274,7 +331,8 @@ public class WorkerHandler {
                 context.getGoal(),
                 context.getDeepSearchFlow().getFlowId(),
                 stepActionDto,
-                step);
+                step ,
+                context.getSessionId());
 
         llm.chatStream(historyPrompt, new StreamResponseListener() {
             @Override
@@ -298,7 +356,7 @@ public class WorkerHandler {
                         stepActionDto.setStatus(StepActionStatusEnums.DONE.getKey());
                         stepActionDto.setThink(message.getReasoningContent());
                         stepActionDto.setResult(message.getFullContent());
-                        context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey());
+                        context.getRecordManager().markTaskWorkerSingleStep(stepActionDto, StepActionStatusEnums.DONE.getKey() , context.getSessionId());
                         future.complete(outputAcc.toString());
                     }
 
@@ -345,7 +403,7 @@ public class WorkerHandler {
         params.put("planning_detail", getPlanningDetail(taskStepMap));
         params.put("task_id", task.getId());
         params.put("task_description", task.getTaskDesc());
-        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, false)));
+        params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, false , false)));
         params.put("current_time", PromptHandle.getCurrentTime());
         return params;
     }
