@@ -25,9 +25,9 @@ public interface IProjectKnowledgeGroupService extends IBaseService<ProjectKnowl
     void removeGroup(Long id);
 
     /**
-     * 导入数据
-     * @param result
-     * @param query
+     * 根据索引名称查询
+     * @param outsideCollectionIndexName
+     * @return
      */
-    void importExcelData(Map<String, List<Map<String, Object>>> result, PermissionQuery query);
+    ProjectKnowledgeGroupEntity getByCollectionIndexName(String outsideCollectionIndexName);
 }
