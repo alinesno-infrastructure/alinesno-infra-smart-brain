@@ -581,55 +581,55 @@ function handleDisplayContent(item){
   }
 }
 
-// 新增方法：加载任务历史记录
+// 加载任务历史记录时调用
 const loadTaskHistoryRecords = async () => {
   try {
     const res = await getTaskRecords(taskId.value);
-    const deepSearchFlow = res.data;
+    const flowList = res.data; // 后端返回按 session 分组的 flowList
     const username = res.username;
-
-    if (deepSearchFlow) {
-      // 重建消息列表
-      rebuildMessageListFromFlow(deepSearchFlow , username);
-    }
+    rebuildMessageListFromFlow(flowList, username); // 重建一问一答
   } catch (error) {
     console.error('加载任务历史记录失败:', error);
     ElMessage.error('加载历史记录失败');
   }
 };
 
-// 重建消息列表
-const rebuildMessageListFromFlow = (deepSearchFlow , username) => {
-  // 清空当前消息列表
-  // messageList.value = [];
+// 重建消息列表（按 session 分组，一问一答）
+const rebuildMessageListFromFlow = (flowList, username) => {
+  messageList.value = []; // 清空原有列表
+  if (!flowList || flowList.length === 0) return;
 
-  // 添加用户初始消息
-  const userMessage = {
-    roleType: 'person',
-    name: username || '用户',
-    dateTime: new Date().toLocaleString(),
-    chatText: currentTask.value.promptContent,
-    businessId: snowflake.generate(),
-    showTools: false
-  };
+  flowList.forEach(flow => {
+    // 1. 渲染“用户问题”
+    const userMessage = {
+      roleType: 'person',
+      name: username || '用户',
+      dateTime: new Date().toLocaleString(),
+      chatText: flow.userQuestion || '', // 从 flow 取用户问题
+      businessId: snowflake.generate(),
+      showTools: false,
+      sessionId: flow.sessionId, // 关联会话ID
+      fileAttributeList: flow.userAttachments || [] // 渲染用户附件
+    };
+    messageList.value.push(userMessage);
 
-  messageList.value.push(userMessage);
+    // 2. 渲染“AI结果”
+    const aiMessage = {
+      roleType: 'agent',
+      name: roleInfo.value.roleName || 'AI助手',
+      dateTime: new Date().toLocaleString(),
+      businessId: snowflake.generate(),
+      showTools: false,
+      sessionId: flow.sessionId,
+      deepSearchFlow: flow, // AI的DeepSearch结果
+      chatText: flow.output?.actions?.[0]?.result || '', // AI总结内容
+      loading: false,
+      fileAttributeList: [] // AI返回的附件
+    };
+    messageList.value.push(aiMessage);
+  });
 
-  // 添加 AI 响应消息（包含完整的 DeepSearch 流程）
-  const aiMessage = {
-    roleType: 'agent',
-    name: roleInfo.value.roleName || 'AI助手',
-    dateTime: new Date().toLocaleString(),
-    businessId: snowflake.generate(),
-    showTools: false,
-    deepSearchFlow: deepSearchFlow,
-    chatText: deepSearchFlow.output?.actions?.[0]?.result || '',
-    loading: false
-  };
-  messageList.value.push(aiMessage);
-
-  // 初始化滚动条
-  initChatBoxScroll();
+  initChatBoxScroll(); // 滚动到底部
 };
 
 // 销毁信息
