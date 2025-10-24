@@ -510,12 +510,12 @@ export const constantRoutes = [
       },
 
       // 知识库
-      {
-        path: '/knowledge',
-        component: () => import('@/views/base/knowledge/index'),
-        name: '/knowledge',
-        meta: { title: '知识库', icon: 'dashboard', affix: true }
-      },
+//      {
+//        path: '/knowledge',
+//        component: () => import('@/views/base/knowledge/index'),
+//        name: '/knowledge',
+//        meta: { title: '知识库', icon: 'dashboard', affix: true }
+//      },
 
       // ->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
     ]
