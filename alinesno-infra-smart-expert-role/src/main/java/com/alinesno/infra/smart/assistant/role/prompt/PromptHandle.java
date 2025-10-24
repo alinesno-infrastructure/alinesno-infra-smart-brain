@@ -4,7 +4,8 @@ import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.tools.AskHumanHelpTool;
-import com.alinesno.infra.smart.assistant.role.tools.RagTool;
+import com.alinesno.infra.smart.assistant.role.tools.OutsideRagTool;
+import com.alinesno.infra.smart.assistant.role.tools.UploadRagTool;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -29,13 +30,14 @@ public class PromptHandle {
                                      String goal ,
                                      String datasetKnowledgeDocument,
                                      int maxLoop ,
-                                     boolean hasOutsideKnowledge){
+                                     boolean hasOutsideKnowledge ,
+                                     boolean hasUploadKnowledge){
 
         return String.format(PromptTemplate.corePrompt,
                 agent.getPromptContent(),
                 datasetKnowledgeDocument,
                 thought.toString() ,
-                parsePlugins(tools , agent.isAskHumanHelp() ,  hasOutsideKnowledge),
+                parsePlugins(tools , agent.isAskHumanHelp() ,  hasOutsideKnowledge , hasUploadKnowledge),
                 taskPrompt(goal),
                 maxLoop ,
                 getCurrentTime()
@@ -61,7 +63,7 @@ public class PromptHandle {
      * @param tools
      * @return
      */
-    public static List<String> parsePlugins(List<ToolDto> tools , boolean askHumanHelp , boolean hasOutsideKnowledge) {
+    public static List<String> parsePlugins(List<ToolDto> tools , boolean askHumanHelp , boolean hasOutsideKnowledge , boolean hasUploadKnowledge) {
         List<String> toolList = new ArrayList<>() ;
 
         // 用户自定义的工具类
@@ -77,7 +79,12 @@ public class PromptHandle {
 
         // 使用外部工具知识库
         if(hasOutsideKnowledge){
-            toolList.add(new RagTool().toJson()) ;
+            toolList.add(new OutsideRagTool().toJson()) ;
+        }
+
+        // 使用上传工具知识库
+        if(hasUploadKnowledge){
+            toolList.add(new UploadRagTool().toJson()) ;
         }
 
         return toolList;
