@@ -14,6 +14,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.Generator
 import com.alinesno.infra.smart.assistant.service.IIndustryRoleService;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchSceneDto;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchSceneRequestDto;
+import com.alinesno.infra.smart.point.annotation.ScenePointAnnotation;
 import com.alinesno.infra.smart.scene.dto.SceneDto;
 import com.alinesno.infra.smart.scene.dto.SceneInfoDto;
 import com.alinesno.infra.smart.scene.entity.DeepSearchSceneEntity;
@@ -85,6 +86,7 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         return AjaxResult.success("操作成功.", sceneEntity.getId());
     }
 
+    @ScenePointAnnotation(sceneCode = SceneEnum.DEEP_SEARCH)
     @DataPermissionQuery
     @PostMapping("/updateChapterPromptContent")
     public AjaxResult updateChapterPromptContent(@RequestBody @Validated DeepSearchSceneRequestDto dto , PermissionQuery query) {
