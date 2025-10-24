@@ -71,47 +71,15 @@ public class ProjectKnowledgeGroupServiceImpl extends IBaseServiceImpl<ProjectKn
         knowledgeService.remove(new LambdaQueryWrapper<ProjectKnowledgeEntity>().eq(ProjectKnowledgeEntity::getGroupId, id));
     }
 
+    /**
+     * 根据索引名称查询
+     * @param collectionIndexName
+     * @return
+     */
     @Override
-    public void importExcelData(Map<String, List<Map<String, Object>>> result, PermissionQuery query) {
-        int count = 1 ;
-
-        for (Map.Entry<String, List<Map<String, Object>>> entry : result.entrySet()) {
-
-            // 判断分组是否已经在数据库中，如果存在则跳过，如果不存在则创建
-            if (exists(new LambdaQueryWrapper<ProjectKnowledgeGroupEntity>()
-                    .eq(ProjectKnowledgeGroupEntity::getOrgId, query.getOrgId())
-                    .eq(ProjectKnowledgeGroupEntity::getGroupName, entry.getKey()))) {
-                continue;
-            }
-
-            ProjectKnowledgeGroupEntity group = new ProjectKnowledgeGroupEntity();
-            BeanUtils.copyProperties(query , group);
-
-            group.setGroupName(entry.getKey());
-            group.setGroupSort(count++);
-
-            save(group);
-
-            Long groupId = group.getId() ;
-
-//            for (Map<String, Object> row : entry.getValue()) {
-//
-//                String ruleName= (String) row.get("ruleName");
-//                String ruleContent = (String) row.get("ruleDesc");
-//                String riskLevel = (String) row.get("riskLevel");
-//
-//                ProjectKnowledgeEntity rulesEntity = new ProjectKnowledgeEntity();
-//                BeanUtils.copyProperties(query , rulesEntity);
-//                rulesEntity.setGroupId(groupId);
-//
-//                rulesEntity.setRuleName(ruleName);
-//                rulesEntity.setRuleContent(ruleContent);
-//                rulesEntity.setRiskLevel(riskLevel);
-//
-//                rulesService.save(rulesEntity);
-//            }
-
-        }
+    public ProjectKnowledgeGroupEntity getByCollectionIndexName(String collectionIndexName) {
+        return getOne(new LambdaQueryWrapper<ProjectKnowledgeGroupEntity>()
+                .eq(ProjectKnowledgeGroupEntity::getVectorDatasetName, collectionIndexName));
     }
 
 }
