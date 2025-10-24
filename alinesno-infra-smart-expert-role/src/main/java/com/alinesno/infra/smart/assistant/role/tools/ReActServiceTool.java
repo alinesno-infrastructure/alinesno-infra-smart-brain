@@ -16,6 +16,7 @@ import com.alinesno.infra.smart.assistant.api.config.ContextEngineeringData;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.entity.LlmModelEntity;
+import com.alinesno.infra.smart.assistant.role.context.WorkerResponseJson;
 import com.alinesno.infra.smart.assistant.role.utils.AttachmentReaderUtils;
 import com.alinesno.infra.smart.assistant.role.utils.OutsideDatasetUtil;
 import com.alinesno.infra.smart.assistant.role.utils.ParserDataUtils;
@@ -48,6 +49,8 @@ import java.util.List;
 @Scope("prototype")
 @Component
 public class ReActServiceTool {
+
+    public static final String UPLOAD_ATTACHMENT_RAG_STRATEGY = "rag" ; // rag 策略
 
     @Autowired
     private AttachmentReaderUtils attachmentReaderUtils; ;
@@ -189,7 +192,7 @@ public class ReActServiceTool {
         }
 
         // 如果文件内容总token数超过限制，则进行RAG内容化
-        if (contentTokenSummary > maxTokenLength && uploadData.getOverflowStrategy().equals("rag")) {
+        if (contentTokenSummary > maxTokenLength && uploadData.getOverflowStrategy().equals(UPLOAD_ATTACHMENT_RAG_STRATEGY)) {
 
             String processChatId = IdUtil.getSnowflakeNextIdStr();
             eventStepMessage(" 附件上下文长度超出指定的长度，将使用Rag策略进行存储配置，内容将被向量化.", AgentConstants.STEP_FINISH, processChatId, taskInfo);
@@ -210,7 +213,7 @@ public class ReActServiceTool {
                 groupEntity = projectKnowledgeGroupService.getOne(groupWrapper) ;
             }
 
-            taskInfo.setCollectionIndexName(groupEntity.getVectorDatasetName());
+            taskInfo.setUploadCollectionIndexName(groupEntity.getVectorDatasetName());
 
             for (FileAttachmentDto fileAttachmentDto : newAttachments) {
 
@@ -431,8 +434,103 @@ public class ReActServiceTool {
                                                  String oneChatId,
                                                  HistoriesPrompt historyPrompt) {
 
-        // 判断是否有外挂知识库
-        String groupName = "chat_rag_"+taskInfo.getRoleId() + "_" + taskInfo.getChannelId() ;
+        StringBuilder datasetKnowledgeDocumentBuilder = new StringBuilder() ;
+
+        // 获取对话上传的知识库
+        String uploadDatasetKnowledgeDocument = getUploadDatasetKnowledgeDocument(goal, taskInfo, oneChatId);
+        datasetKnowledgeDocumentBuilder.append(uploadDatasetKnowledgeDocument);
+
+        // 获取到外置知识库
+        String outsideDatasetKnowledgeDocument = getOutsideDatasetKnowledgeDocument(goal, taskInfo, oneChatId);
+        datasetKnowledgeDocumentBuilder.append(outsideDatasetKnowledgeDocument);
+
+        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList) || !CollectionUtils.isEmpty(taskInfo.getAttachments()) || workflowMessage != null){
+
+            String preKnowledgeProcess = "解析知识库" + (taskInfo.getAttachments() == null ? "" : "和" + taskInfo.getAttachments().size() + "个附件")  ;
+
+            if(workflowMessage != null){
+                preKnowledgeProcess += "和" + workflowMessage.getId() + "消息" ;
+            }
+
+            eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
+            List<ParserDataBean> datasetMap = new ArrayList<>();
+            datasetKnowledgeDocumentBuilder.append(handleDocumentContent(goal ,
+                    datasetKnowledgeDocumentList,
+                    workflowMessage,
+                    taskInfo ,
+                    historyPrompt ,
+                    oneChatId ,
+                    datasetMap)) ;
+            taskInfo.setDatasetMap(datasetMap);
+            eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(datasetMap)) ;
+
+        }
+
+        // 设置消息引用为空（fix:规避重复生成引用的问题)
+        taskInfo.setFlowStep(null);
+
+        return datasetKnowledgeDocumentBuilder.toString();
+    }
+
+    /**
+     * 获取外置知识库
+     * @param goal
+     * @param taskInfo
+     * @param oneChatId
+     * @return
+     */
+    private String getOutsideDatasetKnowledgeDocument(String goal, MessageTaskInfo taskInfo, String oneChatId) {
+
+        String outsideDatasetKnowledgeDocument = "" ;
+
+        // 解析前端外挂知识库内容
+        if(StringUtils.hasLength(taskInfo.getOutsideCollectionIndexName())){
+
+            String preKnowledgeProcess = "解析前端外挂["+ taskInfo.getOutsideCollectionIndexLabel()+"]知识库" ;
+            this.eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
+
+            List<ParserDataBean> indexDatasetMap = new ArrayList<>();
+
+            // 获取到外挂数据库的模型
+            ProjectKnowledgeGroupEntity projectKnowledgeGroupEntity = projectKnowledgeGroupService.getByCollectionIndexName(taskInfo.getOutsideCollectionIndexName()) ;
+
+            LlmModelEntity llmModel = llmModelService.getById(projectKnowledgeGroupEntity.getEmbeddingModelId()) ;
+            Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+            LlmConfig config = new LlmConfig() ;
+
+            config.setEndpoint(llmModel.getApiUrl());
+            config.setApiKey(llmModel.getApiKey()) ;
+            config.setModel(llmModel.getModel()) ;
+
+            Llm llm =llmAdapter.getLlm(llmModel.getProviderCode(), config);
+
+            EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+            embeddingOptions.setModel(llmModel.getModel()) ;
+
+            outsideDatasetUtil.setLlm(llm);
+            outsideDatasetUtil.setEmbeddingOptions(embeddingOptions);
+
+            outsideDatasetKnowledgeDocument = outsideDatasetUtil.search(taskInfo.getOutsideCollectionIndexName() , goal, indexDatasetMap) ;
+            taskInfo.setDatasetMap(indexDatasetMap);
+
+            this.eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(indexDatasetMap)) ;
+        }
+
+        return outsideDatasetKnowledgeDocument;
+    }
+
+    /**
+     * 获取到对话框上传的知识库
+     * @param goal
+     * @param taskInfo
+     * @param oneChatId
+     * @return
+     */
+    private String getUploadDatasetKnowledgeDocument(String goal, MessageTaskInfo taskInfo, String oneChatId) {
+        // ------------->>>>>>>>>>> 上传文件转RAG知识库处理_start ----->>>>>>>>>>>>>>>>>>>>>>
+        // 判断是否有上传知识库
+        String groupName = "chat_rag_"+ taskInfo.getRoleId() + "_" + taskInfo.getChannelId() ;
         LambdaQueryWrapper<ProjectKnowledgeGroupEntity> groupWrapper = new LambdaQueryWrapper<>();
         groupWrapper.eq(ProjectKnowledgeGroupEntity::getGroupName , groupName);
 
@@ -440,21 +538,22 @@ public class ReActServiceTool {
             ProjectKnowledgeGroupEntity groupEntity = projectKnowledgeGroupService.getOne(groupWrapper);
             String collectionIndexName = groupEntity.getVectorDatasetName();
 
-            taskInfo.setCollectionIndexLabel("对话知识库:"+groupEntity.getGroupName());
-            taskInfo.setCollectionIndexName(collectionIndexName);
+            taskInfo.setUploadCollectionIndexLabel("对话知识库:"+groupEntity.getGroupName());
+            taskInfo.setUploadCollectionIndexName(collectionIndexName);
         }
 
-        String datasetKnowledgeDocument = "" ;
+        String uploadDatasetKnowledgeDocument = "" ;
 
-        // 解析前端自带知识库内容
-        if(StringUtils.hasLength(taskInfo.getCollectionIndexName())){
+        // 解析前端上传知识库内容
+        if(StringUtils.hasLength(taskInfo.getUploadCollectionIndexName())){
 
-            String preKnowledgeProcess = "解析前端["+taskInfo.getCollectionIndexLabel()+"]知识库" ;
+            String preKnowledgeProcess = "解析前端["+ taskInfo.getUploadCollectionIndexLabel()+"]知识库" ;
             this.eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
 
             List<ParserDataBean> indexDatasetMap = new ArrayList<>();
 
-            if(this.uploadData != null && this.uploadData.getOverflowStrategy().equals("rag")){  // 设置自定义的模型解析模型
+            if(this.uploadData != null && this.uploadData.getOverflowStrategy().equals(UPLOAD_ATTACHMENT_RAG_STRATEGY)){  // 设置自定义的模型解析模型
+
                 LlmModelEntity llmModel = llmModelService.getById(uploadData.getRagVectorId()) ;
                 Assert.notNull(llmModel, "模型未配置或者不存在.");
 
@@ -473,38 +572,118 @@ public class ReActServiceTool {
                 outsideDatasetUtil.setEmbeddingOptions(embeddingOptions);
             }
 
-            datasetKnowledgeDocument = outsideDatasetUtil.search(taskInfo.getCollectionIndexName() , goal , indexDatasetMap) ;
+            uploadDatasetKnowledgeDocument = outsideDatasetUtil.search(taskInfo.getUploadCollectionIndexName() , goal, indexDatasetMap) ;
             taskInfo.setDatasetMap(indexDatasetMap);
 
             this.eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(indexDatasetMap)) ;
         }
 
-        if(!CollectionUtils.isEmpty(datasetKnowledgeDocumentList) || !CollectionUtils.isEmpty(taskInfo.getAttachments()) || workflowMessage != null){
+        // ------------->>>>>>>>>>> 上传文件转RAG知识库处理_end ----->>>>>>>>>>>>>>>>>>>>>>
+        return uploadDatasetKnowledgeDocument;
+    }
 
-            String preKnowledgeProcess = "解析知识库" + (taskInfo.getAttachments() == null ? "" : "和" + taskInfo.getAttachments().size() + "个附件")  ;
+    /**
+     * 执行 UploadRagTool 并返回要追加到 toolOutput 的字符串（如果有）
+     */
+    public String executeUploadRagTool(WorkerResponseJson.Tool tool,
+                                       String thought,
+                                       MessageTaskInfo taskInfo,
+                                       String oneChatId) {
 
-            if(workflowMessage != null){
-                preKnowledgeProcess += "和" + workflowMessage.getId() + "消息" ;
-            }
+        UploadRagTool ragTool = new UploadRagTool(tool.getArgsList().get("queryText"),
+                taskInfo.getUploadCollectionIndexName());
 
-            eventStepMessage(preKnowledgeProcess, AgentConstants.STEP_START , oneChatId, taskInfo) ;
-            List<ParserDataBean> datasetMap = new ArrayList<>();
-            datasetKnowledgeDocument = handleDocumentContent(goal ,
-                    datasetKnowledgeDocumentList,
-                    workflowMessage,
-                    taskInfo ,
-                    historyPrompt ,
-                    oneChatId ,
-                    datasetMap) ;
-            taskInfo.setDatasetMap(datasetMap);
-            eventStepMessage(preKnowledgeProcess , AgentConstants.STEP_FINISH, oneChatId, taskInfo, ParserDataUtils.generateParsedItemsHTML(datasetMap)) ;
+        // 配置查询向量模型（当 uploadData 使用 rag 策略时）
+        if (this.uploadData != null && this.uploadData.getOverflowStrategy().equals(UPLOAD_ATTACHMENT_RAG_STRATEGY)) {
 
+            LlmModelEntity llmModel = llmModelService.getById(uploadData.getRagVectorId());
+            Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+            LlmConfig config = new LlmConfig();
+            config.setEndpoint(llmModel.getApiUrl());
+            config.setApiKey(llmModel.getApiKey());
+            config.setModel(llmModel.getModel());
+
+            Llm uploadRagLlm = llmAdapter.getLlm(llmModel.getProviderCode(), config);
+
+            EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+            embeddingOptions.setModel(llmModel.getModel());
+
+            ragTool.setLlm(uploadRagLlm);
+            ragTool.setEmbeddingOptions(embeddingOptions);
         }
 
-        // 设置消息引用为空（fix:规避重复生成引用的问题)
-        taskInfo.setFlowStep(null);
+        Object executeToolOutput = ragTool.execute();
 
-        return datasetKnowledgeDocument;
+        if (executeToolOutput != null && StringUtils.hasLength(executeToolOutput + "")) {
+            FlowStepStatusDto stepDto = new FlowStepStatusDto();
+            stepDto.setMessage("RagTool工具执行完成.");
+            stepDto.setStepId(oneChatId);
+            stepDto.setStatus(AgentConstants.STEP_FINISH);
+            stepDto.setFlowChatText("\r\n" + executeToolOutput);
+            stepDto.setPrint(false);
+            taskInfo.setFlowStep(stepDto);
+
+            // 发布流式消息（不入库）
+            this.streamMessagePublisher.doStuffAndPublishAnEvent(null, this.role, taskInfo, taskInfo.getTraceBusId());
+
+            String toolAndObservable = "\r\n" + thought + ":" + executeToolOutput;
+            taskInfo.setReasoningText("<p>" + thought + "</p>");
+            return toolAndObservable;
+        }
+
+        return null;
+    }
+
+    /**
+     * 执行 OutsideRagTool 并返回要追加到 toolOutput 的字符串（如果有）
+     */
+    public String executeOutsideRagTool(WorkerResponseJson.Tool tool,
+                                        String thought,
+                                        MessageTaskInfo taskInfo,
+                                        String oneChatId) {
+
+        OutsideRagTool ragTool = new OutsideRagTool(tool.getArgsList().get("queryText"),
+                taskInfo.getOutsideCollectionIndexName());
+
+        // 配置查询向量模型：从外置知识库分组获取 embeddingModelId
+        ProjectKnowledgeGroupEntity projectKnowledgeGroupEntity =
+                projectKnowledgeGroupService.getByCollectionIndexName(taskInfo.getOutsideCollectionIndexName());
+        LlmModelEntity llmModel = llmModelService.getById(projectKnowledgeGroupEntity.getEmbeddingModelId());
+        Assert.notNull(llmModel, "模型未配置或者不存在.");
+
+        LlmConfig config = new LlmConfig();
+        config.setEndpoint(llmModel.getApiUrl());
+        config.setApiKey(llmModel.getApiKey());
+        config.setModel(llmModel.getModel());
+
+        Llm uploadRagLlm = llmAdapter.getLlm(llmModel.getProviderCode(), config);
+
+        EmbeddingOptions embeddingOptions = new EmbeddingOptions();
+        embeddingOptions.setModel(llmModel.getModel());
+
+        ragTool.setLlm(uploadRagLlm);
+        ragTool.setEmbeddingOptions(embeddingOptions);
+
+        Object executeToolOutput = ragTool.execute();
+
+        if (executeToolOutput != null && StringUtils.hasLength(executeToolOutput + "")) {
+            FlowStepStatusDto stepDto = new FlowStepStatusDto();
+            stepDto.setMessage("RagTool工具执行完成.");
+            stepDto.setStepId(oneChatId);
+            stepDto.setStatus(AgentConstants.STEP_FINISH);
+            stepDto.setFlowChatText("\r\n" + executeToolOutput);
+            stepDto.setPrint(false);
+            taskInfo.setFlowStep(stepDto);
+
+            this.streamMessagePublisher.doStuffAndPublishAnEvent(null, this.role, taskInfo, taskInfo.getTraceBusId());
+
+            String toolAndObservable = "\r\n" + thought + ":" + executeToolOutput;
+            taskInfo.setReasoningText("<p>" + thought + "</p>");
+            return toolAndObservable;
+        }
+
+        return null;
     }
 
 }
