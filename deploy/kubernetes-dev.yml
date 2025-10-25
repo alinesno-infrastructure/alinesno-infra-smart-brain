@@ -80,10 +80,6 @@ spec:
             -Dalinesno.infra.qiniu.bucket-pub=${QINIU_BUCKET_NAME_PUB}
             -Dalinesno.infra.qiniu.domain-pub=${QINIU_BUCKET_DOMAIN_PUB}
 
-            -javaagent:/home/root/libs/aliyun-java-agent-4.2.5.jar
-            -Darms.licenseKey=${OPEN_TELEMETRY_ENDPOINT}
-            -Darms.appName=alinesno-infra-smart-expert-boot
-
             -Dserver.port=8080
         ports:
         - name: http
