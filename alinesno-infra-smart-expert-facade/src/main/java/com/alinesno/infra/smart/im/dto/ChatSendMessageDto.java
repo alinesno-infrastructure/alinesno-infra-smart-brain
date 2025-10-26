@@ -18,7 +18,7 @@ public class ChatSendMessageDto extends BaseDto {
     private List<Long> fileIds = new ArrayList<>(); // 文件ID列表
     private Long channelId;
     private String channelStreamId ;  // 频道流ID
-
+    private String sessionId ; // 会话ID
     private Long accountId ; // 操作账号ID
     private Long accountOrgId ; // 操作账户所属组织Id
     private String accountName; // 操作账号名称
