@@ -1,5 +1,6 @@
 package com.alinesno.infra.smart.scene.entity;
 
+import cn.hutool.core.util.IdUtil;
 import com.alinesno.infra.common.facade.mapper.entity.InfraBaseEntity;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -75,4 +76,16 @@ public class DeepSearchTaskEntity extends InfraBaseEntity {
     @Column(name = "error_message", type = MySqlTypeConstant.TEXT, comment = "设置错误信息")
     private String errorMessage ;
 
+    public static DeepSearchTaskEntity createDemoTask() {
+        DeepSearchTaskEntity task = new DeepSearchTaskEntity();
+        task.setTaskName("Demo任务");
+        task.setTaskDescription("这是一个Demo任务");
+        task.setTaskStatus("not_run");
+        task.setTaskStartTime(new Date());
+        task.setTaskEndTime(new Date());
+        task.setTaskPlanJson("{}");
+        task.setErrorMessage("");
+        task.setId(IdUtil.getSnowflakeNextId());
+        return task;
+    }
 }
