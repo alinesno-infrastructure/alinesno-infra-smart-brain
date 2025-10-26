@@ -63,6 +63,21 @@
                                 </el-col>
                             </el-row>
 
+                            <!-- 定义Prompt工程_start -->
+                            <el-row class="nav-row">
+                                <el-col :span="12">
+                                    <div class="ai-config-section-title">
+                                        <i class="fa-solid fa-file-signature"></i> <span>提示词</span>
+                                    </div>
+                                </el-col>
+                                <el-col :span="12">
+                                    <div class="button-group">
+                                        <el-button type="primary" text bg @click="toggleDeepsearchPromptSettingsPanel">配置</el-button>
+                                    </div>
+                                </el-col>
+                            </el-row>
+                            <!-- 定义Prompt工程_end -->
+
                             <!-- 上下文工程_start -->
                             <el-row class="nav-row">
                                 <el-col :span="12">
@@ -341,6 +356,11 @@
         <ContextEngineSettingsPanel @handleContextEngineSettingsPanelClose="handleContextEngineSettingsPanelClose" ref="contextEngineSettingsPanelRef" />
     </el-dialog>
 
+    <!-- 深度搜索Prompt配置 -->
+    <el-dialog title="深度搜索Prompt配置" v-model="deepSearchPromptStatusVisible" width="1024px" fullscreen>
+        <DeepsearchPromptSettingsPanel @handleDeepSearchPromptStatusPanelClose="handleDeepSearchPromptStatusPanelClose" ref="deepSearchPromptSettingsPanelRef" />
+    </el-dialog>
+
 </template>
 <script setup>
 import { nextTick, ref } from 'vue';
@@ -359,8 +379,6 @@ import {
 import LLMSelector from '@/views/smart/assistant/workflow/components/LLMSelector'
 import DeepSearchTracePanel from './deepSearchTracePanel.vue'
 
-// import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoicePanel'
-// import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoicePanel'
 import DatasetChoicePanel from '@/views/base/search/vectorData/datasetChoiceTransferPanel'
 import DatasetParamsChoicePanel from '@/views/base/search/vectorData/datasetParamsChoicePanel'
 import ToolsChoicePanel from '@/views/smart/assistant/plugin/toolsChoiceTransferPanel'
@@ -373,6 +391,7 @@ import AttachmentUploadStatusPanel from '@/views/smart/assistant/llmModel/attach
 import OpeningPhraseStatusPanel from '@/views/smart/assistant/llmModel/openingPhraseStatusPanel'
 import OutputFileFormatStatusPanel from '@/views/smart/assistant/llmModel/outputFileFormatStatusPanel'
 import ContextEngineSettingsPanel from '@/views/smart/assistant/llmModel/contextEngineSettingsPanel'
+import DeepsearchPromptSettingsPanel from '@/views/smart/assistant/llmModel/deepsearchPromptSettingsPanel'
 
 import RoleChatPanel from '@/views/smart/assistant/role/chat/index';
 
@@ -395,6 +414,7 @@ const outputFileFormatStatusVisible = ref(false)
 const uploadStatusVisible = ref(false)
 const openingPhraseStatusVisible = ref(false)
 const contextEngineStatusVisible = ref(false)
+const deepSearchPromptStatusVisible = ref(false)
 
 const llmModelConfigPanelRef = ref(null)
 const datasetParamsChoicePanelRef= ref(null)
@@ -408,7 +428,8 @@ const promptEditorPanelRef = ref(null)
 const voiceInputStatusPanelRef = ref(null)
 const uploadStatusVisiblePanelRef = ref(null)
 const openingPhraseStatusPanelRef  = ref(null)
-const contextEngineSettingsPanelRef = ref(false)
+const contextEngineSettingsPanelRef = ref(null)
+const deepSearchPromptSettingsPanelRef = ref(null)
 
 const modelOptions = ref([])
 const llmModelOptions = ref([])  // 大模型
@@ -464,6 +485,9 @@ const outputFileFormatStatus = ref(false);
 
 // 上下文工程开头
 const contextEngineeringEnable = ref(false)
+
+// 深搜提示语开关
+const deepsearchPromptEnable = ref(false)
 
 // 已选择的数据集数据
 const selectionDatasetData = ref([]);
@@ -571,7 +595,6 @@ const displayRoleInfoBack = (currentRole) =>{
         agentModelConfigForm.value.contextEngineeringEnable = currentRole.contextEngineeringEnable ;
         agentModelConfigForm.value.contextEngineeringData = currentRole.contextEngineeringData ;
     }
-
 
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
@@ -908,6 +931,28 @@ const handleOpeningPhraseStatusPanelClose = (formData) => {
     }
 }
 
+// DeepSearchPrompt定义
+const toggleDeepsearchPromptSettingsPanel = () => {
+    deepSearchPromptStatusVisible.value = !deepSearchPromptStatusVisible.value;
+
+    nextTick(() => {
+         if(agentModelConfigForm.value.deepSearchPromptData){
+            deepSearchPromptSettingsPanelRef.value.setConfigParams(agentModelConfigForm.value.deepSearchPromptData);
+         }
+    });
+}
+
+// DeepSearchPrompt配置
+const handleDeepSearchPromptStatusPanelClose = (formData) => {
+    console.log('formData= ' + JSON.stringify(formData));
+    if (deepSearchPromptSettingsPanelRef.value) {
+        deepSearchPromptStatusVisible.value = false ;
+        agentModelConfigForm.value.deepSearchPromptData = formData;
+        // 更新角色内容
+        submitModelConfig();
+    }
+}
+
 /** 上下文工程配置 */
 const toggleContextEngineStatus = () => {
     contextEngineeringEnable.value = !contextEngineeringEnable.value;
@@ -1011,11 +1056,6 @@ defineExpose({
 
 </script>
 <style lang="scss" scoped>
-.function-CodemirrorEditor__footer {
-    position: absolute;
-    bottom: 25px;
-    right: 0px;
-}
 
 .nav-row {
     width: 100%;
