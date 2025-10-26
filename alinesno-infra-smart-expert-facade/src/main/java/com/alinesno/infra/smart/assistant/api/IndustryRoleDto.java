@@ -43,6 +43,8 @@ public class IndustryRoleDto {
     private DatasetSearchConfig datasetSearchConfig ;   // 数据集搜索配置
     private OutputFileFormatData outputFileFormatData; // 输出文件格式
     private WelcomeConfigData welcomeConfigData ; // 欢迎配置
+    private DeepSearchPromptData deepSearchPromptData; // 深度搜索Prompt配置
+
     private String roleAvatar; // 角色头像
     private String roleName; // 角色名称
     private String backstory; // 角色背景
@@ -127,6 +129,11 @@ public class IndustryRoleDto {
         // 上下文工程配置
         if (entity.getContextEngineeringData() != null) {
             dto.setContextEngineeringData(JSONObject.parseObject(entity.getContextEngineeringData(), ContextEngineeringData.class));
+        }
+
+        // 深度搜索Prompt配置
+        if (entity.getDeepSearchPromptData() != null) {
+            dto.setDeepSearchPromptData(JSONObject.parseObject(entity.getDeepSearchPromptData(), DeepSearchPromptData.class));
         }
 
         return dto;
