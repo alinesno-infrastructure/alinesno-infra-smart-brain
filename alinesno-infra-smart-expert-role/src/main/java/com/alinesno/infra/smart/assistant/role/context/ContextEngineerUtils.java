@@ -114,8 +114,6 @@ public class ContextEngineerUtils {
             String historyTextPrompt = promptTemplate.format(map).toString();
             compressPrompt = llm.chat(historyTextPrompt) ;
 
-            System.out.println("内容压缩:" + compressPrompt);
-
             eventStepMessage("附件上下文长度超出指定的长度，将内容进行压缩.", AgentConstants.STEP_FINISH, processChatId, taskInfo);
 
             // 组合成新的对话内容
