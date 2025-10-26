@@ -51,6 +51,7 @@ public class PlannerHandler {
     ) {
         try {
             Map<String, Object> params = new HashMap<>();
+            params.put("user_plan_prompt", context.getDeepSearchPromptData().getPlanPrompt());
             params.put("complex_task", goal);
             params.put("dataset_knowledge_info", context.getDatasetKnowledgeDocument());
             params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, context.isHasOutsideKnowledge() , context.isHasUploadKnowledge())));
