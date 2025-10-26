@@ -146,14 +146,6 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @GetMapping("/getRoleWithTool")
     public AjaxResult getRoleWithTool(long roleId) {
 
-//        IndustryRoleEntity role = service.getById(roleId) ;
-//        List<ToolEntity> tools =  roleToolService.findTools(roleId);
-//
-//        AjaxResult result = AjaxResult.success("操作成功" , role);
-//        result.put("tools", tools);
-//
-//        return result ;
-
         return null ;
     }
 
@@ -187,12 +179,6 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @DataPermissionQuery
     @GetMapping("/listAllRole")
     public AjaxResult listAllRole(PermissionQuery query){
-
-//        LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
-//        wrapper.setEntityClass(IndustryRoleEntity.class);
-//        query.toWrapper(wrapper);
-//        wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
-
         List<IndustryRoleEntity> roleEntityList = service.listOrgRoleAndPublicRole(query) ;
         return AjaxResult.success(roleEntityList) ;
     }
@@ -204,12 +190,6 @@ public class IndustryRoleController extends BaseController<IndustryRoleEntity, I
     @DataPermissionQuery
     @GetMapping("/listPublicRole")
     public AjaxResult listPublicRole(PermissionQuery query){
-
-//        LambdaQueryWrapper<IndustryRoleEntity> wrapper = new LambdaQueryWrapper<>() ;
-//        wrapper.setEntityClass(IndustryRoleEntity.class);
-//        query.toWrapper(wrapper);
-//        wrapper.orderByDesc(IndustryRoleEntity::getAddTime) ;
-
         List<IndustryRoleEntity> roleEntityList = service.listPublicRole(query) ;
         return AjaxResult.success(roleEntityList) ;
     }
