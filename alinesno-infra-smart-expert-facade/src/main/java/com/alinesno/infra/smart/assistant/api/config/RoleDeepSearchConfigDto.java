@@ -56,6 +56,12 @@ public class RoleDeepSearchConfigDto {
     // 文件上传
     private boolean uploadStatus ;
 
+    // 深度搜索功能是否启用
+    private boolean contextEngineeringEnable ;
+
+    // 深度搜索提示数据
+    private DeepSearchPromptData deepSearchPromptData ;
+
     // 文件上传相关数据
     private UploadData uploadData ;
 
@@ -70,6 +76,9 @@ public class RoleDeepSearchConfigDto {
 
     // 语料搜索配置
     private DatasetSearchConfig datasetSearchConfig ;
+
+    // 上下文工程数据
+    private ContextEngineeringData contextEngineeringData ;
 
     // 输出内容格式化数据
     private OutputFileFormatData outputFileFormatData ;
