@@ -426,7 +426,7 @@ onMounted(() => {
       color: var(--coz-fg-secondary);
       display: -webkit-box;
       -webkit-box-orient: vertical;
-      // height: 40px;
+      min-height: 40px;
       overflow: hidden;
       display: -webkit-box;
       display: -moz-box;
