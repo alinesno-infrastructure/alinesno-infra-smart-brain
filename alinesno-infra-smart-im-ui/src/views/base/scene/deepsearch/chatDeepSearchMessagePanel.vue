@@ -18,8 +18,6 @@
           </div>
           <div class="say-message-body markdown-body think-content" v-if="item.think" v-html="readerHtml(item.think)"></div>
           <div class="say-message-body markdown-body output-content" v-if="item.result" v-html="readerReactJSON(item.result)"></div> 
-          <!-- 
-           -->
         </div>
 
       </div>
