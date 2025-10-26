@@ -268,6 +268,7 @@ public class SummaryHandler {
                                                         DeepSearchContext context) {
         try {
             Map<String, Object> params = new java.util.HashMap<>();
+            params.put("user_summary_prompt", context.getDeepSearchPromptData().getSummaryPrompt());
             params.put("complex_task", goal);
             params.put("planning_detail", context.getDatasetKnowledgeDocument());
             params.put("answer_output", answerOutput);
