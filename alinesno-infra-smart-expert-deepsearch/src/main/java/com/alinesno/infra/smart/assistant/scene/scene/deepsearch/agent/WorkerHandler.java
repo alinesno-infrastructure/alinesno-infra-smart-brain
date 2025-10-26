@@ -26,6 +26,7 @@ import com.alinesno.infra.smart.assistant.role.tools.OutsideRagTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepSearchContext;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DsContextEngineerUtils;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.FreemarkerUtil;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
@@ -33,6 +34,8 @@ import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.utils.CodeBlockParser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -50,6 +53,12 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class WorkerHandler {
+
+    @Autowired
+    private DsContextEngineerUtils deepsearchContextEngineerUtils ;
+
+    @Value("${alinesno.infra.smart.assistant.maxHistory:20}")
+    protected int maxHistory = 20 ;
 
     /**
      * 执行单个任务（同步方法，期望在线程池中调用）
@@ -86,9 +95,12 @@ public class WorkerHandler {
         steps.add(step);
         context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
+        HistoriesPrompt historyPrompt = new HistoriesPrompt();
+        historyPrompt.addMessage(new SystemMessage(context.getDeepSearchPromptData().getWorkerPrompt() + WorkerPrompt.DEFAULT_SYSTEM_WORKER_PROMPT));
+
         do {
             // 循环执行，确认达到目标则跳出
-            String workerOutput = executeWorker(task, toolOutput, context.getMaxLoopCount(), llm, taskStepMap, context, step);
+            String workerOutput = executeWorker(task, toolOutput, context.getMaxLoopCount(), llm, taskStepMap, context, step , historyPrompt);
 
             // 解析出需要调用的方法
             List<CodeContent> codeContentList = CodeBlockParser.parseCodeBlocks(workerOutput);
@@ -219,6 +231,10 @@ public class WorkerHandler {
                             }
                         } catch (Exception e) {
                             log.error("执行工具异常: {}", e.getMessage(), e);
+
+                            String errorMsg = "工具执行失败:" + e.getMessage();
+                            toolOutput.append("\r\n").append(errorMsg);
+
                             stepActionDto.setStatus(StepActionStatusEnums.FAIL.getKey());
                             stepActionDto.setResult(e.getMessage());
                             context.getDeepSearchFlow().getSteps().removeIf(s -> s.getId().equals(step.getId()));
@@ -305,15 +321,37 @@ public class WorkerHandler {
                                  Llm llm,
                                  List<DeepTaskBean> taskStepMap,
                                  DeepSearchContext context,
-                                 DeepSearchFlow.Step step) {
+                                 DeepSearchFlow.Step step,
+                                 HistoriesPrompt historyPrompt) {
 
         Map<String, Object> params = getStringObjectMap(task, toolOutput, taskStepMap, context);
         params.put("max_loop_count", maxLoopCount);
 
         String workerPrompt = FreemarkerUtil.processTemplate(WorkerPrompt.DEFAULT_WORKER_PROMPT, params);
 
-        HistoriesPrompt historyPrompt = new HistoriesPrompt();
-        historyPrompt.addMessage(new SystemMessage(WorkerPrompt.DEFAULT_SYSTEM_WORKER_PROMPT));
+        if(context.getContextEngineeringData() != null && context.getContextEngineeringData().isEnable()){
+            // 通过上下文处理长度的问题
+            CompletableFuture<String> compressPromptFuture = deepsearchContextEngineerUtils.tryCompressChat(
+                    context,
+                    context.getGoal(),
+                    historyPrompt ,
+                    toolOutput ,
+                    context.getDatasetKnowledgeDocument() ,
+                    maxHistory ,
+                    context.getContextEngineeringData() ,
+                    step) ;
+            try {
+                String compressDatasetKnowledgeDocument = compressPromptFuture.get() ;
+                params.put("observation_info", compressDatasetKnowledgeDocument);  // 压缩后的内容
+
+                workerPrompt = FreemarkerUtil.processTemplate(WorkerPrompt.DEFAULT_WORKER_PROMPT, params);
+                log.debug("compressDatasetKnowledgeDocument workerPrompt = {}" , workerPrompt);
+
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         historyPrompt.addMessage(new HumanMessage(workerPrompt));
 
         CompletableFuture<String> future = new CompletableFuture<>();
@@ -398,6 +436,8 @@ public class WorkerHandler {
      */
     private Map<String, Object> getStringObjectMap(DeepTaskBean task, StringBuilder toolOutput, List<DeepTaskBean> taskStepMap, DeepSearchContext context) {
         Map<String, Object> params = new java.util.HashMap<>();
+
+        params.put("user_worker_prompt", context.getDeepSearchPromptData().getWorkerPrompt());
         params.put("observation_info", toolOutput.toString());
         params.put("dataset_knowledge_info", context.getDatasetKnowledgeDocument());
         params.put("planning_detail", getPlanningDetail(taskStepMap));
@@ -405,6 +445,7 @@ public class WorkerHandler {
         params.put("task_description", task.getTaskDesc());
         params.put("tool_info", JSON.toJSONString(PromptHandle.parsePlugins(context.getTools(), false, false , false)));
         params.put("current_time", PromptHandle.getCurrentTime());
+
         return params;
     }
 
