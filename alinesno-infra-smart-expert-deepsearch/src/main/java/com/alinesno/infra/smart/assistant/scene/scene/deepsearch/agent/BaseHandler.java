@@ -7,7 +7,7 @@ import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record.DeepSearchTaskRecordManager;
-import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepsearchSummaryMessageTool;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DsSummaryMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.assistant.service.IToolService;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
@@ -43,7 +43,7 @@ public abstract class BaseHandler {
 
     private ReActServiceTool reActServiceTool  ;
 
-    private DeepsearchSummaryMessageTool summaryMessageTool ;
+    private DsSummaryMessageTool summaryMessageTool ;
 
     private UploadData uploadData  ; // 上传数据
 
