@@ -4,7 +4,6 @@ import com.alinesno.infra.common.core.service.impl.IBaseServiceImpl;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.mapper.DeepSearchTaskMapper;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
 import com.alinesno.infra.smart.scene.entity.DeepSearchTaskEntity;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -26,5 +25,13 @@ public class DeepSearchTaskServiceImpl extends IBaseServiceImpl<DeepSearchTaskEn
         baseMapper.updateTitleAndDescById(title , desc , taskEntity.getId()) ;
 
         log.info("已更新ID为{}的任务的名称和描述", taskEntity.getId());
+    }
+
+    @Override
+    public void updatePlanById(DeepSearchTaskEntity contextTask) {
+        // 判断是否存在
+        if (contextTask.getId() == null || getById(contextTask.getId()) == null) {
+            log.error("更新失败：任务ID不能为空");
+        }
     }
 }
