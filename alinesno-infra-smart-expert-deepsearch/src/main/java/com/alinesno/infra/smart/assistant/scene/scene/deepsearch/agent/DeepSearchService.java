@@ -10,6 +10,7 @@ import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.IndustryRoleDto;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.config.ContextEngineeringData;
+import com.alinesno.infra.smart.assistant.api.config.DeepSearchPromptData;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
@@ -18,8 +19,11 @@ import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepSearchContext;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.bean.DeepTaskBean;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record.DeepSearchTaskRecordManager;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.PlanningPrompts;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.SummaryPrompt;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
-import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepsearchSummaryMessageTool;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DsSummaryMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
@@ -75,7 +79,7 @@ public class DeepSearchService extends ReActExpertService {
     private IDeepSearchTaskService taskService ;
 
     @Autowired
-    private DeepsearchSummaryMessageTool summaryMessageTool ;
+    private DsSummaryMessageTool summaryMessageTool ;
 
     @Autowired
     private DeepSearchTaskRecordManager recordManager;
@@ -101,9 +105,9 @@ public class DeepSearchService extends ReActExpertService {
         String goal = clearMessage(taskInfo.getText()); // 目标
 
         deepSearchFlow = new DeepSearchFlow(IdUtil.getSnowflakeNextIdStr()) ;  // 执行步骤统计
-        Long sceneTaskId = taskInfo.getSceneTaskId() ;  // 当前任务id
+        Long sceneTaskId = taskInfo.getSceneTaskId() == null ? IdUtil.getSnowflakeNextId() : taskInfo.getSceneTaskId() ;  // 当前任务id
         Long sceneId = taskInfo.getSceneId() ;  // 当前场景id
-        String sessionId = taskInfo.getSessionId() ;
+        String sessionId = taskInfo.getSessionId() == null ? IdUtil.getSnowflakeNextIdStr() : taskInfo.getSessionId() ;
 
         deepSearchFlow.setSessionId(sessionId);
         deepSearchFlow.setSceneId(sceneId);
@@ -111,6 +115,10 @@ public class DeepSearchService extends ReActExpertService {
 
         // 深度任务
         DeepSearchTaskEntity deepSearchTask = taskService.getById(sceneTaskId) ;
+        // 如果任务空为，判断为测试模式，则创建一个虚拟的任务
+        if (deepSearchTask == null) {
+            deepSearchTask = DeepSearchTaskEntity.createDemoTask() ;
+        }
 
         // 是否带有外部的知识库
         boolean hasOutsideKnowledge = StringUtils.hasLength(taskInfo.getOutsideCollectionIndexName()) ;
@@ -120,6 +128,9 @@ public class DeepSearchService extends ReActExpertService {
         reActServiceTool.handleReferenceArticle(taskInfo, datasetKnowledgeDocumentList);
 
         IndustryRoleDto industryRoleDto = IndustryRoleDto.fromEntity(getRole()) ;
+
+        // Prompt配置
+        DeepSearchPromptData deepSearchPromptData = industryRoleDto.getDeepSearchPromptData() ;
 
         // 上传配置
         UploadData uploadData = industryRoleDto.getUploadData() ;
@@ -158,7 +169,8 @@ public class DeepSearchService extends ReActExpertService {
                 deepSearchFlow,
                 oneChatId ,
                 hasOutsideKnowledge ,
-                sessionId);
+                sessionId ,
+                deepSearchPromptData);
 
         Llm llm = getLlm(role);
         DeepSearchFlow.Plan plan = new DeepSearchFlow.Plan("执行深度搜索规划");
@@ -184,8 +196,9 @@ public class DeepSearchService extends ReActExpertService {
                     deepSearchFlow.setSteps(new ArrayList<>()); // 初始化步骤列表
 
                     // 更新任务计划
-                    deepSearchTask.setTaskPlanJson(JSONObject.toJSONString(taskBeans));
-                    taskService.updateById(deepSearchTask);
+                    DeepSearchTaskEntity contextTask = context.getDeepSearchTask() ;
+                    contextTask.setTaskPlanJson(JSONObject.toJSONString(taskBeans));
+                    taskService.updatePlanById(contextTask);
 
                     // 初始一个已完成的 CompletableFuture<StringBuilder>
                     CompletableFuture<StringBuilder> seq = CompletableFuture.completedFuture(new StringBuilder());
@@ -259,7 +272,7 @@ public class DeepSearchService extends ReActExpertService {
                                                       String datasetKnowledgeDocument,
                                                       String goal,
                                                       ReActServiceTool reActServiceTool,
-                                                      DeepsearchSummaryMessageTool summaryMessageTool,
+                                                      DsSummaryMessageTool summaryMessageTool,
                                                       UploadData uploadData,
                                                       ContextEngineeringData contextEngineeringData,
                                                       DeepSearchTaskEntity deepSearchTask,
@@ -267,8 +280,11 @@ public class DeepSearchService extends ReActExpertService {
                                                       DeepSearchFlow deepSearchFlow,
                                                       String oneChatId ,
                                                       boolean hasOutsideKnowledge,
-                                                      String sessionId) {
+                                                      String sessionId,
+                                                      DeepSearchPromptData deepSearchPromptData) {
 
+        // 初始化和填充 默认的promptData
+        deepSearchPromptData = fillDeepsearchPromptData(deepSearchPromptData);
         List<ToolDto> tools = getToolService().getByToolIds(getRole().getSelectionToolsData() , orgId) ;
 
         // 构造不可变/显式传参上下文 DeepSearchContext
@@ -290,6 +306,7 @@ public class DeepSearchService extends ReActExpertService {
                 .summaryMessageTool(summaryMessageTool)
                 .toolService(getToolService())
                 .tools(tools)
+                .deepSearchPromptData(deepSearchPromptData)
                 .deepSearchFlow(deepSearchFlow)
                 .stepEventUtil(stepEventUtil)
                 .recordManager(statusManager)
@@ -300,6 +317,35 @@ public class DeepSearchService extends ReActExpertService {
                 .llmModelService(llmModelService)
                 .cloudStorageConsumer(cloudStorageConsumer)
                 .build();
+    }
+
+    /**
+     * 处理和填充Prompt
+     *
+     * @param deepSearchPromptData
+     * @return
+     */
+    private DeepSearchPromptData fillDeepsearchPromptData(DeepSearchPromptData deepSearchPromptData) {
+
+        // 在没有配置的情况下，处理默认的Prompt
+        if(deepSearchPromptData == null){
+            deepSearchPromptData =  new DeepSearchPromptData() ;
+            deepSearchPromptData.setPlanPrompt(PlanningPrompts.DEFAULT_PLANNING_USER_PROMPT);
+            deepSearchPromptData.setWorkerPrompt(WorkerPrompt.DEFAULT_WORKER_USER_PROMPT);
+            deepSearchPromptData.setSummaryPrompt(SummaryPrompt.DEFAULT_SUMMARY_USER_PROMPT);
+        }else {
+            if(!StringUtils.hasLength(deepSearchPromptData.getPlanPrompt())){
+                deepSearchPromptData.setPlanPrompt(PlanningPrompts.DEFAULT_PLANNING_USER_PROMPT);
+            }
+            if(!StringUtils.hasLength(deepSearchPromptData.getWorkerPrompt())){
+                deepSearchPromptData.setWorkerPrompt(WorkerPrompt.DEFAULT_WORKER_USER_PROMPT);
+            }
+            if(!StringUtils.hasLength(deepSearchPromptData.getSummaryPrompt())){
+                deepSearchPromptData.setSummaryPrompt(SummaryPrompt.DEFAULT_SUMMARY_USER_PROMPT);
+            }
+        }
+
+        return deepSearchPromptData;
     }
 
 }
