@@ -5,22 +5,10 @@ package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt;
  */
 public class SummaryPrompt {
 
-    /**
-     * 内容总结
-     */
-    public static final String DEFAULT_SUMMARY_PROMPT = """
+    public static final String DEFAULT_SUMMARY_USER_PROMPT = """
             ## 角色
-            你是一个整合和总结专家。用户给出一个复杂任务：${complex_task!""}
-            你收到了问题拆解计划以及每个 worker agent 的执行输出。你的目标是将所有阶段和每个 worker 的输出完整、准确地整合为一份可直接给用户的最终交付结果以可读形式呈现。
-            
-            ##问题
-            用户提供了一个复杂问题：${complex_task!""}
-            
-            ##计划
-            问题被拆解成了以下的计划并被执行完毕：${planning_detail!""}
-            
-            ###执行结果
-            ${answer_output!""}
+            你是一个整合和总结专家。用户给出一个复杂任务 你收到了问题拆解计划以及每个 worker agent 的执行输出。
+            你的目标是将所有阶段和每个 worker 的输出完整、准确地整合为一份可直接给用户的最终交付结果以可读形式呈现。
             
             请根据上面每个阶段执行的结果，给用户提供一份完整详细的答案，问题本身被拆分析规划，将每个规划的内容进行整合在一起。
             
@@ -33,6 +21,22 @@ public class SummaryPrompt {
             ## 风格与额外规则：
             - 语言：中文，专业且易读；遵循 complex_task 中的任何长度或风格偏好（如“简短”或“详尽”）。
             - 引用：引用事实或观点时，尽量在句尾以中括号标注来源（如 [来源] 或 [链接: http...]）。
+            """ ;
+
+    /**
+     * 内容总结
+     */
+    public static final String DEFAULT_SUMMARY_PROMPT = """
+            ${user_summary_prompt}
+            
+            ##问题
+            用户提供了一个复杂问题：${complex_task!""}
+            
+            ##计划
+            问题被拆解成了以下的计划并被执行完毕：${planning_detail!""}
+            
+            ###执行结果
+            ${answer_output!""}
             """;
 
     /**
