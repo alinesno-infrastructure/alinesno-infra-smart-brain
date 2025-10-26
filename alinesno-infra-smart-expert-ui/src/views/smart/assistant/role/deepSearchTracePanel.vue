@@ -12,14 +12,14 @@
     <!-- 执行步骤显示 -->
     <div class="follow-step-panel" v-if="!displayContentVisible">
 
-      <div class="step-title" v-if="currentStepAction.actionName">
+      <div class="step-title" v-if="currentStepAction?.actionName">
         <i :class="currentStepAction?.icon"></i> &nbsp; 正在使用
         <span class="trace-tag">{{ currentStepAction.actionName }}</span>
       </div>
 
       <el-scrollbar class="step-body-panel" ref="scrollbarRef" >
 
-        <div v-if="!currentStepAction.actionName" style="margin-top: 10vh">
+        <div v-if="!currentStepAction?.actionName" style="margin-top: 10vh">
           <el-empty description="当前还没有执行步骤，任务状态显示为空，还未没有执行步骤" />
         </div>
 
@@ -40,7 +40,7 @@
         </span>
         <span style="margin-right: 20px;display: flex;gap: 10px;flex-direction: row;">
           <el-button type="text" @click="hadnleOpenLink()" v-if="displayContentType === 'html'" >
-            <i class="fa-solid fa-share"></i>
+            <i class="fa-solid fa-paper-plane"></i>
           </el-button>
           <el-button type="text" @click="handleCopyContent()">
             <i class="fa-solid fa-clone"></i>
