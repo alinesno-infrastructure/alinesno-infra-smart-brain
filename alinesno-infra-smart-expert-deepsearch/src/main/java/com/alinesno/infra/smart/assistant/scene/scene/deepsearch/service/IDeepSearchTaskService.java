@@ -14,4 +14,9 @@ public interface IDeepSearchTaskService extends IBaseService<DeepSearchTaskEntit
      */
     void updateTitleAndDescById(DeepSearchTaskEntity taskEntity, String title, String desc);
 
+    /**
+     * 更新计划
+     * @param contextTask
+     */
+    void updatePlanById(DeepSearchTaskEntity contextTask);
 }
