@@ -59,16 +59,12 @@ const menuItems = ref([
   { id: '19', icon: 'fa-solid fa-computer', link: '/index', desc: '仪盘表' },
   { id: '9', icon: 'fa-solid fa-ship', link: '/expert/smart/assistant/workplace/index', desc: '工作台' },
   { id: '2', icon: 'fa-solid fa-masks-theater', link: '/expert/smart/assistant/role/index', desc: '智能体' },
-  { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '类型' },
-  { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道' },
   { id: '5', icon: 'fa-solid fa-feather', link: '/prompt/smart/assistant/scene/index', desc: '场景' },
-
-  { id: '18', icon: 'fa-solid fa-file-pdf', link: '/base/search/vectorData/index', desc: '数据集' },
-  { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '分类' },
-  
+  { id: '4', icon: 'fa-solid fa-box', link: '/prompt/smart/assistant/channel/index', desc: '频道' },
+  { id: '18', icon: 'fa-solid fa-file-pdf', link: '/base/search/vectorData/index', desc: '知识库' },
+  { id: '14', icon: 'fa-brands fa-skype', link: '/base/search/catalog/index', desc: '库分类' },
+  { id: '3', icon: 'fa-solid fa-file-pdf', link: '/expert/smart/assistant/roleCatalog/index', desc: '部门' },
   { id: '6', icon: 'fa-solid fa-screwdriver-wrench', link: '/template/smart/assistant/plugin/index', desc: '工具' },
-  // { id: '7', icon: 'fa-solid fa-paper-plane', link: '/template/smart/assistant/secret/index', desc: '密钥管理' },
-
 ]);
 
 // 打开服务市场
