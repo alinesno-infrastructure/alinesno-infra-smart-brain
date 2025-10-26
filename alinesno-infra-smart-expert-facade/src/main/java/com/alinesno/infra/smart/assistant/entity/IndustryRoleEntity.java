@@ -240,6 +240,12 @@ public class IndustryRoleEntity extends InfraBaseEntity {
     @ColumnComment("Agent任务规划条数")
     private Integer agentTaskPlanCount ;
 
+    // 配置规划提示语，以JSON格式进行保存
+    @TableField("deepsearch_prompt_data")
+    @ColumnType(value = MySqlTypeConstant.TEXT)
+    @ColumnComment("配置规划提示语")
+    private String deepSearchPromptData ;
+
     // 是否需要格式化内容
     @TableField("output_file_format_status")
     @ColumnType(value = MySqlTypeConstant.INT, length = 1)
