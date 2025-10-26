@@ -5,11 +5,12 @@ import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
 import com.alinesno.infra.smart.assistant.adapter.service.ILLmAdapterService;
 import com.alinesno.infra.smart.assistant.api.ToolDto;
 import com.alinesno.infra.smart.assistant.api.config.ContextEngineeringData;
+import com.alinesno.infra.smart.assistant.api.config.DeepSearchPromptData;
 import com.alinesno.infra.smart.assistant.api.config.UploadData;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.events.record.DeepSearchTaskRecordManager;
-import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DeepsearchSummaryMessageTool;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.DsSummaryMessageTool;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.StepEventUtil;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.service.IToolService;
@@ -44,12 +45,13 @@ public final class DeepSearchContext {
     private final IndustryRoleEntity role;
     private final DeepSearchTaskEntity deepSearchTask;
     private final UploadData uploadData;
+    private final DeepSearchPromptData deepSearchPromptData;
     private final ContextEngineeringData contextEngineeringData;
     private final Map<String, String> secretKey;
 
     // 工具与服务
     private final ReActServiceTool reActServiceTool;
-    private final DeepsearchSummaryMessageTool summaryMessageTool;
+    private final DsSummaryMessageTool summaryMessageTool;
     private final IToolService toolService;
     private final List<ToolDto> tools;
 
