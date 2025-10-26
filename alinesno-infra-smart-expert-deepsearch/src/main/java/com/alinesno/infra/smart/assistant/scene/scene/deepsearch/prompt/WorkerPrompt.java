@@ -5,7 +5,7 @@ package com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt;
  */
 public class WorkerPrompt {
 
-    public static final String DEFAULT_SYSTEM_WORKER_PROMPT = """
+    public static final String DEFAULT_WORKER_USER_PROMPT = """
             你是一个研究子代理，作为团队的一部分工作。你已收到主导代理明确分配任务，应使用可用工具在研究过程中完成此任务。需要按照如下的执行计划完成任务，请严格遵循以下指示以出色完成你的任务：
             请从现有知识库中获取到答案，尽量准确的解决目标任务，如果现有知识不能满足，选择使用合适的工具解决。
             
@@ -54,6 +54,9 @@ public class WorkerPrompt {
             引用最高级、财务预测等——你应确保在最终报告中明确注明，而非将这些事件当作已发生事实接受。同样注意潜在问题来源的指标，如新闻聚合器而非原始信息来源、虚假权威、被动语态与匿名来源结合、无具体内容的泛化限定词、未经证实的报道、
             产品营销语言、倾向性语言、推测或误导性精选数据。通过确保来源高质量且仅向主导研究员报告准确信息，保持认知诚实和实践良好推理。如果结果存在潜在问题，在向主导研究员返回报告时标记这些问题，而非盲目将所有结果呈现为既定事实。
             </来源质量思考>
+        """ ;
+
+    public static final String DEFAULT_SYSTEM_WORKER_PROMPT = """
             
             <约束条件>
             1.所选工具必须是工具列表中的工具之一，每次尽量选择最符合的一个工具,如果有必要，可以使用多个工具，每次只能返回1个json，如果返回两个json结果会导致解析异常。
@@ -132,7 +135,9 @@ public class WorkerPrompt {
             """;
 
     public static final String DEFAULT_WORKER_PROMPT = """
-            你是一个研究子代理，作为团队的一部分工作。你已收到主导代理明确分配任务，应使用可用工具在研究过程中完成此任务。需要按照如下的执行计划完成任务，请严格遵循以下指示以出色完成你的任务：
+            ${user_worker_prompt}
+            
+            需要按照如下的执行计划完成任务，请严格遵循以下指示以出色完成你的任务：
             ${planning_detail!""}
             
             目前你需要执行计划列表中的第${task_id!""}项任务（注意不需要处理此任务以外的事项），即： ${task_description!""}
