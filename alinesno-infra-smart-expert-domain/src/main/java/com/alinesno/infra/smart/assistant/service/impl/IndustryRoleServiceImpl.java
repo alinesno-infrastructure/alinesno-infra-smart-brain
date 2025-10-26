@@ -566,6 +566,11 @@ public class IndustryRoleServiceImpl extends IBaseServiceImpl<IndustryRoleEntity
             role.setContextEngineeringData(JSONObject.toJSONString(dto.getContextEngineeringData()));
         }
 
+        // DeepSearchPrompt配置
+        if(dto.getDeepSearchPromptData() != null){
+            role.setDeepSearchPromptData(JSONObject.toJSONString(dto.getDeepSearchPromptData()));
+        }
+
     }
 
     /**
