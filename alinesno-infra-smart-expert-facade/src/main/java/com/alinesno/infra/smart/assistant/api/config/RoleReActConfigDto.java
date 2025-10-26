@@ -80,4 +80,7 @@ public class RoleReActConfigDto {
 
     // 上下文工程
     private ContextEngineeringData contextEngineeringData ;
+
+    // 上下文工程
+    private DeepSearchPromptData deepSearchPromptData ;
 }
