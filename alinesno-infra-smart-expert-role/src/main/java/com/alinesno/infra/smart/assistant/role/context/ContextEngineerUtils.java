@@ -18,6 +18,7 @@ import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.im.constants.AgentConstants;
 import com.alinesno.infra.smart.im.dto.FlowStepStatusDto;
 import com.alinesno.infra.smart.im.dto.MessageTaskInfo;
+import com.alinesno.infra.smart.utils.HttpClientUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -112,6 +113,8 @@ public class ContextEngineerUtils {
             TextPromptTemplate promptTemplate = TextPromptTemplate.of(contextSummeryPromptTemplate) ;
 
             String historyTextPrompt = promptTemplate.format(map).toString();
+
+            llm.setHttpClient(HttpClientUtil.buildContextClient());  // 自定义HttpClient 处理请求超时的问题
             compressPrompt = llm.chat(historyTextPrompt) ;
 
             eventStepMessage("附件上下文长度超出指定的长度，将内容进行压缩.", AgentConstants.STEP_FINISH, processChatId, taskInfo);
