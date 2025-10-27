@@ -8,6 +8,10 @@ import com.alinesno.infra.common.facade.datascope.PermissionQuery;
 import com.alinesno.infra.common.facade.response.AjaxResult;
 import com.alinesno.infra.common.web.adapter.rest.BaseController;
 import com.alinesno.infra.smart.assistant.adapter.service.CloudStorageConsumer;
+import com.alinesno.infra.smart.assistant.api.config.DeepSearchPromptData;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.PlanningPrompts;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.SummaryPrompt;
+import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPrompt;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchSceneService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.service.IDeepSearchTaskService;
 import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.utils.GeneratorTaskNameUtil;
@@ -174,6 +178,11 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         return AjaxResult.success("操作成功" , previewUrl);
     }
 
+    /**
+     * 获取存储文件内容
+     * @param storageId
+     * @return
+     */
     @GetMapping("/getOutputMarkdownContent")
     public AjaxResult getOutputMarkdownContent(@RequestParam String storageId) {
         String previewUrl = storageConsumer.getPreviewUrl(storageId).getData();
@@ -198,6 +207,22 @@ public class DeepSearchController extends BaseController<DeepSearchSceneEntity, 
         } finally {
             httpGet.releaseConnection();
         }
+    }
+
+    /**
+     * 获取默认的深度搜索提示词
+     * @return
+     */
+    @GetMapping("/getDefaultDeepSearchPrompt")
+    public AjaxResult getDefaultDeepSearchPrompt(){
+
+        DeepSearchPromptData deepSearchPromptData =  new DeepSearchPromptData() ;
+
+        deepSearchPromptData.setPlanPrompt(PlanningPrompts.DEFAULT_PLANNING_USER_PROMPT);
+        deepSearchPromptData.setWorkerPrompt(WorkerPrompt.DEFAULT_WORKER_USER_PROMPT);
+        deepSearchPromptData.setSummaryPrompt(SummaryPrompt.DEFAULT_SUMMARY_USER_PROMPT);
+
+        return AjaxResult.success(deepSearchPromptData) ;
     }
 
     @Override
