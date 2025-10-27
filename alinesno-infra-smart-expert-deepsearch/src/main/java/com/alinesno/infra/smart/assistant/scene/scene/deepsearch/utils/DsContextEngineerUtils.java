@@ -15,6 +15,7 @@ import com.alinesno.infra.smart.assistant.scene.scene.deepsearch.prompt.WorkerPr
 import com.alinesno.infra.smart.deepsearch.dto.DeepSearchFlow;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionEnums;
 import com.alinesno.infra.smart.deepsearch.enums.StepActionStatusEnums;
+import com.alinesno.infra.smart.utils.HttpClientUtil;
 import com.alinesno.infra.smart.utils.TokenUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.jetbrains.annotations.NotNull;
@@ -122,6 +123,7 @@ public class DsContextEngineerUtils {
             context.getDeepSearchFlow().getSteps().add(step);
             context.getStepEventUtil().eventStepMessage(context.getDeepSearchFlow(), context.getRole(), context.getTaskInfo());
 
+            llm.setHttpClient(HttpClientUtil.buildContextClient());  // 自定义HttpClient 处理请求超时的问题
             compressPrompt = llm.chat(historyTextPrompt) ;
 
             System.out.println("内容压缩:" + compressPrompt);
