@@ -32,7 +32,7 @@
         <docx4j.importxhtml.version>11.4.8</docx4j.importxhtml.version>
 
         <!-- 模型适配 -->
-        <model-adapter.version>3.0.1-M2-SNAPSHOT</model-adapter.version>
+        <model-adapter.version>3.0.2-M2-SNAPSHOT</model-adapter.version>
     </properties>
 
     <modules>
