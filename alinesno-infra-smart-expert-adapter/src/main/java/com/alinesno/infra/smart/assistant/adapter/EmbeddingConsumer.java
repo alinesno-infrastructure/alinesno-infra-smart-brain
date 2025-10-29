@@ -5,7 +5,6 @@ import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingRequest;
 import com.alinesno.infra.smart.assistant.adapter.dto.TextEmbeddingResponse;
 import com.dtflys.forest.annotation.BaseRequest;
 import com.dtflys.forest.annotation.Body;
-import com.dtflys.forest.annotation.Header;
 import com.dtflys.forest.annotation.Post;
 
 /**
@@ -24,6 +23,6 @@ public interface EmbeddingConsumer {
      * @return 响应字符串
      */
     @Post(url = "/v1/embeddings" , contentType = "application/json")
-    TextEmbeddingResponse embeddings(@Body TextEmbeddingRequest request , @Header("Authorization") String authorization);
+    TextEmbeddingResponse embeddings(@Body TextEmbeddingRequest request);
 
 }
