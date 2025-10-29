@@ -14,7 +14,6 @@ import com.alinesno.infra.smart.im.service.IMessageService;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
@@ -29,8 +28,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Service
 public class AgentFlexLLM {
 
-    @Value("${alinesno.infra.smart.brain.qianwen.key:}")
-    private String qianWenKey;
+//    @Value("${alinesno.infra.smart.brain.qianwen.key:}")
+//    private String qianWenKey;
 
     @Autowired
     protected StreamMessagePublisher streamMessagePublisher ;  // 不保存入库的消息
