@@ -124,7 +124,7 @@ public class FunctionNode extends AbstractFlowNode {
         binding.setVariable("role", role); // 角色信息
         binding.setVariable("taskInfo", taskInfo); // 任务信息
         binding.setVariable("workflow", workflow); // 执行流程节点
-        binding.setVariable("qianWenLLM", flowExpertService.getQianWenLLM()); // 文本和图片生成
+//        binding.setVariable("qianWenLLM", flowExpertService.getQianWenLLM()); // 文本和图片生成
 //        binding.setVariable("agentFlexLLM", flowExpertService.getAgentFlexLLM()); // 多模型适配生成
         binding.setVariable("qianWenAuditLLM", flowExpertService.getQianWenAuditLLM());  // 语音生成
         binding.setVariable("templateService", flowExpertService.getTemplateService()); // 模板引擎
