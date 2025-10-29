@@ -34,9 +34,9 @@ public class DefaultExpert extends ExpertService {
         messageEntityList.forEach(item -> log.debug("item:{}", item));
 
         List<PromptMessage> promptMessages = parseMessage(promptContent , message) ;
-        String gentContent = qianWenLLM.processFile(promptMessages) ;
+        String gentContent = null ; //  qianWenLLM.processFile(promptMessages) ;
 
-        log.debug("result:{}", gentContent);
+//        log.debug("result:{}", gentContent);
 
         return null ; //  gentContent ;
     }
