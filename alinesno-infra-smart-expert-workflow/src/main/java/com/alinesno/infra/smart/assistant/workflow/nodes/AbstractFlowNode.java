@@ -10,7 +10,6 @@ import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamMessagePublisher;
 import com.alinesno.infra.smart.assistant.adapter.event.StreamStoreMessagePublisher;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
 import com.alinesno.infra.smart.assistant.service.ILlmModelService;
 import com.alinesno.infra.smart.assistant.workflow.FlowExpertService;
 import com.alinesno.infra.smart.assistant.workflow.WorkflowManage;
@@ -55,8 +54,8 @@ public abstract class AbstractFlowNode implements FlowNode {
     @Autowired
     protected IMessageReferenceService messageReferenceService;
 
-    @Autowired
-    protected QianWenNewApiLLM qianWenNewApiLLM ;
+//    @Autowired
+//    protected QianWenNewApiLLM qianWenNewApiLLM ;
 
     @Autowired
     protected ILlmModelService llmModelService;
