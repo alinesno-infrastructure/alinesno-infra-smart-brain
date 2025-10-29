@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -47,8 +46,8 @@ public class ScriptExpertService extends ReActExpertService {
 	private ReActServiceTool reActServiceTool  ;
 
 
-	@Value("${alinesno.infra.smart.brain.qianwen.key:}")
-	private String apiKey;
+//	@Value("${alinesno.infra.smart.brain.qianwen.key:}")
+//	private String apiKey;
 
 	@SneakyThrows
 	@Transactional(propagation = Propagation.NOT_SUPPORTED)
@@ -169,7 +168,7 @@ public class ScriptExpertService extends ReActExpertService {
 		binding.setVariable("workflow", workflow); // 执行流程节点
 		binding.setVariable("datasetKnowledgeDocument", datasetKnowledgeDocument); // 上下文内容
 
-		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
+//		binding.setVariable("qianWenLLM", qianWenLLM); // 文本和图片生成
 		binding.setVariable("modelAdapterLLM", modelAdapterLLM); // 文本和图片生成
 		binding.setVariable("qianWenAuditLLM", qianWenAuditLLM);  // 语音生成
 		binding.setVariable("templateService", getTemplateService()); // 模板引擎
