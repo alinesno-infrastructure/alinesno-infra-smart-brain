@@ -7,10 +7,7 @@ import com.agentsflex.core.message.HumanMessage;
 import com.agentsflex.core.message.MessageStatus;
 import com.agentsflex.core.prompt.HistoriesPrompt;
 import com.agentsflex.core.util.StringUtil;
-import com.alibaba.dashscope.aigc.generation.GenerationResult;
-import com.alibaba.dashscope.common.ResultCallback;
 import com.alibaba.dashscope.common.Role;
-import com.alibaba.dashscope.utils.JsonUtils;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alinesno.infra.common.core.utils.StringUtils;
@@ -27,9 +24,6 @@ import com.alinesno.infra.smart.assistant.chain.IBaseExpertService;
 import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.llm.QianWenAuditLLM;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenLLM;
-import com.alinesno.infra.smart.assistant.role.llm.QianWenNewApiLLM;
-import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.role.utils.TemplateParser;
 import com.alinesno.infra.smart.assistant.service.ISecretService;
@@ -57,7 +51,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Semaphore;
 
 import static com.alinesno.infra.smart.im.constants.ImConstants.*;
 
@@ -75,8 +68,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Value("${alinesno.infra.smart.assistant.maxHistory:20}")
     protected int maxHistory = 20 ;
 
-    @Autowired
-    protected QianWenNewApiLLM qianWenNewApiLLM ;
+//    @Autowired
+//    protected QianWenNewApiLLM qianWenNewApiLLM ;
 
     // 设置当前执行任务的信息
     private IndustryRoleEntity role ;
@@ -105,8 +98,8 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
     @Autowired
     protected CloudStorageConsumer cloudStorageConsumer;
 
-    @Autowired
-    protected QianWenLLM qianWenLLM;
+//    @Autowired
+//    protected QianWenLLM qianWenLLM;
 
     @Autowired
     protected QianWenAuditLLM qianWenAuditLLM;
@@ -435,135 +428,135 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
         return result.toString();
     }
 
-    @SneakyThrows
-    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+//    @SneakyThrows
+//    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo) {
+//
+//        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
+//                .role("user")
+//                .content(prompt)
+//                .build();
+//
+//        MessageManager msgManager = new MessageManager(10);
+//        msgManager.add(promptMsg);
+//
+//        processStreamCallback(role, taskInfo , msgManager);
+//    }
+//
+//    /**
+//     * 流式任务
+//     * @param role
+//     * @param prompt
+//     * @param taskInfo
+//     * @param messages 历史任务
+//     */
+//    @SneakyThrows
+//    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , List<com.alibaba.dashscope.common.Message> messages) {
+//
+//        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
+//                .role("user")
+//                .content(prompt)
+//                .build();
+//
+//
+//        MessageManager msgManager = new MessageManager(50);
+//
+//        if(messages != null && !messages.isEmpty()){
+//            for(com.alibaba.dashscope.common.Message m : messages) {
+//                msgManager.add(m);
+//            }
+//        }
+//        msgManager.add(promptMsg);
+//
+//        processStreamCallback(role, taskInfo , msgManager);
+//    }
+//
+//    /**
+//     * 流式任务
+//     * @param role
+//     * @param messages
+//     * @param taskInfo
+//     */
+//    @SneakyThrows
+//    public void processStream(IndustryRoleEntity role, List<PromptMessage> messages, MessageTaskInfo taskInfo) {
+//        MessageManager msgManager = new MessageManager(10);
+//
+//        for(PromptMessage m : messages) {
+//            com.alibaba.dashscope.common.Message msg = com.alibaba.dashscope.common.Message.builder()
+//                    .role(m.getRole())
+//                    .content(m.getContent())
+//                    .build();
+//            msgManager.add(msg);
+//        }
+//
+//        processStreamCallback(role, taskInfo, msgManager);
+//    }
 
-        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
-                .role("user")
-                .content(prompt)
-                .build();
-
-        MessageManager msgManager = new MessageManager(10);
-        msgManager.add(promptMsg);
-
-        processStreamCallback(role, taskInfo , msgManager);
-    }
-
-    /**
-     * 流式任务
-     * @param role
-     * @param prompt
-     * @param taskInfo
-     * @param messages 历史任务
-     */
-    @SneakyThrows
-    public void processStream(IndustryRoleEntity role, String prompt, MessageTaskInfo taskInfo , List<com.alibaba.dashscope.common.Message> messages) {
-
-        com.alibaba.dashscope.common.Message promptMsg = com.alibaba.dashscope.common.Message.builder()
-                .role("user")
-                .content(prompt)
-                .build();
-
-
-        MessageManager msgManager = new MessageManager(50);
-
-        if(messages != null && !messages.isEmpty()){
-            for(com.alibaba.dashscope.common.Message m : messages) {
-                msgManager.add(m);
-            }
-        }
-        msgManager.add(promptMsg);
-
-        processStreamCallback(role, taskInfo , msgManager);
-    }
-
-    /**
-     * 流式任务
-     * @param role
-     * @param messages
-     * @param taskInfo
-     */
-    @SneakyThrows
-    public void processStream(IndustryRoleEntity role, List<PromptMessage> messages, MessageTaskInfo taskInfo) {
-        MessageManager msgManager = new MessageManager(10);
-
-        for(PromptMessage m : messages) {
-            com.alibaba.dashscope.common.Message msg = com.alibaba.dashscope.common.Message.builder()
-                    .role(m.getRole())
-                    .content(m.getContent())
-                    .build();
-            msgManager.add(msg);
-        }
-
-        processStreamCallback(role, taskInfo, msgManager);
-    }
-
-    protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
-        Semaphore semaphore = new Semaphore(0);
-        StringBuilder fullContent = new StringBuilder();
-        long traceBusId = taskInfo.getTraceBusId() ;
-
-        msgManager.setTraceBusId(taskInfo.getTraceBusId());
-        msgManager.setWorkflowId(traceBusId);
-        msgManager.setChannelId(taskInfo.getChannelId());
-
-        qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
-            @SneakyThrows
-            @Override
-            public void onEvent(GenerationResult message) {
-
-                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
-                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
-
-                log.info("Received message: {}", JsonUtils.toJson(message));
-
-                if (finishReason != null && finishReason.equals("stop")) {
-                    msg = "[DONE]" ;
-                    semaphore.release();
-                }else{
-                    fullContent.append(msg);
-                }
-
-                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
-
-            }
-
-            @Override
-            public void onError(Exception err) {
-                log.error("Exception occurred: {}", err.getMessage());
-                semaphore.release();
-            }
-
-            @Override
-            public void onComplete() {
-                log.info("Completed");
-                semaphore.release();
-                log.info("Full content: \n{}", fullContent);
-
-                MessageEntity entity = new MessageEntity();
-
-                entity.setTraceBusId(taskInfo.getTraceBusId());
-                entity.setId(msgManager.getWorkflowId());
-                entity.setContent(fullContent.toString()) ;
-                entity.setFormatContent(fullContent.toString());
-                entity.setName(role.getRoleName());
-
-                entity.setRoleType("agent");
-                entity.setReaderType("html");
-
-                entity.setAddTime(new Date());
-                entity.setIcon(role.getRoleAvatar());
-
-                entity.setChannelId(msgManager.getChannelId());
-                entity.setRoleId(role.getId()) ;
-
-                messageService.save(entity);
-
-            }
-        }) ;
-
-        semaphore.acquire();
-    }
+//    protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
+//        Semaphore semaphore = new Semaphore(0);
+//        StringBuilder fullContent = new StringBuilder();
+//        long traceBusId = taskInfo.getTraceBusId() ;
+//
+//        msgManager.setTraceBusId(taskInfo.getTraceBusId());
+//        msgManager.setWorkflowId(traceBusId);
+//        msgManager.setChannelId(taskInfo.getChannelId());
+//
+//        qianWenLLM.getGeneration(msgManager, new ResultCallback<>() {
+//            @SneakyThrows
+//            @Override
+//            public void onEvent(GenerationResult message) {
+//
+//                String msg = message.getOutput().getChoices().get(0).getMessage().getContent();
+//                String finishReason = message.getOutput().getChoices().get(0).getFinishReason() ;
+//
+//                log.info("Received message: {}", JsonUtils.toJson(message));
+//
+//                if (finishReason != null && finishReason.equals("stop")) {
+//                    msg = "[DONE]" ;
+//                    semaphore.release();
+//                }else{
+//                    fullContent.append(msg);
+//                }
+//
+//                streamMessagePublisher.doStuffAndPublishAnEvent(msg , role, taskInfo, traceBusId);
+//
+//            }
+//
+//            @Override
+//            public void onError(Exception err) {
+//                log.error("Exception occurred: {}", err.getMessage());
+//                semaphore.release();
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//                log.info("Completed");
+//                semaphore.release();
+//                log.info("Full content: \n{}", fullContent);
+//
+//                MessageEntity entity = new MessageEntity();
+//
+//                entity.setTraceBusId(taskInfo.getTraceBusId());
+//                entity.setId(msgManager.getWorkflowId());
+//                entity.setContent(fullContent.toString()) ;
+//                entity.setFormatContent(fullContent.toString());
+//                entity.setName(role.getRoleName());
+//
+//                entity.setRoleType("agent");
+//                entity.setReaderType("html");
+//
+//                entity.setAddTime(new Date());
+//                entity.setIcon(role.getRoleAvatar());
+//
+//                entity.setChannelId(msgManager.getChannelId());
+//                entity.setRoleId(role.getId()) ;
+//
+//                messageService.save(entity);
+//
+//            }
+//        }) ;
+//
+//        semaphore.acquire();
+//    }
 
     /**
      * 运行回调通知到界面
@@ -627,68 +620,68 @@ public abstract class ExpertService extends ExpertToolsService implements IBaseE
 
     }
 
-    /**
-     * 处理本次会话的历史记录
-     * @param messages
-     * @param channelId
-     */
-    protected void handleHistoryUserMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId) {
+//    /**
+//     * 处理本次会话的历史记录
+//     * @param messages
+//     * @param channelId
+//     */
+//    protected void handleHistoryUserMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId) {
+//
+//        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(MessageEntity::getChannelId, channelId)
+//                .orderByDesc(MessageEntity::getAddTime)
+//                .last("limit 500");;
+//        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+//
+//        for (MessageEntity dto : chatMessageDtoList) {
+//            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+//            if ("person".equals(dto.getRoleType())) {
+//                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+//            }
+//        }
+//
+//        Collections.reverse(messages);
+//
+//    }
 
-        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByDesc(MessageEntity::getAddTime)
-                .last("limit 500");;
-        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
-
-        for (MessageEntity dto : chatMessageDtoList) {
-            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-            if ("person".equals(dto.getRoleType())) {
-                messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
-            }
-        }
-
-        Collections.reverse(messages);
-
-    }
-
-    /**
-     * 处理本次会话的历史记录
-     * @param messages
-     * @param channelId
-     */
-    protected void handleHistoryMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId , int maxLength) {
-
-        log.debug("历史记录：");
-
-        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(MessageEntity::getChannelId, channelId)
-                .orderByDesc(MessageEntity::getAddTime)
-                .last("limit 500");;
-        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
-        StringBuilder allMessagesText = new StringBuilder();
-
-        int tokenLength;
-
-        for (MessageEntity dto : chatMessageDtoList) {
-            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
-            tokenLength = chatText.length();
-
-            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
-            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
-
-                if ("agent".equals(dto.getRoleType())) {
-                    messages.add(qianWenNewApiLLM.createMessage(Role.ASSISTANT, chatText));
-                } else {
-                    messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
-                }
-
-                // 更新所有消息文本的总长度
-                allMessagesText.append(chatText);
-            }
-        }
-        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
-
-    }
+//    /**
+//     * 处理本次会话的历史记录
+//     * @param messages
+//     * @param channelId
+//     */
+//    protected void handleHistoryMessage(List<com.alibaba.dashscope.common.Message> messages, long channelId , int maxLength) {
+//
+//        log.debug("历史记录：");
+//
+//        LambdaQueryWrapper<MessageEntity> wrapper = new LambdaQueryWrapper<>();
+//        wrapper.eq(MessageEntity::getChannelId, channelId)
+//                .orderByDesc(MessageEntity::getAddTime)
+//                .last("limit 500");;
+//        List<MessageEntity> chatMessageDtoList = messageService.list(wrapper) ;
+//        StringBuilder allMessagesText = new StringBuilder();
+//
+//        int tokenLength;
+//
+//        for (MessageEntity dto : chatMessageDtoList) {
+//            String chatText = !org.springframework.util.StringUtils.hasLength(dto.getFormatContent()) ? dto.getContent() : dto.getFormatContent();
+//            tokenLength = chatText.length();
+//
+//            // 如果是 "agent" 或 "person" 角色的消息，并且总长度加上新消息长度不超过最大长度，则添加消息
+//            if (("agent".equals(dto.getRoleType()) || "person".equals(dto.getRoleType()))  && (allMessagesText.length() + tokenLength <= maxLength)) {
+//
+//                if ("agent".equals(dto.getRoleType())) {
+//                    messages.add(qianWenNewApiLLM.createMessage(Role.ASSISTANT, chatText));
+//                } else {
+//                    messages.add(qianWenNewApiLLM.createMessage(Role.USER, chatText));
+//                }
+//
+//                // 更新所有消息文本的总长度
+//                allMessagesText.append(chatText);
+//            }
+//        }
+//        log.debug("历史记录处理完毕，总消息长度为: {}", allMessagesText.length());
+//
+//    }
 
 
     /**
