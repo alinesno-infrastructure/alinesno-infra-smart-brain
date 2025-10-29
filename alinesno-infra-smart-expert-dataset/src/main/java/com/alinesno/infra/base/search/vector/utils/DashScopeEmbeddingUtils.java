@@ -1,10 +1,6 @@
 package com.alinesno.infra.base.search.vector.utils;
 
-import com.alibaba.dashscope.embeddings.BatchTextEmbedding;
-import com.alibaba.dashscope.embeddings.BatchTextEmbeddingParam;
-import com.alibaba.dashscope.embeddings.BatchTextEmbeddingResult;
 import com.alibaba.dashscope.embeddings.TextEmbeddingResultItem;
-import com.alibaba.dashscope.exception.ApiException;
 import com.alibaba.dashscope.exception.NoApiKeyException;
 import com.alibaba.fastjson.JSON;
 import com.alinesno.infra.smart.assistant.adapter.EmbeddingConsumer;
@@ -47,8 +43,8 @@ import java.util.zip.GZIPInputStream;
 @Component
 public class DashScopeEmbeddingUtils {
 
-    @Value("${alinesno.infra.smart.brain.qianwen.key:}")
-    private String apiKey;
+//    @Value("${alinesno.infra.smart.brain.qianwen.key:}")
+//    private String apiKey;
 
     @Value("${alinesno.infra.gateway.embedding-model:text-embedding-v4}")
     private String embeddingModel ;
@@ -83,29 +79,29 @@ public class DashScopeEmbeddingUtils {
         request.setEncoding_format("float");
         request.setInput(queryText);
 
-        TextEmbeddingResponse response = embeddingConsumer.embeddings(request , apiKey) ;
+        TextEmbeddingResponse response = embeddingConsumer.embeddings(request) ;
         return response.getData() ;
     }
 
-    /**
-     * 处理批量文本嵌入
-     *
-     * @return
-     * @throws ApiException      当API调用异常时抛出
-     * @throws NoApiKeyException 当没有API密钥时抛出
-     */
-    public BatchTextEmbeddingResult embedBatch(String url) throws ApiException, NoApiKeyException {
-        // 构建批量文本嵌入参数
-        BatchTextEmbeddingParam param = BatchTextEmbeddingParam.builder()
-                .model(BatchTextEmbedding.Models.TEXT_EMBEDDING_ASYNC_V1) // 设置模型
-                .apiKey(apiKey) // 从环境变量中获取API密钥
-                .url(url) // 设置文本文件的URL
-                .build();
-        // 初始化批量文本嵌入对象并调用嵌入方法
-        BatchTextEmbedding textEmbedding = new BatchTextEmbedding();
-
-        return textEmbedding.call(param);
-    }
+//    /**
+//     * 处理批量文本嵌入
+//     *
+//     * @return
+//     * @throws ApiException      当API调用异常时抛出
+//     * @throws NoApiKeyException 当没有API密钥时抛出
+//     */
+//    public BatchTextEmbeddingResult embedBatch(String url) throws ApiException, NoApiKeyException {
+//        // 构建批量文本嵌入参数
+//        BatchTextEmbeddingParam param = BatchTextEmbeddingParam.builder()
+//                .model(BatchTextEmbedding.Models.TEXT_EMBEDDING_ASYNC_V1) // 设置模型
+//                .apiKey(apiKey) // 从环境变量中获取API密钥
+//                .url(url) // 设置文本文件的URL
+//                .build();
+//        // 初始化批量文本嵌入对象并调用嵌入方法
+//        BatchTextEmbedding textEmbedding = new BatchTextEmbedding();
+//
+//        return textEmbedding.call(param);
+//    }
 
     public void parseAndProcess(String jsonString) throws IOException {
         // 解析JSON
