@@ -13,7 +13,6 @@ import com.alinesno.infra.smart.assistant.entity.IndustryRoleEntity;
 import com.alinesno.infra.smart.assistant.enums.AssistantConstants;
 import com.alinesno.infra.smart.assistant.enums.WorkflowStatusEnum;
 import com.alinesno.infra.smart.assistant.role.ReActExpertService;
-import com.alinesno.infra.smart.assistant.role.llm.adapter.MessageManager;
 import com.alinesno.infra.smart.assistant.role.tools.ReActServiceTool;
 import com.alinesno.infra.smart.assistant.role.utils.RoleUtils;
 import com.alinesno.infra.smart.assistant.workflow.dto.FlowNodeDto;
@@ -219,8 +218,8 @@ public class FlowExpertService extends ReActExpertService {
         return null;
     }
 
-    @Override
-    protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
+//    @Override
+//    protected void processStreamCallback(IndustryRoleEntity role, MessageTaskInfo taskInfo, MessageManager msgManager) throws InterruptedException {
 //        Semaphore semaphore = new Semaphore(0);
 //        StringBuilder fullContent = new StringBuilder();
 //        long traceBusId = taskInfo.getTraceBusId(); // IdUtil.getSnowflakeNextId() ; // taskInfo.getWorkflowRecordId() ;
@@ -286,7 +285,7 @@ public class FlowExpertService extends ReActExpertService {
 //        });
 //
 //        semaphore.acquire();
-    }
+//    }
 
     @Override
     public void notifyCallback(String msg) {
