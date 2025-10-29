@@ -118,7 +118,7 @@ const router = useRouter();
 const createPortalRef = ref(null);
 const filterTag = ref('')
 
-const defaultDesc = ref('AI智能体工作台是融合多种先进技术的综合性工作平台，具备知识管理、内容生成、创作辅助等多种功能，功能包括多模型接入、知识管理、智能创作等功能，能够极大提升工作效率与创新能力，助力企业和个人在数字化时代实现高效、智能的工作模式 。')
+const defaultDesc = ref('AI智能体工作台是融合多种先进技术的综合性工作平台，，助力企业和个人在数字化时代实现高效、智能的工作模式 。')
 const currentWorkplace = ref({
     name: 'AIP智能体运营工作台',
     description: defaultDesc.value,
