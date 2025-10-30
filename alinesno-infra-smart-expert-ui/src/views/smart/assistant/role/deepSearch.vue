@@ -596,6 +596,11 @@ const displayRoleInfoBack = (currentRole) =>{
         agentModelConfigForm.value.contextEngineeringData = currentRole.contextEngineeringData ;
     }
 
+    // 深度搜索Prompt
+    if(currentRole.deepSearchPromptData){
+        agentModelConfigForm.value.deepSearchPromptData = currentRole.deepSearchPromptData ;
+    }
+
     console.log('agentModelConfigForm = ' + JSON.stringify(agentModelConfigForm.value));
 }
 
