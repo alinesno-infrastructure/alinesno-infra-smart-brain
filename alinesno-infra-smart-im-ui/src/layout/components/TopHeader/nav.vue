@@ -28,7 +28,7 @@
     </div>
 
     <div class="acp-header-item ">
-      <a class="header-label-text" target="_blank" :href="studioUrl? studioUrl : 'http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com'">
+      <a class="header-label-text" target="_blank" :href="studioUrl? studioUrl : 'https://alinesno-infra-plat-console-ui.linesno.com'">
         <i class="fa-solid fa-feather"></i> 工作区(Studio)
       </a>
     </div>
