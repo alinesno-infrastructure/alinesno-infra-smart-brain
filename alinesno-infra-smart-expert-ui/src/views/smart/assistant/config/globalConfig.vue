@@ -204,7 +204,7 @@ const form = ref({
   defaultImageModel: '',
   maxChannelPeople: 0,
   displayService: 'none' , 
-  studioUrl: 'http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com'
+  studioUrl: 'https://alinesno-infra-plat-console-ui.linesno.com'
 });
 
 const rules = ref({
