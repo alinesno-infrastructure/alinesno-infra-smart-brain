@@ -73,7 +73,7 @@ forest:
 # sa-token配置
 sa-token:
   token-name: Authorization
-  host-path: http://alinesno-infra-base-identity-auth-application.beta.base.infra.linesno.com
+  host-path: https://alinesno-infra-base-identity-auth-application.linesno.com
   sso:
     auth-url: ${sa-token.host-path}/login
     is-http: true
@@ -121,7 +121,7 @@ alinesno:
     enabled: false
   infra:
     gateway:
-      host: http://alinesno-infra-base-gateway-proxy-application.linesno.com
+      host: https://alinesno-infra-base-gateway-proxy-application.linesno.com
     smart:
       # milvus 向量数据库
       milvus:
