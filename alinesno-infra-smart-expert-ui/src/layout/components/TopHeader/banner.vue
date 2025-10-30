@@ -20,7 +20,7 @@ import AIPLogo from '@/assets/logo/logo.png'
 
 const saasTitle = ref('AIP智能设施')
 const enableLogo = ref(true)
-const saasUrl = ref('http://alinesno-infra-plat-console-ui.beta.base.infra.linesno.com')
+const saasUrl = ref('https://alinesno-infra-plat-console-ui.linesno.com')
 const saasLogoUrl = ref(AIPLogo)
 const displayUrl = ref('')
 const domainName = ref(null)
